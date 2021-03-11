@@ -8,7 +8,7 @@ module.exports = {
     UFN_USER_SEL: "select * from ufn_user_sel($facebookuserid, $offset);",
     UFN_FACEBOOKPOST_USERID_SEL: "select * from ufn_facebookpost_userid_sel($userid);",
     UFN_UPDATE_ANSWER_FBPOST: "update facebookpost set answered = $answered where facebookpostid = $facebookpostid",
-    QUERY_AUTHENTICATED: "select us.userid, us.usr, us.role, us.doctype, us.docnum, us.pwd, us.firstname, us.lastname, us.email, us.status, us.company, us.corporation, ou.corpid, ou.orgid, org.description orgname, corp.description corpname from usr us left join orguser ou on ou.userid = us.userid left join org org on org.orgid = ou.orgid left join corp corp on corp.corpid = ou.corpid where us.usr = $usr and (ou.bydefault = true or ou.bydefault is null)",
+    QUERY_AUTHENTICATED: "select us.userid, us.usr, us.doctype, us.docnum, us.pwd, us.firstname, us.lastname, us.email, us.status, us.company, ou.orgid, org.description orgname from usr us left join orguser ou on ou.userid = us.userid left join org org on org.orgid = ou.orgid where us.usr = $usr and (ou.bydefault = true or ou.bydefault is null)",
     UFN_USERZYX_SEL: "select * from ufn_analytics_user_sel($corpid, $orgid, $id, $username, $applicationid, $all, $corporation)",
     UFN_CORP_ORG_SEL: "SELECT * FROM ufn_corp_org_sel($corpid,$id,$username,$applicationid,$all)",
     UFN_ROLE_LST: "SELECT * FROM ufn_role_lst($corpid, $orgid)",
