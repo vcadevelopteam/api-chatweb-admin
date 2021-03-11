@@ -13,16 +13,13 @@ exports.GetCollection = async (req, res) => {
     try {
         const { data, method } = req.body;
 
-        if (!data.corporation)
-            data.corporation = req.usuario.corporation;
-        if (!data.corpid)
-            data.corpid = req.usuario.corpid ? req.usuario.corpid : 1;
         if (!data.orgid)
             data.orgid = req.usuario.orgid ? req.usuario.orgid : 1;
         if (!data.username)
             data.username = req.usuario.usr;
         if (!data.userid)
             data.userid = req.usuario.userid;
+            
         const result = await triggerfunctions.executesimpletransaction(method, data);
         if (result instanceof Array)
             return res.json(result);

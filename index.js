@@ -9,7 +9,7 @@ app.use(cors());
 
 app.use(express.json());//to accept json
 
-const PORT = process.env.PORT || 4040;
+const PORT = process.env.PORT || 5050;
 
 app.use('/api/usuarios', require('./routes/usuarios'));
 app.use('/api/auth', require('./routes/auth'));
