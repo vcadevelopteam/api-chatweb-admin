@@ -11,7 +11,7 @@ const COS_BUCKET_NAME = "staticfileszyxme"
 
 exports.GetCollection = async (req, res) => {
     try {
-        const { data, method } = req.body;
+        const { data = {}, method } = req.body;
 
         if (!data.orgid)
             data.orgid = req.usuario.orgid ? req.usuario.orgid : 1;

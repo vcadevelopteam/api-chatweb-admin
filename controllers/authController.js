@@ -38,11 +38,11 @@ exports.authenticate = async (req, res) => {
 
 exports.getUser = async (req, res) => {
     try {
-        delete req.usuario.corpid;
-        delete req.usuario.orgid;
-        delete req.usuario.corpname;
-        delete req.usuario.orgname;
-        delete req.usuario.userid;
+        // delete req.usuario.corpid;
+        // delete req.usuario.orgid;
+        // delete req.usuario.corpname;
+        // delete req.usuario.orgname;
+        // delete req.usuario.userid;
 
         res.json({ user: req.usuario })
     } catch (error) {
