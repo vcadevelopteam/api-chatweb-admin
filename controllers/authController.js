@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 
 exports.authenticate = async (req, res) => {
     const { data: { usr, password } } = req.body;
-
+    console.log(usr);
     try {
 
         const result = await triggerfunctions.executesimpletransaction("QUERY_AUTHENTICATED", { usr });
