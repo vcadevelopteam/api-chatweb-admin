@@ -1,5 +1,6 @@
 const triggerfunctions = require('../config/triggerfunctions');;
 var ibm = require('ibm-cos-sdk');
+const { v4: uuidv4 } = require('uuid');
 
 var config = {
     endpoint: 's3.us-east.cloud-object-storage.appdomain.cloud',
@@ -19,6 +20,9 @@ exports.GetCollection = async (req, res) => {
             data.username = req.usuario.usr;
         if (!data.userid)
             data.userid = req.usuario.userid;
+        if (data.uuid)
+            data.uuid = uuidv4();
+
             
         const result = await triggerfunctions.executesimpletransaction(method, data);
         if (result instanceof Array)
