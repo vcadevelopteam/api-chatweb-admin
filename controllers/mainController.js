@@ -19,6 +19,7 @@ exports.GetCollection = async (req, res) => {
             data.username = req.usuario.usr;
         if (!data.userid)
             data.userid = req.usuario.userid;
+
             
         const result = await triggerfunctions.executesimpletransaction(method, data);
         if (result instanceof Array)
