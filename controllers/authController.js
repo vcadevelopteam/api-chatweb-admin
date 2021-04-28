@@ -10,7 +10,7 @@ exports.authenticate = async (req, res) => {
     try {
 
         const result = await triggerfunctions.executesimpletransaction("QUERY_AUTHENTICATED", { usr });
-
+        console.log(result)
         if (!result instanceof Array || result.length === 0)
             return res.status(401).json({ msg: "El usuario no existe" });
 
