@@ -45,7 +45,6 @@ exports.Save = async (req, res) => {
                     console.log(error);
                 }
             } else {
-                console.log('11111111');
                 try {
                     await axios({
                         url: `${urlBroker}integrations/update/${data.integrationkey}`,
