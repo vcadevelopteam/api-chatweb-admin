@@ -17,6 +17,7 @@ app.use('/api/contact', require('./routes/contact'));
 app.use('/api/main', require('./routes/main'));
 app.use('/api/template', require('./routes/template'));
 app.use('/api/processfile', require('./routes/processfile'));
+app.use('/api/upload', require('./routes/upload'));
 
 // Definir la pagina principal
 app.get('/', (req, res) => {
