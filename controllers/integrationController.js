@@ -24,7 +24,10 @@ exports.Save = async (req, res) => {
                 status: data.status,
                 metadata: {
                     integrationid,
-                    applicationid: data.chatwebapplicationid
+                    applicationid: data.chatwebapplicationid,
+                    color: data.color ? JSON.parse(data.color) : {},
+                    form: data.form ? JSON.parse(data.form) : [],
+                    icons: data.icons ? JSON.parse(data.icons) : {}
                 },
                 applicationId: "" + data.chatwebapplicationid
             }
@@ -44,7 +47,7 @@ exports.Save = async (req, res) => {
             } else {
                 console.log('11111111');
                 try {
-                    const response = await axios({
+                    await axios({
                         url: `${urlBroker}integrations/update/${data.integrationkey}`,
                         method: 'put',
                         data: datatosend
