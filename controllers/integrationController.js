@@ -18,6 +18,9 @@ exports.Save = async (req, res) => {
 
         if (result instanceof Array) {
             const integrationid = result[0].p_chatwebintegrationid;
+
+            const icons = data.icons ? JSON.parse(data.icons) : {};
+
             const datatosend = {
                 name: data.name,
                 type: data.type,
@@ -27,7 +30,15 @@ exports.Save = async (req, res) => {
                     applicationid: data.chatwebapplicationid,
                     color: data.color ? JSON.parse(data.color) : {},
                     form: data.form ? JSON.parse(data.form) : [],
-                    icons: data.icons ? JSON.parse(data.icons) : {}
+                    icons: {
+                        chatHeaderImage: icons.chatHeaderImage,
+                        chatBotImage: icons.chatBotImage,
+                        chatOpenImage: icons.chatOpenImage
+                    },
+                    personalization: {
+                        headerTitle: icons.headerTitle,
+                        headerSubTitle: icons.headerSubTitle
+                    }
                 },
                 applicationId: "" + data.chatwebapplicationid
             }
