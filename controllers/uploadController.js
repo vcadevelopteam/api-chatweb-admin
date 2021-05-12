@@ -12,7 +12,7 @@ const COS_BUCKET_NAME = "staticfileszyxme"
 
 exports.upload = async (req, res) => {
     try {
-        console.log(req.file);
+        
         const params = {
             ACL: 'public-read',
             Key: req.file.originalname,
@@ -23,15 +23,15 @@ exports.upload = async (req, res) => {
     
         s3.upload(params, (err, data) => {
             if (err) {
-                console.log("error", err);
+                
                 return res.json({ success: false, msg: 'Hubo un error#1 en la carga de archivo.', err })
             }
-            console.log(data);
+            
             return res.json({ success: true, url: data.Location })
         })   
     } 
     catch (error) {
-        console.log("error try", error);
+        
         return res.json({ success: false, msg: 'Hubo un error#2 en la carga de archivo.', err })
     }
 }

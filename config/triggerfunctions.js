@@ -18,7 +18,7 @@ exports.executequery = async (query) => {
             type: QueryTypes.SELECT,
             bind: {}
         }).catch(function (err) {
-            console.log(err);
+            
             return {
                 msg: err.toString(),
                 success: false,
@@ -27,7 +27,6 @@ exports.executequery = async (query) => {
         });
         return result;
     } catch (e) {
-        console.log(e);
         response.result = e;
         response.msg = "Hubo un error, vuelva a intentarlo";
     }
@@ -64,7 +63,7 @@ exports.executesimpletransaction = async (method, data) => {
             response.msg = "No existe el método";
         }
     } catch (e) {
-        console.log(e);
+        
         response.result = e;
         response.msg = "Hubo un error, vuelva a intentarlo";
     }
@@ -113,7 +112,7 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data) =>
         } else
             response.msg = "No existe el método";
     } catch (e) {
-        console.log(e);
+        
         response.msg = "Hubo un error, vuelva a intentarlo";
     }
 
@@ -147,7 +146,7 @@ exports.export = async (method, data) => {
             response.msg = "No existe el método";
         }
     } catch (e) {
-        console.log(e);
+        
         response.msg = "Hubo un error, vuelva a intentarlo";
     }
 

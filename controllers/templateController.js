@@ -44,7 +44,7 @@ exports.MassiveLoad = async (req, res) => {
             return res.status(500).json(result);
 
     } catch (error) {
-        console.log(error);
+        
         return res.status(500).json({
             msg: "Hubo un problema, intentelo más tarde"
         });
@@ -93,15 +93,15 @@ exports.Export = async (req, res) => {
         console.time(`uploadcos`);
         s3.upload(params, (err, data) => {
             if (err) {
-                console.log(err);
+                
                 return res.json({ success: false, msg: 'Hubo un error#1 en la carga de archivo.', err })
             }
-            console.log(data);
+            
             console.timeEnd(`uploadcos`);
             return res.json({ success: true, url: data.Location })
         });
     } catch (error) {
-        console.log(error);
+        
         return res.status(500).json({
             msg: "Hubo un problema, intentelo más tarde"
         });
@@ -141,7 +141,7 @@ exports.Insert = async (req, res) => {
             return res.status(500).json(result);
     }
     catch (error) {
-        console.log(error);
+        
         return res.status(500).json({
             msg: "Hubo un problema, intentelo más tarde"
         });

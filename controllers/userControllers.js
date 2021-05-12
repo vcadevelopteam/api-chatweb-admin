@@ -46,7 +46,7 @@ exports.manage = async (req, res) => {
         
         
     } catch (error) {
-        console.log(error);
+        
         return res.status(500).json({
             msg: "Hubo un problema, intentelo más tarde"
         });
@@ -84,7 +84,7 @@ exports.insertUser = async (req, res) => {
         });
     }
     catch (error) {
-        console.log(error);
+        
         return res.status(500).json({
             msg: "Hubo un problema, intentelo más tarde"
         });

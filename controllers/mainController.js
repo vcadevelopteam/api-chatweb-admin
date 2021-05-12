@@ -28,7 +28,7 @@ exports.GetCollection = async (req, res) => {
             return res.status(500).json(result);
     }
     catch (error) {
-        console.log(error);
+        
         return res.status(500).json({
             msg: "Hubo un problema, intentelo más tarde"
         });
@@ -50,7 +50,7 @@ exports.getCollectionPagination = async (req, res) => {
         res.json(result);
     }
     catch (error) {
-        console.log(error);
+        
         return res.status(500).json({
             msg: "Hubo un problema, intentelo más tarde"
         });
@@ -105,10 +105,10 @@ exports.exportexcel = async (req, res) => {
             console.time(`uploadcos`);
             s3.upload(params, (err, data) => {
                 if (err) {
-                    console.log(err);
+                    
                     return res.json({ success: false, msg: 'Hubo un error#1 en la carga de archivo.', err })
                 }
-                console.log(data);
+                
                 console.timeEnd(`uploadcos`);
                 return res.json({ success: true, url: data.Location })
             });
@@ -119,7 +119,7 @@ exports.exportexcel = async (req, res) => {
         }
     }
     catch (error) {
-        console.log(error);
+        
         return res.status(500).json({
             msg: "Hubo un problema, intentelo más tarde"
         });
@@ -143,7 +143,7 @@ exports.export = async (req, res) => {
         res.json(result);
     }
     catch (error) {
-        console.log(error);
+        
         return res.status(500).json({
             msg: "Hubo un problema, intentelo más tarde"
         });
