@@ -30,6 +30,7 @@ exports.Save = async (req, res) => {
                     applicationid: data.chatwebapplicationid,
                     color: data.color ? JSON.parse(data.color) : {},
                     form: data.form ? JSON.parse(data.form) : [],
+                    extra: data.other ? JSON.parse(data.other) : [],
                     icons: {
                         chatHeaderImage: icons.chatHeaderImage,
                         chatBotImage: icons.chatBotImage,
