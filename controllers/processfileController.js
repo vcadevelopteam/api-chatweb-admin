@@ -69,9 +69,9 @@ const cleanArray = (dataToProcess, templateselected, filename) => {
 
 exports.process = async (req, res) => {
     const { url, subject, mailattachmentid, filename } = req.body;
-    console.log({ url, subject, mailattachmentid, filename });
+    
     try {
-        console.log("working....");
+        
         if (!/.rar|.txt|.xlsx|.xls|.csv|.zip/gi.test(filename)) {
             const errormsg = "Contenido no soportado";
             await updateMailattachment(false, mailattachmentid, errormsg)
@@ -154,9 +154,9 @@ exports.process = async (req, res) => {
                 const templatedictionary = JSON.parse(template.json_detail);
                 try {
                     dataready = cleanArray(datatoprocess, templatedictionary, filename);
-                    console.log(dataready);
+                    
                 } catch (e) {
-                    console.log(e);
+                    
                     await updateMailattachment(false, mailattachmentid, e.toString());
                     return res.json({ msg: e.toString() });
                 }
@@ -171,7 +171,7 @@ exports.process = async (req, res) => {
         });
     }
     catch (error) {
-        console.log(error);
+        
         return res.status(500).json({ msg: "Hubo un problema, intentelo más tarde" });
     }
 }

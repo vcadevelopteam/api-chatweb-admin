@@ -19,7 +19,6 @@ exports.sendMessage = async (req, res) => {
             }
             res.json(response.data);
         } catch (error) {
-            console.log(error);
             return res.status(500).json({
                 msg: "Hubo un problema, intentelo más tarde"
             });

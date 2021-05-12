@@ -6,11 +6,11 @@ const jwt = require("jsonwebtoken");
 
 exports.authenticate = async (req, res) => {
     const { data: { usr, password } } = req.body;
-    console.log(usr);
+    
     try {
 
         const result = await triggerfunctions.executesimpletransaction("QUERY_AUTHENTICATED", { usr });
-        console.log(result)
+        
         if (!result instanceof Array || result.length === 0)
             return res.status(401).json({ msg: "El usuario no existe" });
 
@@ -29,7 +29,7 @@ exports.authenticate = async (req, res) => {
             res.json({ ...usuario, token });
         })
     } catch (error) {
-        console.log(error);
+        
         return res.status(500).json({
             msg: "Hubo un problema, intentelo más tarde"
         });
@@ -46,7 +46,7 @@ exports.getUser = async (req, res) => {
 
         res.json({ user: req.usuario })
     } catch (error) {
-        console.log(error);
+        
         return res.status(500).json({
             msg: "Hubo un problema, intentelo más tarde"
         });

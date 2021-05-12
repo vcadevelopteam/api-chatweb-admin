@@ -52,9 +52,9 @@ exports.Save = async (req, res) => {
                     });
                     const integrationkey = response.data.id;
                     await triggerfunctions.executesimpletransaction("UFN_INTEGRATION_KEY_UPD", { integrationid, integrationkey });
-                    console.log(response);
+                    
                 } catch (error) {
-                    console.log(error);
+                    
                 }
             } else {
                 try {
@@ -64,7 +64,7 @@ exports.Save = async (req, res) => {
                         data: datatosend
                     });
                 } catch (error) {
-                    console.log(error);                    
+                    
                 }
             }
             return res.json(result);
@@ -73,7 +73,7 @@ exports.Save = async (req, res) => {
             return res.status(500).json(result);
     }
     catch (error) {
-        console.log(error);
+        
         return res.status(500).json({
             msg: "Hubo un problema, intentelo más tarde"
         });
