@@ -117,6 +117,7 @@ exports.Save = async (req, res) => {
             } else {
                 data.integration = data.integrationkey;
                 try {
+                    console.log(datatosend);
                     await axios({
                         url: `${URLBROKER}integrations/update/${data.integration}`,
                         method: 'put',
