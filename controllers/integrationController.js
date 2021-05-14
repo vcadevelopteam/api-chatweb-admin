@@ -9,7 +9,8 @@ const triggerGenerateApikey = async (data) => {
         method: 'post',
         data: {
             name: data.name,
-            integration: data.integration
+            integration: data.integration,
+            status: 'ACTIVO'
         }
     });
     const { apiKey: apikey, id: apikeyid } = responseCreateApikey.data;
