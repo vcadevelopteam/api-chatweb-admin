@@ -1,24 +1,67 @@
-const triggerfunctions = require('../config/triggerfunctions');;
+const tf = require('../config/triggerfunctions');;
 const axios = require('axios')
 
-const urlBroker = "https://goo.zyxmeapp.com/api/";
+const URLBROKER = "https://goo.zyxmeapp.com/api/";
+
+const triggerGenerateApikey = async (data) => {
+    const responseCreateApikey = await axios({
+        url: `${URLBROKER}plugins/save`,
+        method: 'post',
+        data: {
+            name: data.name,
+            integration: data.integration
+        }
+    });
+    const { apiKey: apikey, id: apikeyid } = responseCreateApikey.data;
+    
+    const datatobd = {
+        chatwebintegrationid: data.integrationid,
+        id: 0,
+        name: data.name,
+        key: apikey,
+        operation: "INSERT",
+        description: "",
+        type: "NINGUNO",
+        status: "ACTIVO",
+        username: data.username,
+        idmongo: apikeyid
+    }
+
+    const rr = await tf.executesimpletransaction("UFN_CHATWEBAPIKEY_INS", datatobd);
+    if (!rr.success) 
+        throw 'Error al insertar'
+    console.log(rr);
+}
+const triggerSaveWebhook = async (data, x) => {
+    const dataInsWebhook = {
+        name: "webhook" + data.integrationid,
+        description: "webhook" + data.integrationid,
+        integration: data.integration,
+        webUrl: x.target,
+        status: x.status
+    }
+    const rBroker =  await axios({
+        url: x.operation === "INSERT" ? `${URLBROKER}webhooks/save` : `${URLBROKER}webhooks/update/${x.trigger}`,
+        method: x.operation === "INSERT" ? "post" : "put",
+        data: dataInsWebhook
+    });
+    const datapostgres = { 
+        ...x, 
+        username: data.username, 
+        chatwebintegrationid: data.integrationid, 
+        trigger: rBroker.data.id 
+    }
+    const rr = await tf.executesimpletransaction("UFN_CHATWEBHOOK_INS", datapostgres)
+
+    console.log(datapostgres);
+
+    return rr;
+}
 
 exports.Save = async (req, res) => {
-    // const dataWebhooks = {
-    //     chatwebintegrationid, 
-    //     id, 
-    //     name, 
-    //     target, 
-    //     trigger, 
-    //     operation: "INSERT", 
-    //     description: "", 
-    //     type: "", 
-    //     status: "ACTIVO", 
-    //     // username: req.usuario.usr
-    // }
     try {
         const { data = {}, method, webhooks } = req.body;
-
+        // let integration;
         if (!data.orgid)
             data.orgid = req.usuario.orgid ? req.usuario.orgid : 1;
         if (!data.username)
@@ -26,16 +69,11 @@ exports.Save = async (req, res) => {
         if (!data.userid)
             data.userid = req.usuario.userid;
 
-        const result = await triggerfunctions.executesimpletransaction(method, data);
+        const result = await tf.executesimpletransaction(method, data);
 
         if (result instanceof Array) {
             const integrationid = result[0].p_chatwebintegrationid;
-            if (webhooks.length > 0) {
-                const insertWebhooks = webhooks.map(w => triggerfunctions.executesimpletransaction("UFN_CHATWEBHOOK_INS", { ...w, username: req.usuario.usr, chatwebintegrationid: integrationid}));
-                
-                const resultsrequests = await Promise.all(insertWebhooks);
-                console.log(resultsrequests);
-            }
+            data.integrationid = integrationid;
             const icons = data.icons ? JSON.parse(data.icons) : {};
 
             const datatosend = {
@@ -62,23 +100,36 @@ exports.Save = async (req, res) => {
             }
             if (data.id === 0) {
                 try {
-                    const response = await axios({
-                        url: `${urlBroker}integrations/save`,
+                    const responseCreateIntegration = await axios({
+                        url: `${URLBROKER}integrations/save`,
                         method: 'post',
                         data: datatosend
                     });
-                    const integrationkey = response.data.id;
-                    await triggerfunctions.executesimpletransaction("UFN_INTEGRATION_KEY_UPD", { integrationid, integrationkey });
-
+                    data.integration = responseCreateIntegration.data.id;
+                    
+                    //Actualizar la integración con el idintegration de mongo, y generar el apikey
+                    await Promise.all([
+                        tf.executesimpletransaction("UFN_INTEGRATION_KEY_UPD", { integrationid, integration: data.integration }),
+                        triggerGenerateApikey(data)
+                    ]);
                 } catch (error) { }
             } else {
+                data.integration = data.integrationkey;
                 try {
                     await axios({
-                        url: `${urlBroker}integrations/update/${data.integrationkey}`,
+                        url: `${URLBROKER}integrations/update/${data.integration}`,
                         method: 'put',
                         data: datatosend
                     });
                 } catch (error) { }
+            }
+
+            if (webhooks.length > 0) {
+                const InsertBrokerWebhooks = webhooks.map(x => triggerSaveWebhook(data, x));
+                
+                const resultwebhooks = await Promise.all(InsertBrokerWebhooks);
+
+                console.log(resultwebhooks);
             }
             return res.json(result);
         }
@@ -86,9 +137,12 @@ exports.Save = async (req, res) => {
             return res.status(500).json(result);
     }
     catch (error) {
-
+        console.log(error);
         return res.status(500).json({
             msg: "Hubo un problema, intentelo más tarde"
         });
     }
+}
+exports.GenerateApikey = async (req, res) => {
+
 }

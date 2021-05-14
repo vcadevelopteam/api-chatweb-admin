@@ -7,6 +7,10 @@ router.post("/",
     auth,
     integrationController.Save
 )
+router.post("/generateapikey",
+    auth,
+    integrationController.GenerateApikey
+)
 
 
 module.exports = router
