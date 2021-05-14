@@ -6,5 +6,8 @@ module.exports = {
     UFN_CHATWEBINTEGRATION_APP_SEL: "select * from ufn_chatwebintegration_app_sel($applicationid)",
     UFN_INTEGRATION_INS: "select * from ufn_integration_ins($chatwebapplicationid, $name, $id, $operation, $description, $type, $status, $username, $color, $form, $icons, $other)",
     UFN_CHATWEBINTEGRATION_SEL: "select * from ufn_chatwebintegration_sel($integrationid)",
+    UFN_CHATWEBHOOK_SEL: "select * from ufn_chatwebhook_sel($integrationid)",
     UFN_INTEGRATION_KEY_UPD: "update chatwebintegration set integrationkey = $integrationkey where chatwebintegrationid = $integrationid",
+
+    UFN_CHATWEBHOOK_INS: 'select * from ufn_chatwebhook_ins($chatwebintegrationid, $chatwebhookid, $name, $target, $trigger, $operation, $description, $type, $status, $username)'
 }

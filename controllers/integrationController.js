@@ -4,8 +4,20 @@ const axios = require('axios')
 const urlBroker = "https://goo.zyxmeapp.com/api/";
 
 exports.Save = async (req, res) => {
+    // const dataWebhooks = {
+    //     chatwebintegrationid, 
+    //     id, 
+    //     name, 
+    //     target, 
+    //     trigger, 
+    //     operation: "INSERT", 
+    //     description: "", 
+    //     type: "", 
+    //     status: "ACTIVO", 
+    //     // username: req.usuario.usr
+    // }
     try {
-        const { data = {}, method } = req.body;
+        const { data = {}, method, webhooks } = req.body;
 
         if (!data.orgid)
             data.orgid = req.usuario.orgid ? req.usuario.orgid : 1;
@@ -18,7 +30,12 @@ exports.Save = async (req, res) => {
 
         if (result instanceof Array) {
             const integrationid = result[0].p_chatwebintegrationid;
-
+            if (webhooks.length > 0) {
+                const insertWebhooks = webhooks.map(w => triggerfunctions.executesimpletransaction("UFN_CHATWEBHOOK_INS", { ...w, username: req.usuario.usr, chatwebintegrationid: integrationid}));
+                
+                const resultsrequests = await Promise.all(insertWebhooks);
+                console.log(resultsrequests);
+            }
             const icons = data.icons ? JSON.parse(data.icons) : {};
 
             const datatosend = {
@@ -52,10 +69,8 @@ exports.Save = async (req, res) => {
                     });
                     const integrationkey = response.data.id;
                     await triggerfunctions.executesimpletransaction("UFN_INTEGRATION_KEY_UPD", { integrationid, integrationkey });
-                    
-                } catch (error) {
-                    
-                }
+
+                } catch (error) { }
             } else {
                 try {
                     await axios({
@@ -63,9 +78,7 @@ exports.Save = async (req, res) => {
                         method: 'put',
                         data: datatosend
                     });
-                } catch (error) {
-                    
-                }
+                } catch (error) { }
             }
             return res.json(result);
         }
@@ -73,7 +86,7 @@ exports.Save = async (req, res) => {
             return res.status(500).json(result);
     }
     catch (error) {
-        
+
         return res.status(500).json({
             msg: "Hubo un problema, intentelo más tarde"
         });
