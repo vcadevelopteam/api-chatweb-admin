@@ -12,10 +12,13 @@ const COS_BUCKET_NAME = "staticfileszyxme"
 
 exports.upload = async (req, res) => {
     try {
-        
+        console.log(req.file);
+        if (req.file.size > 9999999) {
+            return res.status(500).json({ success: false, msg: 'Archivo demasiado grande.' });
+        }
         const params = {
             ACL: 'public-read',
-            Key: req.file.originalname,
+            Key: new Date().getTime() + req.file.originalname,
             Body: req.file.buffer,
             Bucket: COS_BUCKET_NAME,
             ContentType: req.file.mimetype,
@@ -23,7 +26,6 @@ exports.upload = async (req, res) => {
     
         s3.upload(params, (err, data) => {
             if (err) {
-                
                 return res.json({ success: false, msg: 'Hubo un error#1 en la carga de archivo.', err })
             }
             
@@ -31,7 +33,6 @@ exports.upload = async (req, res) => {
         })   
     } 
     catch (error) {
-        
         return res.json({ success: false, msg: 'Hubo un error#2 en la carga de archivo.', err })
     }
 }

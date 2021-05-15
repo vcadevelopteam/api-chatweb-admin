@@ -11,5 +11,9 @@ router.post("/",
     uploadController.upload
 );
 
+router.post("/file",
+    upload.single('file'), 
+    uploadController.upload
+);
 
 module.exports = router;
