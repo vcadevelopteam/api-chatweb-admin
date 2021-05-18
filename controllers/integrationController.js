@@ -54,15 +54,12 @@ const triggerSaveWebhook = async (data, x) => {
     }
     const rr = await tf.executesimpletransaction("UFN_CHATWEBHOOK_INS", datapostgres)
 
-    console.log(datapostgres);
-
     return rr;
 }
 
 exports.Save = async (req, res) => {
     try {
         const { data = {}, method, webhooks } = req.body;
-        // let integration;
         if (!data.orgid)
             data.orgid = req.usuario.orgid ? req.usuario.orgid : 1;
         if (!data.username)
@@ -117,7 +114,6 @@ exports.Save = async (req, res) => {
             } else {
                 data.integration = data.integrationkey;
                 try {
-                    console.log(datatosend);
                     await axios({
                         url: `${URLBROKER}integrations/update/${data.integration}`,
                         method: 'put',

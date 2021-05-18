@@ -1,21 +1,24 @@
 const express = require('express');
 const cors = require('cors');
 
-const allowedOrigins = ['http://52.116.128.51:5040'];
+const allowedOrigins = ['http://localhost:3000', 'http://52.116.128.51:5040'];
 
 const app = express();
 
-app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) === -1) {
-            var msg = 'The CORS policy for this site does not ' +
-                'allow access from the specified Origin.';
-            return callback(new Error(msg), false);
-        }
-        return callback(null, true);
-    }
-}));
+app.use(cors(
+//     {
+//     origin: function (origin, callback) {
+//         console.log(origin);
+//         if (!origin) return callback(null, true);
+//         if (allowedOrigins.indexOf(origin) === -1) {
+//             var msg = 'The CORS policy for this site does not ' +
+//                 'allow access from the specified Origin.';
+//             return callback(new Error(msg), false);
+//         }
+//         return callback(null, true);
+//     }
+// }
+));
 app.use(express.json());//to accept json
 
 const PORT = process.env.PORT || 5065;
