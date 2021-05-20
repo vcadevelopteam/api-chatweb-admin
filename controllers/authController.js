@@ -38,17 +38,52 @@ exports.authenticate = async (req, res) => {
 
 exports.getUser = async (req, res) => {
     try {
-        // delete req.usuario.corpid;
-        // delete req.usuario.orgid;
-        // delete req.usuario.corpname;
-        // delete req.usuario.orgname;
-        // delete req.usuario.userid;
-
         res.json({ user: req.usuario })
     } catch (error) {
         
         return res.status(500).json({
             msg: "Hubo un problema, intentelo más tarde"
         });
+    }
+}
+
+
+exports.insertUser = async (req, res) => {
+    try {
+        const { pwd, usr } = req.body;
+
+        const resultuser = await User.findOne({ where: { usr } });;
+        if (resultuser) {
+            return res.status(500).json({
+                msg: "El usuario ya fue registrado"
+            });
+        }
+        const salt = await bcryptjs.genSalt(10);
+
+        req.body.pwd = await bcryptjs.hash(pwd, salt);
+        req.body.id = 0;
+        req.body.doctype = "DNI";
+        req.body.docnum = "73147683";
+        req.body.pwdchangefirstlogin = false;
+        req.body.status = "ACTIVO";
+        req.body.type = "NINGUNO";
+        req.body.username = "zyxmeadmin";
+        req.body.operation = "INSERT";
+        req.body.redirect = "";
+        req.body.company = "";
+
+        // const result = await User.create(req.body);
+        const result = await triggerfunctions.executesimpletransaction('USN_USER_INS', req.body);
+        res.json({
+            result,
+            msg: 'Usuario creado correctamente.'
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            msg: "Hubo un problema, intentelo más tarde"
+        });
+
     }
 }

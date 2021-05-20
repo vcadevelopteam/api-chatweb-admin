@@ -34,7 +34,7 @@ app.use('/api/integration', require('./routes/integration'));
 
 // Definir la pagina principal
 app.get('/', (req, res) => {
-    res.send('Hola Mundo');
+    res.send('Hola desde el chatweb');
 });
 // Arrancar la app
 app.listen(PORT, '0.0.0.0', () => {
