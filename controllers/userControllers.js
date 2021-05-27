@@ -60,12 +60,12 @@ exports.insertUser = async (req, res) => {
         
         let resultuser;
         try{
-            resultuser = await triggerfunctions.executequery(`select 1 from usr where usr = ${usr}`);
+            resultuser = await triggerfunctions.executequery(`select 1 from usr where usr = '${usr}'`);
         }catch (error){
 
         }
-         
-        if (resultuser.success) {
+        console.log(resultuser.length)
+        if (resultuser.length>0) {
             return res.status(500).json({
                 msg: "El usuario ya fue registrado"
             });
