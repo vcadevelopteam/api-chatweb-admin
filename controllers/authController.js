@@ -52,7 +52,7 @@ exports.insertUser = async (req, res) => {
     try {
         const { pwd, usr } = req.body;
 
-        const resultuser = await User.findOne({ where: { usr } });;
+        const resultuser = await await triggerfunctions.executesimpletransaction('FALTA QUERY PARA VALIDAR SI EXISTE EL USUARIO', {usr});
         if (resultuser) {
             return res.status(500).json({
                 msg: "El usuario ya fue registrado"
