@@ -55,31 +55,40 @@ exports.manage = async (req, res) => {
 
 
 exports.insertUser = async (req, res) => {
-    try {
-        const { pwd, usr } = req.body;
+    try {  
+        const { pwd, usr, firstname, lastname, email } = req.body.data;
+        
+        let resultuser;
+        try{
+            resultuser = await triggerfunctions.executequery(`select 1 from usr where usr = ${usr}`);
+        }catch (error){
 
-        const resultuser = await await triggerfunctions.executesimpletransaction('FALTA QUERY PARA VALIDAR SI EXISTE EL USUARIO', {usr});
-        if (resultuser) {
+        }
+         
+        if (resultuser.success) {
             return res.status(500).json({
                 msg: "El usuario ya fue registrado"
             });
         }
         const salt = await bcryptjs.genSalt(10);
-
-        req.body.pwd = await bcryptjs.hash(pwd, salt);
-        req.body.id = 0;
-        req.body.doctype = "DNI";
-        req.body.docnum = "73147683";
-        req.body.pwdchangefirstlogin = false;
-        req.body.status = "ACTIVO";
-        req.body.type = "NINGUNO";
-        req.body.username = "zyxmeadmin";
-        req.body.operation = "INSERT";
-        req.body.redirect = "";
-        req.body.company = "";
-
-        // const result = await User.create(req.body);
-        const result = await triggerfunctions.executesimpletransaction('USN_USER_INS', req.body);
+        const data = {
+            pwd: await bcryptjs.hash(pwd, salt),
+            id: 0,
+            status: "ACTIVO",
+            type: "NINGUNO",
+            usr: usr,
+            firstname: firstname,
+            lastname: lastname,
+            email: email,
+            operation: "INSERT",
+            username: "admin"
+        }
+        
+        console.log(data);
+        const result = await triggerfunctions.executesimpletransaction('UFN_USER_INS', data);
+        console.log(result);
+        
+        
         res.json({
             result,
             msg: 'Usuario creado correctamente.'
