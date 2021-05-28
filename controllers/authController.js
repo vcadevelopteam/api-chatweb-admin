@@ -13,7 +13,7 @@ exports.authenticate = async (req, res) => {
         
         if (!result instanceof Array || result.length === 0)
             return res.status(401).json({ msg: "El usuario no existe" });
-
+        console.log(result);
         const usuario = result[0];
         const ispasswordmatch = await bcryptjs.compare(password, usuario.pwd)
 
@@ -29,7 +29,7 @@ exports.authenticate = async (req, res) => {
             res.json({ ...usuario, token });
         })
     } catch (error) {
-        
+        console.log(error);
         return res.status(500).json({
             msg: "Hubo un problema, intentelo más tarde"
         });
