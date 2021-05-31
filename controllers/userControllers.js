@@ -53,9 +53,9 @@ exports.manage = async (req, res) => {
     }
 }
 exports.changepassword= async (req,res) =>{
-    console.log("aun no hay error");
+    console.log(req);
     try {  
-        const { pwdnuevo,userid,type, usr, status, firstname, lastname, email } = req.body.data;
+        const { pwdnuevo,userid,type, usr, status, firstname, lastname, email } = req.body;
         const salt = await bcryptjs.genSalt(10);
         const data = {
             pwd: await bcryptjs.hash(pwdnuevo, salt),
@@ -70,15 +70,15 @@ exports.changepassword= async (req,res) =>{
             username: "admin"
         }
         
-        console.log(data);
         const result = await triggerfunctions.executesimpletransaction('UFN_USER_INS', data);
         console.log(result);
         
         
         res.json({
             result,
-            msg: 'contraseña actualizada'
+            msg: 'Contraseña actualizada'
         });
+        return res;
     }
     catch (error) {
         console.log(error);

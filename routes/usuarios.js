@@ -17,8 +17,7 @@ router.get("/",
     usuarioController.getUsers
 )
 
-router.get("/changepassword", 
-    auth,
+router.post("/changepassword", 
     usuarioController.changepassword
 )
 
