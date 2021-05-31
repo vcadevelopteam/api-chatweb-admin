@@ -17,4 +17,9 @@ router.get("/",
     usuarioController.getUsers
 )
 
+router.get("/changepassword", 
+    auth,
+    usuarioController.changepassword
+)
+
 module.exports = router;

@@ -52,7 +52,42 @@ exports.manage = async (req, res) => {
         });
     }
 }
+exports.changepassword= async (req,res) =>{
+    console.log("aun no hay error");
+    try {  
+        const { pwdnuevo,userid,type, usr, status, firstname, lastname, email } = req.body.data;
+        const salt = await bcryptjs.genSalt(10);
+        const data = {
+            pwd: await bcryptjs.hash(pwdnuevo, salt),
+            id: userid,
+            status: status,
+            type: type,
+            usr: usr,
+            firstname: firstname,
+            lastname: lastname,
+            email: email,
+            operation: "UPDATE",
+            username: "admin"
+        }
+        
+        console.log(data);
+        const result = await triggerfunctions.executesimpletransaction('UFN_USER_INS', data);
+        console.log(result);
+        
+        
+        res.json({
+            result,
+            msg: 'contraseña actualizada'
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            msg: "Hubo un problema, intentelo más tarde"
+        });
 
+    }
+}
 
 exports.insertUser = async (req, res) => {
     try {  
