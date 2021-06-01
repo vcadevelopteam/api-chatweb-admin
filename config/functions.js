@@ -11,5 +11,6 @@ module.exports = {
     UFN_CHATWEBHOOK_INS: 'select * from ufn_chatwebhook_ins($chatwebintegrationid, $chatwebhookid, $name, $target, $trigger, $operation, $description, $type, $status, $username)',
     UFN_CHATWEBAPIKEY_INS: 'select * from ufn_chatwebapikey_ins($chatwebintegrationid, $id, $name, $key, $operation, $description, $type, $status, $username, $idmongo)',
     UFN_USER_INS: 'select * from ufn_user_ins($pwd, $id, $status, $type, $usr, $firstname, $lastname, $email, $operation, $username)',
-    UFN_USER_SEL: 'select * from ufn_user_sel($userid)'
+    UFN_USER_SEL: 'select * from ufn_user_sel($userid)',
+    UFN_VALIDATE_PASSWORD: 'select * from ufn_validate_password($userid,$pwd)'
 }

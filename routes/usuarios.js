@@ -18,6 +18,7 @@ router.get("/",
 )
 
 router.post("/changepassword", 
+    auth,
     usuarioController.changepassword
 )
 

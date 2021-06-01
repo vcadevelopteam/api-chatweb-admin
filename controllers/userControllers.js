@@ -55,8 +55,22 @@ exports.manage = async (req, res) => {
 exports.changepassword= async (req,res) =>{
     console.log(req);
     try {  
-        const { pwdnuevo,userid,type, usr, status, firstname, lastname, email } = req.body;
+        const { pwdnuevo,userid,type, usr, status, firstname, lastname, email, pwd } = req.body;
+        
         const salt = await bcryptjs.genSalt(10);
+        const dat = {
+            pwd: await bcryptjs.hash(pwd, salt),
+        }
+        try{
+            rightpassword = await triggerfunctions.executequery(`UFN_VALIDATE_PASSWORD`,dat);
+        }catch (error){
+
+        }
+        if (!rightpassword) {
+            return res.status(500).json({
+                msg: "Contraseña incorrecta"
+            });
+        }
         const data = {
             pwd: await bcryptjs.hash(pwdnuevo, salt),
             id: userid,
