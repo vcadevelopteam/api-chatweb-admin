@@ -11,6 +11,9 @@ router.post("/generateapikey",
     auth,
     integrationController.GenerateApikey
 )
+router.post("/integrationzyxme",
+    integrationController.IntegrationZyxme
+)
 
 
 module.exports = router
