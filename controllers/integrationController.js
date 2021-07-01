@@ -107,10 +107,10 @@ exports.Save = async (req, res) => {
                         data: datatosend
                     });
                     data.integrationkey = responseCreateIntegration.data.id;
-                    
+                    console.log(data);
                     //Actualizar la integración con el idintegration de mongo, y generar el apikey
                     await Promise.all([
-                        tf.executesimpletransaction("UFN_INTEGRATION_KEY_UPD", { integrationid, integration: data.integrationkey }),
+                        tf.executesimpletransaction("UFN_INTEGRATION_KEY_UPD", data),
                         triggerGenerateApikey(data)
                     ]);
                 } catch (error) { }
