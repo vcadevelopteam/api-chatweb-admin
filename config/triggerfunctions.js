@@ -10,7 +10,7 @@ require('pg').defaults.parseInt8 = true;
 exports.executequery = async (query) => {
     const response = {
         success: false,
-        msg: null,
+        message: null,
         result: null
     }
     try {
@@ -18,17 +18,18 @@ exports.executequery = async (query) => {
             type: QueryTypes.SELECT,
             bind: {}
         }).catch(function (err) {
-            
             return {
-                msg: err.toString(),
+                message: err.toString(),
                 success: false,
+                code: "METHOD_ERROR",
                 result: err
             };
         });
         return result;
     } catch (e) {
         response.result = e;
-        response.msg = "Hubo un error, vuelva a intentarlo";
+        response.message = "Hubo un error, vuelva a intentarlo";
+        response.code = "UNEXPECTED_ERROR"
     }
 
     return response;
@@ -37,8 +38,9 @@ exports.executequery = async (query) => {
 exports.executesimpletransaction = async (method, data) => {
     const response = {
         success: false,
-        msg: null,
-        result: null
+        message: null,
+        result: null,
+        error: true
     }
     try {
         if (functionsbd[method]) {
@@ -49,7 +51,7 @@ exports.executesimpletransaction = async (method, data) => {
                     bind: data
                 }).catch(function (err) {
                     return {
-                        msg: err.toString(),
+                        message: err.toString(),
                         success: false,
                         result: err
                     };
@@ -57,26 +59,29 @@ exports.executesimpletransaction = async (method, data) => {
                 return result;
 
             } else {
-                response.msg = "Mal formato";
+                response.message = "Mal formato";
+                response.code = "BAD_FORMAT_ERROR";
             }
         } else {
-            response.msg = "No existe el método";
+            response.code = "METHOD_ERROR";
+            response.message = "No existe el método";
         }
     } catch (e) {
         
         response.result = e;
-        response.msg = "Hubo un error, vuelva a intentarlo";
+        response.message = "Hubo un error, vuelva a intentarlo";
+        response.code = "UNEXPECTED_ERROR"
     }
 
     return response;
 }
 
-
 exports.getCollectionPagination = async (methodcollection, methodcount, data) => {
     const response = {
         success: false,
-        msg: null,
+        message: null,
         result: null,
+        error: true
     }
     try {
         if (functionsbd[methodcollection] && functionsbd[methodcount]) {
@@ -93,6 +98,7 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data) =>
                     data: [],
                     count: 0
                 }
+
                 await Promise.all([
                     sequelize.query(querycollection, {
                         type: QueryTypes.SELECT,
@@ -107,13 +113,17 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data) =>
                 ]);
 
                 return res;
-            } else
-                response.msg = "Mal formato";
-        } else
-            response.msg = "No existe el método";
+            } else {
+                response.message = "Mal formato";
+                response.code = "BAD_FORMAT_ERROR";
+            }
+        } else {
+            response.code = "METHOD_ERROR";   
+            response.message = "No existe el método";
+        }
     } catch (e) {
-        
-        response.msg = "Hubo un error, vuelva a intentarlo";
+        response.message = "Hubo un error, vuelva a intentarlo";
+        response.code = "UNEXPECTED_ERROR"
     }
 
     return response;
@@ -122,8 +132,9 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data) =>
 exports.export = async (method, data) => {
     const response = {
         success: false,
-        msg: null,
-        result: null
+        message: null,
+        result: null,
+        error: true
     }
     try {
         if (functionsbd[method]) {
@@ -140,14 +151,16 @@ exports.export = async (method, data) => {
                 return result;
 
             } else {
-                response.msg = "Mal formato";
+                response.message = "Mal formato";
+                response.code = "BAD_FORMAT_ERROR";
             }
         } else {
-            response.msg = "No existe el método";
+            response.code = "METHOD_ERROR";
+            response.message = "No existe el método";
         }
     } catch (e) {
-        
-        response.msg = "Hubo un error, vuelva a intentarlo";
+        response.code = "UNEXPECTED_ERROR"
+        response.message = "Hubo un error, vuelva a intentarlo";
     }
 
     return response;

@@ -21,8 +21,9 @@ exports.GetCollection = async (req, res) => {
             parameters.username = req.usuario.usr;
         if (!parameters.userid)
             parameters.userid = req.usuario.userid;
-        console.log(parameters);
+        
         const result = await triggerfunctions.executesimpletransaction(method, parameters);
+        
         if (result instanceof Array)
             return res.json({success: true, data: result});
         else
@@ -31,7 +32,7 @@ exports.GetCollection = async (req, res) => {
     catch (error) {
         
         return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
+            message: "Hubo un problema, intentelo más tarde"
         });
     }
 }
@@ -48,12 +49,12 @@ exports.getCollectionPagination = async (req, res) => {
             data.orgid = req.usuario.orgid;
 
         const result = await triggerfunctions.getCollectionPagination(methodcollection, methodcount, data);
+        
         res.json(result);
     }
     catch (error) {
-        
         return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
+            message: "Hubo un problema, intentelo más tarde"
         });
     }
 }
@@ -106,23 +107,21 @@ exports.exportexcel = async (req, res) => {
             console.time(`uploadcos`);
             s3.upload(params, (err, data) => {
                 if (err) {
-                    
-                    return res.json({ success: false, msg: 'Hubo un error#1 en la carga de archivo.', err })
+                    return res.status(500).json({ success: false, message: 'Hubo un error#1 en la carga de archivo.', err })
                 }
-                
                 console.timeEnd(`uploadcos`);
                 return res.json({ success: true, url: data.Location })
             });
         } else {
             return res.status(500).json({
-                msg: "Sin información para exportar"
+                message: "Sin información para exportar"
             });
         }
     }
     catch (error) {
         
         return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
+            message: "Hubo un problema, intentelo más tarde"
         });
     }
 }
@@ -146,7 +145,7 @@ exports.export = async (req, res) => {
     catch (error) {
         
         return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
+            message: "Hubo un problema, intentelo más tarde"
         });
     }
 }
