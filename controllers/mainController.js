@@ -12,15 +12,16 @@ const COS_BUCKET_NAME = "staticfileszyxme"
 exports.GetCollection = async (req, res) => {
     try {
         const { parameters = {}, method } = req.body;
-
+        
+        if (!parameters.corpid)
+            parameters.corpid = req.usuario.corpid ? req.usuario.corpid : 1;
         if (!parameters.orgid)
             parameters.orgid = req.usuario.orgid ? req.usuario.orgid : 1;
         if (!parameters.username)
             parameters.username = req.usuario.usr;
         if (!parameters.userid)
             parameters.userid = req.usuario.userid;
-
-            
+        console.log(parameters);
         const result = await triggerfunctions.executesimpletransaction(method, parameters);
         if (result instanceof Array)
             return res.json({success: true, data: result});

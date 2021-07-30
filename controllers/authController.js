@@ -8,7 +8,6 @@ exports.authenticate = async (req, res) => {
     const { data: { usr, password } } = req.body;
 
     try {
-
         const result = await triggerfunctions.executesimpletransaction("QUERY_AUTHENTICATED", { usr });
 
         if (!result instanceof Array || result.length === 0)
@@ -26,6 +25,9 @@ exports.authenticate = async (req, res) => {
             expiresIn: 60 * 60 * 24
         }, (error, token) => {
             if (error) throw error;
+            delete usuario.corpid;
+            delete usuario.orgid;
+            delete usuario.userid;
             res.json({ data: { ...usuario, token }, success: true });
         })
     } catch (error) {
@@ -42,9 +44,9 @@ exports.getUser = async (req, res) => {
     try {
         res.json({ user: req.usuario })
     } catch (error) {
-
         return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
+            message: "Hubo un problema, intentelo más tarde",
+            code: "ERROR_AUTH",
         });
     }
 }

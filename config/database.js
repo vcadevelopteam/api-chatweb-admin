@@ -1,7 +1,7 @@
 require('dotenv').config({ path: 'variables.env' });
 const Sequelize = require('sequelize');
 
-const DBNAME = "VCACHATWEB";
+const DBNAME = "LARAIGODEV";
 const DBUSER =  "postgres";
 const DBPASSWORD =  "vcaADMIN/*2019";
 const DBHOST =  "10.240.55.4";
