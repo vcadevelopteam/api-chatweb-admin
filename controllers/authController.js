@@ -42,7 +42,7 @@ exports.authenticate = async (req, res) => {
 
 exports.getUser = async (req, res) => {
     try {
-        res.json({ user: req.usuario })
+        res.json({ data: req.usuario, error: false })
     } catch (error) {
         return res.status(500).json({
             message: "Hubo un problema, intentelo más tarde",
