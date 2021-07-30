@@ -6,19 +6,19 @@ const jwt = require("jsonwebtoken");
 
 exports.authenticate = async (req, res) => {
     const { data: { usr, password } } = req.body;
-    
+
     try {
 
         const result = await triggerfunctions.executesimpletransaction("QUERY_AUTHENTICATED", { usr });
-        
+
         if (!result instanceof Array || result.length === 0)
-            return res.status(401).json({ msg: "El usuario no existe" });
+            return res.status(401).json({ message: "El usuario no existe", code: "USER_INCORRECT" });
         console.log(result);
         const usuario = result[0];
         const ispasswordmatch = await bcryptjs.compare(password, usuario.pwd)
 
         if (!ispasswordmatch)
-            return res.status(401).json({ msg: "Contraseña incorrecta" })
+            return res.status(401).json({ message: "Contraseña incorrecta", code: "PASSWORD_INCORRECT" })
 
         delete usuario.pwd;
 
@@ -26,12 +26,14 @@ exports.authenticate = async (req, res) => {
             expiresIn: 60 * 60 * 24
         }, (error, token) => {
             if (error) throw error;
-            res.json({ ...usuario, token });
+            res.json({ data: { ...usuario, token }, success: true });
         })
     } catch (error) {
         console.log(error);
         return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
+            success: false,
+            code: "ERROR_DB",
+            message: "Hubo un problema, intentelo más tarde"
         });
     }
 }
@@ -40,7 +42,7 @@ exports.getUser = async (req, res) => {
     try {
         res.json({ user: req.usuario })
     } catch (error) {
-        
+
         return res.status(500).json({
             msg: "Hubo un problema, intentelo más tarde"
         });
