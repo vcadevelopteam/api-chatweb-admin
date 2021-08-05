@@ -171,7 +171,7 @@ exports.executeMultiTransactions = async (detail) => {
     const response = {
         success: false,
         message: null,
-        result: null,
+        data: null,
         error: true
     }
     try {
@@ -190,20 +190,16 @@ exports.executeMultiTransactions = async (detail) => {
                         code: "UNEXPECTED_DBERROR",
                     };
                 });
-                
-                if (Array.isArray(r)) {
-                    return {
-                        success: true,
-                        result: r
-                    }
+                return {
+                    success: true,
+                    data: r
                 }
-                return r;
             } else {
                 return {
                     message: "No existe el método",
                     code: "METHOD_ERROR",
                     success: false,
-                    result: null
+                    data: null
                 };
             }
         }))
