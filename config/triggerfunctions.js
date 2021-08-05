@@ -21,7 +21,7 @@ exports.executequery = async (query) => {
             return {
                 message: err.toString(),
                 success: false,
-                code: "METHOD_ERROR",
+                code: "UNEXPECTED_DBERROR",
                 result: err
             };
         });
@@ -50,10 +50,11 @@ exports.executesimpletransaction = async (method, data) => {
                     type: QueryTypes.SELECT,
                     bind: data
                 }).catch(function (err) {
+                    console.log(err);
                     return {
                         message: err.toString(),
                         success: false,
-                        result: err
+                        code: "UNEXPECTED_DBERROR",
                     };
                 });
                 return result;
@@ -169,31 +170,27 @@ exports.export = async (method, data) => {
 exports.executeMultiTransactions = async (detail) => {
     const response = {
         success: false,
-        msg: null,
+        message: null,
+        result: null,
+        error: true
     }
     try {
-        //detail is a array of objects with the following format
-        // {
-        //     method: 'methodName',
-        //     data: object
-        //}
-        //loop over the array in paralel executing with sequelize.query.
+        
         return await Promise.all(detail.map(async (item) => {
-            console.log("executing");
-            //have to validate method on functionsbd, the value is the query tu use on sequelize.query and return the result.
             if (functionsbd[item.method]) {
                 const query = functionsbd[item.method];
                 const r = await sequelize.query(query, {
                     type: QueryTypes.SELECT,
                     bind: item.data
                 }).catch(function (err) {
+                    console.log(err);
                     return {
-                        msg: err.toString(),
+                        message: err.toString(),
                         success: false,
-                        result: err
+                        code: "UNEXPECTED_DBERROR",
                     };
                 });
-                //validate type of r is an array or object.
+                
                 if (Array.isArray(r)) {
                     return {
                         success: true,
@@ -203,7 +200,8 @@ exports.executeMultiTransactions = async (detail) => {
                 return r;
             } else {
                 return {
-                    msg: "No existe el método",
+                    message: "No existe el método",
+                    code: "METHOD_ERROR",
                     success: false,
                     result: null
                 };
@@ -212,7 +210,8 @@ exports.executeMultiTransactions = async (detail) => {
 
     } catch (e) {
         console.log(e);
-        response.msg = "Hubo un error, vuelva a intentarlo";
+        response.code = "UNEXPECTED_ERROR"
+        response.message = "Hubo un error, vuelva a intentarlo";
     }
 
     return response;
