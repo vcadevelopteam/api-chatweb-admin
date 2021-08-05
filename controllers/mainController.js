@@ -152,7 +152,8 @@ exports.export = async (req, res) => {
 
 exports.multiTransaction = async (req, res) => {
     try {
-        const data = req.body.map(x => {
+        const { data: datatmp } = req.body;
+        const data = datatmp.map(x => {
             if (!x.data.corpid)
                 x.data.corpid = req.usuario.corpid ? req.usuario.corpid : 1;
             if (!x.data.orgid)
