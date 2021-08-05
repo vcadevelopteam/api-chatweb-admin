@@ -149,3 +149,29 @@ exports.export = async (req, res) => {
         });
     }
 }
+
+exports.multiTransaction = async (req, res) => {
+    try {
+        const data = req.body.map(x => {
+            if (!x.data.corpid)
+                x.data.corpid = req.usuario.corpid ? req.usuario.corpid : 1;
+            if (!x.data.orgid)
+                x.data.orgid = req.usuario.orgid ? req.usuario.orgid : 1;
+            if (!x.data.username)
+                x.data.username = req.usuario.usr;
+            if (!x.data.userid)
+                x.data.userid = req.usuario.userid;
+            return x;
+        })
+
+        const result = await triggerfunctions.executeMultiTransactions(data);
+
+        return res.json(result);
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            msg: "Hubo un problema, intentelo más tarde"
+        });
+    }
+}

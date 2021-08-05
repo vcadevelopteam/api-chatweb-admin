@@ -7,6 +7,10 @@ router.post("/",
     auth,
     mainController.GetCollection
 )
+router.post("/multi",
+    auth,
+    mainController.multiTransaction
+)
 
 router.post("/getCollectionPag",
     auth,

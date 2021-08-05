@@ -165,3 +165,55 @@ exports.export = async (method, data) => {
 
     return response;
 }
+
+exports.executeMultiTransactions = async (detail) => {
+    const response = {
+        success: false,
+        msg: null,
+    }
+    try {
+        //detail is a array of objects with the following format
+        // {
+        //     method: 'methodName',
+        //     data: object
+        //}
+        //loop over the array in paralel executing with sequelize.query.
+        return await Promise.all(detail.map(async (item) => {
+            console.log("executing");
+            //have to validate method on functionsbd, the value is the query tu use on sequelize.query and return the result.
+            if (functionsbd[item.method]) {
+                const query = functionsbd[item.method];
+                const r = await sequelize.query(query, {
+                    type: QueryTypes.SELECT,
+                    bind: item.data
+                }).catch(function (err) {
+                    return {
+                        msg: err.toString(),
+                        success: false,
+                        result: err
+                    };
+                });
+                //validate type of r is an array or object.
+                if (Array.isArray(r)) {
+                    return {
+                        success: true,
+                        result: r
+                    }
+                }
+                return r;
+            } else {
+                return {
+                    msg: "No existe el método",
+                    success: false,
+                    result: null
+                };
+            }
+        }))
+
+    } catch (e) {
+        console.log(e);
+        response.msg = "Hubo un error, vuelva a intentarlo";
+    }
+
+    return response;
+}
