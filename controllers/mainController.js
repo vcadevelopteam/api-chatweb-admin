@@ -12,7 +12,7 @@ const COS_BUCKET_NAME = "staticfileszyxme"
 exports.GetCollection = async (req, res) => {
     try {
         const { parameters = {}, method } = req.body;
-        
+
         if (!parameters.corpid)
             parameters.corpid = req.usuario.corpid ? req.usuario.corpid : 1;
         if (!parameters.orgid)
@@ -21,16 +21,16 @@ exports.GetCollection = async (req, res) => {
             parameters.username = req.usuario.usr;
         if (!parameters.userid)
             parameters.userid = req.usuario.userid;
-        
+
         const result = await triggerfunctions.executesimpletransaction(method, parameters);
-        
+
         if (result instanceof Array)
-            return res.json({success: true, data: result});
+            return res.json({ success: true, data: result });
         else
             return res.status(500).json(result);
     }
     catch (error) {
-        
+
         return res.status(500).json({
             message: "Hubo un problema, intentelo más tarde"
         });
@@ -49,7 +49,7 @@ exports.getCollectionPagination = async (req, res) => {
             parameters.orgid = req.usuario.orgid;
 
         const result = await triggerfunctions.getCollectionPagination(methodcollection, methodcount, parameters);
-        
+
         res.json(result);
     }
     catch (error) {
@@ -119,7 +119,7 @@ exports.exportexcel = async (req, res) => {
         }
     }
     catch (error) {
-        
+
         return res.status(500).json({
             message: "Hubo un problema, intentelo más tarde"
         });
@@ -143,7 +143,7 @@ exports.export = async (req, res) => {
         res.json(result);
     }
     catch (error) {
-        
+
         return res.status(500).json({
             message: "Hubo un problema, intentelo más tarde"
         });
@@ -167,7 +167,7 @@ exports.multiTransaction = async (req, res) => {
 
         const result = await triggerfunctions.executeMultiTransactions(data);
 
-        return res.json(result);
+        return res.json({ success: true, data: result });
     }
     catch (error) {
         console.log(error);
