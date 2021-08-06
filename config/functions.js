@@ -14,5 +14,5 @@ module.exports = {
     UFN_CORPBYUSER_LST: "SELECT * FROM ufn_corpbyuser_lst($userid)",
     UFN_ORGBYCORP_LST: "SELECT * FROM ufn_orgbycorp_lst($corpid)",
     UFN_COMMUNICATIONCHANNELBYORG_LST: "SELECT * FROM ufn_communicationchannelbyorg_lst($orgid)",
-    UFN_DOMAIN_LST_VALORES: "SELECT * FROM ufn_domain_lst_valores($corpid,$orgid,$domainname)
+    UFN_DOMAIN_LST_VALORES: "SELECT * FROM ufn_domain_lst_valores($corpid,$orgid,$domainname)"
 }
