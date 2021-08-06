@@ -181,7 +181,7 @@ exports.executeMultiTransactions = async (detail) => {
                 const query = functionsbd[item.method];
                 const r = await sequelize.query(query, {
                     type: QueryTypes.SELECT,
-                    bind: item.data
+                    bind: item.parameters
                 }).catch(function (err) {
                     console.log(err);
                     return {

@@ -39,16 +39,16 @@ exports.GetCollection = async (req, res) => {
 
 exports.getCollectionPagination = async (req, res) => {
     try {
-        const { data, methodcollection, methodcount } = req.body;
+        const { parameters, methodcollection, methodcount } = req.body;
 
-        if (!data.corporation)
-            data.corporation = req.usuario.corporation;
-        if (!data.corpid)
-            data.corpid = req.usuario.corpid;
-        if (!data.orgid)
-            data.orgid = req.usuario.orgid;
+        if (!parameters.corporation)
+            parameters.corporation = req.usuario.corporation;
+        if (!parameters.corpid)
+            parameters.corpid = req.usuario.corpid;
+        if (!parameters.orgid)
+            parameters.orgid = req.usuario.orgid;
 
-        const result = await triggerfunctions.getCollectionPagination(methodcollection, methodcount, data);
+        const result = await triggerfunctions.getCollectionPagination(methodcollection, methodcount, parameters);
         
         res.json(result);
     }
@@ -60,22 +60,22 @@ exports.getCollectionPagination = async (req, res) => {
 }
 exports.exportexcel = async (req, res) => {
     try {
-        const { data, method } = req.body;
+        const { parameters, method } = req.body;
 
-        if (!data.corporation)
-            data.corporation = req.usuario.corporation;
-        if (!data.corpid)
-            data.corpid = req.usuario.corpid ? req.usuario.corpid : 1;
-        if (!data.orgid)
-            data.orgid = req.usuario.orgid ? req.usuario.orgid : 1;
-        if (!data.username)
-            data.username = req.usuario.usr;
+        if (!parameters.corporation)
+            parameters.corporation = req.usuario.corporation;
+        if (!parameters.corpid)
+            parameters.corpid = req.usuario.corpid ? req.usuario.corpid : 1;
+        if (!parameters.orgid)
+            parameters.orgid = req.usuario.orgid ? req.usuario.orgid : 1;
+        if (!parameters.username)
+            parameters.username = req.usuario.usr;
 
         console.time(`exe-${method}`);
-        const result = await triggerfunctions.executesimpletransaction(method, data);
+        const result = await triggerfunctions.executesimpletransaction(method, parameters);
         console.timeEnd(`exe-${method}`);
 
-        const titlefile = (data.titlefile ? data.titlefile : "report") + new Date().toISOString() + ".csv";
+        const titlefile = (parameters.titlefile ? parameters.titlefile : "report") + new Date().toISOString() + ".csv";
 
         console.time(`draw-excel`);
         let content = "";
@@ -128,18 +128,18 @@ exports.exportexcel = async (req, res) => {
 
 exports.export = async (req, res) => {
     try {
-        const { data, method } = req.body;
+        const { parameters, method } = req.body;
 
-        if (!data.corporation)
-            data.corporation = req.usuario.corporation;
-        if (!data.corpid)
-            data.corpid = req.usuario.corpid ? req.usuario.corpid : 1;
-        if (!data.orgid)
-            data.orgid = req.usuario.orgid ? req.usuario.orgid : 1;
-        if (!data.username)
-            data.username = req.usuario.usr;
+        if (!parameters.corporation)
+            parameters.corporation = req.usuario.corporation;
+        if (!parameters.corpid)
+            parameters.corpid = req.usuario.corpid ? req.usuario.corpid : 1;
+        if (!parameters.orgid)
+            parameters.orgid = req.usuario.orgid ? req.usuario.orgid : 1;
+        if (!parameters.username)
+            parameters.username = req.usuario.usr;
 
-        const result = await triggerfunctions.export(method, data);
+        const result = await triggerfunctions.export(method, parameters);
         res.json(result);
     }
     catch (error) {
@@ -154,14 +154,14 @@ exports.multiTransaction = async (req, res) => {
     try {
         const datatmp = req.body;
         const data = datatmp.map(x => {
-            if (!x.data.corpid)
-                x.data.corpid = req.usuario.corpid ? req.usuario.corpid : 1;
-            if (!x.data.orgid)
-                x.data.orgid = req.usuario.orgid ? req.usuario.orgid : 1;
-            if (!x.data.username)
-                x.data.username = req.usuario.usr;
-            if (!x.data.userid)
-                x.data.userid = req.usuario.userid;
+            if (!x.parameters.corpid)
+                x.parameters.corpid = req.usuario.corpid ? req.usuario.corpid : 1;
+            if (!x.parameters.orgid)
+                x.parameters.orgid = req.usuario.orgid ? req.usuario.orgid : 1;
+            if (!x.parameters.username)
+                x.parameters.username = req.usuario.usr;
+            if (!x.parameters.userid)
+                x.parameters.userid = req.usuario.userid;
             return x;
         })
 
