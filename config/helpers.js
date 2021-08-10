@@ -81,4 +81,6 @@ exports.setSessionParameters = (parameters, user) => {
         parameters.username = user.usr;
     if (!parameters.userid)
         parameters.userid = user.userid;
+
+    return parameters;
 }
