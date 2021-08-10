@@ -1,4 +1,5 @@
-const triggerfunctions = require('../config/triggerfunctions');;
+const triggerfunctions = require('../config/triggerfunctions');
+const { setSessionParameters } = require('../config/helpers');
 var ibm = require('ibm-cos-sdk');
 
 var config = {
@@ -13,14 +14,7 @@ exports.GetCollection = async (req, res) => {
     try {
         const { parameters = {}, method } = req.body;
 
-        if (!parameters.corpid)
-            parameters.corpid = req.usuario.corpid ? req.usuario.corpid : 1;
-        if (!parameters.orgid)
-            parameters.orgid = req.usuario.orgid ? req.usuario.orgid : 1;
-        if (!parameters.username)
-            parameters.username = req.usuario.usr;
-        if (!parameters.userid)
-            parameters.userid = req.usuario.userid;
+        setSessionParameters(parameters, req.user);
 
         const result = await triggerfunctions.executesimpletransaction(method, parameters);
 
@@ -41,12 +35,7 @@ exports.getCollectionPagination = async (req, res) => {
     try {
         const { parameters, methodcollection, methodcount } = req.body;
 
-        if (!parameters.corporation)
-            parameters.corporation = req.usuario.corporation;
-        if (!parameters.corpid)
-            parameters.corpid = req.usuario.corpid;
-        if (!parameters.orgid)
-            parameters.orgid = req.usuario.orgid;
+        setSessionParameters(parameters, req.user);
 
         const result = await triggerfunctions.getCollectionPagination(methodcollection, methodcount, parameters);
 
@@ -62,14 +51,7 @@ exports.exportexcel = async (req, res) => {
     try {
         const { parameters, method } = req.body;
 
-        if (!parameters.corporation)
-            parameters.corporation = req.usuario.corporation;
-        if (!parameters.corpid)
-            parameters.corpid = req.usuario.corpid ? req.usuario.corpid : 1;
-        if (!parameters.orgid)
-            parameters.orgid = req.usuario.orgid ? req.usuario.orgid : 1;
-        if (!parameters.username)
-            parameters.username = req.usuario.usr;
+        setSessionParameters(parameters, req.user);
 
         console.time(`exe-${method}`);
         const result = await triggerfunctions.executesimpletransaction(method, parameters);
@@ -130,14 +112,7 @@ exports.export = async (req, res) => {
     try {
         const { parameters, method } = req.body;
 
-        if (!parameters.corporation)
-            parameters.corporation = req.usuario.corporation;
-        if (!parameters.corpid)
-            parameters.corpid = req.usuario.corpid ? req.usuario.corpid : 1;
-        if (!parameters.orgid)
-            parameters.orgid = req.usuario.orgid ? req.usuario.orgid : 1;
-        if (!parameters.username)
-            parameters.username = req.usuario.usr;
+        setSessionParameters(parameters, req.user);
 
         const result = await triggerfunctions.export(method, parameters);
         res.json(result);
@@ -154,14 +129,7 @@ exports.multiTransaction = async (req, res) => {
     try {
         const datatmp = req.body;
         const data = datatmp.map(x => {
-            if (!x.parameters.corpid)
-                x.parameters.corpid = req.usuario.corpid ? req.usuario.corpid : 1;
-            if (!x.parameters.orgid)
-                x.parameters.orgid = req.usuario.orgid ? req.usuario.orgid : 1;
-            if (!x.parameters.username)
-                x.parameters.username = req.usuario.usr;
-            if (!x.parameters.userid)
-                x.parameters.userid = req.usuario.userid;
+            setSessionParameters(x, req.user);
             return x;
         })
 

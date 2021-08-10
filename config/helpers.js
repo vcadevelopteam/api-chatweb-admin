@@ -6,39 +6,39 @@ exports.generatefilter = (filters, origin, daterange, offset) => {
         if (f) {
             const column = columnsFunction[origin][key].column;
             const type = columnsFunction[origin][key].type;
-            if (f.value !== '' ) {
+            if (f.value !== '') {
 
                 switch (f.operator) {
                     case 'contains':
-                        where += ` and ${column} ilike '%${f.value}%'`;    
+                        where += ` and ${column} ilike '%${f.value}%'`;
                         break;
                     case 'nocontains':
-                        where += ` and ${column} not ilike '%${f.value}%'`;    
+                        where += ` and ${column} not ilike '%${f.value}%'`;
                         break;
                     case 'equals':
-                        where += ` and ${column} = '${f.value}'`;    
+                        where += ` and ${column} = '${f.value}'`;
                         break;
                     case 'noequals':
-                        where += ` and ${column} <> '${f.value}'`;    
+                        where += ` and ${column} <> '${f.value}'`;
                         break;
                     case 'empty':
-                        where += ` and (${column} = '' or ${column} is null)`;    
+                        where += ` and (${column} = '' or ${column} is null)`;
                         break;
                     case 'noempty':
-                        where += ` and ${column} <> '' and ${column} is not null`;    
+                        where += ` and ${column} <> '' and ${column} is not null`;
                         break;
-                    
+
                     case 'greater':
-                        where += ` and ${column} > ${f.value}`;    
+                        where += ` and ${column} > ${f.value}`;
                         break;
                     case 'greaterequal':
-                        where += ` and ${column} >= ${f.value}`;    
+                        where += ` and ${column} >= ${f.value}`;
                         break;
                     case 'smaller':
-                        where += ` and ${column} < ${f.value}`;    
+                        where += ` and ${column} < ${f.value}`;
                         break;
                     case 'smallerequal':
-                        where += ` and ${column} <= ${f.value}`;    
+                        where += ` and ${column} <= ${f.value}`;
                         break;
                     default:
                         break;
@@ -63,11 +63,22 @@ exports.generateSort = (sorts, origin) => {
     for (const [key, value] of Object.entries(sorts)) {
         if (value) {
             const column = columnsFunction[origin][key].column;
-            order += ` ${column} ${value},`;                       
+            order += ` ${column} ${value},`;
         }
     }
     if (order)
         order = order.substring(0, order.length - 1);
 
     return order;
+}
+
+exports.setSessionParameters = (parameters, user) => {
+    if (!parameters.corpid)
+        parameters.corpid = user.corpid ? user.corpid : 1;
+    if (!parameters.orgid)
+        parameters.orgid = user.orgid ? user.orgid : 1;
+    if (!parameters.username)
+        parameters.username = user.usr;
+    if (!parameters.userid)
+        parameters.userid = user.userid;
 }

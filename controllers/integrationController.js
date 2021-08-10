@@ -64,11 +64,11 @@ exports.Save = async (req, res) => {
     try {
         const { data = {}, method, webhooks } = req.body;
         if (!data.orgid)
-            data.orgid = req.usuario.orgid ? req.usuario.orgid : 1;
+            data.orgid = req.user.orgid ? req.user.orgid : 1;
         if (!data.username)
-            data.username = req.usuario.usr;
+            data.username = req.user.usr;
         if (!data.userid)
-            data.userid = req.usuario.userid;
+            data.userid = req.user.userid;
 
         const result = await tf.executesimpletransaction(method, data);
 

@@ -24,15 +24,15 @@ exports.manage = async (req, res) => {
         }
 
         if (!data.corporation)
-            data.corporation = req.usuario.corporation;
+            data.corporation = req.user.corporation;
         if (!data.corpid)
-            data.corpid = req.usuario.corpid ? req.usuario.corpid : 1;
+            data.corpid = req.user.corpid ? req.user.corpid : 1;
         if (!data.orgid)
-            data.orgid = req.usuario.orgid ? req.usuario.orgid : 1;
+            data.orgid = req.user.orgid ? req.user.orgid : 1;
         if (!data.username)
-            data.username = req.usuario.usr;
+            data.username = req.user.usr;
         if (!data.userid)
-            data.userid = req.usuario.userid;
+            data.userid = req.user.userid;
     
         const resx = await triggerfunctions.executesimpletransaction(method, data);
         
