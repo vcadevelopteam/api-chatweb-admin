@@ -25,7 +25,7 @@ module.exports = async function (req, res, next) {
                 if (result[0].status === 'INACTIVO')
                     return res.status(401).json({ message: 'Su usuario ha sido logeado en otra PC', code: 'USER_CONNECTED_OTHER_PC' });
                 else
-                    return res.status(401).json({ message: 'Su sesión ha sido expirada', 'SESION_EXPIRED' });
+                    return res.status(401).json({ message: 'Su sesión ha sido expirada', code: 'SESION_EXPIRED' });
             }
         } else {
             return res.status(401).json({ message: 'Token no valido' });
