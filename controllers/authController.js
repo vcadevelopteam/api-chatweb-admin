@@ -93,7 +93,7 @@ exports.getUser = async (req, res) => {
     }
 }
 
-exports.logout = async (req, res) => {
+exports.logout = async (req, res) => { 
 
     try {
         const result = await tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", cifrado.user);
