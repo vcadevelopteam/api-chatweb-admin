@@ -17,19 +17,19 @@ module.exports = async function (req, res, next) {
     try {
         const cifrado = jwt.verify(token, process.env.SECRETA);
         req.user = cifrado.user;
-        console.log(cifrado.user);
-        const result = await tf.executesimpletransaction("UFN_USERTOKEN_SEL", cifrado.user);
+        // console.log(cifrado.user);
+        // const result = await tf.executesimpletransaction("UFN_USERTOKEN_SEL", cifrado.user);
 
-        if (result && result instanceof Array && result.length > 0) {
-            if (result[0].status !== 'ACTIVO') {
-                if (result[0].status === 'INACTIVO')
-                    return res.status(401).json({ message: 'Su usuario ha sido logeado en otra PC', code: 'USER_CONNECTED_OTHER_PC' });
-                else
-                    return res.status(401).json({ message: 'Su sesión ha sido expirada', code: 'SESION_EXPIRED' });
-            }
-        } else {
-            return res.status(401).json({ message: 'Token no valido' });
-        }
+        // if (result && result instanceof Array && result.length > 0) {
+        //     if (result[0].status !== 'ACTIVO') {
+        //         if (result[0].status === 'INACTIVO')
+        //             return res.status(401).json({ message: 'Su usuario ha sido logeado en otra PC', code: 'USER_CONNECTED_OTHER_PC' });
+        //         else
+        //             return res.status(401).json({ message: 'Su sesión ha sido expirada', code: 'SESION_EXPIRED' });
+        //     }
+        // } else {
+        //     return res.status(401).json({ message: 'Token no valido' });
+        // }
 
         next();
 
