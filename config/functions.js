@@ -13,6 +13,7 @@ module.exports = {
     UFN_CONVERSATION_QUEUE_USERGROUP_SEL: "SELECT * FROM ufn_conversation_queue_usergroup_sel($corpid, $orgid)",
     UFN_GROUPCONFIGURATION_SEL: "SELECT * FROM ufn_groupconfiguration_sel($corpid, $orgid, $id, $username, $all)",
     UFN_GROUPCONFIGURATION_INS: "SELECT * FROM ufn_groupconfiguration_ins($corpid, $orgid, $id, $operation, $domainid, $description, $type, $status, $username, $quantity, $validationtext)",
+    UFN_WHITELIST_SEL: "SELECT * FROM ufn_whitelist_sel($corpid, $orgid, $username, $id, $all)",
 
     UFN_CORPBYUSER_LST: "SELECT * FROM ufn_corpbyuser_lst($userid)",
     UFN_ORGBYCORP_LST: "SELECT * FROM ufn_orgbycorp_lst($corpid)",
