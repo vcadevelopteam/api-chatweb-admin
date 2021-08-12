@@ -148,7 +148,10 @@ exports.export = async (req, res) => {
 exports.multiTransaction = async (req, res) => {
     try {
         const datatmp = req.body;
-        const data = datatmp.map(x => setSessionParameters(x.parameters, req.user))
+        const data = datatmp.map(x => {
+            setSessionParameters(x.parameters, req.user);
+            return x;
+        })
 
         const result = await triggerfunctions.executeMultiTransactions(data);
 
