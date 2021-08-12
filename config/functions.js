@@ -17,6 +17,8 @@ module.exports = {
     UFN_WHITELIST_INS: "SELECT * FROM ufn_whitelist_ins($corpid,$orgid,$id,$operation,$documenttype,$documentnumber,$usergroup,$type,$status,$asesorname,$username)",
     UFN_INAPPROPRIATEWORDS_SEL: "SELECT * FROM ufn_inappropriatewords_sel($corpid, $orgid,$id, $username)",
     UFN_INAPPROPRIATEWORDS_INS: "SELECT * FROM ufn_inappropriatewords_ins($id,$corpid, $orgid, $description,$status,$type,$username,$operation)",
+    UFN_INTELLIGENTMODELS_SEL: "SELECT * FROM ufn_intelligentmodels_sel($corpid,$orgid,$username,$id,$all)",    
+    UFN_INTELLIGENTMODELS_INS: "SELECT * FROM ufn_intelligentmodels_ins($corpid,$orgid,$id,$operation,$description,$endpoint ,$modelid ,$provider ,$apikey ,$type ,$status ,$username) ",
 
     UFN_CORPBYUSER_LST: "SELECT * FROM ufn_corpbyuser_lst($userid)",
     UFN_ORGBYCORP_LST: "SELECT * FROM ufn_orgbycorp_lst($corpid)",
