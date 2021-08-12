@@ -11,6 +11,7 @@ module.exports = {
     UFN_PROPERTY_SEL: "SELECT * FROM ufn_property_sel($corpid,$orgid,$id,$username,$all)" ,
     UFN_USER_SUPERVISOR_LST: "SELECT * FROM ufn_user_supervisor_lst($corpid, $orgid, $userid)",
     UFN_APPS_DATA_SEL: "SELECT * FROM UFN_APPS_DATA_SEL($roleid)",
+    UFN_ROLE_LST: "SELECT * FROM ufn_role_lst($corpid, $orgid)",
     UFN_PROPERTY_INS: "SELECT * FROM ufn_property_ins($corpid,$orgid,$communicationchannelid,$id,$propertyname,$propertyvalue, $description, $status,$type,$username,$operation)",
     UFN_CONVERSATION_QUEUE_USERGROUP_SEL: "SELECT * FROM ufn_conversation_queue_usergroup_sel($corpid, $orgid)",
     UFN_GROUPCONFIGURATION_SEL: "SELECT * FROM ufn_groupconfiguration_sel($corpid, $orgid, $id, $username, $all)",
