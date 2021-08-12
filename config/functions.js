@@ -9,6 +9,8 @@ module.exports = {
     UFN_ORGUSER_INS: "SELECT * FROM ufn_orguser_ins($corpid, $orgid, $userid, $roleid, $usersupervisor, $bydefault, $labels, $groups, $channels, $status,$type, $defaultsort, $username, $operation, $redirect)",
     UFN_USER_INS: "SELECT * FROM ufn_user_ins($id, $usr, $doctype, $docnum, $pwd, $firstname, $lastname, $email, $pwdchangefirstlogin, $type, $status,$description, $username, $operation, $redirect, $company, $twofactorauthentication)",
     UFN_PROPERTY_SEL: "SELECT * FROM ufn_property_sel($corpid,$orgid,$id,$username,$all)" ,
+    UFN_USER_SUPERVISOR_LST: "SELECT * FROM ufn_user_supervisor_lst($corpid, $orgid, $userid)",
+    UFN_APPS_DATA_SEL: "SELECT * FROM UFN_APPS_DATA_SEL($roleid)",
     UFN_PROPERTY_INS: "SELECT * FROM ufn_property_ins($corpid,$orgid,$communicationchannelid,$id,$propertyname,$propertyvalue, $description, $status,$type,$username,$operation)",
     UFN_CONVERSATION_QUEUE_USERGROUP_SEL: "SELECT * FROM ufn_conversation_queue_usergroup_sel($corpid, $orgid)",
     UFN_GROUPCONFIGURATION_SEL: "SELECT * FROM ufn_groupconfiguration_sel($corpid, $orgid, $id, $username, $all)",
