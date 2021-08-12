@@ -31,6 +31,26 @@ exports.GetCollection = async (req, res) => {
     }
 }
 
+exports.executeTransaction = async (req, res) => {
+    try {
+        const { header, detail: detailtmp } = req.body;
+
+        setSessionParameters(header.parameters, req.user);
+
+        const detail = detailtmp.map(x => setSessionParameters(x.parameters, req.user))
+
+        const result = await triggerfunctions.executeTransaction(header, detail);
+
+        return res.json(result);
+    }
+    catch (error) {
+
+        return res.status(500).json({
+            message: "Hubo un problema, intentelo más tarde"
+        });
+    }
+}
+
 exports.getCollectionPagination = async (req, res) => {
     try {
         const { parameters, methodcollection, methodcount } = req.body;
@@ -128,11 +148,7 @@ exports.export = async (req, res) => {
 exports.multiTransaction = async (req, res) => {
     try {
         const datatmp = req.body;
-        const data = datatmp.map(x => {
-            
-            setSessionParameters(x.parameters, req.user);
-            return x
-        })
+        const data = datatmp.map(x => setSessionParameters(x.parameters, req.user))
 
         const result = await triggerfunctions.executeMultiTransactions(data);
 

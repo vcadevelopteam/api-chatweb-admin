@@ -2,7 +2,6 @@ const sequelize = require('./database');
 const functionsbd = require('./functions');
 const columnsFunction = require('./columnsFunction');
 const helper = require('./helpers');
-const Sequelize = require('sequelize');
 
 const { QueryTypes } = require('sequelize');
 require('pg').defaults.parseInt8 = true;
@@ -68,7 +67,7 @@ exports.executesimpletransaction = async (method, data) => {
             response.message = "No existe el método";
         }
     } catch (e) {
-        
+
         response.result = e;
         response.message = "Hubo un error, vuelva a intentarlo";
         response.code = "UNEXPECTED_ERROR"
@@ -119,7 +118,7 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data) =>
                 response.code = "BAD_FORMAT_ERROR";
             }
         } else {
-            response.code = "METHOD_ERROR";   
+            response.code = "METHOD_ERROR";
             response.message = "No existe el método";
         }
     } catch (e) {
@@ -175,7 +174,6 @@ exports.executeMultiTransactions = async (detail) => {
         error: true
     }
     try {
-        
         return await Promise.all(detail.map(async (item) => {
             if (functionsbd[item.method]) {
                 const query = functionsbd[item.method];
@@ -209,6 +207,78 @@ exports.executeMultiTransactions = async (detail) => {
         console.log(e);
         response.code = "UNEXPECTED_ERROR"
         response.message = "Hubo un error, vuelva a intentarlo";
+    }
+
+    return response;
+}
+
+
+exports.executeTransaction = async (header, detail) => {
+    let transaction;
+    let detailtmp = detail;
+    const response = {
+        success: true,
+        message: null,
+        error: false
+    }
+    try {
+        transaction = await sequelize.transaction();
+
+        if (header) {
+            const { method, parameters } = header;
+
+            if (functionsbd[method]) {
+                let query = functionsbd[method];
+                if (data instanceof Object) {
+                    const result = await sequelize.query(query, {
+                        type: QueryTypes.SELECT,
+                        bind: parameters
+                    }).catch(function (err) {
+                        console.log(err);
+                        throw 'Hubo un error vuelva a intentarlo'
+                    });
+                    if (result.length > 0) {
+                        const keysResult = Object.keys(result[0])
+                        if (keysResult.length > 0) {
+                            detailtmp = detailtmp.map(x => ({
+                                ...x,
+                                ...result[0]
+                            }))
+                        }
+                    }
+                } else {
+                    throw 'Hubo un error vuelva a intentarlo'
+                }
+            } else {
+                throw 'Hubo un error vuelva a intentarlo'
+            }
+        }
+
+        await Promise.all(detailtmp.map(async (item) => {
+            if (functionsbd[item.method]) {
+                const query = functionsbd[item.method];
+                const r = await sequelize.query(query, {
+                    type: QueryTypes.SELECT,
+                    bind: item.parameters
+                }).catch(function (err) {
+                    console.log(err);
+                    throw 'Hubo un error vuelva a intentarlo'
+                });
+            } else {
+                throw 'Hubo un error vuelva a intentarlo'
+            }
+        }))
+        await transaction.commit();
+    } catch (e) {
+        if (transaction)
+            await transaction.rollback();
+        console.log(e);
+        return {
+            success: false,
+            error: true,
+            code: "UNEXPECTED_ERROR",
+            message: "Hubo un error, vuelva a intentarlo"
+        }
     }
 
     return response;

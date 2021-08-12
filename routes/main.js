@@ -11,6 +11,10 @@ router.post("/multi",
     auth,
     mainController.multiTransaction
 )
+router.post("/executetransaction",
+    auth,
+    mainController.executeTransaction
+)
 
 router.post("/getCollectionPag",
     auth,
