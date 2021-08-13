@@ -36,9 +36,9 @@ exports.executeTransaction = async (req, res) => {
     try {
         const { header, detail: detailtmp } = req.body;
 
-        if (header.password) {
+        if (header.parameters.password) {
             const salt = await bcryptjs.genSalt(10);
-            header.password = await bcryptjs.hash(header.password, salt);
+            header.parameters.password = await bcryptjs.hash(header.parameters.password, salt);
         }
 
         setSessionParameters(header.parameters, req.user);
