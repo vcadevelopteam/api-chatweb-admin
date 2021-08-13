@@ -229,7 +229,7 @@ exports.executeTransaction = async (header, detail) => {
 
             if (functionsbd[method]) {
                 let query = functionsbd[method];
-                if (data instanceof Object) {
+                if (parameters instanceof Object) {
                     const result = await sequelize.query(query, {
                         type: QueryTypes.SELECT,
                         bind: parameters
@@ -238,23 +238,29 @@ exports.executeTransaction = async (header, detail) => {
                         throw 'Hubo un error vuelva a intentarlo'
                     });
                     if (result.length > 0) {
+                        console.log(detailtmp)
+
                         const keysResult = Object.keys(result[0])
                         if (keysResult.length > 0) {
-                            detailtmp = detailtmp.map(x => ({
-                                ...x,
-                                ...result[0]
-                            }))
+                            detailtmp = detailtmp.map(x => {
+                                x.parameters = {
+                                    ...x.parameters,
+                                    ...result[0]
+                                }
+                                return x;
+                            })
+                            console.log(detailtmp)
                         }
                     }
                 } else {
-                    throw 'Hubo un error vuelva a intentarlo'
+                    throw 'Hubo un error vuelva a intentarlo1'
                 }
             } else {
-                throw 'Hubo un error vuelva a intentarlo'
+                throw 'Hubo un error vuelva a intentarlo2'
             }
         }
-
         await Promise.all(detailtmp.map(async (item) => {
+            console.log(item);
             if (functionsbd[item.method]) {
                 const query = functionsbd[item.method];
                 const r = await sequelize.query(query, {
@@ -262,10 +268,10 @@ exports.executeTransaction = async (header, detail) => {
                     bind: item.parameters
                 }).catch(function (err) {
                     console.log(err);
-                    throw 'Hubo un error vuelva a intentarlo'
+                    throw 'Hubo un error vuelva a intentarl3o'
                 });
             } else {
-                throw 'Hubo un error vuelva a intentarlo'
+                throw 'Hubo un error vuelva a intentarlo4'
             }
         }))
         await transaction.commit();

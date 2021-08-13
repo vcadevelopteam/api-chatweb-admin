@@ -37,7 +37,10 @@ exports.executeTransaction = async (req, res) => {
 
         setSessionParameters(header.parameters, req.user);
 
-        const detail = detailtmp.map(x => setSessionParameters(x.parameters, req.user))
+        const detail = detailtmp.map(x => {
+            setSessionParameters(x.parameters, req.user);
+            return x;
+        })
 
         const result = await triggerfunctions.executeTransaction(header, detail);
 

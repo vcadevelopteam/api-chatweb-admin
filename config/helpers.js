@@ -73,13 +73,13 @@ exports.generateSort = (sorts, origin) => {
 }
 
 exports.setSessionParameters = (parameters, user) => {
-    if (!parameters.corpid)
+    if (parameters.corpid === null || parameters.corpid === undefined)
         parameters.corpid = user.corpid ? user.corpid : 1;
-    if (!parameters.orgid)
+    if (parameters.orgid === null || parameters.orgid === undefined)
         parameters.orgid = user.orgid ? user.orgid : 1;
-    if (!parameters.username)
+    if (parameters.username === null || parameters.username === undefined)
         parameters.username = user.usr;
-    if (!parameters.userid)
+    if (parameters.userid === null || parameters.userid === undefined)
         parameters.userid = user.userid;
 
     return parameters;
