@@ -36,6 +36,11 @@ exports.executeTransaction = async (req, res) => {
     try {
         const { header, detail: detailtmp } = req.body;
 
+        if (header.password) {
+            const salt = await bcryptjs.genSalt(10);
+            header.password = await bcryptjs.hash(header.password, salt);
+        }
+
         setSessionParameters(header.parameters, req.user);
 
         const detail = detailtmp.map(x => {
@@ -152,10 +157,6 @@ exports.export = async (req, res) => {
 exports.multiTransaction = async (req, res) => {
     try {
         const datatmp = req.body;
-        if (x.password) {
-            const salt = await bcryptjs.genSalt(10);
-            x.password = await bcryptjs.hash(x.password, salt);
-        }
         const data = datatmp.map(x => {
             setSessionParameters(x.parameters, req.user);
             return x;
