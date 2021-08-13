@@ -1,4 +1,5 @@
 const triggerfunctions = require('../config/triggerfunctions');
+const bcryptjs = require("bcryptjs");
 const { setSessionParameters } = require('../config/helpers');
 var ibm = require('ibm-cos-sdk');
 
@@ -34,6 +35,11 @@ exports.GetCollection = async (req, res) => {
 exports.executeTransaction = async (req, res) => {
     try {
         const { header, detail: detailtmp } = req.body;
+
+        if (header.parameters.password) {
+            const salt = await bcryptjs.genSalt(10);
+            header.parameters.password = await bcryptjs.hash(header.parameters.password, salt);
+        }
 
         setSessionParameters(header.parameters, req.user);
 
