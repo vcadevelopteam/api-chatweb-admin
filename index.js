@@ -25,12 +25,10 @@ const PORT = process.env.PORT || 6065;
 
 app.use('/api/usuarios', require('./routes/usuarios'));
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/contact', require('./routes/contact'));
+
 app.use('/api/main', require('./routes/main'));
-app.use('/api/template', require('./routes/template'));
-app.use('/api/processfile', require('./routes/processfile'));
 app.use('/api/upload', require('./routes/upload'));
-app.use('/api/integration', require('./routes/integration'));
+
 
 // Definir la pagina principal
 app.get('/', (req, res) => {
