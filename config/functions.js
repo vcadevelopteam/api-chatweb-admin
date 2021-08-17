@@ -2,7 +2,7 @@ module.exports = {
     
     
     QUERY_AUTHENTICATED: "select org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.lastname, us.email, us.status, us.lastuserstatus, ous.redirect, role.description roledesc from usr us inner join orguser ous on ous.userid = us.userid inner join org org on org.orgid = ous.orgid inner join corp corp on corp.corpid = ous.corpid inner join role role on role.roleid = ous.roleid where us.usr = $usr and ous.bydefault limit 1",
-    UFN_CORORG_SEL: "SELECT * FROM ufn_cororg_sel($corpid, $id, $username, $all)",
+    UFN_CORP_ORG_SEL: "SELECT * FROM ufn_cororg_sel($corpid, $id, $username, $all)",
     UFN_CORSEL: "SELECT * FROM ufn_corsel($corpid, $orgid, $id, $username, $all)",
     UFN_USER_SEL: "SELECT * FROM ufn_user_sel($corpid, $orgid, $id, $username, $all)",
     UFN_ORGUSER_SEL: "SELECT * FROM ufn_orguser_sel($corpid, $orgid, $userid, $username, $all)",
