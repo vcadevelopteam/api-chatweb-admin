@@ -84,6 +84,7 @@ exports.authenticate = async (req, res) => {
 
 exports.getUser = async (req, res) => {
     try {
+        delete req.user.token
         res.json({ data: req.user, error: false })
     } catch (error) {
         return res.status(500).json({
