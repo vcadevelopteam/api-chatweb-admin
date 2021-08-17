@@ -33,6 +33,8 @@ module.exports = {
     UFN_CLASSIFICATION_INS: "SELECT * FROM ufn_classification_ins($id,$corpid,$orgid,$description,$parent,$communicationchannel,$status,$type,$username,$operation,$jobplan,$usergroup,$schedule)",    
     UFN_QUICKREPLY_SEL: "SELECT * FROM ufn_quickreply_sel($corpid ,$orgid ,$id  ,$username ,$all)",    
     UFN_QUICKREPLY_INS: "SELECT * FROM ufn_quickreply_ins($corpid,$orgid,$id,$classificationid,$description,$quickreply,$status,$type,$username,$operation)",    
+    UFN_PERSON_SEL: "SELECT * FROM ufn_person_sel($corpid ,$orgid ,$id  ,$username ,$all)",    
+    UFN_PERSON_INS: "SELECT * FROM ufn_quickreply_ins($id,$corpid,$orgid,$groups,$status,$type,$persontype,$personstatus,$phone,$email,$birthday,$alternativephone,$alternativeemail,$documenttype,$documentnumber,$firstname,$lastname,$sex,$gender,$civilstatus,$occupation,$educationlevel,$referringpersonid,$username,$operation)",    
 
     UFN_CORPBYUSER_LST: "SELECT * FROM ufn_corpbyuser_lst($userid)",
     UFN_ORGBYCORLST: "SELECT * FROM ufn_orgbycorlst($corpid)",
