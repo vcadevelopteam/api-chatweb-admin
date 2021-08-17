@@ -17,6 +17,8 @@ exports.GetCollection = async (req, res) => {
 
         setSessionParameters(parameters, req.user);
 
+        console.log(parameters);
+
         const result = await triggerfunctions.executesimpletransaction(method, parameters);
 
         if (result instanceof Array)

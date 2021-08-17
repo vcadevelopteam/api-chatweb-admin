@@ -4,11 +4,11 @@ const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 function uuidv4() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
     });
-  }
+}
 
 exports.authenticate = async (req, res) => {
     const { data: { usr, password } } = req.body;
@@ -18,7 +18,7 @@ exports.authenticate = async (req, res) => {
 
         if (!result instanceof Array || result.length === 0)
             return res.status(401).json({ message: "El usuario no existe", code: "USER_INCORRECT" });
-        
+
         const user = result[0];
         const ispasswordmatch = await bcryptjs.compare(password, user.pwd)
 
@@ -46,7 +46,7 @@ exports.authenticate = async (req, res) => {
             ]);
             user.token = tokenzyx;
             delete user.pwd;
-    
+
             jwt.sign({ user }, (process.env.SECRETA ? process.env.SECRETA : "palabrasecreta"), {
                 expiresIn: 60 * 60 * 24
             }, (error, token) => {
@@ -93,10 +93,11 @@ exports.getUser = async (req, res) => {
     }
 }
 
-exports.logout = async (req, res) => { 
+exports.logout = async (req, res) => {
+    console.log(req.user);
 
     try {
-        const result = await tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", cifrado.user);
+        tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", { ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
 
     } catch (error) {
         console.log(error);
