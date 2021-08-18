@@ -84,8 +84,9 @@ exports.authenticate = async (req, res) => {
 
 exports.getUser = async (req, res) => {
     try {
-        delete req.user.token
-        res.json({ data: req.user, error: false })
+        delete req.user.token;
+        const resultApps = await tf.executesimpletransaction("UFN_APPLICATION_SEL", req.user);
+        res.json({ data: { ...req.user, menu: resultApps }, error: false });
     } catch (error) {
         return res.status(500).json({
             message: "Hubo un problema, intentelo más tarde",
@@ -95,8 +96,6 @@ exports.getUser = async (req, res) => {
 }
 
 exports.logout = async (req, res) => {
-    console.log(req.user);
-
     try {
         tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", { ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
 

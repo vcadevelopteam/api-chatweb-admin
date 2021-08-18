@@ -5,7 +5,7 @@ module.exports = {
     UFN_CORP_ORG_SEL: "SELECT * FROM ufn_corp_org_sel($corpid, $id, $username, $all)",
     UFN_CORSEL: "SELECT * FROM ufn_corsel($corpid, $orgid, $id, $username, $all)",
     UFN_USER_SEL: "SELECT * FROM ufn_user_sel($corpid, $orgid, $id, $username, $all)",
-    UFN_APPLICATION_SEL: "SELECT * FROM ufn_application_sel($corpid, $orgid, $roleid)",
+    UFN_APPLICATION_SEL: "SELECT * FROM ufn_application_sel($corpid, $orgid, $userid)",
     UFN_ORGUSER_SEL: "SELECT * FROM ufn_orguser_sel($corpid, $orgid, $userid, $username, $all)",
     UFN_ORGUSER_INS: "SELECT * FROM ufn_orguser_ins($corpid, $orgid, $p_userid, $roleid, $usersupervisor, $bydefault, $labels, $groups, $channels, $status,$type, $defaultsort, $username, $operation, $redirect)",
     UFN_USER_INS: "SELECT * FROM ufn_user_ins($id, $usr, $doctype, $docnum, $password, $firstname, $lastname, $email, $pwdchangefirstlogin, $type, $status,$description, $username, $operation, $company, $twofactorauthentication, $registercode, $billinggroup)",
