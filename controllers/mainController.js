@@ -29,6 +29,8 @@ exports.GetCollection = async (req, res) => {
     catch (error) {
 
         return res.status(500).json({
+            error: true,
+            code: "UNEXPECTED_ERROR",
             message: "Hubo un problema, intentelo más tarde"
         });
     }
@@ -69,11 +71,16 @@ exports.getCollectionPagination = async (req, res) => {
         setSessionParameters(parameters, req.user);
 
         const result = await triggerfunctions.getCollectionPagination(methodCollection, methodCount, parameters);
-
-        res.json(result);
+        if (!result.error) {
+            res.json(result);
+        } else {
+            return res.status(500).json(result);
+        }
     }
     catch (error) {
         return res.status(500).json({
+            error: true,
+            code: "UNEXPECTED_ERROR",
             message: "Hubo un problema, intentelo más tarde"
         });
     }
