@@ -22,6 +22,8 @@ module.exports = {
     UFN_WHITELIST_INS: "SELECT * FROM ufn_whitelist_ins($corpid,$orgid,$id,$operation,$documenttype,$documentnumber,$usergroup,$type,$status,$asesorname,$username)",
     UFN_INAPPROPRIATEWORDS_SEL: "SELECT * FROM ufn_inappropriatewords_sel($corpid, $orgid,$id, $username)",
     UFN_INAPPROPRIATEWORDS_INS: "SELECT * FROM ufn_inappropriatewords_ins($id,$corpid, $orgid, $description,$status,$type,$username,$operation)",
+    UFN_PERSON_TOTALRECORDS: "SELECT * FROM ufn_person_totalrecords($corpid, $orgid, $where, $offset)",
+    UFN_PERSON_SEL: "SELECT  * FROM ufn_person_sel($corpid, $orgid, $username, $where, $order, $take, $skip, $offset)",
     UFN_INTELLIGENTMODELS_SEL: "SELECT * FROM ufn_intelligentmodels_sel($corpid,$orgid,$username,$id,$all)",    
     UFN_INTELLIGENTMODELS_INS: "SELECT * FROM ufn_intelligentmodels_ins($corpid,$orgid,$id,$operation,$description,$endpoint ,$modelid ,$provider ,$apikey ,$type ,$status ,$username) ",
     UFN_SLA_SEL: "SELECT * FROM ufn_sla_sel($corpid ,$orgid ,$id ,$username ,$all)",    
@@ -34,7 +36,7 @@ module.exports = {
     UFN_CLASSIFICATION_INS: "SELECT * FROM ufn_classification_ins($id,$corpid,$orgid,$description,$parent,$communicationchannel,$status,$type,$username,$operation,$jobplan,$usergroup,$schedule)",    
     UFN_QUICKREPLY_SEL: "SELECT * FROM ufn_quickreply_sel($corpid ,$orgid ,$id  ,$username ,$all)",    
     UFN_QUICKREPLY_INS: "SELECT * FROM ufn_quickreply_ins($corpid,$orgid,$id,$classificationid,$description,$quickreply,$status,$type,$username,$operation)",    
-    UFN_PERSON_SEL: "SELECT * FROM ufn_person_sel($corpid ,$orgid ,$id  ,$username ,$all)",    
+    // UFN_PERSON_SEL: "SELECT * FROM ufn_person_sel($corpid ,$orgid ,$id  ,$username ,$all)",    
     UFN_PERSON_INS: "SELECT * FROM ufn_quickreply_ins($id,$corpid,$orgid,$groups,$status,$type,$persontype,$personstatus,$phone,$email,$birthday,$alternativephone,$alternativeemail,$documenttype,$documentnumber,$firstname,$lastname,$sex,$gender,$civilstatus,$occupation,$educationlevel,$referringpersonid,$username,$operation)",    
 
     UFN_CORPBYUSER_LST: "SELECT * FROM ufn_corpbyuser_lst($userid)",

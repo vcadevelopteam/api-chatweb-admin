@@ -96,22 +96,30 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data) =>
 
                 const res = {
                     data: [],
-                    count: 0
+                    count: 0,
+                    success: true,
+                    message: null,
+                    error: false
                 }
 
                 await Promise.all([
                     sequelize.query(querycollection, {
                         type: QueryTypes.SELECT,
                         bind: data
-                    }).then(result => res.data = result),
+                    })
+                    .then(result => res.data = result)
+                    .catch(function (err) {
+                        console.log(err);
+                    }),
                     sequelize.query(querycount, {
                         type: QueryTypes.SELECT,
                         bind: data
-                    }).then(result => {
-                        res.count = result[0].totalrecords;
-                    }),
+                    })
+                    .then(result => res.count = result[0].p_totalrecords)
+                    .catch(function (err) {
+                        console.log(err);
+                    })
                 ]);
-
                 return res;
             } else {
                 response.message = "Mal formato";

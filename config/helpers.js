@@ -27,7 +27,6 @@ exports.generatefilter = (filters, origin, daterange, offset) => {
                     case 'noempty':
                         where += ` and ${column} <> '' and ${column} is not null`;
                         break;
-
                     case 'greater':
                         where += ` and ${column} > ${f.value}`;
                         break;
@@ -51,10 +50,10 @@ exports.generatefilter = (filters, origin, daterange, offset) => {
         const startdate = daterange.startDate.substring(0, 10);
         const enddate = daterange.endDate.substring(0, 10);
 
-        const columndate = columnsFunction[origin]["fechafilter"].column.replace(/###OFFSET###/gi, offset.toString());
+        const columndate = columnsFunction[origin]["datefilter"].column;
         where += ` and ${columndate} between '${startdate}' and '${enddate}' `;
     }
-    return where;
+    return where.replace(/###OFFSET###/gi, offset.toString());
 }
 
 exports.generateSort = (sorts, origin) => {

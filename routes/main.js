@@ -16,7 +16,7 @@ router.post("/executetransaction",
     mainController.executeTransaction
 )
 
-router.post("/getCollectionPag",
+router.post("/paginated",
     auth,
     mainController.getCollectionPagination
 )

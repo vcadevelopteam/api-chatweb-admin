@@ -1,128 +1,127 @@
 module.exports = {
-    post: {
-        facebookpostid: {
-            column: 'fp.facebookpostid',
-            type: 'int'
+    person: {
+        corpid: {
+            column: "pe.corpid"
         },
-        message: {
-            column: 'fp.message',
-            type: 'string'
+        corpdesc: {
+            column: "corp.description as corpdesc"
         },
-        media: {
-            column: 'fp.media',
-            type: 'string'
+        orgid: {
+            column: "pe.orgid"
+        },
+        orgdesc: {
+            column: "org.description as orgdesc"
+        },
+        personid: {
+            column: "pe.personid"
+        },
+        description: {
+            column: "pe.description"
+        },
+        groups: {
+            column: "pe.groups"
+        },
+        status: {
+            column: "pe.status"
         },
         type: {
-            column: 'fp.type',
-            type: 'string'
+            column: "pe.type,"
         },
-        commentnumber: {
-            column: 'fp.commentnumber',
-            type: 'int'
+        name: {
+            column: "pe.name"
         },
-        likenumber: {
-            column: 'fp.likenumber',
-            type: 'int'
+        persontype: {
+            column: "pe.persontype"
         },
-        sharednumber: {
-            column: 'fp.sharednumber',
-            type: 'int'
+        personstatus: {
+            column: "pe.personstatus"
         },
-        watsonclass: {
-            column: 'fp.watsonclass',
-            type: 'string'
-        },
-        watsonsubclass: {
-            column: 'fp.watsonsubclass',
-            type: 'string'
-        },
-        userid: {
-            column: 'fp.userid',
-            type: 'string'
-        },
-        fullname: {
-            column: 'fu.fullname',
-            type: 'string'
-        },
-        externalid: {
-            column: 'fp.externalid',
-            type: 'string'
-        },
-        facebookid: {
-            column: 'fp.facebookid',
-            type: 'string'
-        },
-        parentid: {
-            column: 'fp.parentid',
-            type: 'string'
-        },
-        postid: {
-            column: 'fp.postid',
-            type: 'string'
-        },
-        fechafilter: {
-            column: "(fp.datetimecreated ###OFFSET### * interval '1hour')::DATE",
-            type: 'string'
-        },
-        clienttype: {
-            column: "fu.clienttype",
-            type: 'string'
-        },
-        phonenumber: {
-            column: "fu.phonenumber",
-            type: 'string'
-        },
-        document: {
-            column: "fu.document",
-            type: 'string'
-        },
-        post: {
-            column: "coalesce(fp2.message, fp2.story, fp2.media)",
-            type: 'string'
+        phone: {
+            column: "pe.phone"
         },
         email: {
-            column: "fu.mailaddress",
-            type: 'string'
+            column: "pe.email"
         },
-        customerfullname: {
-            column: "fu.customerfullname",
-            type: 'string'
+        alternativephone: {
+            column: "pe.alternativephone"
         },
-        nluanger: {
-            column: "fp.nluanger",
-            type: "string"
+        alternativeemail: {
+            column: "pe.alternativeemail"
         },
-        nludisgust: {
-            column: "fp.nludisgust",
-            type: "string"
+        firstcontact: {
+            column: "to_char(pe.firstcontact + '||p_offset||' * interval ''1hour'', ''DD/MM/YYYY HH24:MI:SS'') firstcontact"
         },
-        nlufear: {
-            column: "fp.nlufear",
-            type: "string"
+        lastcontact: {
+            column: "to_char(pe.lastcontact + '||p_offset||' * interval ''1hour'', ''DD/MM/YYYY HH24:MI:SS'') lastcontact"
         },
-        nlujoy: {
-            column: "fp.nlujoy",
-            type: "string"
+        lastcommunicationchannelid: {
+            column: "pe.lastcommunicationchannelid"
         },
-        nlusadness: {
-            column: "fp.nlusadness",
-            type: "string"
+        communicationchannelname: {
+            column: "cc.description communicationchannelname"
         },
-        nlusentiment: {
-            column: "fp.nlusentiment",
-            type: "string"
+        documenttype: {
+            column: "pe.documenttype"
         },
-        nluentities: {
-            column: "fp.nluentities",
-            type: "string"
+        documentnumber: {
+            column: "pe.documentnumber"
         },
-        nlukeywords: {
-            column: "fp.nlukeywords",
-            type: "string"
+        firstname: {
+            column: "pe.firstname"
         },
-        datetimecreated: {
-            column: "to_char(fp.datetimecreated ###OFFSET### * interval '1hour', 'dd/MM/yyyy hh24:mi:ss')",
-            type: "string"
+        lastname: {
+            column: "pe.lastname"
+        },
+        imageurldef: {
+            column: "pe.imageurldef"
+        },
+        sex: {
+            column: "pe.sex"
+        },
+        gender: {
+            column: "pe.gender"
+        },
+        birthday: {
+            column: "pe.birthday"
+        },
+        civilstatus: {
+            column: "pe.civilstatus"
+        },
+        occupation: {
+            column: "pe.occupation"
+        },
+        educationlevel: {
+            column: "pe.educationlevel,"
+        },
+        country: {
+            column: "pe.country"
+        },
+        region: {
+            column: "pe.region"
+        },
+        province: {
+            column: "pe.province"
+        },
+        district: {
+            column: "pe.district"
+        },
+        latitude: {
+            column: "pe.latitude"
+        },
+        longitude: {
+            column: "pe.longitude"
+        },
+        referringpersonid: {
+            column: "pe.referringpersonid"
+        },
+        referringpersonname: {
+            column: "pe2.name referringpersonname"
+        },
+        displayname: {
+            column: "pcc.displayname"
+        },
+        locked: {
+            column: "pcc.locke"
         },
     }
 }

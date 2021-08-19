@@ -64,11 +64,11 @@ exports.executeTransaction = async (req, res) => {
 
 exports.getCollectionPagination = async (req, res) => {
     try {
-        const { parameters, methodcollection, methodcount } = req.body;
+        const { parameters, methodCollection, methodCount } = req.body;
 
         setSessionParameters(parameters, req.user);
 
-        const result = await triggerfunctions.getCollectionPagination(methodcollection, methodcount, parameters);
+        const result = await triggerfunctions.getCollectionPagination(methodCollection, methodCount, parameters);
 
         res.json(result);
     }
