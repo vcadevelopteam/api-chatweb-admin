@@ -83,3 +83,11 @@ exports.setSessionParameters = (parameters, user) => {
 
     return parameters;
 }
+
+exports.errors = {
+    VARIABLE_INCOMPATIBILITY_ERROR: "VARIABLE_INCOMPATIBILITY_ERROR",
+    NOT_FUNCTION_ERROR: "NOT_FUNCTION_ERROR",
+    UNEXPECTED_DB_DBERROR: "UNEXPECTED_DB_ERROR",
+    UNEXPECTED_ERROR: "UNEXPECTED_ERROR",
+    FORBIDDEN: "E-ZYX-FORBIDDEN",
+}

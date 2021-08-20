@@ -9,7 +9,7 @@ router.post("/",
 )
 router.post("/multi",
     auth,
-    mainController.multiTransaction
+    mainController.multiCollection
 )
 router.post("/executetransaction",
     auth,

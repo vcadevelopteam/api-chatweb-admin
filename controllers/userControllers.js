@@ -111,7 +111,6 @@ exports.insertUser = async (req, res) => {
         }catch (error){
 
         }
-        console.log(resultuser.length)
         if (resultuser.length>0) {
             return res.status(500).json({
                 msg: "El usuario ya fue registrado"
@@ -131,10 +130,7 @@ exports.insertUser = async (req, res) => {
             username: "admin"
         }
         
-        console.log(data);
         const result = await triggerfunctions.executesimpletransaction('UFN_USER_INS', data);
-        console.log(result);
-        
         
         res.json({
             result,

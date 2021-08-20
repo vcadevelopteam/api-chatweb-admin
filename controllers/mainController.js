@@ -1,4 +1,4 @@
-const triggerfunctions = require('../config/triggerfunctions');
+const { executesimpletransaction, executeTransaction, getCollectionPagination, exporttmp, GetMultiCollection } = require('../config/triggerfunctions');
 const bcryptjs = require("bcryptjs");
 const { setSessionParameters } = require('../config/helpers');
 var ibm = require('ibm-cos-sdk');
@@ -12,77 +12,51 @@ var config = {
 const COS_BUCKET_NAME = "staticfileszyxme"
 
 exports.GetCollection = async (req, res) => {
-    try {
-        const { parameters = {}, method } = req.body;
+    const { parameters = {}, method } = req.body;
 
-        setSessionParameters(parameters, req.user);
+    setSessionParameters(parameters, req.user);
 
-        console.log(parameters);
+    const result = await executesimpletransaction(method, parameters);
 
-        const result = await triggerfunctions.executesimpletransaction(method, parameters);
-
-        if (result instanceof Array)
-            return res.json({ success: true, data: result });
-        else
-            return res.status(500).json(result);
-    }
-    catch (error) {
-
-        return res.status(500).json({
-            error: true,
-            code: "UNEXPECTED_ERROR",
-            message: "Hubo un problema, intentelo más tarde"
-        });
-    }
+    if (result instanceof Array)
+        return res.json({ error: false, success: true, data: result });
+    else
+        return res.status(result.rescode).json(result);
 }
 
 exports.executeTransaction = async (req, res) => {
-    try {
-        const { header, detail: detailtmp } = req.body;
+    const { header, detail: detailtmp } = req.body;
 
-        if (header.parameters.password) {
-            const salt = await bcryptjs.genSalt(10);
-            header.parameters.password = await bcryptjs.hash(header.parameters.password, salt);
-        }
+    if (header.parameters.password) {
+        const salt = await bcryptjs.genSalt(10);
+        header.parameters.password = await bcryptjs.hash(header.parameters.password, salt);
+    }
 
-        setSessionParameters(header.parameters, req.user);
+    setSessionParameters(header.parameters, req.user);
 
-        const detail = detailtmp.map(x => {
-            setSessionParameters(x.parameters, req.user);
-            return x;
-        })
+    const detail = detailtmp.map(x => {
+        setSessionParameters(x.parameters, req.user);
+        return x;
+    })
 
-        const result = await triggerfunctions.executeTransaction(header, detail);
+    const result = await executeTransaction(header, detail);
 
+    if (!result.error)
         return res.json(result);
-    }
-    catch (error) {
-
-        return res.status(500).json({
-            message: "Hubo un problema, intentelo más tarde"
-        });
-    }
+    else
+        return res.status(result.rescode).json(result);
 }
 
 exports.getCollectionPagination = async (req, res) => {
-    try {
-        const { parameters, methodCollection, methodCount } = req.body;
+    const { parameters, methodCollection, methodCount } = req.body;
 
-        setSessionParameters(parameters, req.user);
+    setSessionParameters(parameters, req.user);
 
-        const result = await triggerfunctions.getCollectionPagination(methodCollection, methodCount, parameters);
-        if (!result.error) {
-            res.json(result);
-        } else {
-            return res.status(500).json(result);
-        }
-    }
-    catch (error) {
-        return res.status(500).json({
-            error: true,
-            code: "UNEXPECTED_ERROR",
-            message: "Hubo un problema, intentelo más tarde"
-        });
+    const result = await getCollectionPagination(methodCollection, methodCount, parameters);
+    if (!result.error) {
+        res.json(result);
+    } else {
+        return res.status(result.rescode).json(result);
     }
 }
 exports.exportexcel = async (req, res) => {
@@ -92,7 +66,7 @@ exports.exportexcel = async (req, res) => {
         setSessionParameters(parameters, req.user);
 
         console.time(`exe-${method}`);
-        const result = await triggerfunctions.executesimpletransaction(method, parameters);
+        const result = await executesimpletransaction(method, parameters);
         console.timeEnd(`exe-${method}`);
 
         const titlefile = (parameters.titlefile ? parameters.titlefile : "report") + new Date().toISOString() + ".csv";
@@ -127,20 +101,20 @@ exports.exportexcel = async (req, res) => {
             console.time(`uploadcos`);
             s3.upload(params, (err, data) => {
                 if (err) {
-                    return res.status(500).json({ success: false, message: 'Hubo un error#1 en la carga de archivo.', err })
+                    return res.status(result.rescode).json({ success: false, message: 'Hubo un error#1 en la carga de archivo.', err })
                 }
                 console.timeEnd(`uploadcos`);
                 return res.json({ success: true, url: data.Location })
             });
         } else {
-            return res.status(500).json({
+            return res.status(result.rescode).json({
                 message: "Sin información para exportar"
             });
         }
     }
     catch (error) {
 
-        return res.status(500).json({
+        return res.status(result.rescode).json({
             message: "Hubo un problema, intentelo más tarde"
         });
     }
@@ -152,18 +126,18 @@ exports.export = async (req, res) => {
 
         setSessionParameters(parameters, req.user);
 
-        const result = await triggerfunctions.export(method, parameters);
+        const result = await exporttmp(method, parameters);
         res.json(result);
     }
     catch (error) {
 
-        return res.status(500).json({
+        return res.status(result.rescode).json({
             message: "Hubo un problema, intentelo más tarde"
         });
     }
 }
 
-exports.multiTransaction = async (req, res) => {
+exports.multiCollection = async (req, res) => {
     try {
         const datatmp = req.body;
         const data = datatmp.map(x => {
@@ -171,13 +145,13 @@ exports.multiTransaction = async (req, res) => {
             return x;
         })
 
-        const result = await triggerfunctions.executeMultiTransactions(data);
+        const result = await GetMultiCollection(data);
 
         return res.json({ success: true, data: result });
     }
     catch (error) {
         console.log(error);
-        return res.status(500).json({
+        return res.status(result.rescode).json({
             msg: "Hubo un problema, intentelo más tarde"
         });
     }
