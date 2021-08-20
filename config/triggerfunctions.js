@@ -55,10 +55,22 @@ exports.executesimpletransaction = async (method, data, permissions = false) => 
     }
 }
 
-exports.getCollectionPagination = async (methodcollection, methodcount, data) => {
-    if (functionsbd[methodcollection] && functionsbd[methodcount]) {
-        const querycollection = functionsbd[methodcollection];
-        const querycount = functionsbd[methodcount];
+exports.getCollectionPagination = async (methodcollection, methodcount, data, permissions = false) => {
+
+    try {
+        let functionMethod = functionsbd[methodcollection];
+
+    if (functionMethod && functionsbd[methodcount]) {
+
+        if (permissions && functionMethod.module) {
+            const application = permissions[functionMethod.module];
+            if (functionMethod.protected && (!application || ((functionMethod.protected === "SELECT" && !application[0]) || (functionMethod.protected === "INSERT" && !application[2])))) {
+                return getErrorCode(errors.FORBIDDEN);
+            }
+        }
+
+        const querycollection = functionMethod.query;
+        const querycount = functionsbd[methodcount].query;
 
         if (data instanceof Object) {
             data.where = generatefilter(data.filters, data.origin, data.daterange, data.offset);
@@ -90,6 +102,9 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data) =>
         }
     } else {
         return getErrorCode(errors.NOT_FUNCTION_ERROR);
+    }
+    } catch (error) {
+        return getErrorCode(errors.UNEXPECTED_ERROR);
     }
 }
 
@@ -130,11 +145,18 @@ exports.exporttmp = async (method, data) => {
     return response;
 }
 
-exports.GetMultiCollection = async (detail) => {
+exports.GetMultiCollection = async (detail, permissions = false) => {
     return await Promise.all(detail.map(async (item) => {
-        if (functionsbd[item.method]) {
-            const query = functionsbd[item.method];
-            const r = await sequelize.query(query, {
+        let functionMethod = functionsbd[item.method];
+        if (functionMethod) {
+            if (permissions && functionMethod.module) {
+                const application = permissions[functionMethod.module];
+                if (functionMethod.protected && (!application || ((functionMethod.protected === "SELECT" && !application[0]) || (functionMethod.protected === "INSERT" && !application[2])))) {
+                    return getErrorCode(errors.FORBIDDEN);
+                }
+            }
+            
+            const r = await sequelize.query(functionMethod.query, {
                 type: QueryTypes.SELECT,
                 bind: item.parameters
             }).catch(err => getErrorSeq(err));
@@ -153,17 +175,25 @@ exports.GetMultiCollection = async (detail) => {
     }))
 }
 
-exports.executeTransaction = async (header, detail) => {
+exports.executeTransaction = async (header, detail, permissions = false) => {
     let detailtmp = detail;
     const transaction = await sequelize.transaction();
 
     let lasterror = null;
     if (header) {
         const { method, parameters } = header;
-        if (functionsbd[method]) {
-            let query = functionsbd[method];
+
+        let functionMethod = functionsbd[method];
+        if (functionMethod) {
+            if (permissions && functionMethod.module) {
+                const application = permissions[functionMethod.module];
+                if (functionMethod.protected && (!application || ((functionMethod.protected === "SELECT" && !application[0]) || (functionMethod.protected === "INSERT" && !application[2])))) {
+                    return getErrorCode(errors.FORBIDDEN);
+                }
+            }
+
             if (parameters instanceof Object) {
-                const result = await sequelize.query(query, {
+                const result = await sequelize.query(functionMethod.query, {
                     type: QueryTypes.SELECT,
                     bind: parameters,
                     transaction

@@ -39,7 +39,7 @@ exports.executeTransaction = async (req, res) => {
         return x;
     })
 
-    const result = await executeTransaction(header, detail);
+    const result = await executeTransaction(header, detail, req.user.menu || {});
 
     if (!result.error)
         return res.json(result);
@@ -52,7 +52,7 @@ exports.getCollectionPagination = async (req, res) => {
 
     setSessionParameters(parameters, req.user);
 
-    const result = await getCollectionPagination(methodCollection, methodCount, parameters);
+    const result = await getCollectionPagination(methodCollection, methodCount, parameters, req.user.menu || {});
     if (!result.error) {
         res.json(result);
     } else {
@@ -145,7 +145,7 @@ exports.multiCollection = async (req, res) => {
             return x;
         })
 
-        const result = await GetMultiCollection(data);
+        const result = await GetMultiCollection(data, req.user.menu || {});
 
         return res.json({ success: true, data: result });
     }

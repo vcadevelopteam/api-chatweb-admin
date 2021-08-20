@@ -71,33 +71,33 @@ module.exports = {
     },
     UFN_GROUPCONFIGURATION_SEL: {
         query: "SELECT * FROM ufn_groupconfiguration_sel($corpid, $orgid, $id, $username, $all)",
-        module: "",
+        module: "/extras/groupconfig",
         protected: "SELECT"
     },
     UFN_GROUPCONFIGURATION_INS: {
         query: "SELECT * FROM ufn_groupconfiguration_ins($corpid, $orgid, $id, $operation, $domainid, $description, $type, $status, $username, $quantity, $validationtext)",
-        module: "",
-        protected: "SELECT"
+        module: "/extras/groupconfig",
+        protected: "INSERT"
     },
     UFN_WHITELIST_SEL: {
         query: "SELECT * FROM ufn_whitelist_sel($corpid, $orgid, $username, $id, $all)",
-        module: "",
+        module: "/extras/whitelist",
         protected: "SELECT"
     },
     UFN_WHITELIST_INS: {
         query: "SELECT * FROM ufn_whitelist_ins($corpid,$orgid,$id,$operation,$documenttype,$documentnumber,$usergroup,$type,$status,$asesorname,$username)",
-        module: "",
-        protected: "SELECT"
+        module: "/extras/whitelist",
+        protected: "INSERT"
     },
     UFN_INAPPROPRIATEWORDS_SEL: {
         query: "SELECT * FROM ufn_inappropriatewords_sel($corpid, $orgid,$id, $username)",
-        module: "",
+        module: "/extras/inappropriatewords",
         protected: "SELECT"
     },
     UFN_INAPPROPRIATEWORDS_INS: {
         query: "SELECT * FROM ufn_inappropriatewords_ins($id,$corpid, $orgid, $description,$status,$type,$username,$operation)",
-        module: "",
-        protected: "SELECT"
+        module: "/extras/inappropriatewords",
+        protected: "INSERT"
     },
     UFN_PERSON_TOTALRECORDS: {
         query: "SELECT * FROM ufn_person_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset)",
@@ -106,48 +106,48 @@ module.exports = {
     },
     UFN_PERSON_SEL: {
         query: "SELECT  * FROM ufn_person_sel($corpid, $orgid, $username, $where, $order, $take, $skip, $startdate, $enddate, $offset)",
-        module: "",
+        module: "/extras/person",
         protected: "SELECT"
     },
     UFN_INTELLIGENTMODELS_SEL: {
         query: "SELECT * FROM ufn_intelligentmodels_sel($corpid,$orgid,$username,$id,$all)",    
-        module: "",
+        module: "/extras/intelligentmodels",
         protected: "SELECT"
     },
     UFN_INTELLIGENTMODELS_INS: {
         query: "SELECT * FROM ufn_intelligentmodels_ins($corpid,$orgid,$id,$operation,$description,$endpoint ,$modelid ,$provider ,$apikey ,$type ,$status ,$username) ",
-        module: "",
-        protected: "SELECT"
+        module: "/extras/intelligentmodels",
+        protected: "INSERT"
     },
     UFN_SLA_SEL: {
         query: "SELECT * FROM ufn_sla_sel($corpid ,$orgid ,$id ,$username ,$all)",    
-        module: "",
+        module: "/extras/sla",
         protected: "SELECT"
     },
     UFN_SLA_INS: {
         query: "SELECT * FROM ufn_sla_ins( $corpid, $orgid, $id, $description, $type, $company, $communicationchannelid, $usergroup, $status, $totaltmo, $totaltmomin, $totaltmopercentmax, $totaltmopercentmin, $usertmo, $usertmomin, $usertmopercentmax, $usertmopercentmin, $tme, $tmemin, $tmepercentmax, $tmepercentmin, $usertme, $usertmemin, $usertmepercentmax, $usertmepercentmin, $productivitybyhour, $username, $operation)",
-        module: "",
-        protected: "SELECT"
+        module: "/extras/sla",
+        protected: "INSERT"
     },
     UFN_DOMAIN_SEL: {
         query: "SELECT * FROM ufn_domain_sel($corpid ,$orgid ,$domainname  ,$username ,$all)",    
-        module: "",
+        module: "/extras/domains",
         protected: "SELECT"
     },
     UFN_DOMAIN_VALUES_SEL: {
         query: "SELECT * FROM ufn_domain_values_sel($corpid ,$orgid ,$domainname  ,$username ,$all)",    
-        module: "",
+        module: "/extras/domains",
         protected: "SELECT"
     },
     UFN_DOMAIN_INS: {
         query: "SELECT * FROM ufn_domain_ins($id ,$corpid ,$orgid ,$domainname  ,$username ,$operation )",
-        module: "",
-        protected: "SELECT"
+        module: "/extras/domains",
+        protected: "INSERT"
     },
     UFN_DOMAIN_VALUES_INS: {
         query: "SELECT * FROM ufn_domain_value_ins($id ,$corpid ,$orgid ,$domainname  ,$description ,$domainvalue ,$domaindesc,$system,$status,$type ,$bydefault,$username,$operation)",
-        module: "",
-        protected: "SELECT"
+        module: "/extras/domains",
+        protected: "INSERT"
     },
     UFN_CLASSIFICATION_SEL: {
         query: "SELECT * FROM ufn_classification_sel($corpid ,$orgid ,$id  ,$username ,$all)",    
@@ -161,18 +161,13 @@ module.exports = {
     },
     UFN_QUICKREPLY_SEL: {
         query: "SELECT * FROM ufn_quickreply_sel($corpid ,$orgid ,$id  ,$username ,$all)",    
-        module: "",
+        module: "/extras/quickreplies",
         protected: "SELECT"
     },
     UFN_QUICKREPLY_INS: {
         query: "SELECT * FROM ufn_quickreply_ins($corpid,$orgid,$id,$classificationid,$description,$quickreply,$status,$type,$username,$operation)",    
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_PERSON_INS: {
-        query: "SELECT * FROM ufn_quickreply_ins($id,$corpid,$orgid,$groups,$status,$type,$persontype,$personstatus,$phone,$email,$birthday,$alternativephone,$alternativeemail,$documenttype,$documentnumber,$firstname,$lastname,$sex,$gender,$civilstatus,$occupation,$educationlevel,$referringpersonid,$username,$operation)",    
-        module: "",
-        protected: "SELECT"
+        module: "/extras/quickreplies",
+        protected: "INSERT"
     },
     UFN_CORPBYUSER_LST: {
         query: "SELECT * FROM ufn_corpbyuser_lst($userid)",
