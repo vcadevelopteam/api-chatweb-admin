@@ -42,7 +42,7 @@ module.exports = {
     UFN_CORPBYUSER_LST: "SELECT * FROM ufn_corpbyuser_lst($userid)",
     UFN_ORGBYCORLST: "SELECT * FROM ufn_orgbycorlst($corpid)",
     UFN_COMMUNICATIONCHANNELBYORG_LST: "SELECT * FROM ufn_communicationchannelbyorg_lst($orgid)",
-    UFN_DOMAIN_LST_VALORES: "SELECT * FROM ufn_ddsdsadomain_lst_valores($corpid,$orgid,$domainname)",
+    UFN_DOMAIN_LST_VALORES: "SELECT * FROM ufn_domain_lst_valores($corpid,$orgid,$domainname)",
     UFN_USERTOKEN_INS: "select * from ufn_usertoken_ins($userid, $token, $origin)",
     UFN_USERSTATUS_UPDATE: "select * from ufn_userstatus_update($userid, $orgid, $type, $username, $status, $motive, $description)",
     UFN_USERTOKEN_SEL: "SELECT * FROM ufn_usertoken_sel($corpid,$orgid,$userid, $token)",
