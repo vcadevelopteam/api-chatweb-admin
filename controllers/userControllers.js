@@ -52,7 +52,7 @@ exports.manage = async (req, res) => {
         });
     }
 }
-exports.changepassword= async (req,res) =>{
+exports.changepassword = async (req,res) =>{
     try {  
         const { pwdnuevo,userid,type, usr, status, firstname, lastname, email, pwd } = req.body;
         
@@ -91,51 +91,6 @@ exports.changepassword= async (req,res) =>{
             msg: 'Contraseña actualizada'
         });
         return res;
-    }
-    catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
-
-    }
-}
-
-exports.insertUser = async (req, res) => {
-    try {  
-        const { pwd, usr, firstname, lastname, email } = req.body.data;
-        
-        let resultuser;
-        try{
-            resultuser = await triggerfunctions.executequery(`select 1 from usr where usr = '${usr}'`);
-        }catch (error){
-
-        }
-        if (resultuser.length>0) {
-            return res.status(500).json({
-                msg: "El usuario ya fue registrado"
-            });
-        }
-        const salt = await bcryptjs.genSalt(10);
-        const data = {
-            pwd: await bcryptjs.hash(pwd, salt),
-            id: 0,
-            status: "ACTIVO",
-            type: "NINGUNO",
-            usr: usr,
-            firstname: firstname,
-            lastname: lastname,
-            email: email,
-            operation: "INSERT",
-            username: "admin"
-        }
-        
-        const result = await triggerfunctions.executesimpletransaction('UFN_USER_INS', data);
-        
-        res.json({
-            result,
-            msg: 'Usuario creado correctamente.'
-        });
     }
     catch (error) {
         console.log(error);

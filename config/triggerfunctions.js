@@ -19,7 +19,7 @@ const getErrorSeq = err => {
 const getErrorCode = code => ({
     success: false,
     error: true,
-    rescode: 400,
+    rescode: code === errors.FORBIDDEN ? 401 : 400,
     code: code || errors.UNEXPECTED_ERROR
 });
 
@@ -30,9 +30,18 @@ exports.executequery = async (query) => {
     }).catch(err => getErrorSeq(err));
 }
 
-exports.executesimpletransaction = async (method, data) => {
-    if (functionsbd[method]) {
-        let query = functionsbd[method];
+exports.executesimpletransaction = async (method, data, permissions = false) => {
+    let functionMethod = functionsbd[method];
+    if (functionMethod) {
+        if (permissions && functionMethod.module) {
+            const application = permissions[functionMethod.module];
+
+            if (functionMethod.protected && (!application || ((functionMethod.protected === "SELECT" && !application[0]) || (functionMethod.protected === "INSERT" && !application[2])))) {
+                return getErrorCode(errors.FORBIDDEN);
+            }
+        }
+
+        const query = functionMethod.query;
         if (data instanceof Object) {
             return await sequelize.query(query, {
                 type: QueryTypes.SELECT,

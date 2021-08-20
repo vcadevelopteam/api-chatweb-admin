@@ -16,7 +16,7 @@ exports.GetCollection = async (req, res) => {
 
     setSessionParameters(parameters, req.user);
 
-    const result = await executesimpletransaction(method, parameters);
+    const result = await executesimpletransaction(method, parameters, req.user.menu || {});
 
     if (result instanceof Array)
         return res.json({ error: false, success: true, data: result });

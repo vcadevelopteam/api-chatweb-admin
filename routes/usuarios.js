@@ -3,9 +3,6 @@ const router = express.Router();
 const usuarioController = require("../controllers/userControllers");
 const auth = require('../middleware/auth');
 
-router.post("/",
-    usuarioController.insertUser
-)
 
 router.post("/manage",
     auth,

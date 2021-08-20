@@ -47,9 +47,7 @@ exports.authenticate = async (req, res) => {
             user.token = tokenzyx;
             delete user.pwd;
 
-            jwt.sign({ user }, (process.env.SECRETA ? process.env.SECRETA : "palabrasecreta"), {
-                expiresIn: 60 * 60 * 24
-            }, (error, token) => {
+            jwt.sign({ user: { ...user } }, (process.env.SECRETA ? process.env.SECRETA : "palabrasecreta"), {}, (error, token) => {
                 if (error) throw error;
                 delete user.corpid;
                 delete user.orgid;
@@ -84,9 +82,24 @@ exports.authenticate = async (req, res) => {
 
 exports.getUser = async (req, res) => {
     try {
-        delete req.user.token;
         const resultApps = await tf.executesimpletransaction("UFN_APPLICATION_SEL", req.user);
-        res.json({ data: { ...req.user, menu: resultApps }, error: false });
+
+        const menu = resultApps.reduce((acc, item) => ({
+            ...acc, [item.path]:
+                [item.view ? 1 : 0,
+                item.modify ? 1 : 0,
+                item.insert ? 1 : 0,
+                item.delete ? 1 : 0]
+        }), {})
+
+        jwt.sign({ user: { ...req.user, menu: { ...menu, "system-label": undefined, "/": undefined } } }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
+            if (error) throw error;
+            delete req.user.token;
+            delete req.user.corpid;
+            delete req.user.orgid;
+            delete req.user.userid;
+            return res.json({ data: { ...req.user, menu, token } });
+        })
     } catch (error) {
         return res.status(500).json({
             message: "Hubo un problema, intentelo más tarde",
