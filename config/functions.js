@@ -1,13 +1,11 @@
 module.exports = {
-    
-    
     QUERY_AUTHENTICATED: "select org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.lastname, us.email, us.status, us.lastuserstatus, ous.redirect, role.description roledesc from usr us inner join orguser ous on ous.userid = us.userid inner join org org on org.orgid = ous.orgid inner join corp corp on corp.corpid = ous.corpid inner join role role on role.roleid = ous.roleid where us.usr = $usr and ous.bydefault limit 1",
     UFN_CORP_ORG_SEL: "SELECT * FROM ufn_corp_org_sel($corpid, $id, $username, $all)",
     UFN_CORSEL: "SELECT * FROM ufn_corsel($corpid, $orgid, $id, $username, $all)",
     UFN_USER_SEL: "SELECT * FROM ufn_user_sel($corpid, $orgid, $id, $username, $all)",
     UFN_APPLICATION_SEL: "SELECT * FROM ufn_application_sel($corpid, $orgid, $userid)",
     UFN_ORGUSER_SEL: "SELECT * FROM ufn_orguser_sel($corpid, $orgid, $userid, $username, $all)",
-    UFN_ORGUSER_INS: "SELECT * FROM ufdddddddn_orguser_ins($corpid, $orgid, $p_userid, $roleid, $usersupervisor, $bydefault, $labels, $groups, $channels, $status,$type, $defaultsort, $username, $operation, $redirect)",
+    UFN_ORGUSER_INS: "SELECT * FROM ufn_orguser_ins($corpid, $orgid, $p_userid, $roleid, $usersupervisor, $bydefault, $labels, $groups, $channels, $status,$type, $defaultsort, $username, $operation, $redirect)",
     UFN_USER_INS: "SELECT * FROM ufn_user_ins($id, $usr, $doctype, $docnum, $password, $firstname, $lastname, $email, $pwdchangefirstlogin, $type, $status,$description, $username, $operation, $company, $twofactorauthentication, $registercode, $billinggroup)",
     UFN_COMMUNICATIONCHANNEL_LST: "SELECT * FROM ufn_communicationchannel_lst($corpid, $orgid)",
     UFN_PROPERTY_SEL: "SELECT * FROM ufn_property_sel($corpid,$orgid,$id,$username,$all, $offset)" ,
@@ -36,9 +34,7 @@ module.exports = {
     UFN_CLASSIFICATION_INS: "SELECT * FROM ufn_classification_ins($id,$corpid,$orgid,$description,$parent,$communicationchannel,$status,$type,$username,$operation,$jobplan,$usergroup,$schedule)",    
     UFN_QUICKREPLY_SEL: "SELECT * FROM ufn_quickreply_sel($corpid ,$orgid ,$id  ,$username ,$all)",    
     UFN_QUICKREPLY_INS: "SELECT * FROM ufn_quickreply_ins($corpid,$orgid,$id,$classificationid,$description,$quickreply,$status,$type,$username,$operation)",    
-    // UFN_PERSON_SEL: "SELECT * FROM ufn_person_sel($corpid ,$orgid ,$id  ,$username ,$all)",    
     UFN_PERSON_INS: "SELECT * FROM ufn_quickreply_ins($id,$corpid,$orgid,$groups,$status,$type,$persontype,$personstatus,$phone,$email,$birthday,$alternativephone,$alternativeemail,$documenttype,$documentnumber,$firstname,$lastname,$sex,$gender,$civilstatus,$occupation,$educationlevel,$referringpersonid,$username,$operation)",    
-
     UFN_CORPBYUSER_LST: "SELECT * FROM ufn_corpbyuser_lst($userid)",
     UFN_ORGBYCORLST: "SELECT * FROM ufn_orgbycorlst($corpid)",
     UFN_COMMUNICATIONCHANNELBYORG_LST: "SELECT * FROM ufn_communicationchannelbyorg_lst($orgid)",
