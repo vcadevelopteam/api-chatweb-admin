@@ -6,13 +6,14 @@ const { QueryTypes } = require('sequelize');
 require('pg').defaults.parseInt8 = true;
 
 const getErrorSeq = err => {
-    console.log(`${new Date()}: ${err.toString()}: ${JSON.stringify(err)}`);
     const messageerror = err.toString().replace("SequelizeDatabaseError: ", "");
+    console.log(`${new Date()}: ${err.parent.code}-${messageerror}`);
+    const codeError = (err.parent.code === 'P0001') ? messageerror : err.parent.code;
     return {
         success: false,
         error: true,
-        rescode: (err.parent.code === 'P0001' && messageerror === errors.FORBIDDEN) ? 403 : 400,
-        code: (err.parent.code === 'P0001') ? messageerror : errors.UNEXPECTED_DB_DBERROR
+        rescode: 400,
+        code: errors[codeError] || errors.UNEXPECTED_DB_DBERROR
     };
 };
 
