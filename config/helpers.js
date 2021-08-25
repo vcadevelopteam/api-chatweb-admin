@@ -91,6 +91,14 @@ exports.errors = {
     UNEXPECTED_ERROR: "UNEXPECTED_ERROR",
     FORBIDDEN: "E-ZYX-FORBIDDEN",
     
+    LOGIN_USER_INCORRECT: "LOGIN_USER_INCORRECT",
+    LOGIN_USER_PENDING: "LOGIN_USER_PENDING",
+    LOGIN_LOCKED_BY_ATTEMPTS_FAILED_PASSWORD: "LOGIN_LOCKED_BY_ATTEMPTS_FAILED_PASSWORD",
+    LOGIN_LOCKED_BY_INACTIVED: "LOGIN_LOCKED_BY_INACTIVED",
+    LOGIN_LOCKED_BY_PASSWORD_EXPIRED: "LOGIN_LOCKED_BY_PASSWORD_EXPIRED",
+    LOGIN_LOCKED: "LOGIN_LOCKED",
+    LOGIN_USER_INACTIVE: "LOGIN_USER_INACTIVE",
+
     "23505": "ALREADY_EXISTS_RECORD",
     "E-ZYX-23505": "ALREADY_EXISTS_RECORD",
     "22012": "DIVISON_BY_ZERO",
@@ -104,3 +112,26 @@ exports.errors = {
     "42883": "FUNCTION_NOT_EXISTS",
     
 }
+
+exports.getErrorSeq = err => {
+    const messageerror = err.toString().replace("SequelizeDatabaseError: ", "");
+    console.log(`${new Date()}: ${err.parent.code}-${messageerror}`);
+    const codeError = (err.parent.code === 'P0001') ? messageerror : err.parent.code;
+    return {
+        success: false,
+        error: true,
+        rescode: 400,
+        code: errors[codeError] || errors.UNEXPECTED_DB_DBERROR
+    };
+};
+
+exports.getErrorCode = (code, error = false) => {
+    if (error)
+        console.log(`${new Date()}: ${JSON.stringify(error)}`);
+    return {
+        success: false,
+        error: true,
+        rescode: code === errors.FORBIDDEN ? 401 : 400,
+        code: code || errors.UNEXPECTED_ERROR
+    }
+};

@@ -2,6 +2,7 @@ require('dotenv').config({ path: 'process.env' });
 const tf = require('../config/triggerfunctions');;
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { errors, getErrorCode } = require('../config/helpers');
 
 function uuidv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -17,13 +18,13 @@ exports.authenticate = async (req, res) => {
         const result = await tf.executesimpletransaction("QUERY_AUTHENTICATED", { usr });
 
         if (!result instanceof Array || result.length === 0)
-            return res.status(401).json({ message: "El usuario no existe", code: "USER_INCORRECT" });
+            return res.status(401).json({ code: errors.LOGIN_USER_INCORRECT });
 
         const user = result[0];
         const ispasswordmatch = await bcryptjs.compare(password, user.pwd)
 
         if (!ispasswordmatch)
-            return res.status(401).json({ message: "Contraseña incorrecta", code: "PASSWORD_INCORRECT" })
+            return res.status(401).json({ code: errors.LOGIN_USER_INCORRECT })
 
         const tokenzyx = uuidv4();
 
@@ -55,28 +56,22 @@ exports.authenticate = async (req, res) => {
                 return res.json({ data: { ...user, token }, success: true });
             })
         } else if (user.status === 'PENDIENTE') {
-            return res.status(401).json({ message: "Tu usuario está pendiente de confirmación", code: "USER_PENDING" })
+            return res.status(401).json({ code: errors.LOGIN_USER_PENDING })
         } else if (user.status === 'BLOQUEADO') {
             if (user.lastuserstatus === 'INTENTOSFALLIDOS') {
-                return res.status(401).json({ message: "Tu usuario fue bloqueado por exceder los intentos permitidos al loguearse.", code: "LOCKED_BY_ATTEMPTS_FAILED_PASSWORD" })
+                return res.status(401).json({ code: errors.LOGIN_LOCKED_BY_ATTEMPTS_FAILED_PASSWORD })
             } else if (user.lastuserstatus === 'INACTIVITY') {
-                return res.status(401).json({ message: "Tu usuario fue bloqueado por exceder los dias permitidos sin conectarse.", code: "LOCKED_BY_INACTIVED" })
+                return res.status(401).json({ code: errors.LOGIN_LOCKED_BY_INACTIVED })
             } else if (user.lastuserstatus === 'PASSEXPIRED') {
-                return res.status(401).json({ message: "Tu usuario fue bloqueado por qué tu contraseña expiró.", code: "LOCKED_BY_PASSWORD_EXPIRED" })
+                return res.status(401).json({ code: errors.LOGIN_LOCKED_BY_PASSWORD_EXPIRED })
             } else {
-                return res.status(401).json({ message: "Tu usuario fue bloqueado.", code: "LOCKED" })
+                return res.status(401).json({ code: errors.LOGIN_LOCKED })
             }
         } else {
-            return res.status(401).json({ message: "Tu usuario está inactivo", code: "USER_INACTIVE" })
+            return res.status(401).json({ code: errors.LOGIN_USER_INACTIVE })
         }
-
     } catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            success: false,
-            code: "ERROR_DB",
-            message: "Hubo un problema, intentelo más tarde"
-        });
+        return res.status(500).json(getErrorCode(null, error));
     }
 }
 
@@ -101,20 +96,15 @@ exports.getUser = async (req, res) => {
             return res.json({ data: { ...req.user, menu, token } });
         })
     } catch (error) {
-        return res.status(500).json({
-            message: "Hubo un problema, intentelo más tarde",
-            code: "ERROR_AUTH",
-        });
+        return res.status(500).json(getErrorCode(null, error));
     }
 }
 
 exports.logout = async (req, res) => {
     try {
         tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", { ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
-
     } catch (error) {
-        console.log(error);
+        console.log(`${new Date()}: ${JSON.stringify(error)}`);
     }
-
     return res.json({ data: null, error: false })
 }

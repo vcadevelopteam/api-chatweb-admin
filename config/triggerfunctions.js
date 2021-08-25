@@ -1,28 +1,9 @@
 const sequelize = require('./database');
 const functionsbd = require('./functions');
-const { generatefilter, generateSort, errors } = require('./helpers');
+const { generatefilter, generateSort, errors, getErrorSeq, getErrorCode } = require('./helpers');
 
 const { QueryTypes } = require('sequelize');
 require('pg').defaults.parseInt8 = true;
-
-const getErrorSeq = err => {
-    const messageerror = err.toString().replace("SequelizeDatabaseError: ", "");
-    console.log(`${new Date()}: ${err.parent.code}-${messageerror}`);
-    const codeError = (err.parent.code === 'P0001') ? messageerror : err.parent.code;
-    return {
-        success: false,
-        error: true,
-        rescode: 400,
-        code: errors[codeError] || errors.UNEXPECTED_DB_DBERROR
-    };
-};
-
-const getErrorCode = code => ({
-    success: false,
-    error: true,
-    rescode: code === errors.FORBIDDEN ? 401 : 400,
-    code: code || errors.UNEXPECTED_ERROR
-});
 
 exports.executequery = async (query) => {
     return await sequelize.query(query, {
@@ -41,7 +22,6 @@ exports.executesimpletransaction = async (method, data, permissions = false) => 
                 return getErrorCode(errors.FORBIDDEN);
             }
         }
-
         const query = functionMethod.query;
         if (data instanceof Object) {
             return await sequelize.query(query, {
