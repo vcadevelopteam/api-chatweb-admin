@@ -164,6 +164,11 @@ module.exports = {
         module: "/extras/quickreplies",
         protected: "SELECT"
     },
+    UFN_ORG_SEL: {
+        query: "SELECT * FROM ufn_org_sel($corpid ,$orgid ,$all)",    
+        module: "/extras/quickreplies",
+        protected: "SELECT"
+    },
     UFN_QUICKREPLY_INS: {
         query: "SELECT * FROM ufn_quickreply_ins($corpid,$orgid,$id,$classificationid,$description,$quickreply,$status,$type,$username,$operation)",    
         module: "/extras/quickreplies",
