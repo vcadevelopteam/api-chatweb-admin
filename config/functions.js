@@ -175,7 +175,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_QUICKREPLY_INS: {
-        query: "SELECT * FROM ufn_quickreply_ins($corpid,$orgid,$id,$classificationid,$description,$quickreply,$status,$type,$username,$operation)",    
+        query: "SELECT * FROM ufn_quickreply_ins($corpid,$orgid,$id,$classificationid,$description,$quickreply,$status,$type,$username,$operation,$orggroupid,$timezoneoffset,$timezone)",    
         module: "/extras/quickreplies",
         protected: "INSERT"
     },
