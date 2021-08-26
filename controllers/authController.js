@@ -12,10 +12,22 @@ function uuidv4() {
 }
 
 exports.authenticate = async (req, res) => {
-    const { data: { usr, password } } = req.body;
-
+    const { data: { usr, password, facebookid, googleid } } = req.body;
+    let integration = false;
     try {
-        const result = await tf.executesimpletransaction("QUERY_AUTHENTICATED", { usr });
+        let result;
+        if (facebookid) {
+            result = await tf.executesimpletransaction("QUERY_AUTHENTICATED_BY_FACEBOOKID", { usr });
+            integration = true;
+        } else if (googleid) {
+            result = await tf.executesimpletransaction("QUERY_AUTHENTICATED_BY_GOOGLEID", { facebookid });
+            integration = true;
+        } else {
+            result = await tf.executesimpletransaction("QUERY_AUTHENTICATED", { googleid });
+        }
+
+        if (integration)
+            return res.status(401).json({ code: errors.LOGIN_NO_INTEGRATION });
 
         if (!result instanceof Array || result.length === 0)
             return res.status(401).json({ code: errors.LOGIN_USER_INCORRECT });
