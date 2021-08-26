@@ -83,8 +83,7 @@ exports.setSessionParameters = (parameters, user) => {
 
     return parameters;
 }
-
-exports.errors = {
+const errorstmp = {
     VARIABLE_INCOMPATIBILITY_ERROR: "VARIABLE_INCOMPATIBILITY_ERROR",
     NOT_FUNCTION_ERROR: "NOT_FUNCTION_ERROR",
     UNEXPECTED_DB_DBERROR: "UNEXPECTED_DB_ERROR",
@@ -99,6 +98,7 @@ exports.errors = {
     LOGIN_LOCKED: "LOGIN_LOCKED",
     LOGIN_USER_INACTIVE: "LOGIN_USER_INACTIVE",
     LOGIN_NO_INTEGRATION: "LOGIN_NO_INTEGRATION",
+    PARAMETER_IS_MISSING: "PARAMETER_IS_MISSING",
 
     "23505": "ALREADY_EXISTS_RECORD",
     "E-ZYX-23505": "ALREADY_EXISTS_RECORD",
@@ -110,19 +110,20 @@ exports.errors = {
     "E-ZYX-23502": "NULL_NOT_ALLOWED",
     "42601": "SINTAX_ERROR",
     "E-ZYX-42601": "SINTAX_ERROR",
-    "42883": "FUNCTION_NOT_EXISTS",
-    
+    "42883": "FUNCTION_NOT_EXISTS",   
 }
+exports.errors = errorstmp;
 
 exports.getErrorSeq = err => {
     const messageerror = err.toString().replace("SequelizeDatabaseError: ", "");
-    console.log(`${new Date()}: ${err.parent.code}-${messageerror}`);
-    const codeError = (err.parent.code === 'P0001') ? messageerror : err.parent.code;
+    const errorcode = messageerror.includes("Named bind parameter") ? "PARAMETER_IS_MISSING" : err.parent.code;
+    console.log(`${new Date()}: ${errorcode}-${messageerror}`);
+    const codeError = (errorcode === 'P0001') ? messageerror : errorcode;
     return {
         success: false,
         error: true,
         rescode: 400,
-        code: errors[codeError] || errors.UNEXPECTED_DB_DBERROR
+        code: errorstmp[codeError] || errorstmp.UNEXPECTED_DB_DBERROR
     };
 };
 
@@ -132,7 +133,7 @@ exports.getErrorCode = (code, error = false) => {
     return {
         success: false,
         error: true,
-        rescode: code === errors.FORBIDDEN ? 401 : 400,
-        code: code || errors.UNEXPECTED_ERROR
+        rescode: code === error.FORBIDDEN ? 401 : 400,
+        code: code || error.UNEXPECTED_ERROR
     }
 };

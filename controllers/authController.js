@@ -17,26 +17,27 @@ exports.authenticate = async (req, res) => {
     try {
         let result;
         if (facebookid) {
-            result = await tf.executesimpletransaction("QUERY_AUTHENTICATED_BY_FACEBOOKID", { usr });
+            result = await tf.executesimpletransaction("QUERY_AUTHENTICATED_BY_FACEBOOKID", { facebookid });
             integration = true;
         } else if (googleid) {
-            result = await tf.executesimpletransaction("QUERY_AUTHENTICATED_BY_GOOGLEID", { facebookid });
+            result = await tf.executesimpletransaction("QUERY_AUTHENTICATED_BY_GOOGLEID", { googleid });
             integration = true;
         } else {
-            result = await tf.executesimpletransaction("QUERY_AUTHENTICATED", { googleid });
+            result = await tf.executesimpletransaction("QUERY_AUTHENTICATED", { usr });
         }
 
-        if (integration)
+        if (integration && !(result instanceof Array))
             return res.status(401).json({ code: errors.LOGIN_NO_INTEGRATION });
-
+        
         if (!result instanceof Array || result.length === 0)
             return res.status(401).json({ code: errors.LOGIN_USER_INCORRECT });
 
         const user = result[0];
-        const ispasswordmatch = await bcryptjs.compare(password, user.pwd)
-
-        if (!ispasswordmatch)
-            return res.status(401).json({ code: errors.LOGIN_USER_INCORRECT })
+        if (!integration) {
+            const ispasswordmatch = await bcryptjs.compare(password, user.pwd)
+            if (!ispasswordmatch)
+                return res.status(401).json({ code: errors.LOGIN_USER_INCORRECT })
+        }
 
         const tokenzyx = uuidv4();
 
@@ -83,6 +84,7 @@ exports.authenticate = async (req, res) => {
             return res.status(401).json({ code: errors.LOGIN_USER_INACTIVE })
         }
     } catch (error) {
+        console.log(error);
         return res.status(500).json(getErrorCode(null, error));
     }
 }
