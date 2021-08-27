@@ -214,4 +214,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CLASSIFICATION_TREE_SEL: {
+        query: "SELECT * FROM ufn_classification_tree_sel($corpid,$orgid,$classificationid,$type)",
+        module: "",
+        protected: "SELECT"
+    },
 }
