@@ -219,6 +219,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CLASSIFICATION_QUICKREPLYTREE_SEL: {
+        query: "select * from ufn_classification_quickreplytree_sel($corpid, $orgid, $type)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_USERTOKEN_SEL: {
         query: "SELECT * FROM ufn_usertoken_sel($corpid,$orgid,$userid, $token)",
         module: "",
