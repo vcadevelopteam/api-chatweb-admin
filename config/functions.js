@@ -234,4 +234,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_MESSAGETEMPLATE_SEL: {
+        query: "SELECT * FROM ufn_messagetemplate_sel($corpid,$orgid,$id,$username, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_MESSAGETEMPLATE_INS: {
+        query: "SELECT * FROM ufn_messagetemplate_ins($corpid,$orgid,$id,$description,$type,$status,$hsmid,$namespace,$message,$category,$header,$buttons,$username,$operation)",
+        module: "",
+        protected: "INSERT"
+    },
 }
