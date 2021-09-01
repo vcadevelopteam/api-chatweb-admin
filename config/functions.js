@@ -244,4 +244,14 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_CLASSIFICATION_SEL: {
+        query: "SELECT * FROM ufn_classification_sel($corpid,$orgid,$id,$username, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CLASSIFICATION_INS: {
+        query: "SELECT * FROM ufn_classification_ins( $id, $corpid, $orgid, $description, $parent, $communicationchannel, $status, $type, $username, $operation, $jobplan, $usergroup, $schedule)",
+        module: "",
+        protected: "INSERT"
+    },
 }
