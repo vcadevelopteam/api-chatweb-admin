@@ -185,7 +185,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_QUICKREPLY_INS: {
-        query: "SELECT * FROM ufn_quickreply_ins($corpid,$orgid,$id,$classificationid,$description,$quickreply,$status,$type,$username,$operation,$orggroupid,$timezoneoffset,$timezone)",    
+        query: "SELECT * FROM ufn_quickreply_ins($corpid,$orgid,$id,$classificationid,$description,$quickreply,$status,$type,$username,$operation)",    
         module: "/extras/quickreplies",
         protected: "INSERT"
     },
@@ -241,6 +241,16 @@ module.exports = {
     },
     UFN_MESSAGETEMPLATE_INS: {
         query: "SELECT * FROM ufn_messagetemplate_ins($corpid,$orgid,$id,$description,$type,$status,$name,$namespace,$category,$language,$templatetype,$headerenabled,$headertype,$header,$body,$footerenabled,$footer,$buttonsenabled,$buttons,$username,$operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CLASSIFICATION_SEL: {
+        query: "SELECT * FROM ufn_classification_sel($corpid,$orgid,$id,$username, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CLASSIFICATION_INS: {
+        query: "SELECT * FROM ufn_classification_ins( $id, $corpid, $orgid, $description, $parent, $communicationchannel, $status, $type, $username, $operation, $tags, $jobplan, $usergroup, $schedule)",
         module: "",
         protected: "INSERT"
     },
