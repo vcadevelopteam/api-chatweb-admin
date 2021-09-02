@@ -259,4 +259,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_USERBYSUPERVISOR_SEL: {
+        query: "SELECT * FROM ufn_userbysupervisor_sel($corpid, $orgid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
