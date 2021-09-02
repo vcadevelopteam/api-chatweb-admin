@@ -185,7 +185,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_QUICKREPLY_INS: {
-        query: "SELECT * FROM ufn_quickreply_ins($corpid,$orgid,$id,$classificationid,$description,$quickreply,$status,$type,$username,$operation,$orggroupid,$timezoneoffset,$timezone)",    
+        query: "SELECT * FROM ufn_quickreply_ins($corpid,$orgid,$id,$classificationid,$description,$quickreply,$status,$type,$username,$operation)",    
         module: "/extras/quickreplies",
         protected: "INSERT"
     },
@@ -219,8 +219,43 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CLASSIFICATION_QUICKREPLYTREE_SEL: {
+        query: "select * from ufn_classification_quickreplytree_sel($corpid, $orgid, $type)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_USERTOKEN_SEL: {
         query: "SELECT * FROM ufn_usertoken_sel($corpid,$orgid,$userid, $token)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CLASSIFICATION_TREE_SEL: {
+        query: "SELECT * FROM ufn_classification_tree_sel($corpid,$orgid,$classificationid,$type)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_MESSAGETEMPLATE_SEL: {
+        query: "SELECT * FROM ufn_messagetemplate_sel($corpid,$orgid,$id,$username, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_MESSAGETEMPLATE_INS: {
+        query: "SELECT * FROM ufn_messagetemplate_ins($corpid,$orgid,$id,$description,$type,$status,$name,$namespace,$category,$language,$templatetype,$headerenabled,$headertype,$header,$body,$footerenabled,$footer,$buttonsenabled,$buttons,$username,$operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CLASSIFICATION_SEL: {
+        query: "SELECT * FROM ufn_classification_sel($corpid,$orgid,$id,$username, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CLASSIFICATION_INS: {
+        query: "SELECT * FROM ufn_classification_ins( $id, $corpid, $orgid, $description, $parent, $communicationchannel, $status, $type, $username, $operation, $tags, $jobplan, $usergroup, $schedule)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CLASSIFICATION_LST_PARENT: {
+        query: "SELECT * FROM ufn_classification_lst_parent($corpid,$orgid,$classificationid)",
         module: "",
         protected: "SELECT"
     },
