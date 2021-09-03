@@ -150,7 +150,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_DOMAIN_INS: {
-        query: "SELECT * FROM ufn_domain_ins($id ,$corpid ,$orgid ,$domainname  ,$username ,$operation )",
+        query: "SELECT * FROM ufn_domain_ins($id ,$corpid ,$orgid ,$domainname, $status  ,$username ,$operation )",
         module: "/extras/domains",
         protected: "INSERT"
     },
