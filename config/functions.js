@@ -259,9 +259,25 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_COMMUNICATIONCHANNEL_SEL: {
+        query: "SELECT * FROM ufn_communicationchannel_sel($corpid,$orgid,$communicationchannelid, $personcommunicationchannel, $username, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    
     UFN_USERBYSUPERVISOR_SEL: {
         query: "SELECT * FROM ufn_userbysupervisor_sel($corpid, $orgid, $userid)",
         module: "",
         protected: "SELECT"
+    },
+    UFN_INTEGRATIONMANAGER_SEL: {
+        query: "SELECT * FROM ufn_integrationmanager_sel($corpid,$orgid,$id,$username, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INTEGRATIONMANAGER_INS: {
+        query: "SELECT * FROM ufn_integrationmanager_ins($corpid,$orgid,$id,$description,$type,$status,$method,$url,$authorization,$headers,$bodytype,$body,$username,$operation)",
+        module: "",
+        protected: "INSERT"
     },
 }
