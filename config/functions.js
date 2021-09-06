@@ -280,6 +280,16 @@ module.exports = {
         module: "/supervisor",
         protected: "SELECT"
     },
+    UFN_CONVERSATION_SEL_INTERACTION: {
+        query: "SELECT * FROM ufn_conversation_sel_interaction($conversationid, $lock, $conversationold, $userid)",
+        module: "/supervisor",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_PERSON_SEL: {
+        query: "SELECT * FROM ufn_conversation_person_sel($personid)",
+        module: "/supervisor",
+        protected: "SELECT"
+    },
     UFN_INTEGRATIONMANAGER_SEL: {
         query: "SELECT * FROM ufn_integrationmanager_sel($corpid,$orgid,$id,$username, $all)",
         module: "",
