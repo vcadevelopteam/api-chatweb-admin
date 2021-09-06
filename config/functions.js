@@ -150,7 +150,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_DOMAIN_INS: {
-        query: "SELECT * FROM ufn_domain_ins($id ,$corpid ,$orgid ,$domainname  ,$username ,$operation )",
+        query: "SELECT * FROM ufn_domain_ins($id ,$corpid ,$orgid ,$domainname, $description, $type, $status  ,$username ,$operation )",
         module: "/extras/domains",
         protected: "INSERT"
     },
@@ -259,6 +259,12 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_COMMUNICATIONCHANNEL_SEL: {
+        query: "SELECT * FROM ufn_communicationchannel_sel($corpid,$orgid,$communicationchannelid, $personcommunicationchannel, $username, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    
     UFN_USERBYSUPERVISOR_SEL: {
         query: "SELECT * FROM ufn_userbysupervisor_sel($corpid, $orgid, $userid)",
         module: "/supervisor",
@@ -273,5 +279,15 @@ module.exports = {
         query: "SELECT * FROM ufn_conversation_sel_intent($conversationid)",
         module: "/supervisor",
         protected: "SELECT"
+    },
+    UFN_INTEGRATIONMANAGER_SEL: {
+        query: "SELECT * FROM ufn_integrationmanager_sel($corpid,$orgid,$id,$username, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INTEGRATIONMANAGER_INS: {
+        query: "SELECT * FROM ufn_integrationmanager_ins($corpid,$orgid,$id,$description,$type,$status,$method,$url,$authorization,$headers,$bodytype,$body,$username,$operation)",
+        module: "",
+        protected: "INSERT"
     },
 }
