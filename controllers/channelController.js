@@ -181,8 +181,10 @@ exports.InsertChannel = async (req, res) => {
                         };
 
                         parameters.servicecredentials = JSON.stringify(servicecredentials);
-                        parameters.motive = "Insert channel";
                         parameters.type = channelType;
+                        parameters.motive = "Insert channel";
+                        parameters.operation = "INSERT";
+                        parameters.status = "ACTIVO";
 
                         const resx = await triggerfunctions.executesimpletransaction(method, parameters);
 
@@ -234,6 +236,8 @@ exports.InsertChannel = async (req, res) => {
 
                     parameters.servicecredentials = JSON.stringify(servicecredentials);
                     parameters.motive = "Insert channel";
+                    parameters.operation = "INSERT";
+                    parameters.status = "ACTIVO";
                     parameters.type = "WHAD";
 
                     const resx = await triggerfunctions.executesimpletransaction(method, parameters);
