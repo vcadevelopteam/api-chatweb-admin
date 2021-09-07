@@ -296,7 +296,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INTEGRATIONMANAGER_INS: {
-        query: "SELECT * FROM ufn_integrationmanager_ins($corpid,$orgid,$id,$description,$type,$status,$method,$url,$authorization,$headers,$bodytype,$body,$parameters,$variables,$level,$frame,$fields,$username,$operation)",
+        query: "SELECT * FROM ufn_integrationmanager_ins($corpid,$orgid,$id,$description,$type,$status,$name,$method,$url,$authorization,$headers,$bodytype,$body,$parameters,$variables,$level,$fields,$username,$operation)",
         module: "",
         protected: "INSERT"
     },
