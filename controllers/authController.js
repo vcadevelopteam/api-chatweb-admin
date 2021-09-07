@@ -61,7 +61,7 @@ exports.authenticate = async (req, res) => {
             user.token = tokenzyx;
             delete user.pwd;
 
-            jwt.sign({ user: { ...user } }, (process.env.SECRETA ? process.env.SECRETA : "palabrasecreta"), {}, (error, token) => {
+            jwt.sign({ user }, (process.env.SECRETA ? process.env.SECRETA : "palabrasecreta"), {}, (error, token) => {
                 if (error) throw error;
                 delete user.corpid;
                 delete user.orgid;
