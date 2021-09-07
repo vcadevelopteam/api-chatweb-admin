@@ -267,7 +267,27 @@ module.exports = {
     
     UFN_USERBYSUPERVISOR_SEL: {
         query: "SELECT * FROM ufn_userbysupervisor_sel($corpid, $orgid, $userid)",
-        module: "",
+        module: "/supervisor",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_SEL_TICKETSBYUSER: {
+        query: "SELECT * FROM ufn_conversation_sel_ticketsbyuser($corpid, $orgid, $userid)",
+        module: "/supervisor",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_SEL_INTENT: {
+        query: "SELECT * FROM ufn_conversation_sel_intent($conversationid)",
+        module: "/supervisor",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_SEL_INTERACTION: {
+        query: "SELECT * FROM ufn_conversation_sel_interaction($conversationid, $lock, $conversationold, $userid)",
+        module: "/supervisor",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_PERSON_SEL: {
+        query: "SELECT * FROM ufn_conversation_person_sel($personid)",
+        module: "/supervisor",
         protected: "SELECT"
     },
     UFN_INTEGRATIONMANAGER_SEL: {
