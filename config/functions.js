@@ -139,6 +139,11 @@ module.exports = {
         module: "/extras/sla",
         protected: "INSERT"
     },
+    UFN_REPORT_SEL: {
+        query: "SELECT * FROM ufn_report_sel($corpid ,$orgid ,$reportname  ,$username ,$all)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
     UFN_DOMAIN_SEL: {
         query: "SELECT * FROM ufn_domain_sel($corpid ,$orgid ,$domainname  ,$username ,$all)",    
         module: "/extras/domains",
