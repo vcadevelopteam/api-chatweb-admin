@@ -283,7 +283,7 @@ exports.DeleteChannel = async (req, res) => {
             case "FBDM":
                 var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
-                const responseChannelRemove = await axios({
+                const responseChannelRemoveFBDM = await axios({
                     url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
                     method: 'post',
                     data: {
@@ -293,7 +293,7 @@ exports.DeleteChannel = async (req, res) => {
                     }
                 });
 
-                if (responseChannelRemove.data.success) {
+                if (responseChannelRemoveFBDM.data.success) {
                     var { parameters = {}, method } = req.body;
 
                     parameters.motive = "Delete channel";
@@ -316,7 +316,7 @@ exports.DeleteChannel = async (req, res) => {
                 else {
                     res.status(500).json({
                         success: false,
-                        msg: responseChannelRemove.data.operationMessage
+                        msg: responseChannelRemoveFBDM.data.operationMessage
                     });
                 }
                 break;
@@ -324,7 +324,7 @@ exports.DeleteChannel = async (req, res) => {
             case "FBWA":
                 var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
-                const responseChannelRemove = await axios({
+                const responseChannelRemoveFBWA = await axios({
                     url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
                     method: 'post',
                     data: {
@@ -334,7 +334,7 @@ exports.DeleteChannel = async (req, res) => {
                     }
                 });
 
-                if (responseChannelRemove.data.success) {
+                if (responseChannelRemoveFBWA.data.success) {
                      var { parameters = {}, method } = req.body;
                     
                     parameters.motive = "Delete channel";
@@ -357,7 +357,7 @@ exports.DeleteChannel = async (req, res) => {
                 else {
                     res.status(500).json({
                         success: false,
-                        msg: responseChannelRemove.data.operationMessage
+                        msg: responseChannelRemoveFBWA.data.operationMessage
                     });
                 }
                 break;
@@ -365,7 +365,7 @@ exports.DeleteChannel = async (req, res) => {
             case "INST":
                 var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
-                const responseChannelRemove = await axios({
+                const responseChannelRemoveINST = await axios({
                     url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
                     method: 'post',
                     data: {
@@ -375,7 +375,7 @@ exports.DeleteChannel = async (req, res) => {
                     }
                 });
 
-                if (responseChannelRemove.data.success) {
+                if (responseChannelRemoveINST.data.success) {
                     var { parameters = {}, method } = req.body;
                     
                     parameters.motive = "Delete channel";
@@ -398,7 +398,7 @@ exports.DeleteChannel = async (req, res) => {
                 else {
                     res.status(500).json({
                         success: false,
-                        msg: responseChannelRemove.data.operationMessage
+                        msg: responseChannelRemoveINST.data.operationMessage
                     });
                 }
                 break;
@@ -406,7 +406,7 @@ exports.DeleteChannel = async (req, res) => {
             case "WHAD":
                 var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
-                const responseChannelRemove = await axios({
+                const responseChannelRemoveWHAD = await axios({
                     url: `${URLBRIDGE}api/processlaraigo/whatsapp/managewhatsapplink`,
                     method: 'post',
                     data: {
@@ -416,7 +416,7 @@ exports.DeleteChannel = async (req, res) => {
                     }
                 });
 
-                if (responseChannelRemove.data.success) {
+                if (responseChannelRemoveWHAD.data.success) {
                     var { parameters = {}, method } = req.body;
                     
                     parameters.motive = "Delete channel";
@@ -439,7 +439,7 @@ exports.DeleteChannel = async (req, res) => {
                 else {
                     res.status(500).json({
                         success: false,
-                        msg: responseChannelRemove.data.operationMessage
+                        msg: responseChannelRemoveWHAD.data.operationMessage
                     });
                 }
                 break;
