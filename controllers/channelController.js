@@ -122,6 +122,7 @@ exports.GetLongToken = async (req, res) => {
 exports.InsertChannel = async (req, res) => {
     try {
         var { parameters = {}, method } = req.body;
+        var businessId = '';
 
         setSessionParameters(parameters, req.user);
 
@@ -146,6 +147,28 @@ exports.InsertChannel = async (req, res) => {
         parameters.updintegration = null;
         parameters.resolvelithium = null;
 
+        if (req.body.type === 'INSTAGRAM') {
+            const responseGetBusiness = await axios({
+                url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
+                method: 'post',
+                data: {
+                    linkType: 'GETBUSINESS',
+                    accessToken: req.body.service.accesstoken,
+                    siteId: req.body.service.siteid
+                }
+            });
+
+            if (responseGetBusiness.data.success) {
+                businessId = responseGetBusiness.data.businessId;
+            }
+            else {
+                res.status(500).json({
+                    success: false,
+                    msg: "No Instagram business found"
+                });
+            }
+        }
+
         switch (req.body.type) {
             case "FACEBOOK":
             case "INSTAGRAM":
@@ -156,7 +179,7 @@ exports.InsertChannel = async (req, res) => {
                     data: {
                         linkType: 'GENERATELONGTOKEN',
                         accessToken: req.body.service.accesstoken,
-                        appId: req.body.service.appid
+                        appId: req.body.service.siteid
                     }
                 });
         
@@ -197,12 +220,19 @@ exports.InsertChannel = async (req, res) => {
                     });
 
                     if (responseChannelAdd.data.success) {
-                        const servicecredentials = {
+                        var servicecredentials = {
                             accessToken: longToken,
                             endpoint: 'https://graph.facebook.com/v8.0/',
                             serviceType: serviceType,
                             siteId: req.body.service.siteid
                         };
+
+                        if (businessId !== '') {
+                            parameters.communicationchannelsite = businessId;
+                            parameters.communicationchannelowner = req.body.service.siteid;
+
+                            servicecredentials.siteId = businessId;
+                        }
 
                         parameters.servicecredentials = JSON.stringify(servicecredentials);
                         parameters.type = channelType;
@@ -302,10 +332,12 @@ exports.DeleteChannel = async (req, res) => {
         parameters.corpid = req.user.corpid;
         parameters.orgid = req.user.orgid;
         parameters.username = req.user.usr;
-
+        
         parameters.motive = "Delete channel";
         parameters.operation = "DELETE";
         parameters.status = "ELIMINADO";
+
+        parameters.updintegration = null;
 
         switch (req.body.parameters.type) {
             case "FBDM":
@@ -449,11 +481,18 @@ exports.DeleteChannel = async (req, res) => {
                 break;
 
             default:
-                res.status(500).json({
-                    success: false,
-                    msg: "undefined"
-                });
-                break;
+                const resx = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                if (resx instanceof Array) {
+                    return res.json({
+                        success: true
+                    });
+                } else {
+                    return res.status(500).json({
+                        success: false,
+                        msg: resx.msg
+                    });
+                }
         }
     }
     catch (error) {
