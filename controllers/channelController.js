@@ -1,5 +1,6 @@
 const triggerfunctions = require('../config/triggerfunctions');
 const axios = require('axios');
+const { setSessionParameters } = require('../config/helpers');
 
 const URLBRIDGE = "https://zyxmedev.com/zyxme/bridge/";
 
@@ -126,7 +127,7 @@ exports.InsertChannel = async (req, res) => {
 
         parameters.corpid = req.user.corpid;
         parameters.orgid = req.user.orgid;
-        parameters.username = req.user.username;
+        parameters.username = req.user.usr;
 
         parameters.motive = "Insert channel";
         parameters.operation = "INSERT";
@@ -254,7 +255,7 @@ exports.InsertChannel = async (req, res) => {
 
                     parameters.servicecredentials = JSON.stringify(servicecredentials);
                     parameters.type = "WHAD";
-                    
+
                     const resx = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (resx instanceof Array) {
@@ -300,7 +301,7 @@ exports.DeleteChannel = async (req, res) => {
 
         parameters.corpid = req.user.corpid;
         parameters.orgid = req.user.orgid;
-        parameters.username = req.user.username;
+        parameters.username = req.user.usr;
 
         parameters.motive = "Delete channel";
         parameters.operation = "DELETE";
