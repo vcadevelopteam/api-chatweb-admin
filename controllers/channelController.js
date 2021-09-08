@@ -332,7 +332,7 @@ exports.DeleteChannel = async (req, res) => {
         parameters.corpid = req.user.corpid;
         parameters.orgid = req.user.orgid;
         parameters.username = req.user.usr;
-        
+
         parameters.motive = "Delete channel";
         parameters.operation = "DELETE";
         parameters.status = "ELIMINADO";
@@ -341,19 +341,42 @@ exports.DeleteChannel = async (req, res) => {
 
         switch (req.body.parameters.type) {
             case "FBDM":
-                var serviceData = JSON.parse(req.body.parameters.servicecredentials);
+                if (typeof req.body.parameters.servicecredentials !== 'undefined' && req.body.parameters.servicecredentials) {
+                    var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
-                const responseChannelRemoveFBDM = await axios({
-                    url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
-                    method: 'post',
-                    data: {
-                        linkType: 'MESSENGERREMOVE',
-                        accessToken: serviceData.accesstoken,
-                        siteId: serviceData.siteid
+                    const responseChannelRemoveFBDM = await axios({
+                        url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
+                        method: 'post',
+                        data: {
+                            linkType: 'MESSENGERREMOVE',
+                            accessToken: serviceData.accesstoken,
+                            siteId: serviceData.siteid
+                        }
+                    });
+
+                    if (responseChannelRemoveFBDM.data.success) {
+                        const resx = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                        if (resx instanceof Array) {
+                            return res.json({
+                                success: true
+                            });
+                        } else {
+                            return res.status(500).json({
+                                success: false,
+                                msg: resx.msg
+                            });
+                        }
                     }
-                });
-
-                if (responseChannelRemoveFBDM.data.success) {
+                    else {
+                        res.status(500).json({
+                            success: false,
+                            msg: responseChannelRemoveFBDM.data.operationMessage
+                        });
+                    }
+                }
+                else
+                {
                     const resx = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (resx instanceof Array) {
@@ -366,29 +389,46 @@ exports.DeleteChannel = async (req, res) => {
                             msg: resx.msg
                         });
                     }
-                }
-                else {
-                    res.status(500).json({
-                        success: false,
-                        msg: responseChannelRemoveFBDM.data.operationMessage
-                    });
                 }
                 break;
 
             case "FBWA":
-                var serviceData = JSON.parse(req.body.parameters.servicecredentials);
+                if (typeof req.body.parameters.servicecredentials !== 'undefined' && req.body.parameters.servicecredentials) {
+                    var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
-                const responseChannelRemoveFBWA = await axios({
-                    url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
-                    method: 'post',
-                    data: {
-                        linkType: 'WALLREMOVE',
-                        accessToken: serviceData.accesstoken,
-                        siteId: serviceData.siteid
+                    const responseChannelRemoveFBWA = await axios({
+                        url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
+                        method: 'post',
+                        data: {
+                            linkType: 'WALLREMOVE',
+                            accessToken: serviceData.accesstoken,
+                            siteId: serviceData.siteid
+                        }
+                    });
+
+                    if (responseChannelRemoveFBWA.data.success) {
+                        const resx = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                        if (resx instanceof Array) {
+                            return res.json({
+                                success: true
+                            });
+                        } else {
+                            return res.status(500).json({
+                                success: false,
+                                msg: resx.msg
+                            });
+                        }
                     }
-                });
-
-                if (responseChannelRemoveFBWA.data.success) {
+                    else {
+                        res.status(500).json({
+                            success: false,
+                            msg: responseChannelRemoveFBWA.data.operationMessage
+                        });
+                    }
+                }
+                else
+                {
                     const resx = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (resx instanceof Array) {
@@ -401,29 +441,46 @@ exports.DeleteChannel = async (req, res) => {
                             msg: resx.msg
                         });
                     }
-                }
-                else {
-                    res.status(500).json({
-                        success: false,
-                        msg: responseChannelRemoveFBWA.data.operationMessage
-                    });
                 }
                 break;
 
             case "INST":
-                var serviceData = JSON.parse(req.body.parameters.servicecredentials);
+                if (typeof req.body.parameters.servicecredentials !== 'undefined' && req.body.parameters.servicecredentials) {
+                    var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
-                const responseChannelRemoveINST = await axios({
-                    url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
-                    method: 'post',
-                    data: {
-                        linkType: 'INSTAGRAMREMOVE',
-                        accessToken: serviceData.accesstoken,
-                        siteId: serviceData.siteid
+                    const responseChannelRemoveINST = await axios({
+                        url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
+                        method: 'post',
+                        data: {
+                            linkType: 'INSTAGRAMREMOVE',
+                            accessToken: serviceData.accesstoken,
+                            siteId: parameters.communicationchannelowner
+                        }
+                    });
+
+                    if (responseChannelRemoveINST.data.success) {
+                        const resx = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                        if (resx instanceof Array) {
+                            return res.json({
+                                success: true
+                            });
+                        } else {
+                            return res.status(500).json({
+                                success: false,
+                                msg: resx.msg
+                            });
+                        }
                     }
-                });
-
-                if (responseChannelRemoveINST.data.success) {
+                    else {
+                        res.status(500).json({
+                            success: false,
+                            msg: responseChannelRemoveINST.data.operationMessage
+                        });
+                    }
+                }
+                else
+                {
                     const resx = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (resx instanceof Array) {
@@ -436,29 +493,46 @@ exports.DeleteChannel = async (req, res) => {
                             msg: resx.msg
                         });
                     }
-                }
-                else {
-                    res.status(500).json({
-                        success: false,
-                        msg: responseChannelRemoveINST.data.operationMessage
-                    });
                 }
                 break;
 
             case "WHAD":
-                var serviceData = JSON.parse(req.body.parameters.servicecredentials);
+                if (typeof req.body.parameters.servicecredentials !== 'undefined' && req.body.parameters.servicecredentials) {
+                    var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
-                const responseChannelRemoveWHAD = await axios({
-                    url: `${URLBRIDGE}api/processlaraigo/whatsapp/managewhatsapplink`,
-                    method: 'post',
-                    data: {
-                        linkType: 'WHATSAPPREMOVE',
-                        accessToken: serviceData.apiKey,
-                        siteId: serviceData.number
+                    const responseChannelRemoveWHAD = await axios({
+                        url: `${URLBRIDGE}api/processlaraigo/whatsapp/managewhatsapplink`,
+                        method: 'post',
+                        data: {
+                            linkType: 'WHATSAPPREMOVE',
+                            accessToken: serviceData.apiKey,
+                            siteId: serviceData.number
+                        }
+                    });
+
+                    if (responseChannelRemoveWHAD.data.success) {
+                        const resx = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                        if (resx instanceof Array) {
+                            return res.json({
+                                success: true
+                            });
+                        } else {
+                            return res.status(500).json({
+                                success: false,
+                                msg: resx.msg
+                            });
+                        }
                     }
-                });
-
-                if (responseChannelRemoveWHAD.data.success) {
+                    else {
+                        res.status(500).json({
+                            success: false,
+                            msg: responseChannelRemoveWHAD.data.operationMessage
+                        });
+                    }
+                }
+                else
+                {
                     const resx = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (resx instanceof Array) {
@@ -471,12 +545,6 @@ exports.DeleteChannel = async (req, res) => {
                             msg: resx.msg
                         });
                     }
-                }
-                else {
-                    res.status(500).json({
-                        success: false,
-                        msg: responseChannelRemoveWHAD.data.operationMessage
-                    });
                 }
                 break;
 
