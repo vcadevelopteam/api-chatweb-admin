@@ -25,6 +25,7 @@ const PORT = process.env.PORT || 6065;
 
 app.use('/api/usuarios', require('./routes/usuarios'));
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/channel', require('./routes/channel'));
 
 app.use('/api/main', require('./routes/main'));
 app.use('/api/upload', require('./routes/upload'));

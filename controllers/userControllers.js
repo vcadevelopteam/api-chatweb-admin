@@ -1,6 +1,6 @@
 const bcryptjs = require("bcryptjs");
 const User = require("../models/user");
-const triggerfunctions = require('../config/triggerfunctions');;
+const triggerfunctions = require('../config/triggerfunctions');
 
 exports.getUsers = async (req, res) => {
     try {
