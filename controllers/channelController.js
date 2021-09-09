@@ -179,7 +179,7 @@ exports.InsertChannel = async (req, res) => {
                     data: {
                         linkType: 'GENERATELONGTOKEN',
                         accessToken: req.body.service.accesstoken,
-                        appId: req.body.service.siteid
+                        appId: req.body.service.appid
                     }
                 });
         
