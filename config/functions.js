@@ -329,4 +329,20 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CONVERSATION_LST_USRDELEGATE2: {
+        query: "SELECT * FROM ufn_conversation_lst_usrdelegate2($corpid, $orgid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+
+    UFN_CONVERSATIONCLASSIFICATIONLIST_LEVEL1_SEL: {
+        query: "SELECT * FROM ufn_conversationclassificationlist_level1_sel($corpid, $orgid, $type)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATIONCLASSIFICATIONLIST_LEVEL2_SEL: {
+        query: "SELECT * FROM ufn_conversationclassificationlist_level2_sel($corpid, $orgid, $type, $classificationid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
