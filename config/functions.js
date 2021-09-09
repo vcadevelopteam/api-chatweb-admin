@@ -119,6 +119,11 @@ module.exports = {
         module: "/extras/person",
         protected: "SELECT"
     },
+    UFN_PERSON_EXPORT: {
+        query: "SELECT * FROM UFN_PERSON_EXPORT($corpid, $orgid, $where, $order, $startdate, $enddate, $offset)",
+        module: "/extras/person",
+        protected: "SELECT"
+    },
     UFN_INTELLIGENTMODELS_SEL: {
         query: "SELECT * FROM ufn_intelligentmodels_sel($corpid,$orgid,$username,$id,$all)",    
         module: "/extras/intelligentmodels",
@@ -294,6 +299,11 @@ module.exports = {
         module: "/supervisor",
         protected: "SELECT"
     },
+    UFN_CONVERSATION_SEL_TICKETSBYPERSON: {
+        query: "SELECT * FROM ufn_conversation_sel_ticketsbyperson($corpid, $orgid, $personid, $conversationid)",
+        module: "/supervisor",
+        protected: "SELECT"
+    },
     UFN_INTEGRATIONMANAGER_SEL: {
         query: "SELECT * FROM ufn_integrationmanager_sel($corpid,$orgid,$id,$username, $all)",
         module: "",
@@ -319,8 +329,6 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-
-
     UFN_CHATFLOW_BLOCK_LST: {
         query: "SELECT * FROM ufn_chatflow_block_lst($corpid, $orgid, $userid)",
         module: "",
@@ -395,5 +403,21 @@ module.exports = {
         query: "SELECT * FROM ufn_domain_value_import($corpid,$orgid,$domainname,$description,$domainvalue,$domaindesc,$system,$status,$type,$bydefault,$username)",
         module: "",
         protected: "INSERT"
-    }
+    },
+    UFN_CONVERSATION_LST_USRDELEGATE2: {
+        query: "SELECT * FROM ufn_conversation_lst_usrdelegate2($corpid, $orgid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+
+    UFN_CONVERSATIONCLASSIFICATIONLIST_LEVEL1_SEL: {
+        query: "SELECT * FROM ufn_conversationclassificationlist_level1_sel($corpid, $orgid, $type)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATIONCLASSIFICATIONLIST_LEVEL2_SEL: {
+        query: "SELECT * FROM ufn_conversationclassificationlist_level2_sel($corpid, $orgid, $type, $classificationid)",
+        module: "",
+        protected: "SELECT"
+    },
 }

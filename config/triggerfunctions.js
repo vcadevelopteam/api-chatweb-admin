@@ -101,7 +101,7 @@ exports.exporttmp = async (method, data) => {
             let query = functionsbd[method];
             if (data instanceof Object) {
 
-                data.where = generatefilter(data.filters, data.origin, data.daterange);
+                data.where = generatefilter(data.filters, data.origin, data.daterange, data.offset);
                 data.order = generateSort(data.sorts, data.origin);
 
                 const result = await sequelize.query(query, {
@@ -111,19 +111,15 @@ exports.exporttmp = async (method, data) => {
                 return result;
 
             } else {
-                response.message = "Mal formato";
-                response.code = "BAD_FORMAT_ERROR";
+                return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
             }
         } else {
-            response.code = "METHOD_ERROR";
-            response.message = "No existe el método";
+            return getErrorCode(errors.NOT_FUNCTION_ERROR);
         }
     } catch (e) {
-        response.code = "UNEXPECTED_ERROR"
-        response.message = "Hubo un error, vuelva a intentarlo";
+        console.log(e);
+        return getErrorCode(errors.UNEXPECTED_ERROR);
     }
-
-    return response;
 }
 
 exports.GetMultiCollection = async (detail, permissions = false) => {
@@ -199,9 +195,9 @@ exports.executeTransaction = async (header, detail, permissions = false) => {
                     }
                 }
             } else
-                return getErrorCode("VARIABLE_INCOMPATIBILITY_ERROR")
+                return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
         } else
-            return getErrorCode("NOT_FUNCTION_ERROR")
+            return getErrorCode(errors.NOT_FUNCTION_ERROR)
     }
     try {
         await Promise.all(detailtmp.map(async (item) => {
