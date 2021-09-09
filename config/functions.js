@@ -338,5 +338,96 @@ module.exports = {
         query: "SELECT * FROM ufn_communicationchannelhook_sel($type, $site)",
         module: "",
         protected: "INSERT"
-    }
+    },
+    UFN_CHATFLOW_BLOCK_LST: {
+        query: "SELECT * FROM ufn_chatflow_block_lst($corpid, $orgid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CHATFLOW_BLOCK_SEL: {
+        query: "SELECT * FROM ufn_chatflow_block_sel($corpid, $orgid, $chatblockid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CHATFLOW_BLOCK_INS: {
+        query: "SELECT * FROM ufn_chatflow_block_ins($corpid, $orgid, $communicationchannelid, $username, $chatblockid, $title, $description, $defaultgroupid, $defaultblockid, $firstblockid, $aiblockid, $blockgroup, $variablecustom, $status, $color, $icontype, $tag, $chatblockversionid, $surveyid)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CHATFLOW_BLOCK_DUP: {
+        query: "SELECT * FROM ufn_chatflow_block_dup($corpid, $orgid, $chatblockidold, $chatblockidnew, $defaultgroupid, $defaultblockid, $firstblockid, $blockgroup, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CHATFLOW_BLOCKVERSION_LST: {
+        query: "SELECT corpid, orgid, chatblockid, chatblockversionid, description FROM blockversion WHERE corpid = $corpid AND chatblockid = $chatblockid AND status = 'ACTIVO' order by changedate DESC LIMIT 10",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CHATFLOW_BLOCKVERSION_SEL: {
+        query: "SELECT * FROM blockversion WHERE corpid = $corpid AND chatblockid = $chatblockid AND chatblockversionid = $chatblockversionid AND status = 'ACTIVO'",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_TABLE_VARIABLE_LST: {
+        query: "SELECT tablename, fieldname, inputname, description, true as persistence, columntype, type FROM tablevariable WHERE status = 'ACTIVO' ORDER BY description ASC",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DOMAIN_LST: {
+        query: "SELECT * FROM ufn_domain_lst($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INPUTVALIDATION_LST: {
+        query: "SELECT description FROM inputvalidation WHERE corpid = $corpid AND status = 'ACTIVO'",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LOCATION_LST: {
+        query: "SELECT DISTINCT(type) FROM location where corpid = $corpid AND orgid = $orgid AND status = 'ACTIVO' ORDER BY type ASC",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PROPERTYFAMILY_SEL: {
+        query: "SELECT * FROM ufn_propertyfamily_sel($corpid, $orgid, $propertyname)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CHATFLOW_SURVEY_INS: {
+        query: "SELECT * FROM ufn_chatflow_survey_ins($corpid, $orgid, $communicationchannelid, $surveycode, $description, $status, $type, $username, $surveyid)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CHATFLOW_SURVEYQUESTION_INS: {
+        query: "SELECT * FROM ufn_chatflow_surveyquestion_ins($corpid, $orgid, $surveyid, $description, $questionnumber, $question, $status, $type, $username, $jsonformat)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CHATFLOW_SURVEYANSWER_INS: {
+        query: "SELECT * FROM ufn_chatflow_surveyanswer_ins($corpid, $orgid, $surveyid, $surveyquestionid, $description, $answer, $value, $answerorder, $hascomment, $status, $type, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_DOMAIN_VALUES_IMPORT: {
+        query: "SELECT * FROM ufn_domain_value_import($corpid,$orgid,$domainname,$description,$domainvalue,$domaindesc,$system,$status,$type,$bydefault,$username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CONVERSATION_LST_USRDELEGATE2: {
+        query: "SELECT * FROM ufn_conversation_lst_usrdelegate2($corpid, $orgid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+
+    UFN_CONVERSATIONCLASSIFICATIONLIST_LEVEL1_SEL: {
+        query: "SELECT * FROM ufn_conversationclassificationlist_level1_sel($corpid, $orgid, $type)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATIONCLASSIFICATIONLIST_LEVEL2_SEL: {
+        query: "SELECT * FROM ufn_conversationclassificationlist_level2_sel($corpid, $orgid, $type, $classificationid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
