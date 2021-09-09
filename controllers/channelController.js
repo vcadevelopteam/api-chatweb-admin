@@ -349,8 +349,8 @@ exports.DeleteChannel = async (req, res) => {
                         method: 'post',
                         data: {
                             linkType: 'MESSENGERREMOVE',
-                            accessToken: serviceData.accesstoken,
-                            siteId: serviceData.siteid
+                            accessToken: serviceData.accessToken,
+                            siteId: serviceData.siteId
                         }
                     });
 
@@ -401,8 +401,8 @@ exports.DeleteChannel = async (req, res) => {
                         method: 'post',
                         data: {
                             linkType: 'WALLREMOVE',
-                            accessToken: serviceData.accesstoken,
-                            siteId: serviceData.siteid
+                            accessToken: serviceData.accessToken,
+                            siteId: serviceData.siteId
                         }
                     });
 
@@ -453,7 +453,7 @@ exports.DeleteChannel = async (req, res) => {
                         method: 'post',
                         data: {
                             linkType: 'INSTAGRAMREMOVE',
-                            accessToken: serviceData.accesstoken,
+                            accessToken: serviceData.accessToken,
                             siteId: parameters.communicationchannelowner
                         }
                     });
