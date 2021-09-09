@@ -329,4 +329,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_COMMUNICATIONCHANNELHOOK_INS: {
+        query: "SELECT * FROM ufn_communicationchannelhook_ins($type, $servicedata, $site, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_COMMUNICATIONCHANNELHOOK_SEL: {
+        query: "SELECT * FROM ufn_communicationchannelhook_sel($type, $site)",
+        module: "",
+        protected: "INSERT"
+    }
 }
