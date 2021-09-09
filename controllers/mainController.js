@@ -66,11 +66,10 @@ exports.exportexcel = async (req, res) => {
         setSessionParameters(parameters, req.user);
 
         console.time(`exe-${method}`);
-        const result = await executesimpletransaction(method, parameters);
+        const result = !parameters.isNotPaginated ? await exporttmp(method, parameters) : await executesimpletransaction(method, parameters);
         console.timeEnd(`exe-${method}`);
 
         const titlefile = (parameters.titlefile ? parameters.titlefile : "report") + new Date().toISOString() + ".csv";
-
         console.time(`draw-excel`);
         let content = "";
 
@@ -107,14 +106,14 @@ exports.exportexcel = async (req, res) => {
                 return res.json({ success: true, url: data.Location })
             });
         } else {
-            return res.status(result.rescode).json({
+            return res.status(result.rescode || 500).json({
                 message: "Sin información para exportar"
             });
         }
     }
     catch (error) {
-
-        return res.status(result.rescode).json({
+        console.log(error);
+        return res.status(500).json({
             message: "Hubo un problema, intentelo más tarde"
         });
     }
@@ -151,7 +150,7 @@ exports.multiCollection = async (req, res) => {
     }
     catch (error) {
         console.log(error);
-        return res.status(result.rescode).json({
+        return res.status(500).json({
             msg: "Hubo un problema, intentelo más tarde"
         });
     }

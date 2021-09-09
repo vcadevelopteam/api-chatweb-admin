@@ -119,6 +119,11 @@ module.exports = {
         module: "/extras/person",
         protected: "SELECT"
     },
+    UFN_PERSON_EXPORT: {
+        query: "SELECT * FROM UFN_PERSON_EXPORT($corpid, $orgid, $where, $order, $startdate, $enddate, $offset)",
+        module: "/extras/person",
+        protected: "SELECT"
+    },
     UFN_INTELLIGENTMODELS_SEL: {
         query: "SELECT * FROM ufn_intelligentmodels_sel($corpid,$orgid,$username,$id,$all)",    
         module: "/extras/intelligentmodels",
@@ -287,6 +292,11 @@ module.exports = {
     },
     UFN_CONVERSATION_PERSON_SEL: {
         query: "SELECT * FROM ufn_conversation_person_sel($personid)",
+        module: "/supervisor",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_SEL_TICKETSBYPERSON: {
+        query: "SELECT * FROM ufn_conversation_sel_ticketsbyperson($corpid, $orgid, $personid, $conversationid)",
         module: "/supervisor",
         protected: "SELECT"
     },
