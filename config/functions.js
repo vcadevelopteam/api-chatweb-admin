@@ -179,18 +179,18 @@ module.exports = {
         module: "/reports",
         protected: "SELECT"
     },
-    UFN_REPORT_INTERACTIONNEW_SEL: {
-        query: "SELECT * FROM ufn_report_interactionnew_sel($corpid ,$orgid, $take, $skip, $where, $order, $supervisorid)",    
+    UFN_REPORT_INTERACTION_SEL: {
+        query: "SELECT * FROM ufn_report_interaction_sel($corpid ,$orgid, $take, $skip, $where, $order, $supervisorid)",    
         module: "/reports",
         protected: "SELECT"
     },
-    UFN_REPORT_INTERACTIONNEW_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_interactionnew_totalrecords($corpid ,$orgid, $where, $supervisorid)",    
+    UFN_REPORT_INTERACTION_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_report_interaction_totalrecords($corpid ,$orgid, $where, $supervisorid)",    
         module: "/reports",
         protected: "SELECT"
     },
-    UFN_REPORT_INTERACTIONNEW_EXPORT: {
-        query: "SELECT * FROM ufn_report_interactionnew_export($corpid ,$orgid, $where, $order, $supervisorid)",    
+    UFN_REPORT_INTERACTION_EXPORT: {
+        query: "SELECT * FROM ufn_report_interaction_export($corpid ,$orgid, $where, $order, $supervisorid)",    
         module: "/reports",
         protected: "SELECT"
     },
