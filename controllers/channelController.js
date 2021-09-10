@@ -758,6 +758,8 @@ exports.DeleteChannel = async (req, res) => {
             case "TWIT":
             case "TWDM":
                 if (typeof req.body.parameters.servicecredentials !== 'undefined' && req.body.parameters.servicecredentials) {
+                    var serviceData = JSON.parse(req.body.parameters.servicecredentials);
+
                     var methodremove = 'UFN_COMMUNICATIONCHANNELSITE_SEL';
                     var dataremove = {
                         communicationchannelsite: serviceData.twitterPageId,
@@ -790,8 +792,6 @@ exports.DeleteChannel = async (req, res) => {
                         }
                         else
                         {
-                            var serviceData = JSON.parse(req.body.parameters.servicecredentials);
-
                             const responseChannelRemoveTWDM = await axios({
                                 url: `${URLBRIDGE}api/processlaraigo/twitter/managetwitterlink`,
                                 method: 'post',
