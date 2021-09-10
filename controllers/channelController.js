@@ -2,7 +2,7 @@ const triggerfunctions = require('../config/triggerfunctions');
 const axios = require('axios');
 const { setSessionParameters } = require('../config/helpers');
 
-const URLBRIDGE = "https://zyxmedev.com/zyxme/bridge/";
+const URLBRIDGE = "https://zyxmelinux.zyxmeapp.com/zyxme/bridge/";
 
 exports.GetChannelService = async (req, res) => {
     try {
