@@ -44,15 +44,15 @@ exports.load = async (req, res) => {
             break;
 
         case 'find_one':
-            w_data = equalQuery(filter)
-            s_data = getSort(sort)
+            w_data = (filter) ? equalQuery(filter) : ''
+            s_data = (sort) ? getSort(sort) : ''
             query = `SELECT * FROM ${table_name} WHERE ${w_data.join(' AND ')} order by ${s_data.join(', ')} limit 1`;
             break;
 
         case 'find_many':
-            w_data = equalQuery(filter)
-            s_data = getSort(sort)
-            let s_limit = (limit) ? ` limit ${limit}` : '';
+            w_data = (filter) ? equalQuery(filter) : ''
+            s_data = (sort) ? getSort(sort) : ''
+            let s_limit = (limit) ? ` limit ${limit}` : ''
             query = `SELECT * FROM ${table_name} WHERE ${w_data.join(' AND ')} order by ${s_data.join(', ')} ${s_limit}`;
             break;
 
