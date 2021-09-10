@@ -149,6 +149,36 @@ module.exports = {
         module: "/reports",
         protected: "SELECT"
     },
+    UFN_REPORT_INPUTRETRY_SEL: {
+        query: "SELECT * FROM ufn_report_inputretry_sel($corpid ,$orgid, $take, $skip, $where, $order, $supervisorid, $startdate, $enddate, $offset)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_INPUTRETRY_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_report_inputretry_totalrecords($corpid ,$orgid, $where, $supervisorid, $startdate, $enddate, $offset)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_INPUTRETRY_EXPORT: {
+        query: "SELECT * FROM ufn_report_inputretry_export($corpid ,$orgid, $where, $order, $supervisorid, $startdate, $enddate, $offset)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_TIPIFICATION_SEL: {
+        query: "SELECT * FROM ufn_report_tipification_sel($corpid ,$orgid, $take, $skip, $where, $order, $supervisorid, $startdate, $enddate)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_TIPIFICATION_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_report_tipification_totalrecords($corpid ,$orgid, $where, $supervisorid, $startdate, $enddate)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_TIPIFICATION_EXPORT: {
+        query: "SELECT * FROM ufn_report_tipification_export($corpid ,$orgid, $where, $order, $supervisorid, $startdate, $enddate)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
     UFN_DOMAIN_SEL: {
         query: "SELECT * FROM ufn_domain_sel($corpid ,$orgid ,$domainname  ,$username ,$all)",    
         module: "/extras/domains",

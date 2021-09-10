@@ -1,4 +1,95 @@
 module.exports = {
+    inputretry: {
+        numeroticket: {
+            column: "co.ticketnum"
+        },
+        cliente: {
+            column: "pe.name"
+        },
+        canal: {
+            column: "cc.description"
+        },
+        fecha: {
+            column: "to_char(inter.createdate + '||p_offset||' * INTERVAL ''1hour'', ''DD/MM/YYYY HH24:MI:SS'')"
+        },
+        pregunta: {
+            column: "inter.inputquestion"
+        },
+        respuesta: {
+            column: "inter.interactiontext"
+        },
+        valido: {
+            column: "CASE WHEN inter.validinput THEN ''SI'' ELSE ''NO'' END"
+        },
+        intento: {
+            column: "inter.attempt"
+        }
+    },
+    tipification: {
+        numeroticket: {
+            column: "co.ticketnum"
+        },
+        anioticket: {
+            column: "extract(year from (co.startdate - interval ''5 hour''))::character varying"
+        },
+        mesticket: {
+            column: "extract(month from (co.startdate - interval ''5 hour''))::character varying"
+        },
+        fechaticket: {
+            column: "to_char(co.startdate - interval ''5 hour'', ''DD/MM/YYYY'')::character varying"
+        },
+        horaticket: {
+            column: "to_char(co.startdate - interval ''5 hour'' :: time, ''HH24:MI:SS'')::character varying"
+        },
+        cliente: {
+            column: "pe.name"
+        },
+        numerodocumento: {
+            column: "pe.documentnumber"
+        },
+        asesor: {
+            column: "concat(us.firstname,'' '',us.lastname)::character varying"
+        },
+        canal: {
+            column: "cc.description canal"
+        },
+        tipo: {
+            column: "coalesce(cl2.description, cl1.description)"
+        },
+        submotivo: {
+            column: "case when cl2.description is null then cl.description else cl1.description end"
+        },
+        valoracion: {
+            column: "case when cl2.description is null then null else cl.description end"
+        },
+        fechafin: {
+            column: "to_char(co.finishdate - interval ''5 hour'', ''YYYY-MM-DD'')::character varying"
+        },
+        horafin: {
+            column: "to_char(co.finishdate - interval ''5 hour'' :: time, ''HH24:MI:SS'')::character varying"
+        },
+        fechaprimerainteraccion: {
+            column: "CASE WHEN ou.type <> ''BOT'' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) - interval ''5 hour'', ''YYYY-MM-DD''), to_char((co.startdate + co.userfirstreplytime) - interval ''5 hour'', ''YYYY-MM-DD'')) ELSE null END ::character varying"
+        },
+        horaprimerainteraccion: {
+            column: "CASE WHEN ou.type <> ''BOT'' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) - interval ''5 hour'' :: time, ''HH24:MI:SS''), to_char((co.startdate + co.userfirstreplytime) - interval ''5 hour'' :: time, ''HH24:MI:SS'')) ELSE null END ::character varying"
+        },
+        cerradopor: {
+            column: "ou.type"
+        },
+        tipocierre: {
+            column: "coalesce(do2.domaindesc, co.closetype)"
+        },
+        displayname: {
+            column: "pcc.displayname"
+        },
+        phone: {
+            column: "pe.phone"
+        },
+        contact: {
+            column: "pe.contact"
+        }
+    },
     person: {
         corpid: {
             column: "pe.corpid"
