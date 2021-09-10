@@ -29,7 +29,7 @@ app.use('/api/channel', require('./routes/channel'));
 
 app.use('/api/main', require('./routes/main'));
 app.use('/api/upload', require('./routes/upload'));
-
+app.use('/api/load', require('./routes/load'));
 
 // Definir la pagina principal
 app.get('/', (req, res) => {
