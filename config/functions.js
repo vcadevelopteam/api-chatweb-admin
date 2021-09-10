@@ -179,6 +179,76 @@ module.exports = {
         module: "/reports",
         protected: "SELECT"
     },
+    UFN_REPORT_INTERACTIONNEW_SEL: {
+        query: "SELECT * FROM ufn_report_interactionnew_sel($corpid ,$orgid, $take, $skip, $where, $order, $supervisorid)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_INTERACTIONNEW_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_report_interactionnew_totalrecords($corpid ,$orgid, $where, $supervisorid)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_INTERACTIONNEW_EXPORT: {
+        query: "SELECT * FROM ufn_report_interactionnew_export($corpid ,$orgid, $where, $order, $supervisorid)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_PRODUCTIVITY_SEL: {
+        query: "SELECT * FROM ufn_report_productivity_sel($corpid ,$orgid, $take, $skip, $where, $order, $supervisorid, $startdate, $enddate)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_PRODUCTIVITY_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_report_productivity_totalrecords($corpid ,$orgid, $where, $supervisorid, $startdate, $enddate)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_PRODUCTIVITY_EXPORT: {
+        query: "SELECT * FROM ufn_report_productivity_export($corpid ,$orgid, $where, $order, $supervisorid, $startdate, $enddate)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_USERPRODUCTIVITYHOURS_SEL: {
+        query: "SELECT * FROM ufn_report_userproductivityhours_sel($corpid ,$orgid, $startdate, $enddate, $channel, $hours, $userid, $take, $skip, $where, $order, $supervisorid)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_USERPRODUCTIVITYHOURS_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_report_userproductivityhours_totalrecords($corpid ,$orgid, $startdate, $enddate, $channel, $hours, $userid, $where, $supervisorid)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_USERPRODUCTIVITYHOURS_EXPORT: {
+        query: "SELECT * FROM ufn_report_userproductivityhours_export($corpid ,$orgid, $startdate, $enddate, $channel, $hours, $asesorid, $where, $order, $supervisorid)",
+        module: "/reports",
+        protected: "SELECT"
+    },    
+    UFN_USER_ASESORBYORGID_LST: {
+        query: "SELECT * FROM ufn_user_asesorbyorgid_lst($corpid ,$orgid, $supervisorid)",
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_USRNOTIFICATION_USRID_SEL: {
+        query: "SELECT * FROM ufn_usrnotification_usrid_sel($corpid ,$orgid, $userid, $usrnotificationid, $all, $username)",
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_LOGINHISTORY_SEL: {
+        query: "SELECT * FROM ufn_loginhistory_sel($corpid ,$orgid, $take, $skip, $where, $order, $startdate, $enddate)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_LOGINHISTORY_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_loginhistory_totalrecords($corpid ,$orgid, $where, $startdate, $enddate)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_LOGINHISTORY_EXPORT: {
+        query: "SELECT * FROM ufn_loginhistory_export($corpid ,$orgid, $where, $order, $startdate, $enddate)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
     UFN_DOMAIN_SEL: {
         query: "SELECT * FROM ufn_domain_sel($corpid ,$orgid ,$domainname  ,$username ,$all)",    
         module: "/extras/domains",
