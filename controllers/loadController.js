@@ -3,10 +3,10 @@ const { getErrorSeq } = require('../config/helpers');
 const { QueryTypes } = require('sequelize');
 
 exports.load = async (req, res) => {
-    const { filter = {}, data, sort = null, limit = null} = req.body;
+    const { filter = null, data = null, sort = null, limit = null} = req.body;
     const { table_name, action } = req.params;
     const coreTables = getCoreTables();
-    const validActions = ['insert_one', 'insert_many', 'update_one','remove_one','find_one','find_many']
+    const validActions = ['insert_one', 'insert_many', 'update','remove','find_one','find_many']
     // setSessionParameters(parameters, req.user);
 
     if (coreTables.includes(table_name))
@@ -32,28 +32,28 @@ exports.load = async (req, res) => {
             query = `INSERT INTO ${table_name}(${columns.join(',')}) VALUES ${values.map(e => "(" + e.join(',') + ")" )}`
             break;
 
-        case 'update_one':
+        case 'update':
             q_data = equalQuery(data)
             w_data = equalQuery(filter)
             query = `UPDATE ${table_name} SET ${q_data.join(', ')} WHERE ${w_data.join(' AND ')}`
             break;
 
-        case 'remove_one':
+        case 'remove':
             w_data = equalQuery(filter)
             query = `UPDATE ${table_name} SET status = 'ELIMINADO' WHERE ${w_data.join(' AND ')}`
             break;
 
         case 'find_one':
-            w_data = equalQuery(filter)
-            s_data = getSort(sort)
-            query = `SELECT * FROM ${table_name} WHERE ${w_data.join(' AND ')} order by ${s_data.join(', ')} limit 1`;
+            w_data = (filter) ? `WHERE ${equalQuery(filter).join(' AND ')}` : ''
+            s_data = (sort) ? `order by ${getSort(sort).join(', ')}` : ''
+            query = `SELECT * FROM ${table_name} ${w_data}  ${s_data} limit 1`;
             break;
 
         case 'find_many':
-            w_data = equalQuery(filter)
-            s_data = getSort(sort)
-            let s_limit = (limit) ? ` limit ${limit}` : '';
-            query = `SELECT * FROM ${table_name} WHERE ${w_data.join(' AND ')} order by ${s_data.join(', ')} ${s_limit}`;
+            w_data = (filter) ? `WHERE ${equalQuery(filter).join(' AND ')}` : ''
+            s_data = (sort) ? `order by ${getSort(sort).join(', ')}` : ''
+            let s_limit = (limit) ? ` limit ${limit}` : ''
+            query = `SELECT * FROM ${table_name} ${w_data} ${s_data} ${s_limit}`;
             break;
 
         default:
@@ -96,5 +96,5 @@ function getSort(data) {
 }
 
 function getCoreTables() {
-    return ['appintegration','application','block','blockversion','classification','communicationchannel','communicationchannelhook','communicationchannelstatus','conversation','conversationclassification','corp','domain','groupconfiguration','inappropriatewords','inputvalidation','integration_laraigo_test2','integration_laraigo_test3','integrationmanager','intelligentmodels','interaction','location','messagetemplate','org','orguser','person','personcommunicationchannel','post','productivity','property','quickreply','report','reportbiinteraction','role','roleapplication','sla','survey','surveyanswer','surveyquestion','tablevariable','tablevariableconfiguration','timezone','userhistory','userstatus','usertoken','usr','usrnotification','whitelist']
+    return ['appintegration','application','block','blockversion','classification','communicationchannel','communicationchannelhook','communicationchannelstatus','conversation','conversationclassification','corp','domain','groupconfiguration','inappropriatewords','inputvalidation','integrationmanager','intelligentmodels','interaction','location','messagetemplate','org','orguser','person','personcommunicationchannel','post','productivity','property','quickreply','report','reportbiinteraction','role','roleapplication','sla','survey','surveyanswer','surveyquestion','tablevariable','tablevariableconfiguration','timezone','userhistory','userstatus','usertoken','usr','usrnotification','whitelist']
 }
