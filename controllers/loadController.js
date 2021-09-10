@@ -3,7 +3,7 @@ const { getErrorSeq } = require('../config/helpers');
 const { QueryTypes } = require('sequelize');
 
 exports.load = async (req, res) => {
-    const { filter = {}, data, sort = null, limit = null} = req.body;
+    const { filter = {}, data = {}, sort = null, limit = null} = req.body;
     const { table_name, action } = req.params;
     const coreTables = getCoreTables();
     const validActions = ['insert_one', 'insert_many', 'update_one','remove_one','find_one','find_many']
