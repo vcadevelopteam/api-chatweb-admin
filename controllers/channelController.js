@@ -13,13 +13,13 @@ exports.GetChannelService = async (req, res) => {
             if (req.body.siteType === 'SMCH') {
                 method = 'UFN_COMMUNICATIONCHANNELSITE_SMOOCH_SEL';
                 data = {
-                    communicationchannelsite:  req.body.siteId
+                    communicationchannelsite: req.body.siteId
                 };
             }
             else {
                 method = 'UFN_COMMUNICATIONCHANNELSITE_SEL';
                 data = {
-                    communicationchannelsite:  req.body.siteId,
+                    communicationchannelsite: req.body.siteId,
                     type: req.body.siteType,
                 };
             }
@@ -382,7 +382,8 @@ exports.InsertChannel = async (req, res) => {
                 break;
 
             case "TWITTER":
-                const servicecredential = {
+            case "TWITTERDM":
+                const servicecredentialstwitter = {
                     accessSecret: req.body.service.accesssecret,
                     accessToken: req.body.service.accesstoken,
                     consumerKey: req.body.service.consumerkey,
@@ -394,7 +395,7 @@ exports.InsertChannel = async (req, res) => {
                 var twitterMethod = 'UFN_COMMUNICATIONCHANNELHOOK_INS';
                 var twitterData = {
                     type: 'TWTR',
-                    servicedata: JSON.stringify(servicecredential),
+                    servicedata: JSON.stringify(servicecredentialstwitter),
                     site: req.body.service.siteid,
                     operation: 'INSERT'
                 };
@@ -408,18 +409,24 @@ exports.InsertChannel = async (req, res) => {
                         data: {
                             linkType: 'TWITTERADD',
                             siteId: req.body.service.siteid,
-                            developmentEnvironment: servicecredential.devEnvironment,
-                            consumerSecret: servicecredential.consumerSecret,
-                            consumerKey: servicecredential.consumerKey,
-                            accessToken: servicecredential.accessToken,
-                            accessSecret: servicecredential.accessSecret
+                            developmentEnvironment: servicecredentialstwitter.devEnvironment,
+                            consumerSecret: servicecredentialstwitter.consumerSecret,
+                            consumerKey: servicecredentialstwitter.consumerKey,
+                            accessToken: servicecredentialstwitter.accessToken,
+                            accessSecret: servicecredentialstwitter.accessSecret
                         }
                     });
     
                     if (responseTwitterAdd.data.success) {
-                        parameters.servicecredentials = JSON.stringify(servicecredential);
-                        parameters.type = "TWDM";
-    
+                        if (req.body.type === 'TWITTER') {
+                            parameters.type = "TWIT";
+                        }
+                        else {
+                            parameters.type = "TWDM";
+                        }
+
+                        parameters.servicecredentials = JSON.stringify(servicecredentialstwitter);
+
                         const resx = await triggerfunctions.executesimpletransaction(method, parameters);
     
                         if (resx instanceof Array) {
@@ -748,51 +755,91 @@ exports.DeleteChannel = async (req, res) => {
                 }
                 break;
 
+            case "TWIT":
             case "TWDM":
                 if (typeof req.body.parameters.servicecredentials !== 'undefined' && req.body.parameters.servicecredentials) {
-                    var serviceData = JSON.parse(req.body.parameters.servicecredentials);
+                    var methodremove = 'UFN_COMMUNICATIONCHANNELSITE_SEL';
+                    var dataremove = {
+                        communicationchannelsite: serviceData.twitterPageId,
+                        type: ''
+                    };
 
-                    const responseChannelRemoveTWDM = await axios({
-                        url: `${URLBRIDGE}api/processlaraigo/twitter/managetwitterlink`,
-                        method: 'post',
-                        data: {
-                            linkType: 'TWITTERREMOVE',
-                            siteId: serviceData.twitterPageId,
-                            developmentEnvironment: serviceData.devEnvironment,
-                            consumerSecret: serviceData.consumerSecret,
-                            consumerKey: serviceData.consumerKey,
-                            accessToken: serviceData.accessToken,
-                            accessSecret: serviceData.accessSecret
-                        }
-                    });
-
-                    if (responseChannelRemoveTWDM.data.success) {
-                        const resx = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                        if (resx instanceof Array) {
-                            var twitterMethod = 'UFN_COMMUNICATIONCHANNELHOOK_INS';
-                            var twitterData = {
-                                type: 'TWTR',
-                                site: serviceData.twitterPageId,
-                                operation: 'DELETE'
-                            };
-
-                            await triggerfunctions.executesimpletransaction(twitterMethod, twitterData);
-
-                            return res.json({
-                                success: true
-                            });
-                        } else {
-                            return res.status(500).json({
-                                success: false,
-                                msg: resx.msg
-                            });
-                        }
+                    if (req.body.parameters.type === 'TWIT') {
+                        dataremove.type = 'TWDM';
                     }
                     else {
-                        res.status(500).json({
+                        dataremove.type = 'TWIT';
+                    }
+
+                    const rest = await triggerfunctions.executesimpletransaction(methodremove, dataremove);
+    
+                    if (rest instanceof Array) {
+                        if (rest.length > 0) {
+                            const resx = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                            if (resx instanceof Array) {
+                                return res.json({
+                                    success: true
+                                });
+                            } else {
+                                return res.status(500).json({
+                                    success: false,
+                                    msg: resx.msg
+                                });
+                            }
+                        }
+                        else
+                        {
+                            var serviceData = JSON.parse(req.body.parameters.servicecredentials);
+
+                            const responseChannelRemoveTWDM = await axios({
+                                url: `${URLBRIDGE}api/processlaraigo/twitter/managetwitterlink`,
+                                method: 'post',
+                                data: {
+                                    linkType: 'TWITTERREMOVE',
+                                    siteId: serviceData.twitterPageId,
+                                    developmentEnvironment: serviceData.devEnvironment,
+                                    consumerSecret: serviceData.consumerSecret,
+                                    consumerKey: serviceData.consumerKey,
+                                    accessToken: serviceData.accessToken,
+                                    accessSecret: serviceData.accessSecret
+                                }
+                            });
+                        
+                            if (responseChannelRemoveTWDM.data.success) {
+                                const resx = await triggerfunctions.executesimpletransaction(method, parameters);
+                            
+                                if (resx instanceof Array) {
+                                    var twitterMethod = 'UFN_COMMUNICATIONCHANNELHOOK_INS';
+                                    var twitterData = {
+                                        type: 'TWTR',
+                                        site: serviceData.twitterPageId,
+                                        operation: 'DELETE'
+                                    };
+                                
+                                    await triggerfunctions.executesimpletransaction(twitterMethod, twitterData);
+                                
+                                    return res.json({
+                                        success: true
+                                    });
+                                } else {
+                                    return res.status(500).json({
+                                        success: false,
+                                        msg: resx.msg
+                                    });
+                                }
+                            }
+                            else {
+                                res.status(500).json({
+                                    success: false,
+                                    msg: responseChannelRemoveTWDM.data.operationMessage
+                                });
+                            }
+                        }
+                    } else {
+                        return res.status(500).json({
                             success: false,
-                            msg: responseChannelRemoveTWDM.data.operationMessage
+                            msg: rest.msg
                         });
                     }
                 }
