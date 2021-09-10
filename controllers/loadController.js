@@ -32,13 +32,13 @@ exports.load = async (req, res) => {
             query = `INSERT INTO ${table_name}(${columns.join(',')}) VALUES ${values.map(e => "(" + e.join(',') + ")" )}`
             break;
 
-        case 'update_one':
+        case 'update':
             q_data = equalQuery(data)
             w_data = equalQuery(filter)
             query = `UPDATE ${table_name} SET ${q_data.join(', ')} WHERE ${w_data.join(' AND ')}`
             break;
 
-        case 'remove_one':
+        case 'remove':
             w_data = equalQuery(filter)
             query = `UPDATE ${table_name} SET status = 'ELIMINADO' WHERE ${w_data.join(' AND ')}`
             break;
