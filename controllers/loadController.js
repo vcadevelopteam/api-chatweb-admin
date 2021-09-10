@@ -6,7 +6,7 @@ exports.load = async (req, res) => {
     const { filter = null, data = null, sort = null, limit = null} = req.body;
     const { table_name, action } = req.params;
     const coreTables = getCoreTables();
-    const validActions = ['insert_one', 'insert_many', 'update_one','remove_one','find_one','find_many']
+    const validActions = ['insert_one', 'insert_many', 'update','remove','find_one','find_many']
     // setSessionParameters(parameters, req.user);
 
     if (coreTables.includes(table_name))
