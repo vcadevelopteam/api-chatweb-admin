@@ -148,6 +148,11 @@ module.exports = {
         query: "SELECT * FROM ufn_report_sel($corpid ,$orgid ,$reportname  ,$username ,$all)",    
         module: "/reports",
         protected: "SELECT"
+    },    
+    UFN_REPORT_COLUMN_SEL: {
+        query: "SELECT * FROM ufn_report_column_sel($function, $all)",    
+        module: "/reports",
+        protected: "SELECT"
     },
     UFN_REPORT_INPUTRETRY_SEL: {
         query: "SELECT * FROM ufn_report_inputretry_sel($corpid ,$orgid, $take, $skip, $where, $order, $supervisorid, $startdate, $enddate, $offset)",    
