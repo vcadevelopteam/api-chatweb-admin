@@ -2,7 +2,12 @@ const triggerfunctions = require('../config/triggerfunctions');
 const axios = require('axios');
 const { setSessionParameters } = require('../config/helpers');
 
-const URLBRIDGE = "https://zyxmelinux.zyxmeapp.com/zyxme/bridge/";
+const URLABANDON = 'https://zyxmelinux.zyxmeapp.com/zyxme/webchatscript/api/smooch';
+const URLBRIDGE = 'https://zyxmelinux.zyxmeapp.com/zyxme/bridge/';
+const URLHOOK = 'https://zyxmelinux.zyxmeapp.com/zyxme/hook/';
+const URLBROKER = 'https://goo.zyxmeapp.com/';
+
+const chatwebApplicationId = '53';
 
 exports.GetChannelService = async (req, res) => {
     try {
@@ -40,7 +45,8 @@ exports.GetChannelService = async (req, res) => {
                         msg: 'Not found'
                     });
                 }
-            } else {
+            }
+            else {
                 return res.status(500).json({
                     success: false,
                     msg: resx.msg
@@ -70,7 +76,8 @@ exports.GetChannelService = async (req, res) => {
                         msg: 'Not found'
                     });
                 }
-            } else {
+            }
+            else {
                 return res.status(500).json({
                     success: false,
                     msg: resx.msg
@@ -162,22 +169,23 @@ exports.InsertChannel = async (req, res) => {
         parameters.orgid = req.user.orgid;
         parameters.username = req.user.usr;
 
-        parameters.motive = "Insert channel";
-        parameters.operation = "INSERT";
-        parameters.status = "ACTIVO";
+        parameters.motive = 'Insert channel';
+        parameters.operation = 'INSERT';
+        parameters.status = 'ACTIVO';
 
-        parameters.communicationchannelcontact = "";
+        parameters.communicationchannelcontact = '';
+
         parameters.communicationchanneltoken = null;
+        parameters.botconfigurationid = null;
+        parameters.channelparameters = null;
+        parameters.appintegrationid = null;
+        parameters.resolvelithium = null;
+        parameters.updintegration = null;
+        parameters.botenabled = null;
         parameters.customicon = null;
         parameters.coloricon = null;
-        parameters.botenabled = null;
-        parameters.botconfigurationid = null;
         parameters.schedule = null;
-        parameters.appintegrationid = null;
         parameters.country = null;
-        parameters.channelparameters = null;
-        parameters.updintegration = null;
-        parameters.resolvelithium = null;
 
         if (req.body.type === 'INSTAGRAM') {
             const responseGetBusiness = await axios({
@@ -196,15 +204,15 @@ exports.InsertChannel = async (req, res) => {
             else {
                 res.status(500).json({
                     success: false,
-                    msg: "No Instagram business found"
+                    msg: 'No Instagram business found'
                 });
             }
         }
 
         switch (req.body.type) {
-            case "FACEBOOK":
-            case "INSTAGRAM":
-            case "MESSENGER":
+            case 'FACEBOOK':
+            case 'INSTAGRAM':
+            case 'MESSENGER':
                 const responseGetLongToken = await axios({
                     url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
                     method: 'post',
@@ -222,22 +230,22 @@ exports.InsertChannel = async (req, res) => {
                     var serviceType = null;
 
                     switch (req.body.type) {
-                        case "FACEBOOK":
-                            channelService = "WALLADD";
-                            channelType = "FBWA";
-                            serviceType = "WALL";
+                        case 'FACEBOOK':
+                            channelService = 'WALLADD';
+                            channelType = 'FBWA';
+                            serviceType = 'WALL';
                             break;
 
-                        case "INSTAGRAM":
-                            channelService = "INSTAGRAMADD";
-                            channelType = "INST";
-                            serviceType = "INSTAGRAM";
+                        case 'INSTAGRAM':
+                            channelService = 'INSTAGRAMADD';
+                            channelType = 'INST';
+                            serviceType = 'INSTAGRAM';
                             break;
 
-                        case "MESSENGER":
-                            channelService = "MESSENGERADD";
-                            channelType = "FBDM";
-                            serviceType = "MESSENGER";
+                        case 'MESSENGER':
+                            channelService = 'MESSENGERADD';
+                            channelType = 'FBDM';
+                            serviceType = 'MESSENGER';
                             break;
                     }
 
@@ -275,7 +283,8 @@ exports.InsertChannel = async (req, res) => {
                             return res.json({
                                 success: true
                             });
-                        } else {
+                        }
+                        else {
                             return res.status(500).json({
                                 success: false,
                                 msg: resx.msg
@@ -297,7 +306,7 @@ exports.InsertChannel = async (req, res) => {
                 }
                 break;
 
-            case "WHATSAPP":
+            case 'WHATSAPP':
                 const responseWhatsAppAdd = await axios({
                     url: `${URLBRIDGE}api/processlaraigo/whatsapp/managewhatsapplink`,
                     method: 'post',
@@ -316,7 +325,7 @@ exports.InsertChannel = async (req, res) => {
                     };
 
                     parameters.servicecredentials = JSON.stringify(servicecredentials);
-                    parameters.type = "WHAD";
+                    parameters.type = 'WHAD';
 
                     const resx = await triggerfunctions.executesimpletransaction(method, parameters);
 
@@ -324,7 +333,8 @@ exports.InsertChannel = async (req, res) => {
                         return res.json({
                             success: true
                         });
-                    } else {
+                    }
+                    else {
                         return res.status(500).json({
                             success: false,
                             msg: resx.msg
@@ -339,7 +349,7 @@ exports.InsertChannel = async (req, res) => {
                 }
                 break;
 
-            case "TELEGRAM":
+            case 'TELEGRAM':
                 const responseTelegramAdd = await axios({
                     url: `${URLBRIDGE}api/processlaraigo/telegram/managetelegramlink`,
                     method: 'post',
@@ -358,7 +368,7 @@ exports.InsertChannel = async (req, res) => {
                     };
 
                     parameters.servicecredentials = JSON.stringify(servicecredentials);
-                    parameters.type = "TELE";
+                    parameters.type = 'TELE';
 
                     const resx = await triggerfunctions.executesimpletransaction(method, parameters);
 
@@ -366,7 +376,8 @@ exports.InsertChannel = async (req, res) => {
                         return res.json({
                             success: true
                         });
-                    } else {
+                    }
+                    else {
                         return res.status(500).json({
                             success: false,
                             msg: resx.msg
@@ -381,8 +392,8 @@ exports.InsertChannel = async (req, res) => {
                 }
                 break;
 
-            case "TWITTER":
-            case "TWITTERDM":
+            case 'TWITTER':
+            case 'TWITTERDM':
                 const servicecredentialstwitter = {
                     accessSecret: req.body.service.accesssecret,
                     accessToken: req.body.service.accesstoken,
@@ -419,10 +430,10 @@ exports.InsertChannel = async (req, res) => {
     
                     if (responseTwitterAdd.data.success) {
                         if (req.body.type === 'TWITTER') {
-                            parameters.type = "TWIT";
+                            parameters.type = 'TWIT';
                         }
                         else {
-                            parameters.type = "TWDM";
+                            parameters.type = 'TWDM';
                         }
 
                         parameters.servicecredentials = JSON.stringify(servicecredentialstwitter);
@@ -433,7 +444,8 @@ exports.InsertChannel = async (req, res) => {
                             return res.json({
                                 success: true
                             });
-                        } else {
+                        }
+                        else {
                             twitterData.operation = 'DELETE';
 
                             await triggerfunctions.executesimpletransaction(twitterMethod, twitterData);
@@ -454,7 +466,8 @@ exports.InsertChannel = async (req, res) => {
                             msg: responseTwitterAdd.data.operationMessage
                         });
                     }
-                } else {
+                }
+                else {
                     return res.status(500).json({
                         success: false,
                         msg: resx.msg
@@ -462,10 +475,243 @@ exports.InsertChannel = async (req, res) => {
                 }
                 break;
 
+            case 'CHATWEB':
+                var chatwebBody = {
+                    applicationId: chatwebApplicationId,
+                    name: req.body.parameters.description,
+                    status: 'ACTIVO',
+                    type: 'WEBM',
+                    metadata: {
+                        color: {
+                            chatBackgroundColor: '',
+                            chatBorderColor: '',
+                            chatHeaderColor: '',
+                            messageBotColor: '',
+                            messageClientColor: ''
+                        },
+                        extra: {
+                            abandonendpoint: URLABANDON,
+                            cssbody: '',
+                            enableabandon: false,
+                            enableformhistory: false,
+                            enableidlemessage: false,
+                            headermessage: '',
+                            inputalwaysactive: false,
+                            jsscript: '',
+                            playalertsound: false,
+                            sendmetadata: false,
+                            showchatrestart: false,
+                            showmessageheader: false,
+                            showplatformlogo: false,
+                            uploadaudio: false,
+                            uploadfile: false,
+                            uploadimage: false,
+                            uploadlocation: false,
+                            uploadvideo: false
+                        },
+                        form: [],
+                        icons: {
+                            chatBotImage: '',
+                            chatHeaderImage: '',
+                            chatIdleImage: '',
+                            chatOpenImage: ''
+                        },
+                        personalization: {
+                            headerMessage: '',
+                            headerSubTitle: '',
+                            headerTitle: '',
+                            idleMessage: ''
+                        }
+                    }
+                };
+
+                if (typeof req.body.service !== 'undefined' && req.body.service) {
+                    if (typeof req.body.service.interface !== 'undefined' && req.body.service.interface) {
+                        if (typeof req.body.service.interface.chattitle !== 'undefined' && req.body.service.interface.chattitle) {
+                            chatwebMetadata.personalization.headerTitle = req.body.service.interface.chattitle;
+                        }
+                        if (typeof req.body.service.interface.chatsubtitle !== 'undefined' && req.body.service.interface.chatsubtitle) {
+                            chatwebMetadata.personalization.headerSubTitle = req.body.service.interface.chatsubtitle;
+                        }
+                        if (typeof req.body.service.interface.iconbutton !== 'undefined' && req.body.service.interface.iconbutton) {
+                            chatwebMetadata.icons.chatOpenImage = req.body.service.interface.iconbutton;
+                        }
+                        if (typeof req.body.service.interface.iconheader !== 'undefined' && req.body.service.interface.iconheader) {
+                            chatwebMetadata.icons.chatHeaderImage = req.body.service.interface.iconheader;
+                        }
+                        if (typeof req.body.service.interface.iconbot !== 'undefined' && req.body.service.interface.iconbot) {
+                            chatwebMetadata.icons.chatBotImage = req.body.service.interface.iconbot;
+                        }
+                    }
+                    if (typeof req.body.service.color !== 'undefined' && req.body.service.color) {
+                        if (typeof req.body.service.color.header !== 'undefined' && req.body.service.color.header) {
+                            chatwebMetadata.color.chatHeaderColor = req.body.service.color.header;
+                        }
+                        if (typeof req.body.service.color.background !== 'undefined' && req.body.service.color.background) {
+                            chatwebMetadata.color.chatBackgroundColor = req.body.service.color.background;
+                        }
+                        if (typeof req.body.service.color.border !== 'undefined' && req.body.service.color.border) {
+                            chatwebMetadata.color.chatBorderColor = req.body.service.color.border;
+                        }
+                        if (typeof req.body.service.color.client !== 'undefined' && req.body.service.color.client) {
+                            chatwebMetadata.color.messageClientColor = req.body.service.color.client;
+                        }
+                        if (typeof req.body.service.color.bot !== 'undefined' && req.body.service.color.bot) {
+                            chatwebMetadata.color.messageBotColor = req.body.service.color.bot;
+                        }
+                    }
+                    if (typeof req.body.service.form !== 'undefined' && req.body.service.form) {
+                        chatwebMetadata.form = req.body.service.form;
+                    }
+                    if (typeof req.body.service.bubble !== 'undefined' && req.body.service.bubble) {
+                        if (typeof req.body.service.bubble.active !== 'undefined') {
+                            chatwebMetadata.extra.enableidlemessage = req.body.service.bubble.active;
+                        }
+                        if (typeof req.body.service.bubble.iconbubble !== 'undefined' && req.body.service.bubble.iconbubble) {
+                            chatwebMetadata.icons.chatIdleImage = req.body.service.bubble.iconbubble;
+                        }
+                        if (typeof req.body.service.bubble.messagebubble !== 'undefined' && req.body.service.bubble.messagebubble) {
+                            chatwebMetadata.personalization.idleMessage = req.body.service.bubble.messagebubble;
+                        }
+                    }
+                    if (typeof req.body.service.extra !== 'undefined' && req.body.service.extra) {
+                        if (typeof req.body.service.extra.uploadfile !== 'undefined') {
+                            chatwebMetadata.extra.uploadfile = req.body.service.extra.uploadfile;
+                        }
+                        if (typeof req.body.service.extra.uploadvideo !== 'undefined') {
+                            chatwebMetadata.extra.uploadvideo = req.body.service.extra.uploadvideo;
+                        }
+                        if (typeof req.body.service.extra.uploadlocation !== 'undefined') {
+                            chatwebMetadata.extra.uploadlocation = req.body.service.extra.uploadlocation;
+                        }
+                        if (typeof req.body.service.extra.uploadimage !== 'undefined') {
+                            chatwebMetadata.extra.uploadimage = req.body.service.extra.uploadimage;
+                        }
+                        if (typeof req.body.service.extra.uploadaudio !== 'undefined') {
+                            chatwebMetadata.extra.uploadaudio = req.body.service.extra.uploadaudio;
+                        }
+                        if (typeof req.body.service.extra.reloadchat !== 'undefined') {
+                            chatwebMetadata.extra.showchatrestart = req.body.service.extra.reloadchat;
+                        }
+                        if (typeof req.body.service.extra.poweredby !== 'undefined') {
+                            chatwebMetadata.extra.showplatformlogo = req.body.service.extra.poweredby;
+                        }
+                        if (typeof req.body.service.extra.persistentinput !== 'undefined') {
+                            chatwebMetadata.extra.inputalwaysactive = req.body.service.extra.persistentinput;
+                        }
+                        if (typeof req.body.service.extra.abandonevent !== 'undefined') {
+                            chatwebMetadata.extra.enableabandon = req.body.service.extra.abandonevent;
+                        }
+                        if (typeof req.body.service.extra.alertsound !== 'undefined') {
+                            chatwebMetadata.extra.playalertsound = req.body.service.extra.alertsound;
+                        }
+                        if (typeof req.body.service.extra.formhistory !== 'undefined') {
+                            chatwebMetadata.extra.enableformhistory = req.body.service.extra.formhistory;
+                        }
+                        if (typeof req.body.service.extra.enablemetadata !== 'undefined') {
+                            chatwebMetadata.extra.sendmetadata = req.body.service.extra.enablemetadata;
+                        }
+                        if (typeof req.body.service.extra.customcss !== 'undefined' && req.body.service.extra.customcss) {
+                            chatwebMetadata.extra.cssbody = req.body.service.extra.customcss;
+                        }
+                        if (typeof req.body.service.extra.customjs !== 'undefined' && req.body.service.extra.customjs) {
+                            chatwebMetadata.extra.jsscript = req.body.service.extra.customjs;
+                        }
+                        if (typeof req.body.service.extra.botnameenabled !== 'undefined') {
+                            chatwebMetadata.extra.showmessageheader = req.body.service.extra.botnameenabled;
+                        }
+                        if (typeof req.body.service.extra.botnametext !== 'undefined' && req.body.service.extra.botnametext) {
+                            chatwebMetadata.extra.headermessage = req.body.service.extra.botnametext;
+                        }
+                    }
+                }
+
+                chatwebBody.metadata = chatwebMetadata;
+
+                const responseChatWebSave = await axios({
+                    url: `${URLBROKER}api/integrations/save`,
+                    method: 'post',
+                    data: chatwebBody
+                });
+
+                var integrationId = responseChatWebSave.data.id;
+
+                if (typeof integrationId !== 'undefined' && integrationId) {
+                    const responseChatWebhookSave = await axios({
+                        url: `${URLBROKER}api/webhooks/save`,
+                        method: 'post',
+                        data: {
+                            name: req.body.parameters.description,
+                            description: req.body.parameters.description,
+                            integration: integrationId,
+                            webUrl: `${URLHOOK}api/chatweb/webhookasync`,
+                            status: 'ACTIVO'
+                        }
+                    });
+
+                    var webhookId = responseChatWebhookSave.data.id;
+
+                    const responseChatPluginSave = await axios({
+                        url: `${URLBROKER}api/webhooks/save`,
+                        method: 'post',
+                        data: {
+                            name: req.body.parameters.description,
+                            integration: integrationId,
+                            status: 'ACTIVO'
+                        }
+                    });
+
+                    var integrationApiKey = responseChatPluginSave.data.apiKey;
+                    var integrationKeyId = responseChatPluginSave.data.id;
+
+                    if (typeof integrationApiKey !== 'undefined' && integrationApiKey) {
+                        parameters.communicationchannelcontact = integrationKeyId;
+                        parameters.communicationchannelsite = integrationId;
+                        parameters.communicationchannelowner = webhookId;
+
+                        parameters.appintegrationid = chatwebApplicationId;
+                        parameters.integrationid = integrationId;
+
+                        parameters.apikey = integrationApiKey;
+
+                        parameters.type = 'CHAZ';
+
+                        parameters.channelparameters = JSON.stringify(chatwebBody);
+
+                        const resx = await triggerfunctions.executesimpletransaction(method, parameters);
+    
+                        if (resx instanceof Array) {
+                            return res.json({
+                                integrationid: integrationId,
+                                success: true
+                            });
+                        }
+                        else {
+                            return res.status(500).json({
+                                success: false,
+                                msg: resx.msg
+                            });
+                        }
+                    }
+                    else {
+                        res.status(500).json({
+                            success: false,
+                            msg: 'Error while creating plugin'
+                        });
+                    }
+                }
+                else {
+                    res.status(500).json({
+                        success: false,
+                        msg: 'Error while creating integration'
+                    });
+                }
+                break;
+
             default:
                 res.status(500).json({
                     success: false,
-                    msg: "undefined"
+                    msg: 'Undefined'
                 });
                 break;
         }
@@ -488,14 +734,14 @@ exports.DeleteChannel = async (req, res) => {
         parameters.orgid = req.user.orgid;
         parameters.username = req.user.usr;
 
-        parameters.motive = "Delete channel";
-        parameters.operation = "DELETE";
-        parameters.status = "ELIMINADO";
+        parameters.motive = 'Delete channel';
+        parameters.operation = 'DELETE';
+        parameters.status = 'ELIMINADO';
 
         parameters.updintegration = null;
 
         switch (req.body.parameters.type) {
-            case "FBDM":
+            case 'FBDM':
                 if (typeof req.body.parameters.servicecredentials !== 'undefined' && req.body.parameters.servicecredentials) {
                     var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
@@ -516,7 +762,8 @@ exports.DeleteChannel = async (req, res) => {
                             return res.json({
                                 success: true
                             });
-                        } else {
+                        }
+                        else {
                             return res.status(500).json({
                                 success: false,
                                 msg: resx.msg
@@ -538,7 +785,8 @@ exports.DeleteChannel = async (req, res) => {
                         return res.json({
                             success: true
                         });
-                    } else {
+                    }
+                    else {
                         return res.status(500).json({
                             success: false,
                             msg: resx.msg
@@ -547,7 +795,7 @@ exports.DeleteChannel = async (req, res) => {
                 }
                 break;
 
-            case "FBWA":
+            case 'FBWA':
                 if (typeof req.body.parameters.servicecredentials !== 'undefined' && req.body.parameters.servicecredentials) {
                     var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
@@ -568,7 +816,8 @@ exports.DeleteChannel = async (req, res) => {
                             return res.json({
                                 success: true
                             });
-                        } else {
+                        }
+                        else {
                             return res.status(500).json({
                                 success: false,
                                 msg: resx.msg
@@ -590,7 +839,8 @@ exports.DeleteChannel = async (req, res) => {
                         return res.json({
                             success: true
                         });
-                    } else {
+                    }
+                    else {
                         return res.status(500).json({
                             success: false,
                             msg: resx.msg
@@ -599,7 +849,7 @@ exports.DeleteChannel = async (req, res) => {
                 }
                 break;
 
-            case "INST":
+            case 'INST':
                 if (typeof req.body.parameters.servicecredentials !== 'undefined' && req.body.parameters.servicecredentials) {
                     var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
@@ -620,7 +870,8 @@ exports.DeleteChannel = async (req, res) => {
                             return res.json({
                                 success: true
                             });
-                        } else {
+                        }
+                        else {
                             return res.status(500).json({
                                 success: false,
                                 msg: resx.msg
@@ -642,7 +893,8 @@ exports.DeleteChannel = async (req, res) => {
                         return res.json({
                             success: true
                         });
-                    } else {
+                    }
+                    else {
                         return res.status(500).json({
                             success: false,
                             msg: resx.msg
@@ -651,7 +903,7 @@ exports.DeleteChannel = async (req, res) => {
                 }
                 break;
 
-            case "WHAD":
+            case 'WHAD':
                 if (typeof req.body.parameters.servicecredentials !== 'undefined' && req.body.parameters.servicecredentials) {
                     var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
@@ -672,7 +924,8 @@ exports.DeleteChannel = async (req, res) => {
                             return res.json({
                                 success: true
                             });
-                        } else {
+                        }
+                        else {
                             return res.status(500).json({
                                 success: false,
                                 msg: resx.msg
@@ -694,7 +947,8 @@ exports.DeleteChannel = async (req, res) => {
                         return res.json({
                             success: true
                         });
-                    } else {
+                    }
+                    else {
                         return res.status(500).json({
                             success: false,
                             msg: resx.msg
@@ -703,7 +957,7 @@ exports.DeleteChannel = async (req, res) => {
                 }
                 break;
 
-            case "TELE":
+            case 'TELE':
                 if (typeof req.body.parameters.servicecredentials !== 'undefined' && req.body.parameters.servicecredentials) {
                     var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
@@ -724,7 +978,8 @@ exports.DeleteChannel = async (req, res) => {
                             return res.json({
                                 success: true
                             });
-                        } else {
+                        }
+                        else {
                             return res.status(500).json({
                                 success: false,
                                 msg: resx.msg
@@ -746,7 +1001,8 @@ exports.DeleteChannel = async (req, res) => {
                         return res.json({
                             success: true
                         });
-                    } else {
+                    }
+                    else {
                         return res.status(500).json({
                             success: false,
                             msg: resx.msg
@@ -755,8 +1011,8 @@ exports.DeleteChannel = async (req, res) => {
                 }
                 break;
 
-            case "TWIT":
-            case "TWDM":
+            case 'TWIT':
+            case 'TWDM':
                 if (typeof req.body.parameters.servicecredentials !== 'undefined' && req.body.parameters.servicecredentials) {
                     var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
@@ -783,7 +1039,8 @@ exports.DeleteChannel = async (req, res) => {
                                 return res.json({
                                     success: true
                                 });
-                            } else {
+                            }
+                            else {
                                 return res.status(500).json({
                                     success: false,
                                     msg: resx.msg
@@ -822,7 +1079,8 @@ exports.DeleteChannel = async (req, res) => {
                                     return res.json({
                                         success: true
                                     });
-                                } else {
+                                }
+                                else {
                                     return res.status(500).json({
                                         success: false,
                                         msg: resx.msg
@@ -836,7 +1094,8 @@ exports.DeleteChannel = async (req, res) => {
                                 });
                             }
                         }
-                    } else {
+                    }
+                    else {
                         return res.status(500).json({
                             success: false,
                             msg: rest.msg
@@ -851,7 +1110,8 @@ exports.DeleteChannel = async (req, res) => {
                         return res.json({
                             success: true
                         });
-                    } else {
+                    }
+                    else {
                         return res.status(500).json({
                             success: false,
                             msg: resx.msg
@@ -860,6 +1120,45 @@ exports.DeleteChannel = async (req, res) => {
                 }
                 break;
 
+            case 'CHAZ':
+                const responseChatPluginDelete = await axios({
+                    url: `${URLBROKER}api/plugins/update/${req.body.parameters.communicationchannelcontact}`,
+                    method: 'post',
+                    data: {
+                        status: 'ELIMINADO'
+                    }
+                });
+
+                const responseChatWebhookDelete = await axios({
+                    url: `${URLBROKER}api/webhooks/update/${req.body.parameters.communicationchannelowner}`,
+                    method: 'post',
+                    data: {
+                        status: 'ELIMINADO'
+                    }
+                });
+
+                const responseChatIntegrationDelete = await axios({
+                    url: `${URLBROKER}api/integrations/update/${req.body.parameters.integrationid}`,
+                    method: 'post',
+                    data: {
+                        status: 'ELIMINADO'
+                    }
+                });
+
+                const responseChatweb = await triggerfunctions.executesimpletransaction(method, parameters);
+    
+                if (responseChatweb instanceof Array) {
+                    return res.json({
+                        success: true
+                    });
+                }
+                else {
+                    return res.status(500).json({
+                        success: false,
+                        msg: responseChatweb.msg
+                    });
+                }
+
             default:
                 const resx = await triggerfunctions.executesimpletransaction(method, parameters);
 
@@ -867,7 +1166,8 @@ exports.DeleteChannel = async (req, res) => {
                     return res.json({
                         success: true
                     });
-                } else {
+                }
+                else {
                     return res.status(500).json({
                         success: false,
                         msg: resx.msg
