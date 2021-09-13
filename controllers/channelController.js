@@ -509,7 +509,7 @@ exports.InsertChannel = async (req, res) => {
                             uploadlocation: false,
                             uploadvideo: false
                         },
-                        form: [],
+                        form: null,
                         icons: {
                             chatBotImage: '',
                             chatHeaderImage: '',
@@ -528,105 +528,103 @@ exports.InsertChannel = async (req, res) => {
                 if (typeof req.body.service !== 'undefined' && req.body.service) {
                     if (typeof req.body.service.interface !== 'undefined' && req.body.service.interface) {
                         if (typeof req.body.service.interface.chattitle !== 'undefined' && req.body.service.interface.chattitle) {
-                            chatwebMetadata.personalization.headerTitle = req.body.service.interface.chattitle;
+                            chatwebBody.metadata.personalization.headerTitle = req.body.service.interface.chattitle;
                         }
                         if (typeof req.body.service.interface.chatsubtitle !== 'undefined' && req.body.service.interface.chatsubtitle) {
-                            chatwebMetadata.personalization.headerSubTitle = req.body.service.interface.chatsubtitle;
+                            chatwebBody.metadata.personalization.headerSubTitle = req.body.service.interface.chatsubtitle;
                         }
                         if (typeof req.body.service.interface.iconbutton !== 'undefined' && req.body.service.interface.iconbutton) {
-                            chatwebMetadata.icons.chatOpenImage = req.body.service.interface.iconbutton;
+                            chatwebBody.metadata.icons.chatOpenImage = req.body.service.interface.iconbutton;
                         }
                         if (typeof req.body.service.interface.iconheader !== 'undefined' && req.body.service.interface.iconheader) {
-                            chatwebMetadata.icons.chatHeaderImage = req.body.service.interface.iconheader;
+                            chatwebBody.metadata.icons.chatHeaderImage = req.body.service.interface.iconheader;
                         }
                         if (typeof req.body.service.interface.iconbot !== 'undefined' && req.body.service.interface.iconbot) {
-                            chatwebMetadata.icons.chatBotImage = req.body.service.interface.iconbot;
+                            chatwebBody.metadata.icons.chatBotImage = req.body.service.interface.iconbot;
                         }
                     }
                     if (typeof req.body.service.color !== 'undefined' && req.body.service.color) {
                         if (typeof req.body.service.color.header !== 'undefined' && req.body.service.color.header) {
-                            chatwebMetadata.color.chatHeaderColor = req.body.service.color.header;
+                            chatwebBody.metadata.color.chatHeaderColor = req.body.service.color.header;
                         }
                         if (typeof req.body.service.color.background !== 'undefined' && req.body.service.color.background) {
-                            chatwebMetadata.color.chatBackgroundColor = req.body.service.color.background;
+                            chatwebBody.metadata.color.chatBackgroundColor = req.body.service.color.background;
                         }
                         if (typeof req.body.service.color.border !== 'undefined' && req.body.service.color.border) {
-                            chatwebMetadata.color.chatBorderColor = req.body.service.color.border;
+                            chatwebBody.metadata.color.chatBorderColor = req.body.service.color.border;
                         }
                         if (typeof req.body.service.color.client !== 'undefined' && req.body.service.color.client) {
-                            chatwebMetadata.color.messageClientColor = req.body.service.color.client;
+                            chatwebBody.metadata.color.messageClientColor = req.body.service.color.client;
                         }
                         if (typeof req.body.service.color.bot !== 'undefined' && req.body.service.color.bot) {
-                            chatwebMetadata.color.messageBotColor = req.body.service.color.bot;
+                            chatwebBody.metadata.color.messageBotColor = req.body.service.color.bot;
                         }
                     }
                     if (typeof req.body.service.form !== 'undefined' && req.body.service.form) {
-                        chatwebMetadata.form = req.body.service.form;
+                        chatwebBody.metadata.form = req.body.service.form;
                     }
                     if (typeof req.body.service.bubble !== 'undefined' && req.body.service.bubble) {
                         if (typeof req.body.service.bubble.active !== 'undefined') {
-                            chatwebMetadata.extra.enableidlemessage = req.body.service.bubble.active;
+                            chatwebBody.metadata.extra.enableidlemessage = req.body.service.bubble.active;
                         }
                         if (typeof req.body.service.bubble.iconbubble !== 'undefined' && req.body.service.bubble.iconbubble) {
-                            chatwebMetadata.icons.chatIdleImage = req.body.service.bubble.iconbubble;
+                            chatwebBody.metadata.icons.chatIdleImage = req.body.service.bubble.iconbubble;
                         }
                         if (typeof req.body.service.bubble.messagebubble !== 'undefined' && req.body.service.bubble.messagebubble) {
-                            chatwebMetadata.personalization.idleMessage = req.body.service.bubble.messagebubble;
+                            chatwebBody.metadata.personalization.idleMessage = req.body.service.bubble.messagebubble;
                         }
                     }
                     if (typeof req.body.service.extra !== 'undefined' && req.body.service.extra) {
                         if (typeof req.body.service.extra.uploadfile !== 'undefined') {
-                            chatwebMetadata.extra.uploadfile = req.body.service.extra.uploadfile;
+                            chatwebBody.metadata.extra.uploadfile = req.body.service.extra.uploadfile;
                         }
                         if (typeof req.body.service.extra.uploadvideo !== 'undefined') {
-                            chatwebMetadata.extra.uploadvideo = req.body.service.extra.uploadvideo;
+                            chatwebBody.metadata.extra.uploadvideo = req.body.service.extra.uploadvideo;
                         }
                         if (typeof req.body.service.extra.uploadlocation !== 'undefined') {
-                            chatwebMetadata.extra.uploadlocation = req.body.service.extra.uploadlocation;
+                            chatwebBody.metadata.extra.uploadlocation = req.body.service.extra.uploadlocation;
                         }
                         if (typeof req.body.service.extra.uploadimage !== 'undefined') {
-                            chatwebMetadata.extra.uploadimage = req.body.service.extra.uploadimage;
+                            chatwebBody.metadata.extra.uploadimage = req.body.service.extra.uploadimage;
                         }
                         if (typeof req.body.service.extra.uploadaudio !== 'undefined') {
-                            chatwebMetadata.extra.uploadaudio = req.body.service.extra.uploadaudio;
+                            chatwebBody.metadata.extra.uploadaudio = req.body.service.extra.uploadaudio;
                         }
                         if (typeof req.body.service.extra.reloadchat !== 'undefined') {
-                            chatwebMetadata.extra.showchatrestart = req.body.service.extra.reloadchat;
+                            chatwebBody.metadata.extra.showchatrestart = req.body.service.extra.reloadchat;
                         }
                         if (typeof req.body.service.extra.poweredby !== 'undefined') {
-                            chatwebMetadata.extra.showplatformlogo = req.body.service.extra.poweredby;
+                            chatwebBody.metadata.extra.showplatformlogo = req.body.service.extra.poweredby;
                         }
                         if (typeof req.body.service.extra.persistentinput !== 'undefined') {
-                            chatwebMetadata.extra.inputalwaysactive = req.body.service.extra.persistentinput;
+                            chatwebBody.metadata.extra.inputalwaysactive = req.body.service.extra.persistentinput;
                         }
                         if (typeof req.body.service.extra.abandonevent !== 'undefined') {
-                            chatwebMetadata.extra.enableabandon = req.body.service.extra.abandonevent;
+                            chatwebBody.metadata.extra.enableabandon = req.body.service.extra.abandonevent;
                         }
                         if (typeof req.body.service.extra.alertsound !== 'undefined') {
-                            chatwebMetadata.extra.playalertsound = req.body.service.extra.alertsound;
+                            chatwebBody.metadata.extra.playalertsound = req.body.service.extra.alertsound;
                         }
                         if (typeof req.body.service.extra.formhistory !== 'undefined') {
-                            chatwebMetadata.extra.enableformhistory = req.body.service.extra.formhistory;
+                            chatwebBody.metadata.extra.enableformhistory = req.body.service.extra.formhistory;
                         }
                         if (typeof req.body.service.extra.enablemetadata !== 'undefined') {
-                            chatwebMetadata.extra.sendmetadata = req.body.service.extra.enablemetadata;
+                            chatwebBody.metadata.extra.sendmetadata = req.body.service.extra.enablemetadata;
                         }
                         if (typeof req.body.service.extra.customcss !== 'undefined' && req.body.service.extra.customcss) {
-                            chatwebMetadata.extra.cssbody = req.body.service.extra.customcss;
+                            chatwebBody.metadata.extra.cssbody = req.body.service.extra.customcss;
                         }
                         if (typeof req.body.service.extra.customjs !== 'undefined' && req.body.service.extra.customjs) {
-                            chatwebMetadata.extra.jsscript = req.body.service.extra.customjs;
+                            chatwebBody.metadata.extra.jsscript = req.body.service.extra.customjs;
                         }
                         if (typeof req.body.service.extra.botnameenabled !== 'undefined') {
-                            chatwebMetadata.extra.showmessageheader = req.body.service.extra.botnameenabled;
+                            chatwebBody.metadata.extra.showmessageheader = req.body.service.extra.botnameenabled;
                         }
                         if (typeof req.body.service.extra.botnametext !== 'undefined' && req.body.service.extra.botnametext) {
-                            chatwebMetadata.extra.headermessage = req.body.service.extra.botnametext;
+                            chatwebBody.metadata.extra.headermessage = req.body.service.extra.botnametext;
                         }
                     }
                 }
-
-                chatwebBody.metadata = chatwebMetadata;
 
                 const responseChatWebSave = await axios({
                     url: `${URLBROKER}api/integrations/save`,
