@@ -27,12 +27,14 @@ exports.GetCollection = async (req, res) => {
 exports.executeTransaction = async (req, res) => {
     const { header, detail: detailtmp } = req.body;
 
-    if (header.parameters.password) {
+    if (header && header.parameters.password) {
         const salt = await bcryptjs.genSalt(10);
         header.parameters.password = await bcryptjs.hash(header.parameters.password, salt);
     }
 
-    setSessionParameters(header.parameters, req.user);
+    if (header) {
+        setSessionParameters(header.parameters, req.user);
+    }
 
     const detail = detailtmp.map(x => {
         setSessionParameters(x.parameters, req.user);
