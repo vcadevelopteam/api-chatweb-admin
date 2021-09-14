@@ -535,6 +535,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_VARIABLECONFIGURATION_LST: {
+        query: "SELECT * FROM ufn_tableconfiguration_lst($corpid, $orgid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_VARIABLECONFIGURATION_SEL: {
         query: "SELECT * FROM ufn_tablevariableconfiguration_sel($corpid, $orgid, $chatblockid, $userid)",
         module: "",
