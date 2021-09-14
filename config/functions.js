@@ -279,11 +279,6 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_CLASSIFICATION_INS: {
-        query: "SELECT * FROM ufn_classification_ins($id,$corpid,$orgid,$description,$parent,$communicationchannel,$status,$type,$username,$operation,$jobplan,$usergroup,$schedule)",    
-        module: "",
-        protected: "SELECT"
-    },
     UFN_QUICKREPLY_SEL: {
         query: "SELECT * FROM ufn_quickreply_sel($corpid ,$orgid ,$id  ,$username ,$all)",    
         module: "/extras/quickreplies",
@@ -365,7 +360,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CLASSIFICATION_INS: {
-        query: "SELECT * FROM ufn_classification_ins( $id, $corpid, $orgid, $description, $parent, $communicationchannel, $status, $type, $username, $operation, $tags, $jobplan, $usergroup, $schedule)",
+        query: "SELECT * FROM ufn_classification_ins( $id, $corpid, $orgid, $description, $parent, $communicationchannel, $status, $type, $username, $operation, $tags,$title, $jobplan, $usergroup, $schedule)",
         module: "",
         protected: "INSERT"
     },
