@@ -1,10 +1,10 @@
-require('dotenv').config({ path: 'variables.env' });
+require('dotenv').config();
 const Sequelize = require('sequelize');
 
-const DBNAME = "laraigodev";
-const DBUSER = "admin";
-const DBPASSWORD = "Sistemas247";
-const DBHOST = "d5f3bbe9-f872-48c5-93b0-768afcc6a391.4b2136ddd30a46e9b7bdb2b2db7f8cd0.private.databases.appdomain.cloud";
+const DBNAME = process.env.DBNAME
+const DBUSER = process.env.DBUSER
+const DBPASSWORD = process.env.DBPASSWORD
+const DBHOST = process.env.DBHOST
 
 module.exports = new Sequelize(DBNAME, DBUSER, DBPASSWORD, {
     host: DBHOST,
