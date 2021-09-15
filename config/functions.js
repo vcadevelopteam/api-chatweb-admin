@@ -50,7 +50,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PROPERTY_SEL: {
-        query: "SELECT * FROM ufn_property_sel($corpid,$orgid,$id,$username,$all, $offset)" ,
+        query: "SELECT * FROM ufn_property_sel($corpid, $orgid, $id, $username, $all, $offset)" ,
         module: "/extras/properties",
         protected: "SELECT"
     },
@@ -70,7 +70,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PROPERTY_INS: {
-        query: "SELECT * FROM ufn_property_ins($corpid,$orgid,$communicationchannelid,$id,$propertyname,$propertyvalue, $description, $status,$type,$username,$operation)",
+        query: "SELECT * FROM ufn_property_ins($corpid, $orgid, $communicationchannelid, $id, $propertyname, $propertyvalue, $description, $status, $type, $category, $group, $username,$operation)",
         module: "/extras/properties",
         protected: "SELECT"
     },
@@ -105,7 +105,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INAPPROPRIATEWORDS_INS: {
-        query: "SELECT * FROM ufn_inappropriatewords_ins($id,$corpid, $orgid, $description,$status,$type,$username,$operation)",
+        query: "SELECT * FROM ufn_inappropriatewords_ins($id,$corpid, $orgid, $description,$status,$type,$username,$classification,$defaultanswer,$operation)",
         module: "/extras/inappropriatewords",
         protected: "INSERT"
     },
@@ -547,6 +547,11 @@ module.exports = {
     },
     UFN_VARIABLECONFIGURATION_INS: {
         query: "SELECT * FROM ufn_tablevariableconfiguration_ins($corpid, $orgid, $chatblockid, $variable, $description, $fontcolor, $fontbold, $priority, $visible, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_TABLEVARIABLECONFIGURATIONBYCHANNEL_SEL: {
+        query: "select * from ufn_tablevariableconfigurationbychannel_sel($corpid, $orgid, $communicationchannelid, $userid)",
         module: "",
         protected: "SELECT"
     },

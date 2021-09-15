@@ -650,7 +650,7 @@ exports.InsertChannel = async (req, res) => {
                     var webhookId = responseChatWebhookSave.data.id;
 
                     const responseChatPluginSave = await axios({
-                        url: `${URLBROKER}api/webhooks/save`,
+                        url: `${URLBROKER}api/plugins/save`,
                         method: 'post',
                         data: {
                             name: req.body.parameters.description,
@@ -672,8 +672,9 @@ exports.InsertChannel = async (req, res) => {
 
                         parameters.apikey = integrationApiKey;
 
+                        parameters.servicecredentials = '';
                         parameters.type = 'CHAZ';
-
+                        
                         parameters.channelparameters = JSON.stringify(chatwebBody);
 
                         const resx = await triggerfunctions.executesimpletransaction(method, parameters);
