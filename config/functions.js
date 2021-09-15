@@ -545,4 +545,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_TABLEVARIABLECONFIGURATIONBYCHANNEL_SEL: {
+        query: "select * from ufn_tablevariableconfigurationbychannel_sel($corpid, $orgid, $communicationchannelid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
 }

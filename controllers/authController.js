@@ -1,4 +1,4 @@
-require('dotenv').config({ path: 'process.env' });
+require('dotenv').config();
 const tf = require('../config/triggerfunctions');;
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
