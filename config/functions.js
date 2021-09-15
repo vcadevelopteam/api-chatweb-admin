@@ -105,7 +105,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INAPPROPRIATEWORDS_INS: {
-        query: "SELECT * FROM ufn_inappropriatewords_ins($id,$corpid, $orgid, $description,$status,$type,$username,$operation)",
+        query: "SELECT * FROM ufn_inappropriatewords_ins($id,$corpid, $orgid, $description,$status,$type,$username,$classification,$defaultanswer,$operation)",
         module: "/extras/inappropriatewords",
         protected: "INSERT"
     },
