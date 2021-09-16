@@ -105,8 +105,8 @@ exports.getUser = async (req, res) => {
             if (error) throw error;
             delete req.user.token;
             delete req.user.corpid;
-            delete req.user.orgid;
-            delete req.user.userid;
+            // delete req.user.orgid;
+            // delete req.user.userid;
             return res.json({ data: { ...req.user, menu, token } });
         })
     } catch (error) {

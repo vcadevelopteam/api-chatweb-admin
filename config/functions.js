@@ -412,7 +412,7 @@ module.exports = {
     UFN_CONVERSATIONCLASSIFICATION_INS: {
         query: "SELECT * FROM ufn_conversationclassification_ins($conversationid, $classificationid, $username, $operation, $jobplan)",
         module: "/supervisor",
-        protected: "SELECT"
+        protected: "INSERT"
     },
     UFN_INTEGRATIONMANAGER_SEL: {
         query: "SELECT * FROM ufn_integrationmanager_sel($corpid,$orgid,$id,$username, $all)",
