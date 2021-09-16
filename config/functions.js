@@ -259,6 +259,21 @@ module.exports = {
         module: "/reports",
         protected: "SELECT"
     },
+    UFN_REPORT_USERPRODUCTIVITY_SEL: {
+        query: "SELECT * FROM ufn_report_userproductivity_sel($corpid ,$orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $supervisorid)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_USERPRODUCTIVITY_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_report_userproductivity_totalrecords($corpid ,$orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $supervisorid)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_USERPRODUCTIVITY_EXPORT: {
+        query: "SELECT * FROM ufn_report_userproductivity_export($corpid ,$orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $supervisorid)",    
+        module: "/reports",
+        protected: "SELECT"
+    },
     UFN_DOMAIN_SEL: {
         query: "SELECT * FROM ufn_domain_sel($corpid ,$orgid ,$domainname  ,$username ,$all)",    
         module: "/extras/domains",
