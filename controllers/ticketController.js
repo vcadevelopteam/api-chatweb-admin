@@ -86,7 +86,7 @@ exports.close = async (req, res) => {
         const responseservices = await axios.post(
             `${process.env.SERVICES}ServiceLogicHook/closeticket`,
             { method: "", parameters: data });
-        console.log(responseservices)
+        console.log(responseservices.data)
         if (!responseservices.data || !responseservices.data instanceof Object)
             return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
 
@@ -99,7 +99,7 @@ exports.close = async (req, res) => {
         // if (!responseapp.data || !responseapp.data instanceof Object)
         //     return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
 
-        res.json(responseservices);
+        res.json(responseservices.data);
     }
     catch (ee) {
         console.log(ee);
