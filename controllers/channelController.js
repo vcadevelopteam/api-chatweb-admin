@@ -1120,29 +1120,35 @@ exports.DeleteChannel = async (req, res) => {
                 break;
 
             case 'CHAZ':
-                const responseChatPluginDelete = await axios({
-                    url: `${URLBROKER}api/plugins/update/${req.body.parameters.communicationchannelcontact}`,
-                    method: 'post',
-                    data: {
-                        status: 'ELIMINADO'
-                    }
-                });
+                if (typeof req.body.parameters.communicationchannelcontact !== 'undefined' && req.body.parameters.communicationchannelcontact) {
+                    await axios({
+                        url: `${URLBROKER}api/plugins/update/${req.body.parameters.communicationchannelcontact}`,
+                        method: 'put',
+                        data: {
+                            status: 'ELIMINADO'
+                        }
+                    });
+                }
 
-                const responseChatWebhookDelete = await axios({
-                    url: `${URLBROKER}api/webhooks/update/${req.body.parameters.communicationchannelowner}`,
-                    method: 'post',
-                    data: {
-                        status: 'ELIMINADO'
-                    }
-                });
+                if (typeof req.body.parameters.communicationchannelowner !== 'undefined' && req.body.parameters.communicationchannelowner) {
+                    await axios({
+                        url: `${URLBROKER}api/webhooks/update/${req.body.parameters.communicationchannelowner}`,
+                        method: 'put',
+                        data: {
+                            status: 'ELIMINADO'
+                        }
+                    });
+                }
 
-                const responseChatIntegrationDelete = await axios({
-                    url: `${URLBROKER}api/integrations/update/${req.body.parameters.integrationid}`,
-                    method: 'post',
-                    data: {
-                        status: 'ELIMINADO'
-                    }
-                });
+                if (typeof req.body.parameters.integrationid !== 'undefined' && req.body.parameters.integrationid) {
+                    await axios({
+                        url: `${URLBROKER}api/integrations/update/${req.body.parameters.integrationid}`,
+                        method: 'put',
+                        data: {
+                            status: 'ELIMINADO'
+                        }
+                    });
+                }
 
                 const responseChatweb = await triggerfunctions.executesimpletransaction(method, parameters);
     
