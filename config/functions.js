@@ -55,7 +55,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_DISTINCT_PROPERTY_SEL: {
-        query: "SELECT * FROM ufn_distinct_property_sel($corpid)",
+        query: "SELECT * FROM ufn_distinct_property_sel($corpid, $category, $level)",
         module: "/extras/properties",
         protected: "SELECT"
     },
