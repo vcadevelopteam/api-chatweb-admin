@@ -433,7 +433,7 @@ exports.InsertChannel = async (req, res) => {
                             parameters.type = 'TWIT';
                         }
                         else {
-                            parameters.type = 'TWDM';
+                            parameters.type = 'TWMS';
                         }
 
                         parameters.servicecredentials = JSON.stringify(servicecredentialstwitter);
@@ -1011,7 +1011,7 @@ exports.DeleteChannel = async (req, res) => {
                 break;
 
             case 'TWIT':
-            case 'TWDM':
+            case 'TWMS':
                 if (typeof req.body.parameters.servicecredentials !== 'undefined' && req.body.parameters.servicecredentials) {
                     var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
@@ -1022,7 +1022,7 @@ exports.DeleteChannel = async (req, res) => {
                     };
 
                     if (req.body.parameters.type === 'TWIT') {
-                        dataremove.type = 'TWDM';
+                        dataremove.type = 'TWMS';
                     }
                     else {
                         dataremove.type = 'TWIT';
@@ -1048,7 +1048,7 @@ exports.DeleteChannel = async (req, res) => {
                         }
                         else
                         {
-                            const responseChannelRemoveTWDM = await axios({
+                            const responseChannelRemoveTWMS = await axios({
                                 url: `${URLBRIDGE}api/processlaraigo/twitter/managetwitterlink`,
                                 method: 'post',
                                 data: {
@@ -1062,7 +1062,7 @@ exports.DeleteChannel = async (req, res) => {
                                 }
                             });
                         
-                            if (responseChannelRemoveTWDM.data.success) {
+                            if (responseChannelRemoveTWMS.data.success) {
                                 const resx = await triggerfunctions.executesimpletransaction(method, parameters);
                             
                                 if (resx instanceof Array) {
@@ -1089,7 +1089,7 @@ exports.DeleteChannel = async (req, res) => {
                             else {
                                 res.status(500).json({
                                     success: false,
-                                    msg: responseChannelRemoveTWDM.data.operationMessage
+                                    msg: responseChannelRemoveTWMS.data.operationMessage
                                 });
                             }
                         }
