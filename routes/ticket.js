@@ -7,9 +7,9 @@ router.post("/reply",
     auth,
     ticketController.reply
 )
-router.post("/reasign",
+router.post("/reassign",
     auth,
-    ticketController.reasign
+    ticketController.reassign
 )
 router.post("/close",
     auth,
