@@ -50,12 +50,20 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PROPERTY_SEL: {
+<<<<<<< HEAD
         query: "SELECT * FROM ufn_property_sel($corpid, $orgid, $description, $category, $level, $id, $username, $all, $offset)",
+=======
+        query: "SELECT * FROM ufn_property_sel($corpid, $propertyname, $description, $category, $level, $id, $username, $all, $offset)" ,
+>>>>>>> 4264597262222c495be808f57c4af968d80f3b78
         module: "/extras/properties",
         protected: "SELECT"
     },
     UFN_DISTINCT_PROPERTY_SEL: {
+<<<<<<< HEAD
         query: "SELECT * FROM ufn_distinct_property_sel($corpid)",
+=======
+        query: "SELECT * FROM ufn_distinct_property_sel($corpid, $category, $level)",
+>>>>>>> 4264597262222c495be808f57c4af968d80f3b78
         module: "/extras/properties",
         protected: "SELECT"
     },
@@ -75,7 +83,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PROPERTY_INS: {
-        query: "SELECT * FROM ufn_property_ins($corpid, $orgid, $communicationchannelid, $id, $propertyname, $propertyvalue, $description, $status, $type, $category, $group, $level, $username, $operation)",
+        query: "SELECT * FROM ufn_property_ins($corpid, $orgid, $communicationchannelid, $id, $propertyname, $propertyvalue, $description, $status, $type, $category, $domainname, $group, $level, $username, $operation)",
         module: "/extras/properties",
         protected: "SELECT"
     },
@@ -266,6 +274,19 @@ module.exports = {
     },
     UFN_REPORT_USERPRODUCTIVITY_SEL: {
         query: "SELECT * FROM ufn_report_userproductivity_sel($corpid ,$orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $supervisorid)",
+<<<<<<< HEAD
+=======
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_USERPRODUCTIVITY_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_report_userproductivity_totalrecords($corpid ,$orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $supervisorid)",
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_USERPRODUCTIVITY_EXPORT: {
+        query: "SELECT * FROM ufn_report_userproductivity_export($corpid ,$orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $supervisorid)",
+>>>>>>> 4264597262222c495be808f57c4af968d80f3b78
         module: "/reports",
         protected: "SELECT"
     },
@@ -421,6 +442,11 @@ module.exports = {
     },
     UFN_CONVERSATIONCLASSIFICATION_INS: {
         query: "SELECT * FROM ufn_conversationclassification_ins($conversationid, $classificationid, $username, $operation, $jobplan)",
+        module: "/supervisor",
+        protected: "INSERT"
+    },
+    UFN_CONVERSATION_REASSIGNTICKET: {
+        query: "SELECT * FROM ufn_conversation_reassignticket($conversationid, $newuserid, $userid, $username, $usergroup, $comment, $isanswered)",
         module: "/supervisor",
         protected: "INSERT"
     },

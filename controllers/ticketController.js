@@ -13,9 +13,9 @@ exports.reply = async (req, res) => {
         data.fromasesor = "fromasesor";
 
         if (!data.corpid)
-            data.p_corpid = req.user.corpid ? req.user.corpid : 1;
+            data.p_corpid = req.user.corpid;
         if (!data.orgid)
-            data.p_orgid = req.user.orgid ? req.user.orgid : 1;
+            data.p_orgid = req.user.orgid;
         if (!data.username)
             data.username = req.user.usr;
         if (!data.userid)
@@ -108,7 +108,7 @@ exports.close = async (req, res) => {
         });
     }
 }
-exports.reasign = async (req, res) => {
+exports.reassign = async (req, res) => {
     try {
         const { data } = req.body;
 
@@ -129,12 +129,12 @@ exports.reasign = async (req, res) => {
 
         await tf.executesimpletransaction("UFN_CONVERSATION_REASSIGNTICKET", data);
 
-        const responseapp = await axios.post(`${process.env.APP}inbox/ReassignedTicketHub`, data);
+        // const responseapp = await axios.post(`${process.env.APP}inbox/ReassignedTicketHub`, data);
 
-        if (!responseapp.data || !responseapp.data instanceof Object)
-            return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
+        // if (!responseapp.data || !responseapp.data instanceof Object)
+        //     return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
 
-        res.json(responseapp.data);
+        res.json({ success: true });
     }
     catch (ee) {
         console.log(ee);
