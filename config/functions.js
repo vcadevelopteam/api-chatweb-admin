@@ -50,20 +50,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PROPERTY_SEL: {
-<<<<<<< HEAD
-        query: "SELECT * FROM ufn_property_sel($corpid, $orgid, $description, $category, $level, $id, $username, $all, $offset)",
-=======
         query: "SELECT * FROM ufn_property_sel($corpid, $propertyname, $description, $category, $level, $id, $username, $all, $offset)" ,
->>>>>>> 4264597262222c495be808f57c4af968d80f3b78
         module: "/extras/properties",
         protected: "SELECT"
     },
     UFN_DISTINCT_PROPERTY_SEL: {
-<<<<<<< HEAD
-        query: "SELECT * FROM ufn_distinct_property_sel($corpid)",
-=======
         query: "SELECT * FROM ufn_distinct_property_sel($corpid, $category, $level)",
->>>>>>> 4264597262222c495be808f57c4af968d80f3b78
         module: "/extras/properties",
         protected: "SELECT"
     },
