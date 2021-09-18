@@ -41,49 +41,52 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
     try {
         let functionMethod = functionsbd[methodcollection];
 
-    if (functionMethod && functionsbd[methodcount]) {
+        if (functionMethod && functionsbd[methodcount]) {
 
-        if (permissions && functionMethod.module) {
-            const application = permissions[functionMethod.module];
-            if (functionMethod.protected && (!application || ((functionMethod.protected === "SELECT" && !application[0]) || (functionMethod.protected === "INSERT" && !application[2])))) {
-                return getErrorCode(errors.FORBIDDEN);
+            if (permissions && functionMethod.module) {
+                const application = permissions[functionMethod.module];
+                if (functionMethod.protected && (!application || ((functionMethod.protected === "SELECT" && !application[0]) || (functionMethod.protected === "INSERT" && !application[2])))) {
+                    return getErrorCode(errors.FORBIDDEN);
+                }
             }
-        }
 
-        const querycollection = functionMethod.query;
-        const querycount = functionsbd[methodcount].query;
+            const querycollection = functionMethod.query;
+            const querycount = functionsbd[methodcount].query;
 
-        if (data instanceof Object) {
-            data.where = generatefilter(data.filters, data.origin, data.daterange, data.offset);
-            data.order = generateSort(data.sorts, data.origin);
+            if (data instanceof Object) {
+                data.where = generatefilter(data.filters, data.origin, data.daterange, data.offset);
+                data.order = generateSort(data.sorts, data.origin);
 
-            const results = await Promise.all([
-                sequelize.query(querycollection, {
-                    type: QueryTypes.SELECT,
-                    bind: data
-                }),
-                sequelize.query(querycount, {
-                    type: QueryTypes.SELECT,
-                    bind: data
-                })
-            ]).catch(err => getErrorSeq(err));
+                const queryCollectionCleaned = querycollection.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order || "");
+                const queryCountCleaned = querycount.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
 
-            if (!(results instanceof Array)) {
-                return results
-            }
-            return {
-                data: results[0],
-                count: results[1][0].p_totalrecords,
-                success: true,
-                message: null,
-                error: false
+                const results = await Promise.all([
+                    sequelize.query(queryCollectionCleaned, {
+                        type: QueryTypes.SELECT,
+                        bind: data
+                    }),
+                    sequelize.query(queryCountCleaned, {
+                        type: QueryTypes.SELECT,
+                        bind: data
+                    })
+                ]).catch(err => getErrorSeq(err));
+
+                if (!(results instanceof Array)) {
+                    return results
+                }
+                return {
+                    data: results[0],
+                    count: results[1][0].p_totalrecords,
+                    success: true,
+                    message: null,
+                    error: false
+                }
+            } else {
+                return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
             }
         } else {
-            return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
+            return getErrorCode(errors.NOT_FUNCTION_ERROR);
         }
-    } else {
-        return getErrorCode(errors.NOT_FUNCTION_ERROR);
-    }
     } catch (error) {
         return getErrorCode(errors.UNEXPECTED_ERROR);
     }
@@ -98,13 +101,15 @@ exports.exporttmp = async (method, data) => {
     }
     try {
         if (functionsbd[method]) {
-            let query = functionsbd[method];
+            let query = functionsbd[method].query;
             if (data instanceof Object) {
 
                 data.where = generatefilter(data.filters, data.origin, data.daterange, data.offset);
                 data.order = generateSort(data.sorts, data.origin);
 
-                const result = await sequelize.query(query, {
+                const queryCollectionCleaned = query.replace("###WHERE###", data.where || "");
+
+                const result = await sequelize.query(queryCollectionCleaned, {
                     type: QueryTypes.SELECT,
                     bind: data
                 });
@@ -132,7 +137,7 @@ exports.GetMultiCollection = async (detail, permissions = false) => {
                     return getErrorCode(errors.FORBIDDEN);
                 }
             }
-            
+
             const r = await sequelize.query(functionMethod.query, {
                 type: QueryTypes.SELECT,
                 bind: item.parameters
