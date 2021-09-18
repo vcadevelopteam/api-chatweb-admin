@@ -50,12 +50,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PROPERTY_SEL: {
-        query: "SELECT * FROM ufn_property_sel($corpid, $orgid, $description, $category, $level, $id, $username, $all, $offset)",
+        query: "SELECT * FROM ufn_property_sel($corpid, $propertyname, $description, $category, $level, $id, $username, $all, $offset)",
         module: "/extras/properties",
         protected: "SELECT"
     },
     UFN_DISTINCT_PROPERTY_SEL: {
-        query: "SELECT * FROM ufn_distinct_property_sel($corpid)",
+        query: "SELECT * FROM ufn_distinct_property_sel($corpid, $category, $level)",
         module: "/extras/properties",
         protected: "SELECT"
     },
@@ -75,7 +75,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PROPERTY_INS: {
-        query: "SELECT * FROM ufn_property_ins($corpid, $orgid, $communicationchannelid, $id, $propertyname, $propertyvalue, $description, $status, $type, $category, $group, $level, $username, $operation)",
+        query: "SELECT * FROM ufn_property_ins($corpid, $orgid, $communicationchannelid, $id, $propertyname, $propertyvalue, $description, $status, $type, $category, $domainname, $group, $level, $username, $operation)",
         module: "/extras/properties",
         protected: "SELECT"
     },
@@ -165,32 +165,32 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_INPUTRETRY_SEL: {
-        query: "SELECT * FROM ufn_report_inputretry_sel($corpid ,$orgid, $take, $skip, $where, $order, $supervisorid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_inputretry_sel($corpid ,$orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_INPUTRETRY_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_inputretry_totalrecords($corpid ,$orgid, $where, $supervisorid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_inputretry_totalrecords($corpid ,$orgid, $where, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_INPUTRETRY_EXPORT: {
-        query: "SELECT * FROM ufn_report_inputretry_export($corpid ,$orgid, $where, $order, $supervisorid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_inputretry_export($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_TIPIFICATION_SEL: {
-        query: "SELECT * FROM ufn_report_tipification_sel($corpid ,$orgid, $take, $skip, $where, $order, $supervisorid, $startdate, $enddate)",
+        query: "SELECT * FROM ufn_report_tipification_sel($corpid ,$orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_TIPIFICATION_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_tipification_totalrecords($corpid ,$orgid, $where, $supervisorid, $startdate, $enddate)",
+        query: "SELECT * FROM ufn_report_tipification_totalrecords($corpid ,$orgid, $where, $userid, $startdate, $enddate)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_TIPIFICATION_EXPORT: {
-        query: "SELECT * FROM ufn_report_tipification_export($corpid ,$orgid, $where, $order, $supervisorid, $startdate, $enddate)",
+        query: "SELECT * FROM ufn_report_tipification_export($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -200,7 +200,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_INTERACTION_TOTALRECORDS: {
-        query: "WITH w1 AS (SELECT DISTINCT unnest(string_to_array(groups,',')) AS groups FROM orguser ous         WHERE ous.corpid = $corpid         AND ous.orgid = $orgid         AND ous.userid = $userid     ) SELECT         COUNT(*)     FROM conversation co     LEFT JOIN orguser ous ON co.corpid = ous.corpid AND co.orgid = ous.orgid AND co.lastuserid = ous.userid     LEFT JOIN communicationchannel cc on co.corpid = cc.corpid and co.orgid = cc.orgid and co.communicationchannelid = cc.communicationchannelid     LEFT JOIN person pe on co.personid = pe.personid     LEFT JOIN personcommunicationchannel pcc on co.corpid = pcc.corpid and co.orgid = pcc.orgid and co.personid = pcc.personid and co.personcommunicationchannel = pcc.personcommunicationchannel     LEFT JOIN interaction inter ON co.conversationid = inter.conversationid     LEFT JOIN orguser ous2 ON inter.corpid = ous2.corpid AND inter.orgid = ous2.orgid AND inter.userid = ous2.userid     LEFT JOIN usr us on ous2.userid = us.userid     WHERE co.corpid = $corpid     AND co.orgid = $orgid     AND CASE WHEN (SELECT(array_length(array_agg(groups), 1)) FROM w1) IS NOT NULL THEN (string_to_array(ous2.groups,',') && (SELECT array_agg(groups) FROM w1)) OR COALESCE(ous2.groups,'') = '' ELSE TRUE END     AND inter.interactiontype <> 'LOG'     ###WHERE###;",
+        query: "WITH w1 AS (SELECT DISTINCT unnest(string_to_array(groups,',')) AS groups FROM orguser ous         WHERE ous.corpid = $corpid         AND ous.orgid = $orgid         AND ous.userid = $userid     ) SELECT         COUNT(*)  p_totalrecords   FROM conversation co     LEFT JOIN orguser ous ON co.corpid = ous.corpid AND co.orgid = ous.orgid AND co.lastuserid = ous.userid     LEFT JOIN communicationchannel cc on co.corpid = cc.corpid and co.orgid = cc.orgid and co.communicationchannelid = cc.communicationchannelid     LEFT JOIN person pe on co.personid = pe.personid     LEFT JOIN personcommunicationchannel pcc on co.corpid = pcc.corpid and co.orgid = pcc.orgid and co.personid = pcc.personid and co.personcommunicationchannel = pcc.personcommunicationchannel     LEFT JOIN interaction inter ON co.conversationid = inter.conversationid     LEFT JOIN orguser ous2 ON inter.corpid = ous2.corpid AND inter.orgid = ous2.orgid AND inter.userid = ous2.userid     LEFT JOIN usr us on ous2.userid = us.userid     WHERE co.corpid = $corpid     AND co.orgid = $orgid     AND CASE WHEN (SELECT(array_length(array_agg(groups), 1)) FROM w1) IS NOT NULL THEN (string_to_array(ous2.groups,',') && (SELECT array_agg(groups) FROM w1)) OR COALESCE(ous2.groups,'') = '' ELSE TRUE END     AND inter.interactiontype <> 'LOG'     ###WHERE###;",
         module: "/reports",
         protected: "SELECT"
     },
@@ -210,37 +210,37 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_PRODUCTIVITY_SEL: {
-        query: "SELECT * FROM ufn_report_productivity_sel($corpid ,$orgid, $take, $skip, $where, $order, $supervisorid, $startdate, $enddate)",
+        query: "SELECT * FROM ufn_report_productivity_sel($corpid ,$orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_PRODUCTIVITY_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_productivity_totalrecords($corpid ,$orgid, $where, $supervisorid, $startdate, $enddate)",
+        query: "SELECT * FROM ufn_report_productivity_totalrecords($corpid ,$orgid, $where, $userid, $startdate, $enddate)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_PRODUCTIVITY_EXPORT: {
-        query: "SELECT * FROM ufn_report_productivity_export($corpid ,$orgid, $where, $order, $supervisorid, $startdate, $enddate)",
+        query: "SELECT * FROM ufn_report_productivity_export($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_USERPRODUCTIVITYHOURS_SEL: {
-        query: "SELECT * FROM ufn_report_userproductivityhours_sel($corpid ,$orgid, $startdate, $enddate, $channel, $hours, $userid, $take, $skip, $where, $order, $supervisorid)",
+        query: "SELECT * FROM ufn_report_userproductivityhours_sel($corpid ,$orgid, $startdate, $enddate, $channel, $hours, $asesorid, $take, $skip, $where, $order, $userid)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_USERPRODUCTIVITYHOURS_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_userproductivityhours_totalrecords($corpid ,$orgid, $startdate, $enddate, $channel, $hours, $userid, $where, $supervisorid)",
+        query: "SELECT * FROM ufn_report_userproductivityhours_totalrecords($corpid ,$orgid, $startdate, $enddate, $channel, $hours, $asesorid, $where, $userid)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_USERPRODUCTIVITYHOURS_EXPORT: {
-        query: "SELECT * FROM ufn_report_userproductivityhours_export($corpid ,$orgid, $startdate, $enddate, $channel, $hours, $asesorid, $where, $order, $supervisorid)",
+        query: "SELECT * FROM ufn_report_userproductivityhours_export($corpid ,$orgid, $startdate, $enddate, $channel, $hours, $asesorid, $where, $order, $userid)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_USER_ASESORBYORGID_LST: {
-        query: "SELECT * FROM ufn_user_asesorbyorgid_lst($corpid ,$orgid, $supervisorid)",
+        query: "SELECT * FROM ufn_user_asesorbyorgid_lst($corpid ,$orgid, $userid)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -265,17 +265,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_USERPRODUCTIVITY_SEL: {
-        query: "SELECT * FROM ufn_report_userproductivity_sel($corpid ,$orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $supervisorid)",
-        module: "/reports",
-        protected: "SELECT"
-    },
-    UFN_REPORT_USERPRODUCTIVITY_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_userproductivity_totalrecords($corpid ,$orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $supervisorid)",
-        module: "/reports",
-        protected: "SELECT"
-    },
-    UFN_REPORT_USERPRODUCTIVITY_EXPORT: {
-        query: "SELECT * FROM ufn_report_userproductivity_export($corpid ,$orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $supervisorid)",
+        query: "SELECT * FROM ufn_report_userproductivity_sel($corpid ,$orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $userid)",
         module: "/reports",
         protected: "SELECT"
     },

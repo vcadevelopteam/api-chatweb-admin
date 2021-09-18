@@ -10,7 +10,7 @@ module.exports = {
             column: "cc.description"
         },
         fecha: {
-            column: "to_char(inter.createdate + '||p_offset||' * INTERVAL ''1hour'', ''DD/MM/YYYY HH24:MI:SS'')"
+            column: "to_char(inter.createdate + ||p_offset|| * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI:SS')"
         },
         pregunta: {
             column: "inter.inputquestion"
@@ -19,7 +19,7 @@ module.exports = {
             column: "inter.interactiontext"
         },
         valido: {
-            column: "CASE WHEN inter.validinput THEN ''SI'' ELSE ''NO'' END"
+            column: "CASE WHEN inter.validinput THEN 'SI' ELSE 'NO' END"
         },
         intento: {
             column: "inter.attempt"
@@ -30,16 +30,16 @@ module.exports = {
             column: "co.ticketnum"
         },
         anioticket: {
-            column: "extract(year from (co.startdate - interval ''5 hour''))::character varying"
+            column: "extract(year from (co.startdate - interval '5 hour'))::character varying"
         },
         mesticket: {
-            column: "extract(month from (co.startdate - interval ''5 hour''))::character varying"
+            column: "extract(month from (co.startdate - interval '5 hour'))::character varying"
         },
         fechaticket: {
-            column: "to_char(co.startdate - interval ''5 hour'', ''DD/MM/YYYY'')::character varying"
+            column: "to_char(co.startdate - interval '5 hour', 'DD/MM/YYYY')::character varying"
         },
         horaticket: {
-            column: "to_char(co.startdate - interval ''5 hour'' :: time, ''HH24:MI:SS'')::character varying"
+            column: "to_char(co.startdate - interval '5 hour' :: time, 'HH24:MI:SS')::character varying"
         },
         cliente: {
             column: "pe.name"
@@ -48,7 +48,7 @@ module.exports = {
             column: "pe.documentnumber"
         },
         asesor: {
-            column: "concat(us.firstname,'' '',us.lastname)::character varying"
+            column: "concat(us.firstname,' ',us.lastname)::character varying"
         },
         canal: {
             column: "cc.description canal"
@@ -63,16 +63,16 @@ module.exports = {
             column: "case when cl2.description is null then null else cl.description end"
         },
         fechafin: {
-            column: "to_char(co.finishdate - interval ''5 hour'', ''YYYY-MM-DD'')::character varying"
+            column: "to_char(co.finishdate - interval '5 hour', 'YYYY-MM-DD')::character varying"
         },
         horafin: {
-            column: "to_char(co.finishdate - interval ''5 hour'' :: time, ''HH24:MI:SS'')::character varying"
+            column: "to_char(co.finishdate - interval '5 hour' :: time, 'HH24:MI:SS')::character varying"
         },
         fechaprimerainteraccion: {
-            column: "CASE WHEN ou.type <> ''BOT'' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) - interval ''5 hour'', ''YYYY-MM-DD''), to_char((co.startdate + co.userfirstreplytime) - interval ''5 hour'', ''YYYY-MM-DD'')) ELSE null END ::character varying"
+            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) - interval '5 hour', 'YYYY-MM-DD'), to_char((co.startdate + co.userfirstreplytime) - interval '5 hour', 'YYYY-MM-DD')) ELSE null END ::character varying"
         },
         horaprimerainteraccion: {
-            column: "CASE WHEN ou.type <> ''BOT'' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) - interval ''5 hour'' :: time, ''HH24:MI:SS''), to_char((co.startdate + co.userfirstreplytime) - interval ''5 hour'' :: time, ''HH24:MI:SS'')) ELSE null END ::character varying"
+            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) - interval '5 hour' :: time, 'HH24:MI:SS'), to_char((co.startdate + co.userfirstreplytime) - interval '5 hour' :: time, 'HH24:MI:SS')) ELSE null END ::character varying"
         },
         cerradopor: {
             column: "ou.type"
@@ -101,7 +101,7 @@ module.exports = {
             column: "rbi.monthconversation::character varying"
         },
         fechaticket: {
-            column: "to_char(rbi.datestrconversation::date, ''DD/MM/YYYY'')::character varying"
+            column: "to_char(rbi.datestrconversation::date, 'DD/MM/YYYY')::character varying"
         },
         horaticket: {
             column: "rbi.hourstrconversation::character varying"
@@ -110,7 +110,7 @@ module.exports = {
             column: "rbi.interactionid"
         },
         fechalinea: {
-            column: "to_char(rbi.datestrinteraction::date, ''DD/MM/YYYY'')::character varying"
+            column: "to_char(rbi.datestrinteraction::date, 'DD/MM/YYYY')::character varying"
         },
         horalinea: {
             column: "rbi.hourstrinteraction::character varying"
@@ -148,19 +148,19 @@ module.exports = {
             column: "co.ticketnum"
         },
         anio: {
-            column: "extract(year from co.startdate - interval ''5 hour'')::int"
+            column: "extract(year from co.startdate - interval '5 hour')::int"
         },
         mes: {
-            column: "extract(month from co.startdate - interval ''5 hour'')::int"
+            column: "extract(month from co.startdate - interval '5 hour')::int"
         },
         semana: {
-            column: "extract(week from co.startdate - interval ''5 hour'')::int"
+            column: "extract(week from co.startdate - interval '5 hour')::int"
         },
         dia: {
-            column: "extract(day from co.startdate - interval ''5 hour'')::int"
+            column: "extract(day from co.startdate - interval '5 hour')::int"
         },
         hora: {
-            column: "extract(hour from co.startdate - interval ''5 hour'')::int"
+            column: "extract(hour from co.startdate - interval '5 hour')::int"
         },
         canal: {
             column: "cc.description"
@@ -172,46 +172,46 @@ module.exports = {
             column: "ou.type"
         },
         asesor: {
-            column: "concat(us.firstname,'' '',us.lastname)::character varying"
+            column: "concat(us.firstname,' ',us.lastname)::character varying"
         },
         tipocierre: {
             column: "coalesce(do2.domaindesc, co.closetype)"
         },
         fechainicio: {
-            column: "to_char(co.startdate - interval ''5 hour'', ''DD/MM/YYYY'')::character varying"
+            column: "to_char(co.startdate - interval '5 hour', 'DD/MM/YYYY')::character varying"
         },
         horainicio: {
-            column: "to_char(co.startdate - interval ''5 hour'' :: time, ''HH24:MI:SS'')::character varying"
+            column: "to_char(co.startdate - interval '5 hour' :: time, 'HH24:MI:SS')::character varying"
         },
         fechafin: {
-            column: "to_char(co.finishdate - interval ''5 hour'', ''DD/MM/YYYY'')::character varying"
+            column: "to_char(co.finishdate - interval '5 hour', 'DD/MM/YYYY')::character varying"
         },
         horafin: {
-            column: "to_char(co.finishdate - interval ''5 hour'' :: time, ''HH24:MI:SS'')::character varying"
+            column: "to_char(co.finishdate - interval '5 hour' :: time, 'HH24:MI:SS')::character varying"
         },
         fechaderivacion: {
-            column: "to_char(co.handoffdate - interval ''5 hour'', ''DD/MM/YYYY'')::character varying"
+            column: "to_char(co.handoffdate - interval '5 hour', 'DD/MM/YYYY')::character varying"
         },
         horaderivacion: {
-            column: "coalesce(to_char(co.handoffdate - interval ''5 hour'' :: time, ''HH24:MI:SS''),'''')::character varying"
-        },        
+            column: "coalesce(to_char(co.handoffdate - interval '5 hour' :: time, 'HH24:MI:SS'),'')::character varying"
+        },
         fechaprimerainteraccion: {
-            column: "CASE WHEN ou.type <> ''BOT'' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) - interval ''5 hour'', ''DD/MM/YYYY''), to_char((co.startdate + co.userfirstreplytime) - interval ''5 hour'', ''DD/MM/YYYY'')) ELSE to_char((co.startdate + co.firstreplytime) - interval ''5 hour'', ''DD/MM/YYYY'') END ::character varying"
+            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) - interval '5 hour', 'DD/MM/YYYY'), to_char((co.startdate + co.userfirstreplytime) - interval '5 hour', 'DD/MM/YYYY')) ELSE to_char((co.startdate + co.firstreplytime) - interval '5 hour', 'DD/MM/YYYY') END ::character varying"
         },
         horaprimerainteraccion: {
-            column: "CASE WHEN ou.type <> ''BOT'' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) - interval ''5 hour'' :: time, ''HH24:MI:SS''), to_char((co.startdate + co.userfirstreplytime) - interval ''5 hour'' :: time, ''HH24:MI:SS'')) ELSE to_char((co.startdate + co.firstreplytime) - interval ''5 hour'' ::time, ''HH24:MI:SS'') END ::character varying"
+            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) - interval '5 hour' :: time, 'HH24:MI:SS'), to_char((co.startdate + co.userfirstreplytime) - interval '5 hour' :: time, 'HH24:MI:SS')) ELSE to_char((co.startdate + co.firstreplytime) - interval '5 hour' ::time, 'HH24:MI:SS') END ::character varying"
         },
         tmo: {
-            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.realduration)::text || '' seconds '')::interval,''HH24:MI:SS''),''00:00:00'') :: character varying"
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.realduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') :: character varying"
         },
         tmg: {
-            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM CASE WHEN ou.type <> ''BOT'' THEN (co.realduration - co.userfirstreplytime) ELSE null END)::text || '' seconds '')::interval,''HH24:MI:SS''),''00:00:00'') :: character varying"
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM CASE WHEN ou.type <> 'BOT' THEN (co.realduration - co.userfirstreplytime) ELSE null END)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') :: character varying"
         },
         tiemposuspension: {
-            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.totalpauseduration)::text || '' seconds '')::interval,''HH24:MI:SS''),''00:00:00'') :: character varying"
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.totalpauseduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') :: character varying"
         },
         tiempopromediorespuestaasesor: {
-            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.useraveragereplytime)::text || '' seconds '')::interval,''HH24:MI:SS''),''00:00:00'') :: character varying"
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.useraveragereplytime)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') :: character varying"
         },
         firstname: {
             column: "pe.firstname"
@@ -232,10 +232,10 @@ module.exports = {
             column: "pcc.displayname"
         },
         holdingwaitingtime: {
-            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.holdingwaitingtime)::text || '' seconds '')::interval,''HH24:MI:SS''),''00:00:00'') :: character varying"
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.holdingwaitingtime)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') :: character varying"
         },
         tmoasesor: {
-            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.totalduration - co.firstassignedtime - co.botduration)::text || '' seconds '')::interval,''HH24:MI:SS''),''00:00:00'') :: character varying"
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.totalduration - co.firstassignedtime - co.botduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') :: character varying"
         }
     },
     userproductivityhours: {
@@ -258,7 +258,7 @@ module.exports = {
             column: "pr.communicationchanneldesc"
         },
         datestr: {
-            column: "TO_CHAR(pr.datestr::DATE,''dd/mm/yyyy'')"
+            column: "TO_CHAR(pr.datestr::DATE,'dd/mm/yyyy')"
         },
         hours: {
             column: "pr.hours"
@@ -267,45 +267,45 @@ module.exports = {
             column: "pr.hoursrange"
         },
         worktime: {
-            column: "COALESCE(pr.worktime::text,''00:00:00'')"
+            column: "COALESCE(pr.worktime::text,'00:00:00')"
         },
         busytimewithinwork: {
-            column: "COALESCE(pr.busytimewithinwork::text,''00:00:00'')"
+            column: "COALESCE(pr.busytimewithinwork::text,'00:00:00')"
         },
         freetimewithinwork: {
-            column: "COALESCE(pr.freetimewithinwork::text,''00:00:00'')"
+            column: "COALESCE(pr.freetimewithinwork::text,'00:00:00')"
         },
         busytimeoutsidework: {
-            column: "COALESCE(pr.busytimeoutsidework::text,''00:00:00'')"
+            column: "COALESCE(pr.busytimeoutsidework::text,'00:00:00')"
         },
         onlinetime: {
-            column: "COALESCE(pr.onlinetime::text,''00:00:00'')"
+            column: "COALESCE(pr.onlinetime::text,'00:00:00')"
         },
         idletime: {
-            column: "COALESCE(pr.idletime::text,''00:00:00'')"
+            column: "COALESCE(pr.idletime::text,'00:00:00')"
         },
         qtytickets: {
             column: "COALESCE(pr.qtytickets,0)"
         },
         qtyconnection: {
             column: "COALESCE(pr.qtyconnection,0)"
-        },        
+        },
         qtydisconnection: {
             column: "COALESCE(pr.qtydisconnection,0)"
         }
     },
     loginhistory: {
         nombre_usuario: {
-            column: "concat(u.firstname,'' '',u.lastname)"
+            column: "concat(u.firstname,' ',u.lastname)"
         },
         usuario: {
             column: "u.usr"
         },
         createdate: {
-            column: "to_char(uh.createdate - interval ''5 hour'', ''DD/MM/YYYY'')::character varying"
+            column: "to_char(uh.createdate - interval '5 hour', 'DD/MM/YYYY')::character varying"
         },
         createhour: {
-            column: "to_char(uh.createdate - interval ''5 hour'', ''HH24:MI'')::character varying"
+            column: "to_char(uh.createdate - interval '5 hour', 'HH24:MI')::character varying"
         },
         type: {
             column: "uh.type"
@@ -442,5 +442,5 @@ module.exports = {
             column: "pcc.locke"
         },
     }
-    
+
 }

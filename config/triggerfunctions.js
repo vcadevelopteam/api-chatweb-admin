@@ -74,6 +74,7 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
                 if (!(results instanceof Array)) {
                     return results
                 }
+                console.log(results)
                 return {
                     data: results[0],
                     count: results[1][0].p_totalrecords,
