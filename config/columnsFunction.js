@@ -92,46 +92,46 @@ module.exports = {
     },
     interaction: {
         numeroticket: {
-            column: "rbi.ticketnum"
+            column: "co.ticketnum"
         },
         anioticket: {
-            column: "rbi.yearconversation::character varying"
+            column: "to_char(co.startdate -5 * INTERVAL '1hour','YYYY')::character varying"
         },
         mesticket: {
-            column: "rbi.monthconversation::character varying"
+            column: "to_char(co.startdate -5 * INTERVAL '1hour','MM')::character varying"
         },
         fechaticket: {
-            column: "to_char(rbi.datestrconversation::date, 'DD/MM/YYYY')::character varying"
+            column: "to_char(co.startdate -5 * INTERVAL '1hour','DD/MM/YYYY')::character varying"
         },
         horaticket: {
-            column: "rbi.hourstrconversation::character varying"
+            column: "to_char(co.startdate -5 * INTERVAL '1hour','HH24:MI:SS')::character varying"
         },
         linea: {
-            column: "rbi.interactionid"
+            column: "inter.interactionid"
         },
         fechalinea: {
-            column: "to_char(rbi.datestrinteraction::date, 'DD/MM/YYYY')::character varying"
+            column: "to_char(inter.createdate -5 * INTERVAL '1hour','DD/MM/YYYY')::character varying"
         },
         horalinea: {
-            column: "rbi.hourstrinteraction::character varying"
+            column: "to_char(inter.createdate -5 * INTERVAL '1hour','HH24:MI:SS')::character varying"
         },
         cliente: {
-            column: "rbi.personname"
+            column: "pe.name"
         },
         canal: {
-            column: "rbi.communicationchanneldesc"
+            column: "cc.description"
         },
         asesor: {
-            column: "rbi.username::character varying"
+            column: "concat(us.firstname,' ',us.lastname)::character varying"
         },
         intencion: {
-            column: "rbi.intent"
+            column: "inter.intent"
         },
         tipotexto: {
-            column: "rbi.interactiontype"
+            column: "inter.interactiontype"
         },
         texto: {
-            column: "rbi.interactiontext"
+            column: "inter.interactiontext"
         },
         usergroup: {
             column: "co.usergroup"
