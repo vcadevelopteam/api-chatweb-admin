@@ -95,34 +95,34 @@ module.exports = {
             column: "co.ticketnum"
         },
         anioticket: {
-            column: "to_char(co.startdate -5 * INTERVAL '1hour', 'YYYY')::character varying"
+            column: "to_char(co.startdate -5 * INTERVAL '1hour','YYYY')::character varying"
         },
         mesticket: {
-            column: "to_char(co.startdate -5 * INTERVAL '1hour', 'MM')::character varying"
+            column: "to_char(co.startdate -5 * INTERVAL '1hour','MM')::character varying"
         },
         fechaticket: {
-            column: "to_char(co.startdate -5 * INTERVAL '1hour', 'DD/MM/YYYY')::character varying"
+            column: "to_char(co.startdate -5 * INTERVAL '1hour','DD/MM/YYYY')::character varying"
         },
         horaticket: {
-            column: "to_char(co.startdate -5 * INTERVAL '1hour', 'HH24:MI:SS')::character varying"
+            column: "to_char(co.startdate -5 * INTERVAL '1hour','HH24:MI:SS')::character varying"
         },
         linea: {
             column: "inter.interactionid"
         },
         fechalinea: {
-            column: "to_char(inter.datestrinteraction::date, 'DD/MM/YYYY')::character varying"
+            column: "to_char(inter.createdate -5 * INTERVAL '1hour','DD/MM/YYYY')::character varying"
         },
         horalinea: {
-            column: "inter.hourstrinteraction::character varying"
+            column: "to_char(inter.createdate -5 * INTERVAL '1hour','HH24:MI:SS')::character varying"
         },
         cliente: {
-            column: "inter.personname"
+            column: "pe.name"
         },
         canal: {
-            column: "inter.communicationchanneldesc"
+            column: "cc.description"
         },
         asesor: {
-            column: "inter.username::character varying"
+            column: "concat(us.firstname,' ',us.lastname)::character varying"
         },
         intencion: {
             column: "inter.intent"
