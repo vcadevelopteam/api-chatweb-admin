@@ -57,8 +57,8 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
                 data.where = generatefilter(data.filters, data.origin, data.daterange, data.offset);
                 data.order = generateSort(data.sorts, data.origin);
 
-                const queryCollectionCleaned = querycollection.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order || "");
-                const queryCountCleaned = querycount.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
+                const queryCollectionCleaned = querycollection.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
+                const queryCountCleaned = querycount.replace("###WHERE###", data.where || "");
 
                 const results = await Promise.all([
                     sequelize.query(queryCollectionCleaned, {
@@ -74,7 +74,7 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
                 if (!(results instanceof Array)) {
                     return results
                 }
-                console.log(results)
+
                 return {
                     data: results[0],
                     count: results[1][0].p_totalrecords,
