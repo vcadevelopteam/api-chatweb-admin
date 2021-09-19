@@ -7,6 +7,10 @@ router.post("/reply",
     auth,
     ticketController.reply
 )
+router.post("/reply/list",
+    auth,
+    ticketController.replyListMessages
+)
 router.post("/reassign",
     auth,
     ticketController.reassign

@@ -33,23 +33,67 @@ exports.reply = async (req, res) => {
         if (!responseservices.data.Success) {
             return res.status(500).json({ msg: "No se pudo enviar el mensaje" });
         }
-        const ticket = {
-            ticketnum: data.ticketnum,
-            personcommunicationchannel: data.p_messagesourcekey1,
-            lastmessage: data.p_messagetext,
-            typemessage: data.p_type,
-            interactionid: 0,
-            userid: data.p_userid,
-            corpid: data.p_corpid,
-            orgid: data.p_orgid,
-            wasanswered: data.newanswered
-        }
+        // const ticket = {
+        //     ticketnum: data.ticketnum,
+        //     personcommunicationchannel: data.p_messagesourcekey1,
+        //     lastmessage: data.p_messagetext,
+        //     typemessage: data.p_type,
+        //     interactionid: 0,
+        //     userid: data.p_userid,
+        //     corpid: data.p_corpid,
+        //     orgid: data.p_orgid,
+        //     wasanswered: data.newanswered
+        // }
         // const responseapp = await axios.post(`${process.env.APP}inbox/AnswerAsesorUpdateSupervisor`, ticket);
 
         // if (!responseapp.data || !responseapp.data instanceof Object)
         //     return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
 
         res.json(responseservices.data);
+    }
+    catch (ee) {
+        console.log(ee);
+        return res.status(500).json({
+            msg: "Hubo un problema, intentelo más tarde"
+        });
+    }
+}
+
+exports.replyListMessages = async (req, res) => {
+    try {
+        const { data: listMessages } = req.body;
+
+        listMessages.forEach(async data => {
+            for (const [key, value] of Object.entries(data)) {
+                if (value === null)
+                    data[key] = "";
+            }
+
+            data.fromasesor = "fromasesor";
+
+            if (!data.corpid)
+                data.p_corpid = req.user.corpid;
+            if (!data.orgid)
+                data.p_orgid = req.user.orgid;
+            if (!data.username)
+                data.username = req.user.usr;
+            if (!data.userid)
+                data.p_userid = req.user.userid;
+
+            data.agentName = req.user.fullname;
+
+            const responseservices = await axios.post(
+                `${process.env.SERVICES}ServiceLogicHook/ProcessMessageOut`,
+                { method: "", parameters: data });
+
+            if (!responseservices.data || !responseservices.data instanceof Object)
+                return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
+
+            if (!responseservices.data.Success) {
+                return res.status(500).json({ msg: "No se pudo enviar el mensaje" });
+            }
+        })
+        res.json({ success: true });
     }
     catch (ee) {
         console.log(ee);
