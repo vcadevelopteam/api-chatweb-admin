@@ -409,6 +409,11 @@ module.exports = {
         module: "/supervisor",
         protected: "SELECT"
     },
+    UFN_QUICKREPLY_LIST_SEL: {
+        query: "SELECT * FROM ufn_quickreply_list_sel($corpid, $orgid, $classificationid, $all)",
+        module: "/supervisor",
+        protected: "SELECT"
+    },
     UFN_CONVERSATION_PERSON_SEL: {
         query: "SELECT * FROM ufn_conversation_person_sel($personid)",
         module: "/supervisor",
