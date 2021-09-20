@@ -129,6 +129,26 @@ module.exports = {
         module: "/extras/person",
         protected: "SELECT"
     },
+
+
+    UFN_CONVERSATION_SEL_PERSON: {
+        query: "select * from ufn_conversation_sel_person($personid)",
+        module: "/extras/person",
+        protected: "SELECT"
+    },
+    UFN_PERSONCOMMUNICATIONCHANNEL_SEL: {
+        query: "SELECT * FROM ufn_personcommunicationchannel_sel($corpid, $orgid, $personid,  $personcommunicationchannel, $username, $all)",
+        module: "/extras/person",
+        protected: "SELECT"
+    },
+    UFN_PERSONADDINFO_SEL: {
+        query: "SELECT * FROM ufn_personaddinfo_sel($personid)",
+        module: "/extras/person",
+        protected: "SELECT"
+    },
+
+
+
     UFN_INTELLIGENTMODELS_SEL: {
         query: "SELECT * FROM ufn_intelligentmodels_sel($corpid,$orgid,$username,$id,$all)",
         module: "/extras/intelligentmodels",
