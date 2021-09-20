@@ -19,7 +19,7 @@ app.use(cors(
 //     }
 // }
 ));
-app.use(express.json());//to accept json
+app.use(express.json({ limit: '100mb' }));//to accept json
 
 const PORT = process.env.PORT || 6065;
 
