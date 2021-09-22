@@ -600,4 +600,24 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CAMPAIGN_LST: {
+        query: "SELECT * FROM ufn_campaign_lst($corpid, $orgid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CAMPAIGN_SEL: {
+        query: "SELECT * FROM ufn_campaign_sel($corpid, $orgid, $id, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CAMPAIGN_INS: {
+        query: "SELECT * FROM ufn_campaign_ins($corpid, $orgid, $id, $communicationchannelid, $usergroup, $type, $status, $title, $description, $subject, $message, $startdate, $enddate, $repeatable, $frecuency, $messagetemplateid, $messagetemplatename, $messagetemplatenamespace, $messagetemplateheader, $messagetemplatebuttons, $executiontype, $batchjson, $fields, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_USER_GROUPS_SEL: {
+        query: "SELECT * FROM ufn_user_groups_sel($corpid, $orgid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
