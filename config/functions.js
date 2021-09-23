@@ -620,4 +620,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CAMPAIGNMEMBER_SEL: {
+        query: "SELECT * FROM ufn_campaignmember_sel($corpid, $orgid, $campaignid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CAMPAIGNMEMBER_INS: {
+        query: "SELECT * FROM ufn_campaignmember_ins($corpid, $orgid, $id, $personid, $personcommunicationchannel, $personcommunicationchannelowner, $type, $displayname, $status, $operation, $campaignid, $field1, $field2, $field3, $field4, $field5, $field6, $field7, $field8, $field9, $field10, $field11, $field12, $field13, $field14, $field15, $batchindex)",
+        module: "",
+        protected: "INSERT"
+    },
 }
