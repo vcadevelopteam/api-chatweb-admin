@@ -132,7 +132,7 @@ module.exports = {
 
 
     UFN_CONVERSATION_SEL_PERSON: {
-        query: "select * from ufn_conversation_sel_person($personid)",
+        query: "select * from ufn_conversation_sel_person($personid, $offset)",
         module: "/extras/person",
         protected: "SELECT"
     },
