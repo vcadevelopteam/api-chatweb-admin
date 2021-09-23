@@ -132,7 +132,7 @@ module.exports = {
 
 
     UFN_CONVERSATION_SEL_PERSON: {
-        query: "select * from ufn_conversation_sel_person($personid)",
+        query: "select * from ufn_conversation_sel_person($personid, $offset)",
         module: "/extras/person",
         protected: "SELECT"
     },
@@ -596,7 +596,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_VARIABLECONFIGURATION_LST: {
-        query: "SELECT * FROM ufn_tableconfiguration_lst($corpid, $orgid, $userid)",
+        query: "SELECT * FROM ufn_tablevariableconfiguration_lst($corpid, $orgid, $userid)",
         module: "",
         protected: "SELECT"
     },
@@ -614,5 +614,35 @@ module.exports = {
         query: "select * from ufn_tablevariableconfigurationbychannel_sel($corpid, $orgid, $communicationchannelid, $userid)",
         module: "",
         protected: "SELECT"
+    },
+    UFN_CAMPAIGN_LST: {
+        query: "SELECT * FROM ufn_campaign_lst($corpid, $orgid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CAMPAIGN_SEL: {
+        query: "SELECT * FROM ufn_campaign_sel($corpid, $orgid, $id, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CAMPAIGN_INS: {
+        query: "SELECT * FROM ufn_campaign_ins($corpid, $orgid, $id, $communicationchannelid, $usergroup, $type, $status, $title, $description, $subject, $message, $startdate, $enddate, $repeatable, $frecuency, $messagetemplateid, $messagetemplatename, $messagetemplatenamespace, $messagetemplateheader, $messagetemplatebuttons, $executiontype, $batchjson, $fields, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_USER_GROUPS_SEL: {
+        query: "SELECT * FROM ufn_user_groups_sel($corpid, $orgid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CAMPAIGNMEMBER_SEL: {
+        query: "SELECT * FROM ufn_campaignmember_sel($corpid, $orgid, $campaignid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CAMPAIGNMEMBER_INS: {
+        query: "SELECT * FROM ufn_campaignmember_ins($corpid, $orgid, $id, $personid, $personcommunicationchannel, $personcommunicationchannelowner, $type, $displayname, $status, $operation, $campaignid, $field1, $field2, $field3, $field4, $field5, $field6, $field7, $field8, $field9, $field10, $field11, $field12, $field13, $field14, $field15, $batchindex)",
+        module: "",
+        protected: "INSERT"
     },
 }

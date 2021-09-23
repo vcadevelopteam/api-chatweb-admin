@@ -14,7 +14,7 @@ exports.reply = async (req, res) => {
 
         if (!data.corpid)
             data.p_corpid = req.user.corpid;
-        if (!data.orgid)
+        if (!data.orgid)    
             data.p_orgid = req.user.orgid;
         if (!data.username)
             data.username = req.user.usr;
@@ -33,22 +33,7 @@ exports.reply = async (req, res) => {
         if (!responseservices.data.Success) {
             return res.status(500).json({ msg: "No se pudo enviar el mensaje" });
         }
-        // const ticket = {
-        //     ticketnum: data.ticketnum,
-        //     personcommunicationchannel: data.p_messagesourcekey1,
-        //     lastmessage: data.p_messagetext,
-        //     typemessage: data.p_type,
-        //     interactionid: 0,
-        //     userid: data.p_userid,
-        //     corpid: data.p_corpid,
-        //     orgid: data.p_orgid,
-        //     wasanswered: data.newanswered
-        // }
-        // const responseapp = await axios.post(`${process.env.APP}inbox/AnswerAsesorUpdateSupervisor`, ticket);
-
-        // if (!responseapp.data || !responseapp.data instanceof Object)
-        //     return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
-
+        
         res.json(responseservices.data);
     }
     catch (ee) {
@@ -152,6 +137,7 @@ exports.close = async (req, res) => {
         });
     }
 }
+
 exports.reassign = async (req, res) => {
     try {
         const { data } = req.body;
@@ -162,21 +148,18 @@ exports.reassign = async (req, res) => {
             data.orgid = req.user.orgid ? req.user.orgid : 1;
         if (!data.username)
             data.username = req.user.usr;
-        if (!data.userid) {
-            data.lastuserid = req.user.userid;
-            data.userid = data.newuserid;
+        
+        data.userid = req.user.userid;
+        
+        if (!data.newuserid && data.usergroup) { //id del bot
+            data.newuserid = 3;
         }
-        if (!data.newuserid && data.usergroup) {
-            data.newuserid = 51;
-            data.userid = 51;
+
+        if (!data.newuserid && !data.usergroup) { //esta siendo reasigando x el mismo supervisor
+            data.newuserid = req.user.userid;
         }
 
         await tf.executesimpletransaction("UFN_CONVERSATION_REASSIGNTICKET", data);
-
-        // const responseapp = await axios.post(`${process.env.APP}inbox/ReassignedTicketHub`, data);
-
-        // if (!responseapp.data || !responseapp.data instanceof Object)
-        //     return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
 
         res.json({ success: true });
     }
