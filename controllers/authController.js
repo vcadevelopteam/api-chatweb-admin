@@ -28,7 +28,7 @@ exports.authenticate = async (req, res) => {
 
         if (integration && !(result instanceof Array))
             return res.status(401).json({ code: errors.LOGIN_NO_INTEGRATION });
-        
+
         if (!result instanceof Array || result.length === 0)
             return res.status(401).json({ code: errors.LOGIN_USER_INCORRECT });
 
@@ -117,6 +117,23 @@ exports.getUser = async (req, res) => {
 exports.logout = async (req, res) => {
     try {
         tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", { ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
+    } catch (error) {
+        console.log(`${new Date()}: ${JSON.stringify(error)}`);
+    }
+    return res.json({ data: null, error: false })
+}
+
+exports.connect = async (req, res) => {
+    try {
+        const { connect, description, motive } = req.body.data;
+        tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", {
+            ...req.user,
+            type: 'INBOX',
+            status: connect ? 'ACTIVO' : 'DESCONECTADO',
+            description,
+            motive,
+            username: req.user.usr
+        });
     } catch (error) {
         console.log(`${new Date()}: ${JSON.stringify(error)}`);
     }

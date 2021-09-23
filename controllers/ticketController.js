@@ -33,22 +33,7 @@ exports.reply = async (req, res) => {
         if (!responseservices.data.Success) {
             return res.status(500).json({ msg: "No se pudo enviar el mensaje" });
         }
-        // const ticket = {
-        //     ticketnum: data.ticketnum,
-        //     personcommunicationchannel: data.p_messagesourcekey1,
-        //     lastmessage: data.p_messagetext,
-        //     typemessage: data.p_type,
-        //     interactionid: 0,
-        //     userid: data.p_userid,
-        //     corpid: data.p_corpid,
-        //     orgid: data.p_orgid,
-        //     wasanswered: data.newanswered
-        // }
-        // const responseapp = await axios.post(`${process.env.APP}inbox/AnswerAsesorUpdateSupervisor`, ticket);
-
-        // if (!responseapp.data || !responseapp.data instanceof Object)
-        //     return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
-
+        
         res.json(responseservices.data);
     }
     catch (ee) {
@@ -152,6 +137,7 @@ exports.close = async (req, res) => {
         });
     }
 }
+
 exports.reassign = async (req, res) => {
     try {
         const { data } = req.body;
@@ -172,11 +158,6 @@ exports.reassign = async (req, res) => {
         }
 
         await tf.executesimpletransaction("UFN_CONVERSATION_REASSIGNTICKET", data);
-
-        // const responseapp = await axios.post(`${process.env.APP}inbox/ReassignedTicketHub`, data);
-
-        // if (!responseapp.data || !responseapp.data instanceof Object)
-        //     return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
 
         res.json({ success: true });
     }
