@@ -14,7 +14,7 @@ exports.reply = async (req, res) => {
 
         if (!data.corpid)
             data.p_corpid = req.user.corpid;
-        if (!data.orgid)
+        if (!data.orgid)    
             data.p_orgid = req.user.orgid;
         if (!data.username)
             data.username = req.user.usr;
@@ -148,13 +148,15 @@ exports.reassign = async (req, res) => {
             data.orgid = req.user.orgid ? req.user.orgid : 1;
         if (!data.username)
             data.username = req.user.usr;
-        if (!data.userid) {
-            data.lastuserid = req.user.userid;
-            data.userid = data.newuserid;
+        
+        data.userid = req.user.userid;
+        
+        if (!data.newuserid && data.usergroup) { //id del bot
+            data.newuserid = 3;
         }
-        if (!data.newuserid && data.usergroup) {
-            data.newuserid = 51;
-            data.userid = 51;
+
+        if (!data.newuserid && !data.usergroup) { //esta siendo reasigando x el mismo supervisor
+            data.newuserid = req.user.userid;
         }
 
         await tf.executesimpletransaction("UFN_CONVERSATION_REASSIGNTICKET", data);
