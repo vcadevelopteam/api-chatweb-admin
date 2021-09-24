@@ -289,6 +289,26 @@ module.exports = {
         module: "/reports",
         protected: "SELECT"
     },
+    UFN_EMOJI_GROUP_SEL: {
+        query: "SELECT * FROM ufn_emoji_group_sel($corpid ,$orgid ,$userid ,$all)",
+        module: "/extras/emojis",
+        protected: "SELECT"
+    },
+    UFN_EMOJI_SEL: {
+        query: "select orgid ,categorydesc ,emojidec ,favoritechannels ,restrictedchannels from emoji where corpid = $corpid and emojidec = $emojidec;",
+        module: "/extras/emojis",
+        protected: "SELECT"
+    },
+    UFN_EMOJI_ALL_SEL: {
+        query: "select * from ufn_emoji_all_sel($corpid ,$orgid ,$userid ,$all);",
+        module: "/extras/emojis",
+        protected: "SELECT"
+    },
+    UFN_EMOJI_UPDATE: {
+        query: "update emoji set favoritechannels = case when $favoritechannels = 'undefined' then favoritechannels else case when length(trim($favoritechannels)) > 0 then $favoritechannels else null end end, restrictedchannels = case when $restrictedchannels = 'undefined' then restrictedchannels else  case when length(trim($restrictedchannels)) > 0 then $restrictedchannels else null end end where corpid = $corpid and orgid = $orgid and emojidec = $emojidec;",
+        module: "/extras/emojis",
+        protected: "SELECT"
+    },
     UFN_DOMAIN_SEL: {
         query: "SELECT * FROM ufn_domain_sel($corpid ,$orgid ,$domainname  ,$username ,$all)",
         module: "/extras/domains",
@@ -612,6 +632,11 @@ module.exports = {
     },
     UFN_CAMPAIGN_INS: {
         query: "SELECT * FROM ufn_campaign_ins($corpid, $orgid, $id, $communicationchannelid, $usergroup, $type, $status, $title, $description, $subject, $message, $startdate, $enddate, $repeatable, $frecuency, $messagetemplateid, $messagetemplatename, $messagetemplatenamespace, $messagetemplateheader, $messagetemplatebuttons, $executiontype, $batchjson, $fields, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CAMPAIGN_DEL: {
+        query: "SELECT * FROM ufn_campaign_del($corpid, $orgid, $id, $status, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
