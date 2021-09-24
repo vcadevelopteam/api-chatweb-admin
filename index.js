@@ -23,8 +23,8 @@ app.use(express.json({ limit: '100mb' }));//to accept json
 
 const PORT = process.env.PORT || 6065;
 
-app.use('/api/usuarios', require('./routes/usuarios'));
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/person', require('./routes/person'));
 app.use('/api/channel', require('./routes/channel'));
 app.use('/api/ticket', require('./routes/ticket'));
 app.use('/api/main', require('./routes/main'));
