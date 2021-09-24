@@ -635,6 +635,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_CAMPAIGN_DEL: {
+        query: "SELECT * FROM ufn_campaign_del($corpid, $orgid, $id, $status, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_USER_GROUPS_SEL: {
         query: "SELECT * FROM ufn_user_groups_sel($corpid, $orgid, $userid)",
         module: "",
