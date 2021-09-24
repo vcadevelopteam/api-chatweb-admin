@@ -290,12 +290,17 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_EMOJI_GROUP_SEL: {
-        query: "SELECT * FROM ufn_emoji_group_sel($corpid ,$orgid ,$userid ,$categorydesc ,$all)",
+        query: "SELECT * FROM ufn_emoji_group_sel($corpid ,$orgid ,$userid ,$all)",
         module: "/extras/emojis",
         protected: "SELECT"
     },
     UFN_EMOJI_SEL: {
-        query: "select orgid ,categorydesc ,emojidec ,favoritechannels ,restrictedchannels from emoji where corpid = $corpid and emojichar = $emojichar;",
+        query: "select orgid ,categorydesc ,emojidec ,favoritechannels ,restrictedchannels from emoji where corpid = $corpid and emojidec = $emojidec;",
+        module: "/extras/emojis",
+        protected: "SELECT"
+    },
+    UFN_EMOJI_ALL_SEL: {
+        query: "select * from ufn_emoji_all_sel($corpid ,$orgid ,$userid ,$all);",
         module: "/extras/emojis",
         protected: "SELECT"
     },
