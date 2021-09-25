@@ -309,6 +309,11 @@ module.exports = {
         module: "/extras/emojis",
         protected: "SELECT"
     },
+    UFN_EMOJI_CHANNELS_UPD: {
+        query: "select * from ufn_emoji_channels_upd($corpid ,$emojidec ,$isfavorite);",
+        module: "/extras/emojis",
+        protected: "SELECT"
+    },
     UFN_DOMAIN_SEL: {
         query: "SELECT * FROM ufn_domain_sel($corpid ,$orgid ,$domainname  ,$username ,$all)",
         module: "/extras/domains",
