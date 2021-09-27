@@ -309,6 +309,11 @@ module.exports = {
         module: "/extras/emojis",
         protected: "SELECT"
     },
+    UFN_EMOJI_CHANNELS_UPD: {
+        query: "select * from ufn_emoji_channels_upd($corpid ,$emojidec ,$isfavorite);",
+        module: "/extras/emojis",
+        protected: "SELECT"
+    },
     UFN_DOMAIN_SEL: {
         query: "SELECT * FROM ufn_domain_sel($corpid ,$orgid ,$domainname  ,$username ,$all)",
         module: "/extras/domains",
@@ -350,7 +355,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_QUICKREPLY_INS: {
-        query: "SELECT * FROM ufn_quickreply_ins($corpid,$orgid,$id,$classificationid,$description,$quickreply,$status,$type,$username,$operation)",
+        query: "SELECT * FROM ufn_quickreply_ins($corpid,$orgid,$id,$classificationid,$description,$quickreply,$status,$type,$username,$operation,$favorite)",
         module: "/extras/quickreplies",
         protected: "INSERT"
     },
@@ -674,5 +679,20 @@ module.exports = {
         query: "SELECT * FROM ufn_blacklist_export($corpid, $orgid, $where, $offset)",
         module: "",
         protected: "SELECT"
+    },
+    UFN_REPORTTEMPLATE_SEL: {
+        query: "SELECT * FROM ufn_reporttemplate_sel($corpid, $orgid, $reporttemplateid, $username, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORTTEMPLATE_INS: {
+        query: "select * from ufn_reporttemplate_ins($id, $corpid, $orgid, $description, $status, $type, $columnjson, $filterjson, $communicationchannelid, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORTTEMPLATE_INS: {
+        query: "SELECT * FROM ufn_createzyxmeaccount_ins($firstname, $lastname, $username, $password, $email, $doctype, $docnumber, $organizationname)",
+        module: "/extras/subscription",
+        protected: "INSERT"
     },
 }
