@@ -655,4 +655,24 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_BLACKLIST_INS: {
+        query: "SELECT * FROM ufn_blacklist_ins($corpid, $orgid, $id, $description, $type, $status, $phone, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BLACKLIST_SEL: {
+        query: "SELECT * FROM ufn_blacklist_sel($corpid, $orgid, $where, $order, $take, $skip, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BLACKLIST_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_blacklist_totalrecords($corpid, $orgid, $where)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BLACKLIST_EXPORT: {
+        query: "SELECT * FROM ufn_blacklist_export($corpid, $orgid, $where, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
 }
