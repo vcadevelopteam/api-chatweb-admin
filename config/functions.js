@@ -660,4 +660,14 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_REPORTTEMPLATE_SEL: {
+        query: "SELECT * FROM ufn_reporttemplate_sel($corpid, $orgid, $reporttemplateid, $username, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORTTEMPLATE_INS: {
+        query: "select * from ufn_reporttemplate_ins($id, $corpid, $orgid, $description, $status, $type, $columnjson, $filterjson, $communicationchannelid, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
 }
