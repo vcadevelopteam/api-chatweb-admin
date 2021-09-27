@@ -670,4 +670,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_REPORTTEMPLATE_INS: {
+        query: "SELECT * FROM ufn_createzyxmeaccount_ins($firstname, $lastname, $username, $password, $email, $doctype, $docnumber, $organizationname)",
+        module: "/extras/subscription",
+        protected: "INSERT"
+    },
 }
