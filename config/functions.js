@@ -675,6 +675,26 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_BLACKLIST_INS: {
+        query: "SELECT * FROM ufn_blacklist_ins($corpid, $orgid, $id, $description, $type, $status, $phone, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BLACKLIST_SEL: {
+        query: "SELECT * FROM ufn_blacklist_sel($corpid, $orgid, $where, $order, $take, $skip, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BLACKLIST_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_blacklist_totalrecords($corpid, $orgid, $where)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BLACKLIST_EXPORT: {
+        query: "SELECT * FROM ufn_blacklist_export($corpid, $orgid, $where, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_REPORTTEMPLATE_SEL: {
         query: "SELECT * FROM ufn_reporttemplate_sel($corpid, $orgid, $reporttemplateid, $username, $all)",
         module: "",
@@ -684,5 +704,10 @@ module.exports = {
         query: "select * from ufn_reporttemplate_ins($id, $corpid, $orgid, $description, $status, $type, $columnjson, $filterjson, $communicationchannelid, $username, $operation)",
         module: "",
         protected: "SELECT"
+    },
+    UFN_REPORTTEMPLATE_INS: {
+        query: "SELECT * FROM ufn_createzyxmeaccount_ins($firstname, $lastname, $username, $password, $email, $doctype, $docnumber, $organizationname)",
+        module: "/extras/subscription",
+        protected: "INSERT"
     },
 }
