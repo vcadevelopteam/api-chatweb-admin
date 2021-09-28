@@ -314,6 +314,21 @@ module.exports = {
         module: "/extras/emojis",
         protected: "SELECT"
     },
+    UFN_CONVERSATIONGRID_SEL: {
+        query: "SELECT * FROM ufn_conversationgrid_sel($corpid, $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $channel, $usergroup, $offset)",
+        module: "/tickets",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATIONGRID_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_conversationgrid_totalrecords($corpid, $orgid, $where, $userid, $startdate, $enddate, $channel, $usergroup, $offset)",
+        module: "/tickets",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATIONGRID_EXPORT: {
+        query: "SELECT * FROM ufn_conversationgrid_export($corpid, $orgid, $where, $order, $userid, $startdate, $enddate, $channel, $usergroup, $offset)",
+        module: "/tickets",
+        protected: "SELECT"
+    },
     UFN_DOMAIN_SEL: {
         query: "SELECT * FROM ufn_domain_sel($corpid ,$orgid ,$domainname  ,$username ,$all)",
         module: "/extras/domains",
@@ -660,6 +675,26 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_BLACKLIST_INS: {
+        query: "SELECT * FROM ufn_blacklist_ins($corpid, $orgid, $id, $description, $type, $status, $phone, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BLACKLIST_SEL: {
+        query: "SELECT * FROM ufn_blacklist_sel($corpid, $orgid, $where, $order, $take, $skip, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BLACKLIST_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_blacklist_totalrecords($corpid, $orgid, $where, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BLACKLIST_EXPORT: {
+        query: "SELECT * FROM ufn_blacklist_export($corpid, $orgid, $where, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_REPORTTEMPLATE_SEL: {
         query: "SELECT * FROM ufn_reporttemplate_sel($corpid, $orgid, $reporttemplateid, $username, $all)",
         module: "",
@@ -674,5 +709,10 @@ module.exports = {
         query: "select * from UFN_CHATFLOW_TAG_SEL($corpid, $orgid)",
         module: "",
         protected: "SELECT"
+    },
+    UFN_REPORTTEMPLATE_INS: {
+        query: "SELECT * FROM ufn_createzyxmeaccount_ins($firstname, $lastname, $username, $password, $email, $doctype, $docnumber, $organizationname)",
+        module: "/extras/subscription",
+        protected: "INSERT"
     },
 }

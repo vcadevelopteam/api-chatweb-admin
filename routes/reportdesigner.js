@@ -8,4 +8,9 @@ router.post("/",
     reportDesignerController.drawReport
 )
 
+router.post("/export",
+    auth,
+    reportDesignerController.exportReport
+)
+
 module.exports = router;

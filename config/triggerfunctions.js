@@ -5,7 +5,10 @@ const { generatefilter, generateSort, errors, getErrorSeq, getErrorCode } = requ
 const { QueryTypes } = require('sequelize');
 require('pg').defaults.parseInt8 = true;
 
-exports.executeQuery = async (query, bind = {}) => {
+const REPLACEFILTERS = "###FILTERS###";
+const REPLACESEL = "###REPLACESEL###";
+
+const executeQuery = async (query, bind = {}) => {
     return await sequelize.query(query, {
         type: QueryTypes.SELECT,
         bind
@@ -230,5 +233,77 @@ exports.executeTransaction = async (header, detail, permissions = false) => {
     } catch (e) {
         await transaction.rollback();
         return lasterror;
+    }
+}
+
+
+exports.buildQueryDynamic = async (columns, filters, parameters) => {
+    try {
+        let whereQuery = "";
+        let whereSel = "";
+        let query = `
+        select
+            co.conversationid
+            ${REPLACESEL}
+        from conversation co
+        WHERE 
+            json_typeof(co.variablecontext::json) = 'object' 
+            and co.corpid = $corpid 
+            and co.orgid = $orgid
+            ${REPLACEFILTERS}
+        `;
+
+        if (filters && filters instanceof Array) {
+            whereQuery = filters.reduce((acc, item) => {
+                if (!item.value && !item.start)
+                    return acc;
+
+                if (item.column === "startdate")
+                    return `${acc} and co.createdate >= '${item.start}'::DATE + $offset * INTERVAL '1hour' and co.createdate < '${item.end}'::DATE + INTERVAL '1day' + $offset * INTERVAL '1hour'`
+                else if (item.column === "finishdate")
+                    return `${acc} and co.finishdate >= '${item.start}'::DATE + $offset * INTERVAL '1hour' and co.finishdate < '${item.end}'::DATE + INTERVAL '1day' + $offset * INTERVAL '1hour'`
+                else if (item.column === "communicationchannelid")
+                    return `${acc} and co.communicationchannelid = ANY(string_to_array('${item.value}',',')::bigint[])`
+                else if (item.column === "usergroup")
+                    return `${acc} and co.usergroup = ANY(string_to_array('${item.value}',',')::character varying[])`
+                else if (item.column === "tag")
+                    return `${acc} and co.tags ilike '%${item.value}%'`
+            }, "");
+        }
+
+        if (columns && columns instanceof Array) {
+            whereSel = columns.reduce((acc, item) => {
+                if (item.key === "startdateticket" || item.key === "finishdateticket") {
+                    const cc = item.key.Split("ticket")[0];
+                    return `${acc}, to_char(j.${cc} - interval '$offset hour', 'YYYY-MM-DD HH24:MI:SS') as "${item.key}"`
+                } else if (["status", "closecomment", "firstusergroup", "closetype"].includes(item.key))
+                    return `${acc}, co.${item.key} as "${item.key}"`
+                else if (item.key === "alltags")
+                    return `${acc}, co.tags as "${item.key}"`
+                else if (item.key === "ticketgroup")
+                    return `${acc}, co.usergroup as "${item.key}"`
+                else if (item.key === "startonlydateticket")
+                    return `${acc}, to_char(co.startdate + interval '$offset hour', 'DD/MM/YYYY') as "${item.key}"`
+                else if (item.key === "startonlyhourticket")
+                    return `${acc}, to_char(co.startdate + interval '$offset hour', 'HH24:MI') as "${item.key}"`
+                else if (item.key === "asesorinitial")
+                    return `${acc}, (select CONCAT(us.firstname, ' ', us.lastname) from usr us where us.userid = j.firstuserid) as "${item.key}"`
+                else if (item.key === "typifications")
+                    return `${acc}, (select string_agg(c.path, ',') from conversationclassification cc 
+                    inner join classification c on c.classificationid = cc.classificationid 
+                    where cc.conversationid = co.conversationid)  as "${item.key}"`
+                else if (item.key !== "conversationid") {
+                    return `${acc}, (co.variablecontext::jsonb)->'${item.key}'->>'Value' as "${item.key}"`
+                }
+
+            }, "");
+        }
+
+        query = query.replace(REPLACEFILTERS, whereQuery).replace(REPLACESEL, whereSel);
+        console.log(query, parameters)
+        return await executeQuery(query, parameters);
+    } catch (error) {
+        console.log(error);
+        return getErrorCode(errors.UNEXPECTED_ERROR);
     }
 }

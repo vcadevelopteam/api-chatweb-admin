@@ -95,25 +95,25 @@ module.exports = {
             column: "co.ticketnum"
         },
         anioticket: {
-            column: "to_char(co.startdate -5 * INTERVAL '1hour','YYYY')::character varying"
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','YYYY')::character varying"
         },
         mesticket: {
-            column: "to_char(co.startdate -5 * INTERVAL '1hour','MM')::character varying"
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','MM')::character varying"
         },
         fechaticket: {
-            column: "to_char(co.startdate -5 * INTERVAL '1hour','DD/MM/YYYY')::character varying"
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','DD/MM/YYYY')::character varying"
         },
         horaticket: {
-            column: "to_char(co.startdate -5 * INTERVAL '1hour','HH24:MI:SS')::character varying"
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','HH24:MI:SS')::character varying"
         },
         linea: {
             column: "inter.interactionid"
         },
         fechalinea: {
-            column: "to_char(inter.createdate -5 * INTERVAL '1hour','DD/MM/YYYY')::character varying"
+            column: "to_char(inter.createdate + p_offset * INTERVAL '1hour','DD/MM/YYYY')::character varying"
         },
         horalinea: {
-            column: "to_char(inter.createdate -5 * INTERVAL '1hour','HH24:MI:SS')::character varying"
+            column: "to_char(inter.createdate + p_offset * INTERVAL '1hour','HH24:MI:SS')::character varying"
         },
         cliente: {
             column: "pe.name"
@@ -317,6 +317,134 @@ module.exports = {
             column: "uh.motivetype"
         }
     },
+    ticket: {
+        numeroticket: {
+            column: "co.ticketnum"
+        },
+        fecha: {
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')"
+        },
+        firstusergroup: {
+            column: "co.firstusergroup"
+        },
+        ticketgroup: {
+            column: "co.usergroup"
+        },
+        communicationchanneldescription: {
+            column: "cc.description"
+        },
+        name: {
+            column: "pe.name"
+        },
+        canalpersonareferencia: {
+            column: "pcc.personcommunicationchannelowner"
+        },
+        fechainicio: {
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')"
+        },
+        fechafin: {
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')"
+        },
+        fechaprimeraconversacion: {
+            column: "to_char(co.firstconversationdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')"
+        },
+        fechaultimaconversacion: {
+            column: "to_char(co.lastconversationdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')"
+        },
+        fechahandoff: {
+            column: "to_char(co.handoffdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')"
+        },
+        asesorinicial: {
+            column: "(select concat(us.firstname,' ',us.lastname) from usr us where co.firstuserid = us.userid )"
+        },
+        asesorfinal: {
+            column: "concat(us.firstname,' ',us.lastname)"
+        },
+        supervisor: {
+            column: "concat(usr2.firstname,' ',usr2.lastname)"
+        },
+        empresa: {
+            column: "case when us.firstname in ('Bot','HOLDING') then 'VCA Perú' else us.company end"
+        },
+        attentiongroup: {
+            column: "COALESCE(NULLIF(ous.groups,''),'Sin grupo de atención')::character varying"
+        },
+        classification: {
+            column: "co.classification"
+        },
+        tiempopromediorespuesta: {
+            column: "co.averagereplytime::text"
+        },
+        tiempoprimerarespuestaasesor: {
+            column: "co.userfirstreplytime::text"
+        },
+        tiempopromediorespuestaasesor: {
+            column: "co.useraveragereplytime::text"
+        },
+        tiempopromediorespuestapersona: {
+            column: "co.personaveragereplytime::text"
+        },
+        duraciontotal: {
+            column: "co.totalduration::text"
+        },
+        duracionreal: {
+            column: "co.realduration::text"
+        },
+        duracionpausa: {
+            column: "co.totalpauseduration::text"
+        },
+        tmoasesor: {
+            column: "CASE WHEN co.status = 'CERRADO' THEN COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.totalduration - co.firstassignedtime - co.botduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') ELSE COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (NOW() - co.startdate) - co.firstassignedtime - co.botduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') END"
+        },
+        tiempoprimeraasignacion: {
+            column: "co.firstassignedtime::text"
+        },
+        estadoconversacion: {
+            column: "co.status"
+        },
+        tipocierre: {
+            column: "coalesce(do3.domaindesc,co.closetype,'Cierre automático')"
+        },
+        tipification: {
+            column: "cla.description"
+        },
+        firstname: {
+            column: "pe.firstname"
+        },
+        contact: {
+            column: "pe.contact"
+        },
+        lastname: {
+            column: "pe.lastname"
+        },
+        email: {
+            column: "pe.email"
+        },
+        phone: {
+            column: "pe.phone"
+        },
+        balancetimes: {
+            column: "COALESCE(co.balancetimes,0)"
+        },
+        documenttype: {
+            column: "pe.documenttype"
+        },
+        dni: {
+            column: "pe.documentnumber"
+        },
+        abandoned: {
+            column: "CASE WHEN propaba.propertyvalue = 'SUNAT' THEN CASE WHEN (coalesce(co.abandoned, false) = true and coalesce(co.startdate + co.botduration + co.firstassignedtime > co.closetabdate, false)) THEN 'SI' ELSE 'NO' END ELSE CASE WHEN co.abandoned = true THEN 'SI' ELSE 'NO' END END"
+        },
+        enquiries: {
+            column: "co.enquiries"
+        },
+        labels: {
+            column: "COALESCE(co.tags, '')"
+        },
+        tdatime: {
+            column: "co.tdatime::text"
+        }
+    },
     person: {
         corpid: {
             column: "pe.corpid"
@@ -441,6 +569,16 @@ module.exports = {
         locked: {
             column: "pcc.locke"
         },
+    },
+    blacklist: {
+        phone: {
+            column: "bl.phone"
+        },
+        description: {
+            column: "bl.description"
+        },
+        createdate: {
+            column: "bl.createdate + p_offset * interval '1hour'"
+        }
     }
-
 }
