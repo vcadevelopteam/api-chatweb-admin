@@ -441,6 +441,16 @@ module.exports = {
         locked: {
             column: "pcc.locke"
         },
+    },
+    blacklist: {
+        phone: {
+            column: "bl.phone"
+        },
+        description: {
+            column: "bl.description"
+        },
+        createdate: {
+            column: "bl.createdate + p_offset * interval '1hour'"
+        }
     }
-
 }

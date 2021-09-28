@@ -671,7 +671,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BLACKLIST_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_blacklist_totalrecords($corpid, $orgid, $where)",
+        query: "SELECT * FROM ufn_blacklist_totalrecords($corpid, $orgid, $where, $offset)",
         module: "",
         protected: "SELECT"
     },
