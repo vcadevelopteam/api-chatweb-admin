@@ -604,13 +604,13 @@ module.exports = {
             column: "ch.success"
         },
         successp: {
-            column: "ROUND(ch.success::numeric / ch.total * 100,2)"
+            column: "ROUND(ch.success::numeric / ch.total * 100,2)::TEXT"
         },
         fail: {
             column: "ch.fail"
         },
         failp: {
-            column: "ROUND(ch.fail::numeric / ch.total * 100,2)"
+            column: "ROUND(ch.fail::numeric / ch.total * 100,2)::TEXT"
         },
         locked: {
             column: "ch.locked"
