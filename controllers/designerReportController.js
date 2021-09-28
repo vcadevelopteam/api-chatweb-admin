@@ -10,7 +10,6 @@ exports.drawReport = async (req, res) => {
     setSessionParameters(parameters, req.user);
     
     const result = await buildQueryDynamic(columns, filters, parameters);
-
     if (!result.error)
         return res.json(result);
     else

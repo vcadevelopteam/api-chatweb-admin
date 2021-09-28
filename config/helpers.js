@@ -131,7 +131,7 @@ exports.getErrorSeq = err => {
 
 exports.getErrorCode = (code, error = false) => {
     if (error)
-        console.log(`${new Date()}: ${JSON.stringify(error)}`);
+        console.log(`${new Date()}: ${JSON.stringify(error) || error}`);
     return {
         success: false,
         error: true,

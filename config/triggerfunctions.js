@@ -277,18 +277,31 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
         if (columns && columns instanceof Array) {
             selQuery = columns.reduce((acc, item) => {
                 if (item.key === "startdateticket" || item.key === "finishdateticket") {
-                    const cc = item.key.Split("ticket")[0];
-                    return `${acc}, to_char(j.${cc} - interval '$offset hour', 'YYYY-MM-DD HH24:MI:SS') as "${item.key}"`
-                } else if (["status", "closecomment", "firstusergroup", "closetype"].includes(item.key))
+                    const cc = item.key.split("ticket")[0];
+                    return `${acc}, to_char(co.${cc} - interval '$offset hour', 'YYYY-MM-DD HH24:MI:SS') as "${item.key}"`
+                } else if (["status", "closecomment", "firstusergroup", "closetype", "conversationid"].includes(item.key)) {
+                    if (item.filter)
+                        whereQuery += ` and co.${item.key} = '${item.filter}'`;
                     return `${acc}, co.${item.key} as "${item.key}"`
-                else if (item.key === "alltags")
+                }
+                else if (item.key === "alltags") {
+                    if (item.filter)
+                        whereQuery += ` and co.tags ilike '%${item.filter}%'`;
                     return `${acc}, co.tags as "${item.key}"`
-                else if (item.key === "ticketgroup")
+                }
+                else if (item.key === "ticketgroup") {
+                    if (item.filter)
+                        whereQuery += ` and co.usergroup = '${item.filter}'`;
                     return `${acc}, co.usergroup as "${item.key}"`
-                else if (item.key === "startonlydateticket")
+                }
+                else if (item.key === "startonlydateticket") {
+                    if (item.filter)
+                        whereQuery += ` and to_char(co.startdate + interval '$offset hour', 'DD/MM/YYYY') = '${item.filter}'`;
                     return `${acc}, to_char(co.startdate + interval '$offset hour', 'DD/MM/YYYY') as "${item.key}"`
+                }
                 else if (item.key === "startonlyhourticket") {
-
+                    if (item.filter)
+                        whereQuery += ` and to_char(co.startdate + interval '$offset hour', 'HH24:MI') = '${item.filter}'`;
                     return `${acc}, to_char(co.startdate + interval '$offset hour', 'HH24:MI') as "${item.key}"`
                 }
                 else if (item.key === "initialagent")
@@ -299,7 +312,7 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
                     return `${acc}, (select string_agg(c.path, ',') from conversationclassification cc 
                     inner join classification c on c.classificationid = cc.classificationid 
                     where cc.conversationid = co.conversationid)  as "${item.key}"`
-                else if (item.key !== "conversationid") {
+                else {
                     if (item.filter) {
                         const filterCleaned = item.filter.trim();
                         if (filterCleaned.includes(",")) {
@@ -316,7 +329,7 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
         }
 
         query = query.replace(REPLACEFILTERS, whereQuery).replace(REPLACESEL, selQuery);
-        console.log(query, parameters)
+        
         return await executeQuery(query, parameters);
     } catch (error) {
         return getErrorCode(errors.UNEXPECTED_ERROR, error);
