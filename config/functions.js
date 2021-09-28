@@ -680,6 +680,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_BLACKLIST_INS_ARRAY: {
+        query: "SELECT * FROM ufn_blacklist_ins_array($corpid, $orgid, $username, $table)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_BLACKLIST_SEL: {
         query: "SELECT * FROM ufn_blacklist_sel($corpid, $orgid, $where, $order, $take, $skip, $offset)",
         module: "",
@@ -705,14 +710,34 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CREATEZYXMEACCOUNT_INS: {
+        query: "SELECT * FROM ufn_createzyxmeaccount_ins($firstname, $lastname, $username, $password, $email, $doctype, $docnumber, $organizationname)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CAMPAIGNREPORT_SEL: {
+        query: "SELECT * FROM ufn_campaign_report_sel($corpid, $orgid, $where, $order, $skip, $take, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CAMPAIGNREPORT_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_campaign_report_totalrecords($corpid, $orgid, $where, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CAMPAIGNREPORT_EXPORT: {
+        query: "SELECT * FROM ufn_campaign_report_export($corpid, $orgid, $table, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CAMPAIGNREPORT_PROACTIVE_EXPORT: {
+        query: "SELECT * FROM ufn_campaign_report_proactive_export($corpid, $orgid, $table, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CHATFLOW_TAG_SEL: {
         query: "select * from UFN_CHATFLOW_TAG_SEL($corpid, $orgid)",
         module: "",
         protected: "SELECT"
-    },
-    UFN_REPORTTEMPLATE_INS: {
-        query: "SELECT * FROM ufn_createzyxmeaccount_ins($firstname, $lastname, $username, $password, $email, $doctype, $docnumber, $organizationname)",
-        module: "/extras/subscription",
-        protected: "INSERT"
     },
 }

@@ -580,5 +580,46 @@ module.exports = {
         createdate: {
             column: "bl.createdate + p_offset * interval '1hour'"
         }
+    },
+    campaignreport: {
+        campaignid: {
+            column: "ch.campaignid"
+        },
+        title: {
+            column: "ca.title"
+        },
+        description: {
+            column: "ca.description"
+        },
+        rundate: {
+            column: "ch.rundate"
+        },
+        channel: {
+            column: "cc.description"
+        },
+        total: {
+            column: "ch.total"
+        },
+        success: {
+            column: "ch.success"
+        },
+        successp: {
+            column: "ROUND(ch.success::numeric / ch.total * 100,2)"
+        },
+        fail: {
+            column: "ch.fail"
+        },
+        failp: {
+            column: "ROUND(ch.fail::numeric / ch.total * 100,2)"
+        },
+        locked: {
+            column: "ch.locked"
+        },
+        blacklisted: {
+            column: "ch.blacklisted"
+        },
+        attended: {
+            column: "ch.attended"
+        }
     }
 }
