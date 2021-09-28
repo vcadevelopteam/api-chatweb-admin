@@ -243,7 +243,7 @@ exports.executeTransaction = async (header, detail, permissions = false) => {
 exports.buildQueryDynamic = async (columns, filters, parameters) => {
     try {
         let whereQuery = "";
-        let whereSel = "";
+        let selQuery = "";
         let query = `
         select
             co.conversationid
@@ -262,9 +262,9 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
                     return acc;
 
                 if (item.column === "startdate")
-                    return `${acc} and co.createdate >= '${item.start}'::DATE + $offset * INTERVAL '1hour' and co.createdate < '${item.end}'::DATE + INTERVAL '1day' + $offset * INTERVAL '1hour'`
+                    return `${acc} and co.startdate >= '${item.start}'::DATE - $offset * INTERVAL '1hour' and co.startdate < '${item.end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
                 else if (item.column === "finishdate")
-                    return `${acc} and co.finishdate >= '${item.start}'::DATE + $offset * INTERVAL '1hour' and co.finishdate < '${item.end}'::DATE + INTERVAL '1day' + $offset * INTERVAL '1hour'`
+                    return `${acc} and co.finishdate >= '${item.start}'::DATE + $offset * INTERVAL '1hour' and co.finishdate < '${item.end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
                 else if (item.column === "communicationchannelid")
                     return `${acc} and co.communicationchannelid = ANY(string_to_array('${item.value}',',')::bigint[])`
                 else if (item.column === "usergroup")
@@ -275,35 +275,62 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
         }
 
         if (columns && columns instanceof Array) {
-            whereSel = columns.reduce((acc, item) => {
+            selQuery = columns.reduce((acc, item) => {
                 if (item.key === "startdateticket" || item.key === "finishdateticket") {
-                    const cc = item.key.Split("ticket")[0];
-                    return `${acc}, to_char(j.${cc} - interval '$offset hour', 'YYYY-MM-DD HH24:MI:SS') as "${item.key}"`
-                } else if (["status", "closecomment", "firstusergroup", "closetype"].includes(item.key))
+                    const cc = item.key.split("ticket")[0];
+                    return `${acc}, to_char(co.${cc} + interval '$offset hour', 'YYYY-MM-DD HH24:MI:SS') as "${item.key}"`
+                } else if (["status", "closecomment", "firstusergroup", "closetype", "conversationid"].includes(item.key)) {
+                    if (item.filter)
+                        whereQuery += ` and co.${item.key} = '${item.filter}'`;
                     return `${acc}, co.${item.key} as "${item.key}"`
-                else if (item.key === "alltags")
+                }
+                else if (item.key === "alltags") {
+                    if (item.filter)
+                        whereQuery += ` and co.tags ilike '%${item.filter}%'`;
                     return `${acc}, co.tags as "${item.key}"`
-                else if (item.key === "ticketgroup")
+                }
+                else if (item.key === "ticketgroup") {
+                    if (item.filter)
+                        whereQuery += ` and co.usergroup = '${item.filter}'`;
                     return `${acc}, co.usergroup as "${item.key}"`
-                else if (item.key === "startonlydateticket")
+                }
+                else if (item.key === "startonlydateticket") {
+                    if (item.filter)
+                        whereQuery += ` and to_char(co.startdate + interval '$offset hour', 'DD/MM/YYYY') = '${item.filter}'`;
                     return `${acc}, to_char(co.startdate + interval '$offset hour', 'DD/MM/YYYY') as "${item.key}"`
-                else if (item.key === "startonlyhourticket")
+                }
+                else if (item.key === "startonlyhourticket") {
+                    if (item.filter)
+                        whereQuery += ` and to_char(co.startdate + interval '$offset hour', 'HH24:MI') = '${item.filter}'`;
                     return `${acc}, to_char(co.startdate + interval '$offset hour', 'HH24:MI') as "${item.key}"`
-                else if (item.key === "asesorinitial")
-                    return `${acc}, (select CONCAT(us.firstname, ' ', us.lastname) from usr us where us.userid = j.firstuserid) as "${item.key}"`
+                }
+                else if (item.key === "initialagent")
+                    return `${acc}, (select CONCAT(us.firstname, ' ', us.lastname) from usr us where us.userid = co.firstuserid) as "${item.key}"`
+                else if (item.key === "currentagent")
+                    return `${acc}, (select CONCAT(us.firstname, ' ', us.lastname) from usr us where us.userid = co.lastuserid) as "${item.key}"`
                 else if (item.key === "typifications")
                     return `${acc}, (select string_agg(c.path, ',') from conversationclassification cc 
                     inner join classification c on c.classificationid = cc.classificationid 
                     where cc.conversationid = co.conversationid)  as "${item.key}"`
-                else if (item.key !== "conversationid") {
+                else {
+                    if (item.filter) {
+                        const filterCleaned = item.filter.trim();
+                        if (filterCleaned.includes(",")) {
+                            const listFilters = filterCleaned.split(",").map(x => `'${x.trim()}'`);
+                            whereQuery += ` and (co.variablecontext::jsonb)->'${item.key}'->>'Value' in (${listFilters}) `;
+                        }
+                        else
+                            whereQuery += ` and (co.variablecontext::jsonb)->'${item.key}'->>'Value' = '${filterCleaned}'`;
+                    }
                     return `${acc}, (co.variablecontext::jsonb)->'${item.key}'->>'Value' as "${item.key}"`
                 }
 
             }, "");
         }
 
-        query = query.replace(REPLACEFILTERS, whereQuery).replace(REPLACESEL, whereSel);
-        console.log(query, parameters)
+        query = query.replace(REPLACEFILTERS, whereQuery).replace(REPLACESEL, selQuery);
+        console.log(query)
+        
         return await executeQuery(query, parameters);
     } catch (error) {
         return getErrorCode(errors.UNEXPECTED_ERROR, error);
