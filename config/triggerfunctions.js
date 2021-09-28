@@ -262,7 +262,7 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
                     return acc;
 
                 if (item.column === "startdate")
-                    return `${acc} and co.createdate >= '${item.start}'::DATE + $offset * INTERVAL '1hour' and co.createdate < '${item.end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
+                    return `${acc} and co.startdate >= '${item.start}'::DATE - $offset * INTERVAL '1hour' and co.startdate < '${item.end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
                 else if (item.column === "finishdate")
                     return `${acc} and co.finishdate >= '${item.start}'::DATE + $offset * INTERVAL '1hour' and co.finishdate < '${item.end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
                 else if (item.column === "communicationchannelid")
