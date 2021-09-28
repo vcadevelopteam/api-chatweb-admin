@@ -670,4 +670,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CHATFLOW_TAG_SEL: {
+        query: "select * from UFN_CHATFLOW_TAG_SEL($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
 }

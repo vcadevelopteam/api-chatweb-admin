@@ -5,10 +5,10 @@ const { generatefilter, generateSort, errors, getErrorSeq, getErrorCode } = requ
 const { QueryTypes } = require('sequelize');
 require('pg').defaults.parseInt8 = true;
 
-exports.executequery = async (query) => {
+exports.executeQuery = async (query, bind = {}) => {
     return await sequelize.query(query, {
         type: QueryTypes.SELECT,
-        bind: {}
+        bind
     }).catch(err => getErrorSeq(err));
 }
 

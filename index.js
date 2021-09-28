@@ -30,6 +30,7 @@ app.use('/api/ticket', require('./routes/ticket'));
 app.use('/api/main', require('./routes/main'));
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/load', require('./routes/load'));
+app.use('/api/reportdesigner', require('./routes/reportdesigner'));
 
 // Definir la pagina principal
 app.get('/', (req, res) => {
