@@ -710,9 +710,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_REPORTTEMPLATE_INS: {
+    UFN_CREATEZYXMEACCOUNT_INS: {
         query: "SELECT * FROM ufn_createzyxmeaccount_ins($firstname, $lastname, $username, $password, $email, $doctype, $docnumber, $organizationname)",
-        module: "/extras/subscription",
+        module: "",
         protected: "INSERT"
     },
     UFN_CAMPAIGNREPORT_SEL: {
@@ -732,6 +732,11 @@ module.exports = {
     },
     UFN_CAMPAIGNREPORT_PROACTIVE_EXPORT: {
         query: "SELECT * FROM ufn_campaign_report_proactive_export($corpid, $orgid, $table, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CHATFLOW_TAG_SEL: {
+        query: "select * from UFN_CHATFLOW_TAG_SEL($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },

@@ -86,7 +86,7 @@ exports.GetChannelService = async (req, res) => {
         }
     }
     catch (error) {
-        res.status(400).json({
+        return res.status(400).json({
             success: false,
             msg: error
         });
@@ -111,14 +111,14 @@ exports.GetPageList = async (req, res) => {
             });
         }
         else {
-            res.status(500).json({
+            return res.status(500).json({
                 success: false,
                 msg: responseGetPageList.data.operationMessage
             });
         }
     }
     catch (error) {
-        res.status(400).json({
+        return res.status(400).json({
             success: false,
             msg: error
         });
@@ -144,14 +144,14 @@ exports.GetLongToken = async (req, res) => {
             });
         }
         else {
-            res.status(500).json({
+            return res.status(500).json({
                 success: false,
                 msg: responseGetLongToken.data.operationMessage
             });
         }
     }
     catch (error) {
-        res.status(400).json({
+        return res.status(400).json({
             success: false,
             msg: error
         });
@@ -202,7 +202,7 @@ exports.InsertChannel = async (req, res) => {
                 businessId = responseGetBusiness.data.businessId;
             }
             else {
-                res.status(500).json({
+                return res.status(500).json({
                     success: false,
                     msg: 'No Instagram business found'
                 });
@@ -292,14 +292,14 @@ exports.InsertChannel = async (req, res) => {
                         }
                     }
                     else {
-                        res.status(500).json({
+                        return res.status(500).json({
                             success: false,
                             msg: responseChannelAdd.data.operationMessage
                         });
                     }
                 }
                 else {
-                    res.status(500).json({
+                    return res.status(500).json({
                         success: false,
                         msg: responseGetLongToken.data.operationMessage
                     });
@@ -342,7 +342,7 @@ exports.InsertChannel = async (req, res) => {
                     }
                 }
                 else {
-                    res.status(500).json({
+                    return res.status(500).json({
                         success: false,
                         msg: responseWhatsAppAdd.data.operationMessage
                     });
@@ -385,7 +385,7 @@ exports.InsertChannel = async (req, res) => {
                     }
                 }
                 else {
-                    res.status(500).json({
+                    return res.status(500).json({
                         success: false,
                         msg: responseTelegramAdd.data.operationMessage
                     });
@@ -461,7 +461,7 @@ exports.InsertChannel = async (req, res) => {
 
                         await triggerfunctions.executesimpletransaction(twitterMethod, twitterData);
 
-                        res.status(500).json({
+                        return res.status(500).json({
                             success: false,
                             msg: responseTwitterAdd.data.operationMessage
                         });
@@ -693,14 +693,14 @@ exports.InsertChannel = async (req, res) => {
                         }
                     }
                     else {
-                        res.status(500).json({
+                        return res.status(500).json({
                             success: false,
                             msg: 'Error while creating plugin'
                         });
                     }
                 }
                 else {
-                    res.status(500).json({
+                    return res.status(500).json({
                         success: false,
                         msg: 'Error while creating integration'
                     });
@@ -708,7 +708,7 @@ exports.InsertChannel = async (req, res) => {
                 break;
 
             default:
-                res.status(500).json({
+                return res.status(500).json({
                     success: false,
                     msg: 'Undefined'
                 });
@@ -716,7 +716,7 @@ exports.InsertChannel = async (req, res) => {
         }
     }
     catch (error) {
-        res.status(400).json({
+        return res.status(400).json({
             success: false,
             msg: error
         });
@@ -770,7 +770,7 @@ exports.DeleteChannel = async (req, res) => {
                         }
                     }
                     else {
-                        res.status(500).json({
+                        return res.status(500).json({
                             success: false,
                             msg: responseChannelRemoveFBDM.data.operationMessage
                         });
@@ -824,7 +824,7 @@ exports.DeleteChannel = async (req, res) => {
                         }
                     }
                     else {
-                        res.status(500).json({
+                        return res.status(500).json({
                             success: false,
                             msg: responseChannelRemoveFBWA.data.operationMessage
                         });
@@ -878,7 +878,7 @@ exports.DeleteChannel = async (req, res) => {
                         }
                     }
                     else {
-                        res.status(500).json({
+                        return res.status(500).json({
                             success: false,
                             msg: responseChannelRemoveINST.data.operationMessage
                         });
@@ -932,7 +932,7 @@ exports.DeleteChannel = async (req, res) => {
                         }
                     }
                     else {
-                        res.status(500).json({
+                        return res.status(500).json({
                             success: false,
                             msg: responseChannelRemoveWHAD.data.operationMessage
                         });
@@ -986,7 +986,7 @@ exports.DeleteChannel = async (req, res) => {
                         }
                     }
                     else {
-                        res.status(500).json({
+                        return res.status(500).json({
                             success: false,
                             msg: responseChannelRemoveTELE.data.operationMessage
                         });
@@ -1087,7 +1087,7 @@ exports.DeleteChannel = async (req, res) => {
                                 }
                             }
                             else {
-                                res.status(500).json({
+                                return res.status(500).json({
                                     success: false,
                                     msg: responseChannelRemoveTWMS.data.operationMessage
                                 });
@@ -1181,7 +1181,7 @@ exports.DeleteChannel = async (req, res) => {
         }
     }
     catch (error) {
-        res.status(400).json({
+        return res.status(400).json({
             success: false,
             msg: error
         });
