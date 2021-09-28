@@ -6,4 +6,8 @@ router.post("/createsubscription",
     subscriptionController.CreateSubscription
 )
 
+router.post("/getpagelist",
+subscriptionController.GetPageList
+)
+
 module.exports = router;

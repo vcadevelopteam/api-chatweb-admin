@@ -628,3 +628,35 @@ exports.CreateSubscription = async (req, res) => {
         });
     }
 }
+
+exports.GetPageList = async (req, res) => {
+    try {
+        const responseGetPageList = await axios({
+            url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
+            method: 'post',
+            data: {
+                linkType: 'GETPAGES',
+                accessToken: req.body.accessToken
+            }
+        });
+
+        if (responseGetPageList.data.success) {
+            return res.json({
+                success: true,
+                pageData: responseGetPageList.data.pageData
+            });
+        }
+        else {
+            return res.status(500).json({
+                success: false,
+                msg: responseGetPageList.data.operationMessage
+            });
+        }
+    }
+    catch (error) {
+        return res.status(400).json({
+            success: false,
+            msg: error
+        });
+    }
+}
