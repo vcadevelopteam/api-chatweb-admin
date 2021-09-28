@@ -456,7 +456,7 @@ module.exports = {
     },
     UFN_CONVERSATION_SEL_TICKETSBYUSER: {
         query: "SELECT * FROM ufn_conversation_sel_ticketsbyuser($corpid, $orgid, $userid)",
-        module: "/supervisor",
+        module: "", //messag einbox y supervisor admitir arrays
         protected: "SELECT"
     },
     UFN_CONVERSATION_SEL_INTENT: {
