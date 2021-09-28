@@ -329,13 +329,14 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
         }
 
         query = query.replace(REPLACEFILTERS, whereQuery).replace(REPLACESEL, selQuery);
+        console.log(query)
         
         return await executeQuery(query, parameters);
     } catch (error) {
         return getErrorCode(errors.UNEXPECTED_ERROR, error);
     }
 }
-
+g
 exports.exportDataToCSV = (dataToExport, reportName) => {
     let content = "";
     try {
