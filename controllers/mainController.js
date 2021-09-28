@@ -1,4 +1,4 @@
-const { executesimpletransaction, executeTransaction, getCollectionPagination, exporttmp, GetMultiCollection } = require('../config/triggerfunctions');
+const { executesimpletransaction, executeTransaction, getCollectionPagination, exportDataToCSV, buildQueryWithFilterAndSort, GetMultiCollection } = require('../config/triggerfunctions');
 const bcryptjs = require("bcryptjs");
 const { setSessionParameters } = require('../config/helpers');
 var ibm = require('ibm-cos-sdk');
@@ -62,62 +62,20 @@ exports.getCollectionPagination = async (req, res) => {
     }
 }
 exports.exportexcel = async (req, res) => {
-    try {
-        const { parameters, method } = req.body;
+    const { parameters, method } = req.body;
 
-        setSessionParameters(parameters, req.user);
+    setSessionParameters(parameters, req.user);
 
-        console.time(`exe-${method}`);
-        const result = !parameters.isNotPaginated ? await exporttmp(method, parameters) : await executesimpletransaction(method, parameters);
-        console.timeEnd(`exe-${method}`);
+    console.time(`exe-${method}`);
+    const resultBD = !parameters.isNotPaginated ? await buildQueryWithFilterAndSort(method, parameters) : await executesimpletransaction(method, parameters);
+    console.timeEnd(`exe-${method}`);
 
-        const titlefile = (parameters.titlefile ? parameters.titlefile : "report") + new Date().toISOString() + ".csv";
-        console.time(`draw-excel`);
-        let content = "";
+    const result = await exportDataToCSV(resultBD, parameters.titlefile);
 
-        if (result instanceof Array && result.length > 0) {
-            content += Object.keys(result[0]).join() + "\n";
-
-            result.forEach((rowdata) => {
-                let rowjoined = Object.values(rowdata).join("##");
-                if (rowjoined.includes(",")) {
-                    rowjoined = Object.values(rowdata).map(x => (x && typeof x === "string") ? (x.includes(",") ? `"${x}"` : x) : x).join();
-                } else {
-                    rowjoined = rowjoined.replace(/##/gi, ",");
-                }
-                content += rowjoined + "\n";
-            });
-
-            console.timeEnd(`draw-excel`);
-
-            var s3 = new ibm.S3(config);
-
-            const params = {
-                ACL: 'public-read',
-                Key: titlefile,
-                Body: Buffer.from(content, 'ASCII'),
-                Bucket: COS_BUCKET_NAME,
-                ContentType: "text/csv",
-            }
-            console.time(`uploadcos`);
-            s3.upload(params, (err, data) => {
-                if (err) {
-                    return res.status(result.rescode).json({ success: false, message: 'Hubo un error#1 en la carga de archivo.', err })
-                }
-                console.timeEnd(`uploadcos`);
-                return res.json({ success: true, url: data.Location })
-            });
-        } else {
-            return res.status(result.rescode || 500).json({
-                message: "Sin información para exportar"
-            });
-        }
-    }
-    catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            message: "Hubo un problema, intentelo más tarde"
-        });
+    if (!result.error) {
+        return res.json(result);
+    } else {
+        return res.status(result.rescode).json(result);
     }
 }
 

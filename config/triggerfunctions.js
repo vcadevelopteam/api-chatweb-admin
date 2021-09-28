@@ -5,6 +5,15 @@ const { generatefilter, generateSort, errors, getErrorSeq, getErrorCode } = requ
 const { QueryTypes } = require('sequelize');
 require('pg').defaults.parseInt8 = true;
 
+var ibm = require('ibm-cos-sdk');
+
+var config = {
+    endpoint: 's3.us-east.cloud-object-storage.appdomain.cloud',
+    ibmAuthEndpoint: 'https://iam.cloud.ibm.com/identity/token',
+    apiKeyId: 'LwD1YXNXSp8ZYMGIUWD2D3-wmHkmWRVcFm-5a1Wz_7G1', //'GyvV7NE7QiuAMLkWLXRiDJKJ0esS-R5a6gc8VEnFo0r5',
+    serviceInstanceId: '0268699b-7d23-4e1d-9d17-e950b6804633' //'9720d58a-1b9b-42ed-a246-f2e9d7409b18',
+};
+const COS_BUCKET_NAME = "staticfileszyxme"
 const REPLACEFILTERS = "###FILTERS###";
 const REPLACESEL = "###REPLACESEL###";
 
@@ -96,13 +105,7 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
     }
 }
 
-exports.exporttmp = async (method, data) => {
-    const response = {
-        success: false,
-        message: null,
-        result: null,
-        error: true
-    }
+exports.buildQueryWithFilterAndSort = async (method, data) => {
     try {
         if (functionsbd[method]) {
             let query = functionsbd[method].query;
@@ -303,7 +306,54 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
         console.log(query, parameters)
         return await executeQuery(query, parameters);
     } catch (error) {
-        console.log(error);
-        return getErrorCode(errors.UNEXPECTED_ERROR);
+        return getErrorCode(errors.UNEXPECTED_ERROR, error);
+    }
+}
+
+exports.exportDataToCSV = (dataToExport, reportName) => {
+    let content = "";
+    try {
+        const titlefile = (reportName ? reportName : "report") + new Date().toISOString() + ".csv";
+        if (dataToExport instanceof Array && dataToExport.length > 0) {
+            console.time(`draw-excel`);
+
+            content += Object.keys(dataToExport[0]).join() + "\n";
+            dataToExport.forEach((rowdata) => {
+                let rowjoined = Object.values(rowdata).join("##");
+                if (rowjoined.includes(",")) {
+                    rowjoined = Object.values(rowdata).map(x => (x && typeof x === "string") ? (x.includes(",") ? `"${x}"` : x) : x).join();
+                } else {
+                    rowjoined = rowjoined.replace(/##/gi, ",");
+                }
+                content += rowjoined + "\n";
+            });
+
+            console.timeEnd(`draw-excel`);
+
+            var s3 = new ibm.S3(config);
+
+            const params = {
+                ACL: 'public-read',
+                Key: titlefile,
+                Body: Buffer.from(content, 'ASCII'),
+                Bucket: COS_BUCKET_NAME,
+                ContentType: "text/csv",
+            }
+            console.time(`uploadcos`);
+            return new Promise((res, rej) => {
+                s3.upload(params, (err, data) => {
+                    console.log('ddd')
+                    if (err) {
+                        rej(getErrorCode(errors.COS_UNEXPECTED_ERROR, err));
+                    }
+                    console.timeEnd(`uploadcos`);
+                    res({ url: data.Location })
+                });
+            });
+        } else {
+            return getErrorCode(errors.ZERO_RECORDS_ERROR);
+        }
+    } catch (error) {
+        return getErrorCode(errors.UNEXPECTED_ERROR, error);
     }
 }
