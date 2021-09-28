@@ -278,7 +278,7 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
             selQuery = columns.reduce((acc, item) => {
                 if (item.key === "startdateticket" || item.key === "finishdateticket") {
                     const cc = item.key.split("ticket")[0];
-                    return `${acc}, to_char(co.${cc} - interval '$offset hour', 'YYYY-MM-DD HH24:MI:SS') as "${item.key}"`
+                    return `${acc}, to_char(co.${cc} + interval '$offset hour', 'YYYY-MM-DD HH24:MI:SS') as "${item.key}"`
                 } else if (["status", "closecomment", "firstusergroup", "closetype", "conversationid"].includes(item.key)) {
                     if (item.filter)
                         whereQuery += ` and co.${item.key} = '${item.filter}'`;
