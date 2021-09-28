@@ -451,7 +451,7 @@ module.exports = {
     },
     UFN_USERBYSUPERVISOR_SEL: {
         query: "SELECT * FROM ufn_userbysupervisor_sel($corpid, $orgid, $userid)",
-        module: "/supervisor",
+        module: "", //supervisor and inbox
         protected: "SELECT"
     },
     UFN_CONVERSATION_SEL_TICKETSBYUSER: {
@@ -461,37 +461,37 @@ module.exports = {
     },
     UFN_CONVERSATION_SEL_INTENT: {
         query: "SELECT * FROM ufn_conversation_sel_intent($conversationid)",
-        module: "/supervisor",
+        module: "", //supervisor and inbox
         protected: "SELECT"
     },
     UFN_CONVERSATION_SEL_INTERACTION: {
         query: "SELECT * FROM ufn_conversation_sel_interaction($conversationid, $lock, $conversationold, $userid)",
-        module: "/supervisor",
+        module: "", //supervisor and inbox
         protected: "SELECT"
     },
     UFN_QUICKREPLY_LIST_SEL: {
         query: "SELECT * FROM ufn_quickreply_list_sel($corpid, $orgid, $classificationid, $all)",
-        module: "/supervisor",
+        module: "", //supervisor and inbox
         protected: "SELECT"
     },
     UFN_CONVERSATION_PERSON_SEL: {
         query: "SELECT * FROM ufn_conversation_person_sel($personid)",
-        module: "/supervisor",
+        module: "", //supervisor and inbox
         protected: "SELECT"
     },
     UFN_CONVERSATION_SEL_TICKETSBYPERSON: {
         query: "SELECT * FROM ufn_conversation_sel_ticketsbyperson($corpid, $orgid, $personid, $conversationid)",
-        module: "/supervisor",
+        module: "", //supervisor and inbox
         protected: "SELECT"
     },
     UFN_CONVERSATIONCLASSIFICATION_INS: {
         query: "SELECT * FROM ufn_conversationclassification_ins($conversationid, $classificationid, $username, $operation, $jobplan)",
-        module: "/supervisor",
+        module: "", //supervisor and inbox
         protected: "INSERT"
     },
     UFN_CONVERSATION_REASSIGNTICKET: {
         query: "SELECT * FROM ufn_conversation_reassignticket($conversationid, $newuserid, $userid, $username, $usergroup, $comment, $isanswered)",
-        module: "/supervisor",
+        module: "", //supervisor and inbox
         protected: "INSERT"
     },
     UFN_INTEGRATIONMANAGER_SEL: {
