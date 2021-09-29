@@ -660,6 +660,16 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_CAMPAIGN_START: {
+        query: "SELECT * FROM ufn_campaign_start($corpid, $orgid, $id, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CAMPAIGN_STATUS: {
+        query: "SELECT * FROM ufn_campaign_status($corpid, $orgid, $id)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_USER_GROUPS_SEL: {
         query: "SELECT * FROM ufn_user_groups_sel($corpid, $orgid, $userid)",
         module: "",
