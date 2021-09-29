@@ -674,13 +674,13 @@ exports.ValidateUsername = async (req, res) => {
         if (responseUserSelect instanceof Array) {
             if (responseUserSelect.length > 0) {
                 return res.status(200).json({
-                    isvalid: true,
+                    isvalid: false,
                     success: true
                 });
             }
             else {
                 return res.status(200).json({
-                    isvalid: false,
+                    isvalid: true,
                     success: true
                 });
             }
