@@ -7,7 +7,11 @@ router.post("/createsubscription",
 )
 
 router.post("/getpagelist",
-subscriptionController.GetPageList
+    subscriptionController.GetPageList
+)
+
+router.post("/validateusername",
+    subscriptionController.ValidateUsername
 )
 
 module.exports = router;
