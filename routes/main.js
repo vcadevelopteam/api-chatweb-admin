@@ -20,14 +20,10 @@ router.post("/paginated",
     auth,
     mainController.getCollectionPagination
 )
+
 router.post("/export",
     auth,
     mainController.export
 )
-router.post("/exportexcel",
-    auth,
-    mainController.exportexcel
-)
-
 
 module.exports = router;

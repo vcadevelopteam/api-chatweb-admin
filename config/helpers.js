@@ -88,7 +88,7 @@ const errorstmp = {
     NOT_FUNCTION_ERROR: "NOT_FUNCTION_ERROR",
     UNEXPECTED_DB_DBERROR: "UNEXPECTED_DB_ERROR",
     UNEXPECTED_ERROR: "UNEXPECTED_ERROR",
-    COS_UNEXPECTED_ERROR: "COS_UNEXPECTED_ERROR",
+    COS_UNEXPECTED: "COS_UNEXPECTED",
     ZERO_RECORDS_ERROR: "ZERO_RECORDS",
     FORBIDDEN: "E-ZYX-FORBIDDEN",
     
@@ -130,8 +130,10 @@ exports.getErrorSeq = err => {
 };
 
 exports.getErrorCode = (code, error = false) => {
-    if (error)
-        console.log(`${new Date()}: ${JSON.stringify(error) || error}`);
+    if (error) {
+        const posibleError = JSON.stringify(error);
+        console.log(`${new Date()}: ${posibleError !== "{}" && posibleError ? posibleError : error}`);
+    }
     return {
         success: false,
         error: true,

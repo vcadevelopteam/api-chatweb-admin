@@ -1,7 +1,6 @@
-const { executesimpletransaction, executeTransaction, getCollectionPagination, exportDataToCSV, buildQueryWithFilterAndSort, GetMultiCollection } = require('../config/triggerfunctions');
+const { executesimpletransaction, executeTransaction, getCollectionPagination, exportData, buildQueryWithFilterAndSort, GetMultiCollection } = require('../config/triggerfunctions');
 const bcryptjs = require("bcryptjs");
 const { setSessionParameters } = require('../config/helpers');
-
 
 exports.GetCollection = async (req, res) => {
     const { parameters = {}, method } = req.body;
@@ -53,7 +52,7 @@ exports.getCollectionPagination = async (req, res) => {
         return res.status(result.rescode).json(result);
     }
 }
-exports.exportexcel = async (req, res) => {
+exports.export = async (req, res) => {
     const { parameters, method } = req.body;
 
     setSessionParameters(parameters, req.user);
@@ -62,29 +61,12 @@ exports.exportexcel = async (req, res) => {
     const resultBD = !parameters.isNotPaginated ? await buildQueryWithFilterAndSort(method, parameters) : await executesimpletransaction(method, parameters);
     console.timeEnd(`exe-${method}`);
 
-    const result = await exportDataToCSV(resultBD, parameters.titlefile);
+    const result = await exportData(resultBD, parameters.reportName, parameters.formatToExport);
 
     if (!result.error) {
         return res.json(result);
     } else {
         return res.status(result.rescode).json(result);
-    }
-}
-
-exports.export = async (req, res) => {
-    try {
-        const { parameters, method } = req.body;
-
-        setSessionParameters(parameters, req.user);
-
-        const result = await exporttmp(method, parameters);
-        res.json(result);
-    }
-    catch (error) {
-
-        return res.status(result.rescode).json({
-            message: "Hubo un problema, intentelo más tarde"
-        });
     }
 }
 

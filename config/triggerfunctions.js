@@ -1,5 +1,6 @@
 const sequelize = require('./database');
 const functionsbd = require('./functions');
+const XLSX = require('xlsx');
 const { generatefilter, generateSort, errors, getErrorSeq, getErrorCode } = require('./helpers');
 
 const { QueryTypes } = require('sequelize');
@@ -329,54 +330,77 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
         }
 
         query = query.replace(REPLACEFILTERS, whereQuery).replace(REPLACESEL, selQuery);
-        console.log(query)
-        
+        // console.log(query)
+
         return await executeQuery(query, parameters);
     } catch (error) {
         return getErrorCode(errors.UNEXPECTED_ERROR, error);
     }
 }
 
-exports.exportDataToCSV = (dataToExport, reportName) => {
+exports.exportData = (dataToExport, reportName, formatToExport) => {
     let content = "";
     try {
-        const titlefile = (reportName ? reportName : "report") + new Date().toISOString() + ".csv";
+        const titlefile = (reportName || "report") + new Date().toISOString() + (formatToExport ? ".xlsx" : ".csv");
         if (dataToExport instanceof Array && dataToExport.length > 0) {
-            console.time(`draw-excel`);
-
-            content += Object.keys(dataToExport[0]).join() + "\n";
-            dataToExport.forEach((rowdata) => {
-                let rowjoined = Object.values(rowdata).join("##");
-                if (rowjoined.includes(",")) {
-                    rowjoined = Object.values(rowdata).map(x => (x && typeof x === "string") ? (x.includes(",") ? `"${x}"` : x) : x).join();
-                } else {
-                    rowjoined = rowjoined.replace(/##/gi, ",");
-                }
-                content += rowjoined + "\n";
-            });
-
-            console.timeEnd(`draw-excel`);
-
             var s3 = new ibm.S3(config);
 
-            const params = {
-                ACL: 'public-read',
-                Key: titlefile,
-                Body: Buffer.from(content, 'ASCII'),
-                Bucket: COS_BUCKET_NAME,
-                ContentType: "text/csv",
-            }
-            console.time(`uploadcos`);
-            return new Promise((res, rej) => {
-                s3.upload(params, (err, data) => {
-                    console.log('ddd')
-                    if (err) {
-                        rej(getErrorCode(errors.COS_UNEXPECTED_ERROR, err));
-                    }
-                    console.timeEnd(`uploadcos`);
-                    res({ url: data.Location })
+            if (formatToExport === "excel") {
+                const ws = XLSX.utils.json_to_sheet(dataToExport);
+                const wb = { Sheets: { 'data': ws }, SheetNames: ['data'] };
+                const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
+
+                const params = {
+                    ACL: 'public-read',
+                    Key: titlefile,
+                    Body: excelBuffer,
+                    Bucket: COS_BUCKET_NAME,
+                    ContentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
+                }
+                console.time(`uploadcos`);
+                return new Promise((res, rej) => {
+                    s3.upload(params, (err, data) => {
+                        if (err) {
+                            res(getErrorCode(errors.COS_UNEXPECTED, err));
+                        } else {
+                            console.timeEnd(`uploadcos`);
+                            res({ url: data.Location })
+                        }
+                    });
                 });
-            });
+            } else {
+                console.time(`draw-csv`);
+                content += Object.keys(dataToExport[0]).join() + "\n";
+                dataToExport.forEach((rowdata) => {
+                    let rowjoined = Object.values(rowdata).join("##");
+                    if (rowjoined.includes(",")) {
+                        rowjoined = Object.values(rowdata).map(x => (x && typeof x === "string") ? (x.includes(",") ? `"${x}"` : x) : x).join();
+                    } else {
+                        rowjoined = rowjoined.replace(/##/gi, ",");
+                    }
+                    content += rowjoined + "\n";
+                });
+                console.timeEnd(`draw-csv`);
+
+
+                const params = {
+                    ACL: 'public-read',
+                    Key: titlefile,
+                    Body: Buffer.from(content, 'ASCII'),
+                    Bucket: COS_BUCKET_NAME,
+                    ContentType: "text/csv",
+                }
+                console.time(`uploadcos`);
+                return new Promise((res, rej) => {
+                    s3.upload(params, (err, data) => {
+                        if (err) {
+                            rej(getErrorCode(errors.COS_UNEXPECTED_ERROR, err));
+                        }
+                        console.timeEnd(`uploadcos`);
+                        res({ url: data.Location })
+                    });
+                });
+            }
         } else {
             return getErrorCode(errors.ZERO_RECORDS_ERROR);
         }

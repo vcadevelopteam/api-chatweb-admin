@@ -1,7 +1,5 @@
-const { buildQueryDynamic, exportDataToCSV } = require('../config/triggerfunctions');
+const { buildQueryDynamic, exportData } = require('../config/triggerfunctions');
 const { setSessionParameters } = require('../config/helpers');
-
-
 
 exports.drawReport = async (req, res) => {
 
@@ -23,7 +21,7 @@ exports.exportReport = async (req, res) => {
     
     const resultBD = await buildQueryDynamic(columns, filters, parameters);
 
-    const result = await exportDataToCSV(resultBD, parameters.reportName);
+    const result = await exportData(resultBD, parameters.reportName, parameters.formatToExport);
 
     if (!result.error) {
         return res.json(result);
