@@ -755,4 +755,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CHATFLOW_ISSELFBLOCK_SEL: {
+        query: "select * from ufn_chatflow_isselfblock_sel($corpid, $orgid, $communicationchannelid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
