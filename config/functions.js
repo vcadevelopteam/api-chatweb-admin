@@ -550,17 +550,17 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CHATFLOW_BLOCKVERSION_LST: {
-        query: "SELECT corpid, orgid, chatblockid, chatblockversionid, description FROM blockversion WHERE corpid = $corpid AND chatblockid = $chatblockid AND status = 'ACTIVO' order by changedate DESC LIMIT 10",
+        query: "SELECT * FROM ufn_chatflow_blockversion_lst($corpid, $chatblockid)",
         module: "",
         protected: "SELECT"
     },
     UFN_CHATFLOW_BLOCKVERSION_SEL: {
-        query: "SELECT * FROM blockversion WHERE corpid = $corpid AND chatblockid = $chatblockid AND chatblockversionid = $chatblockversionid AND status = 'ACTIVO'",
+        query: "SELECT * FROM ufn_chatflow_blockversion_sel($corpid, $chatblockid, $chatblockversionid)",
         module: "",
         protected: "SELECT"
     },
     UFN_TABLE_VARIABLE_LST: {
-        query: "SELECT tablename, fieldname, inputname, description, true as persistence, columntype, type FROM tablevariable WHERE status = 'ACTIVO' ORDER BY description ASC",
+        query: "SELECT * FROM ufn_tablevariable_sel()",
         module: "",
         protected: "SELECT"
     },
@@ -570,12 +570,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INPUTVALIDATION_LST: {
-        query: "SELECT description FROM inputvalidation WHERE corpid = $corpid AND status = 'ACTIVO'",
+        query: "SELECT * FROM ufn_inputvalidation_lst($corpid)",
         module: "",
         protected: "SELECT"
     },
     UFN_LOCATION_LST: {
-        query: "SELECT DISTINCT(type) FROM location where corpid = $corpid AND orgid = $orgid AND status = 'ACTIVO' ORDER BY type ASC",
+        query: "SELECT * FROM ufn_location_lst($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
