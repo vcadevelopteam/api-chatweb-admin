@@ -2,12 +2,15 @@ const triggerfunctions = require('../config/triggerfunctions');
 const axios = require('axios');
 const { setSessionParameters } = require('../config/helpers');
 
-const URLABANDON = 'https://zyxmelinux.zyxmeapp.com/zyxme/webchatscript/api/smooch';
-const URLBRIDGE = 'https://zyxmelinux.zyxmeapp.com/zyxme/bridge/';
-const URLHOOK = 'https://zyxmelinux.zyxmeapp.com/zyxme/hook/';
-const URLBROKER = 'https://goo.zyxmeapp.com/';
+const URLABANDON = process.env.WEBCHATSCRIPT;
+const URLBROKER = process.env.CHATBROKER;
+const URLBRIDGE = process.env.BRIDGE;
+const URLHOOK = process.env.HOOK;
+const FACEBOOKAPI = process.env.FACEBOOKAPI;
+const WHATSAPPAPI = process.env.WHATSAPPAPI;
+const TELEGRAMAPI = process.env.TELEGRAMAPI;
 
-const chatwebApplicationId = '53';
+const chatwebApplicationId = process.env.CHATAPPLICATION;
 
 exports.GetChannelService = async (req, res) => {
     try {
@@ -96,7 +99,7 @@ exports.GetChannelService = async (req, res) => {
 exports.GetPageList = async (req, res) => {
     try {
         const responseGetPageList = await axios({
-            url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
+            url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
             method: 'post',
             data: {
                 linkType: 'GETPAGES',
@@ -128,7 +131,7 @@ exports.GetPageList = async (req, res) => {
 exports.GetLongToken = async (req, res) => {
     try {
         const responseGetLongToken = await axios({
-            url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
+            url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
             method: 'post',
             data: {
                 linkType: 'GENERATELONGTOKEN',
@@ -189,7 +192,7 @@ exports.InsertChannel = async (req, res) => {
 
         if (req.body.type === 'INSTAGRAM') {
             const responseGetBusiness = await axios({
-                url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
+                url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
                 method: 'post',
                 data: {
                     linkType: 'GETBUSINESS',
@@ -214,7 +217,7 @@ exports.InsertChannel = async (req, res) => {
             case 'INSTAGRAM':
             case 'MESSENGER':
                 const responseGetLongToken = await axios({
-                    url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
+                    url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
                     method: 'post',
                     data: {
                         linkType: 'GENERATELONGTOKEN',
@@ -250,7 +253,7 @@ exports.InsertChannel = async (req, res) => {
                     }
 
                     const responseChannelAdd = await axios({
-                        url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
+                        url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
                         method: 'post',
                         data: {
                             linkType: channelService,
@@ -262,7 +265,7 @@ exports.InsertChannel = async (req, res) => {
                     if (responseChannelAdd.data.success) {
                         var servicecredentials = {
                             accessToken: longToken,
-                            endpoint: 'https://graph.facebook.com/v8.0/',
+                            endpoint: FACEBOOKAPI,
                             serviceType: serviceType,
                             siteId: req.body.service.siteid
                         };
@@ -308,7 +311,7 @@ exports.InsertChannel = async (req, res) => {
 
             case 'WHATSAPP':
                 const responseWhatsAppAdd = await axios({
-                    url: `${URLBRIDGE}api/processlaraigo/whatsapp/managewhatsapplink`,
+                    url: `${URLBRIDGE}processlaraigo/whatsapp/managewhatsapplink`,
                     method: 'post',
                     data: {
                         linkType: 'WHATSAPPADD',
@@ -320,7 +323,7 @@ exports.InsertChannel = async (req, res) => {
                 if (responseWhatsAppAdd.data.success) {
                     const servicecredentials = {
                         apiKey: req.body.service.accesstoken,
-                        endpoint: 'https://waba.360dialog.io/v1/',
+                        endpoint: WHATSAPPAPI,
                         number: req.body.service.siteid
                     };
 
@@ -351,7 +354,7 @@ exports.InsertChannel = async (req, res) => {
 
             case 'TELEGRAM':
                 const responseTelegramAdd = await axios({
-                    url: `${URLBRIDGE}api/processlaraigo/telegram/managetelegramlink`,
+                    url: `${URLBRIDGE}processlaraigo/telegram/managetelegramlink`,
                     method: 'post',
                     data: {
                         linkType: 'TELEGRAMADD',
@@ -363,7 +366,7 @@ exports.InsertChannel = async (req, res) => {
                 if (responseTelegramAdd.data.success) {
                     const servicecredentials = {
                         bot: req.body.service.siteid,
-                        endpoint: 'https://api.telegram.org/bot',
+                        endpoint: TELEGRAMAPI,
                         token: req.body.service.accesstoken
                     };
 
@@ -415,7 +418,7 @@ exports.InsertChannel = async (req, res) => {
     
                 if (resx instanceof Array) {
                     const responseTwitterAdd = await axios({
-                        url: `${URLBRIDGE}api/processlaraigo/twitter/managetwitterlink`,
+                        url: `${URLBRIDGE}processlaraigo/twitter/managetwitterlink`,
                         method: 'post',
                         data: {
                             linkType: 'TWITTERADD',
@@ -490,7 +493,7 @@ exports.InsertChannel = async (req, res) => {
                             messageClientColor: ''
                         },
                         extra: {
-                            abandonendpoint: URLABANDON,
+                            abandonendpoint: `${URLABANDON}smooch`,
                             cssbody: '',
                             enableabandon: false,
                             enableformhistory: false,
@@ -627,7 +630,7 @@ exports.InsertChannel = async (req, res) => {
                 }
 
                 const responseChatWebSave = await axios({
-                    url: `${URLBROKER}api/integrations/save`,
+                    url: `${URLBROKER}integrations/save`,
                     method: 'post',
                     data: chatwebBody
                 });
@@ -636,13 +639,13 @@ exports.InsertChannel = async (req, res) => {
 
                 if (typeof integrationId !== 'undefined' && integrationId) {
                     const responseChatWebhookSave = await axios({
-                        url: `${URLBROKER}api/webhooks/save`,
+                        url: `${URLBROKER}webhooks/save`,
                         method: 'post',
                         data: {
                             name: req.body.parameters.description,
                             description: req.body.parameters.description,
                             integration: integrationId,
-                            webUrl: `${URLHOOK}api/chatweb/webhookasync`,
+                            webUrl: `${URLHOOK}chatweb/webhookasync`,
                             status: 'ACTIVO'
                         }
                     });
@@ -650,7 +653,7 @@ exports.InsertChannel = async (req, res) => {
                     var webhookId = responseChatWebhookSave.data.id;
 
                     const responseChatPluginSave = await axios({
-                        url: `${URLBROKER}api/plugins/save`,
+                        url: `${URLBROKER}plugins/save`,
                         method: 'post',
                         data: {
                             name: req.body.parameters.description,
@@ -745,7 +748,7 @@ exports.DeleteChannel = async (req, res) => {
                     var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
                     const responseChannelRemoveFBDM = await axios({
-                        url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
+                        url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
                         method: 'post',
                         data: {
                             linkType: 'MESSENGERREMOVE',
@@ -799,7 +802,7 @@ exports.DeleteChannel = async (req, res) => {
                     var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
                     const responseChannelRemoveFBWA = await axios({
-                        url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
+                        url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
                         method: 'post',
                         data: {
                             linkType: 'WALLREMOVE',
@@ -853,7 +856,7 @@ exports.DeleteChannel = async (req, res) => {
                     var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
                     const responseChannelRemoveINST = await axios({
-                        url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
+                        url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
                         method: 'post',
                         data: {
                             linkType: 'INSTAGRAMREMOVE',
@@ -907,7 +910,7 @@ exports.DeleteChannel = async (req, res) => {
                     var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
                     const responseChannelRemoveWHAD = await axios({
-                        url: `${URLBRIDGE}api/processlaraigo/whatsapp/managewhatsapplink`,
+                        url: `${URLBRIDGE}processlaraigo/whatsapp/managewhatsapplink`,
                         method: 'post',
                         data: {
                             linkType: 'WHATSAPPREMOVE',
@@ -961,7 +964,7 @@ exports.DeleteChannel = async (req, res) => {
                     var serviceData = JSON.parse(req.body.parameters.servicecredentials);
 
                     const responseChannelRemoveTELE = await axios({
-                        url: `${URLBRIDGE}api/processlaraigo/telegram/managetelegramlink`,
+                        url: `${URLBRIDGE}processlaraigo/telegram/managetelegramlink`,
                         method: 'post',
                         data: {
                             linkType: 'TELEGRAMREMOVE',
@@ -1049,7 +1052,7 @@ exports.DeleteChannel = async (req, res) => {
                         else
                         {
                             const responseChannelRemoveTWMS = await axios({
-                                url: `${URLBRIDGE}api/processlaraigo/twitter/managetwitterlink`,
+                                url: `${URLBRIDGE}processlaraigo/twitter/managetwitterlink`,
                                 method: 'post',
                                 data: {
                                     linkType: 'TWITTERREMOVE',
@@ -1122,7 +1125,7 @@ exports.DeleteChannel = async (req, res) => {
             case 'CHAZ':
                 if (typeof req.body.parameters.communicationchannelcontact !== 'undefined' && req.body.parameters.communicationchannelcontact) {
                     await axios({
-                        url: `${URLBROKER}api/plugins/update/${req.body.parameters.communicationchannelcontact}`,
+                        url: `${URLBROKER}plugins/update/${req.body.parameters.communicationchannelcontact}`,
                         method: 'put',
                         data: {
                             status: 'ELIMINADO'
@@ -1132,7 +1135,7 @@ exports.DeleteChannel = async (req, res) => {
 
                 if (typeof req.body.parameters.communicationchannelowner !== 'undefined' && req.body.parameters.communicationchannelowner) {
                     await axios({
-                        url: `${URLBROKER}api/webhooks/update/${req.body.parameters.communicationchannelowner}`,
+                        url: `${URLBROKER}webhooks/update/${req.body.parameters.communicationchannelowner}`,
                         method: 'put',
                         data: {
                             status: 'ELIMINADO'
@@ -1142,7 +1145,7 @@ exports.DeleteChannel = async (req, res) => {
 
                 if (typeof req.body.parameters.integrationid !== 'undefined' && req.body.parameters.integrationid) {
                     await axios({
-                        url: `${URLBROKER}api/integrations/update/${req.body.parameters.integrationid}`,
+                        url: `${URLBROKER}integrations/update/${req.body.parameters.integrationid}`,
                         method: 'put',
                         data: {
                             status: 'ELIMINADO'

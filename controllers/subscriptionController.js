@@ -2,12 +2,15 @@ const triggerfunctions = require('../config/triggerfunctions');
 const bcryptjs = require("bcryptjs");
 const axios = require('axios');
 
-const URLABANDON = 'https://zyxmelinux.zyxmeapp.com/zyxme/webchatscript/api/smooch';
-const URLBRIDGE = 'https://zyxmelinux.zyxmeapp.com/zyxme/bridge/';
-const URLHOOK = 'https://zyxmelinux.zyxmeapp.com/zyxme/hook/';
-const URLBROKER = 'https://goo.zyxmeapp.com/';
+const URLABANDON = process.env.WEBCHATSCRIPT;
+const URLBROKER = process.env.CHATBROKER;
+const URLBRIDGE = process.env.BRIDGE;
+const URLHOOK = process.env.HOOK;
+const FACEBOOKAPI = process.env.FACEBOOKAPI;
+const WHATSAPPAPI = process.env.WHATSAPPAPI;
+const TELEGRAMAPI = process.env.TELEGRAMAPI;
 
-const chatwebApplicationId = '53';
+const chatwebApplicationId = process.env.CHATAPPLICATION;
 
 let integrationApiKey = '';
 let integrationKeyId = '';
@@ -33,7 +36,7 @@ exports.CreateSubscription = async (req, res) => {
                         case 'MESSENGER':
                             if (element.type === 'INSTAGRAM') {
                                 const responseGetBusiness = await axios({
-                                    url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
+                                    url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
                                     method: 'post',
                                     data: {
                                         linkType: 'GETBUSINESS',
@@ -54,7 +57,7 @@ exports.CreateSubscription = async (req, res) => {
                             }
 
                             const responseGetLongToken = await axios({
-                                url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
+                                url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
                                 method: 'post',
                                 data: {
                                     linkType: 'GENERATELONGTOKEN',
@@ -83,7 +86,7 @@ exports.CreateSubscription = async (req, res) => {
                                 }
 
                                 const responseChannelAdd = await axios({
-                                    url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
+                                    url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
                                     method: 'post',
                                     data: {
                                         accessToken: element.service.accesstoken,
@@ -109,7 +112,7 @@ exports.CreateSubscription = async (req, res) => {
 
                         case 'WHATSAPP':
                             const responseWhatsAppAdd = await axios({
-                                url: `${URLBRIDGE}api/processlaraigo/whatsapp/managewhatsapplink`,
+                                url: `${URLBRIDGE}processlaraigo/whatsapp/managewhatsapplink`,
                                 method: 'post',
                                 data: {
                                     accessToken: element.service.accesstoken,
@@ -128,7 +131,7 @@ exports.CreateSubscription = async (req, res) => {
 
                         case 'TELEGRAM':
                             const responseTelegramAdd = await axios({
-                                url: `${URLBRIDGE}api/processlaraigo/telegram/managetelegramlink`,
+                                url: `${URLBRIDGE}processlaraigo/telegram/managetelegramlink`,
                                 method: 'post',
                                 data: {
                                     accessToken: element.service.accesstoken,
@@ -168,7 +171,7 @@ exports.CreateSubscription = async (req, res) => {
 
                             if (responseTwitterService instanceof Array) {
                                 const responseTwitterAdd = await axios({
-                                    url: `${URLBRIDGE}api/processlaraigo/twitter/managetwitterlink`,
+                                    url: `${URLBRIDGE}processlaraigo/twitter/managetwitterlink`,
                                     method: 'post',
                                     data: {
                                         developmentEnvironment: servicecredentialstwitter.devEnvironment,
@@ -215,7 +218,7 @@ exports.CreateSubscription = async (req, res) => {
                                         messageClientColor: ''
                                     },
                                     extra: {
-                                        abandonendpoint: URLABANDON,
+                                        abandonendpoint: `${URLABANDON}smooch`,
                                         cssbody: '',
                                         enableabandon: false,
                                         enableformhistory: false,
@@ -352,7 +355,7 @@ exports.CreateSubscription = async (req, res) => {
                             }
 
                             const responseChatWebSave = await axios({
-                                url: `${URLBROKER}api/integrations/save`,
+                                url: `${URLBROKER}integrations/save`,
                                 method: 'post',
                                 data: chatwebBody
                             });
@@ -361,13 +364,13 @@ exports.CreateSubscription = async (req, res) => {
 
                             if (typeof integrationId !== 'undefined' && integrationId) {
                                 const responseChatWebhookSave = await axios({
-                                    url: `${URLBROKER}api/webhooks/save`,
+                                    url: `${URLBROKER}webhooks/save`,
                                     method: 'post',
                                     data: {
                                         name: element.parameters.description,
                                         description: element.parameters.description,
                                         integration: integrationId,
-                                        webUrl: `${URLHOOK}api/chatweb/webhookasync`,
+                                        webUrl: `${URLHOOK}chatweb/webhookasync`,
                                         status: 'ACTIVO'
                                     }
                                 });
@@ -375,7 +378,7 @@ exports.CreateSubscription = async (req, res) => {
                                 webhookId = responseChatWebhookSave.data.id;
 
                                 const responseChatPluginSave = await axios({
-                                    url: `${URLBROKER}api/plugins/save`,
+                                    url: `${URLBROKER}plugins/save`,
                                     method: 'post',
                                     data: {
                                         name: element.parameters.description,
@@ -472,7 +475,7 @@ exports.CreateSubscription = async (req, res) => {
 
                                     var servicecredentials = {
                                         accessToken: element.service.accesstoken,
-                                        endpoint: 'https://graph.facebook.com/v8.0/',
+                                        endpoint: FACEBOOKAPI,
                                         serviceType: serviceType,
                                         siteId: element.service.siteid
                                     };
@@ -502,7 +505,7 @@ exports.CreateSubscription = async (req, res) => {
                                 case 'WHATSAPP':
                                     var whatsappservicecredentials = {
                                         apiKey: element.service.accesstoken,
-                                        endpoint: 'https://waba.360dialog.io/v1/',
+                                        endpoint: WHATSAPPAPI,
                                         number: element.service.siteid
                                     };
                 
@@ -524,7 +527,7 @@ exports.CreateSubscription = async (req, res) => {
                                 case 'TELEGRAM':
                                     var telegramservicecredentials = {
                                         bot: element.service.siteid,
-                                        endpoint: 'https://api.telegram.org/bot',
+                                        endpoint: TELEGRAMAPI,
                                         token: element.service.accesstoken
                                     };
                 
@@ -636,7 +639,7 @@ exports.CreateSubscription = async (req, res) => {
 exports.GetPageList = async (req, res) => {
     try {
         const responseGetPageList = await axios({
-            url: `${URLBRIDGE}api/processlaraigo/facebook/managefacebooklink`,
+            url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
             method: 'post',
             data: {
                 linkType: 'GETPAGES',
