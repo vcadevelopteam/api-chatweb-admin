@@ -604,6 +604,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_INPUTVALIDATION_IMPORT: {
+        query: "SELECT * FROM ufn_inputvalidation_import($corpid,$description,$inputvalue,$username)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_CONVERSATION_LST_USRDELEGATE2: {
         query: "SELECT * FROM ufn_conversation_lst_usrdelegate2($corpid, $orgid, $userid)",
         module: "",
