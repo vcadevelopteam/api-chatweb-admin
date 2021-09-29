@@ -585,6 +585,9 @@ module.exports = {
         campaignid: {
             column: "ch.campaignid"
         },
+        templatetype: {
+            column: "mt.type"
+        },
         title: {
             column: "ca.title"
         },

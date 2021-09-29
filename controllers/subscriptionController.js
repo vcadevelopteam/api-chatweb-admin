@@ -1,4 +1,5 @@
 const triggerfunctions = require('../config/triggerfunctions');
+const bcryptjs = require("bcryptjs");
 const axios = require('axios');
 
 const URLABANDON = 'https://zyxmelinux.zyxmeapp.com/zyxme/webchatscript/api/smooch';
@@ -407,6 +408,9 @@ exports.CreateSubscription = async (req, res) => {
             });
         }
 
+        const salt = await bcryptjs.genSalt(10);
+        parameters.password = await bcryptjs.hash(parameters.password, salt);
+
         const responseSubscriptionCreate = await triggerfunctions.executesimpletransaction(method, parameters);
 
         if (responseSubscriptionCreate instanceof Array) {
@@ -650,6 +654,41 @@ exports.GetPageList = async (req, res) => {
             return res.status(500).json({
                 success: false,
                 msg: responseGetPageList.data.operationMessage
+            });
+        }
+    }
+    catch (error) {
+        return res.status(400).json({
+            success: false,
+            msg: error
+        });
+    }
+}
+
+exports.ValidateUsername = async (req, res) => {
+    try {
+        var { method, parameters = {} } = req.body;
+
+        const responseUserSelect = await triggerfunctions.executesimpletransaction(method, parameters);
+
+        if (responseUserSelect instanceof Array) {
+            if (responseUserSelect.length > 0) {
+                return res.status(200).json({
+                    isvalid: false,
+                    success: true
+                });
+            }
+            else {
+                return res.status(200).json({
+                    isvalid: true,
+                    success: true
+                });
+            }
+        }
+        else {
+            return res.status(500).json({
+                msg: responseUserSelect.msg,
+                success: false
             });
         }
     }

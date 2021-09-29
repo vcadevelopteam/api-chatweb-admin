@@ -750,4 +750,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_USERIDBYUSER: {
+        query: "select * from ufn_useridbyuser($usr)",
+        module: "",
+        protected: "SELECT"
+    },
 }
