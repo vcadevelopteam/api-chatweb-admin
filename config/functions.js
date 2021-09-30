@@ -765,4 +765,24 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_INTELLIGENTMODELSCONFIGURATION_LST: {
+        query: "select * from ufn_intelligentmodelsconfiguration_lst($corpid, $orgid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INTELLIGENTMODELS_LST: {
+        query: "select * from ufn_intelligentmodels_lst($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_COMMUNICATIONCHANNELBYORG_LST: {
+        query: "select * from ufn_communicationchannelbyorg_lst($orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INTELLIGENTMODELSCONFIGURATION_INS: {
+        query: "SELECT * FROM ufn_intelligentmodelsconfiguration_ins($corpid, $orgid, $communicationchannelid, $username, $intelligentmodelsconfigurationid, $operation, $description, $type, $status, $color, $icontype, $parameters)",
+        module: "",
+        protected: "INSERT"
+    },
 }
