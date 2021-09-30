@@ -329,6 +329,16 @@ module.exports = {
         module: "/tickets",
         protected: "SELECT"
     },
+    UFN_COMMUNICATIONCHANNELID_LST_USRDELEGATE: {
+        query: "SELECT * FROM ufn_communicationchannelid_lst_usrdelegate($corpid, $orgid, $userid, $communicationchannelid)",
+        module: "/tickets",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATIONCLASSIFICATION_INS_MASSIVE: {
+        query: "SELECT * FROM ufn_conversationclassification_ins_massive($conversationid, $classificationid, $username)",
+        module: "/tickets",
+        protected: "SELECT"
+    },
     UFN_DOMAIN_SEL: {
         query: "SELECT * FROM ufn_domain_sel($corpid ,$orgid ,$domainname  ,$username ,$all)",
         module: "/extras/domains",
@@ -550,17 +560,17 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CHATFLOW_BLOCKVERSION_LST: {
-        query: "SELECT corpid, orgid, chatblockid, chatblockversionid, description FROM blockversion WHERE corpid = $corpid AND chatblockid = $chatblockid AND status = 'ACTIVO' order by changedate DESC LIMIT 10",
+        query: "SELECT * FROM ufn_chatflow_blockversion_lst($corpid, $chatblockid)",
         module: "",
         protected: "SELECT"
     },
     UFN_CHATFLOW_BLOCKVERSION_SEL: {
-        query: "SELECT * FROM blockversion WHERE corpid = $corpid AND chatblockid = $chatblockid AND chatblockversionid = $chatblockversionid AND status = 'ACTIVO'",
+        query: "SELECT * FROM ufn_chatflow_blockversion_sel($corpid, $chatblockid, $chatblockversionid)",
         module: "",
         protected: "SELECT"
     },
     UFN_TABLE_VARIABLE_LST: {
-        query: "SELECT tablename, fieldname, inputname, description, true as persistence, columntype, type FROM tablevariable WHERE status = 'ACTIVO' ORDER BY description ASC",
+        query: "SELECT * FROM ufn_tablevariable_sel()",
         module: "",
         protected: "SELECT"
     },
@@ -570,12 +580,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INPUTVALIDATION_LST: {
-        query: "SELECT description FROM inputvalidation WHERE corpid = $corpid AND status = 'ACTIVO'",
+        query: "SELECT * FROM ufn_inputvalidation_lst($corpid)",
         module: "",
         protected: "SELECT"
     },
     UFN_LOCATION_LST: {
-        query: "SELECT DISTINCT(type) FROM location where corpid = $corpid AND orgid = $orgid AND status = 'ACTIVO' ORDER BY type ASC",
+        query: "SELECT * FROM ufn_location_lst($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
@@ -726,7 +736,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CREATEZYXMEACCOUNT_INS: {
-        query: "SELECT * FROM ufn_createzyxmeaccount_ins($firstname, $lastname, $username, $password, $email, $doctype, $docnumber, $phone, $sales, $customerservice, $marketing, $rolecompany, $companysize, $organizationname)",
+        query: "SELECT * FROM ufn_createzyxmeaccount_ins($firstname, $lastname, $username, $password, $email, $doctype, $docnumber, $phone, $facebookid, $googleid, $sales, $customerservice, $marketing, $rolecompany, $companysize, $organizationname)",
         module: "",
         protected: "INSERT"
     },
@@ -756,7 +766,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_USERIDBYUSER: {
-        query: "select * from ufn_useridbyuser($usr)",
+        query: "select * from ufn_useridbyuser($usr, $facebookid, $googleid)",
         module: "",
         protected: "SELECT"
     },
@@ -764,5 +774,25 @@ module.exports = {
         query: "select * from ufn_chatflow_isselfblock_sel($corpid, $orgid, $communicationchannelid)",
         module: "",
         protected: "SELECT"
+    },
+    UFN_INTELLIGENTMODELSCONFIGURATION_LST: {
+        query: "select * from ufn_intelligentmodelsconfiguration_lst($corpid, $orgid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INTELLIGENTMODELS_LST: {
+        query: "select * from ufn_intelligentmodels_lst($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_COMMUNICATIONCHANNELBYORG_LST: {
+        query: "select * from ufn_communicationchannelbyorg_lst($orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INTELLIGENTMODELSCONFIGURATION_INS: {
+        query: "SELECT * FROM ufn_intelligentmodelsconfiguration_ins($corpid, $orgid, $communicationchannelid, $username, $intelligentmodelsconfigurationid, $operation, $description, $type, $status, $color, $icontype, $parameters)",
+        module: "",
+        protected: "INSERT"
     },
 }
