@@ -7,39 +7,128 @@ exports.generatefilter = (filters, origin, daterange, offset) => {
             const column = columnsFunction[origin][key].column;
             const type = columnsFunction[origin][key].type;
             if (f.value !== '') {
-
-                switch (f.operator) {
-                    case 'contains':
-                        where += ` and ${column} ilike '%${f.value}%'`;
+                switch (type) {
+                    case "number":
+                        switch (f.operator) {
+                            case 'greater':
+                                where += ` and ${column} > ${f.value}`;
+                                break;
+                            case 'greaterequal': case 'greaterorequals':
+                                where += ` and ${column} >= ${f.value}`;
+                                break;
+                            case 'smaller': case 'less':
+                                where += ` and ${column} < ${f.value}`;
+                                break;
+                            case 'smallerequal': case 'lessorequals':
+                                where += ` and ${column} <= ${f.value}`;
+                                break;
+                            case 'isnull':
+                                where += ` and ${column} is null`;
+                                break;
+                            case 'isnotnull':
+                                where += ` and ${column} is not null`;
+                                break;
+                            case 'noequals': case 'notequals':
+                                where += ` and ${column} <> ${f.value}`;
+                                break;
+                            case 'equals':
+                                where += ` and ${column} = ${f.value}`;
+                                break;
+                            default:
+                                break;
+                            }
                         break;
-                    case 'nocontains':
-                        where += ` and ${column} not ilike '%${f.value}%'`;
+                    case "date":
+                        switch (f.operator) {
+                            case 'after':
+                                where += ` and ${column} > '${f.value}'::DATE`;
+                                break;
+                            case 'afterequals':
+                                where += ` and ${column} >= '${f.value}'::DATE`;
+                                break;
+                            case 'before':
+                                where += ` and ${column} < '${f.value}'::DATE`;
+                                break;
+                            case 'beforeequals':
+                                where += ` and ${column} <= '${f.value}'::DATE`;
+                                break;
+                            case 'isnull':
+                                where += ` and ${column} is null`;
+                                break;
+                            case 'isnotnull':
+                                where += ` and ${column} is not null`;
+                                break;
+                            case 'notequals':
+                                where += ` and ${column}::DATE <> '${f.value}'::DATE`;
+                                break;
+                            case 'equals':
+                                where += ` and ${column}::DATE = '${f.value}'::DATE`;
+                                break;
+                            default:
+                                break;
+                        }
                         break;
-                    case 'equals':
-                        where += ` and ${column} = '${f.value}'`;
+                    case "boolean":
+                        switch (f.operator) {
+                            case 'istrue':
+                                where += ` and ${column} = true`;
+                                break;
+                            case 'isfalse':
+                                where += ` and ${column} = false`;
+                                break;
+                            case 'isnull':
+                                where += ` and ${column} is null`;
+                                break;
+                            case 'isnotnull':
+                                where += ` and ${column} is not null`;
+                                break;
+                            case 'all':
+                            default:
+                                break;
+                        }
                         break;
-                    case 'noequals':
-                        where += ` and ${column} <> '${f.value}'`;
-                        break;
-                    case 'empty':
-                        where += ` and (${column} = '' or ${column} is null)`;
-                        break;
-                    case 'noempty':
-                        where += ` and ${column} <> '' and ${column} is not null`;
-                        break;
-                    case 'greater':
-                        where += ` and ${column} > ${f.value}`;
-                        break;
-                    case 'greaterequal':
-                        where += ` and ${column} >= ${f.value}`;
-                        break;
-                    case 'smaller':
-                        where += ` and ${column} < ${f.value}`;
-                        break;
-                    case 'smallerequal':
-                        where += ` and ${column} <= ${f.value}`;
-                        break;
+                    case "string":
                     default:
+                        switch (f.operator) {
+                            case 'equals':
+                                where += ` and ${column} = '${f.value}'`;
+                                break;
+                            case 'noequals': case 'notequals':
+                                where += ` and ${column} <> '${f.value}'`;
+                                break;
+                            case 'empty': case 'isempty':
+                                where += ` and (${column} = '' or ${column} is null)`;
+                                break;
+                            case 'noempty': case 'isnotempty':
+                                where += ` and ${column} <> '' and ${column} is not null`;
+                                break;
+                            case 'isnull':
+                                where += ` and ${column} is null`;
+                                break;
+                            case 'isnotnull':
+                                where += ` and ${column} is not null`;
+                                break;
+                            case 'nocontains': case 'notcontains':
+                                where += ` and ${column} not ilike '%${f.value}%'`;
+                                break;
+                            case 'contains':
+                                where += ` and ${column} ilike '%${f.value}%'`;
+                                break;
+                            case 'greater':
+                                where += ` and ${column} > ${f.value}`;
+                                break;
+                            case 'greaterequal': case 'greaterorequals':
+                                where += ` and ${column} >= ${f.value}`;
+                                break;
+                            case 'smaller': case 'less':
+                                where += ` and ${column} < ${f.value}`;
+                                break;
+                            case 'smallerequal': case 'lessorequals':
+                                where += ` and ${column} <= ${f.value}`;
+                                break;
+                            default:
+                                break;
+                        }
                         break;
                 }
             }
