@@ -533,10 +533,11 @@ exports.InsertChannel = async (req, res) => {
                 if (!responseChatWebSave.data || !responseChatWebSave.data instanceof Object)
                     return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
                 
-                const integrationApiKey = responseChatWebSave.data.apikey;
                 const integrationId = responseChatWebSave.data.integrationkey;
-                
-                const integrationKeyId = responseChatWebSave.data.pluginid;
+                    
+                const integrationApiKey = responseChatWebSave.data.pluginapikey;
+                const integrationKeyId = responseChatWebSave.data.pluginid; //check
+
                 const webhookId = responseChatWebSave.data.webhookid;
 
 
