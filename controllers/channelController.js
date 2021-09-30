@@ -31,9 +31,9 @@ exports.GetChannelService = async (req, res) => {
                     type: req.body.siteType,
                 };
             }
-    
+
             const resx = await triggerfunctions.executesimpletransaction(method, data);
-    
+
             if (resx instanceof Array) {
                 if (resx.length > 0) {
                     return res.json({
@@ -41,8 +41,7 @@ exports.GetChannelService = async (req, res) => {
                         serviceData: resx[0].servicecredentials
                     });
                 }
-                else
-                {
+                else {
                     return res.json({
                         success: false,
                         msg: 'Not found'
@@ -59,12 +58,12 @@ exports.GetChannelService = async (req, res) => {
         else {
             method = 'UFN_COMMUNICATIONCHANNELHOOK_SEL';
             data = {
-                site:  req.body.siteId,
+                site: req.body.siteId,
                 type: req.body.siteType,
             };
 
             const resx = await triggerfunctions.executesimpletransaction(method, data);
-    
+
             if (resx instanceof Array) {
                 if (resx.length > 0) {
                     return res.json({
@@ -72,8 +71,7 @@ exports.GetChannelService = async (req, res) => {
                         serviceData: resx[0].servicedata
                     });
                 }
-                else
-                {
+                else {
                     return res.json({
                         success: false,
                         msg: 'Not found'
@@ -225,7 +223,7 @@ exports.InsertChannel = async (req, res) => {
                         appId: req.body.service.appid
                     }
                 });
-        
+
                 if (responseGetLongToken.data.success) {
                     var longToken = responseGetLongToken.data.longToken;
                     var channelService = null;
@@ -415,7 +413,7 @@ exports.InsertChannel = async (req, res) => {
                 };
 
                 const resx = await triggerfunctions.executesimpletransaction(twitterMethod, twitterData);
-    
+
                 if (resx instanceof Array) {
                     const responseTwitterAdd = await axios({
                         url: `${URLBRIDGE}processlaraigo/twitter/managetwitterlink`,
@@ -430,7 +428,7 @@ exports.InsertChannel = async (req, res) => {
                             accessSecret: servicecredentialstwitter.accessSecret
                         }
                     });
-    
+
                     if (responseTwitterAdd.data.success) {
                         if (req.body.type === 'TWITTER') {
                             parameters.type = 'TWIT';
@@ -442,7 +440,7 @@ exports.InsertChannel = async (req, res) => {
                         parameters.servicecredentials = JSON.stringify(servicecredentialstwitter);
 
                         const resx = await triggerfunctions.executesimpletransaction(method, parameters);
-    
+
                         if (resx instanceof Array) {
                             return res.json({
                                 success: true
@@ -479,233 +477,95 @@ exports.InsertChannel = async (req, res) => {
                 break;
 
             case 'CHATWEB':
-                var chatwebBody = {
-                    applicationId: chatwebApplicationId,
+                const datatmp = {
+                    webhook: `${URLBROKER}webhooks/save`,
+                    applicationname: 'LARAIGO',
+                    integrationkey: '',
                     name: req.body.parameters.description,
                     status: 'ACTIVO',
-                    type: 'WEBM',
-                    metadata: {
-                        color: {
-                            chatBackgroundColor: '',
-                            chatBorderColor: '',
-                            chatHeaderColor: '',
-                            messageBotColor: '',
-                            messageClientColor: ''
-                        },
-                        extra: {
-                            abandonendpoint: `${URLABANDON}smooch`,
-                            cssbody: '',
-                            enableabandon: false,
-                            enableformhistory: false,
-                            enableidlemessage: false,
-                            headermessage: '',
-                            inputalwaysactive: false,
-                            jsscript: '',
-                            playalertsound: false,
-                            sendmetadata: false,
-                            showchatrestart: false,
-                            showmessageheader: false,
-                            showplatformlogo: false,
-                            uploadaudio: false,
-                            uploadfile: false,
-                            uploadimage: false,
-                            uploadlocation: false,
-                            uploadvideo: false
-                        },
-                        form: null,
-                        icons: {
-                            chatBotImage: '',
-                            chatHeaderImage: '',
-                            chatIdleImage: '',
-                            chatOpenImage: ''
-                        },
-                        personalization: {
-                            headerMessage: '',
-                            headerSubTitle: '',
-                            headerTitle: '',
-                            idleMessage: ''
-                        }
-                    }
-                };
-
-                if (typeof req.body.service !== 'undefined' && req.body.service) {
-                    if (typeof req.body.service.interface !== 'undefined' && req.body.service.interface) {
-                        if (typeof req.body.service.interface.chattitle !== 'undefined' && req.body.service.interface.chattitle) {
-                            chatwebBody.metadata.personalization.headerTitle = req.body.service.interface.chattitle;
-                        }
-                        if (typeof req.body.service.interface.chatsubtitle !== 'undefined' && req.body.service.interface.chatsubtitle) {
-                            chatwebBody.metadata.personalization.headerSubTitle = req.body.service.interface.chatsubtitle;
-                        }
-                        if (typeof req.body.service.interface.iconbutton !== 'undefined' && req.body.service.interface.iconbutton) {
-                            chatwebBody.metadata.icons.chatOpenImage = req.body.service.interface.iconbutton;
-                        }
-                        if (typeof req.body.service.interface.iconheader !== 'undefined' && req.body.service.interface.iconheader) {
-                            chatwebBody.metadata.icons.chatHeaderImage = req.body.service.interface.iconheader;
-                        }
-                        if (typeof req.body.service.interface.iconbot !== 'undefined' && req.body.service.interface.iconbot) {
-                            chatwebBody.metadata.icons.chatBotImage = req.body.service.interface.iconbot;
-                        }
-                    }
-                    if (typeof req.body.service.color !== 'undefined' && req.body.service.color) {
-                        if (typeof req.body.service.color.header !== 'undefined' && req.body.service.color.header) {
-                            chatwebBody.metadata.color.chatHeaderColor = req.body.service.color.header;
-                        }
-                        if (typeof req.body.service.color.background !== 'undefined' && req.body.service.color.background) {
-                            chatwebBody.metadata.color.chatBackgroundColor = req.body.service.color.background;
-                        }
-                        if (typeof req.body.service.color.border !== 'undefined' && req.body.service.color.border) {
-                            chatwebBody.metadata.color.chatBorderColor = req.body.service.color.border;
-                        }
-                        if (typeof req.body.service.color.client !== 'undefined' && req.body.service.color.client) {
-                            chatwebBody.metadata.color.messageClientColor = req.body.service.color.client;
-                        }
-                        if (typeof req.body.service.color.bot !== 'undefined' && req.body.service.color.bot) {
-                            chatwebBody.metadata.color.messageBotColor = req.body.service.color.bot;
-                        }
-                    }
-                    if (typeof req.body.service.form !== 'undefined' && req.body.service.form) {
-                        chatwebBody.metadata.form = req.body.service.form;
-                    }
-                    if (typeof req.body.service.bubble !== 'undefined' && req.body.service.bubble) {
-                        if (typeof req.body.service.bubble.active !== 'undefined') {
-                            chatwebBody.metadata.extra.enableidlemessage = req.body.service.bubble.active;
-                        }
-                        if (typeof req.body.service.bubble.iconbubble !== 'undefined' && req.body.service.bubble.iconbubble) {
-                            chatwebBody.metadata.icons.chatIdleImage = req.body.service.bubble.iconbubble;
-                        }
-                        if (typeof req.body.service.bubble.messagebubble !== 'undefined' && req.body.service.bubble.messagebubble) {
-                            chatwebBody.metadata.personalization.idleMessage = req.body.service.bubble.messagebubble;
-                        }
-                    }
-                    if (typeof req.body.service.extra !== 'undefined' && req.body.service.extra) {
-                        if (typeof req.body.service.extra.uploadfile !== 'undefined') {
-                            chatwebBody.metadata.extra.uploadfile = req.body.service.extra.uploadfile;
-                        }
-                        if (typeof req.body.service.extra.uploadvideo !== 'undefined') {
-                            chatwebBody.metadata.extra.uploadvideo = req.body.service.extra.uploadvideo;
-                        }
-                        if (typeof req.body.service.extra.uploadlocation !== 'undefined') {
-                            chatwebBody.metadata.extra.uploadlocation = req.body.service.extra.uploadlocation;
-                        }
-                        if (typeof req.body.service.extra.uploadimage !== 'undefined') {
-                            chatwebBody.metadata.extra.uploadimage = req.body.service.extra.uploadimage;
-                        }
-                        if (typeof req.body.service.extra.uploadaudio !== 'undefined') {
-                            chatwebBody.metadata.extra.uploadaudio = req.body.service.extra.uploadaudio;
-                        }
-                        if (typeof req.body.service.extra.reloadchat !== 'undefined') {
-                            chatwebBody.metadata.extra.showchatrestart = req.body.service.extra.reloadchat;
-                        }
-                        if (typeof req.body.service.extra.poweredby !== 'undefined') {
-                            chatwebBody.metadata.extra.showplatformlogo = req.body.service.extra.poweredby;
-                        }
-                        if (typeof req.body.service.extra.persistentinput !== 'undefined') {
-                            chatwebBody.metadata.extra.inputalwaysactive = req.body.service.extra.persistentinput;
-                        }
-                        if (typeof req.body.service.extra.abandonevent !== 'undefined') {
-                            chatwebBody.metadata.extra.enableabandon = req.body.service.extra.abandonevent;
-                        }
-                        if (typeof req.body.service.extra.alertsound !== 'undefined') {
-                            chatwebBody.metadata.extra.playalertsound = req.body.service.extra.alertsound;
-                        }
-                        if (typeof req.body.service.extra.formhistory !== 'undefined') {
-                            chatwebBody.metadata.extra.enableformhistory = req.body.service.extra.formhistory;
-                        }
-                        if (typeof req.body.service.extra.enablemetadata !== 'undefined') {
-                            chatwebBody.metadata.extra.sendmetadata = req.body.service.extra.enablemetadata;
-                        }
-                        if (typeof req.body.service.extra.customcss !== 'undefined' && req.body.service.extra.customcss) {
-                            chatwebBody.metadata.extra.cssbody = req.body.service.extra.customcss;
-                        }
-                        if (typeof req.body.service.extra.customjs !== 'undefined' && req.body.service.extra.customjs) {
-                            chatwebBody.metadata.extra.jsscript = req.body.service.extra.customjs;
-                        }
-                        if (typeof req.body.service.extra.botnameenabled !== 'undefined') {
-                            chatwebBody.metadata.extra.showmessageheader = req.body.service.extra.botnameenabled;
-                        }
-                        if (typeof req.body.service.extra.botnametext !== 'undefined' && req.body.service.extra.botnametext) {
-                            chatwebBody.metadata.extra.headermessage = req.body.service.extra.botnametext;
-                        }
-                    }
+                    form: '',
+                    color: JSON.stringify({
+                        chatHeaderColor: req.body.service.color?.header || "",
+                        chatBackgroundColor: req.body.service.color?.background || "",
+                        chatBorderColor: req.body.service.color?.border || "",
+                        messageClientColor: req.body.service.color?.client || "",
+                        messageBotColor: req.body.service.color?.bot || "",
+                    }),
+                    icons: JSON.stringify({
+                        chatOpenImage: req.body.service.interface.iconbutton,
+                        chatHeaderImage: req.body.service.interface.iconheader,
+                        chatBotImage: req.body.service.interface.iconbot,
+                        chatIdleImage: req.body.service.bubble.iconbubble
+                    }),
+                    other: JSON.stringify({
+                        abandonendpoint: `${URLABANDON}smooch`,
+                        jsscript: req.body.service.extra?.customjs || "",
+                        headermessage: req.body.service.extra?.botnametext || "",
+                        cssbody: req.body.service.extra?.customcss || "",
+                        enableidlemessage: req.body.service.bubble?.active || false,
+                        uploadfile: req.body.service.extra?.uploadfile || false,
+                        uploadvideo: req.body.service.extra?.uploadvideo || false,
+                        uploadlocation: req.body.service.extra?.uploadlocation || false,
+                        uploadimage: req.body.service.extra?.uploadimage || false,
+                        uploadaudio: req.body.service.extra?.uploadaudio || false,
+                        showchatrestart: req.body.service.extra?.reloadchat || false,
+                        showplatformlogo: req.body.service.extra?.poweredby || false,
+                        inputalwaysactive: req.body.service.extra?.persistentinput || false,
+                        enableabandon: req.body.service.extra?.abandonevent || false,
+                        playalertsound: req.body.service.extra?.alertsound || false,
+                        enableformhistory: req.body.service.extra?.formhistory || false,
+                        sendmetadata: req.body.service.extra?.enablemetadata || false,
+                        showmessageheader: req.body.service.extra?.botnameenabled || false,
+                    }),
+                    personalization: JSON.stringify({
+                        headerTitle: req.body.service.interface.chattitle,
+                        headerSubTitle: req.body.service.interface.chatsubtitle,
+                        idleMessage: req.body.service.bubble.messagebubble,
+                    })
                 }
 
                 const responseChatWebSave = await axios({
-                    url: `${URLBROKER}integrations/save`,
+                    url: `http://52.116.128.51:5065/api/integration/integrationzyxme`,
                     method: 'post',
-                    data: chatwebBody
+                    data: datatmp
                 });
 
-                var integrationId = responseChatWebSave.data.id;
+                if (!responseChatWebSave.data || !responseChatWebSave.data instanceof Object)
+                    return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
+                
+                const integrationApiKey = responseChatWebSave.data.apikey;
+                const integrationId = responseChatWebSave.data.integrationkey;
+                
+                const integrationKeyId = responseChatWebSave.data.pluginid;
+                const webhookId = responseChatWebSave.data.webhookid;
 
-                if (typeof integrationId !== 'undefined' && integrationId) {
-                    const responseChatWebhookSave = await axios({
-                        url: `${URLBROKER}webhooks/save`,
-                        method: 'post',
-                        data: {
-                            name: req.body.parameters.description,
-                            description: req.body.parameters.description,
-                            integration: integrationId,
-                            webUrl: `${URLHOOK}chatweb/webhookasync`,
-                            status: 'ACTIVO'
-                        }
+
+                parameters.communicationchannelcontact = integrationKeyId;
+                parameters.communicationchannelsite = integrationId;
+                parameters.communicationchannelowner = webhookId;
+
+                parameters.appintegrationid = chatwebApplicationId;
+                parameters.integrationid = integrationId;
+
+                parameters.apikey = integrationApiKey;
+
+                parameters.servicecredentials = '';
+                parameters.type = 'CHAZ';
+                
+                parameters.channelparameters = JSON.stringify(datatmp);
+
+                const xxaa = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                if (xxaa instanceof Array) {
+                    return res.json({
+                        integrationid: integrationId,
+                        success: true
                     });
-
-                    var webhookId = responseChatWebhookSave.data.id;
-
-                    const responseChatPluginSave = await axios({
-                        url: `${URLBROKER}plugins/save`,
-                        method: 'post',
-                        data: {
-                            name: req.body.parameters.description,
-                            integration: integrationId,
-                            status: 'ACTIVO'
-                        }
-                    });
-
-                    var integrationApiKey = responseChatPluginSave.data.apiKey;
-                    var integrationKeyId = responseChatPluginSave.data.id;
-
-                    if (typeof integrationApiKey !== 'undefined' && integrationApiKey) {
-                        parameters.communicationchannelcontact = integrationKeyId;
-                        parameters.communicationchannelsite = integrationId;
-                        parameters.communicationchannelowner = webhookId;
-
-                        parameters.appintegrationid = chatwebApplicationId;
-                        parameters.integrationid = integrationId;
-
-                        parameters.apikey = integrationApiKey;
-
-                        parameters.servicecredentials = '';
-                        parameters.type = 'CHAZ';
-                        
-                        parameters.channelparameters = JSON.stringify(chatwebBody);
-
-                        const resx = await triggerfunctions.executesimpletransaction(method, parameters);
-    
-                        if (resx instanceof Array) {
-                            return res.json({
-                                integrationid: integrationId,
-                                success: true
-                            });
-                        }
-                        else {
-                            return res.status(500).json({
-                                success: false,
-                                msg: resx.msg
-                            });
-                        }
-                    }
-                    else {
-                        return res.status(500).json({
-                            success: false,
-                            msg: 'Error while creating plugin'
-                        });
-                    }
                 }
                 else {
                     return res.status(500).json({
                         success: false,
-                        msg: 'Error while creating integration'
+                        msg: resx.msg
                     });
                 }
                 break;
@@ -779,8 +639,7 @@ exports.DeleteChannel = async (req, res) => {
                         });
                     }
                 }
-                else
-                {
+                else {
                     const resx = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (resx instanceof Array) {
@@ -833,8 +692,7 @@ exports.DeleteChannel = async (req, res) => {
                         });
                     }
                 }
-                else
-                {
+                else {
                     const resx = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (resx instanceof Array) {
@@ -887,8 +745,7 @@ exports.DeleteChannel = async (req, res) => {
                         });
                     }
                 }
-                else
-                {
+                else {
                     const resx = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (resx instanceof Array) {
@@ -941,8 +798,7 @@ exports.DeleteChannel = async (req, res) => {
                         });
                     }
                 }
-                else
-                {
+                else {
                     const resx = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (resx instanceof Array) {
@@ -995,8 +851,7 @@ exports.DeleteChannel = async (req, res) => {
                         });
                     }
                 }
-                else
-                {
+                else {
                     const resx = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (resx instanceof Array) {
@@ -1032,7 +887,7 @@ exports.DeleteChannel = async (req, res) => {
                     }
 
                     const rest = await triggerfunctions.executesimpletransaction(methodremove, dataremove);
-    
+
                     if (rest instanceof Array) {
                         if (rest.length > 0) {
                             const resx = await triggerfunctions.executesimpletransaction(method, parameters);
@@ -1049,8 +904,7 @@ exports.DeleteChannel = async (req, res) => {
                                 });
                             }
                         }
-                        else
-                        {
+                        else {
                             const responseChannelRemoveTWMS = await axios({
                                 url: `${URLBRIDGE}processlaraigo/twitter/managetwitterlink`,
                                 method: 'post',
@@ -1064,10 +918,10 @@ exports.DeleteChannel = async (req, res) => {
                                     accessSecret: serviceData.accessSecret
                                 }
                             });
-                        
+
                             if (responseChannelRemoveTWMS.data.success) {
                                 const resx = await triggerfunctions.executesimpletransaction(method, parameters);
-                            
+
                                 if (resx instanceof Array) {
                                     var twitterMethod = 'UFN_COMMUNICATIONCHANNELHOOK_INS';
                                     var twitterData = {
@@ -1075,9 +929,9 @@ exports.DeleteChannel = async (req, res) => {
                                         site: serviceData.twitterPageId,
                                         operation: 'DELETE'
                                     };
-                                
+
                                     await triggerfunctions.executesimpletransaction(twitterMethod, twitterData);
-                                
+
                                     return res.json({
                                         success: true
                                     });
@@ -1104,8 +958,7 @@ exports.DeleteChannel = async (req, res) => {
                         });
                     }
                 }
-                else
-                {
+                else {
                     const resx = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (resx instanceof Array) {
@@ -1154,7 +1007,7 @@ exports.DeleteChannel = async (req, res) => {
                 }
 
                 const responseChatweb = await triggerfunctions.executesimpletransaction(method, parameters);
-    
+
                 if (responseChatweb instanceof Array) {
                     return res.json({
                         success: true
