@@ -41,16 +41,16 @@ exports.generatefilter = (filters, origin, daterange, offset) => {
                     case "date":
                         switch (f.operator) {
                             case 'after':
-                                where += ` and ${column} > '${f.value}'::DATE`;
+                                where += column.includes("p_offset") ? ` and (${column})::DATE > '${f.value}'::DATE` : ` and ${column} > '${f.value}'::DATE - ${offset} * INTERVAL '1HOUR'`;
                                 break;
                             case 'afterequals':
-                                where += ` and ${column} >= '${f.value}'::DATE`;
+                                where += column.includes("p_offset") ? ` and (${column})::DATE >= '${f.value}'::DATE` : ` and ${column} >= '${f.value}'::DATE - ${offset} * INTERVAL '1HOUR'`;
                                 break;
                             case 'before':
-                                where += ` and ${column} < '${f.value}'::DATE`;
+                                where += column.includes("p_offset") ? ` and (${column})::DATE < '${f.value}'::DATE` : ` and ${column} < '${f.value}'::DATE - ${offset} * INTERVAL '1HOUR'`;
                                 break;
                             case 'beforeequals':
-                                where += ` and ${column} <= '${f.value}'::DATE`;
+                                where += column.includes("p_offset") ? ` and (${column})::DATE <= '${f.value}'::DATE` : ` and ${column} <= '${f.value}'::DATE - ${offset} * INTERVAL '1HOUR'`;
                                 break;
                             case 'isnull':
                                 where += ` and ${column} is null`;
@@ -59,10 +59,10 @@ exports.generatefilter = (filters, origin, daterange, offset) => {
                                 where += ` and ${column} is not null`;
                                 break;
                             case 'notequals':
-                                where += ` and ${column}::DATE <> '${f.value}'::DATE`;
+                                where += column.includes("p_offset") ? ` and (${column})::DATE <> '${f.value}'::DATE` : ` and ${column}::DATE <> ('${f.value}'::DATE - ${offset} * INTERVAL '1HOUR')::DATE`;
                                 break;
                             case 'equals':
-                                where += ` and ${column}::DATE = '${f.value}'::DATE`;
+                                where += column.includes("p_offset") ? ` and (${column})::DATE = '${f.value}'::DATE` : ` and ${column}::DATE = ('${f.value}'::DATE - ${offset} * INTERVAL '1HOUR')::DATE`;
                                 break;
                             default:
                                 break;
