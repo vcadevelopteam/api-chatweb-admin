@@ -479,7 +479,7 @@ exports.InsertChannel = async (req, res) => {
             case 'CHATWEB':
                 const datatmp = {
                     webhook: `${URLBROKER}webhooks/save`,
-                    applicationname: 'LARAIGO',
+                    applicationname: 'ZYXMEDEV',
                     integrationkey: '',
                     name: req.body.parameters.description,
                     status: 'ACTIVO',
