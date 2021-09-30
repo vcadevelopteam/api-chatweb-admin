@@ -34,7 +34,7 @@ const triggerGenerateApikey = async (data) => {
         console.log(rr);
         throw 'Error al insertar'
     }
-    return apikey;
+    return { apikey, apikeyid };
 }
 const triggerSaveWebhook = async (data, x) => {
     const dataInsWebhook = {
@@ -57,7 +57,7 @@ const triggerSaveWebhook = async (data, x) => {
     }
     const rr = await tf.executesimpletransaction("UFN_CHATWEBHOOK_INS", datapostgres)
 
-    return rr;
+    return datapostgres;
 }
 
 exports.Save = async (req, res) => {
@@ -126,7 +126,7 @@ exports.Save = async (req, res) => {
 
             if (webhooks.length > 0) {
                 const InsertBrokerWebhooks = webhooks.map(x => triggerSaveWebhook(data, x));
-                
+
                 const resultwebhooks = await Promise.all(InsertBrokerWebhooks);
             }
             return res.json(result);
@@ -203,6 +203,8 @@ exports.IntegrationZyxme = async (req, res) => {
                 },
                 applicationId: "" + data.chatwebapplicationid
             }
+            let pluginapikey = ""
+            let pluginid = ""
             if (data.id === 0) {
                 try {
                     const responseCreateIntegration = await axios({
@@ -216,7 +218,10 @@ exports.IntegrationZyxme = async (req, res) => {
                     await Promise.all([
                         tf.executesimpletransaction("UFN_INTEGRATION_KEY_UPD", { integrationid, integrationkey: data.integrationkey }),
                         triggerGenerateApikey(data).then(r => apikey = r)
-                    ]);
+                    ]).then(resx => {
+                        pluginapikey = resx[1].apikey
+                        pluginid = resx[1].apikeyid
+                    });
                 } catch (error) { }
             } else {
                 try {
@@ -227,11 +232,12 @@ exports.IntegrationZyxme = async (req, res) => {
                     });
                 } catch (error) { }
             }
-
+            let webhookid = '',
             if (data.id === 0) {
                 const r1 = await triggerSaveWebhook(data, { target: data.webhook, status: 'ACTIVO', operation: 'INSERT', chatwebhookid: 0, name: '', type: 'NINGUNO', description: '', username: data.username });
+                webhookid = r1.trigger;
             }
-            return res.json({ success: true, integrationkey: data.integrationkey, apikey });
+            return res.json({ success: true, integrationkey: data.integrationkey, apikey, webhookid, pluginapikey, pluginid });
         }
         else
             return res.status(500).json(result);
