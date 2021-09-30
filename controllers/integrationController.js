@@ -217,9 +217,10 @@ exports.IntegrationZyxme = async (req, res) => {
                     //Actualizar la integración con el idintegration de mongo, y generar el apikey
                     await Promise.all([
                         tf.executesimpletransaction("UFN_INTEGRATION_KEY_UPD", { integrationid, integrationkey: data.integrationkey }),
-                        triggerGenerateApikey(data).then(r => apikey = r.apikey)
+                        triggerGenerateApikey(data)
                     ]).then(resx => {
                         pluginapikey = resx[1].apikey
+                        apikey = resx[1].apikey
                         pluginid = resx[1].apikeyid
                     });
                 } catch (error) { }
