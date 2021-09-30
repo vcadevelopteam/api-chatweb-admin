@@ -232,7 +232,7 @@ exports.IntegrationZyxme = async (req, res) => {
                     });
                 } catch (error) { }
             }
-            let webhookid = '',
+            let webhookid = ''
             if (data.id === 0) {
                 const r1 = await triggerSaveWebhook(data, { target: data.webhook, status: 'ACTIVO', operation: 'INSERT', chatwebhookid: 0, name: '', type: 'NINGUNO', description: '', username: data.username });
                 webhookid = r1.trigger;
