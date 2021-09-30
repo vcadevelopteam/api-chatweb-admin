@@ -569,5 +569,60 @@ module.exports = {
         locked: {
             column: "pcc.locke"
         },
+    },
+    blacklist: {
+        phone: {
+            column: "bl.phone"
+        },
+        description: {
+            column: "bl.description"
+        },
+        createdate: {
+            column: "bl.createdate + p_offset * interval '1hour'"
+        }
+    },
+    campaignreport: {
+        campaignid: {
+            column: "ch.campaignid"
+        },
+        templatetype: {
+            column: "mt.type"
+        },
+        title: {
+            column: "ca.title"
+        },
+        description: {
+            column: "ca.description"
+        },
+        rundate: {
+            column: "ch.rundate"
+        },
+        channel: {
+            column: "cc.description"
+        },
+        total: {
+            column: "ch.total"
+        },
+        success: {
+            column: "ch.success"
+        },
+        successp: {
+            column: "ROUND(ch.success::numeric / ch.total * 100,2)::TEXT"
+        },
+        fail: {
+            column: "ch.fail"
+        },
+        failp: {
+            column: "ROUND(ch.fail::numeric / ch.total * 100,2)::TEXT"
+        },
+        locked: {
+            column: "ch.locked"
+        },
+        blacklisted: {
+            column: "ch.blacklisted"
+        },
+        attended: {
+            column: "ch.attended"
+        }
     }
 }
