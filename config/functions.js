@@ -329,6 +329,16 @@ module.exports = {
         module: "/tickets",
         protected: "SELECT"
     },
+    UFN_COMMUNICATIONCHANNELID_LST_USRDELEGATE: {
+        query: "SELECT * FROM ufn_communicationchannelid_lst_usrdelegate($corpid, $orgid, $userid, $communicationchannelid)",
+        module: "/tickets",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATIONCLASSIFICATION_INS_MASSIVE: {
+        query: "SELECT * FROM ufn_conversationclassification_ins_massive($conversationid, $classificationid, $username)",
+        module: "/tickets",
+        protected: "SELECT"
+    },
     UFN_DOMAIN_SEL: {
         query: "SELECT * FROM ufn_domain_sel($corpid ,$orgid ,$domainname  ,$username ,$all)",
         module: "/extras/domains",
