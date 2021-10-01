@@ -785,4 +785,9 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_CONVERSATION_SEL_PERSON_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_conversation_sel_person_totalrecords($personid, $where)",
+        module: "",
+        protected: "SELECT"
+    },
 }
