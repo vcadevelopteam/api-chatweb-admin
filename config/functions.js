@@ -289,28 +289,18 @@ module.exports = {
         module: "/reports",
         protected: "SELECT"
     },
-    UFN_EMOJI_GROUP_SEL: {
-        query: "SELECT * FROM ufn_emoji_group_sel($corpid ,$orgid ,$userid ,$all)",
-        module: "/extras/emojis",
-        protected: "SELECT"
-    },
-    UFN_EMOJI_SEL: {
-        query: "select orgid ,categorydesc ,emojidec ,favoritechannels ,restrictedchannels from emoji where corpid = $corpid and emojidec = $emojidec;",
-        module: "/extras/emojis",
-        protected: "SELECT"
-    },
     UFN_EMOJI_ALL_SEL: {
         query: "select * from ufn_emoji_all_sel($corpid ,$orgid ,$userid ,$all);",
         module: "/extras/emojis",
         protected: "SELECT"
     },
-    UFN_EMOJI_UPDATE: {
-        query: "update emoji set favoritechannels = case when $favoritechannels = 'undefined' then favoritechannels else case when length(trim($favoritechannels)) > 0 then $favoritechannels else null end end, restrictedchannels = case when $restrictedchannels = 'undefined' then restrictedchannels else  case when length(trim($restrictedchannels)) > 0 then $restrictedchannels else null end end where corpid = $corpid and orgid = $orgid and emojidec = $emojidec;",
+    UFN_EMOJI_SEL: {
+        query: "select orgid ,categorydesc ,emojidec ,favoritechannels ,restrictedchannels from emoji where corpid = $corpid and emojidec = $emojidec and status <> 'ELIMINADO';",
         module: "/extras/emojis",
         protected: "SELECT"
     },
-    UFN_EMOJI_CHANNELS_UPD: {
-        query: "select * from ufn_emoji_channels_upd($corpid ,$emojidec ,$isfavorite);",
+    UFN_EMOJI_INS: {
+        query: "select * from ufn_emoji_ins($corpid, $orgid, $description, $emojichar, $emojidec, $emojihex, $categorydesc, $categoryorder, $communicationchannel, $favoritechannels, $restrictedchannels, $username, $favorite, $allchannels);",
         module: "/extras/emojis",
         protected: "SELECT"
     },
