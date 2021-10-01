@@ -68,6 +68,36 @@ exports.generatefilter = (filters, origin, daterange, offset) => {
                                 break;
                         }
                         break;
+                    case "datetime":
+                            switch (f.operator) {
+                                case 'after':
+                                    where += column.includes("p_offset") ? ` and (${column})::TIMESTAMP > ('${f.value}')::TIMESTAMP` : ` and ${column} > ('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR'`;
+                                    break;
+                                case 'afterequals':
+                                    where += column.includes("p_offset") ? ` and (${column})::TIMESTAMP >= ('${f.value}')::TIMESTAMP` : ` and ${column} >= ('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR'`;
+                                    break;
+                                case 'before':
+                                    where += column.includes("p_offset") ? ` and (${column})::TIMESTAMP < ('${f.value}')::TIMESTAMP` : ` and ${column} < ('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR'`;
+                                    break;
+                                case 'beforeequals':
+                                    where += column.includes("p_offset") ? ` and (${column})::TIMESTAMP <= ('${f.value}')::TIMESTAMP` : ` and ${column} <= ('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR'`;
+                                    break;
+                                case 'isnull':
+                                    where += ` and ${column} is null`;
+                                    break;
+                                case 'isnotnull':
+                                    where += ` and ${column} is not null`;
+                                    break;
+                                case 'notequals':
+                                    where += column.includes("p_offset") ? ` and DATE_TRUNC('MINUTE', (${column})::TIMESTAMP) <> ('${f.value}')::TIMESTAMP` : ` and DATE_TRUNC('MINUTE', (${column})::TIMESTAMP) <> (('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR')::TIMESTAMP`;
+                                    break;
+                                case 'equals':
+                                    where += column.includes("p_offset") ? ` and DATE_TRUNC('MINUTE', (${column})::TIMESTAMP) = ('${f.value}')::TIMESTAMP` : ` and DATE_TRUNC('MINUTE', (${column})::TIMESTAMP) = (('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR')::TIMESTAMP`;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
                     case "boolean":
                         switch (f.operator) {
                             case 'istrue':
