@@ -129,8 +129,6 @@ module.exports = {
         module: "/extras/person",
         protected: "SELECT"
     },
-
-
     UFN_CONVERSATION_SEL_PERSON: {
         query: "select * from ufn_conversation_sel_person($personid, $offset)",
         module: "/extras/person",
@@ -146,9 +144,6 @@ module.exports = {
         module: "/extras/person",
         protected: "SELECT"
     },
-
-
-
     UFN_INTELLIGENTMODELS_SEL: {
         query: "SELECT * FROM ufn_intelligentmodels_sel($corpid,$orgid,$username,$id,$all)",
         module: "/extras/intelligentmodels",
@@ -295,7 +290,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_EMOJI_SEL: {
-        query: "select orgid ,categorydesc ,emojidec ,favoritechannels ,restrictedchannels from emoji where corpid = $corpid and emojidec = $emojidec and status <> 'ELIMINADO';",
+        query: "select orgid, favoritechannels, restrictedchannels from emoji where corpid = $corpid and emojidec = $emojidec and status <> 'ELIMINADO';",
         module: "/extras/emojis",
         protected: "SELECT"
     },
