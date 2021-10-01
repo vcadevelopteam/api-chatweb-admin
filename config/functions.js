@@ -130,7 +130,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CONVERSATION_SEL_PERSON: {
-        query: "select * from ufn_conversation_sel_person($personid, $offset)",
+        query: "select * from ufn_conversation_sel_person($personid, $take, $skip, $where, $order, $offset)",
         module: "/extras/person",
         protected: "SELECT"
     },
@@ -779,5 +779,10 @@ module.exports = {
         query: "SELECT * FROM ufn_intelligentmodelsconfiguration_ins($corpid, $orgid, $communicationchannelid, $username, $intelligentmodelsconfigurationid, $operation, $description, $type, $status, $color, $icontype, $parameters)",
         module: "",
         protected: "INSERT"
+    },
+    UFN_CONVERSATION_SEL_PERSON_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_conversation_sel_person_totalrecords($personid, $where)",
+        module: "",
+        protected: "SELECT"
     },
 }
