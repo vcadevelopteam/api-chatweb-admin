@@ -578,7 +578,8 @@ module.exports = {
             column: "bl.description"
         },
         createdate: {
-            column: "bl.createdate + p_offset * interval '1hour'"
+            column: "bl.createdate + p_offset * interval '1hour'",
+            type: "date"
         }
     },
     campaignreport: {
@@ -595,34 +596,43 @@ module.exports = {
             column: "ca.description"
         },
         rundate: {
-            column: "ch.rundate"
+            column: "ch.rundate",
+            type: "date"
         },
         channel: {
             column: "cc.description"
         },
         total: {
-            column: "ch.total"
+            column: "ch.total",
+            type: "number"
         },
         success: {
-            column: "ch.success"
+            column: "ch.success",
+            type: "number"
         },
         successp: {
-            column: "ROUND(ch.success::numeric / ch.total * 100,2)::TEXT"
+            column: "ROUND(ch.success::numeric / ch.total * 100,2)",
+            type: "number"
         },
         fail: {
-            column: "ch.fail"
+            column: "ch.fail",
+            type: "number"
         },
         failp: {
-            column: "ROUND(ch.fail::numeric / ch.total * 100,2)::TEXT"
+            column: "ROUND(ch.fail::numeric / ch.total * 100,2)",
+            type: "number"
         },
         locked: {
-            column: "ch.locked"
+            column: "ch.locked",
+            type: "number"
         },
         blacklisted: {
-            column: "ch.blacklisted"
+            column: "ch.blacklisted",
+            type: "number"
         },
         attended: {
-            column: "ch.attended"
+            column: "ch.attended",
+            type: "number"
         }
     }
 }
