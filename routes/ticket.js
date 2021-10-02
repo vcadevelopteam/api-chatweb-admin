@@ -20,4 +20,9 @@ router.post("/close",
     ticketController.close
 )
 
+router.post("/massiveclose",
+    auth,
+    ticketController.massiveClose
+)
+
 module.exports = router;

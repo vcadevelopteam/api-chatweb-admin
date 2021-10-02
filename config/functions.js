@@ -504,6 +504,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_CONVERSATION_REASSIGNTICKET_MASSIVE: {
+        query: "SELECT * FROM ufn_conversation_reassignticket_massive($conversationid, $newuserid, $username, $comment)",
+        module: "", //tickets
+        protected: "SELECT"
+    },
     UFN_COMMUNICATIONCHANNEL_INS: {
         query: "SELECT * FROM ufn_communicationchannel_ins2($corpid, $orgid, $id, $description, $type, $communicationchannelsite, $communicationchannelowner, $communicationchannelcontact, $communicationchanneltoken, $customicon, $coloricon, $status, $username, $operation, $botenabled, $botconfigurationid, $chatflowenabled, $schedule, $integrationid, $appintegrationid, $country, $channelparameters, $updintegration, $resolvelithium, $color, $icons, $other, $form, $apikey, $servicecredentials, $motive)",
         module: "",
