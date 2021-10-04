@@ -354,6 +354,16 @@ module.exports = {
         module: "/extras/quickreplies",
         protected: "SELECT"
     },
+    UFN_CORP_SEL: {
+        query: "SELECT * FROM ufn_corp_sel($corpid, $orgid, $id, $username, $all)",
+        module: "/corporations",
+        protected: "SELECT"
+    },
+    UFN_CORP_INS: {
+        query: "SELECT * FROM ufn_corp_ins($id, $description, $status, $type, $username, $operation, $logo, $logotype)",
+        module: "/corporations",
+        protected: "INSERT"
+    },
     UFN_ORG_SEL: {
         query: "SELECT * FROM ufn_org_sel($corpid ,$orgid ,$all)",
         module: "/extras/quickreplies",
@@ -800,4 +810,24 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DASHBOARD_GERENCIAL_TMO_GENERAL_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_tmo_general_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$supervisorid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_GERENCIAL_TME_GENERAL_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_tme_general_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$supervisorid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_GERENCIAL_SUMMARY_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_summary_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$supervisorid,$offset )",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_GERENCIAL_ENCUESTA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_encuesta_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$closedby ,$supervisorid,$offset )",
+        module: "",
+        protected: "SELECT"
+    }
 }
