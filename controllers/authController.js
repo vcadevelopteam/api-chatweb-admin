@@ -149,7 +149,7 @@ exports.changeOrganization = async (req, res) => {
 
     if (!resultBD.error) {
         
-        const newusertoken = { ...req.user, orgid: parameters.neworgid, redirect: resultBD[0].redirect };
+        const newusertoken = { ...req.user, orgid: parameters.neworgid, corpid: parameters.newcorpid, redirect: resultBD[0].redirect };
         
         const resBDMenu = await tf.executesimpletransaction("UFN_APPLICATION_SEL", newusertoken);
         
