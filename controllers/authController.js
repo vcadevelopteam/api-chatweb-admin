@@ -146,8 +146,22 @@ exports.connect = async (req, res) => {
 exports.changeOrganization = async (req, res) => {
     const { parameters } = req.body;
     const resultBD = await tf.executesimpletransaction("UFN_USERSTATUS_UPDATE_ORG", { ...req.user, ...parameters });
+
     if (!resultBD.error) {
-        const newusertoken = { ...req.user, orgid: parameters.neworgid };
+        
+        const newusertoken = { ...req.user, orgid: parameters.neworgid, redirect: resultBD[0].redirect };
+        
+        const resBDMenu = await tf.executesimpletransaction("UFN_APPLICATION_SEL", newusertoken);
+        
+        const menu = resBDMenu.reduce((acc, item) => ({
+            ...acc, [item.path]:
+                [item.view ? 1 : 0,
+                item.modify ? 1 : 0,
+                item.insert ? 1 : 0,
+                item.delete ? 1 : 0]
+        }), {})
+        
+        newusertoken.menu = { ...menu, "system-label": undefined, "/": undefined };
 
         jwt.sign({ user: newusertoken }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
             if (error) throw error;
