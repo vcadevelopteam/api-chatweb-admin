@@ -354,6 +354,16 @@ module.exports = {
         module: "/extras/quickreplies",
         protected: "SELECT"
     },
+    UFN_CORP_SEL: {
+        query: "SELECT * FROM ufn_corp_sel($corpid, $orgid, $id, $username, $all)",
+        module: "/corporations",
+        protected: "SELECT"
+    },
+    UFN_CORP_INS: {
+        query: "SELECT * FROM ufn_corp_ins($id, $description, $status, $type, $username, $operation, $logo, $logotype)",
+        module: "/corporations",
+        protected: "INSERT"
+    },
     UFN_ORG_SEL: {
         query: "SELECT * FROM ufn_org_sel($corpid ,$orgid ,$all)",
         module: "/extras/quickreplies",
