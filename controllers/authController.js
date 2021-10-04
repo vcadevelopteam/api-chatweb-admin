@@ -155,7 +155,7 @@ exports.changeOrganization = async (req, res) => {
             delete req.user.corpid;
             // delete req.user.orgid;
             // delete req.user.userid;
-            return res.json({ data: { token, res: resultBD[0] } });
+            return res.json({ data: { token } });
         })
     } else {
         const error = getErrorCode();
