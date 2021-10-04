@@ -129,8 +129,6 @@ module.exports = {
         module: "/extras/person",
         protected: "SELECT"
     },
-
-
     UFN_CONVERSATION_SEL_PERSON: {
         query: "select * from ufn_conversation_sel_person($personid, $take, $skip, $where, $order, $offset)",
         module: "/extras/person",
@@ -146,9 +144,6 @@ module.exports = {
         module: "/extras/person",
         protected: "SELECT"
     },
-
-
-
     UFN_INTELLIGENTMODELS_SEL: {
         query: "SELECT * FROM ufn_intelligentmodels_sel($corpid,$orgid,$username,$id,$all)",
         module: "/extras/intelligentmodels",
@@ -295,7 +290,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_EMOJI_SEL: {
-        query: "select orgid ,categorydesc ,emojidec ,favoritechannels ,restrictedchannels from emoji where corpid = $corpid and emojidec = $emojidec and status <> 'ELIMINADO';",
+        query: "select orgid, favoritechannels, restrictedchannels from emoji where corpid = $corpid and emojidec = $emojidec and status <> 'ELIMINADO';",
         module: "/extras/emojis",
         protected: "SELECT"
     },
@@ -358,6 +353,16 @@ module.exports = {
         query: "SELECT * FROM ufn_quickreply_sel($corpid ,$orgid ,$id  ,$username ,$all)",
         module: "/extras/quickreplies",
         protected: "SELECT"
+    },
+    UFN_CORP_SEL: {
+        query: "SELECT * FROM ufn_corp_sel($corpid, $orgid, $id, $username, $all)",
+        module: "/corporations",
+        protected: "SELECT"
+    },
+    UFN_CORP_INS: {
+        query: "SELECT * FROM ufn_corp_ins($id, $description, $status, $type, $username, $operation, $logo, $logotype)",
+        module: "/corporations",
+        protected: "INSERT"
     },
     UFN_ORG_SEL: {
         query: "SELECT * FROM ufn_org_sel($corpid ,$orgid ,$all)",
@@ -503,6 +508,11 @@ module.exports = {
         query: "SELECT * FROM ufn_integrationmanager_ins($corpid,$orgid,$id,$description,$type,$status,$name,$method,$url,$authorization,$headers,$bodytype,$body,$parameters,$variables,$level,$fields,$apikey,$username,$operation)",
         module: "",
         protected: "INSERT"
+    },
+    UFN_CONVERSATION_REASSIGNTICKET_MASSIVE: {
+        query: "SELECT * FROM ufn_conversation_reassignticket_massive($conversationid, $newuserid, $username, $comment)",
+        module: "", //tickets
+        protected: "SELECT"
     },
     UFN_COMMUNICATIONCHANNEL_INS: {
         query: "SELECT * FROM ufn_communicationchannel_ins2($corpid, $orgid, $id, $description, $type, $communicationchannelsite, $communicationchannelowner, $communicationchannelcontact, $communicationchanneltoken, $customicon, $coloricon, $status, $username, $operation, $botenabled, $botconfigurationid, $chatflowenabled, $schedule, $integrationid, $appintegrationid, $country, $channelparameters, $updintegration, $resolvelithium, $color, $icons, $other, $form, $apikey, $servicecredentials, $motive)",

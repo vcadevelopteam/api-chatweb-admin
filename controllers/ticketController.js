@@ -1,5 +1,7 @@
 const axios = require('axios')
-const tf = require('../config/triggerfunctions');;
+const tf = require('../config/triggerfunctions');
+const { generatefilter, generateSort, errors, getErrorCode } = require('../config/helpers');
+
 
 exports.reply = async (req, res) => {
     try {
@@ -14,7 +16,7 @@ exports.reply = async (req, res) => {
 
         if (!data.corpid)
             data.p_corpid = req.user.corpid;
-        if (!data.orgid)    
+        if (!data.orgid)
             data.p_orgid = req.user.orgid;
         if (!data.username)
             data.username = req.user.usr;
@@ -28,12 +30,12 @@ exports.reply = async (req, res) => {
             { method: "", parameters: data });
 
         if (!responseservices.data || !responseservices.data instanceof Object)
-            return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
+            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
 
         if (!responseservices.data.Success) {
-            return res.status(500).json({ msg: "No se pudo enviar el mensaje" });
+            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
         }
-        
+
         res.json(responseservices.data);
     }
     catch (ee) {
@@ -72,10 +74,10 @@ exports.replyListMessages = async (req, res) => {
                 { method: "", parameters: data });
 
             if (!responseservices.data || !responseservices.data instanceof Object)
-                return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
+                return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
 
             if (!responseservices.data.Success) {
-                return res.status(500).json({ msg: "No se pudo enviar el mensaje" });
+                return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
             }
         })
         res.json({ success: true });
@@ -117,10 +119,10 @@ exports.close = async (req, res) => {
             { method: "", parameters: data });
         console.log(responseservices.data)
         if (!responseservices.data || !responseservices.data instanceof Object)
-            return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
+            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
 
         if (!responseservices.data.Success) {
-            return res.status(500).json({ msg: responseservices.data.Msg });
+            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
         }
         // data.isanswered = data.isanswered.toString();
         // const responseapp = await axios.post(`${process.env.APP}inbox/CloseTicketUpdateSupervisors`, data);
@@ -148,9 +150,9 @@ exports.reassign = async (req, res) => {
             data.orgid = req.user.orgid ? req.user.orgid : 1;
         if (!data.username)
             data.username = req.user.usr;
-        
+
         data.userid = req.user.userid;
-        
+
         if (!data.newuserid && data.usergroup) { //id del bot
             data.newuserid = 3;
         }
@@ -168,5 +170,36 @@ exports.reassign = async (req, res) => {
         return res.status(500).json({
             msg: "Hubo un problema, intentelo más tarde"
         });
+    }
+}
+
+exports.massiveClose = async (req, res) => {
+    try {
+        const { data } = req.body;
+        if (!data.corpid)
+            data.p_corpid = req.user.corpid ? req.user.corpid : 1;
+        if (!data.orgid)
+            data.p_orgid = req.user.orgid ? req.user.orgid : 1;
+        if (!data.username)
+            data.p_username = req.user.usr;
+        if (!data.userid)
+            data.p_userid = req.user.userid;
+        const responseservices = await axios.post(
+            `${process.env.SERVICES}ServiceLogicHook/ManageTickets`,
+            { method: "", parameters: data });
+
+        console.log(responseservices.data)
+
+        if (!responseservices.data || !responseservices.data instanceof Object) {
+            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+        }
+
+        if (!responseservices.data.Success) {
+            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+        }
+        res.json({ success: true });
+    }
+    catch (ee) {
+        return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES, ee));
     }
 }
