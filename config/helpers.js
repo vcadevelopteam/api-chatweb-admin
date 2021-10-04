@@ -258,7 +258,7 @@ exports.getErrorCode = (code, error = false) => {
     return {
         success: false,
         error: true,
-        rescode: code === error.FORBIDDEN ? 401 : 400,
-        code: code || error.UNEXPECTED_ERROR
+        rescode: code === errorstmp.FORBIDDEN ? 401 : 400,
+        code: code || errorstmp.UNEXPECTED_ERROR
     }
 };

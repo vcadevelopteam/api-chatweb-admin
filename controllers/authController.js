@@ -86,9 +86,16 @@ exports.authenticate = async (req, res) => {
 
 exports.getUser = async (req, res) => {
     try {
-        const resultApps = await tf.executesimpletransaction("UFN_APPLICATION_SEL", req.user);
+        const resultBD = await Promise.all([
+            tf.executesimpletransaction("UFN_APPLICATION_SEL", req.user),
+            tf.executesimpletransaction("UFN_ORGANIZATION_CHANGEORG_SEL", { userid: req.user.userid }),
+        ]);
 
-        const menu = resultApps.reduce((acc, item) => ({
+        if (!resultBD[0] instanceof Array) {
+            return res.status(500).json(getErrorCode());
+        }
+
+        const menu = resultBD[0].reduce((acc, item) => ({
             ...acc, [item.path]:
                 [item.view ? 1 : 0,
                 item.modify ? 1 : 0,
@@ -102,9 +109,10 @@ exports.getUser = async (req, res) => {
             delete req.user.corpid;
             // delete req.user.orgid;
             // delete req.user.userid;
-            return res.json({ data: { ...req.user, menu, token } });
+            return res.json({ data: { ...req.user, menu, token, organizations: resultBD[1] } });
         })
     } catch (error) {
+        console.log(error)
         return res.status(500).json(getErrorCode(null, error));
     }
 }
@@ -133,4 +141,24 @@ exports.connect = async (req, res) => {
         console.log(`${new Date()}: ${JSON.stringify(error)}`);
     }
     return res.json({ data: null, error: false })
+}
+
+exports.changeOrganization = async (req, res) => {
+    const { parameters } = req.body;
+    const resultBD = await tf.executesimpletransaction("UFN_USERSTATUS_UPDATE_ORG", { ...req.user, ...parameters });
+    if (!resultBD.error) {
+        const newusertoken = { ...req.user, orgid: parameters.neworgid };
+
+        jwt.sign({ user: newusertoken }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
+            if (error) throw error;
+            delete req.user.token;
+            delete req.user.corpid;
+            // delete req.user.orgid;
+            // delete req.user.userid;
+            return res.json({ data: { token, res: resultBD[0] } });
+        })
+    } else {
+        const error = getErrorCode();
+        return res.status(error.rescode).json(error);
+    }
 }

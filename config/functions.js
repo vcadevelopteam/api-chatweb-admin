@@ -790,4 +790,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_ORGANIZATION_CHANGEORG_SEL: {
+        query: "SELECT * FROM ufn_organization_changeorg_sel($userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_USERSTATUS_UPDATE_ORG: {
+        query: "SELECT * FROM ufn_userstatus_update_org($userid, $orgid, $neworgid, $usr)",
+        module: "",
+        protected: "SELECT"
+    },
 }

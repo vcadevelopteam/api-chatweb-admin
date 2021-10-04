@@ -37,6 +37,7 @@ exports.executesimpletransaction = async (method, data, permissions = false) => 
         }
         const query = functionMethod.query;
         if (data instanceof Object) {
+            
             return await sequelize.query(query, {
                 type: QueryTypes.SELECT,
                 bind: data

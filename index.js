@@ -36,7 +36,7 @@ app.use('/api/reportdesigner', require('./routes/reportdesigner'));
 
 // Definir la pagina principal
 app.get('/', (req, res) => {
-    res.send('Hola desde el chatweb');
+    res.send('Welcome to Laraigo API ');
 });
 // Arrancar la app
 app.listen(PORT, '0.0.0.0', () => {

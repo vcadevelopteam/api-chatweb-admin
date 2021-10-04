@@ -17,6 +17,11 @@ router.post("/connect",
     authController.connect
 )
 
+router.post("/changeorganization", 
+    auth,
+    authController.changeOrganization
+)
+
 router.get("/", 
     auth,
     authController.getUser
