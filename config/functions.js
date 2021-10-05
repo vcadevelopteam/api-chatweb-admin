@@ -855,7 +855,7 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_PROPERTY_SELBYNAME_CHANNEL  : {
+    UFN_PROPERTY_SELBYNAME  : {
         query: "SELECT * FROM ufn_property_selbyname($corpid, $orgid, $propertyname)",
         module: "",
         protected: "SELECT"
