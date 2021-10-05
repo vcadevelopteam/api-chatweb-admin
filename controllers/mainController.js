@@ -4,7 +4,6 @@ const { setSessionParameters } = require('../config/helpers');
 
 exports.GetCollection = async (req, res) => {
     const { parameters = {}, method } = req.body;
-
     setSessionParameters(parameters, req.user);
     console.log(method, parameters)
     const result = await executesimpletransaction(method, parameters, req.user.menu || {});

@@ -545,7 +545,7 @@ exports.InsertChannel = async (req, res) => {
                 parameters.communicationchannelsite = integrationId;
                 parameters.communicationchannelowner = webhookId;
 
-                parameters.appintegrationid = chatwebApplicationId;
+                parameters.appintegrationid = chatwebApplicationId || 53;
                 parameters.integrationid = integrationId;
 
                 parameters.apikey = integrationApiKey;
@@ -554,9 +554,7 @@ exports.InsertChannel = async (req, res) => {
                 parameters.type = 'CHAZ';
                 
                 parameters.channelparameters = JSON.stringify(datatmp);
-
                 const xxaa = await triggerfunctions.executesimpletransaction(method, parameters);
-
                 if (xxaa instanceof Array) {
                     return res.json({
                         integrationid: integrationId,

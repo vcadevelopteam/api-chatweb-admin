@@ -106,7 +106,7 @@ exports.getUser = async (req, res) => {
         jwt.sign({ user: { ...req.user, menu: { ...menu, "system-label": undefined, "/": undefined } } }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
             if (error) throw error;
             delete req.user.token;
-            delete req.user.corpid;
+            // delete req.user.corpid;
             // delete req.user.orgid;
             // delete req.user.userid;
             return res.json({ data: { ...req.user, menu, token, organizations: resultBD[1] } });
@@ -146,13 +146,33 @@ exports.connect = async (req, res) => {
 exports.changeOrganization = async (req, res) => {
     const { parameters } = req.body;
     const resultBD = await tf.executesimpletransaction("UFN_USERSTATUS_UPDATE_ORG", { ...req.user, ...parameters });
+
     if (!resultBD.error) {
-        const newusertoken = { ...req.user, orgid: parameters.neworgid };
+        const newusertoken = { 
+            ...req.user, 
+            orgid: parameters.neworgid, 
+            corpid: parameters.newcorpid,
+            corpdesc: parameters.corpdesc, 
+            orgdesc: parameters.orgdesc,
+            redirect: resultBD[0] ? resultBD[0].redirect : '/tickets' 
+        };
+        
+        const resBDMenu = await tf.executesimpletransaction("UFN_APPLICATION_SEL", newusertoken);
+        
+        const menu = resBDMenu.reduce((acc, item) => ({
+            ...acc, [item.path]:
+                [item.view ? 1 : 0,
+                item.modify ? 1 : 0,
+                item.insert ? 1 : 0,
+                item.delete ? 1 : 0]
+        }), {});
+        
+        newusertoken.menu = { ...menu, "system-label": undefined, "/": undefined };
 
         jwt.sign({ user: newusertoken }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
             if (error) throw error;
             delete req.user.token;
-            delete req.user.corpid;
+            // delete req.user.corpid;
             // delete req.user.orgid;
             // delete req.user.userid;
             return res.json({ data: { token } });

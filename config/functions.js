@@ -70,7 +70,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ROLE_LST: {
-        query: "SELECT * FROM ufn_role_lst($corpid, $orgid)",
+        query: "SELECT * FROM ufn_role_lst($corpid, $orgid, $userid)",
         module: "",
         protected: "SELECT"
     },
