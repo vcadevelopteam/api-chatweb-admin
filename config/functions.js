@@ -840,4 +840,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DASHBOARD_GERENCIAL_ETIQUETAS_SEL : {
+        query: "SELECT * FROM ufn_dashboard_gerencial_etiquetas_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$limit ,$userid,$offset )",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_GERENCIAL_ASESORESCONECTADOSBAR_SEL  : {
+        query: "SELECT * FROM ufn_dashboard_gerencial_asesoresconectadosbar_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company ,$userid,$offset )",
+        module: "",
+        protected: "SELECT"
+    },
 }
