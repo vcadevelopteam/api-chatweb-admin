@@ -850,4 +850,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_COUNT_CONFIGURATION  : {
+        query: "SELECT * FROM ufn_count_configuration($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
