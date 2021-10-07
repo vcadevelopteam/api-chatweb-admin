@@ -1,3 +1,6 @@
+const pg = require('pg');
+pg.types.setTypeParser(1114, str => str + 'Z');
+
 require('dotenv').config();
 const Sequelize = require('sequelize');
 
