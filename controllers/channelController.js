@@ -692,25 +692,25 @@ exports.insertChannel = async (request, result) => {
 
                 if (requestGetLongToken.data.success) {
                     var businessId = null;
-                    var channelService = null;
+                    var channelLinkService = null;
                     var channelType = null;
                     var serviceType = null;
 
                     switch (request.body.type) {
                         case 'FACEBOOK':
-                            channelService = 'WALLADD';
+                            channelLinkService = 'WALLADD';
                             channelType = 'FBWA';
                             serviceType = 'WALL';
                             break;
 
                         case 'INSTAGRAM':
-                            channelService = 'INSTAGRAMADD';
+                            channelLinkService = 'INSTAGRAMADD';
                             channelType = 'INST';
                             serviceType = 'INSTAGRAM';
                             break;
 
                         case 'MESSENGER':
-                            channelService = 'MESSENGERADD';
+                            channelLinkService = 'MESSENGERADD';
                             channelType = 'FBDM';
                             serviceType = 'MESSENGER';
                             break;
@@ -742,7 +742,7 @@ exports.insertChannel = async (request, result) => {
                         url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
                         method: 'post',
                         data: {
-                            linkType: channelService,
+                            linkType: channelLinkService,
                             accessToken: requestGetLongToken.data.longToken,
                             siteId: service.siteid
                         }
@@ -839,7 +839,7 @@ exports.insertChannel = async (request, result) => {
             case 'TWITTER':
             case 'TWITTERDM':
                 var serviceMethod = 'UFN_COMMUNICATIONCHANNELHOOK_INS';
-                var serviceParameter = {
+                var serviceParameters = {
                     operation: 'INSERT',
                     servicedata: JSON.stringify({
                         accessSecret: service.accesssecret,
@@ -853,7 +853,7 @@ exports.insertChannel = async (request, result) => {
                     type: 'TWTR'
                 };
 
-                const transactionServiceTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameter);
+                const transactionServiceTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
 
                 if (transactionServiceTwitter instanceof Array) {
                     const requestCreateTwitter = await axios({
@@ -898,9 +898,9 @@ exports.insertChannel = async (request, result) => {
                             });
                         }
                         else {
-                            serviceParameter.operation = 'DELETE';
+                            serviceParameters.operation = 'DELETE';
 
-                            const transactionServiceDeleteTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameter);
+                            const transactionServiceDeleteTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
     
                             if (transactionServiceDeleteTwitter instanceof Array) {
                                 return result.status(400).json({
@@ -917,9 +917,9 @@ exports.insertChannel = async (request, result) => {
                         }
                     }
                     else {
-                        serviceParameter.operation = 'DELETE';
+                        serviceParameters.operation = 'DELETE';
 
-                        const transactionServiceDeleteTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameter);
+                        const transactionServiceDeleteTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
 
                         if (transactionServiceDeleteTwitter instanceof Array) {
                             return result.status(400).json({
