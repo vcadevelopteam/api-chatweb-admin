@@ -9,6 +9,7 @@ const facebookEndpoint = process.env.FACEBOOKAPI;
 const hookEndpoint = process.env.HOOK;
 const telegramEndpoint = process.env.TELEGRAMAPI;
 const webChatApplication = process.env.CHATAPPLICATION;
+const webChatPlatformEndpoint = process.env.WEBCHATPLATFORM;
 const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
 const whatsAppEndpoint = process.env.WHATSAPPAPI;
 
@@ -631,7 +632,13 @@ exports.insertChannel = async (request, result) => {
 
                             if (transactionCreateWebChat instanceof Array) {
                                 try {
-
+                                    if (typeof webChatPlatformEndpoint !== 'undefined' && webChatPlatformEndpoint) {
+                                        await axios({
+                                            data: parameters,
+                                            method: 'post',
+                                            url: `${webChatPlatformEndpoint}integration/addtodatabase`
+                                        });
+                                    }
                                 }
                                 catch (exception) {
                                     console.log(JSON.stringify(exception));
