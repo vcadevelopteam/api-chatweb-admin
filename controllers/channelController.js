@@ -1,236 +1,702 @@
-const triggerfunctions = require('../config/triggerfunctions');
 const axios = require('axios');
+const triggerfunctions = require('../config/triggerfunctions');
+
 const { setSessionParameters } = require('../config/helpers');
 
-const URLABANDON = process.env.WEBCHATSCRIPT;
-const URLBROKER = process.env.CHATBROKER;
-const URLBRIDGE = process.env.BRIDGE;
-const URLHOOK = process.env.HOOK;
-const FACEBOOKAPI = process.env.FACEBOOKAPI;
-const WHATSAPPAPI = process.env.WHATSAPPAPI;
-const TELEGRAMAPI = process.env.TELEGRAMAPI;
+const bridgeEndpoint = process.env.BRIDGE;
+const brokerEndpoint = process.env.CHATBROKER;
+const facebookEndpoint = process.env.FACEBOOKAPI;
+const hookEndpoint = process.env.HOOK;
+const telegramEndpoint = process.env.TELEGRAMAPI;
+const webChatApplication = process.env.CHATAPPLICATION;
+const webChatPlatformEndpoint = process.env.WEBCHATPLATFORM;
+const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
+const whatsAppEndpoint = process.env.WHATSAPPAPI;
 
-const chatwebApplicationId = process.env.CHATAPPLICATION;
+exports.deleteChannel = async (request, result) => {
+    try {
+        var { method, parameters = {} } = request.body;
 
-exports.GetChannelService = async (req, res) => {
+        setSessionParameters(parameters, request.user);
+
+        parameters.corpid = request.user.corpid;
+        parameters.motive = 'Delete from API';
+        parameters.operation = 'DELETE';
+        parameters.orgid = request.user.orgid;
+        parameters.status = 'ELIMINADO';
+        parameters.updintegration = null;
+        parameters.username = request.user.usr;
+
+        switch (parameters.type) {
+            case 'CHAZ':
+                if (typeof parameters.communicationchannelcontact !== 'undefined' && parameters.communicationchannelcontact) {
+                    await axios({
+                        data: {
+                            status: 'ELIMINADO'
+                        },
+                        method: 'put',
+                        url: `${brokerEndpoint}plugins/update/${parameters.communicationchannelcontact}`
+                    });
+                }
+
+                if (typeof parameters.communicationchannelowner !== 'undefined' && parameters.communicationchannelowner) {
+                    await axios({
+                        data: {
+                            status: 'ELIMINADO'
+                        },
+                        method: 'put',
+                        url: `${brokerEndpoint}webhooks/update/${parameters.communicationchannelowner}`
+                    });
+                }
+
+                if (typeof parameters.integrationid !== 'undefined' && parameters.integrationid) {
+                    await axios({
+                        data: {
+                            status: 'ELIMINADO'
+                        },
+                        method: 'put',
+                        url: `${brokerEndpoint}integrations/update/${parameters.integrationid}`
+                    });
+                }
+
+                const transactionDeleteChatWeb = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                if (transactionDeleteChatWeb instanceof Array) {
+                    return result.json({
+                        success: true
+                    });
+                }
+                else {
+                    return result.status(400).json({
+                        msg: transactionDeleteChatWeb.code,
+                        success: false
+                    });
+                }
+
+            case 'FBDM':
+            case 'FBWA':
+            case 'INST':
+                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+                    var serviceCredentials = JSON.parse(parameters.serviceCredentials);
+                    var linkType = '';
+
+                    if (parameters.type === 'FBDM') {
+                        linkType = 'MESSENGERREMOVE';
+                    }
+
+                    if (parameters.type === 'FBWA') {
+                        linkType = 'WALLREMOVE';
+                    }
+
+                    if (parameters.type === 'INST') {
+                        linkType = 'INSTAGRAMREMOVE';
+                    }
+
+                    const requestDeleteFacebook = await axios({
+                        data: {
+                            accessToken: serviceCredentials.accessToken,
+                            linkType: linkType,
+                            siteId: (parameters.type !== 'INST' ? serviceCredentials.siteId : parameters.communicationchannelowner)
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
+                    });
+
+                    if (requestDeleteFacebook.data.success) {
+                        const transactionDeleteFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                        if (transactionDeleteFacebook instanceof Array) {
+                            return result.json({
+                                success: true
+                            });
+                        }
+                        else {
+                            return result.status(400).json({
+                                msg: transactionDeleteFacebook.code,
+                                success: false
+                            });
+                        }
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: requestDeleteFacebook.data.operationMessage,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    const transactionDeleteFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionDeleteFacebook instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionDeleteFacebook.code,
+                            success: false
+                        });
+                    }
+                }
+
+            case 'TELE':
+                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+                    var serviceCredentials = JSON.parse(parameters.servicecredentials);
+
+                    const requestDeleteTelegram = await axios({
+                        data: {
+                            accessToken: serviceCredentials.token,
+                            linkType: 'TELEGRAMREMOVE',
+                            siteId: serviceCredentials.bot
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`
+                    });
+
+                    if (requestDeleteTelegram.data.success) {
+                        const transactionDeleteTelegram = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                        if (transactionDeleteTelegram instanceof Array) {
+                            return result.json({
+                                success: true
+                            });
+                        }
+                        else {
+                            return result.status(400).json({
+                                msg: transactionDeleteTelegram.code,
+                                success: false
+                            });
+                        }
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: requestDeleteTelegram.data.operationMessage,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    const transactionDeleteTelegram = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionDeleteTelegram instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionDeleteTelegram.code,
+                            success: false
+                        });
+                    }
+                }
+
+            case 'TWIT':
+            case 'TWMS':
+                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+                    var serviceCredentials = JSON.parse(parameters.servicecredentials);
+
+                    var validateMethod = 'UFN_COMMUNICATIONCHANNELSITE_SEL';
+                    var validateParameters = {
+                        communicationchannelsite: serviceCredentials.twitterPageId,
+                        type: (parameters.type === 'TWIT' ? 'TWMS' : 'TWIT')
+                    };
+
+                    const transactionValidateTwitter = await triggerfunctions.executesimpletransaction(validateMethod, validateParameters);
+
+                    if (transactionValidateTwitter instanceof Array) {
+                        if (transactionValidateTwitter.length > 0) {
+                            const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                            if (transactionDeleteTwitter instanceof Array) {
+                                return result.json({
+                                    success: true
+                                });
+                            }
+                            else {
+                                return result.status(400).json({
+                                    msg: transactionDeleteTwitter.code,
+                                    success: false
+                                });
+                            }
+                        }
+                        else {
+                            const requestDeleteTwitter = await axios({
+                                data: {
+                                    accessSecret: serviceCredentials.accessSecret,
+                                    accessToken: serviceCredentials.accessToken,
+                                    consumerKey: serviceCredentials.consumerKey,
+                                    consumerSecret: serviceCredentials.consumerSecret,
+                                    developmentEnvironment: serviceCredentials.devEnvironment,
+                                    linkType: 'TWITTERREMOVE',
+                                    siteId: serviceCredentials.twitterPageId
+                                },
+                                method: 'post',
+                                url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`
+                            });
+
+                            if (requestDeleteTwitter.data.success) {
+                                const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                                if (transactionDeleteTwitter instanceof Array) {
+                                    var serviceMethod = 'UFN_COMMUNICATIONCHANNELHOOK_INS';
+                                    var serviceParameters = {
+                                        operation: 'DELETE',
+                                        site: serviceCredentials.twitterPageId,
+                                        type: 'TWTR'
+                                    };
+
+                                    const transactionServiceTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
+
+                                    if (transactionServiceTwitter instanceof Array) {
+                                        return result.json({
+                                            success: true
+                                        });
+                                    }
+                                    else {
+                                        return result.status(400).json({
+                                            msg: transactionServiceTwitter.code,
+                                            success: false
+                                        });
+                                    }
+                                }
+                                else {
+                                    return result.status(400).json({
+                                        msg: transactionDeleteTwitter.code,
+                                        success: false
+                                    });
+                                }
+                            }
+                            else {
+                                return result.status(400).json({
+                                    msg: requestDeleteTwitter.data.operationMessage,
+                                    success: false
+                                });
+                            }
+                        }
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionValidateTwitter.code,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionDeleteTwitter instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionDeleteTwitter.code,
+                            success: false
+                        });
+                    }
+                }
+
+            case 'WHAD':
+                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+                    var serviceCredentials = JSON.parse(parameters.servicecredentials);
+
+                    const requestDeleteWhatsApp = await axios({
+                        data: {
+                            accessToken: serviceCredentials.apiKey,
+                            linkType: 'WHATSAPPREMOVE',
+                            siteId: serviceCredentials.number
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`
+                    });
+
+                    if (requestDeleteWhatsApp.data.success) {
+                        const transactionDeleteWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                        if (transactionDeleteWhatsApp instanceof Array) {
+                            return result.json({
+                                success: true
+                            });
+                        }
+                        else {
+                            return result.status(400).json({
+                                msg: transactionDeleteWhatsApp.code,
+                                success: false
+                            });
+                        }
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: requestDeleteWhatsApp.data.operationMessage,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    const transactionDeleteWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionDeleteWhatsApp instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionDeleteWhatsApp.code,
+                            success: false
+                        });
+                    }
+                }
+
+            default:
+                const transactionDeleteGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                if (transactionDeleteGeneric instanceof Array) {
+                    return result.json({
+                        success: true
+                    });
+                }
+                else {
+                    return result.status(400).json({
+                        msg: transactionDeleteGeneric.code,
+                        success: false
+                    });
+                }
+        }
+    }
+    catch (exception) {
+        return result.status(500).json({
+            msg: exception.message,
+            success: false
+        });
+    }
+}
+
+exports.getChannelService = async (request, result) => {
     try {
         var method = null;
-        var data = null;
+        var parameters = null;
 
-        if (req.body.siteType !== 'TWTR') {
-            if (req.body.siteType === 'SMCH') {
-                method = 'UFN_COMMUNICATIONCHANNELSITE_SMOOCH_SEL';
-                data = {
-                    communicationchannelsite: req.body.siteId
+        if (request.body.siteType === 'SMCH') {
+            method = 'UFN_COMMUNICATIONCHANNELSITE_SMOOCH_SEL';
+            parameters = {
+                communicationchannelsite: request.body.siteId
+            };
+        }
+        else {
+            if (request.body.siteType === 'TWTR') {
+                method = 'UFN_COMMUNICATIONCHANNELHOOK_SEL';
+                parameters = {
+                    site: request.body.siteId,
+                    type: request.body.siteType
                 };
             }
             else {
                 method = 'UFN_COMMUNICATIONCHANNELSITE_SEL';
-                data = {
-                    communicationchannelsite: req.body.siteId,
-                    type: req.body.siteType,
+                parameters = {
+                    communicationchannelsite: request.body.siteId,
+                    type: request.body.siteType,
                 };
             }
+        }
 
-            const resx = await triggerfunctions.executesimpletransaction(method, data);
+        const transactionSelectCredentials = await triggerfunctions.executesimpletransaction(method, parameters);
 
-            if (resx instanceof Array) {
-                if (resx.length > 0) {
-                    return res.json({
-                        success: true,
-                        serviceData: resx[0].servicecredentials
+        if (transactionSelectCredentials instanceof Array) {
+            if (transactionSelectCredentials.length > 0) {
+                if (request.body.siteType !== 'TWTR') {
+                    return result.json({
+                        serviceData: transactionSelectCredentials[0].servicecredentials,
+                        success: true
                     });
                 }
                 else {
-                    return res.json({
-                        success: false,
-                        msg: 'Not found'
+                    return result.json({
+                        serviceData: transactionSelectCredentials[0].servicedata,
+                        success: true
                     });
                 }
             }
             else {
-                return res.status(500).json({
-                    success: false,
-                    msg: resx.msg
+                return result.json({
+                    msg: 'Not found',
+                    success: false
                 });
             }
         }
         else {
-            method = 'UFN_COMMUNICATIONCHANNELHOOK_SEL';
-            data = {
-                site: req.body.siteId,
-                type: req.body.siteType,
-            };
-
-            const resx = await triggerfunctions.executesimpletransaction(method, data);
-
-            if (resx instanceof Array) {
-                if (resx.length > 0) {
-                    return res.json({
-                        success: true,
-                        serviceData: resx[0].servicedata
-                    });
-                }
-                else {
-                    return res.json({
-                        success: false,
-                        msg: 'Not found'
-                    });
-                }
-            }
-            else {
-                return res.status(500).json({
-                    success: false,
-                    msg: resx.msg
-                });
-            }
+            return result.status(400).json({
+                msg: transactionSelectCredentials.code,
+                success: false
+            });
         }
     }
-    catch (error) {
-        return res.status(400).json({
-            success: false,
-            msg: error
+    catch (exception) {
+        return result.status(500).json({
+            msg: exception.message,
+            success: false
         });
     }
 }
 
-exports.GetPageList = async (req, res) => {
+exports.getLongToken = async (request, result) => {
     try {
-        const responseGetPageList = await axios({
-            url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
-            method: 'post',
+        setSessionParameters(parameters, request.user);
+
+        const requestGetLongToken = await axios({
             data: {
-                linkType: 'GETPAGES',
-                accessToken: req.body.accessToken
-            }
+                accessToken: request.body.accessToken,
+                appId: request.body.appId,
+                linkType: 'GENERATELONGTOKEN'
+            },
+            method: 'post',
+            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
         });
 
-        if (responseGetPageList.data.success) {
-            return res.json({
-                success: true,
-                pageData: responseGetPageList.data.pageData
+        if (requestGetLongToken.data.success) {
+            return result.json({
+                longToken: requestGetLongToken.data.longToken,
+                success: true
             });
         }
         else {
-            return res.status(500).json({
-                success: false,
-                msg: responseGetPageList.data.operationMessage
+            return result.status(400).json({
+                msg: requestGetLongToken.data.operationMessage,
+                success: false
             });
         }
     }
-    catch (error) {
-        return res.status(400).json({
-            success: false,
-            msg: error
+    catch (exception) {
+        return result.status(500).json({
+            msg: exception.message,
+            success: false
         });
     }
 }
 
-exports.GetLongToken = async (req, res) => {
+exports.getPageList = async (request, result) => {
     try {
-        const responseGetLongToken = await axios({
-            url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
-            method: 'post',
+        setSessionParameters(parameters, request.user);
+
+        const requestGetPageList = await axios({
             data: {
-                linkType: 'GENERATELONGTOKEN',
-                accessToken: req.body.accessToken,
-                appId: req.body.appId
-            }
+                accessToken: request.body.accessToken,
+                linkType: 'GETPAGES'
+            },
+            method: 'post',
+            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
         });
 
-        if (responseGetLongToken.data.success) {
-            return res.json({
-                success: true,
-                longToken: responseGetLongToken.data.longToken
+        if (requestGetPageList.data.success) {
+            return result.json({
+                pageData: requestGetPageList.data.pageData,
+                success: true
             });
         }
         else {
-            return res.status(500).json({
-                success: false,
-                msg: responseGetLongToken.data.operationMessage
+            return result.status(400).json({
+                msg: requestGetPageList.data.operationMessage,
+                success: false
             });
         }
     }
-    catch (error) {
-        return res.status(400).json({
-            success: false,
-            msg: error
+    catch (exception) {
+        return result.status(500).json({
+            msg: exception.message,
+            success: false
         });
     }
 }
 
-exports.InsertChannel = async (req, res) => {
+exports.insertChannel = async (request, result) => {
     try {
-        var { parameters = {}, method } = req.body;
-        var businessId = '';
+        var { method, parameters = {}, service = {} } = request.body;
 
-        setSessionParameters(parameters, req.user);
+        setSessionParameters(parameters, request.user);        
 
-        parameters.corpid = req.user.corpid;
-        parameters.orgid = req.user.orgid;
-        parameters.username = req.user.usr;
-
-        parameters.motive = 'Insert channel';
-        parameters.operation = 'INSERT';
-        parameters.status = 'ACTIVO';
-
-        parameters.communicationchannelcontact = '';
-
-        parameters.communicationchanneltoken = null;
-        parameters.botconfigurationid = null;
-        parameters.channelparameters = null;
         parameters.appintegrationid = null;
-        parameters.resolvelithium = null;
-        parameters.updintegration = null;
+        parameters.botconfigurationid = null;
         parameters.botenabled = null;
-        parameters.customicon = null;
+        parameters.channelparameters = null;
         parameters.coloricon = null;
-        parameters.schedule = null;
+        parameters.communicationchannelcontact = '';
+        parameters.communicationchanneltoken = null;
+        parameters.corpid = request.user.corpid;
         parameters.country = null;
-
-        if (req.body.type === 'INSTAGRAM') {
-            const responseGetBusiness = await axios({
-                url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
-                method: 'post',
-                data: {
-                    linkType: 'GETBUSINESS',
-                    accessToken: req.body.service.accesstoken,
-                    siteId: req.body.service.siteid
+        parameters.customicon = null;
+        parameters.motive = 'Insert from API';
+        parameters.operation = 'INSERT';
+        parameters.orgid = request.user.orgid;
+        parameters.resolvelithium = null;
+        parameters.schedule = null;
+        parameters.status = 'ACTIVO';
+        parameters.updintegration = null;
+        parameters.username = request.user.usr;
+       
+        switch (request.body.type) {
+            case 'CHATWEB':
+                const webChatData = {
+                    applicationId: webChatApplication,
+                    name: parameters.description,
+                    status: 'ACTIVO',
+                    type: 'CHAZ',
+                    metadata: {
+                        color: {
+                            chatBackgroundColor: service.color ? service.color.background : '',
+                            chatBorderColor: service.color ? service.color.border : '',
+                            chatHeaderColor: service.color ? service.color.header : '',
+                            messageBotColor: service.color ? service.color.bot : '',
+                            messageClientColor: service.color ? service.color.client : ''
+                        },
+                        extra: {
+                            abandonendpoint: `${webChatScriptEndpoint}smooch`,
+                            cssbody: '',
+                            enableabandon: service.extra ? service.extra.abandonevent : false,
+                            enableformhistory: service.extra ? service.extra.formhistory : false,
+                            enableidlemessage: service.bubble ? service.bubble.active : false,
+                            headermessage: service.extra ? service.extra.botnametext : '',
+                            inputalwaysactive: service.extra ? service.extra.persistentinput : false,
+                            jsscript: service.extra ? service.extra.customjs : '',
+                            playalertsound: service.extra ? service.extra.alertsound : false,
+                            sendmetadata: service.extra ? service.extra.enablemetadata : false,
+                            showchatrestart: service.extra ? service.extra.reloadchat : false,
+                            showmessageheader: service.extra ? service.extra.botnameenabled : false,
+                            showplatformlogo: service.extra ? service.extra.poweredby : false,
+                            uploadaudio: service.extra ? service.extra.uploadaudio : false,
+                            uploadfile: service.extra ? service.extra.uploadfile : false,
+                            uploadimage: service.extra ? service.extra.uploadimage : false,
+                            uploadlocation: service.extra ? service.extra.uploadlocation : false,
+                            uploadvideo: service.extra ? service.extra.uploadvideo : false
+                        },
+                        form: service.form ? service.form : null,
+                        icons: {
+                            chatBotImage: service.interface ? service.interface.iconbot : '',
+                            chatHeaderImage: service.interface ? service.interface.iconheader : '',
+                            chatIdleImage: service.bubble ? service.bubble.iconbubble : '',
+                            chatOpenImage: service.interface ? service.interface.iconbutton : ''
+                        },
+                        personalization: {
+                            headerMessage: service.extra ? service.extra.botnametext : '',
+                            headerSubTitle: service.interface ? service.interface.chatsubtitle : '',
+                            headerTitle: service.interface ? service.interface.chattitle : '',
+                            idleMessage: service.bubble ? service.bubble.messagebubble : ''
+                        }
+                    }
                 }
-            });
 
-            if (responseGetBusiness.data.success) {
-                businessId = responseGetBusiness.data.businessId;
-            }
-            else {
-                return res.status(500).json({
-                    success: false,
-                    msg: 'No Instagram business found'
+                const requestWebChatCreate = await axios({
+                    data: webChatData,
+                    method: 'post',
+                    url: `${brokerEndpoint}integrations/save`
                 });
-            }
-        }
 
-        switch (req.body.type) {
+                if (typeof requestWebChatCreate.data.id !== 'undefined' && requestWebChatCreate.data.id) {
+                    const requestWebChatWebhook = await axios({
+                        data: {
+                            description: parameters.description,
+                            integration: requestWebChatCreate.data.id,
+                            name: parameters.description,
+                            status: 'ACTIVO',
+                            webUrl: `${hookEndpoint}chatweb/webhookasync`
+                        },
+                        method: 'post',
+                        url: `${brokerEndpoint}webhooks/save`
+                    });
+
+                    if (typeof requestWebChatWebhook.data.id !== 'undefined' && requestWebChatWebhook.data.id) {
+                        const requestWebChatPlugin = await axios({
+                            data: {
+                                integration: requestWebChatCreate.data.id,
+                                name: parameters.description,
+                                status: 'ACTIVO'
+                            },
+                            method: 'post',
+                            url: `${brokerEndpoint}plugins/save`
+                        });
+
+                        if (typeof requestWebChatPlugin.data.id !== 'undefined' && requestWebChatPlugin.data.id) {
+                            parameters.apikey = requestWebChatPlugin.data.apiKey;
+                            parameters.appintegrationid = webChatApplication;
+                            parameters.channelparameters = JSON.stringify(webChatData);
+                            parameters.communicationchannelcontact = requestWebChatPlugin.data.id;
+                            parameters.communicationchannelowner = requestWebChatWebhook.data.id;
+                            parameters.communicationchannelsite = requestWebChatCreate.data.id;
+                            parameters.integrationid = requestWebChatCreate.data.id;
+                            parameters.servicecredentials = '';
+                            parameters.type = 'CHAZ';
+
+                            const transactionCreateWebChat = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                            if (transactionCreateWebChat instanceof Array) {
+                                try {
+                                    if (typeof webChatPlatformEndpoint !== 'undefined' && webChatPlatformEndpoint) {
+                                        await axios({
+                                            data: parameters,
+                                            method: 'post',
+                                            url: `${webChatPlatformEndpoint}integration/addtodatabase`
+                                        });
+                                    }
+                                }
+                                catch (exception) {
+                                    console.log(JSON.stringify(exception));
+                                }
+
+                                return result.json({
+                                    integrationid: requestWebChatCreate.data.id,
+                                    success: true
+                                });
+                            }
+                            else {
+                                return result.status(400).json({
+                                    msg: transactionCreateWebChat.code,
+                                    success: false
+                                });
+                            }
+                        }
+                        else {
+                            return result.status(400).json({
+                                msg: 'Could not create plugin',
+                                success: false
+                            });
+                        }
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: 'Could not create webhook',
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    return result.status(400).json({
+                        msg: 'Could not create integration',
+                        success: false
+                    });
+                }
+
             case 'FACEBOOK':
             case 'INSTAGRAM':
             case 'MESSENGER':
-                const responseGetLongToken = await axios({
-                    url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
-                    method: 'post',
+                const requestGetLongToken = await axios({
                     data: {
-                        linkType: 'GENERATELONGTOKEN',
-                        accessToken: req.body.service.accesstoken,
-                        appId: req.body.service.appid
-                    }
+                        accessToken: service.accesstoken,
+                        appId: service.appid,
+                        linkType: 'GENERATELONGTOKEN'
+                    },
+                    method: 'post',
+                    url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
                 });
 
-                if (responseGetLongToken.data.success) {
-                    var longToken = responseGetLongToken.data.longToken;
+                if (requestGetLongToken.data.success) {
+                    var businessId = null;
                     var channelService = null;
                     var channelType = null;
                     var serviceType = null;
 
-                    switch (req.body.type) {
+                    switch (request.body.type) {
                         case 'FACEBOOK':
                             channelService = 'WALLADD';
                             channelType = 'FBWA';
@@ -250,795 +716,285 @@ exports.InsertChannel = async (req, res) => {
                             break;
                     }
 
-                    const responseChannelAdd = await axios({
-                        url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
+                    if (request.body.type === 'INSTAGRAM') {
+                        const requestGetBusiness = await axios({
+                            data: {
+                                accessToken: service.accesstoken,
+                                linkType: 'GETBUSINESS',
+                                siteId: service.siteid
+                            },
+                            method: 'post',
+                            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
+                        });
+            
+                        if (requestGetBusiness.data.success) {
+                            businessId = requestGetBusiness.data.businessId;
+                        }
+                        else {
+                            return result.status(400).json({
+                                msg: 'No Instagram account',
+                                success: false
+                            });
+                        }
+                    }
+
+                    const requestCreateFacebook = await axios({
+                        url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
                         method: 'post',
                         data: {
                             linkType: channelService,
-                            accessToken: longToken,
-                            siteId: req.body.service.siteid
+                            accessToken: requestGetLongToken.data.longToken,
+                            siteId: service.siteid
                         }
                     });
 
-                    if (responseChannelAdd.data.success) {
-                        var servicecredentials = {
-                            accessToken: longToken,
-                            endpoint: FACEBOOKAPI,
+                    if (requestCreateFacebook.data.success) {
+                        var serviceCredentials = {
+                            accessToken: requestGetLongToken.data.longToken,
+                            endpoint: facebookEndpoint,
                             serviceType: serviceType,
-                            siteId: req.body.service.siteid
+                            siteId: service.siteid
                         };
 
-                        if (businessId !== '') {
+                        if (typeof businessId !== 'undefined' && businessId) {
+                            parameters.communicationchannelowner = service.siteid;
                             parameters.communicationchannelsite = businessId;
-                            parameters.communicationchannelowner = req.body.service.siteid;
 
-                            servicecredentials.siteId = businessId;
+                            serviceCredentials.siteId = businessId;
                         }
 
-                        parameters.servicecredentials = JSON.stringify(servicecredentials);
+                        parameters.servicecredentials = JSON.stringify(serviceCredentials);
                         parameters.type = channelType;
 
-                        const resx = await triggerfunctions.executesimpletransaction(method, parameters);
+                        const transactionCreateFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
 
-                        if (resx instanceof Array) {
-                            return res.json({
+                        if (transactionCreateFacebook instanceof Array) {
+                            return result.json({
                                 success: true
                             });
                         }
                         else {
-                            return res.status(500).json({
-                                success: false,
-                                msg: resx.msg
+                            return result.status(400).json({
+                                msg: transactionCreateFacebook.code,
+                                success: false
                             });
                         }
                     }
                     else {
-                        return res.status(500).json({
-                            success: false,
-                            msg: responseChannelAdd.data.operationMessage
+                        return result.status(400).json({
+                            msg: requestCreateFacebook.data.operationMessage,
+                            success: false
                         });
                     }
                 }
                 else {
-                    return res.status(500).json({
-                        success: false,
-                        msg: responseGetLongToken.data.operationMessage
+                    return result.status(400).json({
+                        msg: requestGetLongToken.data.operationMessage,
+                        success: false
                     });
                 }
-                break;
-
-            case 'WHATSAPP':
-                const responseWhatsAppAdd = await axios({
-                    url: `${URLBRIDGE}processlaraigo/whatsapp/managewhatsapplink`,
-                    method: 'post',
-                    data: {
-                        linkType: 'WHATSAPPADD',
-                        accessToken: req.body.service.accesstoken,
-                        siteId: req.body.service.siteid
-                    }
-                });
-
-                if (responseWhatsAppAdd.data.success) {
-                    const servicecredentials = {
-                        apiKey: req.body.service.accesstoken,
-                        endpoint: WHATSAPPAPI,
-                        number: req.body.service.siteid
-                    };
-
-                    parameters.servicecredentials = JSON.stringify(servicecredentials);
-                    parameters.type = 'WHAD';
-
-                    const resx = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                    if (resx instanceof Array) {
-                        return res.json({
-                            success: true
-                        });
-                    }
-                    else {
-                        return res.status(500).json({
-                            success: false,
-                            msg: resx.msg
-                        });
-                    }
-                }
-                else {
-                    return res.status(500).json({
-                        success: false,
-                        msg: responseWhatsAppAdd.data.operationMessage
-                    });
-                }
-                break;
 
             case 'TELEGRAM':
-                const responseTelegramAdd = await axios({
-                    url: `${URLBRIDGE}processlaraigo/telegram/managetelegramlink`,
-                    method: 'post',
+                const requestCreateTelegram = await axios({
                     data: {
+                        accessToken: service.accesstoken,
                         linkType: 'TELEGRAMADD',
-                        accessToken: req.body.service.accesstoken,
-                        siteId: req.body.service.siteid
-                    }
+                        siteId: service.siteid
+                    },
+                    method: 'post',
+                    url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`
                 });
 
-                if (responseTelegramAdd.data.success) {
-                    const servicecredentials = {
-                        bot: req.body.service.siteid,
-                        endpoint: TELEGRAMAPI,
-                        token: req.body.service.accesstoken
+                if (requestCreateTelegram.data.success) {
+                    var serviceCredentials = {
+                        bot: service.siteid,
+                        endpoint: telegramEndpoint,
+                        token: service.accesstoken
                     };
 
-                    parameters.servicecredentials = JSON.stringify(servicecredentials);
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
                     parameters.type = 'TELE';
 
-                    const resx = await triggerfunctions.executesimpletransaction(method, parameters);
+                    const transactionCreateTelegram = await triggerfunctions.executesimpletransaction(method, parameters);
 
-                    if (resx instanceof Array) {
-                        return res.json({
+                    if (transactionCreateTelegram instanceof Array) {
+                        return result.json({
                             success: true
                         });
                     }
                     else {
-                        return res.status(500).json({
-                            success: false,
-                            msg: resx.msg
+                        return result.status(400).json({
+                            msg: transactionCreateTelegram.code,
+                            success: false
                         });
                     }
                 }
                 else {
-                    return res.status(500).json({
-                        success: false,
-                        msg: responseTelegramAdd.data.operationMessage
+                    return result.status(400).json({
+                        msg: requestCreateTelegram.data.operationMessage,
+                        success: false
                     });
                 }
-                break;
 
             case 'TWITTER':
             case 'TWITTERDM':
-                const servicecredentialstwitter = {
-                    accessSecret: req.body.service.accesssecret,
-                    accessToken: req.body.service.accesstoken,
-                    consumerKey: req.body.service.consumerkey,
-                    consumerSecret: req.body.service.consumersecret,
-                    twitterPageId: req.body.service.siteid,
-                    devEnvironment: req.body.service.devenvironment
+                var serviceMethod = 'UFN_COMMUNICATIONCHANNELHOOK_INS';
+                var serviceParameter = {
+                    operation: 'INSERT',
+                    servicedata: JSON.stringify({
+                        accessSecret: service.accesssecret,
+                        accessToken: service.accesstoken,
+                        consumerKey: service.consumerkey,
+                        consumerSecret: service.consumersecret,
+                        devEnvironment: service.devenvironment,
+                        twitterPageId: service.siteid
+                    }),
+                    site: service.siteid,
+                    type: 'TWTR'
                 };
 
-                var twitterMethod = 'UFN_COMMUNICATIONCHANNELHOOK_INS';
-                var twitterData = {
-                    type: 'TWTR',
-                    servicedata: JSON.stringify(servicecredentialstwitter),
-                    site: req.body.service.siteid,
-                    operation: 'INSERT'
-                };
+                const transactionServiceTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameter);
 
-                const resx = await triggerfunctions.executesimpletransaction(twitterMethod, twitterData);
-
-                if (resx instanceof Array) {
-                    const responseTwitterAdd = await axios({
-                        url: `${URLBRIDGE}processlaraigo/twitter/managetwitterlink`,
-                        method: 'post',
+                if (transactionServiceTwitter instanceof Array) {
+                    const requestCreateTwitter = await axios({
                         data: {
+                            
+                            accessSecret: service.accesssecret,
+                            accessToken: service.accesstoken,
+                            consumerKey: service.consumerkey,
+                            consumerSecret: service.consumersecret,
+                            developmentEnvironment: service.devenvironment,
                             linkType: 'TWITTERADD',
-                            siteId: req.body.service.siteid,
-                            developmentEnvironment: servicecredentialstwitter.devEnvironment,
-                            consumerSecret: servicecredentialstwitter.consumerSecret,
-                            consumerKey: servicecredentialstwitter.consumerKey,
-                            accessToken: servicecredentialstwitter.accessToken,
-                            accessSecret: servicecredentialstwitter.accessSecret
-                        }
+                            siteId: service.siteid
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`
                     });
 
-                    if (responseTwitterAdd.data.success) {
-                        if (req.body.type === 'TWITTER') {
+                    if (requestCreateTwitter.data.success) {
+                        if (request.body.type === 'TWITTER') {
                             parameters.type = 'TWIT';
                         }
                         else {
                             parameters.type = 'TWMS';
                         }
 
-                        parameters.servicecredentials = JSON.stringify(servicecredentialstwitter);
+                        var serviceCredentials = {
+                            accessSecret: service.accesssecret,
+                            accessToken: service.accesstoken,
+                            consumerKey: service.consumerkey,
+                            consumerSecret: service.consumersecret,
+                            devEnvironment: service.devenvironment,
+                            twitterPageId: service.siteid
+                        };
 
-                        const resx = await triggerfunctions.executesimpletransaction(method, parameters);
+                        parameters.servicecredentials = JSON.stringify(serviceCredentials);
 
-                        if (resx instanceof Array) {
-                            return res.json({
+                        const transactionCreateTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                        if (transactionCreateTwitter instanceof Array) {
+                            return result.json({
                                 success: true
                             });
                         }
                         else {
-                            twitterData.operation = 'DELETE';
+                            serviceParameter.operation = 'DELETE';
 
-                            await triggerfunctions.executesimpletransaction(twitterMethod, twitterData);
-
-                            return res.status(500).json({
-                                success: false,
-                                msg: resx.msg
-                            });
+                            const transactionServiceDeleteTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameter);
+    
+                            if (transactionServiceDeleteTwitter instanceof Array) {
+                                return result.status(400).json({
+                                    msg: transactionCreateTwitter.code,
+                                    success: false
+                                });
+                            }
+                            else {
+                                return result.status(400).json({
+                                    msg: transactionServiceDeleteTwitter.code,
+                                    success: false
+                                });
+                            }
                         }
                     }
                     else {
-                        twitterData.operation = 'DELETE';
+                        serviceParameter.operation = 'DELETE';
 
-                        await triggerfunctions.executesimpletransaction(twitterMethod, twitterData);
+                        const transactionServiceDeleteTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameter);
 
-                        return res.status(500).json({
-                            success: false,
-                            msg: responseTwitterAdd.data.operationMessage
-                        });
+                        if (transactionServiceDeleteTwitter instanceof Array) {
+                            return result.status(400).json({
+                                msg: requestCreateTwitter.data.operationMessage,
+                                success: false
+                            });
+                        }
+                        else {
+                            return result.status(400).json({
+                                msg: transactionServiceDeleteTwitter.code,
+                                success: false
+                            });
+                        }
                     }
                 }
                 else {
-                    return res.status(500).json({
-                        success: false,
-                        msg: resx.msg
+                    return result.status(400).json({
+                        msg: transactionServiceTwitter.code,
+                        success: false
                     });
                 }
-                break;
 
-            case 'CHATWEB':
-                const datatmp = {
-                    webhook: `${URLHOOK}chatweb/webhookasync`,
-                    applicationname: 'LARAIGO',
-                    integrationkey: '',
-                    name: req.body.parameters.description,
-                    status: 'ACTIVO',
-                    form: '',
-                    color: JSON.stringify({
-                        chatHeaderColor: req.body.service.color ? req.body.service.color.header : "",
-                        chatBackgroundColor: req.body.service.color ? req.body.service.color.background : "",
-                        chatBorderColor: req.body.service.color ? req.body.service.color.border : "",
-                        messageClientColor: req.body.service.color ? req.body.service.color.client : "",
-                        messageBotColor: req.body.service.color ? req.body.service.color.bot : "",
-                    }),
-                    icons: JSON.stringify({
-                        chatOpenImage: req.body.service.interface.iconbutton,
-                        chatHeaderImage: req.body.service.interface.iconheader,
-                        chatBotImage: req.body.service.interface.iconbot,
-                        chatIdleImage: req.body.service.bubble.iconbubble
-                    }),
-                    other: JSON.stringify({
-                        abandonendpoint: `${URLABANDON}smooch`,
-                        jsscript: req.body.service.extra ? req.body.service.extra.customjs : "",
-                        headermessage: req.body.service.extra ? req.body.service.extra.botnametext : "",
-                        cssbody: req.body.service.extra ? req.body.service.extra.customcss : "",
-                        enableidlemessage: req.body.service.bubble ? req.body.service.bubble.active : false,
-                        uploadfile: req.body.service.extra ? req.body.service.extra.uploadfile : false,
-                        uploadvideo: req.body.service.extra ? req.body.service.extra.uploadvideo : false,
-                        uploadlocation: req.body.service.extra ? req.body.service.extra.uploadlocation : false,
-                        uploadimage: req.body.service.extra ? req.body.service.extra.uploadimage : false,
-                        uploadaudio: req.body.service.extra ? req.body.service.extra.uploadaudio : false,
-                        showchatrestart: req.body.service.extra ? req.body.service.extra.reloadchat : false,
-                        showplatformlogo: req.body.service.extra ? req.body.service.extra.poweredby : false,
-                        inputalwaysactive: req.body.service.extra ? req.body.service.extra.persistentinput : false,
-                        enableabandon: req.body.service.extra ? req.body.service.extra.abandonevent : false,
-                        playalertsound: req.body.service.extra ? req.body.service.extra.alertsound : false,
-                        enableformhistory: req.body.service.extra ? req.body.service.extra.formhistory : false,
-                        sendmetadata: req.body.service.extra ? req.body.service.extra.enablemetadata : false,
-                        showmessageheader: req.body.service.extra ? req.body.service.extra.botnameenabled : false,
-                    }),
-                    personalization: JSON.stringify({
-                        headerTitle: req.body.service.interface ? req.body.service.interface.chattitle : "",
-                        headerSubTitle: req.body.service.interface ? req.body.service.interface.chatsubtitle : "",
-                        idleMessage: req.body.service.bubble ? req.body.service.bubble.messagebubble : "",
-                    })
-                }
-
-                const responseChatWebSave = await axios({
-                    url: `http://52.116.128.51:5065/api/integration/integrationzyxme`,
+            case 'WHATSAPP':
+                const requestCreateWhatsApp = await axios({
+                    data: {
+                        accessToken: service.accesstoken,
+                        linkType: 'WHATSAPPADD',
+                        siteId: service.siteid
+                    },
                     method: 'post',
-                    data: datatmp
+                    url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`
                 });
 
-                if (!responseChatWebSave.data || !responseChatWebSave.data instanceof Object)
-                    return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
-                
-                const integrationId = responseChatWebSave.data.integrationkey;
-                    
-                const integrationApiKey = responseChatWebSave.data.pluginapikey;
-                const integrationKeyId = responseChatWebSave.data.pluginid; //check
-
-                const webhookId = responseChatWebSave.data.webhookid;
-
-
-                parameters.communicationchannelcontact = integrationKeyId;
-                parameters.communicationchannelsite = integrationId;
-                parameters.communicationchannelowner = webhookId;
-
-                parameters.appintegrationid = chatwebApplicationId || 53;
-                parameters.integrationid = integrationId;
-
-                parameters.apikey = integrationApiKey;
-
-                parameters.servicecredentials = '';
-                parameters.type = 'CHAZ';
-                
-                parameters.channelparameters = JSON.stringify(datatmp);
-                const xxaa = await triggerfunctions.executesimpletransaction(method, parameters);
-                if (xxaa instanceof Array) {
-                    return res.json({
-                        integrationid: integrationId,
-                        success: true
-                    });
-                }
-                else {
-                    return res.status(500).json({
-                        success: false,
-                        msg: resx.msg
-                    });
-                }
-                break;
-
-            default:
-                return res.status(500).json({
-                    success: false,
-                    msg: 'Undefined'
-                });
-                break;
-        }
-    }
-    catch (error) {
-        return res.status(400).json({
-            success: false,
-            msg: error
-        });
-    }
-}
-
-exports.DeleteChannel = async (req, res) => {
-    try {
-        var { parameters = {}, method } = req.body;
-
-        setSessionParameters(parameters, req.user);
-
-        parameters.corpid = req.user.corpid;
-        parameters.orgid = req.user.orgid;
-        parameters.username = req.user.usr;
-
-        parameters.motive = 'Delete channel';
-        parameters.operation = 'DELETE';
-        parameters.status = 'ELIMINADO';
-
-        parameters.updintegration = null;
-
-        switch (req.body.parameters.type) {
-            case 'FBDM':
-                if (typeof req.body.parameters.servicecredentials !== 'undefined' && req.body.parameters.servicecredentials) {
-                    var serviceData = JSON.parse(req.body.parameters.servicecredentials);
-
-                    const responseChannelRemoveFBDM = await axios({
-                        url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
-                        method: 'post',
-                        data: {
-                            linkType: 'MESSENGERREMOVE',
-                            accessToken: serviceData.accessToken,
-                            siteId: serviceData.siteId
-                        }
-                    });
-
-                    if (responseChannelRemoveFBDM.data.success) {
-                        const resx = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                        if (resx instanceof Array) {
-                            return res.json({
-                                success: true
-                            });
-                        }
-                        else {
-                            return res.status(500).json({
-                                success: false,
-                                msg: resx.msg
-                            });
-                        }
-                    }
-                    else {
-                        return res.status(500).json({
-                            success: false,
-                            msg: responseChannelRemoveFBDM.data.operationMessage
-                        });
-                    }
-                }
-                else {
-                    const resx = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                    if (resx instanceof Array) {
-                        return res.json({
-                            success: true
-                        });
-                    }
-                    else {
-                        return res.status(500).json({
-                            success: false,
-                            msg: resx.msg
-                        });
-                    }
-                }
-                break;
-
-            case 'FBWA':
-                if (typeof req.body.parameters.servicecredentials !== 'undefined' && req.body.parameters.servicecredentials) {
-                    var serviceData = JSON.parse(req.body.parameters.servicecredentials);
-
-                    const responseChannelRemoveFBWA = await axios({
-                        url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
-                        method: 'post',
-                        data: {
-                            linkType: 'WALLREMOVE',
-                            accessToken: serviceData.accessToken,
-                            siteId: serviceData.siteId
-                        }
-                    });
-
-                    if (responseChannelRemoveFBWA.data.success) {
-                        const resx = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                        if (resx instanceof Array) {
-                            return res.json({
-                                success: true
-                            });
-                        }
-                        else {
-                            return res.status(500).json({
-                                success: false,
-                                msg: resx.msg
-                            });
-                        }
-                    }
-                    else {
-                        return res.status(500).json({
-                            success: false,
-                            msg: responseChannelRemoveFBWA.data.operationMessage
-                        });
-                    }
-                }
-                else {
-                    const resx = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                    if (resx instanceof Array) {
-                        return res.json({
-                            success: true
-                        });
-                    }
-                    else {
-                        return res.status(500).json({
-                            success: false,
-                            msg: resx.msg
-                        });
-                    }
-                }
-                break;
-
-            case 'INST':
-                if (typeof req.body.parameters.servicecredentials !== 'undefined' && req.body.parameters.servicecredentials) {
-                    var serviceData = JSON.parse(req.body.parameters.servicecredentials);
-
-                    const responseChannelRemoveINST = await axios({
-                        url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
-                        method: 'post',
-                        data: {
-                            linkType: 'INSTAGRAMREMOVE',
-                            accessToken: serviceData.accessToken,
-                            siteId: parameters.communicationchannelowner
-                        }
-                    });
-
-                    if (responseChannelRemoveINST.data.success) {
-                        const resx = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                        if (resx instanceof Array) {
-                            return res.json({
-                                success: true
-                            });
-                        }
-                        else {
-                            return res.status(500).json({
-                                success: false,
-                                msg: resx.msg
-                            });
-                        }
-                    }
-                    else {
-                        return res.status(500).json({
-                            success: false,
-                            msg: responseChannelRemoveINST.data.operationMessage
-                        });
-                    }
-                }
-                else {
-                    const resx = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                    if (resx instanceof Array) {
-                        return res.json({
-                            success: true
-                        });
-                    }
-                    else {
-                        return res.status(500).json({
-                            success: false,
-                            msg: resx.msg
-                        });
-                    }
-                }
-                break;
-
-            case 'WHAD':
-                if (typeof req.body.parameters.servicecredentials !== 'undefined' && req.body.parameters.servicecredentials) {
-                    var serviceData = JSON.parse(req.body.parameters.servicecredentials);
-
-                    const responseChannelRemoveWHAD = await axios({
-                        url: `${URLBRIDGE}processlaraigo/whatsapp/managewhatsapplink`,
-                        method: 'post',
-                        data: {
-                            linkType: 'WHATSAPPREMOVE',
-                            accessToken: serviceData.apiKey,
-                            siteId: serviceData.number
-                        }
-                    });
-
-                    if (responseChannelRemoveWHAD.data.success) {
-                        const resx = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                        if (resx instanceof Array) {
-                            return res.json({
-                                success: true
-                            });
-                        }
-                        else {
-                            return res.status(500).json({
-                                success: false,
-                                msg: resx.msg
-                            });
-                        }
-                    }
-                    else {
-                        return res.status(500).json({
-                            success: false,
-                            msg: responseChannelRemoveWHAD.data.operationMessage
-                        });
-                    }
-                }
-                else {
-                    const resx = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                    if (resx instanceof Array) {
-                        return res.json({
-                            success: true
-                        });
-                    }
-                    else {
-                        return res.status(500).json({
-                            success: false,
-                            msg: resx.msg
-                        });
-                    }
-                }
-                break;
-
-            case 'TELE':
-                if (typeof req.body.parameters.servicecredentials !== 'undefined' && req.body.parameters.servicecredentials) {
-                    var serviceData = JSON.parse(req.body.parameters.servicecredentials);
-
-                    const responseChannelRemoveTELE = await axios({
-                        url: `${URLBRIDGE}processlaraigo/telegram/managetelegramlink`,
-                        method: 'post',
-                        data: {
-                            linkType: 'TELEGRAMREMOVE',
-                            accessToken: serviceData.token,
-                            siteId: serviceData.bot
-                        }
-                    });
-
-                    if (responseChannelRemoveTELE.data.success) {
-                        const resx = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                        if (resx instanceof Array) {
-                            return res.json({
-                                success: true
-                            });
-                        }
-                        else {
-                            return res.status(500).json({
-                                success: false,
-                                msg: resx.msg
-                            });
-                        }
-                    }
-                    else {
-                        return res.status(500).json({
-                            success: false,
-                            msg: responseChannelRemoveTELE.data.operationMessage
-                        });
-                    }
-                }
-                else {
-                    const resx = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                    if (resx instanceof Array) {
-                        return res.json({
-                            success: true
-                        });
-                    }
-                    else {
-                        return res.status(500).json({
-                            success: false,
-                            msg: resx.msg
-                        });
-                    }
-                }
-                break;
-
-            case 'TWIT':
-            case 'TWMS':
-                if (typeof req.body.parameters.servicecredentials !== 'undefined' && req.body.parameters.servicecredentials) {
-                    var serviceData = JSON.parse(req.body.parameters.servicecredentials);
-
-                    var methodremove = 'UFN_COMMUNICATIONCHANNELSITE_SEL';
-                    var dataremove = {
-                        communicationchannelsite: serviceData.twitterPageId,
-                        type: ''
+                if (requestCreateWhatsApp.data.success) {
+                    var serviceCredentials = {
+                        apiKey: service.accesstoken,
+                        endpoint: whatsAppEndpoint,
+                        number: service.siteid
                     };
 
-                    if (req.body.parameters.type === 'TWIT') {
-                        dataremove.type = 'TWMS';
-                    }
-                    else {
-                        dataremove.type = 'TWIT';
-                    }
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.type = 'WHAD';
 
-                    const rest = await triggerfunctions.executesimpletransaction(methodremove, dataremove);
+                    const transactionCreateWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
 
-                    if (rest instanceof Array) {
-                        if (rest.length > 0) {
-                            const resx = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                            if (resx instanceof Array) {
-                                return res.json({
-                                    success: true
-                                });
-                            }
-                            else {
-                                return res.status(500).json({
-                                    success: false,
-                                    msg: resx.msg
-                                });
-                            }
-                        }
-                        else {
-                            const responseChannelRemoveTWMS = await axios({
-                                url: `${URLBRIDGE}processlaraigo/twitter/managetwitterlink`,
-                                method: 'post',
-                                data: {
-                                    linkType: 'TWITTERREMOVE',
-                                    siteId: serviceData.twitterPageId,
-                                    developmentEnvironment: serviceData.devEnvironment,
-                                    consumerSecret: serviceData.consumerSecret,
-                                    consumerKey: serviceData.consumerKey,
-                                    accessToken: serviceData.accessToken,
-                                    accessSecret: serviceData.accessSecret
-                                }
-                            });
-
-                            if (responseChannelRemoveTWMS.data.success) {
-                                const resx = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                                if (resx instanceof Array) {
-                                    var twitterMethod = 'UFN_COMMUNICATIONCHANNELHOOK_INS';
-                                    var twitterData = {
-                                        type: 'TWTR',
-                                        site: serviceData.twitterPageId,
-                                        operation: 'DELETE'
-                                    };
-
-                                    await triggerfunctions.executesimpletransaction(twitterMethod, twitterData);
-
-                                    return res.json({
-                                        success: true
-                                    });
-                                }
-                                else {
-                                    return res.status(500).json({
-                                        success: false,
-                                        msg: resx.msg
-                                    });
-                                }
-                            }
-                            else {
-                                return res.status(500).json({
-                                    success: false,
-                                    msg: responseChannelRemoveTWMS.data.operationMessage
-                                });
-                            }
-                        }
-                    }
-                    else {
-                        return res.status(500).json({
-                            success: false,
-                            msg: rest.msg
-                        });
-                    }
-                }
-                else {
-                    const resx = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                    if (resx instanceof Array) {
-                        return res.json({
+                    if (transactionCreateWhatsApp instanceof Array) {
+                        return result.json({
                             success: true
                         });
                     }
                     else {
-                        return res.status(500).json({
-                            success: false,
-                            msg: resx.msg
+                        return result.status(400).json({
+                            msg: transactionCreateWhatsApp.code,
+                            success: false
                         });
                     }
                 }
-                break;
-
-            case 'CHAZ':
-                if (typeof req.body.parameters.communicationchannelcontact !== 'undefined' && req.body.parameters.communicationchannelcontact) {
-                    await axios({
-                        url: `${URLBROKER}plugins/update/${req.body.parameters.communicationchannelcontact}`,
-                        method: 'put',
-                        data: {
-                            status: 'ELIMINADO'
-                        }
-                    });
-                }
-
-                if (typeof req.body.parameters.communicationchannelowner !== 'undefined' && req.body.parameters.communicationchannelowner) {
-                    await axios({
-                        url: `${URLBROKER}webhooks/update/${req.body.parameters.communicationchannelowner}`,
-                        method: 'put',
-                        data: {
-                            status: 'ELIMINADO'
-                        }
-                    });
-                }
-
-                if (typeof req.body.parameters.integrationid !== 'undefined' && req.body.parameters.integrationid) {
-                    await axios({
-                        url: `${URLBROKER}integrations/update/${req.body.parameters.integrationid}`,
-                        method: 'put',
-                        data: {
-                            status: 'ELIMINADO'
-                        }
-                    });
-                }
-
-                const responseChatweb = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                if (responseChatweb instanceof Array) {
-                    return res.json({
-                        success: true
-                    });
-                }
                 else {
-                    return res.status(500).json({
-                        success: false,
-                        msg: responseChatweb.msg
+                    return result.status(400).json({
+                        msg: requestCreateWhatsApp.data.operationMessage,
+                        success: false
                     });
                 }
 
             default:
-                const resx = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                if (resx instanceof Array) {
-                    return res.json({
-                        success: true
-                    });
-                }
-                else {
-                    return res.status(500).json({
-                        success: false,
-                        msg: resx.msg
-                    });
-                }
+                return result.status(400).json({
+                    msg: 'Channel not supported',
+                    success: false
+                });
         }
     }
-    catch (error) {
-        return res.status(400).json({
-            success: false,
-            msg: error
+    catch (exception) {
+        return result.status(500).json({
+            msg: exception.message,
+            success: false
         });
     }
 }
