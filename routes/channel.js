@@ -1,30 +1,29 @@
-const express = require("express");
-const router = express.Router();
-const channelController = require("../controllers/channelController");
 const auth = require('../middleware/auth');
+const channelController = require("../controllers/channelController");
+const router = require("express").Router();
 
-router.post("/getchannelservice",
-    channelController.GetChannelService
+router.post("/deletechannel",
+    auth,
+    channelController.deleteChannel
 )
 
-router.post("/getpagelist",
-    auth,
-    channelController.GetPageList
+router.post("/getchannelservice",
+    channelController.getChannelService
 )
 
 router.post("/getlongtoken",
     auth,
-    channelController.GetLongToken
+    channelController.getLongToken
+)
+
+router.post("/getpagelist",
+    auth,
+    channelController.getPageList
 )
 
 router.post("/insertchannel",
     auth,
-    channelController.InsertChannel
-)
-
-router.post("/deletechannel",
-    auth,
-    channelController.DeleteChannel
+    channelController.insertChannel
 )
 
 module.exports = router;
