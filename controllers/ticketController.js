@@ -203,3 +203,34 @@ exports.massiveClose = async (req, res) => {
         return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES, ee));
     }
 }
+
+exports.sendHSM = async (req, res) => {
+    try {
+        const { data } = req.body;
+        if (!data.corpid)
+            data.corpid = req.user.corpid ? req.user.corpid : 1;
+        if (!data.orgid)
+            data.orgid = req.user.orgid ? req.user.orgid : 1;
+        if (!data.username)
+            data.username = req.user.usr;
+        if (!data.userid)
+            data.userid = req.user.userid;
+
+        const responseservices = await axios.post(
+            `${process.env.SERVICES}handler/external/sendhsm`, data);
+
+        console.log(responseservices.data)
+
+        if (!responseservices.data || !responseservices.data instanceof Object) {
+            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+        }
+
+        if (!responseservices.data.Success) {
+            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+        }
+        res.json({ success: true });
+    }
+    catch (ee) {
+        return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES, ee));
+    }
+}
