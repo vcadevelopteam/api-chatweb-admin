@@ -440,7 +440,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CLASSIFICATION_INS: {
-        query: "SELECT * FROM ufn_classification_ins( $id, $corpid, $orgid, $description, $parent, $communicationchannel, $status, $type, $username, $operation, $tags,$title, $jobplan, $usergroup, $schedule, $favorite)",
+        query: "SELECT * FROM ufn_classification_ins( $id, $corpid, $orgid, $description, $parent, $communicationchannel, $status, $type, $username, $operation, $tags,$title, $jobplan, $usergroup, $schedule)",
         module: "",
         protected: "INSERT"
     },
@@ -857,6 +857,36 @@ module.exports = {
     },
     UFN_PROPERTY_SELBYNAME  : {
         query: "SELECT * FROM ufn_property_selbyname($corpid, $orgid, $propertyname)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_PUSH_HSMCATEGORYRANK_SEL  : {
+        query: "SELECT * FROM ufn_dashboard_push_hsmcategoryrank_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_PUSH_SUMMARY_SEL  : {
+        query: "SELECT * FROM ufn_dashboard_push_summary_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_PUSH_HSMRANK_SEL  : {
+        query: "SELECT * FROM ufn_dashboard_push_hsmrank_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_PUSH_MENSAJEXDIA_SEL  : {
+        query: "SELECT * FROM ufn_dashboard_push_mensajexdia_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_USER_SUPERVISORBYORGID_LST  : {
+        query: "SELECT * FROM ufn_user_supervisorbyorgid_lst($corpid,$orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LABEL_LST  : {
+        query: "SELECT * FROM ufn_label_lst($corpid,$orgid)",
         module: "",
         protected: "SELECT"
     },
