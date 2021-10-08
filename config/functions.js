@@ -114,6 +114,11 @@ module.exports = {
         module: "/extras/inappropriatewords",
         protected: "INSERT"
     },
+    UFN_INAPPROPRIATEWORDS_INS_ARRAY: {
+        query: "SELECT * FROM ufn_inappropriatewords_ins_array($corpid, $orgid, $username, $table)",
+        module: "/extras/inappropriatewords",
+        protected: "INSERT"
+    },
     UFN_PERSON_TOTALRECORDS: {
         query: "SELECT * FROM ufn_person_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset)",
         module: "",
