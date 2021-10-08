@@ -1,5 +1,5 @@
-const tf = require('../config/triggerfunctions');;
-const axios = require('axios')
+const axios = require('axios');
+const triggerFunctions = require('../config/triggerfunctions');
 
 const URLBROKER = "https://goo.zyxmeapp.com/api/";
 
@@ -29,13 +29,14 @@ const triggerGenerateApikey = async (data) => {
         idmongo: apikeyid
     }
 
-    const rr = await tf.executesimpletransaction("UFN_CHATWEBAPIKEY_INS", datatobd);
+    const rr = await triggerFunctions.executesimpletransaction("UFN_CHATWEBAPIKEY_INS", datatobd);
     if (!rr instanceof Array) {
         console.log(rr);
         throw 'Error al insertar'
     }
     return { apikey, apikeyid };
 }
+
 const triggerSaveWebhook = async (data, x) => {
     const dataInsWebhook = {
         name: "webhook" + data.integrationid,
@@ -55,7 +56,7 @@ const triggerSaveWebhook = async (data, x) => {
         chatwebintegrationid: data.integrationid,
         trigger: rBroker.data.id
     }
-    const rr = await tf.executesimpletransaction("UFN_CHATWEBHOOK_INS", datapostgres)
+    const rr = await triggerFunctions.executesimpletransaction("UFN_CHATWEBHOOK_INS", datapostgres)
 
     return datapostgres;
 }
@@ -70,7 +71,7 @@ exports.Save = async (req, res) => {
         if (!data.userid)
             data.userid = req.usuario.userid;
 
-        const result = await tf.executesimpletransaction(method, data);
+        const result = await triggerFunctions.executesimpletransaction(method, data);
 
         if (result instanceof Array) {
             const integrationid = result[0].p_chatwebintegrationid;
@@ -110,7 +111,7 @@ exports.Save = async (req, res) => {
                     console.log(data);
                     //Actualizar la integración con el idintegration de mongo, y generar el apikey
                     await Promise.all([
-                        tf.executesimpletransaction("UFN_INTEGRATION_KEY_UPD", data),
+                        triggerFunctions.executesimpletransaction("UFN_INTEGRATION_KEY_UPD", data),
                         triggerGenerateApikey(data)
                     ]);
                 } catch (error) { }
@@ -141,6 +142,7 @@ exports.Save = async (req, res) => {
         });
     }
 }
+
 exports.IntegrationZyxme = async (req, res) => {
     try {
         const data = req.body;
@@ -152,7 +154,7 @@ exports.IntegrationZyxme = async (req, res) => {
 
         let apikey = "";
         //required applicationname, integrationkey, webhook
-        const resultApplication = await tf.executesimpletransaction("QUERY_SEARCH_APPLICATION", data);
+        const resultApplication = await triggerFunctions.executesimpletransaction("QUERY_SEARCH_APPLICATION", data);
         console.log(resultApplication);
         if (!resultApplication instanceof Array || resultApplication.length === 0) {
             return res.json({
@@ -164,7 +166,7 @@ exports.IntegrationZyxme = async (req, res) => {
         data.chatwebapplicationid = resultApplication[0].chatwebapplicationid;
 
         if (data.integrationkey) {
-            const resultIntegration = await tf.executesimpletransaction("QUERY_INTEGRATION_BY_KEY", data);
+            const resultIntegration = await triggerFunctions.executesimpletransaction("QUERY_INTEGRATION_BY_KEY", data);
             if (!resultIntegration instanceof Array || resultIntegration.length === 0) {
                 return res.json({
                     success: false,
@@ -174,7 +176,7 @@ exports.IntegrationZyxme = async (req, res) => {
             data.id = resultIntegration[0].chatwebintegrationid;
         }
 
-        const result = await tf.executesimpletransaction("UFN_INTEGRATION_INS", data);
+        const result = await triggerFunctions.executesimpletransaction("UFN_INTEGRATION_INS", data);
 
         if (result instanceof Array) {
             const integrationid = result[0].p_chatwebintegrationid;
@@ -216,7 +218,7 @@ exports.IntegrationZyxme = async (req, res) => {
 
                     //Actualizar la integración con el idintegration de mongo, y generar el apikey
                     await Promise.all([
-                        tf.executesimpletransaction("UFN_INTEGRATION_KEY_UPD", { integrationid, integrationkey: data.integrationkey }),
+                        triggerFunctions.executesimpletransaction("UFN_INTEGRATION_KEY_UPD", { integrationid, integrationkey: data.integrationkey }),
                         triggerGenerateApikey(data)
                     ]).then(resx => {
                         pluginapikey = resx[1].apikey
@@ -250,6 +252,62 @@ exports.IntegrationZyxme = async (req, res) => {
         });
     }
 }
+
 exports.GenerateApikey = async (req, res) => {
 
+}
+
+exports.AddToDatabase = async (request, result) => {
+    try {
+        const webChatParameters = request.body;
+
+        webChatParameters.applicationname = 'LARAIGO';
+
+        const transactionGetApplication = await triggerFunctions.executesimpletransaction("QUERY_SEARCH_APPLICATION", webChatParameters);
+
+        if (!transactionGetApplication instanceof Array || transactionGetApplication.length === 0) {
+            return transactionInsertApplication.json({
+                msg: "Application not found",
+                success: false
+            });
+        }
+
+        var webChatMetadata = JSON.parse(webChatParameters.channelparameters);
+
+        webChatData = {
+            chatwebapplicationid: transactionGetApplication[0].chatwebapplicationid,
+            color: JSON.stringify(webChatMetadata.metadata.color),
+            description: webChatParameters.description,
+            form: JSON.stringify(webChatMetadata.metadata.form),
+            id: 0,
+            icons: JSON.stringify(webChatMetadata.metadata.icons),
+            name: webChatParameters.description,
+            other: JSON.stringify(webChatMetadata.metadata.extra),
+            status: webChatParameters.status,
+            type: webChatParameters.type,
+            username: webChatParameters.username
+        };
+
+        const transactionInsertApplication = await triggerFunctions.executesimpletransaction("UFN_INTEGRATION_INS", webChatData);
+
+        if (transactionInsertApplication instanceof Array) {
+            return transactionInsertApplication.json({
+                apikey: webChatParameters.apikey,
+                integrationkey: webChatParameters.integrationid,
+                pluginapikey: webChatParameters.apikey,
+                pluginid: webChatParameters.communicationchannelcontact,
+                success: true,
+                webhookid:webChatParameters.communicationchannelowner
+            });
+        }
+        else {
+            return transactionInsertApplication.status(400).json(transactionInsertApplication);
+        }
+    }
+    catch (exception) {
+        return result.status(500).json({
+            msg: exception.message,
+            success: false
+        });
+    }
 }
