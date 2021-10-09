@@ -444,8 +444,6 @@ exports.getChannelService = async (request, result) => {
 
 exports.getLongToken = async (request, result) => {
     try {
-        setSessionParameters(parameters, request.user);
-
         const requestGetLongToken = await axios({
             data: {
                 accessToken: request.body.accessToken,
@@ -479,8 +477,6 @@ exports.getLongToken = async (request, result) => {
 
 exports.getPageList = async (request, result) => {
     try {
-        setSessionParameters(parameters, request.user);
-
         const requestGetPageList = await axios({
             data: {
                 accessToken: request.body.accessToken,
