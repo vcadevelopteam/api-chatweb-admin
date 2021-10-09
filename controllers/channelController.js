@@ -77,7 +77,7 @@ exports.deleteChannel = async (request, result) => {
             case 'FBWA':
             case 'INST':
                 if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
-                    var serviceCredentials = JSON.parse(parameters.serviceCredentials);
+                    var serviceCredentials = JSON.parse(parameters.servicecredentials);
                     var linkType = '';
 
                     if (parameters.type === 'FBDM') {
