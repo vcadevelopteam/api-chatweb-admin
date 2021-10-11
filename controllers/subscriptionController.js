@@ -554,6 +554,16 @@ exports.validateUsername = async (request, result) => {
 
         var { method, parameters = {} } = request.body;
 
+        if (typeof parameters.facebookid !== 'undefined' && parameters.facebookid) {
+            parameters.googleid = null;
+            parameters.usr = null;
+        }
+
+        if (typeof parameters.googleid !== 'undefined' && parameters.googleid) {
+            parameters.facebookid = null;
+            parameters.usr = null;
+        }
+
         const transactionSelectUser = await triggerfunctions.executesimpletransaction(method, parameters);
 
         if (transactionSelectUser instanceof Array) {
