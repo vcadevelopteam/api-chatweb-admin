@@ -930,4 +930,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_USER_UPDATE: {
+        query: "SELECT * FROM ufn_user_update($userid,$firstname,$lastname,$password,$image)",
+        module: "",
+        protected: "INSERT"
+    },
 }
