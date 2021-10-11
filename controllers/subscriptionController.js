@@ -517,7 +517,7 @@ exports.getPageList = async (request, result) => {
                 linkType: 'GETPAGES'
             },
             method: 'post',
-            url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
+            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
         });
 
         if (requestGetFacebook.data.success) {
