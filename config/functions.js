@@ -945,4 +945,9 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_ORGUSER_CHANNELS_UPDATE: {
+        query: "SELECT * FROM ufn_orguser_channels_update($corpid, $orgid, $userid, $channels)",
+        module: "",
+        protected: "SELECT"
+    },
 }

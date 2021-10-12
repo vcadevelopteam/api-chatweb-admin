@@ -440,20 +440,28 @@ exports.createSubscription = async (request, result) => {
 
         if (transactionCreateSubscription instanceof Array) {
             if (transactionCreateSubscription.length > 0) {
+                var channelTotal = '';
                 var corpId = transactionCreateSubscription[0].corpid;
-                var orgId = transactionCreateSubscription[0].orgid;
                 var index = 0;
+                var orgId = transactionCreateSubscription[0].orgid;
+                var userId = transactionCreateSubscription[0].userid;
 
-                
                 if (typeof channelMethodArray !== 'undefined' && channelMethodArray) {
                     for (const channel of channelMethodArray) {
                         channelParametersArray[index].corpid = corpId;
                         channelParametersArray[index].orgid = orgId;
                         channelParametersArray[index].username = parameters.username;
 
-                        const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(channel, channelParametersArray[index]);
+                        const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(channelMethodArray[index], channelParametersArray[index]);
 
                         if (transactionCreateGeneric instanceof Array) {
+                            if (channelTotal === '') {
+                                channelTotal = `${transactionCreateGeneric[0].ufn_communicationchannel_ins2}`;
+                            }
+                            else {
+                                channelTotal = `${channelTotal},${transactionCreateGeneric[0].ufn_communicationchannel_ins2}`;
+                            }
+
                             try {
                                 if (channelParametersArray[index].type === 'CHAZ') {
                                     if (typeof webChatPlatformEndpoint !== 'undefined' && webChatPlatformEndpoint) {
@@ -475,6 +483,27 @@ exports.createSubscription = async (request, result) => {
                                 success: false
                             });
                         }
+
+                        index++;
+                    }
+                }
+
+                if (channelTotal !== '') {
+                    var updateMethod = 'UFN_ORGUSER_CHANNELS_UPDATE';
+                    var updateParameters = {
+                        channels: channelTotal,
+                        corpid: corpId,
+                        orgid: orgId,
+                        userid: userId
+                    }
+
+                    const transactionUpdateUser = await triggerfunctions.executesimpletransaction(updateMethod, updateParameters);
+
+                    if (!transactionUpdateUser instanceof Array) {
+                        return result.status(400).json({
+                            msg: transactionUpdateUser.code,
+                            success: false
+                        });
                     }
                 }
             }
