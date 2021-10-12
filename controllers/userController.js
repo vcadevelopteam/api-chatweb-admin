@@ -1,3 +1,5 @@
+const { executesimpletransaction } = require('../config/triggerfunctions');
+
 require('dotenv').config();
 const bcryptjs = require("bcryptjs");
 const { setSessionParameters } = require('../config/helpers');
@@ -12,7 +14,7 @@ exports.updateInformation = async (req, res) => {
 
     try {
         if (parameters.newpassword) {
-            const resUser = await tf.executesimpletransaction("QUERY_GET_PWD_BY_USERID", parameters)
+            const resUser = await executesimpletransaction("QUERY_GET_PWD_BY_USERID", parameters)
     
             const user = resUser[0]
     
@@ -26,7 +28,7 @@ exports.updateInformation = async (req, res) => {
             parameters.password = await bcryptjs.hash(parameters.newpassword, salt);
         }
 
-        const result = await tf.executesimpletransaction("UFN_USER_UPDATE", parameters)
+        const result = await executesimpletransaction("UFN_USER_UPDATE", parameters)
 
         if (result instanceof Array)
             return res.json({ error: false, success: true, data: result });
