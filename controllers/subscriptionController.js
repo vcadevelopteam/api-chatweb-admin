@@ -31,7 +31,7 @@ exports.createSubscription = async (request, result) => {
         var channelServiceArray = [];
 
         if (channellist instanceof Array) {
-            channellist.forEach(async (channel) => {
+            for (const channel of channellist) {
                 if (typeof channel !== 'undefined' && channel) {
                     var channelMethod = channel.method ? channel.method : 'UFN_COMMUNICATIONCHANNEL_INS';
                     var channelParameters = channel.parameters;
@@ -190,7 +190,7 @@ exports.createSubscription = async (request, result) => {
                                 var channelType = null;
                                 var serviceType = null;
 
-                                switch (request.body.type) {
+                                switch (channel.type) {
                                     case 'FACEBOOK':
                                         channelLinkService = 'WALLADD';
                                         channelType = 'FBWA';
@@ -210,7 +210,7 @@ exports.createSubscription = async (request, result) => {
                                         break;
                                 }
 
-                                if (request.body.type === 'INSTAGRAM') {
+                                if (channel.type === 'INSTAGRAM') {
                                     const requestGetBusiness = await axios({
                                         data: {
                                             accessToken: channelService.accesstoken,
@@ -348,7 +348,7 @@ exports.createSubscription = async (request, result) => {
                                 });
 
                                 if (requestCreateTwitter.data.success) {
-                                    if (request.body.type === 'TWITTER') {
+                                    if (channel.type === 'TWITTER') {
                                         channelParameters.type = 'TWIT';
                                     }
                                     else {
@@ -431,7 +431,7 @@ exports.createSubscription = async (request, result) => {
                             break;
                     }
                 }
-            });
+            }
         }
 
         parameters.password = await bcryptjs.hash(parameters.password, await bcryptjs.genSalt(10));
@@ -442,11 +442,11 @@ exports.createSubscription = async (request, result) => {
             if (transactionCreateSubscription.length > 0) {
                 var corpId = transactionCreateSubscription[0].corpid;
                 var orgId = transactionCreateSubscription[0].orgid;
+                var index = 0;
 
+                
                 if (typeof channelMethodArray !== 'undefined' && channelMethodArray) {
-                    channelMethodArray.forEach(async (channel, index) => {
-                        channelParametersArray[index]
-
+                    for (const channel of channelMethodArray) {
                         channelParametersArray[index].corpid = corpId;
                         channelParametersArray[index].orgid = orgId;
                         channelParametersArray[index].username = parameters.username;
@@ -475,7 +475,7 @@ exports.createSubscription = async (request, result) => {
                                 success: false
                             });
                         }
-                    });
+                    }
                 }
             }
             else {
@@ -491,6 +491,10 @@ exports.createSubscription = async (request, result) => {
                 success: false
             });
         }
+
+        return result.json({
+            success: true
+        });
     }
     catch (exception) {
         return result.status(500).json({
