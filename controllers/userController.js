@@ -5,7 +5,7 @@ const axios = require('axios')
 const { errors, getErrorCode } = require('../config/helpers');
 
 exports.updateInformation = async (req, res) => {
-    const { parameters } = req.body;
+    const { data: parameters } = req.body;
 
     console.log("updateInformation", parameters)
 
