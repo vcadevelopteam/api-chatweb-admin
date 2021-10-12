@@ -440,20 +440,28 @@ exports.createSubscription = async (request, result) => {
 
         if (transactionCreateSubscription instanceof Array) {
             if (transactionCreateSubscription.length > 0) {
+                var channelTotal = '';
                 var corpId = transactionCreateSubscription[0].corpid;
-                var orgId = transactionCreateSubscription[0].orgid;
                 var index = 0;
+                var orgId = transactionCreateSubscription[0].orgid;
+                var userId = transactionCreateSubscription[0].userid;
 
-                
                 if (typeof channelMethodArray !== 'undefined' && channelMethodArray) {
                     for (const channel of channelMethodArray) {
                         channelParametersArray[index].corpid = corpId;
                         channelParametersArray[index].orgid = orgId;
                         channelParametersArray[index].username = parameters.username;
 
-                        const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(channel, channelParametersArray[index]);
+                        const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(channelMethodArray[index], channelParametersArray[index]);
 
                         if (transactionCreateGeneric instanceof Array) {
+                            if (channelTotal === '') {
+                                channelTotal = `${transactionCreateGeneric[0].ufn_communicationchannel_ins2}`;
+                            }
+                            else {
+                                channelTotal = `${channelTotal},${transactionCreateGeneric[0].ufn_communicationchannel_ins2}`;
+                            }
+
                             try {
                                 if (channelParametersArray[index].type === 'CHAZ') {
                                     if (typeof webChatPlatformEndpoint !== 'undefined' && webChatPlatformEndpoint) {
@@ -475,6 +483,27 @@ exports.createSubscription = async (request, result) => {
                                 success: false
                             });
                         }
+
+                        index++;
+                    }
+                }
+
+                if (channelTotal !== '') {
+                    var updateMethod = 'UFN_ORGUSER_CHANNELS_UPDATE';
+                    var updateParameters = {
+                        channels: channelTotal,
+                        corpid: corpId,
+                        orgid: orgId,
+                        userid: userId
+                    }
+
+                    const transactionUpdateUser = await triggerfunctions.executesimpletransaction(updateMethod, updateParameters);
+
+                    if (!transactionUpdateUser instanceof Array) {
+                        return result.status(400).json({
+                            msg: transactionUpdateUser.code,
+                            success: false
+                        });
                     }
                 }
             }
@@ -545,6 +574,66 @@ exports.getPageList = async (request, result) => {
     }
 }
 
+exports.validateUserId = async (request, result) => {
+    try {
+        if (typeof whitelist !== 'undefined' && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(400).json({
+                    msg: 'Unauthorized',
+                    success: false
+                });
+            }
+        }
+
+        var { method, parameters = {} } = request.body;
+
+        setSessionParameters(parameters, request.user);
+
+        parameters.password = await bcryptjs.hash(parameters.password, await bcryptjs.genSalt(10));
+        parameters.userid = request.user.userid;
+
+        const transactionSelectUser = await triggerfunctions.executesimpletransaction(method, parameters);
+
+        if (transactionSelectUser instanceof Array) {
+            if (transactionSelectUser.length > 0) {
+                parameters.password = await bcryptjs.hash(parameters.newpassword, await bcryptjs.genSalt(10));
+
+                const transactionUpdateUser = await triggerfunctions.executesimpletransaction('UFN_USER_UPDATE', parameters);
+
+                if (transactionSelectUser instanceof Array) {
+                    return result.json({
+                        success: true
+                    });
+                }
+                else {
+                    return result.status(400).json({
+                        msg: transactionUpdateUser.code,
+                        success: false
+                    });
+                }
+            }
+            else {
+                return result.status(400).json({
+                    msg: 'Password does not match',
+                    success: false
+                });
+            }
+        }
+        else {
+            return result.status(400).json({
+                msg: transactionSelectUser.code,
+                success: false
+            });
+        }
+    }
+    catch (exception) {
+        return result.status(500).json({
+            msg: exception.message,
+            success: false
+        });
+    }
+}
+
 exports.validateUsername = async (request, result) => {
     try {
         if (typeof whitelist !== 'undefined' && whitelist) {
@@ -580,55 +669,6 @@ exports.validateUsername = async (request, result) => {
             else {
                 return result.json({
                     isvalid: true,
-                    success: true
-                });
-            }
-        }
-        else {
-            return result.status(400).json({
-                msg: transactionSelectUser.code,
-                success: false
-            });
-        }
-    }
-    catch (exception) {
-        return result.status(500).json({
-            msg: exception.message,
-            success: false
-        });
-    }
-}
-
-exports.validateUserId = async (request, result) => {
-    try {
-        if (typeof whitelist !== 'undefined' && whitelist) {
-            if (!whitelist.includes(request.ip)) {
-                return result.status(400).json({
-                    msg: 'Unauthorized',
-                    success: false
-                });
-            }
-        }
-
-        var { method, parameters = {} } = request.body;
-
-        setSessionParameters(parameters, request.user);
-
-        parameters.password = await bcryptjs.hash(parameters.password, await bcryptjs.genSalt(10));
-        parameters.userid = request.user.userid;
-
-        const transactionSelectUser = await triggerfunctions.executesimpletransaction(method, parameters);
-
-        if (transactionSelectUser instanceof Array) {
-            if (transactionSelectUser.length > 0) {
-                return result.json({
-                    isvalid: true,
-                    success: true
-                });
-            }
-            else {
-                return result.json({
-                    isvalid: false,
                     success: true
                 });
             }
