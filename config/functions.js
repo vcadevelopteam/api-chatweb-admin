@@ -4,6 +4,11 @@ module.exports = {
         module: "",
         protected: false
     },
+    QUERY_GET_PWD_BY_USERID: {
+        query: "select pwd from usr where userid = $userid",
+        module: "",
+        protected: false
+    },
     QUERY_AUTHENTICATED_BY_FACEBOOKID: {
         query: "select org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.lastname, us.email, us.status, ous.redirect, role.description roledesc from usr us inner join orguser ous on ous.userid = us.userid inner join org org on org.orgid = ous.orgid inner join corp corp on corp.corpid = ous.corpid inner join role role on role.roleid = ous.roleid where us.facebookid = $facebookid and ous.bydefault and ous.status <> 'ELIMINADO'limit 1",
         module: "",
