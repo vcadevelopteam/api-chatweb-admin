@@ -12,18 +12,20 @@ exports.updateInformation = async (req, res) => {
     setSessionParameters(parameters, req.user);
 
     try {
-        const resUser = await tf.executesimpletransaction("QUERY_GET_PWD_BY_USERID", parameters)
-
-        const user = resUser[0]
-
-        const ispasswordmatch = await bcryptjs.compare(parameters.oldpassword, user.pwd)
-
-        if (!ispasswordmatch)
-            return res.status(401).json({ code: errors.LOGIN_USER_INCORRECT })
-
-        const salt = await bcryptjs.genSalt(10);
-
-        parameters.password = await bcryptjs.hash(parameters.newpassword, salt);
+        if (parameters.newpassword) {
+            const resUser = await tf.executesimpletransaction("QUERY_GET_PWD_BY_USERID", parameters)
+    
+            const user = resUser[0]
+    
+            const ispasswordmatch = await bcryptjs.compare(parameters.oldpassword, user.pwd)
+    
+            if (!ispasswordmatch)
+                return res.status(401).json({ code: errors.LOGIN_USER_INCORRECT })
+    
+            const salt = await bcryptjs.genSalt(10);
+    
+            parameters.password = await bcryptjs.hash(parameters.newpassword, salt);
+        }
 
         const result = await tf.executesimpletransaction("UFN_USER_UPDATE", parameters)
 
