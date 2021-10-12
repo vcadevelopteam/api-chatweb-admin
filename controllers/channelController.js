@@ -511,7 +511,7 @@ exports.insertChannel = async (request, result) => {
     try {
         var { method, parameters = {}, service = {} } = request.body;
 
-        setSessionParameters(parameters, request.user);        
+        setSessionParameters(parameters, request.user);
 
         parameters.appintegrationid = null;
         parameters.botconfigurationid = null;

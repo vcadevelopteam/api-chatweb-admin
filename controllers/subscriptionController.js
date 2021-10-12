@@ -594,3 +594,52 @@ exports.validateUsername = async (request, result) => {
         });
     }
 }
+
+exports.validateUserId = async (request, result) => {
+    try {
+        if (typeof whitelist !== 'undefined' && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(400).json({
+                    msg: 'Unauthorized',
+                    success: false
+                });
+            }
+        }
+
+        var { method, parameters = {} } = request.body;
+
+        setSessionParameters(parameters, request.user);
+
+        parameters.password = await bcryptjs.hash(parameters.password, await bcryptjs.genSalt(10));
+        parameters.userid = request.user.userid;
+
+        const transactionSelectUser = await triggerfunctions.executesimpletransaction(method, parameters);
+
+        if (transactionSelectUser instanceof Array) {
+            if (transactionSelectUser.length > 0) {
+                return result.json({
+                    isvalid: true,
+                    success: true
+                });
+            }
+            else {
+                return result.json({
+                    isvalid: false,
+                    success: true
+                });
+            }
+        }
+        else {
+            return result.status(400).json({
+                msg: transactionSelectUser.code,
+                success: false
+            });
+        }
+    }
+    catch (exception) {
+        return result.status(500).json({
+            msg: exception.message,
+            success: false
+        });
+    }
+}

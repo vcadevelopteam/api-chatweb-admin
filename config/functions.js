@@ -935,4 +935,9 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_USER_VALIDATE: {
+        query: "SELECT * FROM ufn_user_validate($userid, $password)",
+        module: "",
+        protected: "INSERT"
+    },
 }
