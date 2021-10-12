@@ -1,7 +1,6 @@
 require('dotenv').config();
 const bcryptjs = require("bcryptjs");
-
-const axios = require('axios')
+const { setSessionParameters } = require('../config/helpers');
 const { errors, getErrorCode } = require('../config/helpers');
 
 exports.updateInformation = async (req, res) => {
