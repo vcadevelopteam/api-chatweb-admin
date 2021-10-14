@@ -30,8 +30,6 @@ exports.updateInformation = async (req, res) => {
 
         const result = await executesimpletransaction("UFN_USER_UPDATE", parameters)
 
-
-        
         if (result instanceof Array) {
             const newusertoken = {
                 ...req.user,
