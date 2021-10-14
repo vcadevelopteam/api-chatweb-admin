@@ -851,6 +851,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DATA_DASHBOARD_GERENCIAL_ENCUESTA_SEL: {
+        query: "SELECT * FROM ufn_data_dashboard_gerencial_encuesta_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$closedby ,$userid,$offset )",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_DASHBOARD_GERENCIAL_CONVERSATION_SEL: {
         query: "SELECT * FROM ufn_dashboard_gerencial_conversation_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company ,$userid,$offset )",
         module: "",
@@ -863,6 +868,11 @@ module.exports = {
     },
     UFN_DASHBOARD_GERENCIAL_ETIQUETAS_SEL : {
         query: "SELECT * FROM ufn_dashboard_gerencial_etiquetas_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$limit ,$userid,$offset )",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DATA_DASHBOARD_GERENCIAL_ETIQUETAS_SEL : {
+        query: "SELECT * FROM ufn_data_dashboard_gerencial_etiquetas_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$limit ,$userid,$offset )",
         module: "",
         protected: "SELECT"
     },
