@@ -621,7 +621,7 @@ exports.insertChannel = async (request, result) => {
                             parameters.communicationchannelowner = requestWebChatWebhook.data.id;
                             parameters.communicationchannelsite = requestWebChatCreate.data.id;
                             parameters.integrationid = requestWebChatCreate.data.id;
-                            parameters.servicecredentials = '';
+                            parameters.servicecredentials = JSON.stringify(service);
                             parameters.type = 'CHAZ';
 
                             const transactionCreateWebChat = await triggerfunctions.executesimpletransaction(method, parameters);
