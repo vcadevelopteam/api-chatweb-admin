@@ -13,9 +13,8 @@ exports.updateInformation = async (req, res) => {
     setSessionParameters(parameters, req.user);
 
     try {
-        if (parameters.newpassword) {
+        if (parameters.password) {
             const resUser = await executesimpletransaction("QUERY_GET_PWD_BY_USERID", parameters)
-
             const user = resUser[0]
 
             const ispasswordmatch = await bcryptjs.compare(parameters.oldpassword, user.pwd)
@@ -25,7 +24,7 @@ exports.updateInformation = async (req, res) => {
 
             const salt = await bcryptjs.genSalt(10);
 
-            parameters.password = await bcryptjs.hash(parameters.newpassword, salt);
+            parameters.password = await bcryptjs.hash(parameters.password, salt);
         }
 
         const result = await executesimpletransaction("UFN_USER_UPDATE", parameters)
