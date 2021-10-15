@@ -142,7 +142,7 @@ exports.createSubscription = async (request, result) => {
                                         channelParameters.communicationchannelowner = requestWebChatWebhook.data.id;
                                         channelParameters.communicationchannelsite = requestWebChatCreate.data.id;
                                         channelParameters.integrationid = requestWebChatCreate.data.id;
-                                        channelParameters.servicecredentials = '';
+                                        channelParameters.servicecredentials = JSON.stringify(channelService);
                                         channelParameters.type = 'CHAZ';
 
                                         channelMethodArray.push(channelMethod);
