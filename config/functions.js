@@ -519,6 +519,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_INTEGRATIONMANAGER_LST: {
+        query: "SELECT * FROM ufn_integrationmanager_lst($corpid,$orgid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CONVERSATION_REASSIGNTICKET_MASSIVE: {
         query: "SELECT * FROM ufn_conversation_reassignticket_massive($conversationid, $newuserid, $username, $comment)",
         module: "", //tickets
