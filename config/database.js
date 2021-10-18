@@ -6,12 +6,13 @@ const Sequelize = require('sequelize');
 
 const DBNAME = process.env.DBNAME
 const DBUSER = process.env.DBUSER
+const DBPORT = process.env.DBPORT
 const DBPASSWORD = process.env.DBPASSWORD
 const DBHOST = process.env.DBHOST
 
 module.exports = new Sequelize(DBNAME, DBUSER, DBPASSWORD, {
     host: DBHOST,
-    port: 30503,
+    port: DBPORT || 30503,
     dialect: 'postgres',
     logging: false,
     dialectOptions: {
