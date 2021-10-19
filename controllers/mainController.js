@@ -16,8 +16,8 @@ exports.GetCollection = async (req, res) => {
 
 exports.GetCollectionDomainValues = async (req, res) => {
     const { parameters = {}, method } = req.body;
-    setSessionParameters(parameters, req.user);
-    console.log(method, parameters)
+    parameters.orgid = 1;
+    parameters.corpid = 1;
     const result = await executesimpletransaction("UFN_DOMAIN_LST_VALORES", parameters);
 
     if (result instanceof Array)
