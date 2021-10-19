@@ -751,7 +751,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CREATEZYXMEACCOUNT_INS: {
-        query: "SELECT * FROM ufn_createzyxmeaccount_ins($firstname, $lastname, $username, $password, $email, $doctype, $docnumber, $phone, $facebookid, $googleid, $sales, $customerservice, $marketing, $rolecompany, $companysize, $organizationname)",
+        query: "SELECT * FROM ufn_createzyxmeaccount_ins($firstname, $lastname, $username, $password, $email, $doctype, $docnumber, $phone, $facebookid, $googleid,$join_reason, $rolecompany, $companysize, $organizationname)",
         module: "",
         protected: "INSERT"
     },
