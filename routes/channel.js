@@ -26,4 +26,9 @@ router.post("/insertchannel",
     channelController.insertChannel
 )
 
+router.post("/updatechannel",
+    auth,
+    channelController.updateChannel
+)
+
 module.exports = router;
