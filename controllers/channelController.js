@@ -517,7 +517,7 @@ exports.insertChannel = async (request, result) => {
         parameters.botconfigurationid = null;
         parameters.botenabled = null;
         parameters.channelparameters = null;
-        parameters.coloricon = null;
+        parameters.coloricon = parameters.coloricon || null;
         parameters.communicationchannelcontact = '';
         parameters.communicationchanneltoken = null;
         parameters.corpid = request.user.corpid;

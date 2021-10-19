@@ -41,7 +41,7 @@ exports.createSubscription = async (request, result) => {
                     channelParameters.botconfigurationid = null;
                     channelParameters.botenabled = null;
                     channelParameters.channelparameters = null;
-                    channelParameters.coloricon = null;
+                    channelParameters.coloricon = channelParameters.coloricon || null;
                     channelParameters.communicationchannelcontact = '';
                     channelParameters.communicationchanneltoken = null;
                     channelParameters.country = null;
