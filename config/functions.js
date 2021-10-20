@@ -149,6 +149,11 @@ module.exports = {
         module: "/extras/person",
         protected: "SELECT"
     },
+    UFN_PERSONREFERRER_SEL: {
+        query: "SELECT * FROM ufn_personreferrer_sel($personid)",
+        module: "/extras/person",
+        protected: "SELECT"
+    },
     UFN_PERSONADDINFO_SEL: {
         query: "SELECT * FROM ufn_personaddinfo_sel($personid)",
         module: "/extras/person",
