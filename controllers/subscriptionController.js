@@ -173,6 +173,7 @@ exports.createSubscription = async (request, result) => {
 
                         case 'FACEBOOK':
                         case 'INSTAGRAM':
+                        case 'INSTAMESSENGER':
                         case 'MESSENGER':
                             const requestGetLongToken = await axios({
                                 data: {
@@ -203,6 +204,12 @@ exports.createSubscription = async (request, result) => {
                                         serviceType = 'INSTAGRAM';
                                         break;
 
+                                    case 'INSTAMESSENGER':
+                                        channelLinkService = 'INSTAGRAMADD';
+                                        channelType = 'INDM';
+                                        serviceType = 'INSTAGRAM';
+                                        break;
+
                                     case 'MESSENGER':
                                         channelLinkService = 'MESSENGERADD';
                                         channelType = 'FBDM';
@@ -210,7 +217,7 @@ exports.createSubscription = async (request, result) => {
                                         break;
                                 }
 
-                                if (channel.type === 'INSTAGRAM') {
+                                if (channel.type === 'INSTAGRAM' || channel.type === 'INSTAMESSENGER') {
                                     const requestGetBusiness = await axios({
                                         data: {
                                             accessToken: channelService.accesstoken,

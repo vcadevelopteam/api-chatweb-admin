@@ -75,10 +75,13 @@ exports.deleteChannel = async (request, result) => {
 
             case 'FBDM':
             case 'FBWA':
+            case 'INDM':
             case 'INST':
                 if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
                     var serviceCredentials = JSON.parse(parameters.servicecredentials);
                     var linkType = '';
+
+                    var DeleteIntegration = true;
 
                     if (parameters.type === 'FBDM') {
                         linkType = 'MESSENGERREMOVE';
@@ -88,38 +91,61 @@ exports.deleteChannel = async (request, result) => {
                         linkType = 'WALLREMOVE';
                     }
 
-                    if (parameters.type === 'INST') {
+                    if (parameters.type === 'INST' || parameters.type === 'INDM') {
                         linkType = 'INSTAGRAMREMOVE';
                     }
 
-                    const requestDeleteFacebook = await axios({
-                        data: {
-                            accessToken: serviceCredentials.accessToken,
-                            linkType: linkType,
-                            siteId: (parameters.type !== 'INST' ? serviceCredentials.siteId : parameters.communicationchannelowner)
-                        },
-                        method: 'post',
-                        url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
-                    });
-
-                    if (requestDeleteFacebook.data.success) {
-                        const transactionDeleteFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                        if (transactionDeleteFacebook instanceof Array) {
-                            return result.json({
-                                success: true
-                            });
+                    if (linkType === 'INSTAGRAMREMOVE') {
+                        var validateMethod = 'UFN_COMMUNICATIONCHANNELSITE_SEL';
+                        var validateParameters = {
+                            communicationchannelsite: serviceCredentials.twitterPageId,
+                            type: (parameters.type === 'INST' ? 'INDM' : 'INST')
+                        };
+    
+                        const transactionValidateInstagram = await triggerfunctions.executesimpletransaction(validateMethod, validateParameters);
+    
+                        if (transactionValidateInstagram instanceof Array) {
+                            if (transactionValidateInstagram.length > 0) {
+                                DeleteIntegration = false;
+                            }
                         }
                         else {
                             return result.status(400).json({
-                                msg: transactionDeleteFacebook.code,
+                                msg: transactionValidateInstagram.code,
                                 success: false
                             });
                         }
                     }
+
+                    if (DeleteIntegration) {
+                        const requestDeleteFacebook = await axios({
+                            data: {
+                                accessToken: serviceCredentials.accessToken,
+                                linkType: linkType,
+                                siteId: ((parameters.type !== 'INST' || parameters.type !== 'INDM') ? serviceCredentials.siteId : parameters.communicationchannelowner)
+                            },
+                            method: 'post',
+                            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
+                        });
+
+                        if (!requestDeleteFacebook.data.success) {
+                            return result.status(400).json({
+                                msg: requestDeleteFacebook.data.operationMessage,
+                                success: false
+                            });
+                        }
+                    }
+
+                    const transactionDeleteFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
+    
+                    if (transactionDeleteFacebook instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
                     else {
                         return result.status(400).json({
-                            msg: requestDeleteFacebook.data.operationMessage,
+                            msg: transactionDeleteFacebook.code,
                             success: false
                         });
                     }
@@ -675,6 +701,7 @@ exports.insertChannel = async (request, result) => {
 
             case 'FACEBOOK':
             case 'INSTAGRAM':
+            case 'INSTAMESSENGER':
             case 'MESSENGER':
                 const requestGetLongToken = await axios({
                     data: {
@@ -705,6 +732,12 @@ exports.insertChannel = async (request, result) => {
                             serviceType = 'INSTAGRAM';
                             break;
 
+                        case 'INSTAMESSENGER':
+                            channelLinkService = 'INSTAGRAMADD';
+                            channelType = 'INDM';
+                            serviceType = 'INSTAGRAM';
+                            break;
+
                         case 'MESSENGER':
                             channelLinkService = 'MESSENGERADD';
                             channelType = 'FBDM';
@@ -712,7 +745,7 @@ exports.insertChannel = async (request, result) => {
                             break;
                     }
 
-                    if (request.body.type === 'INSTAGRAM') {
+                    if (request.body.type === 'INSTAGRAM' || request.body.type === 'INSTAMESSENGER') {
                         const requestGetBusiness = await axios({
                             data: {
                                 accessToken: service.accesstoken,
