@@ -2,164 +2,170 @@ const columnsFunction = require('./columnsFunction');
 
 exports.generatefilter = (filters, origin, daterange, offset) => {
     let where = "";
-    for (const [key, f] of Object.entries(filters)) {
-        if (f) {
-            const column = columnsFunction[origin][key].column;
-            const type = columnsFunction[origin][key].type;
-            if (f.value !== '') {
-                switch (type) {
-                    case "number":
-                        switch (f.operator) {
-                            case 'greater':
-                                where += ` and ${column} > ${f.value}`;
-                                break;
-                            case 'greaterequal': case 'greaterorequals':
-                                where += ` and ${column} >= ${f.value}`;
-                                break;
-                            case 'smaller': case 'less':
-                                where += ` and ${column} < ${f.value}`;
-                                break;
-                            case 'smallerequal': case 'lessorequals':
-                                where += ` and ${column} <= ${f.value}`;
-                                break;
-                            case 'isnull':
-                                where += ` and ${column} is null`;
-                                break;
-                            case 'isnotnull':
-                                where += ` and ${column} is not null`;
-                                break;
-                            case 'noequals': case 'notequals':
-                                where += ` and ${column} <> ${f.value}`;
-                                break;
-                            case 'equals':
-                                where += ` and ${column} = ${f.value}`;
-                                break;
-                            default:
-                                break;
+    if (Object.values(filters)[0]?.operator === 'or') {
+        where += `and (${Object.entries(filters).map(([key, f]) => `(${columnsFunction[origin][key].column})::text ilike '%${f.value}%'`
+        ).join(' or ')})`
+    }
+    else {
+        for (const [key, f] of Object.entries(filters)) {
+            if (f) {
+                const column = columnsFunction[origin][key].column;
+                const type = columnsFunction[origin][key].type;
+                if (f.value !== '') {
+                    switch (type) {
+                        case "number":
+                            switch (f.operator) {
+                                case 'greater':
+                                    where += ` and ${column} > ${f.value}`;
+                                    break;
+                                case 'greaterequal': case 'greaterorequals':
+                                    where += ` and ${column} >= ${f.value}`;
+                                    break;
+                                case 'smaller': case 'less':
+                                    where += ` and ${column} < ${f.value}`;
+                                    break;
+                                case 'smallerequal': case 'lessorequals':
+                                    where += ` and ${column} <= ${f.value}`;
+                                    break;
+                                case 'isnull':
+                                    where += ` and ${column} is null`;
+                                    break;
+                                case 'isnotnull':
+                                    where += ` and ${column} is not null`;
+                                    break;
+                                case 'noequals': case 'notequals':
+                                    where += ` and ${column} <> ${f.value}`;
+                                    break;
+                                case 'equals':
+                                    where += ` and ${column} = ${f.value}`;
+                                    break;
+                                default:
+                                    break;
+                                }
+                            break;
+                        case "date":
+                            switch (f.operator) {
+                                case 'after':
+                                    where += column.includes("p_offset") ? ` and (${column})::DATE > '${f.value}'::DATE` : ` and ${column} > '${f.value}'::DATE - ${offset} * INTERVAL '1HOUR'`;
+                                    break;
+                                case 'afterequals':
+                                    where += column.includes("p_offset") ? ` and (${column})::DATE >= '${f.value}'::DATE` : ` and ${column} >= '${f.value}'::DATE - ${offset} * INTERVAL '1HOUR'`;
+                                    break;
+                                case 'before':
+                                    where += column.includes("p_offset") ? ` and (${column})::DATE < '${f.value}'::DATE` : ` and ${column} < '${f.value}'::DATE - ${offset} * INTERVAL '1HOUR'`;
+                                    break;
+                                case 'beforeequals':
+                                    where += column.includes("p_offset") ? ` and (${column})::DATE <= '${f.value}'::DATE` : ` and ${column} <= '${f.value}'::DATE - ${offset} * INTERVAL '1HOUR'`;
+                                    break;
+                                case 'isnull':
+                                    where += ` and ${column} is null`;
+                                    break;
+                                case 'isnotnull':
+                                    where += ` and ${column} is not null`;
+                                    break;
+                                case 'notequals':
+                                    where += column.includes("p_offset") ? ` and (${column})::DATE <> '${f.value}'::DATE` : ` and ${column}::DATE <> ('${f.value}'::DATE - ${offset} * INTERVAL '1HOUR')::DATE`;
+                                    break;
+                                case 'equals':
+                                    where += column.includes("p_offset") ? ` and (${column})::DATE = '${f.value}'::DATE` : ` and ${column}::DATE = ('${f.value}'::DATE - ${offset} * INTERVAL '1HOUR')::DATE`;
+                                    break;
+                                default:
+                                    break;
                             }
-                        break;
-                    case "date":
-                        switch (f.operator) {
-                            case 'after':
-                                where += column.includes("p_offset") ? ` and (${column})::DATE > '${f.value}'::DATE` : ` and ${column} > '${f.value}'::DATE - ${offset} * INTERVAL '1HOUR'`;
-                                break;
-                            case 'afterequals':
-                                where += column.includes("p_offset") ? ` and (${column})::DATE >= '${f.value}'::DATE` : ` and ${column} >= '${f.value}'::DATE - ${offset} * INTERVAL '1HOUR'`;
-                                break;
-                            case 'before':
-                                where += column.includes("p_offset") ? ` and (${column})::DATE < '${f.value}'::DATE` : ` and ${column} < '${f.value}'::DATE - ${offset} * INTERVAL '1HOUR'`;
-                                break;
-                            case 'beforeequals':
-                                where += column.includes("p_offset") ? ` and (${column})::DATE <= '${f.value}'::DATE` : ` and ${column} <= '${f.value}'::DATE - ${offset} * INTERVAL '1HOUR'`;
-                                break;
-                            case 'isnull':
-                                where += ` and ${column} is null`;
-                                break;
-                            case 'isnotnull':
-                                where += ` and ${column} is not null`;
-                                break;
-                            case 'notequals':
-                                where += column.includes("p_offset") ? ` and (${column})::DATE <> '${f.value}'::DATE` : ` and ${column}::DATE <> ('${f.value}'::DATE - ${offset} * INTERVAL '1HOUR')::DATE`;
-                                break;
-                            case 'equals':
-                                where += column.includes("p_offset") ? ` and (${column})::DATE = '${f.value}'::DATE` : ` and ${column}::DATE = ('${f.value}'::DATE - ${offset} * INTERVAL '1HOUR')::DATE`;
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-                    case "datetime":
-                        switch (f.operator) {
-                            case 'after':
-                                where += column.includes("p_offset") ? ` and (${column})::TIMESTAMP > ('${f.value}')::TIMESTAMP` : ` and ${column} > ('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR'`;
-                                break;
-                            case 'afterequals':
-                                where += column.includes("p_offset") ? ` and (${column})::TIMESTAMP >= ('${f.value}')::TIMESTAMP` : ` and ${column} >= ('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR'`;
-                                break;
-                            case 'before':
-                                where += column.includes("p_offset") ? ` and (${column})::TIMESTAMP < ('${f.value}')::TIMESTAMP` : ` and ${column} < ('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR'`;
-                                break;
-                            case 'beforeequals':
-                                where += column.includes("p_offset") ? ` and (${column})::TIMESTAMP <= ('${f.value}')::TIMESTAMP` : ` and ${column} <= ('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR'`;
-                                break;
-                            case 'isnull':
-                                where += ` and ${column} is null`;
-                                break;
-                            case 'isnotnull':
-                                where += ` and ${column} is not null`;
-                                break;
-                            case 'notequals':
-                                where += column.includes("p_offset") ? ` and DATE_TRUNC('MINUTE', (${column})::TIMESTAMP) <> ('${f.value}')::TIMESTAMP` : ` and DATE_TRUNC('MINUTE', (${column})::TIMESTAMP) <> (('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR')::TIMESTAMP`;
-                                break;
-                            case 'equals':
-                                where += column.includes("p_offset") ? ` and DATE_TRUNC('MINUTE', (${column})::TIMESTAMP) = ('${f.value}')::TIMESTAMP` : ` and DATE_TRUNC('MINUTE', (${column})::TIMESTAMP) = (('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR')::TIMESTAMP`;
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-                    case "boolean":
-                        switch (f.operator) {
-                            case 'istrue':
-                                where += ` and ${column} = true`;
-                                break;
-                            case 'isfalse':
-                                where += ` and ${column} = false`;
-                                break;
-                            case 'isnull':
-                                where += ` and ${column} is null`;
-                                break;
-                            case 'isnotnull':
-                                where += ` and ${column} is not null`;
-                                break;
-                            case 'all':
-                            default:
-                                break;
-                        }
-                        break;
-                    case "string":
-                    default:
-                        switch (f.operator) {
-                            case 'equals':
-                                where += ` and ${column} = '${f.value}'`;
-                                break;
-                            case 'noequals': case 'notequals':
-                                where += ` and ${column} <> '${f.value}'`;
-                                break;
-                            case 'empty': case 'isempty':
-                                where += ` and (${column} = '' or ${column} is null)`;
-                                break;
-                            case 'noempty': case 'isnotempty':
-                                where += ` and ${column} <> '' and ${column} is not null`;
-                                break;
-                            case 'isnull':
-                                where += ` and ${column} is null`;
-                                break;
-                            case 'isnotnull':
-                                where += ` and ${column} is not null`;
-                                break;
-                            case 'nocontains': case 'notcontains':
-                                where += ` and ${column} not ilike '%${f.value}%'`;
-                                break;
-                            case 'contains':
-                                where += ` and ${column} ilike '%${f.value}%'`;
-                                break;
-                            case 'greater':
-                                where += ` and ${column} > ${f.value}`;
-                                break;
-                            case 'greaterequal': case 'greaterorequals':
-                                where += ` and ${column} >= ${f.value}`;
-                                break;
-                            case 'smaller': case 'less':
-                                where += ` and ${column} < ${f.value}`;
-                                break;
-                            case 'smallerequal': case 'lessorequals':
-                                where += ` and ${column} <= ${f.value}`;
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
+                            break;
+                        case "datetime":
+                            switch (f.operator) {
+                                case 'after':
+                                    where += column.includes("p_offset") ? ` and (${column})::TIMESTAMP > ('${f.value}')::TIMESTAMP` : ` and ${column} > ('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR'`;
+                                    break;
+                                case 'afterequals':
+                                    where += column.includes("p_offset") ? ` and (${column})::TIMESTAMP >= ('${f.value}')::TIMESTAMP` : ` and ${column} >= ('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR'`;
+                                    break;
+                                case 'before':
+                                    where += column.includes("p_offset") ? ` and (${column})::TIMESTAMP < ('${f.value}')::TIMESTAMP` : ` and ${column} < ('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR'`;
+                                    break;
+                                case 'beforeequals':
+                                    where += column.includes("p_offset") ? ` and (${column})::TIMESTAMP <= ('${f.value}')::TIMESTAMP` : ` and ${column} <= ('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR'`;
+                                    break;
+                                case 'isnull':
+                                    where += ` and ${column} is null`;
+                                    break;
+                                case 'isnotnull':
+                                    where += ` and ${column} is not null`;
+                                    break;
+                                case 'notequals':
+                                    where += column.includes("p_offset") ? ` and DATE_TRUNC('MINUTE', (${column})::TIMESTAMP) <> ('${f.value}')::TIMESTAMP` : ` and DATE_TRUNC('MINUTE', (${column})::TIMESTAMP) <> (('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR')::TIMESTAMP`;
+                                    break;
+                                case 'equals':
+                                    where += column.includes("p_offset") ? ` and DATE_TRUNC('MINUTE', (${column})::TIMESTAMP) = ('${f.value}')::TIMESTAMP` : ` and DATE_TRUNC('MINUTE', (${column})::TIMESTAMP) = (('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR')::TIMESTAMP`;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
+                        case "boolean":
+                            switch (f.operator) {
+                                case 'istrue':
+                                    where += ` and ${column} = true`;
+                                    break;
+                                case 'isfalse':
+                                    where += ` and ${column} = false`;
+                                    break;
+                                case 'isnull':
+                                    where += ` and ${column} is null`;
+                                    break;
+                                case 'isnotnull':
+                                    where += ` and ${column} is not null`;
+                                    break;
+                                case 'all':
+                                default:
+                                    break;
+                            }
+                            break;
+                        case "string":
+                        default:
+                            switch (f.operator) {
+                                case 'equals':
+                                    where += ` and ${column} = '${f.value}'`;
+                                    break;
+                                case 'noequals': case 'notequals':
+                                    where += ` and ${column} <> '${f.value}'`;
+                                    break;
+                                case 'empty': case 'isempty':
+                                    where += ` and (${column} = '' or ${column} is null)`;
+                                    break;
+                                case 'noempty': case 'isnotempty':
+                                    where += ` and ${column} <> '' and ${column} is not null`;
+                                    break;
+                                case 'isnull':
+                                    where += ` and ${column} is null`;
+                                    break;
+                                case 'isnotnull':
+                                    where += ` and ${column} is not null`;
+                                    break;
+                                case 'nocontains': case 'notcontains':
+                                    where += ` and ${column} not ilike '%${f.value}%'`;
+                                    break;
+                                case 'contains':
+                                    where += ` and ${column} ilike '%${f.value}%'`;
+                                    break;
+                                case 'greater':
+                                    where += ` and ${column} > ${f.value}`;
+                                    break;
+                                case 'greaterequal': case 'greaterorequals':
+                                    where += ` and ${column} >= ${f.value}`;
+                                    break;
+                                case 'smaller': case 'less':
+                                    where += ` and ${column} < ${f.value}`;
+                                    break;
+                                case 'smallerequal': case 'lessorequals':
+                                    where += ` and ${column} <= ${f.value}`;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
+                    }
                 }
             }
         }
