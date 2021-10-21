@@ -144,6 +144,11 @@ module.exports = {
         module: "/extras/person",
         protected: "SELECT"
     },
+    UFN_PERSONCOMMUNICATIONCHANNEL_INS: {
+        query: "SELECT * FROM ufn_personcommunicationchannel_ins($corpid, $orgid, $personid, $personcommunicationchannel, $personcommunicationchannelowner, $displayname, $type, $username, $operation, $status)",
+        module: "/extras/person",
+        protected: "INSERT"
+    },
     UFN_PERSONCOMMUNICATIONCHANNEL_SEL: {
         query: "SELECT * FROM ufn_personcommunicationchannel_sel($corpid, $orgid, $personid,  $personcommunicationchannel, $username, $all)",
         module: "/extras/person",
