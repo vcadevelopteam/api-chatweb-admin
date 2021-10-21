@@ -450,13 +450,13 @@ module.exports = {
             column: "pe.corpid"
         },
         corpdesc: {
-            column: "corp.description as corpdesc"
+            column: "corp.description"
         },
         orgid: {
             column: "pe.orgid"
         },
         orgdesc: {
-            column: "org.description as orgdesc"
+            column: "org.description"
         },
         personid: {
             column: "pe.personid"
@@ -471,7 +471,7 @@ module.exports = {
             column: "pe.status"
         },
         type: {
-            column: "pe.type,"
+            column: "pe.type"
         },
         name: {
             column: "pe.name"
@@ -495,16 +495,16 @@ module.exports = {
             column: "pe.alternativeemail"
         },
         firstcontact: {
-            column: "to_char(pe.firstcontact + p_offset * interval '1hour', ''DD/MM/YYYY HH24:MI:SS'') firstcontact"
+            column: "to_char(pe.firstcontact + p_offset * interval '1hour', 'DD/MM/YYYY HH24:MI:SS')"
         },
         lastcontact: {
-            column: "to_char(pe.lastcontact + p_offset * interval '1hour', ''DD/MM/YYYY HH24:MI:SS'') lastcontact"
+            column: "to_char(pe.lastcontact + p_offset * interval '1hour', 'DD/MM/YYYY HH24:MI:SS')"
         },
         lastcommunicationchannelid: {
             column: "pe.lastcommunicationchannelid"
         },
         communicationchannelname: {
-            column: "cc.description communicationchannelname"
+            column: "cc.description"
         },
         documenttype: {
             column: "pe.documenttype"
@@ -537,7 +537,7 @@ module.exports = {
             column: "pe.occupation"
         },
         educationlevel: {
-            column: "pe.educationlevel,"
+            column: "pe.educationlevel"
         },
         country: {
             column: "pe.country"
@@ -551,6 +551,9 @@ module.exports = {
         district: {
             column: "pe.district"
         },
+        address: {
+            column: "pe.address"
+        },
         latitude: {
             column: "pe.latitude"
         },
@@ -561,13 +564,13 @@ module.exports = {
             column: "pe.referringpersonid"
         },
         referringpersonname: {
-            column: "pe2.name referringpersonname"
+            column: "pe2.name"
         },
         displayname: {
             column: "pcc.displayname"
         },
         locked: {
-            column: "pcc.locke"
+            column: "pcc.locked"
         },
     },
     blacklist: {
