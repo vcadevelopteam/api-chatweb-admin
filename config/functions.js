@@ -1046,4 +1046,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_LEAD_PERSON_INS: {
+        query: "select * from ufn_lead_person_ins($corpid, $orgid, $id, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $username, $index, $firstname, $lastname, $email, $phone, $personid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
