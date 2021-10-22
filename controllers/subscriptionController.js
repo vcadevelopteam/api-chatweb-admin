@@ -6,6 +6,8 @@ const bridgeEndpoint = process.env.BRIDGE;
 const brokerEndpoint = process.env.CHATBROKER;
 const facebookEndpoint = process.env.FACEBOOKAPI;
 const hookEndpoint = process.env.HOOK;
+const smoochEndpoint = process.env.SMOOCHAPI;
+const smoochVersion = process.env.SMOOCHVERSION;
 const telegramEndpoint = process.env.TELEGRAMAPI;
 const webChatApplication = process.env.CHATAPPLICATION;
 const webChatPlatformEndpoint = process.env.WEBCHATPLATFORM;
@@ -432,6 +434,44 @@ exports.createSubscription = async (request, result) => {
                             else {
                                 return result.status(400).json({
                                     msg: requestCreateWhatsApp.data.operationMessage,
+                                    success: false
+                                });
+                            }
+                            break;
+
+                        case 'SMOOCHANDROID':
+                        case 'SMOOCHIOS':
+                            const requestCreateSmooch = await axios({
+                                data: {
+                                    linkType: channel.type === 'SMOOCHANDROID' ? 'ANDROIDADD' : 'IOSADD',
+                                    name: channelParameters.description
+                                },
+                                method: 'post',
+                                url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
+                            });
+
+                            if (requestCreateSmooch.data.success) {
+                                var serviceCredentials = {
+                                    apiKeyId: requestCreateSmooch.data.appApiKey,
+                                    apiKeySecret: requestCreateSmooch.data.appSecret,
+                                    appId: requestCreateSmooch.data.applicationId,
+                                    endpoint: smoochEndpoint,
+                                    version: smoochVersion
+                                };
+
+                                channelParameters.communicationchannelowner = requestCreateSmooch.data.applicationId;
+                                channelParameters.communicationchannelsite = requestCreateSmooch.data.applicationId;
+                                channelParameters.integrationid = requestCreateSmooch.data.integrationId;
+                                channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
+                                channelParameters.type = (request.body.type === 'SMOOCHANDROID' ? 'ANDR' : 'APPL');
+
+                                channelMethodArray.push(channelMethod);
+                                channelParametersArray.push(channelParameters);
+                                channelServiceArray.push(channelService);
+                            }
+                            else {
+                                return result.status(400).json({
+                                    msg: requestCreateSmooch.data.operationMessage,
                                     success: false
                                 });
                             }

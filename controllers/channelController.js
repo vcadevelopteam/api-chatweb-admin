@@ -7,6 +7,8 @@ const bridgeEndpoint = process.env.BRIDGE;
 const brokerEndpoint = process.env.CHATBROKER;
 const facebookEndpoint = process.env.FACEBOOKAPI;
 const hookEndpoint = process.env.HOOK;
+const smoochEndpoint = process.env.SMOOCHAPI;
+const smoochVersion = process.env.SMOOCHVERSION;
 const telegramEndpoint = process.env.TELEGRAMAPI;
 const webChatApplication = process.env.CHATAPPLICATION;
 const webChatPlatformEndpoint = process.env.WEBCHATPLATFORM;
@@ -372,6 +374,57 @@ exports.deleteChannel = async (request, result) => {
                     else {
                         return result.status(400).json({
                             msg: transactionDeleteWhatsApp.code,
+                            success: false
+                        });
+                    }
+                }
+
+            case 'ANDR':
+            case 'APPL':
+                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+                    const requestDeleteSmooch = await axios({
+                        data: {
+                            linkType: parameters.type === 'ANDR' ? 'ANDROIDREMOVE' : 'IOSREMOVE',
+                            applicationId: parameters.communicationchannelsite,
+                            integrationId: parameters.integrationid
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
+                    });
+
+                    if (requestDeleteSmooch.data.success) {
+                        const transactionDeleteSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                        if (transactionDeleteSmooch instanceof Array) {
+                            return result.json({
+                                success: true
+                            });
+                        }
+                        else {
+                            return result.status(400).json({
+                                msg: transactionDeleteSmooch.code,
+                                success: false
+                            });
+                        }
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: requestDeleteSmooch.data.operationMessage,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    const transactionDeleteSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionDeleteSmooch instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionDeleteSmooch.code,
                             success: false
                         });
                     }
@@ -887,7 +940,6 @@ exports.insertChannel = async (request, result) => {
                 if (transactionServiceTwitter instanceof Array) {
                     const requestCreateTwitter = await axios({
                         data: {
-                            
                             accessSecret: service.accesssecret,
                             accessToken: service.accesstoken,
                             consumerKey: service.consumerkey,
@@ -1009,6 +1061,55 @@ exports.insertChannel = async (request, result) => {
                 else {
                     return result.status(400).json({
                         msg: requestCreateWhatsApp.data.operationMessage,
+                        success: false
+                    });
+                }
+
+            case 'SMOOCHANDROID':
+            case 'SMOOCHIOS':
+                const requestCreateSmooch = await axios({
+                    data: {
+                        linkType: request.body.type === 'SMOOCHANDROID' ? 'ANDROIDADD' : 'IOSADD',
+                        name: parameters.description
+                    },
+                    method: 'post',
+                    url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
+                });
+
+                if (requestCreateSmooch.data.success) {
+                    var serviceCredentials = {
+                        apiKeyId: requestCreateSmooch.data.appApiKey,
+                        apiKeySecret: requestCreateSmooch.data.appSecret,
+                        appId: requestCreateSmooch.data.applicationId,
+                        endpoint: smoochEndpoint,
+                        version: smoochVersion
+                    };
+
+                    parameters.communicationchannelowner = requestCreateSmooch.data.applicationId;
+                    parameters.communicationchannelsite = requestCreateSmooch.data.applicationId;
+                    parameters.integrationid = requestCreateSmooch.data.integrationId;
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.type = (request.body.type === 'SMOOCHANDROID' ? 'ANDR' : 'APPL');
+
+                    const transactionCreateSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateSmooch instanceof Array) {
+                        return result.json({
+                            applicationId: requestCreateSmooch.data.applicationId,
+                            integrationId: requestCreateSmooch.data.integrationId,
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionCreateSmooch.code,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    return result.status(400).json({
+                        msg: requestCreateSmooch.data.operationMessage,
                         success: false
                     });
                 }
