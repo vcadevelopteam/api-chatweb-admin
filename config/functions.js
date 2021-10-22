@@ -1051,4 +1051,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_LEADBYPERSONCOMMUNICATIONCHANNEL_SEL: {
+        query: "select * from ufn_leadbypersoncommunicationchannel_sel($corpid, $orgid, $personid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
