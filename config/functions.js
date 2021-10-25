@@ -1056,4 +1056,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_COLUMN_SEL: {
+        query: "select * from ufn_column_sel($corpid, $orgid, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEAD_SEL: {
+        query: "select * from ufn_lead_sel($corpid, $orgid, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
 }
