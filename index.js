@@ -34,6 +34,7 @@ app.use('/api/load', require('./routes/load'));
 app.use('/api/subscription', require('./routes/subscription'));
 app.use('/api/reportdesigner', require('./routes/reportdesigner'));
 app.use('/api/user', require('./routes/user'));
+app.use('/api/check', require('./routes/check'));
 
 // Definir la pagina principal
 app.get('/', (req, res) => {
