@@ -26,4 +26,8 @@ router.post("/export",
     mainController.export
 )
 
+router.post("/getToken",
+    mainController.export
+)
+
 module.exports = router;

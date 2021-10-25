@@ -88,3 +88,18 @@ exports.multiCollection = async (req, res) => {
         });
     }
 }
+
+exports.getToken = async (req, res) => {
+    const { data } = req.body;
+    //userid
+    const result = await executesimpletransaction("UFN_GET_TOKEN_LOGGED_MOVIL", data);
+
+    if (result instanceof Array) {
+        if (result.length > 0) {
+            return res.json({ error: false, success: true, token: result[0].token });
+        }
+        return res.json({ error: false, success: true, token: '' });
+    }
+    else
+        return res.status(result.rescode).json(result);
+}

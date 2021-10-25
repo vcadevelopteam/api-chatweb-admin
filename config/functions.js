@@ -890,4 +890,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_GET_TOKEN_LOGGED_MOVIL  : {
+        query: "SELECT * FROM ufn_get_token_logged_movil($userid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
