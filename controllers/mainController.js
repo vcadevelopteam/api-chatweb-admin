@@ -105,7 +105,7 @@ exports.getToken = async (req, res) => {
     const { data } = req.body;
     //userid
     const result = await executesimpletransaction("UFN_GET_TOKEN_LOGGED_MOVIL", data);
-
+    console.log(result)
     if (result instanceof Array) {
         if (result.length > 0) {
             return res.json({ error: false, success: true, token: result[0].token });

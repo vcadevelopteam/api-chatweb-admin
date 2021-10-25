@@ -30,7 +30,7 @@ router.post("/export",
 )+
 
 router.post("/getToken",
-    mainController.export
+    mainController.getToken
 )
 
 module.exports = router;
