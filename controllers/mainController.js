@@ -14,6 +14,18 @@ exports.GetCollection = async (req, res) => {
         return res.status(result.rescode).json(result);
 }
 
+exports.GetCollectionDomainValues = async (req, res) => {
+    const { parameters = {}, method } = req.body;
+    parameters.orgid = 1;
+    parameters.corpid = 1;
+    const result = await executesimpletransaction("UFN_DOMAIN_LST_VALORES", parameters);
+
+    if (result instanceof Array)
+        return res.json({ error: false, success: true, data: result });
+    else
+        return res.status(result.rescode).json(result);
+}
+
 exports.executeTransaction = async (req, res) => {
     const { header, detail: detailtmp } = req.body;
 

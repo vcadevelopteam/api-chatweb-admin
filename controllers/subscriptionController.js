@@ -2,147 +2,320 @@ const triggerfunctions = require('../config/triggerfunctions');
 const bcryptjs = require("bcryptjs");
 const axios = require('axios');
 
-const URLABANDON = process.env.WEBCHATSCRIPT;
-const URLBROKER = process.env.CHATBROKER;
-const URLBRIDGE = process.env.BRIDGE;
-const URLHOOK = process.env.HOOK;
-const FACEBOOKAPI = process.env.FACEBOOKAPI;
-const WHATSAPPAPI = process.env.WHATSAPPAPI;
-const TELEGRAMAPI = process.env.TELEGRAMAPI;
+const bridgeEndpoint = process.env.BRIDGE;
+const brokerEndpoint = process.env.CHATBROKER;
+const facebookEndpoint = process.env.FACEBOOKAPI;
+const hookEndpoint = process.env.HOOK;
+const smoochEndpoint = process.env.SMOOCHAPI;
+const smoochVersion = process.env.SMOOCHVERSION;
+const telegramEndpoint = process.env.TELEGRAMAPI;
+const webChatApplication = process.env.CHATAPPLICATION;
+const webChatPlatformEndpoint = process.env.WEBCHATPLATFORM;
+const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
+const whatsAppEndpoint = process.env.WHATSAPPAPI;
+const whitelist = process.env.WHITELIST;
 
-const chatwebApplicationId = process.env.CHATAPPLICATION;
-
-let integrationApiKey = '';
-let integrationKeyId = '';
-let integrationId = '';
-var businessId = '';
-let webhookId = '';
-
-let chatwebBody = {};
-
-var corpId = 0;
-var orgId = 0;
-
-exports.CreateSubscription = async (req, res) => {
+exports.createSubscription = async (request, result) => {
     try {
-        var { method, parameters = {}, channellist = [] } = req.body;
+        if (typeof whitelist !== 'undefined' && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(400).json({
+                    msg: 'Unauthorized',
+                    success: false
+                });
+            }
+        }
+
+        var { channellist = [], method, parameters = {} } = request.body;
+        
+        var channelMethodArray = [];
+        var channelParametersArray = [];
+        var channelServiceArray = [];
 
         if (channellist instanceof Array) {
-            channellist.forEach(async (element) => {
-                if (element) {
-                    switch (element.type) {
-                        case 'FACEBOOK':
-                        case 'INSTAGRAM':
-                        case 'MESSENGER':
-                            if (element.type === 'INSTAGRAM') {
-                                const responseGetBusiness = await axios({
-                                    url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
-                                    method: 'post',
-                                    data: {
-                                        linkType: 'GETBUSINESS',
-                                        accessToken: element.service.accesstoken,
-                                        siteId: element.service.siteid
+            for (const channel of channellist) {
+                if (typeof channel !== 'undefined' && channel) {
+                    var channelMethod = channel.method ? channel.method : 'UFN_COMMUNICATIONCHANNEL_INS';
+                    var channelParameters = channel.parameters;
+                    var channelService = channel.service;
+
+                    channelParameters.appintegrationid = null;
+                    channelParameters.botconfigurationid = null;
+                    channelParameters.botenabled = null;
+                    channelParameters.channelparameters = null;
+                    channelParameters.coloricon = channelParameters.coloricon || null;
+                    channelParameters.communicationchannelcontact = '';
+                    channelParameters.communicationchanneltoken = null;
+                    channelParameters.country = null;
+                    channelParameters.customicon = null;
+                    channelParameters.motive = 'Insert from API';
+                    channelParameters.operation = 'INSERT';
+                    channelParameters.resolvelithium = null;
+                    channelParameters.schedule = null;
+                    channelParameters.status = 'ACTIVO';
+                    channelParameters.updintegration = null;
+
+                    switch (channel.type) {
+                        case 'CHATWEB':
+                            const webChatData = {
+                                applicationId: webChatApplication,
+                                name: channelParameters.description,
+                                status: 'ACTIVO',
+                                type: 'CHAZ',
+                                metadata: {
+                                    color: {
+                                        chatBackgroundColor: channelService.color ? channelService.color.background : '',
+                                        chatBorderColor: channelService.color ? channelService.color.border : '',
+                                        chatHeaderColor: channelService.color ? channelService.color.header : '',
+                                        messageBotColor: channelService.color ? channelService.color.bot : '',
+                                        messageClientColor: channelService.color ? channelService.color.client : ''
+                                    },
+                                    extra: {
+                                        abandonendpoint: `${webChatScriptEndpoint}smooch`,
+                                        cssbody: '',
+                                        enableabandon: channelService.extra ? channelService.extra.abandonevent : false,
+                                        enableformhistory: channelService.extra ? channelService.extra.formhistory : false,
+                                        enableidlemessage: channelService.bubble ? channelService.bubble.active : false,
+                                        headermessage: channelService.extra ? channelService.extra.botnametext : '',
+                                        inputalwaysactive: channelService.extra ? channelService.extra.persistentinput : false,
+                                        jsscript: channelService.extra ? channelService.extra.customjs : '',
+                                        playalertsound: channelService.extra ? channelService.extra.alertsound : false,
+                                        sendmetadata: channelService.extra ? channelService.extra.enablemetadata : false,
+                                        showchatrestart: channelService.extra ? channelService.extra.reloadchat : false,
+                                        showmessageheader: channelService.extra ? channelService.extra.botnameenabled : false,
+                                        showplatformlogo: channelService.extra ? channelService.extra.poweredby : false,
+                                        uploadaudio: channelService.extra ? channelService.extra.uploadaudio : false,
+                                        uploadfile: channelService.extra ? channelService.extra.uploadfile : false,
+                                        uploadimage: channelService.extra ? channelService.extra.uploadimage : false,
+                                        uploadlocation: channelService.extra ? channelService.extra.uploadlocation : false,
+                                        uploadvideo: channelService.extra ? channelService.extra.uploadvideo : false
+                                    },
+                                    form: channelService.form ? channelService.form : null,
+                                    icons: {
+                                        chatBotImage: channelService.interface ? channelService.interface.iconbot : '',
+                                        chatHeaderImage: channelService.interface ? channelService.interface.iconheader : '',
+                                        chatIdleImage: channelService.bubble ? channelService.bubble.iconbubble : '',
+                                        chatOpenImage: channelService.interface ? channelService.interface.iconbutton : ''
+                                    },
+                                    personalization: {
+                                        headerMessage: channelService.extra ? channelService.extra.botnametext : '',
+                                        headerSubTitle: channelService.interface ? channelService.interface.chatsubtitle : '',
+                                        headerTitle: channelService.interface ? channelService.interface.chattitle : '',
+                                        idleMessage: channelService.bubble ? channelService.bubble.messagebubble : ''
                                     }
-                                });
-                    
-                                if (responseGetBusiness.data.success) {
-                                    businessId = responseGetBusiness.data.businessId;
-                                }
-                                else {
-                                    return res.status(500).json({
-                                        msg: 'No Instagram business found',
-                                        success: false
-                                    });
                                 }
                             }
 
-                            const responseGetLongToken = await axios({
-                                url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
+                            const requestWebChatCreate = await axios({
+                                data: webChatData,
                                 method: 'post',
-                                data: {
-                                    linkType: 'GENERATELONGTOKEN',
-                                    accessToken: element.service.accesstoken,
-                                    appId: element.service.appid
-                                }
+                                url: `${brokerEndpoint}integrations/save`
                             });
-
-                            if (responseGetLongToken.data.success) {
-                                element.service.accesstoken = responseGetLongToken.data.longToken;
-
-                                var channelService = null;
-
-                                switch (element.type) {
-                                    case 'FACEBOOK':
-                                        channelService = 'WALLADD';
-                                        break;
             
-                                    case 'INSTAGRAM':
-                                        channelService = 'INSTAGRAMADD';
-                                        break;
-            
-                                    case 'MESSENGER':
-                                        channelService = 'MESSENGERADD';
-                                        break;
-                                }
-
-                                const responseChannelAdd = await axios({
-                                    url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
-                                    method: 'post',
+                            if (typeof requestWebChatCreate.data.id !== 'undefined' && requestWebChatCreate.data.id) {
+                                const requestWebChatWebhook = await axios({
                                     data: {
-                                        accessToken: element.service.accesstoken,
-                                        siteId: element.service.siteid,
-                                        linkType: channelService
-                                    }
+                                        description: channelParameters.description,
+                                        integration: requestWebChatCreate.data.id,
+                                        name: channelParameters.description,
+                                        status: 'ACTIVO',
+                                        webUrl: `${hookEndpoint}chatweb/webhookasync`
+                                    },
+                                    method: 'post',
+                                    url: `${brokerEndpoint}webhooks/save`
                                 });
+            
+                                if (typeof requestWebChatWebhook.data.id !== 'undefined' && requestWebChatWebhook.data.id) {
+                                    const requestWebChatPlugin = await axios({
+                                        data: {
+                                            integration: requestWebChatCreate.data.id,
+                                            name: channelParameters.description,
+                                            status: 'ACTIVO'
+                                        },
+                                        method: 'post',
+                                        url: `${brokerEndpoint}plugins/save`
+                                    });
+            
+                                    if (typeof requestWebChatPlugin.data.id !== 'undefined' && requestWebChatPlugin.data.id) {
+                                        channelParameters.apikey = requestWebChatPlugin.data.apiKey;
+                                        channelParameters.appintegrationid = webChatApplication;
+                                        channelParameters.channelparameters = JSON.stringify(webChatData);
+                                        channelParameters.communicationchannelcontact = requestWebChatPlugin.data.id;
+                                        channelParameters.communicationchannelowner = requestWebChatWebhook.data.id;
+                                        channelParameters.communicationchannelsite = requestWebChatCreate.data.id;
+                                        channelParameters.integrationid = requestWebChatCreate.data.id;
+                                        channelParameters.servicecredentials = JSON.stringify(channelService);
+                                        channelParameters.type = 'CHAZ';
 
-                                if (!responseChannelAdd.data.success) {
-                                    return res.status(500).json({
-                                        msg: responseChannelAdd.data.operationMessage,
+                                        channelMethodArray.push(channelMethod);
+                                        channelParametersArray.push(channelParameters);
+                                        channelServiceArray.push(channelService);
+                                    }
+                                    else {
+                                        return result.status(400).json({
+                                            msg: 'Could not create plugin',
+                                            success: false
+                                        });
+                                    }
+                                }
+                                else {
+                                    return result.status(400).json({
+                                        msg: 'Could not create webhook',
                                         success: false
                                     });
                                 }
                             }
                             else {
-                                return res.status(500).json({
-                                    msg: responseGetLongToken.data.operationMessage,
+                                return result.status(400).json({
+                                    msg: 'Could not create integration',
                                     success: false
                                 });
                             }
                             break;
 
-                        case 'WHATSAPP':
-                            const responseWhatsAppAdd = await axios({
-                                url: `${URLBRIDGE}processlaraigo/whatsapp/managewhatsapplink`,
-                                method: 'post',
+                        case 'FACEBOOK':
+                        case 'INSTAGRAM':
+                        case 'INSTAMESSENGER':
+                        case 'MESSENGER':
+                            const requestGetLongToken = await axios({
                                 data: {
-                                    accessToken: element.service.accesstoken,
-                                    siteId: element.service.siteid,
-                                    linkType: 'WHATSAPPADD'
-                                }
+                                    accessToken: channelService.accesstoken,
+                                    appId: channelService.appid,
+                                    linkType: 'GENERATELONGTOKEN'
+                                },
+                                method: 'post',
+                                url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
                             });
 
-                            if (!responseWhatsAppAdd.data.success) {
-                                return res.status(500).json({
-                                    msg: responseWhatsAppAdd.data.operationMessage,
+                            if (requestGetLongToken.data.success) {
+                                var businessId = null;
+                                var channelLinkService = null;
+                                var channelType = null;
+                                var serviceType = null;
+
+                                switch (channel.type) {
+                                    case 'FACEBOOK':
+                                        channelLinkService = 'WALLADD';
+                                        channelType = 'FBWA';
+                                        serviceType = 'WALL';
+                                        break;
+
+                                    case 'INSTAGRAM':
+                                        channelLinkService = 'INSTAGRAMADD';
+                                        channelType = 'INST';
+                                        serviceType = 'INSTAGRAM';
+                                        break;
+
+                                    case 'INSTAMESSENGER':
+                                        channelLinkService = 'INSTAGRAMADD';
+                                        channelType = 'INDM';
+                                        serviceType = 'INSTAGRAM';
+                                        break;
+
+                                    case 'MESSENGER':
+                                        channelLinkService = 'MESSENGERADD';
+                                        channelType = 'FBDM';
+                                        serviceType = 'MESSENGER';
+                                        break;
+                                }
+
+                                if (channel.type === 'INSTAGRAM' || channel.type === 'INSTAMESSENGER') {
+                                    const requestGetBusiness = await axios({
+                                        data: {
+                                            accessToken: channelService.accesstoken,
+                                            linkType: 'GETBUSINESS',
+                                            siteId: channelService.siteid
+                                        },
+                                        method: 'post',
+                                        url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
+                                    });
+                                    
+                                    if (requestGetBusiness.data.success) {
+                                        businessId = requestGetBusiness.data.businessId;
+                                    }
+                                    else {
+                                        return result.status(400).json({
+                                            msg: 'No Instagram account',
+                                            success: false
+                                        });
+                                    }
+                                }
+
+                                const requestCreateFacebook = await axios({
+                                    url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
+                                    method: 'post',
+                                    data: {
+                                        linkType: channelLinkService,
+                                        accessToken: requestGetLongToken.data.longToken,
+                                        siteId: channelService.siteid
+                                    }
+                                });
+
+                                if (requestCreateFacebook.data.success) {
+                                    var serviceCredentials = {
+                                        accessToken: requestGetLongToken.data.longToken,
+                                        endpoint: facebookEndpoint,
+                                        serviceType: serviceType,
+                                        siteId: channelService.siteid
+                                    };
+
+                                    if (typeof businessId !== 'undefined' && businessId) {
+                                        channelParameters.communicationchannelowner = channelService.siteid;
+                                        channelParameters.communicationchannelsite = businessId;
+
+                                        serviceCredentials.siteId = businessId;
+                                    }
+
+                                    channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
+                                    channelParameters.type = channelType;
+
+                                    channelMethodArray.push(channelMethod);
+                                    channelParametersArray.push(channelParameters);
+                                    channelServiceArray.push(channelService);
+                                }
+                                else {
+                                    return result.status(400).json({
+                                        msg: requestCreateFacebook.data.operationMessage,
+                                        success: false
+                                    });
+                                }
+                            }
+                            else {
+                                return result.status(400).json({
+                                    msg: requestGetLongToken.data.operationMessage,
                                     success: false
                                 });
                             }
                             break;
 
                         case 'TELEGRAM':
-                            const responseTelegramAdd = await axios({
-                                url: `${URLBRIDGE}processlaraigo/telegram/managetelegramlink`,
-                                method: 'post',
+                            const requestCreateTelegram = await axios({
                                 data: {
-                                    accessToken: element.service.accesstoken,
-                                    siteId: element.service.siteid,
-                                    linkType: 'TELEGRAMADD'
-                                }
+                                    accessToken: channelService.accesstoken,
+                                    linkType: 'TELEGRAMADD',
+                                    siteId: channelService.siteid
+                                },
+                                method: 'post',
+                                url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`
                             });
+                        
+                            if (requestCreateTelegram.data.success) {
+                                var serviceCredentials = {
+                                    bot: channelService.siteid,
+                                    endpoint: telegramEndpoint,
+                                    token: channelService.accesstoken
+                                };
+                            
+                                channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
+                                channelParameters.type = 'TELE';
 
-                            if (responseTelegramAdd.data.success) {
-                                return res.status(500).json({
-                                    msg: responseTelegramAdd.data.operationMessage,
+                                channelMethodArray.push(channelMethod);
+                                channelParametersArray.push(channelParameters);
+                                channelServiceArray.push(channelService);
+                            }
+                            else {
+                                return result.status(400).json({
+                                    msg: requestCreateTelegram.data.operationMessage,
                                     success: false
                                 });
                             }
@@ -150,555 +323,414 @@ exports.CreateSubscription = async (req, res) => {
 
                         case 'TWITTER':
                         case 'TWITTERDM':
-                            var servicecredentialstwitter = {
-                                accessSecret: element.service.accesssecret,
-                                accessToken: element.service.accesstoken,
-                                consumerKey: element.service.consumerkey,
-                                consumerSecret: element.service.consumersecret,
-                                twitterPageId: element.service.siteid,
-                                devEnvironment: element.service.devenvironment
-                            };
-
-                            var twitterMethod = 'UFN_COMMUNICATIONCHANNELHOOK_INS';
-                            var twitterData = {
-                                servicedata: JSON.stringify(servicecredentialstwitter),
-                                site: element.service.siteid,
+                            var serviceMethod = 'UFN_COMMUNICATIONCHANNELHOOK_INS';
+                            var serviceParameters = {
                                 operation: 'INSERT',
+                                servicedata: JSON.stringify({
+                                    accessSecret: channelService.accesssecret,
+                                    accessToken: channelService.accesstoken,
+                                    consumerKey: channelService.consumerkey,
+                                    consumerSecret: channelService.consumersecret,
+                                    devEnvironment: channelService.devenvironment,
+                                    twitterPageId: channelService.siteid
+                                }),
+                                site: channelService.siteid,
                                 type: 'TWTR'
                             };
 
-                            const responseTwitterService = await triggerfunctions.executesimpletransaction(twitterMethod, twitterData);
+                            const transactionServiceTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
 
-                            if (responseTwitterService instanceof Array) {
-                                const responseTwitterAdd = await axios({
-                                    url: `${URLBRIDGE}processlaraigo/twitter/managetwitterlink`,
-                                    method: 'post',
+                            if (transactionServiceTwitter instanceof Array) {
+                                const requestCreateTwitter = await axios({
                                     data: {
-                                        developmentEnvironment: servicecredentialstwitter.devEnvironment,
-                                        consumerSecret: servicecredentialstwitter.consumerSecret,
-                                        accessSecret: servicecredentialstwitter.accessSecret,
-                                        accessToken: servicecredentialstwitter.accessToken,
-                                        consumerKey: servicecredentialstwitter.consumerKey,
-                                        siteId: element.service.siteid,
-                                        linkType: 'TWITTERADD'
-                                    }
-                                });
-
-                                if (!responseTwitterAdd.data.success) {
-                                    twitterData.operation = 'DELETE';
-
-                                    await triggerfunctions.executesimpletransaction(twitterMethod, twitterData);
-
-                                    return res.status(500).json({
-                                        msg: responseTwitterAdd.data.operationMessage,
-                                        success: false
-                                    });
-                                }
-                            }
-                            else {
-                                return res.status(500).json({
-                                    success: false,
-                                    msg: responseTwitterService.msg
-                                });
-                            }
-                            break;
-
-                        case 'CHATWEB':
-                            chatwebBody = {
-                                applicationId: chatwebApplicationId,
-                                name: element.parameters.description,
-                                status: 'ACTIVO',
-                                type: 'WEBM',
-                                metadata: {
-                                    color: {
-                                        chatBackgroundColor: '',
-                                        chatBorderColor: '',
-                                        chatHeaderColor: '',
-                                        messageBotColor: '',
-                                        messageClientColor: ''
+                                        
+                                        accessSecret: channelService.accesssecret,
+                                        accessToken: channelService.accesstoken,
+                                        consumerKey: channelService.consumerkey,
+                                        consumerSecret: channelService.consumersecret,
+                                        developmentEnvironment: channelService.devenvironment,
+                                        linkType: 'TWITTERADD',
+                                        siteId: channelService.siteid
                                     },
-                                    extra: {
-                                        abandonendpoint: `${URLABANDON}smooch`,
-                                        cssbody: '',
-                                        enableabandon: false,
-                                        enableformhistory: false,
-                                        enableidlemessage: false,
-                                        headermessage: '',
-                                        inputalwaysactive: false,
-                                        jsscript: '',
-                                        playalertsound: false,
-                                        sendmetadata: false,
-                                        showchatrestart: false,
-                                        showmessageheader: false,
-                                        showplatformlogo: false,
-                                        uploadaudio: false,
-                                        uploadfile: false,
-                                        uploadimage: false,
-                                        uploadlocation: false,
-                                        uploadvideo: false
-                                    },
-                                    form: null,
-                                    icons: {
-                                        chatBotImage: '',
-                                        chatHeaderImage: '',
-                                        chatIdleImage: '',
-                                        chatOpenImage: ''
-                                    },
-                                    personalization: {
-                                        headerMessage: '',
-                                        headerSubTitle: '',
-                                        headerTitle: '',
-                                        idleMessage: ''
-                                    }
-                                }
-                            };
-
-                            if (typeof element.service !== 'undefined' && element.service) {
-                                if (typeof element.service.interface !== 'undefined' && element.service.interface) {
-                                    if (typeof element.service.interface.chattitle !== 'undefined' && element.service.interface.chattitle) {
-                                        chatwebBody.metadata.personalization.headerTitle = element.service.interface.chattitle;
-                                    }
-                                    if (typeof element.service.interface.chatsubtitle !== 'undefined' && element.service.interface.chatsubtitle) {
-                                        chatwebBody.metadata.personalization.headerSubTitle = element.service.interface.chatsubtitle;
-                                    }
-                                    if (typeof element.service.interface.iconbutton !== 'undefined' && element.service.interface.iconbutton) {
-                                        chatwebBody.metadata.icons.chatOpenImage = element.service.interface.iconbutton;
-                                    }
-                                    if (typeof element.service.interface.iconheader !== 'undefined' && element.service.interface.iconheader) {
-                                        chatwebBody.metadata.icons.chatHeaderImage = element.service.interface.iconheader;
-                                    }
-                                    if (typeof element.service.interface.iconbot !== 'undefined' && element.service.interface.iconbot) {
-                                        chatwebBody.metadata.icons.chatBotImage = element.service.interface.iconbot;
-                                    }
-                                }
-                                if (typeof element.service.color !== 'undefined' && element.service.color) {
-                                    if (typeof element.service.color.header !== 'undefined' && element.service.color.header) {
-                                        chatwebBody.metadata.color.chatHeaderColor = element.service.color.header;
-                                    }
-                                    if (typeof element.service.color.background !== 'undefined' && element.service.color.background) {
-                                        chatwebBody.metadata.color.chatBackgroundColor = element.service.color.background;
-                                    }
-                                    if (typeof element.service.color.border !== 'undefined' && element.service.color.border) {
-                                        chatwebBody.metadata.color.chatBorderColor = element.service.color.border;
-                                    }
-                                    if (typeof element.service.color.client !== 'undefined' && element.service.color.client) {
-                                        chatwebBody.metadata.color.messageClientColor = element.service.color.client;
-                                    }
-                                    if (typeof element.service.color.bot !== 'undefined' && element.service.color.bot) {
-                                        chatwebBody.metadata.color.messageBotColor = element.service.color.bot;
-                                    }
-                                }
-                                if (typeof element.service.form !== 'undefined' && element.service.form) {
-                                    chatwebBody.metadata.form = element.service.form;
-                                }
-                                if (typeof element.service.bubble !== 'undefined' && element.service.bubble) {
-                                    if (typeof element.service.bubble.active !== 'undefined') {
-                                        chatwebBody.metadata.extra.enableidlemessage = element.service.bubble.active;
-                                    }
-                                    if (typeof element.service.bubble.iconbubble !== 'undefined' && element.service.bubble.iconbubble) {
-                                        chatwebBody.metadata.icons.chatIdleImage = element.service.bubble.iconbubble;
-                                    }
-                                    if (typeof element.service.bubble.messagebubble !== 'undefined' && element.service.bubble.messagebubble) {
-                                        chatwebBody.metadata.personalization.idleMessage = element.service.bubble.messagebubble;
-                                    }
-                                }
-                                if (typeof element.service.extra !== 'undefined' && element.service.extra) {
-                                    if (typeof element.service.extra.uploadfile !== 'undefined') {
-                                        chatwebBody.metadata.extra.uploadfile = element.service.extra.uploadfile;
-                                    }
-                                    if (typeof element.service.extra.uploadvideo !== 'undefined') {
-                                        chatwebBody.metadata.extra.uploadvideo = element.service.extra.uploadvideo;
-                                    }
-                                    if (typeof element.service.extra.uploadlocation !== 'undefined') {
-                                        chatwebBody.metadata.extra.uploadlocation = element.service.extra.uploadlocation;
-                                    }
-                                    if (typeof element.service.extra.uploadimage !== 'undefined') {
-                                        chatwebBody.metadata.extra.uploadimage = element.service.extra.uploadimage;
-                                    }
-                                    if (typeof element.service.extra.uploadaudio !== 'undefined') {
-                                        chatwebBody.metadata.extra.uploadaudio = element.service.extra.uploadaudio;
-                                    }
-                                    if (typeof element.service.extra.reloadchat !== 'undefined') {
-                                        chatwebBody.metadata.extra.showchatrestart = element.service.extra.reloadchat;
-                                    }
-                                    if (typeof element.service.extra.poweredby !== 'undefined') {
-                                        chatwebBody.metadata.extra.showplatformlogo = element.service.extra.poweredby;
-                                    }
-                                    if (typeof element.service.extra.persistentinput !== 'undefined') {
-                                        chatwebBody.metadata.extra.inputalwaysactive = element.service.extra.persistentinput;
-                                    }
-                                    if (typeof element.service.extra.abandonevent !== 'undefined') {
-                                        chatwebBody.metadata.extra.enableabandon = element.service.extra.abandonevent;
-                                    }
-                                    if (typeof element.service.extra.alertsound !== 'undefined') {
-                                        chatwebBody.metadata.extra.playalertsound = element.service.extra.alertsound;
-                                    }
-                                    if (typeof element.service.extra.formhistory !== 'undefined') {
-                                        chatwebBody.metadata.extra.enableformhistory = element.service.extra.formhistory;
-                                    }
-                                    if (typeof element.service.extra.enablemetadata !== 'undefined') {
-                                        chatwebBody.metadata.extra.sendmetadata = element.service.extra.enablemetadata;
-                                    }
-                                    if (typeof element.service.extra.customcss !== 'undefined' && element.service.extra.customcss) {
-                                        chatwebBody.metadata.extra.cssbody = element.service.extra.customcss;
-                                    }
-                                    if (typeof element.service.extra.customjs !== 'undefined' && element.service.extra.customjs) {
-                                        chatwebBody.metadata.extra.jsscript = element.service.extra.customjs;
-                                    }
-                                    if (typeof element.service.extra.botnameenabled !== 'undefined') {
-                                        chatwebBody.metadata.extra.showmessageheader = element.service.extra.botnameenabled;
-                                    }
-                                    if (typeof element.service.extra.botnametext !== 'undefined' && element.service.extra.botnametext) {
-                                        chatwebBody.metadata.extra.headermessage = element.service.extra.botnametext;
-                                    }
-                                }
-                            }
-
-                            const responseChatWebSave = await axios({
-                                url: `${URLBROKER}integrations/save`,
-                                method: 'post',
-                                data: chatwebBody
-                            });
-            
-                            integrationId = responseChatWebSave.data.id;
-
-                            if (typeof integrationId !== 'undefined' && integrationId) {
-                                const responseChatWebhookSave = await axios({
-                                    url: `${URLBROKER}webhooks/save`,
                                     method: 'post',
-                                    data: {
-                                        name: element.parameters.description,
-                                        description: element.parameters.description,
-                                        integration: integrationId,
-                                        webUrl: `${URLHOOK}chatweb/webhookasync`,
-                                        status: 'ACTIVO'
-                                    }
+                                    url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`
                                 });
 
-                                webhookId = responseChatWebhookSave.data.id;
-
-                                const responseChatPluginSave = await axios({
-                                    url: `${URLBROKER}plugins/save`,
-                                    method: 'post',
-                                    data: {
-                                        name: element.parameters.description,
-                                        integration: integrationId,
-                                        status: 'ACTIVO'
-                                    }
-                                });
-            
-                                integrationApiKey = responseChatPluginSave.data.apiKey;
-                                integrationKeyId = responseChatPluginSave.data.id;
-
-                                if (typeof integrationApiKey !== 'undefined' && integrationApiKey) {
-                                }
-                                else {
-                                    return res.status(500).json({
-                                        success: false,
-                                        msg: 'Error while creating plugin'
-                                    });
-                                }
-                            }
-                            else {
-                                return res.status(500).json({
-                                    msg: 'Error while creating integration',
-                                    success: false
-                                });
-                            }
-                            break;
-                    }
-                }
-            });
-        }
-
-        const salt = await bcryptjs.genSalt(10);
-        parameters.password = await bcryptjs.hash(parameters.password, salt);
-
-        const responseSubscriptionCreate = await triggerfunctions.executesimpletransaction(method, parameters);
-
-        if (responseSubscriptionCreate instanceof Array) {
-            if (responseSubscriptionCreate.length > 0) {
-                corpId = responseSubscriptionCreate[0].corpid;
-                orgId = responseSubscriptionCreate[0].orgid;
-
-                if (channellist instanceof Array) {
-                    channellist.forEach(async (element) => {
-                        if (element) {
-                            var channelMethod = 'UFN_COMMUNICATIONCHANNEL_INS';
-                            var channelParameters = element.parameters;
-
-                            channelParameters.username = parameters.username;
-                            channelParameters.corpid = corpId;
-                            channelParameters.orgid = orgId;
-
-                            channelParameters.motive = 'Insert channel';
-                            channelParameters.operation = 'INSERT';
-                            channelParameters.status = 'ACTIVO';
-                    
-                            channelParameters.communicationchannelcontact = '';
-                    
-                            channelParameters.communicationchanneltoken = null;
-                            channelParameters.botconfigurationid = null;
-                            channelParameters.channelparameters = null;
-                            channelParameters.appintegrationid = null;
-                            channelParameters.resolvelithium = null;
-                            channelParameters.updintegration = null;
-                            channelParameters.botenabled = null;
-                            channelParameters.customicon = null;
-                            channelParameters.coloricon = null;
-                            channelParameters.schedule = null;
-                            channelParameters.country = null;
-
-                            switch (element.type) {
-                                case 'FACEBOOK':
-                                case 'INSTAGRAM':
-                                case 'MESSENGER':
-                                    var channelType = null;
-                                    var serviceType = null;
-
-                                    switch (element.type) {
-                                        case 'FACEBOOK':
-                                            channelType = 'FBWA';
-                                            serviceType = 'WALL';
-                                            break;
-                
-                                        case 'INSTAGRAM':
-                                            channelType = 'INST';
-                                            serviceType = 'INSTAGRAM';
-                                            break;
-                
-                                        case 'MESSENGER':
-                                            channelType = 'FBDM';
-                                            serviceType = 'MESSENGER';
-                                            break;
-                                    }
-
-                                    var servicecredentials = {
-                                        accessToken: element.service.accesstoken,
-                                        endpoint: FACEBOOKAPI,
-                                        serviceType: serviceType,
-                                        siteId: element.service.siteid
-                                    };
-
-                                    if (businessId !== '') {
-                                        channelParameters.communicationchannelsite = businessId;
-                                        channelParameters.communicationchannelowner = element.service.siteid;
-            
-                                        servicecredentials.siteId = businessId;
-                                    }
-
-                                    channelParameters.servicecredentials = JSON.stringify(servicecredentials);
-                                    channelParameters.type = channelType;
-
-                                    const responseFacebookChannel = await triggerfunctions.executesimpletransaction(channelMethod, channelParameters);
-
-                                    if (responseFacebookChannel instanceof Array) {
-                                    }
-                                    else {
-                                        return res.status(500).json({
-                                            msg: responseFacebookChannel.msg,
-                                            success: false
-                                        });
-                                    }
-                                    break;
-        
-                                case 'WHATSAPP':
-                                    var whatsappservicecredentials = {
-                                        apiKey: element.service.accesstoken,
-                                        endpoint: WHATSAPPAPI,
-                                        number: element.service.siteid
-                                    };
-                
-                                    channelParameters.servicecredentials = JSON.stringify(whatsappservicecredentials);
-                                    channelParameters.type = 'WHAD';
-                
-                                    const responseWhatsAppChannel = await triggerfunctions.executesimpletransaction(channelMethod, channelParameters);
-                
-                                    if (responseWhatsAppChannel instanceof Array) {
-                                    }
-                                    else {
-                                        return res.status(500).json({
-                                            msg: responseWhatsAppChannel.msg,
-                                            success: false
-                                        });
-                                    }
-                                    break;
-        
-                                case 'TELEGRAM':
-                                    var telegramservicecredentials = {
-                                        bot: element.service.siteid,
-                                        endpoint: TELEGRAMAPI,
-                                        token: element.service.accesstoken
-                                    };
-                
-                                    channelParameters.servicecredentials = JSON.stringify(telegramservicecredentials);
-                                    channelParameters.type = 'TELE';
-                
-                                    const responseTelegramChannel = await triggerfunctions.executesimpletransaction(channelMethod, channelParameters);
-                
-                                    if (responseTelegramChannel instanceof Array) {
-                                    }
-                                    else {
-                                        return res.status(500).json({
-                                            msg: responseTelegramChannel.msg,
-                                            success: false
-                                        });
-                                    }
-                                    break;
-        
-                                case 'TWITTER':
-                                case 'TWITTERDM':
-                                    var servicecredentialstwitter = {
-                                        accessSecret: element.service.accesssecret,
-                                        accessToken: element.service.accesstoken,
-                                        consumerKey: element.service.consumerkey,
-                                        consumerSecret: element.service.consumersecret,
-                                        twitterPageId: element.service.siteid,
-                                        devEnvironment: element.service.devenvironment
-                                    };
-
-                                    if (element.type === 'TWITTER') {
+                                if (requestCreateTwitter.data.success) {
+                                    if (channel.type === 'TWITTER') {
                                         channelParameters.type = 'TWIT';
                                     }
                                     else {
                                         channelParameters.type = 'TWMS';
                                     }
 
-                                    channelParameters.servicecredentials = JSON.stringify(servicecredentialstwitter);
+                                    var serviceCredentials = {
+                                        accessSecret: channelService.accesssecret,
+                                        accessToken: channelService.accesstoken,
+                                        consumerKey: channelService.consumerkey,
+                                        consumerSecret: channelService.consumersecret,
+                                        devEnvironment: channelService.devenvironment,
+                                        twitterPageId: channelService.siteid
+                                    };
 
-                                    const responseTwitterChannel = await triggerfunctions.executesimpletransaction(channelMethod, channelParameters);
+                                    channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
 
-                                    if (responseTwitterChannel instanceof Array) {
-                                    }
-                                    else {
-                                        return res.status(500).json({
-                                            msg: responseTwitterChannel.msg,
+                                    channelMethodArray.push(channelMethod);
+                                    channelParametersArray.push(channelParameters);
+                                    channelServiceArray.push(channelService);
+                                }
+                                else {
+                                    serviceParameters.operation = 'DELETE';
+
+                                    const transactionServiceDeleteTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
+
+                                    if (transactionServiceDeleteTwitter instanceof Array) {
+                                        return result.status(400).json({
+                                            msg: requestCreateTwitter.data.operationMessage,
                                             success: false
                                         });
                                     }
-                                    break;
-        
-                                case 'CHATWEB':
-                                    channelParameters.communicationchannelcontact = integrationKeyId;
-                                    channelParameters.communicationchannelsite = integrationId;
-                                    channelParameters.communicationchannelowner = webhookId;
-
-                                    channelParameters.appintegrationid = chatwebApplicationId;
-                                    channelParameters.integrationid = integrationId;
-
-                                    channelParameters.apikey = integrationApiKey;
-
-                                    channelParameters.servicecredentials = '';
-                                    channelParameters.type = 'CHAZ';
-
-                                    channelParameters.channelparameters = JSON.stringify(chatwebBody);
-
-                                    const responseChatWebChannel = await triggerfunctions.executesimpletransaction(channelMethod, channelParameters);
-
-                                    if (responseChatWebChannel instanceof Array) {
-                                    }
                                     else {
-                                        return res.status(500).json({
-                                            msg: responseChatWebChannel.msg,
+                                        return result.status(400).json({
+                                            msg: transactionServiceDeleteTwitter.code,
                                             success: false
                                         });
                                     }
-                                    break;
+                                }
+                            }
+                            else {
+                                return result.status(400).json({
+                                    msg: transactionServiceTwitter.code,
+                                    success: false
+                                });
+                            }
+                            break;
+
+                        case 'WHATSAPP':
+                            const requestCreateWhatsApp = await axios({
+                                data: {
+                                    accessToken: channelService.accesstoken,
+                                    linkType: 'WHATSAPPADD',
+                                    siteId: channelService.siteid
+                                },
+                                method: 'post',
+                                url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`
+                            });
+                        
+                            if (requestCreateWhatsApp.data.success) {
+                                var serviceCredentials = {
+                                    apiKey: channelService.accesstoken,
+                                    endpoint: whatsAppEndpoint,
+                                    number: channelService.siteid
+                                };
+                            
+                                channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
+                                channelParameters.type = 'WHAD';
+
+                                channelMethodArray.push(channelMethod);
+                                channelParametersArray.push(channelParameters);
+                                channelServiceArray.push(channelService);
+                            }
+                            else {
+                                return result.status(400).json({
+                                    msg: requestCreateWhatsApp.data.operationMessage,
+                                    success: false
+                                });
+                            }
+                            break;
+
+                        case 'SMOOCHANDROID':
+                        case 'SMOOCHIOS':
+                            const requestCreateSmooch = await axios({
+                                data: {
+                                    linkType: channel.type === 'SMOOCHANDROID' ? 'ANDROIDADD' : 'IOSADD',
+                                    name: channelParameters.description
+                                },
+                                method: 'post',
+                                url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
+                            });
+
+                            if (requestCreateSmooch.data.success) {
+                                var serviceCredentials = {
+                                    apiKeyId: requestCreateSmooch.data.appApiKey,
+                                    apiKeySecret: requestCreateSmooch.data.appSecret,
+                                    appId: requestCreateSmooch.data.applicationId,
+                                    endpoint: smoochEndpoint,
+                                    version: smoochVersion
+                                };
+
+                                channelParameters.communicationchannelowner = requestCreateSmooch.data.applicationId;
+                                channelParameters.communicationchannelsite = requestCreateSmooch.data.applicationId;
+                                channelParameters.integrationid = requestCreateSmooch.data.integrationId;
+                                channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
+                                channelParameters.type = (request.body.type === 'SMOOCHANDROID' ? 'ANDR' : 'APPL');
+
+                                channelMethodArray.push(channelMethod);
+                                channelParametersArray.push(channelParameters);
+                                channelServiceArray.push(channelService);
+                            }
+                            else {
+                                return result.status(400).json({
+                                    msg: requestCreateSmooch.data.operationMessage,
+                                    success: false
+                                });
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+
+        parameters.password = await bcryptjs.hash(parameters.password, await bcryptjs.genSalt(10));
+
+        const transactionCreateSubscription = await triggerfunctions.executesimpletransaction(method, parameters);
+
+        if (transactionCreateSubscription instanceof Array) {
+            if (transactionCreateSubscription.length > 0) {
+                var channelTotal = '';
+                var corpId = transactionCreateSubscription[0].corpid;
+                var index = 0;
+                var orgId = transactionCreateSubscription[0].orgid;
+                var userId = transactionCreateSubscription[0].userid;
+
+                if (typeof channelMethodArray !== 'undefined' && channelMethodArray) {
+                    for (const channel of channelMethodArray) {
+                        channelParametersArray[index].corpid = corpId;
+                        channelParametersArray[index].orgid = orgId;
+                        channelParametersArray[index].username = parameters.username;
+
+                        const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(channelMethodArray[index], channelParametersArray[index]);
+
+                        if (transactionCreateGeneric instanceof Array) {
+                            if (channelTotal === '') {
+                                channelTotal = `${transactionCreateGeneric[0].ufn_communicationchannel_ins2}`;
+                            }
+                            else {
+                                channelTotal = `${channelTotal},${transactionCreateGeneric[0].ufn_communicationchannel_ins2}`;
+                            }
+
+                            try {
+                                if (channelParametersArray[index].type === 'CHAZ') {
+                                    if (typeof webChatPlatformEndpoint !== 'undefined' && webChatPlatformEndpoint) {
+                                        await axios({
+                                            data: channelParametersArray[index],
+                                            method: 'post',
+                                            url: `${webChatPlatformEndpoint}integration/addtodatabase`
+                                        });
+                                    }
+                                }
+                            }
+                            catch (exception) {
+                                console.log(JSON.stringify(exception));
                             }
                         }
-                    });
+                        else {
+                            return result.status(400).json({
+                                msg: transactionCreateGeneric.code,
+                                success: false
+                            });
+                        }
+
+                        index++;
+                    }
+                }
+
+                if (channelTotal !== '') {
+                    var updateMethod = 'UFN_ORGUSER_CHANNELS_UPDATE';
+                    var updateParameters = {
+                        channels: channelTotal,
+                        corpid: corpId,
+                        orgid: orgId,
+                        userid: userId
+                    }
+
+                    const transactionUpdateUser = await triggerfunctions.executesimpletransaction(updateMethod, updateParameters);
+
+                    if (!transactionUpdateUser instanceof Array) {
+                        return result.status(400).json({
+                            msg: transactionUpdateUser.code,
+                            success: false
+                        });
+                    }
                 }
             }
             else {
-                return res.status(500).json({
+                return result.status(400).json({
                     msg: 'Not found',
                     success: false
                 });
             }
         }
         else {
-            return res.status(500).json({
-                msg: responseSubscriptionCreate.msg,
+            return result.status(400).json({
+                msg: transactionCreateSubscription.code,
                 success: false
             });
         }
 
-        return res.json({
-            integrationid: integrationId,
+        return result.json({
             success: true
         });
     }
-    catch (error) {
-        res.status(400).json({
-            success: false,
-            msg: error
+    catch (exception) {
+        return result.status(500).json({
+            msg: exception.message,
+            success: false
         });
     }
 }
 
-exports.GetPageList = async (req, res) => {
+exports.getPageList = async (request, result) => {
     try {
-        const responseGetPageList = await axios({
-            url: `${URLBRIDGE}processlaraigo/facebook/managefacebooklink`,
-            method: 'post',
-            data: {
-                linkType: 'GETPAGES',
-                accessToken: req.body.accessToken
+        if (typeof whitelist !== 'undefined' && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(400).json({
+                    msg: 'Unauthorized',
+                    success: false
+                });
             }
+        }
+
+        const requestGetFacebook = await axios({
+            data: {
+                accessToken: request.body.accessToken,
+                linkType: 'GETPAGES'
+            },
+            method: 'post',
+            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
         });
 
-        if (responseGetPageList.data.success) {
-            return res.json({
-                success: true,
-                pageData: responseGetPageList.data.pageData
+        if (requestGetFacebook.data.success) {
+            return result.json({
+                pageData: requestGetFacebook.data.pageData,
+                success: true
             });
         }
         else {
-            return res.status(500).json({
-                success: false,
-                msg: responseGetPageList.data.operationMessage
+            return result.status(400).json({
+                msg: requestGetFacebook.data.operationMessage,
+                success: false
             });
         }
     }
-    catch (error) {
-        return res.status(400).json({
-            success: false,
-            msg: error
+    catch (exception) {
+        return result.status(500).json({
+            msg: exception.message,
+            success: false
         });
     }
 }
 
-exports.ValidateUsername = async (req, res) => {
+exports.validateUserId = async (request, result) => {
     try {
-        var { method, parameters = {} } = req.body;
+        if (typeof whitelist !== 'undefined' && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(400).json({
+                    msg: 'Unauthorized',
+                    success: false
+                });
+            }
+        }
 
-        const responseUserSelect = await triggerfunctions.executesimpletransaction(method, parameters);
+        var { method, parameters = {} } = request.body;
 
-        if (responseUserSelect instanceof Array) {
-            if (responseUserSelect.length > 0) {
-                return res.status(200).json({
+        setSessionParameters(parameters, request.user);
+
+        parameters.password = await bcryptjs.hash(parameters.password, await bcryptjs.genSalt(10));
+        parameters.userid = request.user.userid;
+
+        const transactionSelectUser = await triggerfunctions.executesimpletransaction(method, parameters);
+
+        if (transactionSelectUser instanceof Array) {
+            if (transactionSelectUser.length > 0) {
+                parameters.password = await bcryptjs.hash(parameters.newpassword, await bcryptjs.genSalt(10));
+
+                const transactionUpdateUser = await triggerfunctions.executesimpletransaction('UFN_USER_UPDATE', parameters);
+
+                if (transactionSelectUser instanceof Array) {
+                    return result.json({
+                        success: true
+                    });
+                }
+                else {
+                    return result.status(400).json({
+                        msg: transactionUpdateUser.code,
+                        success: false
+                    });
+                }
+            }
+            else {
+                return result.status(400).json({
+                    msg: 'Password does not match',
+                    success: false
+                });
+            }
+        }
+        else {
+            return result.status(400).json({
+                msg: transactionSelectUser.code,
+                success: false
+            });
+        }
+    }
+    catch (exception) {
+        return result.status(500).json({
+            msg: exception.message,
+            success: false
+        });
+    }
+}
+
+exports.validateUsername = async (request, result) => {
+    try {
+        if (typeof whitelist !== 'undefined' && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(400).json({
+                    msg: 'Unauthorized',
+                    success: false
+                });
+            }
+        }
+
+        var { method, parameters = {} } = request.body;
+
+        if (typeof parameters.facebookid !== 'undefined' && parameters.facebookid) {
+            parameters.googleid = null;
+            parameters.usr = null;
+        }
+
+        if (typeof parameters.googleid !== 'undefined' && parameters.googleid) {
+            parameters.facebookid = null;
+            parameters.usr = null;
+        }
+
+        const transactionSelectUser = await triggerfunctions.executesimpletransaction(method, parameters);
+
+        if (transactionSelectUser instanceof Array) {
+            if (transactionSelectUser.length > 0) {
+                return result.json({
                     isvalid: false,
                     success: true
                 });
             }
             else {
-                return res.status(200).json({
+                return result.json({
                     isvalid: true,
                     success: true
                 });
             }
         }
         else {
-            return res.status(500).json({
-                msg: responseUserSelect.msg,
+            return result.status(400).json({
+                msg: transactionSelectUser.code,
                 success: false
             });
         }
     }
-    catch (error) {
-        return res.status(400).json({
-            success: false,
-            msg: error
+    catch (exception) {
+        return result.status(500).json({
+            msg: exception.message,
+            success: false
         });
     }
 }

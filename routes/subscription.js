@@ -1,17 +1,22 @@
-const express = require("express");
-const router = express.Router();
+const auth = require('../middleware/auth');
+const router = require("express").Router();
 const subscriptionController = require("../controllers/subscriptionController");
 
 router.post("/createsubscription",
-    subscriptionController.CreateSubscription
+    subscriptionController.createSubscription
 )
 
 router.post("/getpagelist",
-    subscriptionController.GetPageList
+    subscriptionController.getPageList
+)
+
+router.post("/validateuserid",
+    auth,
+    subscriptionController.validateUserId
 )
 
 router.post("/validateusername",
-    subscriptionController.ValidateUsername
+    subscriptionController.validateUsername
 )
 
 module.exports = router;

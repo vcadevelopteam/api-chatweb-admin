@@ -6,6 +6,21 @@ const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { errors, getErrorCode } = require('../config/helpers');
 
+const validateResProperty = (r, type) => {
+    let vv;
+    if (r instanceof Array && r.length > 0)
+        vv = r[0].propertyvalue;
+    else
+        return null;
+
+    if (type === "bool")
+        return vv === "1"
+    else if (type === "string")
+        return vv
+    else if (type === "int")
+        return parseInt(vv);
+}
+
 exports.authenticate = async (req, res) => {
     const { data: { usr, password, facebookid, googleid } } = req.body;
     let integration = false;
@@ -28,6 +43,7 @@ exports.authenticate = async (req, res) => {
             return res.status(401).json({ code: errors.LOGIN_USER_INCORRECT });
 
         const user = result[0];
+
         if (!integration) {
             const ispasswordmatch = await bcryptjs.compare(password, user.pwd)
             if (!ispasswordmatch)
@@ -49,10 +65,23 @@ exports.authenticate = async (req, res) => {
         };
 
         if (user.status === 'ACTIVO') {
+            const resConnection = await tf.executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...user, propertyname: 'CONEXIONAUTOMATICAINBOX' })
+
+            const automaticConnection = validateResProperty(resConnection, 'bool');
+
             await Promise.all([
                 tf.executesimpletransaction("UFN_USERTOKEN_INS", dataSesion),
                 tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", dataSesion),
+                ...(automaticConnection ? [tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", {
+                    ...user,
+                    type: 'INBOX',
+                    status: 'ACTIVO',
+                    description: null,
+                    motive: null,
+                    username: user.usr
+                })] : [])
             ]);
+            
             user.token = tokenzyx;
             delete user.pwd;
 
@@ -61,7 +90,7 @@ exports.authenticate = async (req, res) => {
                 delete user.corpid;
                 delete user.orgid;
                 delete user.userid;
-                return res.json({ data: { ...user, token }, success: true });
+                return res.json({ data: { ...user, token, automaticConnection }, success: true });
             })
         } else if (user.status === 'PENDIENTE') {
             return res.status(401).json({ code: errors.LOGIN_USER_PENDING })
@@ -148,17 +177,17 @@ exports.changeOrganization = async (req, res) => {
     const resultBD = await tf.executesimpletransaction("UFN_USERSTATUS_UPDATE_ORG", { ...req.user, ...parameters });
 
     if (!resultBD.error) {
-        const newusertoken = { 
-            ...req.user, 
-            orgid: parameters.neworgid, 
+        const newusertoken = {
+            ...req.user,
+            orgid: parameters.neworgid,
             corpid: parameters.newcorpid,
-            corpdesc: parameters.corpdesc, 
+            corpdesc: parameters.corpdesc,
             orgdesc: parameters.orgdesc,
-            redirect: resultBD[0] ? resultBD[0].redirect : '/tickets' 
+            redirect: resultBD[0] ? resultBD[0].redirect : '/tickets'
         };
-        
+
         const resBDMenu = await tf.executesimpletransaction("UFN_APPLICATION_SEL", newusertoken);
-        
+
         const menu = resBDMenu.reduce((acc, item) => ({
             ...acc, [item.path]:
                 [item.view ? 1 : 0,
@@ -166,7 +195,7 @@ exports.changeOrganization = async (req, res) => {
                 item.insert ? 1 : 0,
                 item.delete ? 1 : 0]
         }), {});
-        
+
         newusertoken.menu = { ...menu, "system-label": undefined, "/": undefined };
 
         jwt.sign({ user: newusertoken }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {

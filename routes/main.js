@@ -7,6 +7,9 @@ router.post("/",
     auth,
     mainController.GetCollection
 )
+router.post("/public/domainvalues",
+    mainController.GetCollectionDomainValues
+)
 router.post("/multi",
     auth,
     mainController.multiCollection
@@ -24,7 +27,7 @@ router.post("/paginated",
 router.post("/export",
     auth,
     mainController.export
-)
+)+
 
 router.post("/getToken",
     mainController.export
