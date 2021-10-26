@@ -1074,6 +1074,6 @@ module.exports = {
     UFN_COLUMN_INS: {
         query: "select * from ufn_column_ins($corpid, $orgid, $id, $description, $type, $status, $edit, $username, $index, $operation)",
         module: "",
-        protected: "SELECT"
+        protected: "INSERT"
     },
 }
