@@ -1081,4 +1081,9 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_UPDATE_COLUMNS: {
+        query: "select * from ufn_update_columns($corpid, $orgid, $cards_uuid)",
+        module: "",
+        protected: "INSERT"
+    },
 }
