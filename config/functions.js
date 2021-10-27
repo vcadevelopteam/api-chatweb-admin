@@ -1071,4 +1071,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_COLUMN_INS: {
+        query: "select * from ufn_column_ins($corpid, $orgid, $id, $description, $type, $status, $edit, $username, $index, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_UPDATE_LEADS: {
+        query: "select * from ufn_update_leads($corpid, $orgid, $cards_startingcolumn, $cards_finalcolumn, $startingcolumn_uuid, $finalcolumn_uuid)",
+        module: "",
+        protected: "INSERT"
+    },
 }
