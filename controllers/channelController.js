@@ -308,8 +308,7 @@ exports.deleteChannel = async (request, result) => {
                                     consumerKey: serviceCredentials.consumerKey,
                                     consumerSecret: serviceCredentials.consumerSecret,
                                     developmentEnvironment: serviceCredentials.devEnvironment,
-                                    linkType: 'TWITTERREMOVE',
-                                    siteId: serviceCredentials.twitterPageId
+                                    linkType: 'TWITTERREMOVE'
                                 },
                                 method: 'post',
                                 url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`
@@ -1009,7 +1008,7 @@ exports.insertChannel = async (request, result) => {
                                 consumerSecret: service.consumersecret,
                                 developmentEnvironment: service.devenvironment,
                                 linkType: 'TWITTERADD',
-                                siteId: requestPageTwitter.data.pageId
+                                pageId: requestPageTwitter.data.pageId
                             },
                             method: 'post',
                             url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`

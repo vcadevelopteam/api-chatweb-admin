@@ -402,7 +402,7 @@ exports.createSubscription = async (request, result) => {
                                             consumerSecret: channelService.consumersecret,
                                             developmentEnvironment: channelService.devenvironment,
                                             linkType: 'TWITTERADD',
-                                            siteId: requestPageTwitter.data.pageId
+                                            pageId: requestPageTwitter.data.pageId
                                         },
                                         method: 'post',
                                         url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`
