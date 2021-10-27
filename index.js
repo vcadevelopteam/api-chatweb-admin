@@ -44,4 +44,4 @@ app.get('/', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
 })
 
-console.log(`ChatWeb esta corriendo en el puerto http://localhost:${PORT}`);
+console.log(`Corriendo en http://localhost:${PORT}`);

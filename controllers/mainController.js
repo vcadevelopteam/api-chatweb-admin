@@ -15,7 +15,7 @@ exports.GetCollection = async (req, res) => {
 }
 
 exports.GetCollectionDomainValues = async (req, res) => {
-    const { parameters = {}, method } = req.body;
+    const { parameters = {} } = req.body;
     parameters.orgid = 1;
     parameters.corpid = 1;
     const result = await executesimpletransaction("UFN_DOMAIN_LST_VALORES", parameters);
@@ -25,6 +25,37 @@ exports.GetCollectionDomainValues = async (req, res) => {
     else
         return res.status(result.rescode).json(result);
 }
+
+exports.GetMultiDomainsValue = async (req, res) => {
+    try {
+        const { parameters = {} } = req.body;
+
+        if (parameters.domains && parameters.domains instanceof Array) {
+            const detailRequest = parameters.domains.map(domainname => ({
+                method: "UFN_DOMAIN_LST_VALORES",
+                parameters: {
+                    corpid: 1,
+                    orgid: 1,
+                    domainname
+                }
+            }))
+            console.log(detailRequest)
+            const result = await GetMultiCollection(detailRequest);
+            return res.json({ success: true, data: result });
+        }
+
+        return res.status(500).json({
+            msg: "Hubo un problema, intentelo más tarde"
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            msg: "Hubo un problema, intentelo más tarde"
+        });
+    }
+}
+
 
 exports.executeTransaction = async (req, res) => {
     const { header, detail: detailtmp } = req.body;
