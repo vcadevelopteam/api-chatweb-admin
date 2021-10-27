@@ -288,12 +288,49 @@ exports.createSubscription = async (request, result) => {
                             }
                             break;
 
+                            case 'SMOOCHANDROID':
+                            case 'SMOOCHIOS':
+                                const requestCreateSmooch = await axios({
+                                    data: {
+                                        linkType: channel.type === 'SMOOCHANDROID' ? 'ANDROIDADD' : 'IOSADD',
+                                        name: channelParameters.description
+                                    },
+                                    method: 'post',
+                                    url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
+                                });
+        
+                                if (requestCreateSmooch.data.success) {
+                                    var serviceCredentials = {
+                                        apiKeyId: requestCreateSmooch.data.appApiKey,
+                                        apiKeySecret: requestCreateSmooch.data.appSecret,
+                                        appId: requestCreateSmooch.data.applicationId,
+                                        endpoint: smoochEndpoint,
+                                        version: smoochVersion
+                                    };
+        
+                                    channelParameters.communicationchannelowner = requestCreateSmooch.data.applicationId;
+                                    channelParameters.communicationchannelsite = requestCreateSmooch.data.applicationId;
+                                    channelParameters.integrationid = requestCreateSmooch.data.integrationId;
+                                    channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
+                                    channelParameters.type = (request.body.type === 'SMOOCHANDROID' ? 'ANDR' : 'APPL');
+        
+                                    channelMethodArray.push(channelMethod);
+                                    channelParametersArray.push(channelParameters);
+                                    channelServiceArray.push(channelService);
+                                }
+                                else {
+                                    return result.status(400).json({
+                                        msg: requestCreateSmooch.data.operationMessage,
+                                        success: false
+                                    });
+                                }
+                                break;
+
                         case 'TELEGRAM':
                             const requestCreateTelegram = await axios({
                                 data: {
                                     accessToken: channelService.accesstoken,
-                                    linkType: 'TELEGRAMADD',
-                                    siteId: channelService.siteid
+                                    linkType: 'TELEGRAMADD'
                                 },
                                 method: 'post',
                                 url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`
@@ -301,11 +338,12 @@ exports.createSubscription = async (request, result) => {
                         
                             if (requestCreateTelegram.data.success) {
                                 var serviceCredentials = {
-                                    bot: channelService.siteid,
+                                    bot: requestCreateTelegram.data.botName,
                                     endpoint: telegramEndpoint,
                                     token: channelService.accesstoken
                                 };
                             
+                                channelParameters.communicationchannelsite = requestCreateTelegram.data.botName;
                                 channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
                                 channelParameters.type = 'TELE';
 
@@ -323,84 +361,106 @@ exports.createSubscription = async (request, result) => {
 
                         case 'TWITTER':
                         case 'TWITTERDM':
-                            var serviceMethod = 'UFN_COMMUNICATIONCHANNELHOOK_INS';
-                            var serviceParameters = {
-                                operation: 'INSERT',
-                                servicedata: JSON.stringify({
+                            const requestPageTwitter = await axios({
+                                data: {
                                     accessSecret: channelService.accesssecret,
                                     accessToken: channelService.accesstoken,
                                     consumerKey: channelService.consumerkey,
                                     consumerSecret: channelService.consumersecret,
-                                    devEnvironment: channelService.devenvironment,
-                                    twitterPageId: channelService.siteid
-                                }),
-                                site: channelService.siteid,
-                                type: 'TWTR'
-                            };
+                                    developmentEnvironment: channelService.devenvironment,
+                                    linkType: 'GETPAGEID'
+                                },
+                                method: 'post',
+                                url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`
+                            });
 
-                            const transactionServiceTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
-
-                            if (transactionServiceTwitter instanceof Array) {
-                                const requestCreateTwitter = await axios({
-                                    data: {
-                                        
-                                        accessSecret: channelService.accesssecret,
-                                        accessToken: channelService.accesstoken,
-                                        consumerKey: channelService.consumerkey,
-                                        consumerSecret: channelService.consumersecret,
-                                        developmentEnvironment: channelService.devenvironment,
-                                        linkType: 'TWITTERADD',
-                                        siteId: channelService.siteid
-                                    },
-                                    method: 'post',
-                                    url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`
-                                });
-
-                                if (requestCreateTwitter.data.success) {
-                                    if (channel.type === 'TWITTER') {
-                                        channelParameters.type = 'TWIT';
-                                    }
-                                    else {
-                                        channelParameters.type = 'TWMS';
-                                    }
-
-                                    var serviceCredentials = {
+                            if (requestPageTwitter.data.success) {
+                                var serviceMethod = 'UFN_COMMUNICATIONCHANNELHOOK_INS';
+                                var serviceParameters = {
+                                    operation: 'INSERT',
+                                    servicedata: JSON.stringify({
                                         accessSecret: channelService.accesssecret,
                                         accessToken: channelService.accesstoken,
                                         consumerKey: channelService.consumerkey,
                                         consumerSecret: channelService.consumersecret,
                                         devEnvironment: channelService.devenvironment,
-                                        twitterPageId: channelService.siteid
-                                    };
+                                        twitterPageId: requestPageTwitter.data.pageId
+                                    }),
+                                    site: requestPageTwitter.data.pageId,
+                                    type: 'TWTR'
+                                };
 
-                                    channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
+                                const transactionServiceTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
 
-                                    channelMethodArray.push(channelMethod);
-                                    channelParametersArray.push(channelParameters);
-                                    channelServiceArray.push(channelService);
-                                }
-                                else {
-                                    serviceParameters.operation = 'DELETE';
-
-                                    const transactionServiceDeleteTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
-
-                                    if (transactionServiceDeleteTwitter instanceof Array) {
-                                        return result.status(400).json({
-                                            msg: requestCreateTwitter.data.operationMessage,
-                                            success: false
-                                        });
+                                if (transactionServiceTwitter instanceof Array) {
+                                    const requestCreateTwitter = await axios({
+                                        data: {
+                                            
+                                            accessSecret: channelService.accesssecret,
+                                            accessToken: channelService.accesstoken,
+                                            consumerKey: channelService.consumerkey,
+                                            consumerSecret: channelService.consumersecret,
+                                            developmentEnvironment: channelService.devenvironment,
+                                            linkType: 'TWITTERADD',
+                                            siteId: requestPageTwitter.data.pageId
+                                        },
+                                        method: 'post',
+                                        url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`
+                                    });
+    
+                                    if (requestCreateTwitter.data.success) {
+                                        if (channel.type === 'TWITTER') {
+                                            channelParameters.type = 'TWIT';
+                                        }
+                                        else {
+                                            channelParameters.type = 'TWMS';
+                                        }
+    
+                                        var serviceCredentials = {
+                                            accessSecret: channelService.accesssecret,
+                                            accessToken: channelService.accesstoken,
+                                            consumerKey: channelService.consumerkey,
+                                            consumerSecret: channelService.consumersecret,
+                                            devEnvironment: channelService.devenvironment,
+                                            twitterPageId: requestPageTwitter.data.pageId
+                                        };
+    
+                                        channelParameters.communicationchannelsite = requestPageTwitter.data.pageId;
+                                        channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
+    
+                                        channelMethodArray.push(channelMethod);
+                                        channelParametersArray.push(channelParameters);
+                                        channelServiceArray.push(channelService);
                                     }
                                     else {
-                                        return result.status(400).json({
-                                            msg: transactionServiceDeleteTwitter.code,
-                                            success: false
-                                        });
+                                        serviceParameters.operation = 'DELETE';
+    
+                                        const transactionServiceDeleteTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
+    
+                                        if (transactionServiceDeleteTwitter instanceof Array) {
+                                            return result.status(400).json({
+                                                msg: requestCreateTwitter.data.operationMessage,
+                                                success: false
+                                            });
+                                        }
+                                        else {
+                                            return result.status(400).json({
+                                                msg: transactionServiceDeleteTwitter.code,
+                                                success: false
+                                            });
+                                        }
                                     }
+                                }
+                                else {
+                                    return result.status(400).json({
+                                        msg: transactionServiceTwitter.code,
+                                        success: false
+                                    });
                                 }
                             }
                             else {
                                 return result.status(400).json({
-                                    msg: transactionServiceTwitter.code,
+                                    msg: requestPageTwitter.data.operationMessage,
                                     success: false
                                 });
                             }
@@ -410,8 +470,7 @@ exports.createSubscription = async (request, result) => {
                             const requestCreateWhatsApp = await axios({
                                 data: {
                                     accessToken: channelService.accesstoken,
-                                    linkType: 'WHATSAPPADD',
-                                    siteId: channelService.siteid
+                                    linkType: 'WHATSAPPADD'
                                 },
                                 method: 'post',
                                 url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`
@@ -421,9 +480,10 @@ exports.createSubscription = async (request, result) => {
                                 var serviceCredentials = {
                                     apiKey: channelService.accesstoken,
                                     endpoint: whatsAppEndpoint,
-                                    number: channelService.siteid
+                                    number: requestCreateWhatsApp.data.phoneNumber
                                 };
                             
+                                channelParameters.communicationchannelsite = requestCreateWhatsApp.data.phoneNumber;
                                 channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
                                 channelParameters.type = 'WHAD';
 
@@ -434,44 +494,6 @@ exports.createSubscription = async (request, result) => {
                             else {
                                 return result.status(400).json({
                                     msg: requestCreateWhatsApp.data.operationMessage,
-                                    success: false
-                                });
-                            }
-                            break;
-
-                        case 'SMOOCHANDROID':
-                        case 'SMOOCHIOS':
-                            const requestCreateSmooch = await axios({
-                                data: {
-                                    linkType: channel.type === 'SMOOCHANDROID' ? 'ANDROIDADD' : 'IOSADD',
-                                    name: channelParameters.description
-                                },
-                                method: 'post',
-                                url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
-                            });
-
-                            if (requestCreateSmooch.data.success) {
-                                var serviceCredentials = {
-                                    apiKeyId: requestCreateSmooch.data.appApiKey,
-                                    apiKeySecret: requestCreateSmooch.data.appSecret,
-                                    appId: requestCreateSmooch.data.applicationId,
-                                    endpoint: smoochEndpoint,
-                                    version: smoochVersion
-                                };
-
-                                channelParameters.communicationchannelowner = requestCreateSmooch.data.applicationId;
-                                channelParameters.communicationchannelsite = requestCreateSmooch.data.applicationId;
-                                channelParameters.integrationid = requestCreateSmooch.data.integrationId;
-                                channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
-                                channelParameters.type = (request.body.type === 'SMOOCHANDROID' ? 'ANDR' : 'APPL');
-
-                                channelMethodArray.push(channelMethod);
-                                channelParametersArray.push(channelParameters);
-                                channelServiceArray.push(channelService);
-                            }
-                            else {
-                                return result.status(400).json({
-                                    msg: requestCreateSmooch.data.operationMessage,
                                     success: false
                                 });
                             }

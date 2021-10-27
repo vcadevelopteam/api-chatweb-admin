@@ -30,6 +30,57 @@ exports.deleteChannel = async (request, result) => {
         parameters.username = request.user.usr;
 
         switch (parameters.type) {
+            case 'ANDR':
+            case 'APPL':
+                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+                    const requestDeleteSmooch = await axios({
+                        data: {
+                            linkType: parameters.type === 'ANDR' ? 'ANDROIDREMOVE' : 'IOSREMOVE',
+                            applicationId: parameters.communicationchannelsite,
+                            integrationId: parameters.integrationid
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
+                    });
+
+                    if (requestDeleteSmooch.data.success) {
+                        const transactionDeleteSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                        if (transactionDeleteSmooch instanceof Array) {
+                            return result.json({
+                                success: true
+                            });
+                        }
+                        else {
+                            return result.status(400).json({
+                                msg: transactionDeleteSmooch.code,
+                                success: false
+                            });
+                        }
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: requestDeleteSmooch.data.operationMessage,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    const transactionDeleteSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionDeleteSmooch instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionDeleteSmooch.code,
+                            success: false
+                        });
+                    }
+                }
+                
             case 'CHAZ':
                 if (typeof parameters.communicationchannelcontact !== 'undefined' && parameters.communicationchannelcontact) {
                     await axios({
@@ -374,57 +425,6 @@ exports.deleteChannel = async (request, result) => {
                     else {
                         return result.status(400).json({
                             msg: transactionDeleteWhatsApp.code,
-                            success: false
-                        });
-                    }
-                }
-
-            case 'ANDR':
-            case 'APPL':
-                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
-                    const requestDeleteSmooch = await axios({
-                        data: {
-                            linkType: parameters.type === 'ANDR' ? 'ANDROIDREMOVE' : 'IOSREMOVE',
-                            applicationId: parameters.communicationchannelsite,
-                            integrationId: parameters.integrationid
-                        },
-                        method: 'post',
-                        url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
-                    });
-
-                    if (requestDeleteSmooch.data.success) {
-                        const transactionDeleteSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                        if (transactionDeleteSmooch instanceof Array) {
-                            return result.json({
-                                success: true
-                            });
-                        }
-                        else {
-                            return result.status(400).json({
-                                msg: transactionDeleteSmooch.code,
-                                success: false
-                            });
-                        }
-                    }
-                    else {
-                        return result.status(400).json({
-                            msg: requestDeleteSmooch.data.operationMessage,
-                            success: false
-                        });
-                    }
-                }
-                else {
-                    const transactionDeleteSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                    if (transactionDeleteSmooch instanceof Array) {
-                        return result.json({
-                            success: true
-                        });
-                    }
-                    else {
-                        return result.status(400).json({
-                            msg: transactionDeleteSmooch.code,
                             success: false
                         });
                     }
@@ -876,195 +876,6 @@ exports.insertChannel = async (request, result) => {
                     });
                 }
 
-            case 'TELEGRAM':
-                const requestCreateTelegram = await axios({
-                    data: {
-                        accessToken: service.accesstoken,
-                        linkType: 'TELEGRAMADD',
-                        siteId: service.siteid
-                    },
-                    method: 'post',
-                    url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`
-                });
-
-                if (requestCreateTelegram.data.success) {
-                    var serviceCredentials = {
-                        bot: service.siteid,
-                        endpoint: telegramEndpoint,
-                        token: service.accesstoken
-                    };
-
-                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
-                    parameters.type = 'TELE';
-
-                    const transactionCreateTelegram = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                    if (transactionCreateTelegram instanceof Array) {
-                        return result.json({
-                            success: true
-                        });
-                    }
-                    else {
-                        return result.status(400).json({
-                            msg: transactionCreateTelegram.code,
-                            success: false
-                        });
-                    }
-                }
-                else {
-                    return result.status(400).json({
-                        msg: requestCreateTelegram.data.operationMessage,
-                        success: false
-                    });
-                }
-
-            case 'TWITTER':
-            case 'TWITTERDM':
-                var serviceMethod = 'UFN_COMMUNICATIONCHANNELHOOK_INS';
-                var serviceParameters = {
-                    operation: 'INSERT',
-                    servicedata: JSON.stringify({
-                        accessSecret: service.accesssecret,
-                        accessToken: service.accesstoken,
-                        consumerKey: service.consumerkey,
-                        consumerSecret: service.consumersecret,
-                        devEnvironment: service.devenvironment,
-                        twitterPageId: service.siteid
-                    }),
-                    site: service.siteid,
-                    type: 'TWTR'
-                };
-
-                const transactionServiceTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
-
-                if (transactionServiceTwitter instanceof Array) {
-                    const requestCreateTwitter = await axios({
-                        data: {
-                            accessSecret: service.accesssecret,
-                            accessToken: service.accesstoken,
-                            consumerKey: service.consumerkey,
-                            consumerSecret: service.consumersecret,
-                            developmentEnvironment: service.devenvironment,
-                            linkType: 'TWITTERADD',
-                            siteId: service.siteid
-                        },
-                        method: 'post',
-                        url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`
-                    });
-
-                    if (requestCreateTwitter.data.success) {
-                        if (request.body.type === 'TWITTER') {
-                            parameters.type = 'TWIT';
-                        }
-                        else {
-                            parameters.type = 'TWMS';
-                        }
-
-                        var serviceCredentials = {
-                            accessSecret: service.accesssecret,
-                            accessToken: service.accesstoken,
-                            consumerKey: service.consumerkey,
-                            consumerSecret: service.consumersecret,
-                            devEnvironment: service.devenvironment,
-                            twitterPageId: service.siteid
-                        };
-
-                        parameters.servicecredentials = JSON.stringify(serviceCredentials);
-
-                        const transactionCreateTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                        if (transactionCreateTwitter instanceof Array) {
-                            return result.json({
-                                success: true
-                            });
-                        }
-                        else {
-                            serviceParameters.operation = 'DELETE';
-
-                            const transactionServiceDeleteTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
-    
-                            if (transactionServiceDeleteTwitter instanceof Array) {
-                                return result.status(400).json({
-                                    msg: transactionCreateTwitter.code,
-                                    success: false
-                                });
-                            }
-                            else {
-                                return result.status(400).json({
-                                    msg: transactionServiceDeleteTwitter.code,
-                                    success: false
-                                });
-                            }
-                        }
-                    }
-                    else {
-                        serviceParameters.operation = 'DELETE';
-
-                        const transactionServiceDeleteTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
-
-                        if (transactionServiceDeleteTwitter instanceof Array) {
-                            return result.status(400).json({
-                                msg: requestCreateTwitter.data.operationMessage,
-                                success: false
-                            });
-                        }
-                        else {
-                            return result.status(400).json({
-                                msg: transactionServiceDeleteTwitter.code,
-                                success: false
-                            });
-                        }
-                    }
-                }
-                else {
-                    return result.status(400).json({
-                        msg: transactionServiceTwitter.code,
-                        success: false
-                    });
-                }
-
-            case 'WHATSAPP':
-                const requestCreateWhatsApp = await axios({
-                    data: {
-                        accessToken: service.accesstoken,
-                        linkType: 'WHATSAPPADD',
-                        siteId: service.siteid
-                    },
-                    method: 'post',
-                    url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`
-                });
-
-                if (requestCreateWhatsApp.data.success) {
-                    var serviceCredentials = {
-                        apiKey: service.accesstoken,
-                        endpoint: whatsAppEndpoint,
-                        number: service.siteid
-                    };
-
-                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
-                    parameters.type = 'WHAD';
-
-                    const transactionCreateWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                    if (transactionCreateWhatsApp instanceof Array) {
-                        return result.json({
-                            success: true
-                        });
-                    }
-                    else {
-                        return result.status(400).json({
-                            msg: transactionCreateWhatsApp.code,
-                            success: false
-                        });
-                    }
-                }
-                else {
-                    return result.status(400).json({
-                        msg: requestCreateWhatsApp.data.operationMessage,
-                        success: false
-                    });
-                }
-
             case 'SMOOCHANDROID':
             case 'SMOOCHIOS':
                 const requestCreateSmooch = await axios({
@@ -1110,6 +921,229 @@ exports.insertChannel = async (request, result) => {
                 else {
                     return result.status(400).json({
                         msg: requestCreateSmooch.data.operationMessage,
+                        success: false
+                    });
+                }
+
+            case 'TELEGRAM':
+                const requestCreateTelegram = await axios({
+                    data: {
+                        accessToken: service.accesstoken,
+                        linkType: 'TELEGRAMADD'
+                    },
+                    method: 'post',
+                    url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`
+                });
+
+                if (requestCreateTelegram.data.success) {
+                    var serviceCredentials = {
+                        bot: requestCreateTelegram.data.botName,
+                        endpoint: telegramEndpoint,
+                        token: service.accesstoken
+                    };
+
+                    parameters.communicationchannelsite = requestCreateTelegram.data.botName;
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.type = 'TELE';
+
+                    const transactionCreateTelegram = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateTelegram instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionCreateTelegram.code,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    return result.status(400).json({
+                        msg: requestCreateTelegram.data.operationMessage,
+                        success: false
+                    });
+                }
+
+            case 'TWITTER':
+            case 'TWITTERDM':
+                const requestPageTwitter = await axios({
+                    data: {
+                        accessSecret: service.accesssecret,
+                        accessToken: service.accesstoken,
+                        consumerKey: service.consumerkey,
+                        consumerSecret: service.consumersecret,
+                        developmentEnvironment: service.devenvironment,
+                        linkType: 'GETPAGEID'
+                    },
+                    method: 'post',
+                    url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`
+                });
+
+                if (requestPageTwitter.data.success) {
+                    var serviceMethod = 'UFN_COMMUNICATIONCHANNELHOOK_INS';
+                    var serviceParameters = {
+                        operation: 'INSERT',
+                        servicedata: JSON.stringify({
+                            accessSecret: service.accesssecret,
+                            accessToken: service.accesstoken,
+                            consumerKey: service.consumerkey,
+                            consumerSecret: service.consumersecret,
+                            devEnvironment: service.devenvironment,
+                            twitterPageId: requestPageTwitter.data.pageId
+                        }),
+                        site: requestPageTwitter.data.pageId,
+                        type: 'TWTR'
+                    };
+
+                    const transactionServiceTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
+
+                    if (transactionServiceTwitter instanceof Array) {
+                        const requestCreateTwitter = await axios({
+                            data: {
+                                accessSecret: service.accesssecret,
+                                accessToken: service.accesstoken,
+                                consumerKey: service.consumerkey,
+                                consumerSecret: service.consumersecret,
+                                developmentEnvironment: service.devenvironment,
+                                linkType: 'TWITTERADD',
+                                siteId: requestPageTwitter.data.pageId
+                            },
+                            method: 'post',
+                            url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`
+                        });
+                    
+                        if (requestCreateTwitter.data.success) {
+                            if (request.body.type === 'TWITTER') {
+                                parameters.type = 'TWIT';
+                            }
+                            else {
+                                parameters.type = 'TWMS';
+                            }
+                        
+                            var serviceCredentials = {
+                                accessSecret: service.accesssecret,
+                                accessToken: service.accesstoken,
+                                consumerKey: service.consumerkey,
+                                consumerSecret: service.consumersecret,
+                                devEnvironment: service.devenvironment,
+                                twitterPageId: requestPageTwitter.data.pageId
+                            };
+                        
+                            parameters.communicationchannelsite = requestPageTwitter.data.pageId;
+                            parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                        
+                            const transactionCreateTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
+                        
+                            if (transactionCreateTwitter instanceof Array) {
+                                serviceParameters.operation = 'DELETE';
+                            
+                                const transactionServiceDeleteTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
+
+                                if (transactionServiceDeleteTwitter instanceof Array) {
+                                    return result.json({
+                                        success: true
+                                    });
+                                }
+                                else {
+                                    return result.status(400).json({
+                                        msg: transactionServiceDeleteTwitter.code,
+                                        success: false
+                                    });
+                                }
+                            }
+                            else {
+                                serviceParameters.operation = 'DELETE';
+                            
+                                const transactionServiceDeleteTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
+                            
+                                if (transactionServiceDeleteTwitter instanceof Array) {
+                                    return result.status(400).json({
+                                        msg: transactionCreateTwitter.code,
+                                        success: false
+                                    });
+                                }
+                                else {
+                                    return result.status(400).json({
+                                        msg: transactionServiceDeleteTwitter.code,
+                                        success: false
+                                    });
+                                }
+                            }
+                        }
+                        else {
+                            serviceParameters.operation = 'DELETE';
+                        
+                            const transactionServiceDeleteTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
+                        
+                            if (transactionServiceDeleteTwitter instanceof Array) {
+                                return result.status(400).json({
+                                    msg: requestCreateTwitter.data.operationMessage,
+                                    success: false
+                                });
+                            }
+                            else {
+                                return result.status(400).json({
+                                    msg: transactionServiceDeleteTwitter.code,
+                                    success: false
+                                });
+                            }
+                        }
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionServiceTwitter.code,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    return result.status(400).json({
+                        msg: requestPageTwitter.data.operationMessage,
+                        success: false
+                    });
+                }
+
+            case 'WHATSAPP':
+                const requestCreateWhatsApp = await axios({
+                    data: {
+                        accessToken: service.accesstoken,
+                        linkType: 'WHATSAPPADD'
+                    },
+                    method: 'post',
+                    url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`
+                });
+
+                if (requestCreateWhatsApp.data.success) {
+                    var serviceCredentials = {
+                        apiKey: service.accesstoken,
+                        endpoint: whatsAppEndpoint,
+                        number: requestCreateWhatsApp.data.phoneNumber
+                    };
+
+                    parameters.communicationchannelsite = requestCreateWhatsApp.data.phoneNumber;
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.type = 'WHAD';
+
+                    const transactionCreateWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateWhatsApp instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionCreateWhatsApp.code,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    return result.status(400).json({
+                        msg: requestCreateWhatsApp.data.operationMessage,
                         success: false
                     });
                 }
