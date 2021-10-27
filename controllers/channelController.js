@@ -151,7 +151,7 @@ exports.deleteChannel = async (request, result) => {
                     if (linkType === 'INSTAGRAMREMOVE') {
                         var validateMethod = 'UFN_COMMUNICATIONCHANNELSITE_SEL';
                         var validateParameters = {
-                            communicationchannelsite: serviceCredentials.twitterPageId,
+                            communicationchannelsite: serviceCredentials.siteId,
                             type: (parameters.type === 'INST' ? 'INDM' : 'INST')
                         };
     
@@ -175,7 +175,7 @@ exports.deleteChannel = async (request, result) => {
                             data: {
                                 accessToken: serviceCredentials.accessToken,
                                 linkType: linkType,
-                                siteId: ((parameters.type !== 'INST' || parameters.type !== 'INDM') ? serviceCredentials.siteId : parameters.communicationchannelowner)
+                                siteId: ((parameters.type === 'INST' || parameters.type === 'INDM') ? parameters.communicationchannelowner : serviceCredentials.siteId)
                             },
                             method: 'post',
                             url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
