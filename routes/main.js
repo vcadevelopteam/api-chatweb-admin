@@ -10,6 +10,9 @@ router.post("/",
 router.post("/public/domainvalues",
     mainController.GetCollectionDomainValues
 )
+router.post("/public/multi/domainvalues",
+    mainController.GetMultiDomainsValue
+)
 router.post("/multi",
     auth,
     mainController.multiCollection
