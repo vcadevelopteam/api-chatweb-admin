@@ -1086,4 +1086,9 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_LEAD_INS: {
+        query: "select * from ufn_lead_ins($corpid,$orgid, $leadid, $description, $status, $type, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $column_uuid, $username, $index, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
 }
