@@ -1111,4 +1111,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_ADVISERS_SEL: {
+        query: "select * from ufn_advisers_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
