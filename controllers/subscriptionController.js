@@ -65,6 +65,20 @@ exports.activateUser = async (request, result) => {
     }
 }
 
+exports.getContract = async (req, res) => {
+    const { parameters = {} } = req.body;
+    const result = await triggerfunctions.executesimpletransaction("GET_CONTRACT", parameters);
+    
+    if (result instanceof Array) {
+        if (result.length > 0) {
+            return res.json({ error: false, success: true, data: result });
+        }
+        return res.status(500).json({ error: true, success: false });
+    }
+    else
+        return res.status(result.rescode).json(result);
+}
+
 exports.createSubscription = async (request, result) => {
     try {
         if (typeof whitelist !== 'undefined' && whitelist) {

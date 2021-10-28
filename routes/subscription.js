@@ -6,6 +6,10 @@ router.post("/activateuser",
     subscriptionController.activateUser
 )
 
+router.post("/get/contract",
+    subscriptionController.getContract
+)
+
 router.post("/createsubscription",
     subscriptionController.createSubscription
 )
