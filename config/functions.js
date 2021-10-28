@@ -24,6 +24,11 @@ module.exports = {
         module: "/extras/users",
         protected: "SELECT"
     },
+    GET_CONTRACT: {
+        query: 'SELECT * FROM paymentplan where "code" = $code',
+        module: "",
+        protected: "SELECT"
+    },
     UFN_USER_SEL: {
         query: "SELECT * FROM ufn_user_sel($corpid, $orgid, $id, $username, $all)",
         module: "/extras/users",

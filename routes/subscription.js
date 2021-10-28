@@ -2,6 +2,10 @@ const auth = require('../middleware/auth');
 const router = require("express").Router();
 const subscriptionController = require("../controllers/subscriptionController");
 
+router.post("/get/contract",
+    subscriptionController.getContract
+)
+
 router.post("/createsubscription",
     subscriptionController.createSubscription
 )
