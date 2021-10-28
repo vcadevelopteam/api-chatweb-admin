@@ -31,7 +31,9 @@ exports.activateUser = async (request, result) => {
 
         var { userCode } = request.body;
 
-        var userByte  = cryptojs.AES.decrypt(userCode, userSecret);
+        var processedUserCode = userCode.replace("_PLUS_", "+").replace("_SLASH_", "/").replace("_EQUAL_", "=");
+
+        var userByte  = cryptojs.AES.decrypt(processedUserCode, userSecret);
 
         var userData = JSON.parse(userByte.toString(cryptojs.enc.Utf8));
 
@@ -678,6 +680,7 @@ exports.createSubscription = async (request, result) => {
                         corpid: 1,
                         domainname: 'ACTIVATEBODY',
                         orgid: 0,
+                        username: parameters.username
                     };
 
                     const transactionGetBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
@@ -686,10 +689,12 @@ exports.createSubscription = async (request, result) => {
                         if (transactionGetBody.length > 0) {
                             var userCode = cryptojs.AES.encrypt(JSON.stringify({ username: parameters.username, firstname: parameters.firstname }), userSecret).toString();
 
+                            var processedUserCode = userCode.replace("+", "_PLUS_").replace("/", "_SLASH_").replace("=", "_EQUAL_");
+
                             const requestSendMail = await axios({
                                 data: {
                                     mailAddress: parameters.username,
-                                    mailBody: transactionGetBody[0].domainvalue.replace('{{link}}', `${laraigoEndpoint}activateuser/${userCode}`),
+                                    mailBody: transactionGetBody[0].domainvalue.replace('{{link}}', `${laraigoEndpoint}activateuser/${encodeURIComponent(processedUserCode)}`),
                                     mailTitle: transactionGetSubject[0].domainvalue
                                 },
                                 method: 'post',
