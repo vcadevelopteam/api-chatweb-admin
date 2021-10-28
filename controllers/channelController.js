@@ -1148,6 +1148,27 @@ exports.insertChannel = async (request, result) => {
                     });
                 }
 
+                case 'WHATSAPPSMOOCH':
+                    parameters.communicationchannelowner = '';
+                    parameters.communicationchannelsite = '';
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.status = 'PENDIENTE';
+                    parameters.type = 'WHAT';
+
+                    const transactionCreateWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateWhatsAppSmooch instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionCreateWhatsAppSmooch.code,
+                            success: false
+                        });
+                    }
+
             default:
                 return result.status(400).json({
                     msg: 'Channel not supported',

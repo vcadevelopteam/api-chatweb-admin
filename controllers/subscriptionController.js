@@ -570,6 +570,18 @@ exports.createSubscription = async (request, result) => {
                                 });
                             }
                             break;
+
+                        case 'WHATSAPPSMOOCH':
+                            channelParameters.communicationchannelowner = '';
+                            channelParameters.communicationchannelsite = '';
+                            channelParameters.servicecredentials = JSON.stringify(service);
+                            channelParameters.status = 'PENDIENTE';
+                            channelParameters.type = 'WHAT';
+
+                            channelMethodArray.push(channelMethod);
+                            channelParametersArray.push(channelParameters);
+                            channelServiceArray.push(channelService);
+                            break;
                     }
                 }
             }
