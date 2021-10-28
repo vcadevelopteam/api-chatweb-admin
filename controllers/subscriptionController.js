@@ -51,6 +51,12 @@ exports.activateUser = async (request, result) => {
                     success: true
                 });
             }
+            else
+            {
+                return result.json({
+                    success: false
+                });
+            }
         }
         else {
             return result.status(400).json({
