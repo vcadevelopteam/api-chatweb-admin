@@ -1,19 +1,69 @@
 const triggerfunctions = require('../config/triggerfunctions');
 const bcryptjs = require("bcryptjs");
 const axios = require('axios');
+const cryptojs = require("crypto-js");
 
 const bridgeEndpoint = process.env.BRIDGE;
 const brokerEndpoint = process.env.CHATBROKER;
 const facebookEndpoint = process.env.FACEBOOKAPI;
 const hookEndpoint = process.env.HOOK;
+const laraigoEndpoint = process.env.LARAIGO;
 const smoochEndpoint = process.env.SMOOCHAPI;
 const smoochVersion = process.env.SMOOCHVERSION;
 const telegramEndpoint = process.env.TELEGRAMAPI;
+const userSecret = process.env.USERSECRET;
 const webChatApplication = process.env.CHATAPPLICATION;
 const webChatPlatformEndpoint = process.env.WEBCHATPLATFORM;
 const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
 const whatsAppEndpoint = process.env.WHATSAPPAPI;
 const whitelist = process.env.WHITELIST;
+
+exports.activateUser = async (request, result) => {
+    try {
+        if (typeof whitelist !== 'undefined' && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(400).json({
+                    msg: 'Unauthorized',
+                    success: false
+                });
+            }
+        }
+
+        var { userCode } = request.body;
+
+        var userByte  = cryptojs.AES.decrypt(userCode, userSecret);
+
+        var userData = JSON.parse(userByte.toString(cryptojs.enc.Utf8));
+
+        var userMethod = 'UFN_UPDATE_ACTIVE_USER_SEL';
+        var userParameters = {
+            usr: userData.username,
+            firstname: userData.firstname
+        };
+        
+        const transactionActivateUser = await triggerfunctions.executesimpletransaction(userMethod, userParameters);
+
+        if (transactionActivateUser instanceof Array) {
+            if (transactionActivateUser.length > 0) {
+                return result.json({
+                    success: true
+                });
+            }
+        }
+        else {
+            return result.status(400).json({
+                msg: transactionActivateUser.code,
+                success: false
+            });
+        }
+    }
+    catch (exception) {
+        return result.status(500).json({
+            msg: exception.message,
+            success: false
+        });
+    }
+}
 
 exports.createSubscription = async (request, result) => {
     try {
@@ -590,8 +640,79 @@ exports.createSubscription = async (request, result) => {
             });
         }
 
+        if ((typeof parameters.facebookid !== 'undefined' && parameters.facebookid) || (typeof parameters.googleid !== 'undefined' && parameters.googleid)) {
+            return result.json({
+                success: true
+            });
+        }
+        else {
+            var domainMethod = 'UFN_DOMAIN_VALUES_SEL';
+            var domainParameters = {
+                all: false,
+                corpid: 1,
+                domainname: 'ACTIVATESUBJECT',
+                orgid: 0,
+                username: parameters.username
+            };
+
+            const transactionGetSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+            if (transactionGetSubject instanceof Array) {
+                if (transactionGetSubject.length > 0) {
+                    domainParameters = {
+                        all: false,
+                        corpid: 1,
+                        domainname: 'ACTIVATEBODY',
+                        orgid: 0,
+                    };
+
+                    const transactionGetBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                    if (transactionGetBody instanceof Array) {
+                        if (transactionGetBody.length > 0) {
+                            var userCode = cryptojs.AES.encrypt(JSON.stringify({ username: parameters.username, firstname: parameters.firstname }), userSecret).toString();
+
+                            const requestSendMail = await axios({
+                                data: {
+                                    mailAddress: parameters.username,
+                                    mailBody: transactionGetBody[0].domainvalue.replace('{{link}}', `${laraigoEndpoint}activateuser/${userCode}`),
+                                    mailTitle: transactionGetSubject[0].domainvalue
+                                },
+                                method: 'post',
+                                url: `${bridgeEndpoint}processscheduler/sendmail`
+                            });
+
+                            if (requestSendMail.data.success) {
+                                return result.json({
+                                    success: true
+                                });
+                            }
+                            else {
+                                return result.status(400).json({
+                                    msg: requestSendMail.data.operationMessage,
+                                    success: false
+                                });
+                            }
+                        }
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionGetBody.code,
+                            success: false
+                        });
+                    }
+                }
+            }
+            else {
+                return result.status(400).json({
+                    msg: transactionGetSubject.code,
+                    success: false
+                });
+            }
+        }
+
         return result.json({
-            success: true
+            success: false
         });
     }
     catch (exception) {
