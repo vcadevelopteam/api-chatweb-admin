@@ -1091,4 +1091,9 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_LEADNOTES_SEL: {
+        query: "select * from ufn_leadnotes_sel($corpid,$orgid, $leadid, $leadnotesid, $all)",
+        module: "",
+        protected: "SELECT"
+    },
 }
