@@ -321,6 +321,7 @@ exports.deleteChannel = async (request, result) => {
                                     var serviceMethod = 'UFN_COMMUNICATIONCHANNELHOOK_INS';
                                     var serviceParameters = {
                                         operation: 'DELETE',
+                                        servicedata: JSON.stringify(serviceCredentials),
                                         site: serviceCredentials.twitterPageId,
                                         type: 'TWTR'
                                     };
