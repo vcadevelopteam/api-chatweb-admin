@@ -1106,4 +1106,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PERSONWITHOUTDATE_SEL: {
+        query: "select * from ufn_personwithoutdate_sel($corpid, $orgid, $username, $where, $order, $take, $skip, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
 }
