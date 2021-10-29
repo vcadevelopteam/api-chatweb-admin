@@ -24,7 +24,8 @@ exports.activateUser = async (request, result) => {
             if (!whitelist.includes(request.ip)) {
                 return result.status(400).json({
                     msg: 'Unauthorized',
-                    success: false
+                    success: false,
+                    error: true
                 });
             }
         }
@@ -54,21 +55,24 @@ exports.activateUser = async (request, result) => {
             else
             {
                 return result.json({
-                    success: false
+                    success: false,
+                    error: true
                 });
             }
         }
         else {
             return result.status(400).json({
                 msg: transactionActivateUser.code,
-                success: false
+                success: false,
+                error: true
             });
         }
     }
     catch (exception) {
         return result.status(500).json({
             msg: exception.message,
-            success: false
+            success: false,
+            error: true
         });
     }
 }
@@ -81,7 +85,8 @@ exports.getContract = async (req, res) => {
         if (result.length > 0) {
             return res.json({ error: false, success: true, data: result });
         }
-        return res.status(500).json({ error: true, success: false });
+        return res.status(500).json({ error: true, success: false,
+        error: true });
     }
     else
         return res.status(result.rescode).json(result);
@@ -93,7 +98,8 @@ exports.createSubscription = async (request, result) => {
             if (!whitelist.includes(request.ip)) {
                 return result.status(400).json({
                     msg: 'Unauthorized',
-                    success: false
+                    success: false,
+                    error: true
                 });
             }
         }
@@ -226,21 +232,24 @@ exports.createSubscription = async (request, result) => {
                                     else {
                                         return result.status(400).json({
                                             msg: 'Could not create plugin',
-                                            success: false
+                                            success: false,
+                                            error: true
                                         });
                                     }
                                 }
                                 else {
                                     return result.status(400).json({
                                         msg: 'Could not create webhook',
-                                        success: false
+                                        success: false,
+                                        error: true
                                     });
                                 }
                             }
                             else {
                                 return result.status(400).json({
                                     msg: 'Could not create integration',
-                                    success: false
+                                    success: false,
+                                    error: true
                                 });
                             }
                             break;
@@ -308,7 +317,8 @@ exports.createSubscription = async (request, result) => {
                                     else {
                                         return result.status(400).json({
                                             msg: 'No Instagram account',
-                                            success: false
+                                            success: false,
+                                            error: true
                                         });
                                     }
                                 }
@@ -348,14 +358,16 @@ exports.createSubscription = async (request, result) => {
                                 else {
                                     return result.status(400).json({
                                         msg: requestCreateFacebook.data.operationMessage,
-                                        success: false
+                                        success: false,
+                                        error: true
                                     });
                                 }
                             }
                             else {
                                 return result.status(400).json({
                                     msg: requestGetLongToken.data.operationMessage,
-                                    success: false
+                                    success: false,
+                                    error: true
                                 });
                             }
                             break;
@@ -393,7 +405,8 @@ exports.createSubscription = async (request, result) => {
                                 else {
                                     return result.status(400).json({
                                         msg: requestCreateSmooch.data.operationMessage,
-                                        success: false
+                                        success: false,
+                                        error: true
                                     });
                                 }
                                 break;
@@ -426,7 +439,8 @@ exports.createSubscription = async (request, result) => {
                             else {
                                 return result.status(400).json({
                                     msg: requestCreateTelegram.data.operationMessage,
-                                    success: false
+                                    success: false,
+                                    error: true
                                 });
                             }
                             break;
@@ -512,13 +526,15 @@ exports.createSubscription = async (request, result) => {
                                         if (transactionServiceDeleteTwitter instanceof Array) {
                                             return result.status(400).json({
                                                 msg: requestCreateTwitter.data.operationMessage,
-                                                success: false
+                                                success: false,
+                                                error: true
                                             });
                                         }
                                         else {
                                             return result.status(400).json({
                                                 msg: transactionServiceDeleteTwitter.code,
-                                                success: false
+                                                success: false,
+                                                error: true
                                             });
                                         }
                                     }
@@ -526,14 +542,16 @@ exports.createSubscription = async (request, result) => {
                                 else {
                                     return result.status(400).json({
                                         msg: transactionServiceTwitter.code,
-                                        success: false
+                                        success: false,
+                                        error: true
                                     });
                                 }
                             }
                             else {
                                 return result.status(400).json({
                                     msg: requestPageTwitter.data.operationMessage,
-                                    success: false
+                                    success: false,
+                                    error: true
                                 });
                             }
                             break;
@@ -566,7 +584,8 @@ exports.createSubscription = async (request, result) => {
                             else {
                                 return result.status(400).json({
                                     msg: requestCreateWhatsApp.data.operationMessage,
-                                    success: false
+                                    success: false,
+                                    error: true
                                 });
                             }
                             break;
@@ -633,7 +652,8 @@ exports.createSubscription = async (request, result) => {
                         else {
                             return result.status(400).json({
                                 msg: transactionCreateGeneric.code,
-                                success: false
+                                success: false,
+                                error: true
                             });
                         }
 
@@ -655,7 +675,8 @@ exports.createSubscription = async (request, result) => {
                     if (!transactionUpdateUser instanceof Array) {
                         return result.status(400).json({
                             msg: transactionUpdateUser.code,
-                            success: false
+                            success: false,
+                            error: true
                         });
                     }
                 }
@@ -663,14 +684,16 @@ exports.createSubscription = async (request, result) => {
             else {
                 return result.status(400).json({
                     msg: 'Not found',
-                    success: false
+                    success: false,
+                    error: true
                 });
             }
         }
         else {
             return result.status(400).json({
                 msg: transactionCreateSubscription.code,
-                success: false
+                success: false,
+                error: true
             });
         }
 
@@ -727,7 +750,8 @@ exports.createSubscription = async (request, result) => {
                             else {
                                 return result.status(400).json({
                                     msg: requestSendMail.data.operationMessage,
-                                    success: false
+                                    success: false,
+                                    error: true
                                 });
                             }
                         }
@@ -735,7 +759,8 @@ exports.createSubscription = async (request, result) => {
                     else {
                         return result.status(400).json({
                             msg: transactionGetBody.code,
-                            success: false
+                            success: false,
+                            error: true
                         });
                     }
                 }
@@ -743,19 +768,22 @@ exports.createSubscription = async (request, result) => {
             else {
                 return result.status(400).json({
                     msg: transactionGetSubject.code,
-                    success: false
+                    success: false,
+                    error: true
                 });
             }
         }
 
         return result.json({
-            success: false
+            success: false,
+            error: true
         });
     }
     catch (exception) {
         return result.status(500).json({
             msg: exception.message,
-            success: false
+            success: false,
+            error: true
         });
     }
 }
@@ -766,7 +794,8 @@ exports.getPageList = async (request, result) => {
             if (!whitelist.includes(request.ip)) {
                 return result.status(400).json({
                     msg: 'Unauthorized',
-                    success: false
+                    success: false,
+                    error: true
                 });
             }
         }
@@ -789,14 +818,16 @@ exports.getPageList = async (request, result) => {
         else {
             return result.status(400).json({
                 msg: requestGetFacebook.data.operationMessage,
-                success: false
+                success: false,
+                error: true
             });
         }
     }
     catch (exception) {
         return result.status(500).json({
             msg: exception.message,
-            success: false
+            success: false,
+            error: true
         });
     }
 }
@@ -807,7 +838,8 @@ exports.validateUserId = async (request, result) => {
             if (!whitelist.includes(request.ip)) {
                 return result.status(400).json({
                     msg: 'Unauthorized',
-                    success: false
+                    success: false,
+                    error: true
                 });
             }
         }
@@ -835,28 +867,32 @@ exports.validateUserId = async (request, result) => {
                 else {
                     return result.status(400).json({
                         msg: transactionUpdateUser.code,
-                        success: false
+                        success: false,
+                        error: true
                     });
                 }
             }
             else {
                 return result.status(400).json({
                     msg: 'Password does not match',
-                    success: false
+                    success: false,
+                    error: true
                 });
             }
         }
         else {
             return result.status(400).json({
                 msg: transactionSelectUser.code,
-                success: false
+                success: false,
+                error: true
             });
         }
     }
     catch (exception) {
         return result.status(500).json({
             msg: exception.message,
-            success: false
+            success: false,
+            error: true
         });
     }
 }
@@ -867,7 +903,8 @@ exports.validateUsername = async (request, result) => {
             if (!whitelist.includes(request.ip)) {
                 return result.status(400).json({
                     msg: 'Unauthorized',
-                    success: false
+                    success: false,
+                    error: true
                 });
             }
         }
@@ -903,14 +940,16 @@ exports.validateUsername = async (request, result) => {
         else {
             return result.status(400).json({
                 msg: transactionSelectUser.code,
-                success: false
+                success: false,
+                error: true
             });
         }
     }
     catch (exception) {
         return result.status(500).json({
             msg: exception.message,
-            success: false
+            success: false,
+            error: true
         });
     }
 }
