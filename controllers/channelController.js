@@ -596,6 +596,7 @@ exports.insertChannel = async (request, result) => {
         parameters.botconfigurationid = null;
         parameters.botenabled = null;
         parameters.channelparameters = null;
+        parameters.chatflowenabled = true;
         parameters.coloricon = parameters.coloricon || null;
         parameters.communicationchannelcontact = '';
         parameters.communicationchanneltoken = null;
