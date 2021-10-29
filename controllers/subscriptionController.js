@@ -32,8 +32,12 @@ exports.activateUser = async (request, result) => {
 
         var { userCode } = request.body;
 
-        var processedUserCode = userCode.replace("_PLUS_", "+").replace("_SLASH_", "/").replace("_EQUAL_", "=");
+        var processedUserCode = userCode;
 
+        processedUserCode = processedUserCode.split("_EQUAL_").join("=");
+        processedUserCode = processedUserCode.split("_SLASH_").join("/");
+        processedUserCode = processedUserCode.split("_PLUS_").join("+");
+        
         var userByte  = cryptojs.AES.decrypt(processedUserCode, userSecret);
 
         var userData = JSON.parse(userByte.toString(cryptojs.enc.Utf8));
@@ -729,7 +733,11 @@ exports.createSubscription = async (request, result) => {
                         if (transactionGetBody.length > 0) {
                             var userCode = cryptojs.AES.encrypt(JSON.stringify({ username: parameters.username, firstname: parameters.firstname }), userSecret).toString();
 
-                            var processedUserCode = userCode.replace("+", "_PLUS_").replace("/", "_SLASH_").replace("=", "_EQUAL_");
+                            var processedUserCode = userCode;
+
+                            processedUserCode = processedUserCode.split("=").join("_EQUAL_");
+                            processedUserCode = processedUserCode.split("/").join("_SLASH_");
+                            processedUserCode = processedUserCode.split("+").join("_PLUS_");
 
                             const requestSendMail = await axios({
                                 data: {
