@@ -55,7 +55,7 @@ exports.activateUser = async (request, result) => {
             else
             {
                 return result.json({
-                    success: true
+                    success: false
                 });
             }
         }
