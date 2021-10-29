@@ -574,7 +574,7 @@ exports.createSubscription = async (request, result) => {
                         case 'WHATSAPPSMOOCH':
                             channelParameters.communicationchannelowner = '';
                             channelParameters.communicationchannelsite = '';
-                            channelParameters.servicecredentials = JSON.stringify(service);
+                            channelParameters.servicecredentials = JSON.stringify(channelService);
                             channelParameters.status = 'PENDIENTE';
                             channelParameters.type = 'WHAT';
 
