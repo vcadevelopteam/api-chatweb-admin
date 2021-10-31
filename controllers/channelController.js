@@ -15,6 +15,50 @@ const webChatPlatformEndpoint = process.env.WEBCHATPLATFORM;
 const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
 const whatsAppEndpoint = process.env.WHATSAPPAPI;
 
+exports.checkPaymentPlan = async (request, result) => {
+    try {
+        var method = 'UFN_PAYMENTPLAN_CHECK';
+        var parameters = {};
+
+        setSessionParameters(parameters, request.user);
+
+        parameters.corpid = request.user.corpid;
+
+        const transactionCheckPaymentPlan = await triggerfunctions.executesimpletransaction(method, parameters);
+
+        if (transactionCheckPaymentPlan instanceof Array) {
+            if (transactionCheckPaymentPlan.length > 0) {
+                var createChannel = transactionCheckPaymentPlan[0].channelnumber < transactionCheckPaymentPlan[0].channelscontracted ? true : false;
+
+                return result.json({
+                    createChannel: createChannel,
+                    providerWhatsApp: transactionCheckPaymentPlan[0].providerwhatsapp,
+                    success: true
+                });
+            }
+            else {
+                return result.json({
+                    createChannel: true,
+                    providerWhatsApp: 'DIALOG',
+                    success: true
+                });
+            }
+        }
+        else {
+            return result.status(400).json({
+                msg: transactionCheckPaymentPlan.code,
+                success: false
+            });
+        }
+    }
+    catch (exception) {
+        return result.status(500).json({
+            msg: exception.message,
+            success: false
+        });
+    }
+}
+
 exports.deleteChannel = async (request, result) => {
     try {
         var { method, parameters = {} } = request.body;
