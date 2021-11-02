@@ -1131,4 +1131,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CURRENCY_SEL: {
+        query: "SELECT code, description FROM currency",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_COUNTRY_SEL: {
+        query: "SELECT code, description, currencycode FROM country",
+        module: "",
+        protected: "SELECT"
+    },
 }

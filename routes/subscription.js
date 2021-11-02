@@ -27,4 +27,12 @@ router.post("/validateusername",
     subscriptionController.validateUsername
 )
 
+router.get("/currencylist",
+    subscriptionController.currencyList
+)
+
+router.get("/countrylist",
+    subscriptionController.countryList
+)
+
 module.exports = router;

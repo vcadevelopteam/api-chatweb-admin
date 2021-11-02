@@ -961,3 +961,61 @@ exports.validateUsername = async (request, result) => {
         });
     }
 }
+
+exports.currencyList = async (request, result) => {
+    try {
+        if (typeof whitelist !== 'undefined' && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(400).json({
+                    msg: 'Unauthorized',
+                    success: false,
+                    error: true
+                });
+            }
+        }
+
+        const queryResult = await triggerfunctions.executesimpletransaction('UFN_CURRENCY_SEL', {});
+
+        if (queryResult instanceof Array) {
+            return result.json({ error: false, success: true, data: queryResult });
+        }
+        else
+            return result.status(400).json({ error: true, success: false, data: queryResult });
+    }
+    catch (exception) {
+        return result.status(500).json({
+            msg: exception.message,
+            success: false,
+            error: true
+        });
+    }
+}
+
+exports.countryList = async (request, result) => {
+    try {
+        if (typeof whitelist !== 'undefined' && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(400).json({
+                    msg: 'Unauthorized',
+                    success: false,
+                    error: true
+                });
+            }
+        }
+
+        const queryResult = await triggerfunctions.executesimpletransaction('UFN_COUNTRY_SEL', {});
+
+        if (queryResult instanceof Array) {
+            return result.json({ error: false, success: true, data: queryResult });
+        }
+        else
+            return result.status(400).json({ error: true, success: false, data: queryResult });
+    }
+    catch (exception) {
+        return result.status(500).json({
+            msg: exception.message,
+            success: false,
+            error: true
+        });
+    }
+}
