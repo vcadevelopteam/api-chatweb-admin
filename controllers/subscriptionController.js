@@ -611,6 +611,14 @@ exports.createSubscription = async (request, result) => {
         }
 
         parameters.password = await bcryptjs.hash(parameters.password, await bcryptjs.genSalt(10));
+        
+        if (typeof parameters.country === 'undefined' || !parameters.country) {
+            parameters.country = null;
+        }
+
+        if (typeof parameters.currency === 'undefined' || !parameters.currency) {
+            parameters.currency = null;
+        }
 
         const transactionCreateSubscription = await triggerfunctions.executesimpletransaction(method, parameters);
 
