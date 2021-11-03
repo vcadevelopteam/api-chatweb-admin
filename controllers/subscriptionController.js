@@ -708,9 +708,9 @@ exports.createSubscription = async (request, result) => {
 
                                                 if (transactionGetBody instanceof Array) {
                                                     if (transactionGetBody.length > 0) {
-                                                        var mailBody = transactionGetSubject[0].domainvalue;
+                                                        var mailBody = transactionGetBody[0].domainvalue;
                                                         var mailRecipient = transactionGetRecipient[0].domainvalue;
-                                                        var mailSubject = transactionGetBody[0].domainvalue;
+                                                        var mailSubject = transactionGetSubject[0].domainvalue;
 
                                                         mailBody = mailBody.split("{{brandname}}").join(channelServiceArray[index].brandname);
                                                         mailBody = mailBody.split("{{brandaddress}}").join(channelServiceArray[index].brandaddress);

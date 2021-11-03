@@ -1241,9 +1241,9 @@ exports.insertChannel = async (request, result) => {
 
                                             if (transactionGetBody instanceof Array) {
                                                 if (transactionGetBody.length > 0) {
-                                                    var mailBody = transactionGetSubject[0].domainvalue;
+                                                    var mailBody = transactionGetBody[0].domainvalue;
                                                     var mailRecipient = transactionGetRecipient[0].domainvalue;
-                                                    var mailSubject = transactionGetBody[0].domainvalue;
+                                                    var mailSubject = transactionGetSubject[0].domainvalue;
 
                                                     mailBody = mailBody.split("{{brandname}}").join(service.brandname);
                                                     mailBody = mailBody.split("{{brandaddress}}").join(service.brandaddress);
