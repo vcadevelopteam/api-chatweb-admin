@@ -1057,7 +1057,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_INS: {
-        query: "select * from ufn_lead_ins($corpid, $orgid, $id, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $column_uuid, $username, $index, $phone, $email, $operation)",
+        query: "select * from ufn_lead_ins($corpid,$orgid,$id,$description,$type,$status,$expected_revenue,$date_deadline,$tags,$personcommunicationchannel,$priority,$conversationid,$columnid,$column_uuid,$username,$index,$phone,$email,$userid,$phase,$operation)",
         module: "",
         protected: "SELECT"
     },
@@ -1140,5 +1140,25 @@ module.exports = {
         query: "SELECT code, description, currencycode FROM country",
         module: "",
         protected: "SELECT"
+    },
+    UFN_LEADACTIVITY_SEL: {
+        query: "select * from ufn_leadactivity_sel($corpid,$orgid,$leadid,$leadactivityid,$all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEADACTIVITY_INS: {
+        query: "select * from ufn_leadactivity_ins($corpid,$orgid,$leadid,$leadactivityid,$description,$duedate,$assignto,$type,$status,$username,$operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_LEADNOTES_SEL: {
+        query: "select * from ufn_leadnotes_sel($corpid,$orgid,$leadid,$leadnotesid,$all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEADNOTES_INS: {
+        query: "select * from ufn_leadnotes_ins($corpid,$orgid,$leadid,$leadnotesid,$description,$type,$status,$username,$media,$operation)",
+        module: "",
+        protected: "INSERT"
     },
 }
