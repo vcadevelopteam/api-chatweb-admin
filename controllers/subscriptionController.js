@@ -864,11 +864,28 @@ exports.createSubscription = async (request, result) => {
                             processedUserCode = processedUserCode.split("/").join("_SLASH_");
                             processedUserCode = processedUserCode.split("+").join("_PLUS_");
 
+                            var mailBody = transactionGetBody[0];
+
+                            mailBody = mailBody.split("{{link}}").join(`${laraigoEndpoint}activateuser/${encodeURIComponent(processedUserCode)}`);
+                            mailBody = mailBody.split("{{organizationname}}").join(parameters.organizationname);
+                            mailBody = mailBody.split("{{paymentplan}}").join(parameters.paymentplan);
+                            mailBody = mailBody.split("{{firstname}}").join(parameters.firstname);
+                            mailBody = mailBody.split("{{lastname}}").join(parameters.lastname);
+                            mailBody = mailBody.split("{{username}}").join(parameters.username);
+
+                            var mailSubject = transactionGetSubject[0].domainvalue;
+
+                            mailSubject = mailSubject.split("{{organizationname}}").join(parameters.organizationname);
+                            mailSubject = mailSubject.split("{{paymentplan}}").join(parameters.paymentplan);
+                            mailSubject = mailSubject.split("{{firstname}}").join(parameters.firstname);
+                            mailSubject = mailSubject.split("{{lastname}}").join(parameters.lastname);
+                            mailSubject = mailSubject.split("{{username}}").join(parameters.username);
+
                             const requestSendMail = await axios({
                                 data: {
                                     mailAddress: parameters.username,
-                                    mailBody: transactionGetBody[0].domainvalue.replace('{{link}}', `${laraigoEndpoint}activateuser/${encodeURIComponent(processedUserCode)}`),
-                                    mailTitle: transactionGetSubject[0].domainvalue
+                                    mailBody: mailBody,
+                                    mailTitle: mailSubject
                                 },
                                 method: 'post',
                                 url: `${bridgeEndpoint}processscheduler/sendmail`
