@@ -669,6 +669,122 @@ exports.createSubscription = async (request, result) => {
                             });
                         }
 
+                        if (channelParametersArray[index].type === 'WHAT') {
+                            if ((typeof channelServiceArray[index] !== 'undefined' && channelServiceArray[index])) {
+                                var domainMethod = 'UFN_DOMAIN_VALUES_SEL';
+                                var domainParameters = {
+                                    all: false,
+                                    corpid: 1,
+                                    domainname: 'WHATSAPPRECIPIENT',
+                                    orgid: 0,
+                                    username: parameters.username
+                                };
+
+                                const transactionGetRecipient = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                                if (transactionGetRecipient instanceof Array) {
+                                    if (transactionGetRecipient.length > 0) {
+                                        domainParameters = {
+                                            all: false,
+                                            corpid: 1,
+                                            domainname: 'WHATSAPPSUBJECT',
+                                            orgid: 0,
+                                            username: parameters.username
+                                        };
+
+                                        const transactionGetSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                                        if (transactionGetSubject instanceof Array) {
+                                            if (transactionGetSubject.length > 0) {
+                                                domainParameters = {
+                                                    all: false,
+                                                    corpid: 1,
+                                                    domainname: 'WHATSAPPBODY',
+                                                    orgid: 0,
+                                                    username: parameters.username
+                                                };
+
+                                                const transactionGetBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                                                if (transactionGetBody instanceof Array) {
+                                                    if (transactionGetBody.length > 0) {
+                                                        var mailBody = transactionGetBody[0].domainvalue;
+                                                        var mailRecipient = transactionGetRecipient[0].domainvalue;
+                                                        var mailSubject = transactionGetSubject[0].domainvalue;
+
+                                                        mailBody = mailBody.split("{{brandname}}").join(channelServiceArray[index].brandname);
+                                                        mailBody = mailBody.split("{{brandaddress}}").join(channelServiceArray[index].brandaddress);
+                                                        mailBody = mailBody.split("{{firstname}}").join(channelServiceArray[index].firstname);
+                                                        mailBody = mailBody.split("{{lastname}}").join(channelServiceArray[index].lastname);
+                                                        mailBody = mailBody.split("{{email}}").join(channelServiceArray[index].email);
+                                                        mailBody = mailBody.split("{{phone}}").join(channelServiceArray[index].phone);
+                                                        mailBody = mailBody.split("{{customerfacebookid}}").join(channelServiceArray[index].customerfacebookid);
+                                                        mailBody = mailBody.split("{{phonenumberwhatsappbusiness}}").join(channelServiceArray[index].phonenumberwhatsappbusiness);
+                                                        mailBody = mailBody.split("{{nameassociatednumber}}").join(channelServiceArray[index].nameassociatednumber);
+                                                        mailBody = mailBody.split("{{corpid}}").join(corpId);
+                                                        mailBody = mailBody.split("{{orgid}}").join(orgId);
+                                                        mailBody = mailBody.split("{{username}}").join(parameters.username);
+
+                                                        mailSubject = mailSubject.split("{{brandname}}").join(channelServiceArray[index].brandname);
+                                                        mailSubject = mailSubject.split("{{brandaddress}}").join(channelServiceArray[index].brandaddress);
+                                                        mailSubject = mailSubject.split("{{firstname}}").join(channelServiceArray[index].firstname);
+                                                        mailSubject = mailSubject.split("{{lastname}}").join(channelServiceArray[index].lastname);
+                                                        mailSubject = mailSubject.split("{{email}}").join(channelServiceArray[index].email);
+                                                        mailSubject = mailSubject.split("{{phone}}").join(channelServiceArray[index].phone);
+                                                        mailSubject = mailSubject.split("{{customerfacebookid}}").join(channelServiceArray[index].customerfacebookid);
+                                                        mailSubject = mailSubject.split("{{phonenumberwhatsappbusiness}}").join(channelServiceArray[index].phonenumberwhatsappbusiness);
+                                                        mailSubject = mailSubject.split("{{nameassociatednumber}}").join(channelServiceArray[index].nameassociatednumber);
+                                                        mailSubject = mailSubject.split("{{corpid}}").join(corpId);
+                                                        mailSubject = mailSubject.split("{{orgid}}").join(orgId);
+                                                        mailSubject = mailSubject.split("{{username}}").join(parameters.username);
+
+                                                        const requestSendMail = await axios({
+                                                            data: {
+                                                                mailAddress: mailRecipient,
+                                                                mailBody: mailBody,
+                                                                mailTitle: mailSubject
+                                                            },
+                                                            method: 'post',
+                                                            url: `${bridgeEndpoint}processscheduler/sendmail`
+                                                        });
+                            
+                                                        if (!requestSendMail.data.success) {
+                                                            return result.status(400).json({
+                                                                msg: requestSendMail.data.operationMessage,
+                                                                success: false,
+                                                                error: true
+                                                            });
+                                                        }
+                                                    }
+                                                }
+                                                else {
+                                                    return result.status(400).json({
+                                                        msg: transactionGetBody.code,
+                                                        success: false,
+                                                        error: true
+                                                    });
+                                                }
+                                            }
+                                        }
+                                        else {
+                                            return result.status(400).json({
+                                                msg: transactionGetSubject.code,
+                                                success: false,
+                                                error: true
+                                            });
+                                        }
+                                    }
+                                }
+                                else {
+                                    return result.status(400).json({
+                                        msg: transactionGetRecipient.code,
+                                        success: false,
+                                        error: true
+                                    });
+                                }
+                            }
+                        }
+
                         index++;
                     }
                 }

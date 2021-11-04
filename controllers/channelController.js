@@ -1203,6 +1203,120 @@ exports.insertChannel = async (request, result) => {
                     const transactionCreateWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateWhatsAppSmooch instanceof Array) {
+                        if (parameters.type === 'WHAT') {
+                            var domainMethod = 'UFN_DOMAIN_VALUES_SEL';
+                            var domainParameters = {
+                                all: false,
+                                corpid: 1,
+                                domainname: 'WHATSAPPRECIPIENT',
+                                orgid: 0,
+                                username: request.user.usr
+                            };
+                            
+                            const transactionGetRecipient = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                            if (transactionGetRecipient instanceof Array) {
+                                if (transactionGetRecipient.length > 0) {
+                                    domainParameters = {
+                                        all: false,
+                                        corpid: 1,
+                                        domainname: 'WHATSAPPSUBJECT',
+                                        orgid: 0,
+                                        username: request.user.usr
+                                    };
+
+                                    const transactionGetSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                                    if (transactionGetSubject instanceof Array) {
+                                        if (transactionGetSubject.length > 0) {
+                                            domainParameters = {
+                                                all: false,
+                                                corpid: 1,
+                                                domainname: 'WHATSAPPBODY',
+                                                orgid: 0,
+                                                username: request.user.usr
+                                            };
+
+                                            const transactionGetBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                                            if (transactionGetBody instanceof Array) {
+                                                if (transactionGetBody.length > 0) {
+                                                    var mailBody = transactionGetBody[0].domainvalue;
+                                                    var mailRecipient = transactionGetRecipient[0].domainvalue;
+                                                    var mailSubject = transactionGetSubject[0].domainvalue;
+
+                                                    mailBody = mailBody.split("{{brandname}}").join(service.brandname);
+                                                    mailBody = mailBody.split("{{brandaddress}}").join(service.brandaddress);
+                                                    mailBody = mailBody.split("{{firstname}}").join(service.firstname);
+                                                    mailBody = mailBody.split("{{lastname}}").join(service.lastname);
+                                                    mailBody = mailBody.split("{{email}}").join(service.email);
+                                                    mailBody = mailBody.split("{{phone}}").join(service.phone);
+                                                    mailBody = mailBody.split("{{customerfacebookid}}").join(service.customerfacebookid);
+                                                    mailBody = mailBody.split("{{phonenumberwhatsappbusiness}}").join(service.phonenumberwhatsappbusiness);
+                                                    mailBody = mailBody.split("{{nameassociatednumber}}").join(service.nameassociatednumber);
+                                                    mailBody = mailBody.split("{{corpid}}").join(request.user.corpid);
+                                                    mailBody = mailBody.split("{{orgid}}").join(request.user.orgid);
+                                                    mailBody = mailBody.split("{{username}}").join(request.user.usr);
+
+                                                    mailSubject = mailSubject.split("{{brandname}}").join(service.brandname);
+                                                    mailSubject = mailSubject.split("{{brandaddress}}").join(service.brandaddress);
+                                                    mailSubject = mailSubject.split("{{firstname}}").join(service.firstname);
+                                                    mailSubject = mailSubject.split("{{lastname}}").join(service.lastname);
+                                                    mailSubject = mailSubject.split("{{email}}").join(service.email);
+                                                    mailSubject = mailSubject.split("{{phone}}").join(service.phone);
+                                                    mailSubject = mailSubject.split("{{customerfacebookid}}").join(service.customerfacebookid);
+                                                    mailSubject = mailSubject.split("{{phonenumberwhatsappbusiness}}").join(service.phonenumberwhatsappbusiness);
+                                                    mailSubject = mailSubject.split("{{nameassociatednumber}}").join(service.nameassociatednumber);
+                                                    mailSubject = mailSubject.split("{{corpid}}").join(request.user.corpid);
+                                                    mailSubject = mailSubject.split("{{orgid}}").join(request.user.orgid);
+                                                    mailSubject = mailSubject.split("{{username}}").join(request.user.usr);
+
+                                                    const requestSendMail = await axios({
+                                                        data: {
+                                                            mailAddress: mailRecipient,
+                                                            mailBody: mailBody,
+                                                            mailTitle: mailSubject
+                                                        },
+                                                        method: 'post',
+                                                        url: `${bridgeEndpoint}processscheduler/sendmail`
+                                                    });
+                            
+                                                    if (!requestSendMail.data.success) {
+                                                        return result.status(400).json({
+                                                            msg: requestSendMail.data.operationMessage,
+                                                            success: false,
+                                                            error: true
+                                                        });
+                                                    }
+                                                }
+                                            }
+                                            else {
+                                                return result.status(400).json({
+                                                    msg: transactionGetBody.code,
+                                                    success: false,
+                                                    error: true
+                                                });
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        return result.status(400).json({
+                                            msg: transactionGetSubject.code,
+                                            success: false,
+                                            error: true
+                                        });
+                                    }
+                                }
+                            }
+                            else {
+                                return result.status(400).json({
+                                    msg: transactionGetRecipient.code,
+                                    success: false,
+                                    error: true
+                                });
+                            }
+                        }
+
                         return result.json({
                             success: true
                         });
