@@ -1469,6 +1469,18 @@ exports.activateChannel = async (request, result) => {
         parameters.status = 'ACTIVO';
         parameters.username = request.user.usr;
 
+        parameters.communicationchannelcontact = '';
+        parameters.communicationchanneltoken = '';
+        parameters.customicon = null;
+        parameters.botenabled = true;
+        parameters.botconfigurationid = null;
+        parameters.schedule = null;
+        parameters.appintegrationid = null;
+        parameters.country = null;
+        parameters.channelparameters = null;
+        parameters.updintegration = null;
+        parameters.resolvelithium = null;
+
         if (request.body.type === 'WHATSAPP') {
             const requestCreateWhatsApp = await axios({
                 data: {
