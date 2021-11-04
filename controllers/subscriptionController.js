@@ -113,6 +113,8 @@ exports.createSubscription = async (request, result) => {
         var channelParametersArray = [];
         var channelServiceArray = [];
 
+        var channelData = '';
+
         if (channellist instanceof Array) {
             for (const channel of channellist) {
                 if (typeof channel !== 'undefined' && channel) {
@@ -646,6 +648,8 @@ exports.createSubscription = async (request, result) => {
                                 channelTotal = `${channelTotal},${transactionCreateGeneric[0].ufn_communicationchannel_ins2}`;
                             }
 
+                            channelData = `<b>${channelParametersArray[index].description}</b>;${channelData}`;
+
                             try {
                                 if (channelParametersArray[index].type === 'CHAZ') {
                                     if (typeof webChatPlatformEndpoint !== 'undefined' && webChatPlatformEndpoint) {
@@ -872,6 +876,8 @@ exports.createSubscription = async (request, result) => {
                             mailBody = mailBody.split("{{firstname}}").join(parameters.firstname);
                             mailBody = mailBody.split("{{lastname}}").join(parameters.lastname);
                             mailBody = mailBody.split("{{username}}").join(parameters.username);
+                            mailBody = mailBody.split("{{country}}").join(parameters.country);
+                            mailBody = mailBody.split("{{channeldata}}").join(channelData);
 
                             var mailSubject = transactionGetSubject[0].domainvalue;
 
@@ -880,6 +886,8 @@ exports.createSubscription = async (request, result) => {
                             mailSubject = mailSubject.split("{{firstname}}").join(parameters.firstname);
                             mailSubject = mailSubject.split("{{lastname}}").join(parameters.lastname);
                             mailSubject = mailSubject.split("{{username}}").join(parameters.username);
+                            mailSubject = mailSubject.split("{{country}}").join(parameters.country);
+                            mailSubject = mailSubject.split("{{channeldata}}").join(channelData);
 
                             const requestSendMail = await axios({
                                 data: {
