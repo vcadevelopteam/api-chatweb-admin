@@ -172,7 +172,7 @@ const laraigoQuery = async (query, bind = {}) => {
     }).catch(err => getErrorSeq(err));
 }
 
-const migrationExecute = (corpidBind, queries) => {
+const migrationExecute = async (corpidBind, queries) => {
     for (const [k,q] of Object.entries(queries)) {
         let selectResult = await zyxmeQuery(q.select.replace('\n',' '), corpidBind);
         if (selectResult instanceof Array) {
