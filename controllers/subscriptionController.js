@@ -868,7 +868,7 @@ exports.createSubscription = async (request, result) => {
                             processedUserCode = processedUserCode.split("/").join("_SLASH_");
                             processedUserCode = processedUserCode.split("+").join("_PLUS_");
 
-                            var mailBody = transactionGetBody[0];
+                            var mailBody = transactionGetBody[0].domainvalue;
 
                             mailBody = mailBody.split("{{link}}").join(`${laraigoEndpoint}activateuser/${encodeURIComponent(processedUserCode)}`);
                             mailBody = mailBody.split("{{organizationname}}").join(parameters.organizationname);
