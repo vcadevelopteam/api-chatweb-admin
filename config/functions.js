@@ -1,6 +1,6 @@
 module.exports = {
     QUERY_AUTHENTICATED: {
-        query: "select org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.redirect, role.description roledesc from usr us inner join orguser ous on ous.userid = us.userid inner join org org on org.orgid = ous.orgid inner join corp corp on corp.corpid = ous.corpid inner join role role on role.roleid = ous.roleid where us.usr = $usr and ous.bydefault and ous.status <> 'ELIMINADO' limit 1",
+        query: "select org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.redirect, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode from usr us inner join orguser ous on ous.userid = us.userid inner join org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency inner join corp corp on corp.corpid = ous.corpid inner join role role on role.roleid = ous.roleid where us.usr = $usr and ous.bydefault and ous.status <> 'ELIMINADO' limit 1",
         module: "",
         protected: false
     },
@@ -10,12 +10,12 @@ module.exports = {
         protected: false
     },
     QUERY_AUTHENTICATED_BY_FACEBOOKID: {
-        query: "select org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.redirect, role.description roledesc from usr us inner join orguser ous on ous.userid = us.userid inner join org org on org.orgid = ous.orgid inner join corp corp on corp.corpid = ous.corpid inner join role role on role.roleid = ous.roleid where us.facebookid = $facebookid and ous.bydefault and ous.status <> 'ELIMINADO'limit 1",
+        query: "select org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.redirect, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode from usr us inner join orguser ous on ous.userid = us.userid inner join org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency inner join corp corp on corp.corpid = ous.corpid inner join role role on role.roleid = ous.roleid where us.facebookid = $facebookid and ous.bydefault and ous.status <> 'ELIMINADO'limit 1",
         module: "",
         protected: false
     },
     QUERY_AUTHENTICATED_BY_GOOGLEID: {
-        query: "select org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.redirect, role.description roledesc from usr us inner join orguser ous on ous.userid = us.userid inner join org org on org.orgid = ous.orgid inner join corp corp on corp.corpid = ous.corpid inner join role role on role.roleid = ous.roleid where us.googleid = $googleid and ous.bydefault and ous.status <> 'ELIMINADO' limit 1",
+        query: "select org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.redirect, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode from usr us inner join orguser ous on ous.userid = us.userid inner join org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency inner join corp corp on corp.corpid = ous.corpid inner join role role on role.roleid = ous.roleid where us.googleid = $googleid and ous.bydefault and ous.status <> 'ELIMINADO' limit 1",
         module: "",
         protected: false
     },
@@ -1057,9 +1057,9 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_INS: {
-        query: "select * from ufn_lead_ins($corpid,$orgid,$id,$description,$type,$status,$expected_revenue,$date_deadline,$tags,$personcommunicationchannel,$priority,$conversationid,$columnid,$column_uuid,$username,$index,$phone,$email,$userid,$phase,$operation)",
+        query: "select * from ufn_lead_ins($corpid,$orgid, $leadid, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $column_uuid, $username, $index, $phone, $email, $userid, $phase $operation)",
         module: "",
-        protected: "SELECT"
+        protected: "INSERT"
     },
     UFN_LEAD_PERSON_INS: {
         query: "select * from ufn_lead_person_ins($corpid, $orgid, $id, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $username, $index, $firstname, $lastname, $email, $phone, $personid)",

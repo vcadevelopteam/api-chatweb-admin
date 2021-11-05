@@ -1455,3 +1455,104 @@ exports.updateChannel = async (request, result) => {
         });
     }
 }
+
+exports.activateChannel = async (request, result) => {
+    try {
+        var { method, parameters = {}, service = {} } = request.body;
+
+        setSessionParameters(parameters, request.user);
+
+        parameters.corpid = request.user.corpid;
+        parameters.motive = 'Activate from API';
+        parameters.operation = 'UPDATE';
+        parameters.orgid = request.user.orgid;
+        parameters.status = 'ACTIVO';
+        parameters.username = request.user.usr;
+
+        parameters.communicationchannelcontact = '';
+        parameters.communicationchanneltoken = '';
+        parameters.customicon = null;
+        parameters.botenabled = true;
+        parameters.botconfigurationid = null;
+        parameters.schedule = null;
+        parameters.appintegrationid = null;
+        parameters.country = null;
+        parameters.channelparameters = null;
+        parameters.updintegration = null;
+        parameters.resolvelithium = null;
+
+        if (request.body.type === 'WHATSAPP') {
+            const requestCreateWhatsApp = await axios({
+                data: {
+                    accessToken: service.accesstoken,
+                    linkType: 'WHATSAPPADD'
+                },
+                method: 'post',
+                url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`
+            });
+
+            if (requestCreateWhatsApp.data.success) {
+                var serviceCredentials = {
+                    apiKey: service.accesstoken,
+                    endpoint: whatsAppEndpoint,
+                    number: requestCreateWhatsApp.data.phoneNumber
+                };
+
+                parameters.communicationchannelsite = requestCreateWhatsApp.data.phoneNumber;
+                parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                parameters.type = 'WHAD';
+
+                const transactionActivateWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                if (transactionActivateWhatsApp instanceof Array) {
+                    return result.json({
+                        success: true
+                    });
+                }
+                else {
+                    return result.status(400).json({
+                        msg: transactionActivateWhatsApp.code,
+                        success: false
+                    });
+                }
+            }
+            else {
+                return result.status(400).json({
+                    msg: requestCreateWhatsApp.data.operationMessage,
+                    success: false
+                });
+            }
+        }
+        else {
+            parameters.communicationchannelsite = service.appid;
+            parameters.servicecredentials = JSON.stringify({
+                apiKeyId: service.apikeyid,
+                apiKeySecret: service.apikeysecret,
+                appId: service.appid,
+                endpoint: 'https://api.smooch.io/',
+                version: 'v1.1'
+            });
+            parameters.type = 'WHAT';
+
+            const transactionActivateWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
+            
+            if (transactionActivateWhatsApp instanceof Array) {
+                return result.json({
+                    success: true
+                });
+            }
+            else {
+                return result.status(400).json({
+                    msg: transactionActivateWhatsApp.code,
+                    success: false
+                });
+            }
+        }
+    }
+    catch (exception) {
+        return result.status(500).json({
+            msg: exception.message,
+            success: false
+        });
+    }
+}

@@ -2,6 +2,11 @@ const auth = require('../middleware/auth');
 const channelController = require("../controllers/channelController");
 const router = require("express").Router();
 
+router.post("/activatechannel",
+    auth,
+    channelController.activateChannel
+)
+
 router.post("/checkpaymentplan",
     auth,
     channelController.checkPaymentPlan
