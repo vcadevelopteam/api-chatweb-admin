@@ -637,5 +637,36 @@ module.exports = {
             column: "ch.attended",
             type: "number"
         }
-    }
+    },
+    lead: {
+        opportunity: {
+            column: "ld.opportunity"
+        },
+        contact_name: {
+            column: "pcc.displayname"
+        },
+        email: {
+            column: "ld.email"
+        },
+        phone: {
+            column: "ld.phone"
+        },
+        sales_person: {
+            column: "ld.createby"
+        },
+        next_activity: {
+            column: "lda.description"
+        },
+        expected_revenue: {
+            column: "ld.expected_revenue",
+            type: "number"
+        },
+        expected_closing: {
+            column: "ld.date_deadline + p_offset * INTERVAL '1hour'",
+            type: "date"
+        },
+        stage: {
+            column: "col.description"
+        },
+    },
 }
