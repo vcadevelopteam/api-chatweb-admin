@@ -1156,4 +1156,19 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_LEADGRID_SEL: {
+        query: "SELECT * FROM ufn_leadgrid_sel($corpid, $orgid, $take, $skip, $where, $order, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEADGRID_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_leadgrid_totalrecords($corpid, $orgid, $where, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEADGRID_EXPORT: {
+        query: "SELECT * FROM ufn_leadgrid_export($corpid, $orgid, $where, $order, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
 }
