@@ -36,7 +36,7 @@ Core
 ||"botconfiguration"
 |||"communicationchannel"
 ||||"communicationchannelstatus"
-||||"property" (Se está completando las columas nuevas con una busqueda de propiedades del mismo nombre)
+||||"property"
 "usr" (Falta la reencriptacion de la contraseña, no existe table billingroupid, que hacer con las columans nuevas?)
 |"usertoken"
 |"userstatus"
@@ -44,15 +44,17 @@ Core
 ||"usrnotification"
 ||"orguser"
 
-SubCore
+SubCoreClassification
 "classification"
 |"quickreply"
+SubCorePerson
 "person"
 |"personaddinfo"
 |"personcommunicationchannel"
+SubcoreConversation
 |"post"
 ||"pccstatus"
-||"conversation" (Falta transformación del variables context de array a objeto)
+||"conversation"
 |||"conversationclassification"
 |||"conversationnote"
 |||"conversationpause"
@@ -60,11 +62,13 @@ SubCore
 |||"conversationstatus"
 |||"interaction"
 |||"surveyanswered" ("survey", "surveyquestion", "surveyanswer")
+SubcoreCampaign
 "messagetemplate"
 |"campaign"
 ||"campaignmember"
 ||"campaignhistory"
-||"taskscheduler" (Revisar si hay tareas que se debe validar para no insertar duplicados)
+SubcoreOthers
+||"taskscheduler"
 "blockversion"
 |"block"
 |"tablevariableconfiguration"
@@ -191,6 +195,17 @@ const migrationExecute = async (corpidBind, queries) => {
                     }
                 }
                 if (q.insert) {
+                    if (k === 'conversation') {
+                        if (bind.variablecontext) {
+                            let variablecontext = JSON.parse(bind.variablecontext)
+                            if (Array.isArray(variablecontext)) {
+                                bind.variablecontext = JSON.stringify(variablecontext.reduce((avc, vc) => ({
+                                    ...avc,
+                                    [vc.Name]: vc
+                                }), {}))
+                            }
+                        }
+                    }
                     let insertResult = await laraigoQuery(q.insert.replace('\n',' '), bind);
                     if (!(insertResult instanceof Array)) {
                         console.log(k, insertResult, bind);
@@ -659,7 +674,7 @@ const queryCore = {
     }
 }
 
-const querySubcore = {
+const querySubcoreClassification = {
     classification: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, classificationid as zyxmeclassificationid,
         description, status, type, createdate, createby, changedate, changeby, edit,
@@ -717,6 +732,9 @@ const querySubcore = {
             $quickreply
         );`
     },
+}
+
+const querySubcorePerson = {
     person: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, personid as zyxmepersonid,
         description, status, type, createdate, createby, changedate, changeby, edit,
@@ -822,6 +840,7 @@ const querySubcore = {
             $imageurl, $personcommunicationchannelowner, $displayname, $pendingsurvey, $surveycontext, $locked, $lastusergroup
         );`
     },
+
     post: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         communicationchannelid as zyxmecommunicationchannelid, personid as zyxmepersonid,
@@ -875,6 +894,9 @@ const querySubcore = {
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit
         );`
     },
+}
+
+const querySubcoreConversation = {
     conversation: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, personid as zyxmepersonid,
         personcommunicationchannel, communicationchannelid as zyxmecommunicationchannelid,
@@ -909,7 +931,9 @@ const querySubcore = {
         handoffafteransweruser, lastseendate, closecomment
         FROM conversation
         WHERE corpid = $corpid
-        ORDER BY conversationid;`,
+        AND variablecontext IS NOT NULL
+        ORDER BY conversationid DESC
+        LIMIT 100;`,
         alter: `ALTER TABLE conversation ADD COLUMN IF NOT EXISTS zyxmeconversationid BIGINT,
         ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
         insert: `INSERT INTO conversation (
@@ -1269,6 +1293,9 @@ const querySubcore = {
         END
         WHERE zyxmecorpid = $zyxmecorpid AND rank is null;`
     },
+}
+
+const querySubcoreCampaign = {    
     messagetemplate: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, hsmtemplateid as zyxmemessagetemplateid,
         description, status, type, createdate, createby, changedate, changeby, edit,
@@ -1434,12 +1461,32 @@ const querySubcore = {
             $attended
         );`
     },
+}
+
+const querySubcoreOthers = {    
     taskscheduler: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, taskschedulerid as zyxmetaskschedulerid,
         tasktype, taskbody, repeatflag, repeatmode, repeatinterval, completed,
         datetimestart, datetimeend, datetimeoriginalstart, datetimelastrun, taskprocessedids
         FROM taskscheduler
         WHERE corpid = $corpid
+        AND tasktype NOT IN
+        ('CHECKABANDONMENT',
+        'CLEANSMOOCHSESSION',
+        'CLEANTICKET',
+        'CONVERSATIONCHECK',
+        'EXECUTEQUERY',
+        'PLAYSTORECOMMENTCHECK',
+        'REFRESHOUTLOOKTOKEN',
+        'REFRESHPLAYSTORETOKEN',
+        'RELOCATEFILE',
+        'SENDPASSWORDALERT',
+        'STATUSCHECK',
+        'UPDATECHANNEL',
+        'UPDATEOUTLOOKSUBSCRIPTION',
+        'UPDATESESSION',
+        'UPDATEUSER',
+        'YOUTUBECOMMENTCHECK')
         ORDER BY taskschedulerid;`,
         alter: `ALTER TABLE taskscheduler ADD COLUMN IF NOT EXISTS zyxmetaskschedulerid BIGINT,
         ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
@@ -1962,9 +2009,13 @@ exports.migration = async (req, res) => {
     const { corpid } = req.params;
     const corpidBind = { corpid: corpid }
 
-    await migrationExecute(corpidBind, queryCore);
+    // await migrationExecute(corpidBind, queryCore);
 
-    await migrationExecute(corpidBind, querySubcore);
+    // await migrationExecute(corpidBind, querySubcoreClassification);
+    // await migrationExecute(corpidBind, querySubcorePerson);
+    await migrationExecute(corpidBind, querySubcoreConversation);
+    await migrationExecute(corpidBind, querySubcoreCampaign);
+    await migrationExecute(corpidBind, querySubcoreOthers);
 
     await migrationExecute(corpidBind, queryExtras);
 
