@@ -4,6 +4,4 @@ const checkController = require("../controllers/checkController");
 
 router.post('/', checkController.load)
 
-router.get('/migration/:corpid', checkController.migration)
-
 module.exports = router;
