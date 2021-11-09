@@ -167,7 +167,8 @@ exports.createSubscription = async (request, result) => {
                                         sendmetadata: channelService.extra ? channelService.extra.enablemetadata : false,
                                         showchatrestart: channelService.extra ? channelService.extra.reloadchat : false,
                                         showmessageheader: channelService.extra ? channelService.extra.botnameenabled : false,
-                                        showplatformlogo: channelService.extra ? channelService.extra.poweredby : false,
+                                        showlaraigologo: channelService.extra ? channelService.extra.poweredby : false,
+                                        showplatformlogo: false,
                                         uploadaudio: channelService.extra ? channelService.extra.uploadaudio : false,
                                         uploadfile: channelService.extra ? channelService.extra.uploadfile : false,
                                         uploadimage: channelService.extra ? channelService.extra.uploadimage : false,
@@ -872,6 +873,7 @@ exports.createSubscription = async (request, result) => {
 
                             mailBody = mailBody.split("{{link}}").join(`${laraigoEndpoint}activateuser/${encodeURIComponent(processedUserCode)}`);
                             mailBody = mailBody.split("{{organizationname}}").join(parameters.organizationname);
+                            mailBody = mailBody.split("{{countryname}}").join(parameters.countryname);
                             mailBody = mailBody.split("{{paymentplan}}").join(parameters.paymentplan);
                             mailBody = mailBody.split("{{firstname}}").join(parameters.firstname);
                             mailBody = mailBody.split("{{lastname}}").join(parameters.lastname);
@@ -882,6 +884,7 @@ exports.createSubscription = async (request, result) => {
                             var mailSubject = transactionGetSubject[0].domainvalue;
 
                             mailSubject = mailSubject.split("{{organizationname}}").join(parameters.organizationname);
+                            mailSubject = mailSubject.split("{{countryname}}").join(parameters.countryname);
                             mailSubject = mailSubject.split("{{paymentplan}}").join(parameters.paymentplan);
                             mailSubject = mailSubject.split("{{firstname}}").join(parameters.firstname);
                             mailSubject = mailSubject.split("{{lastname}}").join(parameters.lastname);
