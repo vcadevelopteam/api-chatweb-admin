@@ -322,7 +322,8 @@ module.exports = {
             column: "co.ticketnum"
         },
         fecha: {
-            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')"
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')",
+            type: "date"
         },
         firstusergroup: {
             column: "co.firstusergroup"
@@ -340,19 +341,24 @@ module.exports = {
             column: "pcc.personcommunicationchannelowner"
         },
         fechainicio: {
-            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')"
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')",
+            type: "date"
         },
         fechafin: {
-            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')"
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')",
+            type: "date"
         },
         fechaprimeraconversacion: {
-            column: "to_char(co.firstconversationdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')"
+            column: "to_char(co.firstconversationdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')",
+            type: "date"
         },
         fechaultimaconversacion: {
-            column: "to_char(co.lastconversationdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')"
+            column: "to_char(co.lastconversationdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')",
+            type: "date"
         },
         fechahandoff: {
-            column: "to_char(co.handoffdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')"
+            column: "to_char(co.handoffdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')",
+            type: "date"
         },
         asesorinicial: {
             column: "(select concat(us.firstname,' ',us.lastname) from usr us where co.firstuserid = us.userid )"
@@ -373,31 +379,40 @@ module.exports = {
             column: "co.classification"
         },
         tiempopromediorespuesta: {
-            column: "co.averagereplytime::text"
+            column: "co.averagereplytime::text",
+            type: "time"
         },
         tiempoprimerarespuestaasesor: {
-            column: "co.userfirstreplytime::text"
+            column: "co.userfirstreplytime::text",
+            type: "time"
         },
         tiempopromediorespuestaasesor: {
-            column: "co.useraveragereplytime::text"
+            column: "co.useraveragereplytime::text",
+            type: "time"
         },
         tiempopromediorespuestapersona: {
-            column: "co.personaveragereplytime::text"
+            column: "co.personaveragereplytime::text",
+            type: "time"
         },
         duraciontotal: {
-            column: "co.totalduration::text"
+            column: "co.totalduration::text",
+            type: "time"
         },
         duracionreal: {
-            column: "co.realduration::text"
+            column: "co.realduration::text",
+            type: "time"
         },
         duracionpausa: {
-            column: "co.totalpauseduration::text"
+            column: "co.totalpauseduration::text",
+            type: "time"
         },
         tmoasesor: {
-            column: "CASE WHEN co.status = 'CERRADO' THEN COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.totalduration - co.firstassignedtime - co.botduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') ELSE COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (NOW() - co.startdate) - co.firstassignedtime - co.botduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') END"
+            column: "CASE WHEN co.status = 'CERRADO' THEN COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.totalduration - co.firstassignedtime - co.botduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') ELSE COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (NOW() - co.startdate) - co.firstassignedtime - co.botduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') END",
+            type: "time"
         },
         tiempoprimeraasignacion: {
-            column: "co.firstassignedtime::text"
+            column: "co.firstassignedtime::text",
+            type: "time"
         },
         estadoconversacion: {
             column: "co.status"
@@ -424,7 +439,8 @@ module.exports = {
             column: "pe.phone"
         },
         balancetimes: {
-            column: "COALESCE(co.balancetimes,0)"
+            column: "COALESCE(co.balancetimes,0)",
+            type: "number"
         },
         documenttype: {
             column: "pe.documenttype"
@@ -442,7 +458,8 @@ module.exports = {
             column: "COALESCE(co.tags, '')"
         },
         tdatime: {
-            column: "co.tdatime::text"
+            column: "co.tdatime::text",
+            type: "time"
         }
     },
     person: {
