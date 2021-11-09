@@ -872,6 +872,7 @@ exports.createSubscription = async (request, result) => {
 
                             mailBody = mailBody.split("{{link}}").join(`${laraigoEndpoint}activateuser/${encodeURIComponent(processedUserCode)}`);
                             mailBody = mailBody.split("{{organizationname}}").join(parameters.organizationname);
+                            mailBody = mailBody.split("{{countryname}}").join(parameters.countryname);
                             mailBody = mailBody.split("{{paymentplan}}").join(parameters.paymentplan);
                             mailBody = mailBody.split("{{firstname}}").join(parameters.firstname);
                             mailBody = mailBody.split("{{lastname}}").join(parameters.lastname);
@@ -882,6 +883,7 @@ exports.createSubscription = async (request, result) => {
                             var mailSubject = transactionGetSubject[0].domainvalue;
 
                             mailSubject = mailSubject.split("{{organizationname}}").join(parameters.organizationname);
+                            mailSubject = mailSubject.split("{{countryname}}").join(parameters.countryname);
                             mailSubject = mailSubject.split("{{paymentplan}}").join(parameters.paymentplan);
                             mailSubject = mailSubject.split("{{firstname}}").join(parameters.firstname);
                             mailSubject = mailSubject.split("{{lastname}}").join(parameters.lastname);
