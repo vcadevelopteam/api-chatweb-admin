@@ -180,8 +180,8 @@ const queryCore = {
         logo, logotipo as logotype
         FROM corp
         WHERE corpid = $corpid
-        ORDER BY corpid;`,
-        alter: `ALTER TABLE corp ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY corpid`,
+        alter: `ALTER TABLE corp ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO corp (
             zyxmecorpid,
             description, status, type, createdate, createby, changedate, changeby, edit,
@@ -191,16 +191,16 @@ const queryCore = {
             $zyxmecorpid,
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $logo, $logotype, 2
-        );`
+        )`
     },
     org: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         description, status, type, createdate, createby, changedate, changeby, edit
         FROM org
         WHERE corpid = $corpid
-        ORDER BY orgid;`,
+        ORDER BY orgid`,
         alter: `ALTER TABLE org ADD COLUMN IF NOT EXISTS zyxmeorgid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO org (
             zyxmecorpid,
             corpid,
@@ -214,7 +214,7 @@ const queryCore = {
             $zyxmeorgid,
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             -5, 'America/Lima', 'PEN', 'PE'
-        ) RETURNING orgid;`,
+        ) RETURNING orgid`,
     },
     domain: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, domainid as zyxmedomainid,
@@ -222,9 +222,9 @@ const queryCore = {
         domainname, domainvalue, domaindesc, bydefault, "system", priorityorder
         FROM domain
         WHERE corpid = $corpid
-        ORDER BY domainid;`,
+        ORDER BY domainid`,
         alter: `ALTER TABLE domain ADD COLUMN IF NOT EXISTS zyxmedomainid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO domain (
             zyxmecorpid,
             corpid,
@@ -242,7 +242,7 @@ const queryCore = {
             $zyxmedomainid,
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $domainname, $domainvalue, $domaindesc, $bydefault, $system, $priorityorder
-        );`
+        )`
     },
     inputvalidation: {
         select: `SELECT corpid as zyxmecorpid,
@@ -250,8 +250,8 @@ const queryCore = {
         inputvalue
         FROM inputvalidation
         WHERE corpid = $corpid
-        ORDER BY inputvalidationid;`,
-        alter: `ALTER TABLE inputvalidation ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY inputvalidationid`,
+        alter: `ALTER TABLE inputvalidation ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO inputvalidation (
             zyxmecorpid,
             corpid,
@@ -263,7 +263,7 @@ const queryCore = {
             (SELECT corpid FROM corp WHERE zyxmecorpid = $zyxmecorpid LIMIT 1),
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $inputvalue
-        );`
+        )`
     },
     /* appintegrationid is required for communicationchannel but no values seen */
     appintegration: {
@@ -272,9 +272,9 @@ const queryCore = {
         appid, externalsource, environment, keyparameters, integrationid
         FROM appintegration
         WHERE corpid = $corpid
-        ORDER BY appintegrationid;`,
+        ORDER BY appintegrationid`,
         alter: `ALTER TABLE appintegration ADD COLUMN IF NOT EXISTS zyxmeappintegrationid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO appintegration (
             zyxmecorpid,
             corpid,
@@ -290,7 +290,7 @@ const queryCore = {
             $zyxmeappintegrationid,
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $appid, $externalsource, $environment, $keyparameters, $integrationid
-        );`
+        )`
     },
     /* botconfiguration is required for communicationchannel */
     botconfiguration: {
@@ -299,9 +299,9 @@ const queryCore = {
         bottype, parameterjson
         FROM botconfiguration
         WHERE corpid = $corpid
-        ORDER BY botconfigurationid;`,
+        ORDER BY botconfigurationid`,
         alter: `ALTER TABLE botconfiguration ADD COLUMN IF NOT EXISTS zyxmebotconfigurationid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO botconfiguration (
             zyxmecorpid,
             corpid,
@@ -317,7 +317,7 @@ const queryCore = {
             $zyxmebotconfigurationid,
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $bottype, $parameterjson
-        );`
+        )`
     },
     communicationchannel: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, communicationchannelid as zyxmecommunicationchannelid,
@@ -328,9 +328,9 @@ const queryCore = {
         color, icons, other, form, apikey
         FROM communicationchannel
         WHERE corpid = $corpid
-        ORDER BY communicationchannelid;`,
+        ORDER BY communicationchannelid`,
         alter: `ALTER TABLE communicationchannel ADD COLUMN IF NOT EXISTS zyxmecommunicationchannelid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO communicationchannel (
             zyxmecorpid,
             corpid,
@@ -362,15 +362,15 @@ const queryCore = {
             END,
             $country, $channelparameters, $channelactive, $resolvelithium,
             $color, $icons, $other, $form, $apikey
-        );`
+        )`
     },
     communicationchannelstatus: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, communicationchannelid as zyxmecommunicationchannelid,
         description, status, type, createdate, createby, changedate, changeby, edit
         FROM communicationchannelstatus
         WHERE corpid = $corpid
-        ORDER BY communicationchannelstatusid;`,
-        alter: `ALTER TABLE communicationchannelstatus ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY communicationchannelstatusid`,
+        alter: `ALTER TABLE communicationchannelstatus ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO communicationchannelstatus (
             zyxmecorpid,
             corpid,
@@ -384,7 +384,7 @@ const queryCore = {
             (SELECT orgid FROM org WHERE zyxmecorpid = $zyxmecorpid AND zyxmeorgid = $zyxmeorgid LIMIT 1),
             (SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = $zyxmecorpid AND zyxmecommunicationchannelid = $zyxmecommunicationchannelid LIMIT 1),
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit
-        );`
+        )`
     },
     property: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, communicationchannelid as zyxmecommunicationchannelid,
@@ -393,9 +393,9 @@ const queryCore = {
         propertyname, propertyvalue
         FROM property
         WHERE corpid = $corpid
-        ORDER BY propertyid;`,
+        ORDER BY propertyid`,
         alter: `ALTER TABLE property ADD COLUMN IF NOT EXISTS zyxmepropertyid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO property (
             zyxmecorpid,
             corpid,
@@ -427,7 +427,7 @@ const queryCore = {
             (SELECT category FROM property WHERE propertyname = $propertyname LIMIT 1),
             (SELECT "group" FROM property WHERE propertyname = $propertyname LIMIT 1),
             (SELECT level FROM property WHERE propertyname = $propertyname LIMIT 1)
-        );`
+        )`
     },
     usr: {
         select: `SELECT ous.corpid as zyxmecorpid, usr.userid as zyxmeuserid,
@@ -442,13 +442,13 @@ const queryCore = {
         FROM usr
         JOIN orguser ous ON ous.corpid = $corpid AND ous.userid = usr.userid
         WHERE usr.type <> 'SYSTEM'
-        ORDER BY usr.userid;`,
+        ORDER BY usr.userid`,
         alter: `ALTER TABLE usr ADD COLUMN IF NOT EXISTS zyxmeuserid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         preprocess: `UPDATE usr
         SET zyxmecorpid = $zyxmecorpid,
         zyxmeuserid = $zyxmeuserid
-        WHERE usr = $username::CHARACTER VARYING;`,
+        WHERE usr = $username::CHARACTER VARYING`,
         insert: `INSERT INTO usr (
             zyxmecorpid,
             zyxmeuserid,
@@ -478,13 +478,13 @@ const queryCore = {
             $area, $location, $management, $phone
         FROM usr
         WHERE NOT EXISTS(SELECT usr.usr FROM usr WHERE usr.usr = $username)
-        LIMIT 1;`,
+        LIMIT 1`,
         update: `UPDATE usr
         SET zyxmeuserid = CASE
         WHEN usr = 'system.bot' THEN 42
         WHEN usr = 'system.holding' THEN 51
         END
-        WHERE usr IN ('system.bot','system.holding');`,
+        WHERE usr IN ('system.bot','system.holding')`,
     },
     usertoken: {
         select: `SELECT ous.corpid as zyxmecorpid, ut.userid as zyxmeuserid,
@@ -492,8 +492,8 @@ const queryCore = {
         ut.token, ut.expirationproperty, ut.origin
         FROM usertoken ut
         JOIN orguser ous ON ous.corpid = $corpid AND ous.userid = ut.userid
-        ORDER BY ut.usertokenid;`,
-        alter: `ALTER TABLE usertoken ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY ut.usertokenid`,
+        alter: `ALTER TABLE usertoken ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO usertoken (
             zyxmecorpid,
             userid,
@@ -505,15 +505,15 @@ const queryCore = {
             (SELECT userid FROM usr WHERE zyxmeuserid = $zyxmeuserid LIMIT 1),
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $token, $expirationproperty, $origin
-        );`
+        )`
     },
     userstatus: {
         select: `SELECT ous.corpid as zyxmecorpid, us.userid as zyxmeuserid,
         us.description, us.status, us.type, us.createdate, us.createby, us.changedate, us.changeby, us.edit
         FROM userstatus us
         JOIN orguser ous ON ous.corpid = $corpid AND ous.userid = us.userid
-        ORDER BY us.userstatusid;`,
-        alter: `ALTER TABLE userstatus ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY us.userstatusid`,
+        alter: `ALTER TABLE userstatus ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO userstatus (
             zyxmecorpid,
             userid,
@@ -523,7 +523,7 @@ const queryCore = {
             $zyxmecorpid,
             (SELECT userid FROM usr WHERE zyxmeuserid = $zyxmeuserid LIMIT 1),
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit
-        );`
+        )`
     },
     userhistory: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, userid as zyxmeuserid,
@@ -531,8 +531,8 @@ const queryCore = {
         motivetype, motivedescription, desconectedtime
         FROM userhistory
         WHERE corpid = $corpid
-        ORDER BY userhistoryid;`,
-        alter: `ALTER TABLE userhistory ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY userhistoryid`,
+        alter: `ALTER TABLE userhistory ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO userhistory (
             zyxmecorpid,
             corpid,
@@ -548,15 +548,15 @@ const queryCore = {
             (SELECT userid FROM usr WHERE zyxmeuserid = $zyxmeuserid LIMIT 1),
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $motivetype, $motivedescription, $desconectedtime
-        );`
+        )`
     },
     usrnotification: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, usridfrom as zyxmeusridfrom, usrid as zyxmeusrid,
         description, status, type, createdate, createby, changedate, changeby, edit
         FROM usrnotification
         WHERE corpid = $corpid
-        ORDER BY usrnotificationid;`,
-        alter: `ALTER TABLE usrnotification ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY usrnotificationid`,
+        alter: `ALTER TABLE usrnotification ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO usrnotification (
             zyxmecorpid,
             corpid,
@@ -572,7 +572,7 @@ const queryCore = {
             (SELECT userid FROM usr WHERE zyxmeuserid = $zyxmeusridfrom LIMIT 1),
             (SELECT userid FROM usr WHERE zyxmeuserid = $zyxmeusrid LIMIT 1),
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit
-        );`
+        )`
     },
     orguser: {
         select: `SELECT ous.corpid as zyxmecorpid, ous.orgid as zyxmeorgid, ous.userid as zyxmeuserid,
@@ -582,8 +582,8 @@ const queryCore = {
         r.code as rolecode
         FROM orguser ous
         JOIN role r ON r.roleid = ous.roleid AND r.corpid = 1 AND r.orgid = 1
-        WHERE ous.corpid = $corpid;`,
-        alter: `ALTER TABLE orguser ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        WHERE ous.corpid = $corpid`,
+        alter: `ALTER TABLE orguser ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO orguser (
             zyxmecorpid,
             corpid,
@@ -612,7 +612,7 @@ const queryCore = {
                 zyxmecommunicationchannelid IN (SELECT UNNEST(string_to_array($channels,',')::BIGINT[]))
             ),
             $defaultsort, $redirect
-        );`
+        )`
     }
 }
 
@@ -623,9 +623,9 @@ const querySubcoreClassification = {
         parent, communicationchannel, path, jobplan, usergroup, schedule
         FROM classification
         WHERE corpid = $corpid
-        ORDER BY classificationid;`,
+        ORDER BY classificationid`,
         alter: `ALTER TABLE classification ADD COLUMN IF NOT EXISTS zyxmeclassificationid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO classification (
             zyxmecorpid,
             corpid,
@@ -647,7 +647,7 @@ const querySubcoreClassification = {
             $communicationchannel, $path, $jobplan,
             (SELECT propertyid FROM property WHERE zyxmecorpid = $zyxmecorpid AND zyxmepropertyid = $usergroup LIMIT 1),
             $schedule
-        );`
+        )`
     },
     quickreply: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, classificationid as zyxmeclassificationid,
@@ -655,8 +655,8 @@ const querySubcoreClassification = {
         quickreply
         FROM quickreply
         WHERE corpid = $corpid
-        ORDER BY quickreplyid;`,
-        alter: `ALTER TABLE quickreply ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY quickreplyid`,
+        alter: `ALTER TABLE quickreply ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO quickreply (
             zyxmecorpid,
             corpid,
@@ -672,7 +672,7 @@ const querySubcoreClassification = {
             (SELECT classificationid FROM classification WHERE zyxmecorpid = $zyxmecorpid AND zyxmeclassificationid = $zyxmeclassificationid LIMIT 1),
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $quickreply
-        );`
+        )`
     },
 }
 
@@ -690,9 +690,9 @@ const querySubcorePerson = {
         country, region, district, latitude, longitude, province, contact, usercall, geographicalarea, age
         FROM person
         WHERE corpid = $corpid
-        ORDER BY personid;`,
+        ORDER BY personid`,
         alter: `ALTER TABLE person ADD COLUMN IF NOT EXISTS zyxmepersonid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO person (
             zyxmecorpid,
             corpid,
@@ -728,7 +728,7 @@ const querySubcorePerson = {
             $lastdateevaluation, $lastdatestatus, $daysfornextevaluation,
             $address, $addressreference, $clientnumber, $mailflag, $ecommerceaccounts, $salary,
             $country, $region, $district, $latitude, $longitude, $province, $contact, $usercall, $geographicalarea, $age
-        );`
+        )`
     },
     personaddinfo: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, personid as zyxmepersonid,
@@ -736,8 +736,8 @@ const querySubcorePerson = {
         addinfo
         FROM personaddinfo
         WHERE corpid = $corpid
-        ORDER BY personaddinfoid;`,
-        alter: `ALTER TABLE personaddinfo ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY personaddinfoid`,
+        alter: `ALTER TABLE personaddinfo ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO personaddinfo (
             zyxmecorpid,
             corpid,
@@ -753,7 +753,7 @@ const querySubcorePerson = {
             (SELECT personid FROM person WHERE zyxmecorpid = $zyxmecorpid AND zyxmepersonid = $zyxmepersonid LIMIT 1),
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $addinfo
-        );`
+        )`
     },
     personcommunicationchannel: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, personid as zyxmepersonid,
@@ -761,8 +761,8 @@ const querySubcorePerson = {
         description, status, type, createdate, createby, changedate, changeby, edit,
         imageurl, personcommunicationchannelowner, displayname, pendingsurvey, surveycontext, "locked", lastusergroup
         FROM personcommunicationchannel
-        WHERE corpid = $corpid;`,
-        alter: `ALTER TABLE personcommunicationchannel ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        WHERE corpid = $corpid`,
+        alter: `ALTER TABLE personcommunicationchannel ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO personcommunicationchannel (
             zyxmecorpid,
             corpid,
@@ -780,7 +780,7 @@ const querySubcorePerson = {
             $personcommunicationchannel,
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $imageurl, $personcommunicationchannelowner, $displayname, $pendingsurvey, $surveycontext, $locked, $lastusergroup
-        );`
+        )`
     },
 }
 
@@ -792,8 +792,8 @@ const querySubcoreConversation = {
         postexternalid, message, content, postexternalparentid, commentexternalid
         FROM post
         WHERE corpid = $corpid
-        ORDER BY postid;`,
-        alter: `ALTER TABLE post ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY postid`,
+        alter: `ALTER TABLE post ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO post (
             zyxmecorpid,
             corpid,
@@ -811,7 +811,7 @@ const querySubcoreConversation = {
             (SELECT personid FROM person WHERE zyxmecorpid = $zyxmecorpid AND zyxmepersonid = $zyxmepersonid LIMIT 1),
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $postexternalid, $message, $content, $postexternalparentid, $commentexternalid
-        );`
+        )`
     },
     pccstatus: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
@@ -819,8 +819,8 @@ const querySubcoreConversation = {
         personcommunicationchannel,
         description, status, type, createdate, createby, changedate, changeby, edit
         FROM pccstatus
-        WHERE corpid = $corpid;`,
-        alter: `ALTER TABLE pccstatus ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        WHERE corpid = $corpid`,
+        alter: `ALTER TABLE pccstatus ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO pccstatus (
             zyxmecorpid,
             corpid,
@@ -836,7 +836,7 @@ const querySubcoreConversation = {
             (SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = $zyxmecorpid AND zyxmecommunicationchannelid = $zyxmecommunicationchannelid LIMIT 1),
             $personcommunicationchannel,
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit
-        );`
+        )`
     },
     conversation: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, personid as zyxmepersonid,
@@ -873,10 +873,9 @@ const querySubcoreConversation = {
         FROM conversation
         WHERE corpid = $corpid
         AND variablecontext IS NOT NULL
-        ORDER BY conversationid DESC
-        LIMIT 100;`,
+        ORDER BY conversationid DESC`,
         alter: `ALTER TABLE conversation ADD COLUMN IF NOT EXISTS zyxmeconversationid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO conversation (
             zyxmecorpid,
             corpid,
@@ -951,7 +950,7 @@ const querySubcoreConversation = {
             $interactionquantity, $interactionpersonquantity, $interactionbotquantity, $interactionasesorquantity,
             $interactionaiquantity, $interactionaipersonquantity, $interactionaibotquantity, $interactionaiasesorquantity,
             $handoffafteransweruser, $lastseendate, $closecomment
-        );`,
+        )`,
         update: `SELECT ufn_ticketnum_ins(orgid)
         FROM org
         WHERE zyxmecorpid = $corpid`
@@ -964,9 +963,8 @@ const querySubcoreConversation = {
         status, createdate, createby, changedate, changeby, edit,
         jobplan
         FROM conversationclassification
-        WHERE corpid = $corpid
-        LIMIT 100;`,
-        alter: `ALTER TABLE conversationclassification ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        WHERE corpid = $corpid`,
+        alter: `ALTER TABLE conversationclassification ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO conversationclassification (
             zyxmecorpid,
             corpid,
@@ -990,7 +988,7 @@ const querySubcoreConversation = {
             (SELECT classificationid FROM classification WHERE zyxmecorpid = $zyxmecorpid AND zyxmeclassificationid = $zyxmeclassificationid LIMIT 1),
             $status, $createdate, $createby, $changedate, $changeby, $edit,
             $jobplan
-        );`
+        )`
     },
     conversationnote: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, personid as zyxmepersonid,
@@ -1000,8 +998,8 @@ const querySubcoreConversation = {
         addpersonnote, note
         FROM conversationnote
         WHERE corpid = $corpid
-        ORDER BY conversationnoteid;`,
-        alter: `ALTER TABLE conversationnote ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY conversationnoteid`,
+        alter: `ALTER TABLE conversationnote ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO conversationnote (
             zyxmecorpid,
             corpid,
@@ -1023,7 +1021,7 @@ const querySubcoreConversation = {
             (SELECT conversationid FROM conversation WHERE zyxmecorpid = $zyxmecorpid AND zyxmeconversationid = $zyxmeconversationid LIMIT 1),
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $addpersonnote, $note
-        );`
+        )`
     },
     conversationpause: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, personid as zyxmepersonid,
@@ -1033,8 +1031,8 @@ const querySubcoreConversation = {
         startpause, stoppause
         FROM conversationpause
         WHERE corpid = $corpid
-        ORDER BY conversationpauseid;`,
-        alter: `ALTER TABLE conversationpause ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY conversationpauseid`,
+        alter: `ALTER TABLE conversationpause ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO conversationpause (
             zyxmecorpid,
             corpid,
@@ -1056,7 +1054,7 @@ const querySubcoreConversation = {
             (SELECT conversationid FROM conversation WHERE zyxmecorpid = $zyxmecorpid AND zyxmeconversationid = $zyxmeconversationid LIMIT 1),
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $startpause, $stoppause
-        );`
+        )`
     },
     conversationpending: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
@@ -1065,8 +1063,8 @@ const querySubcoreConversation = {
         conversationid as zyxmeconversationid,
         status, communicationchannelsite, interactiontext
         FROM conversationpending
-        WHERE corpid = $corpid;`,
-        alter: `ALTER TABLE conversationpending ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        WHERE corpid = $corpid`,
+        alter: `ALTER TABLE conversationpending ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO conversationpending (
             zyxmecorpid,
             corpid,
@@ -1084,7 +1082,7 @@ const querySubcoreConversation = {
             (SELECT userid FROM usr WHERE zyxmeuserid = $zyxmeuserid LIMIT 1),
             (SELECT conversationid FROM conversation WHERE zyxmecorpid = $zyxmecorpid AND zyxmeconversationid = $zyxmeconversationid LIMIT 1),
             $status, $communicationchannelsite, $interactiontext
-        );`
+        )`
     },
     conversationstatus: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, personid as zyxmepersonid,
@@ -1093,9 +1091,8 @@ const querySubcoreConversation = {
         description, status, type, createdate, createby, changedate, changeby, edit
         FROM conversationstatus
         WHERE corpid = $corpid
-        ORDER BY conversationstatusid
-        LIMIT 100;`,
-        alter: `ALTER TABLE conversationstatus ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY conversationstatusid`,
+        alter: `ALTER TABLE conversationstatus ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO conversationstatus (
             zyxmecorpid,
             corpid,
@@ -1115,7 +1112,7 @@ const querySubcoreConversation = {
             (SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = $zyxmecorpid AND zyxmecommunicationchannelid = $zyxmecommunicationchannelid LIMIT 1),
             (SELECT conversationid FROM conversation WHERE zyxmecorpid = $zyxmecorpid AND zyxmeconversationid = $zyxmeconversationid LIMIT 1),
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit
-        );`
+        )`
     },
     interaction: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, personid as zyxmepersonid,
@@ -1136,9 +1133,8 @@ const querySubcoreConversation = {
         waintent, waentityname, waentityvalue, waresult
         FROM interaction
         WHERE corpid = $corpid
-        ORDER BY interactionid
-        LIMIT 1000;`,
-        alter: `ALTER TABLE interaction ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY interactionid`,
+        alter: `ALTER TABLE interaction ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO interaction (
             zyxmecorpid,
             corpid,
@@ -1184,7 +1180,7 @@ const querySubcoreConversation = {
             $wtafrustrated, $wtaimpolite, $wtapolite, $wtasad, $wtasatisfied, $wtasympathetic, $wtaresult,
             $wnlusyntax, $wnlusentiment, $wnlusadness, $wnlujoy, $wnlufear, $wnludisgust, $wnluanger, $wnluresult,
             $waintent, $waentityname, $waentityvalue, $waresult
-        );`
+        )`
     },
     surveyanswered: {
         select: `SELECT sa.corpid as zyxmecorpid, sa.orgid as zyxmeorgid, sa.conversationid as zyxmeconversationid,
@@ -1196,9 +1192,8 @@ const querySubcoreConversation = {
         JOIN property pr ON pr.corpid = sa.corpid AND pr.orgid = sa.orgid AND pr.status = 'ACTIVO'
         AND pr.propertyname ILIKE '%NUMEROPREGUNTA' AND pr.propertyvalue = sq.questionnumber::text
         WHERE sa.corpid = $corpid
-        ORDER BY surveyansweredid
-        LIMIT 100;`,
-        alter: `ALTER TABLE surveyanswered ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY surveyansweredid`,
+        alter: `ALTER TABLE surveyanswered ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO surveyanswered (
             zyxmecorpid,
             corpid,
@@ -1228,14 +1223,14 @@ const querySubcoreConversation = {
             WHEN $type NOT IN ('FCR','FIX') AND $scale IN (5) THEN '1,2'
             END,
             CASE WHEN $type IN ('FCR','FIX') THEN true END
-        );`,
+        )`,
         postprocess: `
         UPDATE surveyanswered
         SET rank = CASE WHEN answervalue = ANY(string_to_array(low,',')::BIGINT[]) THEN 'LOW'
         WHEN answervalue = ANY(string_to_array(medium,',')::BIGINT[]) THEN 'MEDIUM'
         WHEN answervalue = ANY(string_to_array(high,',')::BIGINT[]) THEN 'HIGH'
         END
-        WHERE zyxmecorpid = $zyxmecorpid AND rank is null;`
+        WHERE zyxmecorpid = $zyxmecorpid AND rank is null`
     },
 }
 
@@ -1247,9 +1242,9 @@ const querySubcoreCampaign = {
         message as body, header, buttons
         FROM hsmtemplate
         WHERE corpid = $corpid
-        ORDER BY hsmtemplateid;`,
+        ORDER BY hsmtemplateid`,
         alter: `ALTER TABLE messagetemplate ADD COLUMN IF NOT EXISTS zyxmemessagetemplateid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO messagetemplate (
             zyxmecorpid,
             corpid,
@@ -1275,7 +1270,7 @@ const querySubcoreCampaign = {
             false, '',
             NULLIF(NULLIF($buttons, '[]'),'')::JSON IS NOT NULL,
             REPLACE(REPLACE(NULLIF(NULLIF($buttons, '[]'),''),'"value":','"payload":'),'"text":','"title":')::JSON
-        );`
+        )`
     },
     campaign: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, campaignid as zyxmecampaignid,
@@ -1289,9 +1284,9 @@ const querySubcoreCampaign = {
         executiontype, batchjson, taskid as zyxmetaskid, fields
         FROM campaign
         WHERE corpid = $corpid
-        ORDER BY campaignid;`,
+        ORDER BY campaignid`,
         alter: `ALTER TABLE campaign ADD COLUMN IF NOT EXISTS zyxmecampaignid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO campaign (
             zyxmecorpid,
             corpid,
@@ -1330,7 +1325,7 @@ const querySubcoreCampaign = {
                 zyxmetaskschedulerid IN (SELECT UNNEST(string_to_array($zyxmetaskid,',')::BIGINT[]))
             ),
             $fields
-        );`
+        )`
     },
     campaignmember: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, campaignid as zyxmecampaignid,
@@ -1341,9 +1336,9 @@ const querySubcoreCampaign = {
         resultfromsend, batchindex
         FROM campaignmember
         WHERE corpid = $corpid
-        ORDER BY campaignmemberid;`,
+        ORDER BY campaignmemberid`,
         alter: `ALTER TABLE campaignmember ADD COLUMN IF NOT EXISTS zyxmecampaignmemberid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO campaignmember (
             zyxmecorpid,
             corpid,
@@ -1367,7 +1362,7 @@ const querySubcoreCampaign = {
             $field1, $field2, $field3, $field4, $field5, $field6, $field7, $field8, $field9,
             $field10, $field11, $field12, $field13, $field14, $field15,
             $resultfromsend, $batchindex
-        );`
+        )`
     },
     campaignhistory: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, campaignid as zyxmecampaignid,
@@ -1376,8 +1371,8 @@ const querySubcoreCampaign = {
         success, message, rundate, conversationid as zyxmeconversationid, attended
         FROM campaignhistory
         WHERE corpid = $corpid
-        ORDER BY campaignhistoryid;`,
-        alter: `ALTER TABLE campaignhistory ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY campaignhistoryid`,
+        alter: `ALTER TABLE campaignhistory ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO campaignhistory (
             zyxmecorpid,
             corpid,
@@ -1403,7 +1398,7 @@ const querySubcoreCampaign = {
             ELSE (SELECT conversationid FROM conversation WHERE zyxmecorpid = $zyxmecorpid AND zyxmeconversationid = $zyxmeconversationid LIMIT 1)
             END,
             $attended
-        );`
+        )`
     },
 }
 
@@ -1431,9 +1426,9 @@ const querySubcoreOthers = {
         'UPDATESESSION',
         'UPDATEUSER',
         'YOUTUBECOMMENTCHECK')
-        ORDER BY taskschedulerid;`,
+        ORDER BY taskschedulerid`,
         alter: `ALTER TABLE taskscheduler ADD COLUMN IF NOT EXISTS zyxmetaskschedulerid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO taskscheduler (
             zyxmecorpid,
             corpid,
@@ -1461,7 +1456,7 @@ const querySubcoreOthers = {
             END,
             $repeatflag, $repeatmode, $repeatinterval, $completed,
             $datetimestart, $datetimeend, $datetimeoriginalstart, $datetimelastrun, $taskprocessedids
-        );`
+        )`
     },
     blockversion: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, chatblockversionid as zyxmechatblockversionid,
@@ -1471,9 +1466,9 @@ const querySubcoreOthers = {
         color, icontype, tag
         FROM blockversion
         WHERE corpid = $corpid
-        ORDER BY chatblockversionid;`,
+        ORDER BY chatblockversionid`,
         alter: `ALTER TABLE blockversion ADD COLUMN IF NOT EXISTS zyxmechatblockversionid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO blockversion (
             zyxmecorpid,
             corpid,
@@ -1500,7 +1495,7 @@ const querySubcoreOthers = {
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $title, $defaultgroupid, $defaultblockid, $firstblockid, $aiblockid, $blockgroup, $variablecustom,
             $color, $icontype, $tag
-        );`
+        )`
     },
     block: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
@@ -1509,8 +1504,8 @@ const querySubcoreOthers = {
         title, defaultgroupid, defaultblockid, firstblockid, aiblockid, blockgroup, variablecustom,
         color, icontype, tag, chatblockversionid as zyxmechatblockversionid
         FROM block
-        WHERE corpid = $corpid;`,
-        alter: `ALTER TABLE block ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        WHERE corpid = $corpid`,
+        alter: `ALTER TABLE block ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO block (
             zyxmecorpid,
             corpid,
@@ -1537,7 +1532,7 @@ const querySubcoreOthers = {
             $title, $defaultgroupid, $defaultblockid, $firstblockid, $aiblockid, $blockgroup, $variablecustom,
             $color, $icontype, $tag,
             (SELECT chatblockversionid FROM blockversion WHERE zyxmecorpid = $zyxmecorpid AND zyxmechatblockversionid = $zyxmechatblockversionid LIMIT 1)
-        );`
+        )`
     },
     tablevariableconfiguration: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
@@ -1546,8 +1541,8 @@ const querySubcoreOthers = {
         variable, fontcolor, fontbold, priority, visible
         FROM tablevariableconfiguration
         WHERE corpid = $corpid
-        ORDER BY tablevariableconfigurationid;`,
-        alter: `ALTER TABLE tablevariableconfiguration ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY tablevariableconfigurationid`,
+        alter: `ALTER TABLE tablevariableconfiguration ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO tablevariableconfiguration (
             zyxmecorpid,
             corpid,
@@ -1563,7 +1558,7 @@ const querySubcoreOthers = {
             $chatblockid,
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $variable, $fontcolor, $fontbold, $priority, $visible
-        );`
+        )`
     },
     intelligentmodels: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
@@ -1571,8 +1566,8 @@ const querySubcoreOthers = {
         endpoint, modelid, apikey, provider
         FROM intelligentmodels
         WHERE corpid = $corpid
-        ORDER BY intelligentmodelsid;`,
-        alter: `ALTER TABLE intelligentmodels ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY intelligentmodelsid`,
+        alter: `ALTER TABLE intelligentmodels ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO intelligentmodels (
             zyxmecorpid,
             corpid,
@@ -1586,7 +1581,7 @@ const querySubcoreOthers = {
             (SELECT orgid FROM org WHERE zyxmecorpid = $zyxmecorpid AND zyxmeorgid = $zyxmeorgid LIMIT 1),
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $endpoint, $modelid, $apikey, $provider
-        );`
+        )`
     },
     intelligentmodelsconfiguration: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, communicationchannelid as zyxmecommunicationchannelid,
@@ -1594,8 +1589,8 @@ const querySubcoreOthers = {
         parameters, channels, color, icontype
         FROM intelligentmodelsconfiguration
         WHERE corpid = $corpid
-        ORDER BY intelligentmodelsconfigurationid;`,
-        alter: `ALTER TABLE intelligentmodelsconfiguration ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY intelligentmodelsconfigurationid`,
+        alter: `ALTER TABLE intelligentmodelsconfiguration ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO intelligentmodelsconfiguration (
             zyxmecorpid,
             corpid,
@@ -1642,7 +1637,7 @@ const querySubcoreOthers = {
                 zyxmecommunicationchannelid IN (SELECT UNNEST(string_to_array($channels,',')::BIGINT[]))
             ),
             $color, $icontype
-        );`
+        )`
     },
 }
 
@@ -1653,9 +1648,9 @@ const queryExtras = {
         phone
         FROM blacklist
         WHERE corpid = $corpid
-        ORDER BY blacklistid;`,
+        ORDER BY blacklistid`,
         alter: `ALTER TABLE blacklist ADD COLUMN IF NOT EXISTS zyxmeblacklistid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO blacklist (
             zyxmecorpid,
             corpid,
@@ -1671,7 +1666,7 @@ const queryExtras = {
             $zyxmeblacklistid,
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $phone
-        );`
+        )`
     },
     hsmhistory: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
@@ -1679,10 +1674,10 @@ const queryExtras = {
         config, success, message, groupname, transactionid, externalid
         FROM hsmhistory
         WHERE corpid = $corpid
-        ORDER BY hsmhistoryid;`,
+        ORDER BY hsmhistoryid`,
         alter: `ALTER TABLE hsmhistory ADD COLUMN IF NOT EXISTS transactionid character varying,
         ADD COLUMN IF NOT EXISTS externalid character varying,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO hsmhistory (
             zyxmecorpid,
             corpid,
@@ -1703,15 +1698,15 @@ const queryExtras = {
                 false
             ), $config::JSONB)::TEXT,
             $success, $message, $groupname, $transactionid, $externalid
-        ;`
+        `
     },
     inappropriatewords: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         description, status, type, createdate, createby, changedate, changeby, edit
         FROM inappropriatewords
         WHERE corpid = $corpid
-        ORDER BY inappropriatewordsid;`,
-        alter: `ALTER TABLE inappropriatewords ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY inappropriatewordsid`,
+        alter: `ALTER TABLE inappropriatewords ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO inappropriatewords (
             zyxmecorpid,
             corpid,
@@ -1723,7 +1718,7 @@ const queryExtras = {
             (SELECT corpid FROM corp WHERE zyxmecorpid = $zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = $zyxmecorpid AND zyxmeorgid = $zyxmeorgid LIMIT 1),
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit
-        );`
+        )`
     },
     label: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
@@ -1731,8 +1726,8 @@ const queryExtras = {
         color, intent, tags
         FROM label
         WHERE corpid = $corpid
-        ORDER BY labelid;`,
-        alter: `ALTER TABLE label ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY labelid`,
+        alter: `ALTER TABLE label ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO label (
             zyxmecorpid,
             corpid,
@@ -1746,7 +1741,7 @@ const queryExtras = {
             (SELECT orgid FROM org WHERE zyxmecorpid = $zyxmecorpid AND zyxmeorgid = $zyxmeorgid LIMIT 1),
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $color, $intent, $tags
-        );`
+        )`
     },
     location: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
@@ -1755,8 +1750,8 @@ const queryExtras = {
         latitude, longitude, googleurl
         FROM location
         WHERE corpid = $corpid
-        ORDER BY locationid;`,
-        alter: `ALTER TABLE location ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY locationid`,
+        alter: `ALTER TABLE location ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO location (
             zyxmecorpid,
             corpid,
@@ -1772,7 +1767,7 @@ const queryExtras = {
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $name, $address, $district, $city, $country, $schedule, $phone, $alternativephone, $email, $alternativeemail,
             $latitude, $longitude, $googleurl
-        );`
+        )`
     },
     payment: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
@@ -1783,8 +1778,8 @@ const queryExtras = {
         saleorderid, paymentdate, totaldiscount, obs
         FROM payment
         WHERE corpid = $corpid
-        ORDER BY paymentid;`,
-        alter: `ALTER TABLE payment ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY paymentid`,
+        alter: `ALTER TABLE payment ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO payment (
             zyxmecorpid,
             corpid,
@@ -1806,7 +1801,7 @@ const queryExtras = {
             $pocketbook, $tokenid, $title, $amount, $currency, $email, $capture,
             $tokenjson, $chargejson, $refundjson, $customerjson, $cardjson, $planjson, $subscriptionjson,
             $saleorderid, $paymentdate, $totaldiscount, $obs
-        );`
+        )`
     },
     productivity: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, userid as zyxmeuserid,
@@ -1817,9 +1812,8 @@ const queryExtras = {
         onlinetime, idletime, qtytickets, qtyconnection, qtydisconnection
         FROM productivity
         WHERE corpid = $corpid
-        ORDER BY productivityid
-        LIMIT 10000;`,
-        alter: `ALTER TABLE productivity ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY productivityid`,
+        alter: `ALTER TABLE productivity ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO productivity (
             zyxmecorpid,
             corpid,
@@ -1848,7 +1842,7 @@ const queryExtras = {
             $datestr, $hours, $hoursrange,
             $worktime, $busytimewithinwork, $freetimewithinwork, $busytimeoutsidework,
             $onlinetime, $idletime, $qtytickets, $qtyconnection, $qtydisconnection
-        );`
+        )`
     },
     reporttemplate: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
@@ -1856,8 +1850,8 @@ const queryExtras = {
         communicationchannelid, columnjson, filterjson
         FROM reporttemplate
         WHERE corpid = $corpid
-        ORDER BY reporttemplateid;`,
-        alter: `ALTER TABLE reporttemplate ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY reporttemplateid`,
+        alter: `ALTER TABLE reporttemplate ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO reporttemplate (
             zyxmecorpid,
             corpid,
@@ -1877,7 +1871,7 @@ const queryExtras = {
                 zyxmecommunicationchannelid IN (SELECT UNNEST(string_to_array($communicationchannelid,',')::BIGINT[]))
             ),
             $columnjson, $filterjson
-        );`
+        )`
     },
     sla: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
@@ -1890,8 +1884,8 @@ const queryExtras = {
         productivitybyhour, totaltmomin, usertmomin, tmemin, usertmemin, tmoclosedby, tmeclosedby
         FROM sla
         WHERE corpid = $corpid
-        ORDER BY slaid;`,
-        alter: `ALTER TABLE sla ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY slaid`,
+        alter: `ALTER TABLE sla ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO sla (
             zyxmecorpid,
             corpid,
@@ -1922,7 +1916,7 @@ const queryExtras = {
             $tme, $tmepercentmax, $tmepercentmin,
             $usertme, $usertmepercentmax, $usertmepercentmin,
             $productivitybyhour, $totaltmomin, $usertmomin, $tmemin, $usertmemin, $tmoclosedby, $tmeclosedby
-        );`
+        )`
     },
     whitelist: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
@@ -1930,8 +1924,8 @@ const queryExtras = {
         phone, asesorname, documenttype, documentnumber, usergroup
         FROM whitelist
         WHERE corpid = $corpid
-        ORDER BY whitelistid;`,
-        alter: `ALTER TABLE whitelist ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT;`,
+        ORDER BY whitelistid`,
+        alter: `ALTER TABLE whitelist ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO whitelist (
             zyxmecorpid,
             corpid,
@@ -1945,7 +1939,7 @@ const queryExtras = {
             (SELECT orgid FROM org WHERE zyxmecorpid = $zyxmecorpid AND zyxmeorgid = $zyxmeorgid LIMIT 1),
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $phone, $asesorname, $documenttype, $documentnumber, $usergroup
-        );`
+        )`
     }
 }
 
