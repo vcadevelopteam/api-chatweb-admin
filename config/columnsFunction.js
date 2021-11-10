@@ -685,5 +685,8 @@ module.exports = {
         stage: {
             column: "col.description"
         },
+        status: {
+            column: "ld.status"
+        },
     },
 }
