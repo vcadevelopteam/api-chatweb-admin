@@ -3,9 +3,8 @@ const zyxmeSequelize = require("../config/databasezyxme");
 const { getErrorSeq } = require('../config/helpers');
 const { QueryTypes } = require('sequelize');
 
-/* Índice de tablas */
+/* Índice de tablas
 
-/*
 Propios del sistema
 "application"
 "appsetting"
@@ -96,62 +95,6 @@ SUNAT
 "groupconfiguration"
 */
 
-/*
-DELETE FROM "whitelist" WHERE zyxmecorpid = 1;
-DELETE FROM "sla" WHERE zyxmecorpid = 1;
-DELETE FROM "reporttemplate" WHERE zyxmecorpid = 1;
-DELETE FROM "productivity" WHERE zyxmecorpid = 1;
-
-DELETE FROM "payment" WHERE zyxmecorpid = 1;
-DELETE FROM "location" WHERE zyxmecorpid = 1;
-DELETE FROM "label" WHERE zyxmecorpid = 1;
-DELETE FROM "inappropriatewords" WHERE zyxmecorpid = 1;
-DELETE FROM "hsmhistory" WHERE zyxmecorpid = 1;
-DELETE FROM "blacklist" WHERE zyxmecorpid = 1;
-DELETE FROM "intelligentmodelsconfiguration" WHERE zyxmecorpid = 1;
-DELETE FROM "intelligentmodels" WHERE zyxmecorpid = 1;
-DELETE FROM "tablevariableconfiguration" WHERE zyxmecorpid = 1;
-
-DELETE FROM "block" WHERE zyxmecorpid = 1;
-DELETE FROM "blockversion" WHERE zyxmecorpid = 1;
-DELETE FROM "taskscheduler" WHERE zyxmecorpid = 1;
-DELETE FROM "campaignhistory" WHERE zyxmecorpid = 1;
-DELETE FROM "campaignmember" WHERE zyxmecorpid = 1;
-DELETE FROM "campaign" WHERE zyxmecorpid = 1;
-DELETE FROM "messagetemplate" WHERE zyxmecorpid = 1;
-DELETE FROM "surveyanswered" WHERE zyxmecorpid = 1;
-DELETE FROM "interaction" WHERE zyxmecorpid = 1;
-DELETE FROM "conversationstatus" WHERE zyxmecorpid = 1;
-DELETE FROM "conversationpending" WHERE zyxmecorpid = 1;
-DELETE FROM "conversationpause" WHERE zyxmecorpid = 1;
-DELETE FROM "conversationnote" WHERE zyxmecorpid = 1;
-DELETE FROM "conversationclassification" WHERE zyxmecorpid = 1;
-DELETE FROM "conversation" WHERE zyxmecorpid = 1;
-DELETE FROM "pccstatus" WHERE zyxmecorpid = 1;
-DELETE FROM "post" WHERE zyxmecorpid = 1;
-DELETE FROM "personcommunicationchannel" WHERE zyxmecorpid = 1;
-DELETE FROM "personaddinfo" WHERE zyxmecorpid = 1;
-DELETE FROM "person" WHERE zyxmecorpid = 1;
-DELETE FROM "quickreply" WHERE zyxmecorpid = 1;
-DELETE FROM "classification" WHERE zyxmecorpid = 1;
-
-DELETE FROM "orguser" WHERE zyxmecorpid = 1;
-DELETE FROM "usrnotification" WHERE zyxmecorpid = 1;
-DELETE FROM "userhistory" WHERE zyxmecorpid = 1;
-DELETE FROM "userstatus" WHERE zyxmecorpid = 1;
-DELETE FROM "usertoken" WHERE zyxmecorpid = 1;
-UPDATE usr SET zyxmecorpid = null WHERE zyxmecorpid = 1;
-DELETE FROM "property" WHERE zyxmecorpid = 1;
-DELETE FROM "communicationchannelstatus" WHERE zyxmecorpid = 1;
-DELETE FROM "communicationchannel" WHERE zyxmecorpid = 1;
-DELETE FROM "botconfiguration" WHERE zyxmecorpid = 1;
-DELETE FROM "appintegration" WHERE zyxmecorpid = 1;
-DELETE FROM "inputvalidation" WHERE zyxmecorpid = 1;
-DELETE FROM "domain" WHERE zyxmecorpid = 1;
-DELETE FROM "org" WHERE zyxmecorpid = 1;
-DELETE FROM "corp" WHERE zyxmecorpid = 1;
-*/
-
 const zyxmeQuery = async (query, bind = {}) => {
     return await zyxmeSequelize.query(query, {
         type: QueryTypes.SELECT,
@@ -186,7 +129,6 @@ const migrationExecute = async (corpidBind, queries) => {
                     if (!(preprocessResult instanceof Array)) {
                         executeResult[k].success = false;
                         executeResult[k].errors.push({script: preprocessResult, bind: bind});
-                        // console.log(k, preprocessResult, bind);
                     }
                 }
                 if (q.insert) {
@@ -205,7 +147,6 @@ const migrationExecute = async (corpidBind, queries) => {
                     if (!(insertResult instanceof Array)) {
                         executeResult[k].success = false;
                         executeResult[k].errors.push({script: insertResult, bind: bind});
-                        // console.log(k, insertResult, bind);
                     }
                 }
                 if (q.postprocess) {
@@ -213,7 +154,6 @@ const migrationExecute = async (corpidBind, queries) => {
                     if (!(postprocessResult instanceof Array)) {
                         executeResult[k].success = false;
                         executeResult[k].errors.push({script: postprocessResult, bind: bind});
-                        // console.log(k, postprocessResult, bind);
                     }
                 }
             }
@@ -222,7 +162,6 @@ const migrationExecute = async (corpidBind, queries) => {
                 if (!(updateResult instanceof Array)) {
                     executeResult[k].success = false;
                     executeResult[k].errors.push({script: updateResult, bind: corpidBind});
-                    // console.log(k, updateResult, corpidBind);
                 }
             }
         }
@@ -233,309 +172,6 @@ const migrationExecute = async (corpidBind, queries) => {
     };
     return executeResult;
 }
-
-const queryDelete = [
-    {
-        name: 'corp',
-        level: 'core',
-        order: 1,
-        script: 'DELETE FROM "corp" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'org',
-        level: 'core',
-        order: 2,
-        script: 'DELETE FROM "org" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'domain',
-        level: 'core',
-        order: 3,
-        script: 'DELETE FROM "domain" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'inputvalidation',
-        level: 'core',
-        order: 4,
-        script: 'DELETE FROM "inputvalidation" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'appintegration',
-        level: 'core',
-        order: 5,
-        script: 'DELETE FROM "appintegration" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'botconfiguration',
-        level: 'core',
-        order: 6,
-        script: 'DELETE FROM "botconfiguration" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'communicationchannel',
-        level: 'core',
-        order: 7,
-        script: 'DELETE FROM "communicationchannel" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'communicationchannelstatus',
-        level: 'core',
-        order: 8,
-        script: 'DELETE FROM "communicationchannelstatus" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'property',
-        level: 'core',
-        order: 9,
-        script: 'DELETE FROM "property" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'usr',
-        level: 'core',
-        order: 10,
-        script: 'UPDATE usr SET zyxmecorpid = null WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'usertoken',
-        level: 'core',
-        order: 11,
-        script: 'DELETE FROM "usertoken" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'userstatus',
-        level: 'core',
-        order: 12,
-        script: 'DELETE FROM "userstatus" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'userhistory',
-        level: 'core',
-        order: 13,
-        script: 'DELETE FROM "userhistory" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'usrnotification',
-        level: 'core',
-        order: 14,
-        script: 'DELETE FROM "usrnotification" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'orguser',
-        level: 'core',
-        order: 15,
-        script: 'DELETE FROM "orguser" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'classification',
-        level: 'subcore.classification',
-        order: 101,
-        script: 'DELETE FROM "classification" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'quickreply',
-        level: 'subcore.classification',
-        order: 102,
-        script: 'DELETE FROM "quickreply" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'person',
-        level: 'subcore.person',
-        order: 201,
-        script: 'DELETE FROM "person" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'personaddinfo',
-        level: 'subcore.person',
-        order: 202,
-        script: 'DELETE FROM "personaddinfo" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'personcommunicationchannel',
-        level: 'subcore.person',
-        order: 203,
-        script: 'DELETE FROM "personcommunicationchannel" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'post',
-        level: 'subcore.conversation',
-        order: 301,
-        script: 'DELETE FROM "post" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'pccstatus',
-        level: 'subcore.conversation',
-        order: 302,
-        script: 'DELETE FROM "pccstatus" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'conversation',
-        level: 'subcore.conversation',
-        order: 303,
-        script: 'DELETE FROM "conversation" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'conversationclassification',
-        level: 'subcore.conversation',
-        order: 304,
-        script: 'DELETE FROM "conversationclassification" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'conversationnote',
-        level: 'subcore.conversation',
-        order: 305,
-        script: 'DELETE FROM "conversationnote" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'conversationpause',
-        level: 'subcore.conversation',
-        order: 306,
-        script: 'DELETE FROM "conversationpause" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'conversationpending',
-        level: 'subcore.conversation',
-        order: 307,
-        script: 'DELETE FROM "conversationpending" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'conversationstatus',
-        level: 'subcore.conversation',
-        order: 308,
-        script: 'DELETE FROM "conversationstatus" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'interaction',
-        level: 'subcore.conversation',
-        order: 309,
-        script: 'DELETE FROM "interaction" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'surveyanswered',
-        level: 'subcore.conversation',
-        order: 310,
-        script: 'DELETE FROM "surveyanswered" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'messagetemplate',
-        level: 'subcore.campaign',
-        order: 401,
-        script: 'DELETE FROM "messagetemplate" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'campaign',
-        level: 'subcore.campaign',
-        order: 402,
-        script: 'DELETE FROM "campaign" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'campaignmember',
-        level: 'subcore.campaign',
-        order: 403,
-        script: 'DELETE FROM "campaignmember" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'campaignhistory',
-        level: 'subcore.campaign',
-        order: 404,
-        script: 'DELETE FROM "campaignhistory" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'taskscheduler',
-        level: 'subcore.others',
-        order: 501,
-        script: 'DELETE FROM "taskscheduler" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'blockversion',
-        level: 'subcore.others',
-        order: 502,
-        script: 'DELETE FROM "blockversion" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'block',
-        level: 'subcore.others',
-        order: 503,
-        script: 'DELETE FROM "block" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'tablevariableconfiguration',
-        level: 'subcore.others',
-        order: 504,
-        script: 'DELETE FROM "tablevariableconfiguration" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'intelligentmodels',
-        level: 'subcore.others',
-        order: 505,
-        script: 'DELETE FROM "intelligentmodels" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'intelligentmodelsconfiguration',
-        level: 'subcore.others',
-        order: 506,
-        script: 'DELETE FROM "intelligentmodelsconfiguration" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'blacklist',
-        level: 'extras',
-        order: 9999,
-        script: 'DELETE FROM "blacklist" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'hsmhistory',
-        level: 'extras',
-        order: 9999,
-        script: 'DELETE FROM "hsmhistory" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'inappropriatewords',
-        level: 'extras',
-        order: 9999,
-        script: 'DELETE FROM "inappropriatewords" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'label',
-        level: 'extras',
-        order: 9999,
-        script: 'DELETE FROM "label" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'location',
-        level: 'extras',
-        order: 9999,
-        script: 'DELETE FROM "location" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'payment',
-        level: 'extras',
-        order: 9999,
-        script: 'DELETE FROM "payment" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'productivity',
-        level: 'extras',
-        order: 9999,
-        script: 'DELETE FROM "productivity" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'reporttemplate',
-        level: 'extras',
-        order: 9999,
-        script: 'DELETE FROM "reporttemplate" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'sla',
-        level: 'extras',
-        order: 9999,
-        script: 'DELETE FROM "sla" WHERE zyxmecorpid = $corpid',
-    },
-    {
-        name: 'whitelist',
-        level: 'extras',
-        order: 9999,
-        script: 'DELETE FROM "whitelist" WHERE zyxmecorpid = $corpid',
-    }
-]
 
 const queryCore = {
     corp: {
@@ -2010,7 +1646,7 @@ const querySubcoreOthers = {
     },
 }
 
-const queryBlacklist = {
+const queryExtras = {
     blacklist: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, blacklistid as zyxmeblacklistid,
         description, status, type, createdate, createby, changedate, changeby, edit,
@@ -2036,10 +1672,7 @@ const queryBlacklist = {
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $phone
         );`
-    }
-}
-
-const queryHSMHistory = {
+    },
     hsmhistory: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         description, status, type, createdate, createby, changedate, changeby, edit,
@@ -2071,10 +1704,7 @@ const queryHSMHistory = {
             ), $config::JSONB)::TEXT,
             $success, $message, $groupname, $transactionid, $externalid
         ;`
-    }
-}
-
-const queryInappropriatewords = {
+    },
     inappropriatewords: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         description, status, type, createdate, createby, changedate, changeby, edit
@@ -2094,10 +1724,7 @@ const queryInappropriatewords = {
             (SELECT orgid FROM org WHERE zyxmecorpid = $zyxmecorpid AND zyxmeorgid = $zyxmeorgid LIMIT 1),
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit
         );`
-    }
-}
-
-const queryLabel = {
+    },
     label: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         description, status, type, createdate, createby, changedate, changeby, edit,
@@ -2120,10 +1747,7 @@ const queryLabel = {
             $description, $status, $type, $createdate, $createby, $changedate, $changeby, $edit,
             $color, $intent, $tags
         );`
-    }
-}
-
-const queryLocation = {
+    },
     location: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         description, status, type, createdate, createby, changedate, changeby, edit,
@@ -2149,10 +1773,7 @@ const queryLocation = {
             $name, $address, $district, $city, $country, $schedule, $phone, $alternativephone, $email, $alternativeemail,
             $latitude, $longitude, $googleurl
         );`
-    }
-}
-
-const queryPayment = {
+    },
     payment: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         conversationid as zyxmeconversationid, personid as zyxmepersonid,
@@ -2186,10 +1807,7 @@ const queryPayment = {
             $tokenjson, $chargejson, $refundjson, $customerjson, $cardjson, $planjson, $subscriptionjson,
             $saleorderid, $paymentdate, $totaldiscount, $obs
         );`
-    }
-}
-
-const queryProductivity = {
+    },
     productivity: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, userid as zyxmeuserid,
         description, status, type, createdate, createby, changedate, changeby, edit,
@@ -2231,10 +1849,7 @@ const queryProductivity = {
             $worktime, $busytimewithinwork, $freetimewithinwork, $busytimeoutsidework,
             $onlinetime, $idletime, $qtytickets, $qtyconnection, $qtydisconnection
         );`
-    }
-}
-
-const queryReporttemplate = {
+    },
     reporttemplate: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         description, status, type, createdate, createby, changedate, changeby, edit,
@@ -2263,10 +1878,7 @@ const queryReporttemplate = {
             ),
             $columnjson, $filterjson
         );`
-    }
-}
-
-const querySla = {
+    },
     sla: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         description, status, type, createdate, createby, changedate, changeby, edit,
@@ -2311,10 +1923,7 @@ const querySla = {
             $usertme, $usertmepercentmax, $usertmepercentmin,
             $productivitybyhour, $totaltmomin, $usertmomin, $tmemin, $usertmemin, $tmoclosedby, $tmeclosedby
         );`
-    }
-}
-
-const queryWhitelist = {
+    },
     whitelist: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         description, status, type, createdate, createby, changedate, changeby, edit,
@@ -2364,14 +1973,14 @@ exports.executeMigration = async (req, res) => {
         queryResult = {core: {}, subcore: {}, extras: {}};
         if (modules.includes('core')) {
             if (clean === true) {
-                await executeDelete(queryDelete);
+                await executeDelete('SELECT FROM ufn_migration_core_delete($p_corpid)', corpidBind);
                 clean = false;
             }
             queryResult.core = await migrationExecute(corpidBind, queryCore);
         }
         if (modules.includes('subcore')) {
             if (clean === true) {
-                await executeDelete(queryDelete.filter(q => q.level.split('.')[0] === 'subcore'));
+                await executeDelete('SELECT FROM ufn_migration_subcore_delete($p_corpid)', corpidBind);
             }
             queryResult.subcore.classification = await migrationExecute(corpidBind, querySubcoreClassification);
             queryResult.subcore.person = await migrationExecute(corpidBind, querySubcorePerson);
@@ -2381,78 +1990,78 @@ exports.executeMigration = async (req, res) => {
         }
         if (modules.includes('extras')) {
             if (clean === true) {
-                await executeDelete(queryDelete.filter(q => q.level === 'extras'));
+                await executeDelete('SELECT FROM ufn_migration_extras_delete($p_corpid)', corpidBind);
             }
-            queryResult.extras.blacklist = await migrationExecute(corpidBind, queryBlacklist);
-            queryResult.extras.hsmhistory = await migrationExecute(corpidBind, queryHSMHistory);
-            queryResult.extras.inappropriatewords = await migrationExecute(corpidBind, queryInappropriatewords);
-            queryResult.extras.label = await migrationExecute(corpidBind, queryLabel);
-            queryResult.extras.location = await migrationExecute(corpidBind, queryLocation);
-            queryResult.extras.payment = await migrationExecute(corpidBind, queryPayment);
-            queryResult.extras.productivity = await migrationExecute(corpidBind, queryProductivity);
-            queryResult.extras.reporttemplate = await migrationExecute(corpidBind, queryReporttemplate);
-            queryResult.extras.sla = await migrationExecute(corpidBind, querySla);
-            queryResult.extras.whitelist = await migrationExecute(corpidBind, queryWhitelist);
+            queryResult.extras.blacklist = await migrationExecute(corpidBind, {blacklist: queryExtras.blacklist});
+            queryResult.extras.hsmhistory = await migrationExecute(corpidBind, {hsmhistory: queryExtras.hsmhistory});
+            queryResult.extras.inappropriatewords = await migrationExecute(corpidBind, {inappropriatewords: queryExtras.inappropriatewords});
+            queryResult.extras.label = await migrationExecute(corpidBind, {label: queryExtras.label});
+            queryResult.extras.location = await migrationExecute(corpidBind, {location: queryExtras.location});
+            queryResult.extras.payment = await migrationExecute(corpidBind, {payment: queryExtras.payment});
+            queryResult.extras.productivity = await migrationExecute(corpidBind, {productivity: queryExtras.productivity});
+            queryResult.extras.reporttemplate = await migrationExecute(corpidBind, {reporttemplate: queryExtras.reporttemplate});
+            queryResult.extras.sla = await migrationExecute(corpidBind, {sla: queryExtras.sla});
+            queryResult.extras.whitelist = await migrationExecute(corpidBind, {whitelist: queryExtras.whitelist});
         }
         if (!modules.includes('extras') && modules.includes('extras.blacklist')) {
             if (clean === true) {
-                await executeDelete(queryDelete.filter(q => q.level === 'extras' && q.name === 'blacklist'));
+                await executeDelete('DELETE FROM "blacklist" WHERE zyxmecorpid = $corpid', corpidBind);
             }
-            queryResult.extras.blacklist = await migrationExecute(corpidBind, queryBlacklist);
+            queryResult.extras.blacklist = await migrationExecute(corpidBind, {blacklist: queryExtras.blacklist});
         }
         if (!modules.includes('extras') && modules.includes('extras.hsmhistory')) {
             if (clean === true) {
-                await executeDelete(queryDelete.filter(q => q.level === 'extras' && q.name === 'hsmhistory'));
+                await executeDelete('DELETE FROM "hsmhistory" WHERE zyxmecorpid = $corpid', corpidBind);
             }
-            queryResult.extras.hsmhistory = await migrationExecute(corpidBind, queryHSMHistory);
+            queryResult.extras.hsmhistory = await migrationExecute(corpidBind, {hsmhistory: queryExtras.hsmhistory});
         }
         if (!modules.includes('extras') && modules.includes('extras.inappropriatewords')) {
             if (clean === true) {
-                await executeDelete(queryDelete.filter(q => q.level === 'extras' && q.name === 'inappropriatewords'));
+                await executeDelete('DELETE FROM "inappropriatewords" WHERE zyxmecorpid = $corpid', corpidBind);
             }
-            queryResult.extras.inappropriatewords = await migrationExecute(corpidBind, queryInappropriatewords);
+            queryResult.extras.inappropriatewords = await migrationExecute(corpidBind, {inappropriatewords: queryExtras.inappropriatewords});
         }
         if (!modules.includes('extras') && modules.includes('extras.label')) {
             if (clean === true) {
-                await executeDelete(queryDelete.filter(q => q.level === 'extras' && q.name === 'label'));
+                await executeDelete('DELETE FROM "label" WHERE zyxmecorpid = $corpid', corpidBind);
             }
-            queryResult.extras.label = await migrationExecute(corpidBind, queryLabel);
+            queryResult.extras.label = await migrationExecute(corpidBind, {label: queryExtras.label});
         }
         if (!modules.includes('extras') && modules.includes('extras.location')) {
             if (clean === true) {
-                await executeDelete(queryDelete.filter(q => q.level === 'extras' && q.name === 'location'));
+                await executeDelete('DELETE FROM "location" WHERE zyxmecorpid = $corpid', corpidBind);
             }
-            queryResult.extras.location = await migrationExecute(corpidBind, queryLocation);
+            queryResult.extras.location = await migrationExecute(corpidBind, {location: queryExtras.location});
         }
         if (!modules.includes('extras') && modules.includes('extras.payment')) {
             if (clean === true) {
-                await executeDelete(queryDelete.filter(q => q.level === 'extras' && q.name === 'payment'));
+                await executeDelete('DELETE FROM "payment" WHERE zyxmecorpid = $corpid', corpidBind);
             }
-            queryResult.extras.payment = await migrationExecute(corpidBind, queryPayment);
+            queryResult.extras.payment = await migrationExecute(corpidBind, {payment: queryExtras.payment});
         }
         if (!modules.includes('extras') && modules.includes('extras.productivity')) {
             if (clean === true) {
-                await executeDelete(queryDelete.filter(q => q.level === 'extras' && q.name === 'productivity'));
+                await executeDelete('DELETE FROM "productivity" WHERE zyxmecorpid = $corpid', corpidBind);
             }
-            queryResult.extras.productivity = await migrationExecute(corpidBind, queryProductivity);
+            queryResult.extras.productivity = await migrationExecute(corpidBind, {productivity: queryExtras.productivity});
         }
         if (!modules.includes('extras') && modules.includes('extras.reporttemplate')) {
             if (clean === true) {
-                await executeDelete(queryDelete.filter(q => q.level === 'extras' && q.name === 'reporttemplate'));
+                await executeDelete('DELETE FROM "reporttemplate" WHERE zyxmecorpid = $corpid', corpidBind);
             }
-            queryResult.extras.reporttemplate = await migrationExecute(corpidBind, queryReporttemplate);
+            queryResult.extras.reporttemplate = await migrationExecute(corpidBind, {reporttemplate: queryExtras.reporttemplate});
         }
         if (!modules.includes('extras') && modules.includes('extras.sla')) {
             if (clean === true) {
-                await executeDelete(queryDelete.filter(q => q.level === 'extras' && q.name === 'sla'));
+                await executeDelete('DELETE FROM "sla" WHERE zyxmecorpid = $corpid', corpidBind);
             }
-            queryResult.extras.sla = await migrationExecute(corpidBind, querySla);
+            queryResult.extras.sla = await migrationExecute(corpidBind, {sla: queryExtras.sla});
         }
         if (!modules.includes('extras') && modules.includes('extras.whitelist')) {
             if (clean === true) {
-                await executeDelete(queryDelete.filter(q => q.level === 'extras' && q.name === 'whitelist'));
+                await executeDelete('DELETE FROM "whitelist" WHERE zyxmecorpid = $corpid', corpidBind);
             }
-            queryResult.extras.whitelist = await migrationExecute(corpidBind, queryWhitelist);
+            queryResult.extras.whitelist = await migrationExecute(corpidBind, {whitelist: queryExtras.whitelist});
         }
         return res.status(200).json({ error: false, success: true });
     }
