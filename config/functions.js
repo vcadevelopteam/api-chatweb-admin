@@ -1072,7 +1072,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_COLUMN_SEL: {
-        query: "select * from ufn_column_sel($corpid, $orgid, $id, $all)",
+        query: "select * from ufn_column_sel($corpid, $orgid, $id, $lost, $all)",
         module: "",
         protected: "SELECT"
     },
@@ -1087,7 +1087,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_UPDATE_LEADS: {
-        query: "select * from ufn_update_leads($corpid, $orgid, $cards_startingcolumn, $cards_finalcolumn, $startingcolumn_uuid, $finalcolumn_uuid)",
+        query: "select * from ufn_update_leads($corpid, $orgid, $cards_startingcolumn, $cards_finalcolumn, $startingcolumn_uuid, $finalcolumn_uuid, $leadid)",
         module: "",
         protected: "INSERT"
     },
@@ -1155,5 +1155,20 @@ module.exports = {
         query: "select * from ufn_leadnotes_ins($corpid,$orgid,$leadid,$leadnotesid,$description,$type,$status,$username,$media,$operation)",
         module: "",
         protected: "INSERT"
+    },
+    UFN_LEADGRID_SEL: {
+        query: "SELECT * FROM ufn_leadgrid_sel($corpid, $orgid, $take, $skip, $where, $order, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEADGRID_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_leadgrid_totalrecords($corpid, $orgid, $where, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEADGRID_EXPORT: {
+        query: "SELECT * FROM ufn_leadgrid_export($corpid, $orgid, $where, $order, $offset)",
+        module: "",
+        protected: "SELECT"
     },
 }

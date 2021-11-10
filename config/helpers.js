@@ -103,6 +103,36 @@ exports.generatefilter = (filters, origin, daterange, offset) => {
                                     break;
                             }
                             break;
+                        case "time":
+                            switch (f.operator) {
+                                case 'after':
+                                    where += ` and ${column}::INTERVAL > ('${f.value}')::INTERVAL`;
+                                    break;
+                                case 'afterequals':
+                                    where += ` and ${column}::INTERVAL >= ('${f.value}')::INTERVAL`;
+                                    break;
+                                case 'before':
+                                    where += ` and ${column}::INTERVAL < ('${f.value}')::INTERVAL`;
+                                    break;
+                                case 'beforeequals':
+                                    where += ` and ${column}::INTERVAL <= ('${f.value}')::INTERVAL`;
+                                    break;
+                                case 'isnull':
+                                    where += ` and ${column} is null`;
+                                    break;
+                                case 'isnotnull':
+                                    where += ` and ${column} is not null`;
+                                    break;
+                                case 'notequals':
+                                    where += ` and ${column}::INTERVAL <> ('${f.value}')::INTERVAL`;
+                                    break;
+                                case 'equals':
+                                    where += ` and ${column}::INTERVAL = ('${f.value}')::INTERVAL`;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
                         case "boolean":
                             switch (f.operator) {
                                 case 'istrue':
