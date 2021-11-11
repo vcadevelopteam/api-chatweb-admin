@@ -1142,9 +1142,14 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEADACTIVITY_INS: {
-        query: "select * from ufn_leadactivity_ins($corpid,$orgid,$leadid,$leadactivityid,$description,$duedate,$assignto,$type,$status,$username,$operation)",
+        query: "select * from ufn_leadactivity_ins($corpid,$orgid,$leadid,$leadactivityid,$description,$duedate,$assignto,$type,$status,$username,$operation, $feedback)",
         module: "",
         protected: "INSERT"
+    },
+    UFN_LEADACTIVITY_INS: {
+        query: "select * from ufn_leadactivityhistory_sel($corpid, $orgid, $leadid, $offset)",
+        module: "",
+        protected: "SELECT"
     },
     UFN_LEADNOTES_SEL: {
         query: "select * from ufn_leadnotes_sel($corpid,$orgid,$leadid,$leadnotesid,$all)",
