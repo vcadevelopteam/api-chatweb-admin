@@ -657,7 +657,7 @@ module.exports = {
     },
     lead: {
         opportunity: {
-            column: "ld.opportunity"
+            column: "ld.description"
         },
         changedate: {
             column: "ld.changedate + p_offset * INTERVAL '1hour'",
