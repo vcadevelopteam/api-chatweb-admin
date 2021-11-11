@@ -1171,4 +1171,44 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_REPORT_HEATMAP_PAGE1_SEL: {
+        query: "SELECT * FROM ufn_report_heatmap_page1_sel($corpid, $orgid, $communicationchannel , $startdate , $enddate ,$closedby,$userid, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_HEATMAP_DATE_DETAIL_SEL: {
+        query: "SELECT * FROM ufn_report_heatmap_date_detail_sel($corpid, $orgid, $communicationchannel, $startdate, $enddate, $closedby, $horanum,$userid, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_HEATMAP_ATENCIONESXFECHA_TOTAL_SEL: {
+        query: "SELECT * FROM ufn_report_heatmap_atencionesxfecha_total_sel($corpid, $orgid, $communicationchannel , $startdate , $enddate ,$closedby, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_USER_ASESORBYORGID_LST: {
+        query: "SELECT * FROM ufn_user_asesorbyorgid_lst($corpid, $orgid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_HEATMAP_PAGE3_SEL: {
+        query: "SELECT * FROM ufn_report_heatmap_page3_sel($corpid, $orgid, $communicationchannel , $startdate , $enddate ,$closedby, $company,$userid, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_HEATMAP_ASESORESCONECTADOS_SEL: {
+        query: "SELECT * FROM ufn_report_heatmap_asesoresconectados_sel($corpid, $orgid, $communicationchannel , $startdate , $enddate , $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_HEATMAP_RESUMEN_SEL: {
+        query: "SELECT * FROM ufn_report_heatmap_resumen_sel($corpid, $orgid, $communicationchannel , $startdate , $enddate ,$closedby,$userid, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_HEATMAP_TIPIFICACION_SEL: {
+        query: "SELECT * FROM ufn_report_heatmap_tipificacion_sel($corpid, $orgid, $communicationchannel , $startdate , $enddate ,$closedby, $userid, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
 }
