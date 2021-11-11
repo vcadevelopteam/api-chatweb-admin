@@ -2,8 +2,8 @@ const sequelize = require('../config/database');
 const zyxmeSequelize = require("../config/databasezyxme");
 const { getErrorSeq } = require('../config/helpers');
 const { QueryTypes } = require('sequelize');
-const cryptojs = require("crypto-js");
-const crypto = require('crypto');
+const axios = require('axios');
+const bcryptjs = require("bcryptjs");
 
 /* Índice de tablas
 
@@ -121,26 +121,22 @@ const laraigoQuery = async (query, bind = {}) => {
     }).catch(err => errorSeq(err));
 }
 
-exports.recrypt = async (req, res) => {
-    const { pwd } = req.body;
-    const textBase64 = cryptojs.enc.Base64.parse(pwd);
-    const textBase64_2 = Buffer.from(pwd, 'base64');
-    const keyBase64 =  cryptojs.enc.Utf8.parse("@@lucero@@vca@@");
-    const keyBase64_2 = Buffer.from("@@lucero@@vca@@", 'utf8');
-    const keyHash = cryptojs.MD5(keyBase64);
-    const keyHash_2 = crypto.createHash('md5').update(keyBase64_2).digest("hex");
-
-    var sha1KeyVal = cryptojs.SHA1(textBase64)
-    var keyDES = cryptojs.lib.WordArray.create(sha1KeyVal.words.slice(0, 8 / 4));
-
-    const decrypt = cryptojs.TripleDES.decrypt(textBase64, cryptojs.enc.Hex.parse(keyHash_2), { iv: keyDES, mode: cryptojs.mode.ECB, padding: cryptojs.pad.Pkcs7 });
-    let decryptedStr = decrypt.toString(cryptojs.enc.Utf8);
-    console.log(decryptedStr.toString());
-
-    return res.json({
-        success: true,
-        msg: decryptedStr
-    });
+const apiServiceEndpoint = process.env.APISERVICES;
+const recryptPwd = async (table, data) => {
+    switch (table) {
+        case 'usr':
+            const response = await axios({
+                data: data.map(d => ({userid: d.zyxmeuserid, pwd: d.pwd})),
+                method: 'post',
+                url: `${apiServiceEndpoint}decryption`
+            });
+            const salt = await bcryptjs.genSalt(10);
+            for (let i = 0; i < data.length; i++) {
+                data[i].pwd = await bcryptjs.hash(response.data.find(r => r.userid === data[i].zyxmeuserid).pwd, salt);
+            }
+        break;
+    }
+    return data;
 }
 
 const variableRenameList = [
@@ -305,6 +301,7 @@ const migrationExecute = async (corpidBind, queries, limit) => {
         let selectResult = await zyxmeQuery(q.select.replace('\n',' ') + (!!limit ? ` LIMIT ${limit}` : ''), corpidBind);
         if (selectResult instanceof Array) {
             executeResult[k].count.total = selectResult.length;
+            selectResult = await recryptPwd(k, selectResult);
             if (q.alter) {
                 let alterResult = await laraigoQuery(q.alter.replace('\n',' '));
                 if (!(alterResult instanceof Array)) {
@@ -632,7 +629,8 @@ const queryCore = {
         ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         preprocess: `UPDATE usr
         SET zyxmecorpid = $zyxmecorpid,
-        zyxmeuserid = $zyxmeuserid
+        zyxmeuserid = $zyxmeuserid,
+        pwd = $pwd
         WHERE usr = $username::CHARACTER VARYING`,
         insert: `INSERT INTO usr (
             zyxmecorpid,
@@ -2140,7 +2138,7 @@ exports.listCorp = async (req, res) => {
 }
 
 exports.executeMigration = async (req, res) => {
-    const { corpid, modules, clean = false, limit } = req.body;
+    let { corpid, modules, clean = false, limit } = req.body;
     if (!!corpid && !!modules) {
         const corpidBind = { corpid: corpid }
         queryResult = {core: {}, subcore: {}, extras: {}};
