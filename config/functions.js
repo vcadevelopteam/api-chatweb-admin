@@ -1146,7 +1146,7 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
-    UFN_LEADACTIVITY_INS: {
+    UFN_LEADACTIVITYHISTORY_SEL: {
         query: "select * from ufn_leadactivityhistory_sel($corpid, $orgid, $leadid, $offset)",
         module: "",
         protected: "SELECT"
