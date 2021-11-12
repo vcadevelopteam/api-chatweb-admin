@@ -657,7 +657,11 @@ module.exports = {
     },
     lead: {
         opportunity: {
-            column: "ld.opportunity"
+            column: "ld.description"
+        },
+        changedate: {
+            column: "ld.changedate + p_offset * INTERVAL '1hour'",
+            type: "date"
         },
         contact_name: {
             column: "pcc.displayname"
@@ -667,6 +671,38 @@ module.exports = {
         },
         phone: {
             column: "ld.phone"
+        },
+        priority: {
+            column: "ld.priority"
+        },
+        name: {
+            column: "CONCAT(usr.firstname,'' '',usr.lastname)"
+        },
+        phase: {
+            column: "col.description"
+        },
+        status: {
+            column: "ld.status"
+        },
+        tags: {
+            column: "ld.tags"
+        },
+        notedate: {
+            column: "ldn.changedate + p_offset * INTERVAL '1hour'",
+            type: "date"
+        },
+        notedescription: {
+            column: "ldn.description"
+        },
+        notemedia: {
+            column: "ldn.media"
+        },
+        activitydate: {
+            column: "lda.duedate",
+            type: "date"
+        },
+        activitydescription: {
+            column: "lda.description"
         },
         sales_person: {
             column: "ld.createby"
@@ -681,12 +717,6 @@ module.exports = {
         expected_closing: {
             column: "ld.date_deadline + p_offset * INTERVAL '1hour'",
             type: "date"
-        },
-        stage: {
-            column: "col.description"
-        },
-        status: {
-            column: "ld.status"
         },
     },
 }
