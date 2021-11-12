@@ -150,24 +150,26 @@ const apiLaraigoHookEndpoint = process.env.HOOK;
 const reconfigWebhook = async (table, data) => {
     switch (table) {
         case 'communicationchannel':
-            data.servicecredentials = null;
             if (apiZyxmeHookEndpoint) {
-                try {
-                    const response = await axios({
-                        data: {
-                            communicationchannelsite: data.communicationchannelsite,
-                            communicationchannelowner: data.communicationchannelowner,
-                            type: data.type,
-                            url: apiLaraigoHookEndpoint
-                        },
-                        method: 'post',
-                        url: `${apiZyxmeHookEndpoint}reconfig`
-                    });
-                    if (response.data && response.data.success) {
-                        data.servicecredentials = JSON.stringify(response.data.result)
+                for (let i = 0; i< data.length; i++) {
+                    try {
+                        data[i].servicecredentials = null;
+                        const response = await axios({
+                            data: {
+                                communicationchannelsite: data[i].communicationchannelsite,
+                                communicationchannelowner: data[i].communicationchannelowner,
+                                type: data[i].type,
+                                url: apiLaraigoHookEndpoint
+                            },
+                            method: 'post',
+                            url: `${apiZyxmeHookEndpoint}reconfig`
+                        });
+                        if (response.data && response.data.success) {
+                            data[i].servicecredentials = JSON.stringify(response.data.result)
+                        }
+                    } catch (error) {
+                        console.log(error);
                     }
-                } catch (error) {
-                    console.log(error);
                 }
             }
         break;
@@ -281,33 +283,45 @@ const variableRenameList = [
 const renameVariable = (table, data) => {
     switch (table) {
         case 'conversation':
-            for (const [oldname, newname] of variableRenameList) {
-                data.variablecontext = data.variablecontext.replace(new RegExp(`"id":"${oldname}_custom"`, "g"),`"id":"${newname}_custom"`);
-                data.variablecontext = data.variablecontext.replace(new RegExp(`"Name":"${oldname}"`, "g"),`"Name":"${newname}"`);
-            }
+            data = data.map(d => {
+                for (const [oldname, newname] of variableRenameList) {
+                    d.variablecontext = d.variablecontext.replace(new RegExp(`"id":"${oldname}_custom"`, "g"),`"id":"${newname}_custom"`);
+                    d.variablecontext = d.variablecontext.replace(new RegExp(`"Name":"${oldname}"`, "g"),`"Name":"${newname}"`);
+                }
+                return d;
+            });
             break;
         case 'tablevariable':
-            for (const [oldname, newname] of variableRenameList) {
-                data.description = data.description.replace(`${oldname}`,`${newname}`);
-            }
+            data = data.map(d => {    
+                for (const [oldname, newname] of variableRenameList) {
+                    d.description = d.description.replace(`${oldname}`,`${newname}`);
+                }
+                return d;
+            });
             break;
         case 'tablevariableconfiguration':
-            for (const [oldname, newname] of variableRenameList) {
-                data.variable = data.variable.replace(`${oldname}`,`${newname}`);
-            }
+            data = data.map(d => {    
+                for (const [oldname, newname] of variableRenameList) {
+                    d.variable = d.variable.replace(`${oldname}`,`${newname}`);
+                }
+                return d;
+            });
             break;
         case 'block': case 'blockversion':
-            for (const [oldname, newname] of variableRenameList) {
-                data.blockgroup = data.blockgroup.replace(new RegExp(`"title":"${oldname}","caption"`, "g"),`"title":"${newname}","caption"`);
-                data.blockgroup = data.blockgroup.replace(new RegExp(`"variablename":"${oldname}"`, "g"),`"variablename":"${newname}"`);
-                data.blockgroup = data.blockgroup.replace(new RegExp(`"variablecontext":"${oldname}"`, "g"),`"variablecontext":"${newname}"`);
-                data.blockgroup = data.blockgroup.replace(new RegExp(`"conditionvariable":"${oldname}"`, "g"),`"conditionvariable":"${newname}"`);
-                data.blockgroup = data.blockgroup.replace(new RegExp(`"latitude":"${oldname}"`, "g"),`"latitude":"${newname}"`);
-                data.blockgroup = data.blockgroup.replace(new RegExp(`"longitude":"${oldname}"`, "g"),`"longitude":"${newname}"`);
-                data.blockgroup = data.blockgroup.replace(new RegExp(`{{${oldname}}}`, "g"),`{{${newname}}}`);
-                data.variablecustom = data.variablecustom.replace(new RegExp(`"id":"${oldname}_custom"`, "g"),`"id":"${newname}_custom"`);
-                data.variablecustom = data.variablecustom.replace(new RegExp(`"name":"${oldname}"`, "g"),`"name":"${newname}"`);
-            }
+            data = data.map(d => {       
+                for (const [oldname, newname] of variableRenameList) {
+                    d.blockgroup = d.blockgroup.replace(new RegExp(`"title":"${oldname}","caption"`, "g"),`"title":"${newname}","caption"`);
+                    d.blockgroup = d.blockgroup.replace(new RegExp(`"variablename":"${oldname}"`, "g"),`"variablename":"${newname}"`);
+                    d.blockgroup = d.blockgroup.replace(new RegExp(`"variablecontext":"${oldname}"`, "g"),`"variablecontext":"${newname}"`);
+                    d.blockgroup = d.blockgroup.replace(new RegExp(`"conditionvariable":"${oldname}"`, "g"),`"conditionvariable":"${newname}"`);
+                    d.blockgroup = d.blockgroup.replace(new RegExp(`"latitude":"${oldname}"`, "g"),`"latitude":"${newname}"`);
+                    d.blockgroup = d.blockgroup.replace(new RegExp(`"longitude":"${oldname}"`, "g"),`"longitude":"${newname}"`);
+                    d.blockgroup = d.blockgroup.replace(new RegExp(`{{${oldname}}}`, "g"),`{{${newname}}}`);
+                    d.variablecustom = d.variablecustom.replace(new RegExp(`"id":"${oldname}_custom"`, "g"),`"id":"${newname}_custom"`);
+                    d.variablecustom = d.variablecustom.replace(new RegExp(`"name":"${oldname}"`, "g"),`"name":"${newname}"`);
+                }
+                return d;
+            });
             break;
     }
     return data;
@@ -316,15 +330,18 @@ const renameVariable = (table, data) => {
 const restructureVariable = (table, data) => {
     switch (table) {
         case 'conversation':
-            if (data.variablecontext) {
-                let variablecontext = JSON.parse(data.variablecontext);
-                if (Array.isArray(variablecontext)) {
-                    data.variablecontext = JSON.stringify(variablecontext.reduce((avc, vc) => ({
-                        ...avc,
-                        [vc.Name]: vc
-                    }), {}));
+            data.map(d => {    
+                if (d.variablecontext) {
+                    let variablecontext = JSON.parse(d.variablecontext);
+                    if (Array.isArray(variablecontext)) {
+                        d.variablecontext = JSON.stringify(variablecontext.reduce((avc, vc) => ({
+                            ...avc,
+                            [vc.Name]: vc
+                        }), {}));
+                    }
                 }
-            }
+                return d
+            });
         break;
     }
     return data;
@@ -338,6 +355,9 @@ const migrationExecute = async (corpidBind, queries, limit) => {
         if (selectResult instanceof Array) {
             executeResult[k].count.total = selectResult.length;
             selectResult = await recryptPwd(k, selectResult);
+            selectResult = await reconfigWebhook(k, selectResult);
+            selectResult = renameVariable(k, selectResult);
+            selectResult = restructureVariable(k, selectResult);
             if (q.alter) {
                 let alterResult = await laraigoQuery(q.alter.replace('\n',' '));
                 if (!(alterResult instanceof Array)) {
@@ -347,9 +367,6 @@ const migrationExecute = async (corpidBind, queries, limit) => {
             }
             for (selRes of selectResult) {
                 let bind = selRes;
-                bind = reconfigWebhook(k, bind);
-                bind = renameVariable(k, bind);
-                bind = restructureVariable(k, bind);
                 if (q.preprocess) {
                     let preprocessResult = await laraigoQuery(q.preprocess.replace('\n',' '), bind);
                     if (!(preprocessResult instanceof Array)) {
@@ -834,7 +851,15 @@ const queryCore = {
                 zyxmecommunicationchannelid IN (SELECT UNNEST(string_to_array($channels,',')::BIGINT[]))
             ),
             $defaultsort, $redirect
-        )`
+        )`,
+        update: `UPDATE orguser ous
+        SET redirect = CASE
+        WHEN r.code = 'ASESOR' THEN '/message_inbox'
+        WHEN r.code = 'SUPERVISOR' THEN '/supervisor'
+        ELSE '/usersettings' END
+		FROM role r
+		WHERE r.corpid = 1 AND r.orgid = 1 AND r.roleid = ous.roleid
+        AND ous.zyxmecorpid = $corpid`,
     }
 }
 
@@ -1679,7 +1704,7 @@ const querySubcoreOthers = {
             $repeatflag, $repeatmode, $repeatinterval, $completed,
             $datetimestart, $datetimeend, $datetimeoriginalstart, $datetimelastrun, $taskprocessedids
         )`
-    },
+    },    
     blockversion: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, chatblockversionid as zyxmechatblockversionid,
         communicationchannelid, chatblockid,
