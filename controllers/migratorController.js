@@ -371,44 +371,57 @@ const migrationExecute = async (corpidBind, queries, limit) => {
                         executeResult[k].errors.push({script: error});
                     }
                 }
-                let bind = { datatable: JSON.stringify(selectResult) };
-                if (q.preprocess) {
-                    try {
-                        let preprocessResult = await laraigoQuery(q.preprocess.replace('\n',' '), bind);
-                        if (!(preprocessResult instanceof Array)) {
-                            console.log(preprocessResult);
-                            executeResult[k].success = false;
-                            executeResult[k].errors.push({script: preprocessResult});
+                // let bind = { datatable: JSON.stringify(selectResult) };
+                const perChunk = 1000
+                let chunkArray = selectResult.reduce((chunk, item, index) => { 
+                  const chunkIndex = Math.floor(index/perChunk)
+                  if(!chunk[chunkIndex]) {
+                    chunk[chunkIndex] = []
+                  }
+                  chunk[chunkIndex].push(item)
+                  return chunk
+                }, []);
+
+                for (const chunk of chunkArray) {
+                    let bind = { datatable: JSON.stringify(chunk) };
+                    if (q.preprocess) {
+                        try {
+                            let preprocessResult = await laraigoQuery(q.preprocess.replace('\n',' '), bind);
+                            if (!(preprocessResult instanceof Array)) {
+                                console.log(preprocessResult);
+                                executeResult[k].success = false;
+                                executeResult[k].errors.push({script: preprocessResult});
+                            }
+                        } catch (error) {
+                            console.log(error);
+                            executeResult[k].errors.push({script: error});
                         }
-                    } catch (error) {
-                        console.log(error);
-                        executeResult[k].errors.push({script: error});
                     }
-                }
-                if (q.insert) {
-                    try {
-                        let insertResult = await laraigoQuery(q.insert.replace('\n',' '), bind);
-                        if (!(insertResult instanceof Array)) {
-                            console.log(insertResult);
-                            executeResult[k].success = false;
-                            executeResult[k].errors.push({script: insertResult});
+                    if (q.insert) {
+                        try {
+                            let insertResult = await laraigoQuery(q.insert.replace('\n',' '), bind);
+                            if (!(insertResult instanceof Array)) {
+                                console.log(insertResult);
+                                executeResult[k].success = false;
+                                executeResult[k].errors.push({script: insertResult});
+                            }
+                        } catch (error) {
+                            console.log(error);
+                            executeResult[k].errors.push({script: error});
                         }
-                    } catch (error) {
-                        console.log(error);
-                        executeResult[k].errors.push({script: error});
                     }
-                }
-                if (q.postprocess) {
-                    try {
-                        let postprocessResult = await laraigoQuery(q.postprocess.replace('\n',' '), bind);
-                        if (!(postprocessResult instanceof Array)) {
-                            console.log(postprocessResult);
-                            executeResult[k].success = false;
-                            executeResult[k].errors.push({script: postprocessResult});
+                    if (q.postprocess) {
+                        try {
+                            let postprocessResult = await laraigoQuery(q.postprocess.replace('\n',' '), bind);
+                            if (!(postprocessResult instanceof Array)) {
+                                console.log(postprocessResult);
+                                executeResult[k].success = false;
+                                executeResult[k].errors.push({script: postprocessResult});
+                            }
+                        } catch (error) {
+                            console.log(error);
+                            executeResult[k].errors.push({script: error});
                         }
-                    } catch (error) {
-                        console.log(error);
-                        executeResult[k].errors.push({script: error});
                     }
                 }
                 // for (selRes of selectResult) {
