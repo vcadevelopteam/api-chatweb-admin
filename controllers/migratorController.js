@@ -369,7 +369,7 @@ const migrationExecute = async (corpidBind, queries, limit) => {
                 let preprocessResult = await laraigoQuery(q.preprocess.replace('\n',' '), bind);
                 if (!(preprocessResult instanceof Array)) {
                     executeResult[k].success = false;
-                    executeResult[k].errors.push({script: preprocessResult, bind: Object.fromEntries(Object.entries(bind).filter(b => b[0].startsWith('zyxme')))});
+                    executeResult[k].errors.push({script: preprocessResult});
                 }
             }
             if (q.insert) {
@@ -378,14 +378,14 @@ const migrationExecute = async (corpidBind, queries, limit) => {
                 }
                 else {
                     executeResult[k].success = false;
-                    executeResult[k].errors.push({script: insertResult, bind: Object.fromEntries(Object.entries(bind).filter(b => b[0].startsWith('zyxme')))});
+                    executeResult[k].errors.push({script: insertResult});
                 }
             }
             if (q.postprocess) {
                 let postprocessResult = await laraigoQuery(q.postprocess.replace('\n',' '), bind);
                 if (!(postprocessResult instanceof Array)) {
                     executeResult[k].success = false;
-                    executeResult[k].errors.push({script: postprocessResult, bind: Object.fromEntries(Object.entries(bind).filter(b => b[0].startsWith('zyxme')))});
+                    executeResult[k].errors.push({script: postprocessResult});
                 }
             }
             // for (selRes of selectResult) {
