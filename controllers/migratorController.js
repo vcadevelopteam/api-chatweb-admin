@@ -125,14 +125,50 @@ const apiServiceEndpoint = process.env.APISERVICES;
 const recryptPwd = async (table, data) => {
     switch (table) {
         case 'usr':
-            const response = await axios({
-                data: data.map(d => ({userid: d.zyxmeuserid, pwd: d.pwd})),
-                method: 'post',
-                url: `${apiServiceEndpoint}decryption`
-            });
-            const salt = await bcryptjs.genSalt(10);
-            for (let i = 0; i < data.length; i++) {
-                data[i].pwd = await bcryptjs.hash(response.data.find(r => r.userid === data[i].zyxmeuserid).pwd, salt);
+            if (apiServiceEndpoint) {
+                try {
+                    const response = await axios({
+                        data: data.map(d => ({userid: d.zyxmeuserid, pwd: d.pwd})),
+                        method: 'post',
+                        url: `${apiServiceEndpoint}decryption`,
+                    });
+                    const salt = await bcryptjs.genSalt(10);
+                    for (let i = 0; i < data.length; i++) {
+                        data[i].pwd = await bcryptjs.hash(response.data.find(r => r.userid === data[i].zyxmeuserid).pwd, salt);
+                    }
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+            break;
+        }
+    return data;
+}
+
+const apiZyxmeHookEndpoint = process.env.ZYXMEHOOK;
+const apiLaraigoHookEndpoint = process.env.HOOK;
+const reconfigWebhook = async (table, data) => {
+    switch (table) {
+        case 'communicationchannel':
+            data.servicecredentials = null;
+            if (apiZyxmeHookEndpoint) {
+                try {
+                    const response = await axios({
+                        data: {
+                            communicationchannelsite: data.communicationchannelsite,
+                            communicationchannelowner: data.communicationchannelowner,
+                            type: data.type,
+                            url: apiLaraigoHookEndpoint
+                        },
+                        method: 'post',
+                        url: `${apiZyxmeHookEndpoint}reconfig`
+                    });
+                    if (response.data && response.data.success) {
+                        data.servicecredentials = JSON.stringify(response.data.result)
+                    }
+                } catch (error) {
+                    console.log(error);
+                }
             }
         break;
     }
@@ -311,6 +347,9 @@ const migrationExecute = async (corpidBind, queries, limit) => {
             }
             for (selRes of selectResult) {
                 let bind = selRes;
+                bind = reconfigWebhook(k, bind);
+                bind = renameVariable(k, bind);
+                bind = restructureVariable(k, bind);
                 if (q.preprocess) {
                     let preprocessResult = await laraigoQuery(q.preprocess.replace('\n',' '), bind);
                     if (!(preprocessResult instanceof Array)) {
@@ -319,8 +358,6 @@ const migrationExecute = async (corpidBind, queries, limit) => {
                     }
                 }
                 if (q.insert) {
-                    bind = renameVariable(k, bind);
-                    bind = restructureVariable(k, bind);
                     let insertResult = await laraigoQuery(q.insert.replace('\n',' '), bind);
                     if (insertResult instanceof Array) {
                         executeResult[k].count.success += 1;
@@ -526,7 +563,8 @@ const queryCore = {
             integrationid,
             appintegrationid,
             country, channelparameters, channelactive, resolvelithium,
-            color, icons, other, form, apikey
+            color, icons, other, form, apikey,
+            servicecredentials
         )
         VALUES (
             $zyxmecorpid,
@@ -543,7 +581,8 @@ const queryCore = {
             ELSE (SELECT appintegrationid FROM appintegration WHERE zyxmecorpid = $zyxmecorpid AND zyxmeappintegrationid = $zyxmeappintegrationid LIMIT 1)
             END,
             $country, $channelparameters, $channelactive, $resolvelithium,
-            $color, $icons, $other, $form, $apikey
+            $color, $icons, $other, $form, $apikey,
+            $servicecredentials
         )`
     },
     communicationchannelstatus: {
@@ -2141,103 +2180,107 @@ exports.executeMigration = async (req, res) => {
     let { corpid, modules, clean = false, limit } = req.body;
     if (!!corpid && !!modules) {
         const corpidBind = { corpid: corpid }
-        queryResult = {core: {}, subcore: {}, extras: {}};
-        if (modules.includes('core')) {
-            if (clean === true) {
-                await laraigoQuery('SELECT FROM ufn_migration_core_delete($corpid)', bind = corpidBind);
-                clean = false;
+        let queryResult = {core: {}, subcore: {}, extras: {}};
+        try {
+            if (modules.includes('core')) {
+                if (clean === true) {
+                    await laraigoQuery('SELECT FROM ufn_migration_core_delete($corpid)', bind = corpidBind);
+                    clean = false;
+                }
+                queryResult.core = await migrationExecute(corpidBind, queryCore, limit);
             }
-            queryResult.core = await migrationExecute(corpidBind, queryCore, limit);
-        }
-        if (modules.includes('subcore')) {
-            if (clean === true) {
-                await laraigoQuery('SELECT FROM ufn_migration_subcore_delete($corpid)', bind = corpidBind);
+            if (modules.includes('subcore')) {
+                if (clean === true) {
+                    await laraigoQuery('SELECT FROM ufn_migration_subcore_delete($corpid)', bind = corpidBind);
+                }
+                queryResult.subcore.classification = await migrationExecute(corpidBind, querySubcoreClassification, limit);
+                queryResult.subcore.person = await migrationExecute(corpidBind, querySubcorePerson, limit);
+                queryResult.subcore.conversation = await migrationExecute(corpidBind, querySubcoreConversation, limit);
+                queryResult.subcore.campaign = await migrationExecute(corpidBind, querySubcoreCampaign, limit);
+                queryResult.subcore.others = await migrationExecute(corpidBind, querySubcoreOthers, limit);
             }
-            queryResult.subcore.classification = await migrationExecute(corpidBind, querySubcoreClassification, limit);
-            queryResult.subcore.person = await migrationExecute(corpidBind, querySubcorePerson, limit);
-            queryResult.subcore.conversation = await migrationExecute(corpidBind, querySubcoreConversation, limit);
-            queryResult.subcore.campaign = await migrationExecute(corpidBind, querySubcoreCampaign, limit);
-            queryResult.subcore.others = await migrationExecute(corpidBind, querySubcoreOthers, limit);
-        }
-        if (modules.includes('extras')) {
-            if (clean === true) {
-                await laraigoQuery('SELECT FROM ufn_migration_extras_delete($corpid)', bind = corpidBind);
+            if (modules.includes('extras')) {
+                if (clean === true) {
+                    await laraigoQuery('SELECT FROM ufn_migration_extras_delete($corpid)', bind = corpidBind);
+                }
+                queryResult.extras.blacklist = await migrationExecute(corpidBind, {blacklist: queryExtras.blacklist}, limit);
+                queryResult.extras.hsmhistory = await migrationExecute(corpidBind, {hsmhistory: queryExtras.hsmhistory}, limit);
+                queryResult.extras.inappropriatewords = await migrationExecute(corpidBind, {inappropriatewords: queryExtras.inappropriatewords}, limit);
+                queryResult.extras.label = await migrationExecute(corpidBind, {label: queryExtras.label}, limit);
+                queryResult.extras.location = await migrationExecute(corpidBind, {location: queryExtras.location}, limit);
+                queryResult.extras.payment = await migrationExecute(corpidBind, {payment: queryExtras.payment}, limit);
+                queryResult.extras.productivity = await migrationExecute(corpidBind, {productivity: queryExtras.productivity}, limit);
+                queryResult.extras.reporttemplate = await migrationExecute(corpidBind, {reporttemplate: queryExtras.reporttemplate}, limit);
+                queryResult.extras.sla = await migrationExecute(corpidBind, {sla: queryExtras.sla}, limit);
+                queryResult.extras.whitelist = await migrationExecute(corpidBind, {whitelist: queryExtras.whitelist}, limit);
             }
-            queryResult.extras.blacklist = await migrationExecute(corpidBind, {blacklist: queryExtras.blacklist}, limit);
-            queryResult.extras.hsmhistory = await migrationExecute(corpidBind, {hsmhistory: queryExtras.hsmhistory}, limit);
-            queryResult.extras.inappropriatewords = await migrationExecute(corpidBind, {inappropriatewords: queryExtras.inappropriatewords}, limit);
-            queryResult.extras.label = await migrationExecute(corpidBind, {label: queryExtras.label}, limit);
-            queryResult.extras.location = await migrationExecute(corpidBind, {location: queryExtras.location}, limit);
-            queryResult.extras.payment = await migrationExecute(corpidBind, {payment: queryExtras.payment}, limit);
-            queryResult.extras.productivity = await migrationExecute(corpidBind, {productivity: queryExtras.productivity}, limit);
-            queryResult.extras.reporttemplate = await migrationExecute(corpidBind, {reporttemplate: queryExtras.reporttemplate}, limit);
-            queryResult.extras.sla = await migrationExecute(corpidBind, {sla: queryExtras.sla}, limit);
-            queryResult.extras.whitelist = await migrationExecute(corpidBind, {whitelist: queryExtras.whitelist}, limit);
-        }
-        if (!modules.includes('extras') && modules.includes('extras.blacklist')) {
-            if (clean === true) {
-                await laraigoQuery('DELETE FROM "blacklist" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+            if (!modules.includes('extras') && modules.includes('extras.blacklist')) {
+                if (clean === true) {
+                    await laraigoQuery('DELETE FROM "blacklist" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+                }
+                queryResult.extras.blacklist = await migrationExecute(corpidBind, {blacklist: queryExtras.blacklist}, limit);
             }
-            queryResult.extras.blacklist = await migrationExecute(corpidBind, {blacklist: queryExtras.blacklist}, limit);
-        }
-        if (!modules.includes('extras') && modules.includes('extras.hsmhistory')) {
-            if (clean === true) {
-                await laraigoQuery('DELETE FROM "hsmhistory" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+            if (!modules.includes('extras') && modules.includes('extras.hsmhistory')) {
+                if (clean === true) {
+                    await laraigoQuery('DELETE FROM "hsmhistory" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+                }
+                queryResult.extras.hsmhistory = await migrationExecute(corpidBind, {hsmhistory: queryExtras.hsmhistory}, limit);
             }
-            queryResult.extras.hsmhistory = await migrationExecute(corpidBind, {hsmhistory: queryExtras.hsmhistory}, limit);
-        }
-        if (!modules.includes('extras') && modules.includes('extras.inappropriatewords')) {
-            if (clean === true) {
-                await laraigoQuery('DELETE FROM "inappropriatewords" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+            if (!modules.includes('extras') && modules.includes('extras.inappropriatewords')) {
+                if (clean === true) {
+                    await laraigoQuery('DELETE FROM "inappropriatewords" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+                }
+                queryResult.extras.inappropriatewords = await migrationExecute(corpidBind, {inappropriatewords: queryExtras.inappropriatewords}, limit);
             }
-            queryResult.extras.inappropriatewords = await migrationExecute(corpidBind, {inappropriatewords: queryExtras.inappropriatewords}, limit);
-        }
-        if (!modules.includes('extras') && modules.includes('extras.label')) {
-            if (clean === true) {
-                await laraigoQuery('DELETE FROM "label" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+            if (!modules.includes('extras') && modules.includes('extras.label')) {
+                if (clean === true) {
+                    await laraigoQuery('DELETE FROM "label" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+                }
+                queryResult.extras.label = await migrationExecute(corpidBind, {label: queryExtras.label}, limit);
             }
-            queryResult.extras.label = await migrationExecute(corpidBind, {label: queryExtras.label}, limit);
-        }
-        if (!modules.includes('extras') && modules.includes('extras.location')) {
-            if (clean === true) {
-                await laraigoQuery('DELETE FROM "location" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+            if (!modules.includes('extras') && modules.includes('extras.location')) {
+                if (clean === true) {
+                    await laraigoQuery('DELETE FROM "location" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+                }
+                queryResult.extras.location = await migrationExecute(corpidBind, {location: queryExtras.location}, limit);
             }
-            queryResult.extras.location = await migrationExecute(corpidBind, {location: queryExtras.location}, limit);
-        }
-        if (!modules.includes('extras') && modules.includes('extras.payment')) {
-            if (clean === true) {
-                await laraigoQuery('DELETE FROM "payment" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+            if (!modules.includes('extras') && modules.includes('extras.payment')) {
+                if (clean === true) {
+                    await laraigoQuery('DELETE FROM "payment" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+                }
+                queryResult.extras.payment = await migrationExecute(corpidBind, {payment: queryExtras.payment}, limit);
             }
-            queryResult.extras.payment = await migrationExecute(corpidBind, {payment: queryExtras.payment}, limit);
-        }
-        if (!modules.includes('extras') && modules.includes('extras.productivity')) {
-            if (clean === true) {
-                await laraigoQuery('DELETE FROM "productivity" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+            if (!modules.includes('extras') && modules.includes('extras.productivity')) {
+                if (clean === true) {
+                    await laraigoQuery('DELETE FROM "productivity" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+                }
+                queryResult.extras.productivity = await migrationExecute(corpidBind, {productivity: queryExtras.productivity}, limit);
             }
-            queryResult.extras.productivity = await migrationExecute(corpidBind, {productivity: queryExtras.productivity}, limit);
-        }
-        if (!modules.includes('extras') && modules.includes('extras.reporttemplate')) {
-            if (clean === true) {
-                await laraigoQuery('DELETE FROM "reporttemplate" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+            if (!modules.includes('extras') && modules.includes('extras.reporttemplate')) {
+                if (clean === true) {
+                    await laraigoQuery('DELETE FROM "reporttemplate" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+                }
+                queryResult.extras.reporttemplate = await migrationExecute(corpidBind, {reporttemplate: queryExtras.reporttemplate}, limit);
             }
-            queryResult.extras.reporttemplate = await migrationExecute(corpidBind, {reporttemplate: queryExtras.reporttemplate}, limit);
-        }
-        if (!modules.includes('extras') && modules.includes('extras.sla')) {
-            if (clean === true) {
-                await laraigoQuery('DELETE FROM "sla" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+            if (!modules.includes('extras') && modules.includes('extras.sla')) {
+                if (clean === true) {
+                    await laraigoQuery('DELETE FROM "sla" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+                }
+                queryResult.extras.sla = await migrationExecute(corpidBind, {sla: queryExtras.sla}, limit);
             }
-            queryResult.extras.sla = await migrationExecute(corpidBind, {sla: queryExtras.sla}, limit);
-        }
-        if (!modules.includes('extras') && modules.includes('extras.whitelist')) {
-            if (clean === true) {
-                await laraigoQuery('DELETE FROM "whitelist" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+            if (!modules.includes('extras') && modules.includes('extras.whitelist')) {
+                if (clean === true) {
+                    await laraigoQuery('DELETE FROM "whitelist" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+                }
+                queryResult.extras.whitelist = await migrationExecute(corpidBind, {whitelist: queryExtras.whitelist}, limit);
             }
-            queryResult.extras.whitelist = await migrationExecute(corpidBind, {whitelist: queryExtras.whitelist}, limit);
+            return res.status(200).json({ error: false, success: true, data: queryResult });
         }
-        return res.status(200).json({ error: false, success: true, data: queryResult });
+        catch (error) {
+            return res.status(500).json({ error: true, success: false, data: queryResult, msg: error.message });
+        }
     }
     else {
         return res.status(400).json({ error: true, success: false, data: 'Invalid JSON' });
     }
-    
 }

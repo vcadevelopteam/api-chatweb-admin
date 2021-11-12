@@ -3,7 +3,7 @@ const router = express.Router();
 const migratorController = require("../controllers/migratorController");
 const auth = require('../middleware/auth');
 
-router.post('/listcorp', auth, migratorController.listCorp)
+router.post('/listcorp', migratorController.listCorp)
 
 router.post('/execute', migratorController.executeMigration)
 
