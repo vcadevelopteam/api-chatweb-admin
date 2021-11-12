@@ -351,82 +351,116 @@ const migrationExecute = async (corpidBind, queries, limit) => {
     let executeResult = {};
     for (const [k,q] of Object.entries(queries)) {
         executeResult[k] = {success: true, errors: []};
-        let selectResult = await zyxmeQuery(q.select.replace('\n',' ') + (!!limit ? ` LIMIT ${limit}` : ''), corpidBind);
-        if (selectResult instanceof Array) {
-            selectResult = await recryptPwd(k, selectResult);
-            selectResult = await reconfigWebhook(k, selectResult);
-            selectResult = renameVariable(k, selectResult);
-            selectResult = restructureVariable(k, selectResult);
-            if (q.alter) {
-                let alterResult = await laraigoQuery(q.alter.replace('\n',' '));
-                if (!(alterResult instanceof Array)) {
-                    executeResult[k].success = false;
-                    executeResult[k].errors.push({script: alterResult});
+        try {
+            let selectResult = await zyxmeQuery(q.select.replace('\n',' ') + (!!limit ? ` LIMIT ${limit}` : ''), corpidBind);
+            if (selectResult instanceof Array) {
+                selectResult = await recryptPwd(k, selectResult);
+                selectResult = await reconfigWebhook(k, selectResult);
+                selectResult = renameVariable(k, selectResult);
+                selectResult = restructureVariable(k, selectResult);
+                if (q.alter) {
+                    try {
+                        let alterResult = await laraigoQuery(q.alter.replace('\n',' '));
+                        if (!(alterResult instanceof Array)) {
+                            console.log(alterResult);
+                            executeResult[k].success = false;
+                            executeResult[k].errors.push({script: alterResult});
+                        }
+                    } catch (error) {
+                        console.log(error);
+                        executeResult[k].errors.push({script: error});
+                    }
+                }
+                let bind = { datatable: JSON.stringify(selectResult) };
+                if (q.preprocess) {
+                    try {
+                        let preprocessResult = await laraigoQuery(q.preprocess.replace('\n',' '), bind);
+                        if (!(preprocessResult instanceof Array)) {
+                            console.log(preprocessResult);
+                            executeResult[k].success = false;
+                            executeResult[k].errors.push({script: preprocessResult});
+                        }
+                    } catch (error) {
+                        console.log(error);
+                        executeResult[k].errors.push({script: error});
+                    }
+                }
+                if (q.insert) {
+                    try {
+                        let insertResult = await laraigoQuery(q.insert.replace('\n',' '), bind);
+                        if (!(insertResult instanceof Array)) {
+                            console.log(insertResult);
+                            executeResult[k].success = false;
+                            executeResult[k].errors.push({script: insertResult});
+                        }
+                    } catch (error) {
+                        console.log(error);
+                        executeResult[k].errors.push({script: error});
+                    }
+                }
+                if (q.postprocess) {
+                    try {
+                        let postprocessResult = await laraigoQuery(q.postprocess.replace('\n',' '), bind);
+                        if (!(postprocessResult instanceof Array)) {
+                            console.log(postprocessResult);
+                            executeResult[k].success = false;
+                            executeResult[k].errors.push({script: postprocessResult});
+                        }
+                    } catch (error) {
+                        console.log(error);
+                        executeResult[k].errors.push({script: error});
+                    }
+                }
+                // for (selRes of selectResult) {
+                //     let bind = selRes;
+                //     if (q.preprocess) {
+                //         let preprocessResult = await laraigoQuery(q.preprocess.replace('\n',' '), bind);
+                //         if (!(preprocessResult instanceof Array)) {
+                //             executeResult[k].success = false;
+                //             executeResult[k].errors.push({script: preprocessResult, bind: Object.fromEntries(Object.entries(bind).filter(b => b[0].startsWith('zyxme')))});
+                //         }
+                //     }
+                //     if (q.insert) {
+                //         let insertResult = await laraigoQuery(q.insert.replace('\n',' '), bind);
+                //         if (insertResult instanceof Array) {
+                //             executeResult[k].count.success += 1;
+                //         }
+                //         else {
+                //             executeResult[k].count.failed += 1;
+                //             executeResult[k].success = false;
+                //             executeResult[k].errors.push({script: insertResult, bind: Object.fromEntries(Object.entries(bind).filter(b => b[0].startsWith('zyxme')))});
+                //         }
+                //     }
+                //     if (q.postprocess) {
+                //         let postprocessResult = await laraigoQuery(q.postprocess.replace('\n',' '), bind);
+                //         if (!(postprocessResult instanceof Array)) {
+                //             executeResult[k].success = false;
+                //             executeResult[k].errors.push({script: postprocessResult, bind: Object.fromEntries(Object.entries(bind).filter(b => b[0].startsWith('zyxme')))});
+                //         }
+                //     }
+                // }
+                if (q.update) {
+                    try {
+                        let updateResult = await laraigoQuery(q.update.replace('\n',' '), corpidBind);
+                        if (!(updateResult instanceof Array)) {
+                            console.log(updateResult);
+                            executeResult[k].success = false;
+                            executeResult[k].errors.push({script: updateResult, bind: corpidBind});
+                        }
+                    } catch (error) {
+                        console.log(error);
+                        executeResult[k].errors.push({script: error});
+                    }
                 }
             }
-            let bind = { datatable: JSON.stringify(selectResult) };
-            if (q.preprocess) {
-                let preprocessResult = await laraigoQuery(q.preprocess.replace('\n',' '), bind);
-                if (!(preprocessResult instanceof Array)) {
-                    executeResult[k].success = false;
-                    executeResult[k].errors.push({script: preprocessResult});
-                }
+            else {
+                executeResult[k].success = false;
+                executeResult[k].errors.push({script: selectResult, bind: corpidBind});
             }
-            if (q.insert) {
-                let insertResult = await laraigoQuery(q.insert.replace('\n',' '), bind);
-                if (insertResult instanceof Array) {
-                }
-                else {
-                    executeResult[k].success = false;
-                    executeResult[k].errors.push({script: insertResult});
-                }
-            }
-            if (q.postprocess) {
-                let postprocessResult = await laraigoQuery(q.postprocess.replace('\n',' '), bind);
-                if (!(postprocessResult instanceof Array)) {
-                    executeResult[k].success = false;
-                    executeResult[k].errors.push({script: postprocessResult});
-                }
-            }
-            // for (selRes of selectResult) {
-            //     let bind = selRes;
-            //     if (q.preprocess) {
-            //         let preprocessResult = await laraigoQuery(q.preprocess.replace('\n',' '), bind);
-            //         if (!(preprocessResult instanceof Array)) {
-            //             executeResult[k].success = false;
-            //             executeResult[k].errors.push({script: preprocessResult, bind: Object.fromEntries(Object.entries(bind).filter(b => b[0].startsWith('zyxme')))});
-            //         }
-            //     }
-            //     if (q.insert) {
-            //         let insertResult = await laraigoQuery(q.insert.replace('\n',' '), bind);
-            //         if (insertResult instanceof Array) {
-            //             executeResult[k].count.success += 1;
-            //         }
-            //         else {
-            //             executeResult[k].count.failed += 1;
-            //             executeResult[k].success = false;
-            //             executeResult[k].errors.push({script: insertResult, bind: Object.fromEntries(Object.entries(bind).filter(b => b[0].startsWith('zyxme')))});
-            //         }
-            //     }
-            //     if (q.postprocess) {
-            //         let postprocessResult = await laraigoQuery(q.postprocess.replace('\n',' '), bind);
-            //         if (!(postprocessResult instanceof Array)) {
-            //             executeResult[k].success = false;
-            //             executeResult[k].errors.push({script: postprocessResult, bind: Object.fromEntries(Object.entries(bind).filter(b => b[0].startsWith('zyxme')))});
-            //         }
-            //     }
-            // }
-            if (q.update) {
-                let updateResult = await laraigoQuery(q.update.replace('\n',' '), corpidBind);
-                if (!(updateResult instanceof Array)) {
-                    executeResult[k].success = false;
-                    executeResult[k].errors.push({script: updateResult, bind: corpidBind});
-                }
-            }
-        }
-        else {
+        } catch (error) {
+            console.log(error);
             executeResult[k].success = false;
-            executeResult[k].errors.push({script: selectResult, bind: corpidBind});
+            executeResult[k].errors.push({script: error});
         }
     };
     return executeResult;
