@@ -362,27 +362,9 @@ exports.deleteChannel = async (request, result) => {
                                 const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
 
                                 if (transactionDeleteTwitter instanceof Array) {
-                                    var serviceMethod = 'UFN_COMMUNICATIONCHANNELHOOK_INS';
-                                    var serviceParameters = {
-                                        operation: 'DELETE',
-                                        servicedata: JSON.stringify(serviceCredentials),
-                                        site: serviceCredentials.twitterPageId,
-                                        type: 'TWTR'
-                                    };
-
-                                    const transactionServiceTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
-
-                                    if (transactionServiceTwitter instanceof Array) {
-                                        return result.json({
-                                            success: true
-                                        });
-                                    }
-                                    else {
-                                        return result.status(400).json({
-                                            msg: transactionServiceTwitter.code,
-                                            success: false
-                                        });
-                                    }
+                                    return result.json({
+                                        success: true
+                                    });
                                 }
                                 else {
                                     return result.status(400).json({
@@ -1029,24 +1011,28 @@ exports.insertChannel = async (request, result) => {
                 });
 
                 if (requestPageTwitter.data.success) {
-                    var serviceMethod = 'UFN_COMMUNICATIONCHANNELHOOK_INS';
-                    var serviceParameters = {
-                        operation: 'INSERT',
-                        servicedata: JSON.stringify({
-                            accessSecret: service.accesssecret,
-                            accessToken: service.accesstoken,
-                            consumerKey: service.consumerkey,
-                            consumerSecret: service.consumersecret,
-                            devEnvironment: service.devenvironment,
-                            twitterPageId: requestPageTwitter.data.pageId
-                        }),
-                        site: requestPageTwitter.data.pageId,
-                        type: 'TWTR'
+                    var serviceCredentials = {
+                        accessSecret: service.accesssecret,
+                        accessToken: service.accesstoken,
+                        consumerKey: service.consumerkey,
+                        consumerSecret: service.consumersecret,
+                        devEnvironment: service.devenvironment,
+                        twitterPageId: requestPageTwitter.data.pageId
                     };
+                
+                    parameters.communicationchannelsite = requestPageTwitter.data.pageId;
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
 
-                    const transactionServiceTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
+                    if (request.body.type === 'TWITTER') {
+                        parameters.type = 'TWIT';
+                    }
+                    else {
+                        parameters.type = 'TWMS';
+                    }
 
-                    if (transactionServiceTwitter instanceof Array) {
+                    const transactionCreateTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateTwitter instanceof Array) {
                         const requestCreateTwitter = await axios({
                             data: {
                                 accessSecret: service.accesssecret,
@@ -1060,71 +1046,21 @@ exports.insertChannel = async (request, result) => {
                             method: 'post',
                             url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`
                         });
-                    
-                        if (requestCreateTwitter.data.success) {
-                            if (request.body.type === 'TWITTER') {
-                                parameters.type = 'TWIT';
-                            }
-                            else {
-                                parameters.type = 'TWMS';
-                            }
-                        
-                            var serviceCredentials = {
-                                accessSecret: service.accesssecret,
-                                accessToken: service.accesstoken,
-                                consumerKey: service.consumerkey,
-                                consumerSecret: service.consumersecret,
-                                devEnvironment: service.devenvironment,
-                                twitterPageId: requestPageTwitter.data.pageId
-                            };
-                        
-                            parameters.communicationchannelsite = requestPageTwitter.data.pageId;
-                            parameters.servicecredentials = JSON.stringify(serviceCredentials);
-                        
-                            const transactionCreateTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
-                        
-                            if (transactionCreateTwitter instanceof Array) {
-                                serviceParameters.operation = 'DELETE';
-                            
-                                const transactionServiceDeleteTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
 
-                                if (transactionServiceDeleteTwitter instanceof Array) {
-                                    return result.json({
-                                        success: true
-                                    });
-                                }
-                                else {
-                                    return result.status(400).json({
-                                        msg: transactionServiceDeleteTwitter.code,
-                                        success: false
-                                    });
-                                }
-                            }
-                            else {
-                                serviceParameters.operation = 'DELETE';
-                            
-                                const transactionServiceDeleteTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
-                            
-                                if (transactionServiceDeleteTwitter instanceof Array) {
-                                    return result.status(400).json({
-                                        msg: transactionCreateTwitter.code,
-                                        success: false
-                                    });
-                                }
-                                else {
-                                    return result.status(400).json({
-                                        msg: transactionServiceDeleteTwitter.code,
-                                        success: false
-                                    });
-                                }
-                            }
+                        if (requestCreateTwitter.data.success) {
+                            return result.json({
+                                success: true
+                            });
                         }
-                        else {
-                            serviceParameters.operation = 'DELETE';
-                        
-                            const transactionServiceDeleteTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
-                        
-                            if (transactionServiceDeleteTwitter instanceof Array) {
+                        else
+                        {
+                            parameters.id = transactionCreateTwitter[0].ufn_communicationchannel_ins2;
+                            parameters.motive = 'Delete from API';
+                            parameters.operation = 'DELETE';
+
+                            const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                            if (transactionDeleteTwitter instanceof Array) {
                                 return result.status(400).json({
                                     msg: requestCreateTwitter.data.operationMessage,
                                     success: false
@@ -1132,7 +1068,7 @@ exports.insertChannel = async (request, result) => {
                             }
                             else {
                                 return result.status(400).json({
-                                    msg: transactionServiceDeleteTwitter.code,
+                                    msg: transactionDeleteTwitter.code,
                                     success: false
                                 });
                             }
@@ -1140,7 +1076,7 @@ exports.insertChannel = async (request, result) => {
                     }
                     else {
                         return result.status(400).json({
-                            msg: transactionServiceTwitter.code,
+                            msg: transactionCreateTwitter.code,
                             success: false
                         });
                     }

@@ -114,6 +114,7 @@ exports.createSubscription = async (request, result) => {
         var channelServiceArray = [];
 
         var channelData = '';
+        var channelTotal = '';
 
         if (channellist instanceof Array) {
             for (const channel of channellist) {
@@ -468,27 +469,30 @@ exports.createSubscription = async (request, result) => {
                             });
 
                             if (requestPageTwitter.data.success) {
-                                var serviceMethod = 'UFN_COMMUNICATIONCHANNELHOOK_INS';
-                                var serviceParameters = {
-                                    operation: 'INSERT',
-                                    servicedata: JSON.stringify({
-                                        accessSecret: channelService.accesssecret,
-                                        accessToken: channelService.accesstoken,
-                                        consumerKey: channelService.consumerkey,
-                                        consumerSecret: channelService.consumersecret,
-                                        devEnvironment: channelService.devenvironment,
-                                        twitterPageId: requestPageTwitter.data.pageId
-                                    }),
-                                    site: requestPageTwitter.data.pageId,
-                                    type: 'TWTR'
+                                var serviceCredentials = {
+                                    accessSecret: channelService.accesssecret,
+                                    accessToken: channelService.accesstoken,
+                                    consumerKey: channelService.consumerkey,
+                                    consumerSecret: channelService.consumersecret,
+                                    devEnvironment: channelService.devenvironment,
+                                    twitterPageId: requestPageTwitter.data.pageId
                                 };
 
-                                const transactionServiceTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
+                                channelParameters.communicationchannelsite = requestPageTwitter.data.pageId;
+                                channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
 
-                                if (transactionServiceTwitter instanceof Array) {
+                                if (channel.type === 'TWITTER') {
+                                    channelParameters.type = 'TWIT';
+                                }
+                                else {
+                                    channelParameters.type = 'TWMS';
+                                }
+
+                                const transactionCreateTwitter = await triggerfunctions.executesimpletransaction(channelMethod, channelParameters);
+
+                                if (transactionCreateTwitter instanceof Array) {
                                     const requestCreateTwitter = await axios({
                                         data: {
-                                            
                                             accessSecret: channelService.accesssecret,
                                             accessToken: channelService.accesstoken,
                                             consumerKey: channelService.consumerkey,
@@ -500,37 +504,25 @@ exports.createSubscription = async (request, result) => {
                                         method: 'post',
                                         url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`
                                     });
-    
+
                                     if (requestCreateTwitter.data.success) {
-                                        if (channel.type === 'TWITTER') {
-                                            channelParameters.type = 'TWIT';
+                                        if (channelTotal === '') {
+                                            channelTotal = `${transactionCreateTwitter[0].ufn_communicationchannel_ins2}`;
                                         }
                                         else {
-                                            channelParameters.type = 'TWMS';
+                                            channelTotal = `${channelTotal},${transactionCreateTwitter[0].ufn_communicationchannel_ins2}`;
                                         }
-    
-                                        var serviceCredentials = {
-                                            accessSecret: channelService.accesssecret,
-                                            accessToken: channelService.accesstoken,
-                                            consumerKey: channelService.consumerkey,
-                                            consumerSecret: channelService.consumersecret,
-                                            devEnvironment: channelService.devenvironment,
-                                            twitterPageId: requestPageTwitter.data.pageId
-                                        };
-    
-                                        channelParameters.communicationchannelsite = requestPageTwitter.data.pageId;
-                                        channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
-    
-                                        channelMethodArray.push(channelMethod);
-                                        channelParametersArray.push(channelParameters);
-                                        channelServiceArray.push(channelService);
+
+                                        channelData = `<b>${channelParameters.description}</b>;${channelData}`;
                                     }
                                     else {
-                                        serviceParameters.operation = 'DELETE';
-    
-                                        const transactionServiceDeleteTwitter = await triggerfunctions.executesimpletransaction(serviceMethod, serviceParameters);
-    
-                                        if (transactionServiceDeleteTwitter instanceof Array) {
+                                        channelParameters.id = transactionCreateTwitter[0].ufn_communicationchannel_ins2;
+                                        channelParameters.motive = 'Delete from API';
+                                        channelParameters.operation = 'DELETE';
+
+                                        const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                                        if (transactionDeleteTwitter instanceof Array) {
                                             return result.status(400).json({
                                                 msg: requestCreateTwitter.data.operationMessage,
                                                 success: false,
@@ -539,7 +531,7 @@ exports.createSubscription = async (request, result) => {
                                         }
                                         else {
                                             return result.status(400).json({
-                                                msg: transactionServiceDeleteTwitter.code,
+                                                msg: transactionDeleteTwitter.code,
                                                 success: false,
                                                 error: true
                                             });
@@ -548,7 +540,7 @@ exports.createSubscription = async (request, result) => {
                                 }
                                 else {
                                     return result.status(400).json({
-                                        msg: transactionServiceTwitter.code,
+                                        msg: transactionCreateTwitter.code,
                                         success: false,
                                         error: true
                                     });
@@ -627,7 +619,6 @@ exports.createSubscription = async (request, result) => {
 
         if (transactionCreateSubscription instanceof Array) {
             if (transactionCreateSubscription.length > 0) {
-                var channelTotal = '';
                 var corpId = transactionCreateSubscription[0].corpid;
                 var index = 0;
                 var orgId = transactionCreateSubscription[0].orgid;
