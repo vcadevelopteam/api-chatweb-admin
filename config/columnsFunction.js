@@ -463,6 +463,12 @@ module.exports = {
         }
     },
     person: {
+        havelead: {
+            column: "case when l.priority is not null then true else false end havelead"
+        },
+        datenote: {
+            column: "CONCAT(lda.description, case when ldn.description <> '' then ldn.description else 'FILE' end)"
+        },
         corpid: {
             column: "pe.corpid"
         },
@@ -491,7 +497,7 @@ module.exports = {
             column: "pe.type"
         },
         name: {
-            column: "pe.name"
+            column: "CONCAT(pe.name, pe.email, pe.phone)"
         },
         persontype: {
             column: "pe.persontype"
