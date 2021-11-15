@@ -322,7 +322,7 @@ module.exports = {
             column: "co.ticketnum"
         },
         fecha: {
-            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')",
+            column: "co.startdate + p_offset * INTERVAL '1hour'",
             type: "date"
         },
         firstusergroup: {
@@ -341,23 +341,23 @@ module.exports = {
             column: "pcc.personcommunicationchannelowner"
         },
         fechainicio: {
-            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')",
+            column: "co.startdate + p_offset * INTERVAL '1hour'",
             type: "date"
         },
         fechafin: {
-            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')",
+            column: "co.finishdate + p_offset * INTERVAL '1hour'",
             type: "date"
         },
         fechaprimeraconversacion: {
-            column: "to_char(co.firstconversationdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')",
+            column: "co.firstconversationdate + p_offset * INTERVAL '1hour'",
             type: "date"
         },
         fechaultimaconversacion: {
-            column: "to_char(co.lastconversationdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')",
+            column: "co.lastconversationdate + p_offset * INTERVAL '1hour'",
             type: "date"
         },
         fechahandoff: {
-            column: "to_char(co.handoffdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI')",
+            column: "co.handoffdate + p_offset * INTERVAL '1hour'",
             type: "date"
         },
         asesorinicial: {
@@ -519,10 +519,12 @@ module.exports = {
             column: "pe.alternativeemail"
         },
         firstcontact: {
-            column: "to_char(pe.firstcontact + p_offset * interval '1hour', 'DD/MM/YYYY HH24:MI:SS')"
+            column: "pe.firstcontact + p_offset * interval '1hour'",
+            type: "date"
         },
         lastcontact: {
-            column: "to_char(pe.lastcontact + p_offset * interval '1hour', 'DD/MM/YYYY HH24:MI:SS')"
+            column: "pe.lastcontact + p_offset * interval '1hour'",
+            type: "date"
         },
         lastcommunicationchannelid: {
             column: "pe.lastcommunicationchannelid"
