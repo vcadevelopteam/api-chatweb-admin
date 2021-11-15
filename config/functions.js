@@ -130,12 +130,12 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_PERSON_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_person_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_person_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset, $userids, $channeltypes)",
         module: "",
         protected: "SELECT"
     },
     UFN_PERSON_SEL: {
-        query: "SELECT  * FROM ufn_person_sel($corpid, $orgid, $username, $where, $order, $take, $skip, $startdate, $enddate, $offset)",
+        query: "SELECT  * FROM ufn_person_sel($corpid, $orgid, $username, $where, $order, $take, $skip, $startdate, $enddate, $offset, $userids, $channeltypes)",
         module: "/extras/person",
         protected: "SELECT"
     },
@@ -1218,6 +1218,11 @@ module.exports = {
     },
     UFN_REPORT_HEATMAP_TIPIFICACION_SEL: {
         query: "SELECT * FROM ufn_report_heatmap_tipificacion_sel($corpid, $orgid, $communicationchannel , $startdate , $enddate ,$closedby, $userid, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_USER_ASESORBYORGID_LST: {
+        query: "SELECT * FROM ufn_user_asesorbyorgid_lst($corpid, $orgid, $userid)",
         module: "",
         protected: "SELECT"
     },

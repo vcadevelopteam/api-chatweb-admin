@@ -73,7 +73,7 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
 
                 const queryCollectionCleaned = querycollection.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
                 const queryCountCleaned = querycount.replace("###WHERE###", data.where || "");
-
+                
                 const results = await Promise.all([
                     sequelize.query(queryCollectionCleaned, {
                         type: QueryTypes.SELECT,
