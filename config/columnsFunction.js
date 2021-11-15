@@ -464,7 +464,8 @@ module.exports = {
     },
     person: {
         havelead: {
-            column: "case when l.priority is not null then true else false end havelead"
+            column: "case when l.priority is not null then true else false end",
+            type: "boolean"
         },
         datenote: {
             column: "CONCAT(lda.description, case when ldn.description <> '' then ldn.description else 'FILE' end)"
