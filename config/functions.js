@@ -1152,7 +1152,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_UPDATE_LEAD_TAGS: {
-        query: "select * ufn_update_lead_tags($corpid, $orgid, $leadid, $tags, $history_description, $history_type, $history_status, $username)",
+        query: "select * from ufn_update_lead_tags($corpid, $orgid, $leadid, $tags, $history_description, $history_type, $history_status, $username)",
         module: "",
         protected: "INSERT"
     },
