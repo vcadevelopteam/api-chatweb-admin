@@ -1221,4 +1221,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_USER_ASESORBYORGID_LST: {
+        query: "SELECT * FROM ufn_user_asesorbyorgid_lst($corpid, $orgid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
