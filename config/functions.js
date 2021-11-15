@@ -1151,7 +1151,7 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_LEADACTIVITYHISTORY_SEL: {
+    UFN_UPDATE_LEAD_TAGS: {
         query: "select * ufn_update_lead_tags($corpid, $orgid, $leadid, $tags, $history_description, $history_type, $history_status, $username)",
         module: "",
         protected: "INSERT"
