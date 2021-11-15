@@ -147,91 +147,95 @@ const recryptPwd = async (table, data) => {
 
 const apiZyxmeHookEndpoint = process.env.ZYXMEHOOK;
 const apiLaraigoHookEndpoint = process.env.HOOK;
-const reconfigWebhook = async (table, data) => {
+const reconfigWebhook = async (table, data, move = false) => {
     switch (table) {
         case 'communicationchannel':
-            // if (apiZyxmeHookEndpoint) {
-            //     const url = new URL(apiLaraigoHookEndpoint);
-            //     const laraigoUrl = url.origin + url.pathname.split('hook')[0];
-            //     for (let i = 0; i< data.length; i++) {
-            //         try {
-            //             data[i].servicecredentials = null;
-            //             let zyxmeData = {
-            //                 communicationChannelSite: data[i].communicationchannelsite,
-            //                 migrationEnvironment: laraigoUrl,
-            //                 type: data[i].type
-            //             }
-            //             switch (data[i].type) {
-            //                 case 'CHAZ':
-            //                     zyxmeData = {
-            //                         ...zyxmeData,
-            //                         communicationchannelowner: data[i].communicationchannelowner,
-            //                     }
-            //                     break;
-            //                 case 'TWIT': case 'TWMS':
-            //                     zyxmeData = {
-            //                         ...zyxmeData,
-            //                         twitterLink: false,
-            //                     }
-            //                 default:
-            //                     break;
-            //             }
-            //             const response = await axios({
-            //                 data: zyxmeData,
-            //                 method: 'post',
-            //                 url: `${apiZyxmeHookEndpoint}support/migratechannel`
-            //             });
-            //             if (response.data && response.data.success) {
-            //                 data[i].servicecredentials = JSON.stringify(response.data.serviceCredentials)
-            //                 switch (data[i].type) {
-            //                     case 'CHAZ':
-            //                         data[i].communicationchannelowner = response.data.communicationChannelOwner
-            //                         break;
-            //                 }
-            //             }
-            //         } catch (error) {
-            //             console.log(error);
-            //         }
-            //     }
-            // }
+            if (apiZyxmeHookEndpoint) {
+                const url = new URL(apiLaraigoHookEndpoint);
+                const laraigoUrl = url.origin + url.pathname.split('hook')[0];
+                for (let i = 0; i< data.length; i++) {
+                    try {
+                        data[i].servicecredentials = null;
+                        let zyxmeData = {
+                            communicationChannelSite: data[i].communicationchannelsite,
+                            migrationEnvironment: laraigoUrl,
+                            type: data[i].type,
+                            moveWebhook: move
+                        }
+                        switch (data[i].type) {
+                            case 'CHAZ':
+                                zyxmeData = {
+                                    ...zyxmeData,
+                                    communicationchannelowner: data[i].communicationchannelowner,
+                                }
+                                break;
+                            case 'TWIT': case 'TWMS':
+                                zyxmeData = {
+                                    ...zyxmeData,
+                                    twitterLink: false,
+                                }
+                            default:
+                                break;
+                        }
+                        const response = await axios({
+                            data: zyxmeData,
+                            method: 'post',
+                            url: `${apiZyxmeHookEndpoint}support/migratechannel`
+                        });
+                        if (response.data && response.data.success) {
+                            data[i].servicecredentials = response.data.serviceCredentials
+                            switch (data[i].type) {
+                                case 'CHAZ':
+                                    data[i].communicationchannelowner = response.data.communicationChannelOwner
+                                    break;
+                            }
+                        }
+                    } catch (error) {
+                        console.log(error);
+                    }
+                }
+            }
         break;
     }
     return data;
 }
 
-const reconfigWebhookPart2 = async (table, data) => {
+const reconfigWebhookPart2 = async (table, data, move) => {
     switch (table) {
         case 'communicationchannel':
-            // if (apiZyxmeHookEndpoint) {
-            //     for (let i = 0; i< data.length; i++) {
-            //         try {
-            //             let zyxmeData = {
-            //                 communicationChannelSite: data[i].communicationchannelsite,
-            //                 migrationEnvironment: laraigoUrl,
-            //                 type: data[i].type
-            //             }
-            //             switch (data[i].type) {
-            //                 case 'TWIT': case 'TWMS':
-            //                     zyxmeData = {
-            //                         ...zyxmeData,
-            //                         twitterLink: true,
-            //                     }
-            //                 default:
-            //                     break;
-            //             }
-            //             const response = await axios({
-            //                 data: zyxmeData,
-            //                 method: 'post',
-            //                 url: `${apiZyxmeHookEndpoint}support/migratechannel`
-            //             });
-            //             if (response.data && response.data.success) {
-            //                 console.log(response.data)
-            //             }
-            //         } catch (error) {
-            //             console.log(error);
-            //         }
-            //     }
-            // }
+            if (apiZyxmeHookEndpoint) {
+                const url = new URL(apiLaraigoHookEndpoint);
+                const laraigoUrl = url.origin + url.pathname.split('hook')[0];
+                for (let i = 0; i< data.length; i++) {
+                    try {
+                        let zyxmeData = {
+                            communicationChannelSite: data[i].communicationchannelsite,
+                            migrationEnvironment: laraigoUrl,
+                            type: data[i].type,
+                            moveWebhook: move
+                        }
+                        switch (data[i].type) {
+                            case 'TWIT': case 'TWMS':
+                                zyxmeData = {
+                                    ...zyxmeData,
+                                    twitterLink: true,
+                                }
+                                const response = await axios({
+                                    data: zyxmeData,
+                                    method: 'post',
+                                    url: `${apiZyxmeHookEndpoint}support/migratechannel`
+                                });
+                                if (response.data && response.data.success) {
+                                    console.log(response.data)
+                                }
+                            default:
+                                break;
+                        }
+                    } catch (error) {
+                        console.log(error);
+                    }
+                }
+            }
         break;
     }
 }
@@ -339,13 +343,27 @@ const variableRenameList = [
     ['wnlu_sentiment_score', 'wnlu_sentimentscore']
 ]
 
+const isJson = (s) => {
+    try {
+        JSON.parse(s);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
 const renameVariable = (table, data) => {
     switch (table) {
         case 'conversation':
             data = data.map(d => {
-                for (const [oldname, newname] of variableRenameList) {
-                    d.variablecontext = d.variablecontext.replace(new RegExp(`"id":"${oldname}_custom"`, "g"),`"id":"${newname}_custom"`);
-                    d.variablecontext = d.variablecontext.replace(new RegExp(`"Name":"${oldname}"`, "g"),`"Name":"${newname}"`);
+                if (d.variablecontext !== null && isJson(d.variablecontext)) {
+                    for (const [oldname, newname] of variableRenameList) {
+                        d.variablecontext = d.variablecontext.replace(new RegExp(`"id":"${oldname}_custom"`, "g"),`"id":"${newname}_custom"`);
+                        d.variablecontext = d.variablecontext.replace(new RegExp(`"Name":"${oldname}"`, "g"),`"Name":"${newname}"`);
+                    }
+                }
+                else {
+                    d.variablecontext = null;
                 }
                 return d;
             });
@@ -768,7 +786,7 @@ const queryCore = {
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
             dt.zyxmecommunicationchannelid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
-            dt.communicationchannelsite, dt.communicationchannelowner, dt.communicationchannelcontact, dt.communicationchanneltoken,
+            COALESCE(dt.communicationchannelsite, ''), COALESCE(dt.communicationchannelowner, ''), COALESCE(dt.communicationchannelcontact, ''), dt.communicationchanneltoken,
             dt.botenabled, dt.customicon, dt.coloricon,
             (SELECT botconfigurationid FROM botconfiguration WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmebotconfigurationid = dt.zyxmebotconfigurationid LIMIT 1),
             dt.relatedid, dt.schedule, dt.chatflowenabled,
@@ -798,11 +816,11 @@ const queryCore = {
         )`
     },
     communicationchannelstatus: {
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, communicationchannelid as zyxmecommunicationchannelid,
-        description, status, type, createdate, createby, changedate, changeby, edit
-        FROM communicationchannelstatus
-        WHERE corpid = $corpid
-        ORDER BY communicationchannelstatusid
+        select: `SELECT ccs.corpid as zyxmecorpid, ccs.orgid as zyxmeorgid, ccs.communicationchannelid as zyxmecommunicationchannelid,
+        ccs.description, ccs.status, ccs.type, ccs.createdate, ccs.createby, ccs.changedate, ccs.changeby, ccs.edit
+        FROM communicationchannelstatus ccs
+        WHERE ccs.corpid = $corpid
+        ORDER BY ccs.communicationchannelstatusid
         LIMIT $limit
         OFFSET $offset`,
         alter: `ALTER TABLE communicationchannelstatus ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
@@ -817,7 +835,7 @@ const queryCore = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            (SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1),
+            COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
@@ -1471,13 +1489,13 @@ const querySubcoreConversation = {
         )`
     },
     pccstatus: {
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
-        communicationchannelid as zyxmecommunicationchannelid,
-        personcommunicationchannel,
-        description, status, type, createdate, createby, changedate, changeby, edit
-        FROM pccstatus
-        WHERE corpid = $corpid
-        ORDER BY pccstatusid
+        select: `SELECT pcc.corpid as zyxmecorpid, pcc.orgid as zyxmeorgid,
+        pcc.communicationchannelid as zyxmecommunicationchannelid,
+        pcc.personcommunicationchannel,
+        pcc.description, pcc.status, pcc.type, pcc.createdate, pcc.createby, pcc.changedate, pcc.changeby, pcc.edit
+        FROM pccstatus pcc
+        WHERE pcc.corpid = $corpid
+        ORDER BY pcc.pccstatusid
         LIMIT $limit
         OFFSET $offset`,
         alter: `ALTER TABLE pccstatus ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
@@ -1508,41 +1526,40 @@ const querySubcoreConversation = {
         )`
     },
     conversation: {
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, personid as zyxmepersonid,
-        personcommunicationchannel, communicationchannelid as zyxmecommunicationchannelid,
-        conversationid as zyxmeconversationid,
-        description, status, type, createdate, createby, changedate, changeby, edit,
-        firstconversationdate, lastconversationdate,
-        firstuserid, lastuserid,
-        firstreplytime, averagereplytime, userfirstreplytime, useraveragereplytime,
-        ticketnum, startdate, finishdate, totalduration, realduration, totalpauseduration, personaveragereplytime,
-        closetype, context, postexternalid, commentexternalid, replyexternalid,
-        botduration, autoclosetime, handoffdate, pausedauto,
-        chatflowcontext, variablecontext, usergroup, mailflag,
-        sentiment, sadness, joy, fear, disgust, anger,
-        usersentiment, usersadness, userjoy, userfear, userdisgust, useranger,
-        personsentiment, personsadness, personjoy, personfear, persondisgust, personanger,
-        balancetimes, firstassignedtime, extradata, holdingwaitingtime, closetabdate, abandoned,
-        lastreplydate, personlastreplydate, tags,
-        wnlucategories, wnluconcepts, wnluentities, wnlukeywords, wnlumetadata, wnlurelations, wnlusemanticroles,
-        wnlcclass,
-        wtaanger, wtafear, wtajoy, wtasadness, wtaanalytical, wtaconfident, wtatentative,
-        wtaexcited, wtafrustrated, wtaimpolite, wtapolite, wtasad, wtasatisfied, wtasympathetic,
-        wtauseranger, wtauserfear, wtauserjoy, wtausersadness, wtauseranalytical, wtauserconfident, wtausertentative,
-        wtauserexcited, wtauserfrustrated, wtauserimpolite, wtauserpolite, wtausersad, wtausersatisfied, wtausersympathetic,
-        wtapersonanger, wtapersonfear, wtapersonjoy, wtapersonsadness, wtapersonanalytical, wtapersonconfident, wtapersontentative,
-        wtapersonexcited, wtapersonfrustrated, wtapersonimpolite, wtapersonpolite, wtapersonsad, wtapersonsatisfied, wtapersonsympathetic,
-        wnlusyntax, wnlusentiment, wnlusadness, wnlujoy, wnlufear, wnludisgust, wnluanger,
-        wnluusersentiment, wnluusersadness, wnluuserjoy, wnluuserfear, wnluuserdisgust, wnluuseranger,
-        wnlupersonsentiment, wnlupersonsadness, wnlupersonjoy, wnlupersonfear, wnlupersondisgust, wnlupersonanger,
-        enquiries, classification, firstusergroup, emailalertsent, tdatime,
-        interactionquantity, interactionpersonquantity, interactionbotquantity, interactionasesorquantity,
-        interactionaiquantity, interactionaipersonquantity, interactionaibotquantity, interactionaiasesorquantity,
-        handoffafteransweruser, lastseendate, closecomment
-        FROM conversation
-        WHERE corpid = $corpid
-        AND variablecontext IS NOT NULL
-        ORDER BY conversationid ASC
+        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, co.personid as zyxmepersonid,
+        co.personcommunicationchannel, co.communicationchannelid as zyxmecommunicationchannelid,
+        co.conversationid as zyxmeconversationid,
+        co.description, co.status, co.type, co.createdate, co.createby, co.changedate, co.changeby, co.edit,
+        co.firstconversationdate, co.lastconversationdate,
+        co.firstuserid, co.lastuserid,
+        co.firstreplytime, co.averagereplytime, co.userfirstreplytime, co.useraveragereplytime,
+        co.ticketnum, co.startdate, co.finishdate, co.totalduration, co.realduration, co.totalpauseduration, co.personaveragereplytime,
+        co.closetype, co.context, co.postexternalid, co.commentexternalid, co.replyexternalid,
+        co.botduration, co.autoclosetime, co.handoffdate, co.pausedauto,
+        co.chatflowcontext, co.variablecontext, co.usergroup, co.mailflag,
+        co.sentiment, co.sadness, co.joy, co.fear, co.disgust, co.anger,
+        co.usersentiment, co.usersadness, co.userjoy, co.userfear, co.userdisgust, co.useranger,
+        co.personsentiment, co.personsadness, co.personjoy, co.personfear, co.persondisgust, co.personanger,
+        co.balancetimes, co.firstassignedtime, co.extradata, co.holdingwaitingtime, co.closetabdate, co.abandoned,
+        co.lastreplydate, co.personlastreplydate, co.tags,
+        co.wnlucategories, co.wnluconcepts, co.wnluentities, co.wnlukeywords, co.wnlumetadata, co.wnlurelations, co.wnlusemanticroles,
+        co.wnlcclass,
+        co.wtaanger, co.wtafear, co.wtajoy, co.wtasadness, co.wtaanalytical, co.wtaconfident, co.wtatentative,
+        co.wtaexcited, co.wtafrustrated, co.wtaimpolite, co.wtapolite, co.wtasad, co.wtasatisfied, co.wtasympathetic,
+        co.wtauseranger, co.wtauserfear, co.wtauserjoy, co.wtausersadness, co.wtauseranalytical, co.wtauserconfident, co.wtausertentative,
+        co.wtauserexcited, co.wtauserfrustrated, co.wtauserimpolite, co.wtauserpolite, co.wtausersad, co.wtausersatisfied, co.wtausersympathetic,
+        co.wtapersonanger, co.wtapersonfear, co.wtapersonjoy, co.wtapersonsadness, co.wtapersonanalytical, co.wtapersonconfident, co.wtapersontentative,
+        co.wtapersonexcited, co.wtapersonfrustrated, co.wtapersonimpolite, co.wtapersonpolite, co.wtapersonsad, co.wtapersonsatisfied, co.wtapersonsympathetic,
+        co.wnlusyntax, co.wnlusentiment, co.wnlusadness, co.wnlujoy, co.wnlufear, co.wnludisgust, co.wnluanger,
+        co.wnluusersentiment, co.wnluusersadness, co.wnluuserjoy, co.wnluuserfear, co.wnluuserdisgust, co.wnluuseranger,
+        co.wnlupersonsentiment, co.wnlupersonsadness, co.wnlupersonjoy, co.wnlupersonfear, co.wnlupersondisgust, co.wnlupersonanger,
+        co.enquiries, co.classification, co.firstusergroup, co.emailalertsent, co.tdatime,
+        co.interactionquantity, co.interactionpersonquantity, co.interactionbotquantity, co.interactionasesorquantity,
+        co.interactionaiquantity, co.interactionaipersonquantity, co.interactionaibotquantity, co.interactionaiasesorquantity,
+        co.handoffafteransweruser, co.lastseendate, co.closecomment
+        FROM conversation co
+        WHERE co.corpid = $corpid
+        ORDER BY co.conversationid ASC
         LIMIT $limit
         OFFSET $offset`,
         alter: `ALTER TABLE conversation ADD COLUMN IF NOT EXISTS zyxmeconversationid BIGINT,
@@ -1588,10 +1605,7 @@ const querySubcoreConversation = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE(
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1),
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
-            ),
+            COALESCE((SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1), 0),
             dt.personcommunicationchannel,
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
             dt.zyxmeconversationid,
@@ -1669,15 +1683,15 @@ const querySubcoreConversation = {
         WHERE zyxmecorpid = $corpid`
     },
     conversationclassification: {
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, personid as zyxmepersonid,
-        personcommunicationchannel, conversationid as zyxmeconversationid,
-        communicationchannelid as zyxmecommunicationchannelid,
-        classificationid as zyxmeclassificationid,
-        status, createdate, createby, changedate, changeby, edit,
-        jobplan
-        FROM conversationclassification
-        WHERE corpid = $corpid
-        ORDER BY conversationid
+        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, co.personid as zyxmepersonid,
+        co.personcommunicationchannel, co.conversationid as zyxmeconversationid,
+        co.communicationchannelid as zyxmecommunicationchannelid,
+        co.classificationid as zyxmeclassificationid,
+        co.status, co.createdate, co.createby, co.changedate, co.changeby, co.edit,
+        co.jobplan
+        FROM conversationclassification co
+        WHERE co.corpid = $corpid
+        ORDER BY co.conversationid
         LIMIT $limit
         OFFSET $offset`,
         alter: `ALTER TABLE conversationclassification ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
@@ -1697,10 +1711,7 @@ const querySubcoreConversation = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE(
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1),
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
-            ),
+            COALESCE((SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1), 0),
             dt.personcommunicationchannel,
             COALESCE(
                 (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1),
@@ -1726,14 +1737,14 @@ const querySubcoreConversation = {
         )`
     },
     conversationnote: {
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, personid as zyxmepersonid,
-        personcommunicationchannel, communicationchannelid as zyxmecommunicationchannelid,
-        conversationid as zyxmeconversationid,
-        description, status, type, createdate, createby, changedate, changeby, edit,
-        addpersonnote, note
-        FROM conversationnote
-        WHERE corpid = $corpid
-        ORDER BY conversationnoteid
+        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, co.personid as zyxmepersonid,
+        co.personcommunicationchannel, co.communicationchannelid as zyxmecommunicationchannelid,
+        co.conversationid as zyxmeconversationid,
+        co.description, co.status, co.type, co.createdate, co.createby, co.changedate, co.changeby, co.edit,
+        co.addpersonnote, co.note
+        FROM conversationnote co
+        WHERE co.corpid = $corpid
+        ORDER BY co.conversationnoteid
         LIMIT $limit
         OFFSET $offset`,
         alter: `ALTER TABLE conversationnote ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
@@ -1752,16 +1763,10 @@ const querySubcoreConversation = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE(
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1),
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
-            ),
+            COALESCE((SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1), 0),
             dt.personcommunicationchannel,
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
-            COALESCE(
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1),
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) ORDER BY conversationid ASC LIMIT 1)
-            ),
+            COALESCE((SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1), 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.addpersonnote, dt.note
         FROM json_populate_recordset(null::record, $datatable)
@@ -1779,14 +1784,14 @@ const querySubcoreConversation = {
         )`
     },
     conversationpause: {
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, personid as zyxmepersonid,
-        personcommunicationchannel, communicationchannelid as zyxmecommunicationchannelid,
-        conversationid as zyxmeconversationid,
-        description, status, type, createdate, createby, changedate, changeby, edit,
-        startpause, stoppause
-        FROM conversationpause
-        WHERE corpid = $corpid
-        ORDER BY conversationpauseid
+        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, co.personid as zyxmepersonid,
+        co.personcommunicationchannel, co.communicationchannelid as zyxmecommunicationchannelid,
+        co.conversationid as zyxmeconversationid,
+        co.description, co.status, co.type, co.createdate, co.createby, co.changedate, co.changeby, co.edit,
+        co.startpause, co.stoppause
+        FROM conversationpause co
+        WHERE co.corpid = $corpid
+        ORDER BY co.conversationpauseid
         LIMIT $limit
         OFFSET $offset`,
         alter: `ALTER TABLE conversationpause ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
@@ -1805,16 +1810,10 @@ const querySubcoreConversation = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE(
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1),
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
-            ),
+            COALESCE((SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1), 0),
             dt.personcommunicationchannel,
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
-            COALESCE(
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1),
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) ORDER BY conversationid ASC LIMIT 1)
-            ),
+            COALESCE((SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1), 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.startpause, dt.stoppause
         FROM json_populate_recordset(null::record, $datatable)
@@ -1877,13 +1876,13 @@ const querySubcoreConversation = {
         )`
     },
     conversationstatus: {
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, personid as zyxmepersonid,
-        personcommunicationchannel, communicationchannelid as zyxmecommunicationchannelid,
-        conversationid as zyxmeconversationid,
-        description, status, type, createdate, createby, changedate, changeby, edit
-        FROM conversationstatus
-        WHERE corpid = $corpid
-        ORDER BY conversationstatusid
+        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, co.personid as zyxmepersonid,
+        co.personcommunicationchannel, co.communicationchannelid as zyxmecommunicationchannelid,
+        co.conversationid as zyxmeconversationid,
+        co.description, co.status, co.type, co.createdate, co.createby, co.changedate, co.changeby, co.edit
+        FROM conversationstatus co
+        WHERE co.corpid = $corpid
+        ORDER BY co.conversationstatusid
         LIMIT $limit
         OFFSET $offset`,
         alter: `ALTER TABLE conversationstatus ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
@@ -1901,16 +1900,10 @@ const querySubcoreConversation = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE(
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1),
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
-            ),
+            COALESCE((SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1), 0),
             dt.personcommunicationchannel,
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
-            COALESCE(
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1),
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) ORDER BY conversationid ASC LIMIT 1)
-            ),
+            COALESCE((SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1), 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
@@ -2304,7 +2297,7 @@ const querySubcoreCampaign = {
                     (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
                 )
             END,
-            (SELECT campaignmemberid FROM campaignmember WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignmemberid = dt.zyxmecampaignmemberid LIMIT 1),
+            COALESCE(SELECT campaignmemberid FROM campaignmember WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignmemberid = dt.zyxmecampaignmemberid LIMIT 1), 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.success, dt.message, dt.rundate,
             CASE WHEN COALESCE(dt.zyxmeconversationid, 0) = 0 THEN 0

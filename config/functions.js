@@ -130,12 +130,12 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_PERSON_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_person_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_person_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset, $userids, $channeltypes)",
         module: "",
         protected: "SELECT"
     },
     UFN_PERSON_SEL: {
-        query: "SELECT  * FROM ufn_person_sel($corpid, $orgid, $username, $where, $order, $take, $skip, $startdate, $enddate, $offset)",
+        query: "SELECT  * FROM ufn_person_sel($corpid, $orgid, $username, $where, $order, $take, $skip, $startdate, $enddate, $offset, $userids, $channeltypes)",
         module: "/extras/person",
         protected: "SELECT"
     },
