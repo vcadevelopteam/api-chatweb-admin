@@ -429,7 +429,7 @@ const migrationExecute = async (corpidBind, queries) => {
     for (const [k,q] of Object.entries(queries)) {
         executeResult[k] = {success: true, errors: []};
         try {
-            let limit = 50000;
+            let limit = 20000;
             let counter = 0;
             while (true) {
                 let selectResult = await zyxmeQuery(q.select.replace('\n',' '), {...corpidBind, offset: counter * limit, limit});
