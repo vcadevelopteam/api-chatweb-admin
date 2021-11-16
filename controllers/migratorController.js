@@ -924,8 +924,7 @@ const queryCore = {
         ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         preprocess: `UPDATE usr
         SET zyxmecorpid = dt.zyxmecorpid,
-        zyxmeuserid = dt.zyxmeuserid,
-        pwd = dt.pwd
+        zyxmeuserid = dt.zyxmeuserid
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
             zyxmecorpid bigint,
