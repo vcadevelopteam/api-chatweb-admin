@@ -400,7 +400,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORG_INS: {
-        query: "SELECT * FROM ufn_org_ins($corpid,$id,$description,$status,$type,$username,$operation, $currency)",
+        query: "SELECT * FROM ufn_org_ins($corpid,$id,$description,$status,$type,$username,$operation,$email,$password,$port,$host,$default_credentials,$ssl, $currency)",
         module: "/extras/quickreplies",
         protected: "INSERT"
     },
