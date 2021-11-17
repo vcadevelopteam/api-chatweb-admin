@@ -446,6 +446,14 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
     for (const [k,q] of Object.entries(queries)) {
         executeResult[k] = {success: true, errors: []};
         try {
+            let conversations = await laraigoQuery(
+                `SELECT conversationid, zyxmeconversationid
+                FROM conversation
+                WHERE zyxmecorpid = $corpid`, corpidBind);
+            let persons = await laraigoQuery(
+                `SELECT personid, zyxmepersonid
+                FROM person
+                WHERE zyxmecorpid = $corpid`, corpidBind);
             let limit = 10000;
             let counter = 0;
             const perChunk = 5000
@@ -462,6 +470,11 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     selectResult = await reconfigWebhook(k, selectResult, movewebhook);
                     selectResult = renameVariable(k, selectResult);
                     selectResult = restructureVariable(k, selectResult);
+                    selectResult = selectResult.map(s => ({
+                        ...s,
+                        zyxmeconversationid: conversations.find(co => co.zyxmeconversationid)?.conversationid || s.zyxmeconversationid,
+                        zyxmepersonid: persons.find(pe => pe.zyxmepersonid)?.personid || s.zyxmepersonid
+                    }))
                     let chunkArray = selectResult.reduce((chunk, item, index) => { 
                       const chunkIndex = Math.floor(index/perChunk)
                       if(!chunk[chunkIndex]) {
@@ -1397,7 +1410,7 @@ const querySubcorePerson = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1),
+            dt.zyxmepersonid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.addinfo
         FROM json_populate_recordset(null::record, $datatable)
@@ -1437,7 +1450,7 @@ const querySubcorePerson = {
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
             COALESCE(
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1),
+                dt.zyxmepersonid,
                 (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
             ),
             dt.personcommunicationchannel,
@@ -1483,7 +1496,7 @@ const querySubcoreConversation = {
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
             (SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1),
-            (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1),
+            dt.zyxmepersonid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.postexternalid, dt.message, dt.content, dt.postexternalparentid, dt.commentexternalid
         FROM json_populate_recordset(null::record, $datatable)
@@ -1613,7 +1626,7 @@ const querySubcoreConversation = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE((SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1), 0),
+            COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
             dt.zyxmeconversationid,
@@ -1718,10 +1731,10 @@ const querySubcoreConversation = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE((SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1), 0),
+            COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
             COALESCE(
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1),
+                dt.zyxmeconversationid,
                 (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) ORDER BY conversationid ASC LIMIT 1),
                 0
             ),
@@ -1770,10 +1783,10 @@ const querySubcoreConversation = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE((SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1), 0),
+            COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
-            COALESCE((SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1), 0),
+            COALESCE(dt.zyxmeconversationid, 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.addpersonnote, dt.note
         FROM json_populate_recordset(null::record, $datatable)
@@ -1816,10 +1829,10 @@ const querySubcoreConversation = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE((SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1), 0),
+            COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
-            COALESCE((SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1), 0),
+            COALESCE(dt.zyxmeconversationid, 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.startpause, dt.stoppause
         FROM json_populate_recordset(null::record, $datatable)
@@ -1863,7 +1876,7 @@ const querySubcoreConversation = {
             dt.personcommunicationchannel,
             COALESCE((SELECT userid FROM usr WHERE zyxmeuserid = dt.zyxmeuserid LIMIT 1), 0),
             COALESCE(
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1),
+                dt.zyxmeconversationid,
                 (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) ORDER BY conversationid ASC LIMIT 1)
             ),
             dt.status, dt.communicationchannelsite, dt.interactiontext
@@ -1904,10 +1917,10 @@ const querySubcoreConversation = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE((SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1), 0),
+            COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
-            COALESCE((SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1), 0),
+            COALESCE(dt.zyxmeconversationid, 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
@@ -1971,13 +1984,13 @@ const querySubcoreConversation = {
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
             COALESCE(
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1),
+                dt.zyxmepersonid,
                 (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
             ),
             dt.personcommunicationchannel,
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
             COALESCE(
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1),
+                dt.zyxmeconversationid,
                 (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) ORDER BY conversationid ASC LIMIT 1)
             ),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -2049,7 +2062,7 @@ const querySubcoreConversation = {
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
             COALESCE(
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1),
+                dt.zyxmeconversationid,
                 (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) ORDER BY conversationid ASC LIMIT 1)
             ),
             dt.description, dt.status, dt.type::CHARACTER VARYING, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -2238,7 +2251,7 @@ const querySubcoreCampaign = {
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
             (SELECT campaignid FROM campaign WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignid = dt.zyxmecampaignid LIMIT 1),
-            (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1),
+            dt.zyxmepersonid,
             dt.zyxmecampaignmemberid,
             dt.status, dt.personcommunicationchannel, dt.type, dt.displayname, dt.personcommunicationchannelowner,
             dt.field1, dt.field2, dt.field3, dt.field4, dt.field5, dt.field6, dt.field7, dt.field8, dt.field9,
@@ -2288,7 +2301,7 @@ const querySubcoreCampaign = {
             (SELECT campaignid FROM campaign WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignid = dt.zyxmecampaignid LIMIT 1),
             CASE WHEN COALESCE(dt.zyxmepersonid, 0) = 0 THEN 0
             ELSE COALESCE(
-                    (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1),
+                    dt.zyxmepersonid,
                     (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
                 )
             END,
@@ -2296,7 +2309,7 @@ const querySubcoreCampaign = {
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.success, dt.message, dt.rundate,
             CASE WHEN COALESCE(dt.zyxmeconversationid, 0) = 0 THEN 0
-            ELSE (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1)
+            ELSE dt.zyxmeconversationid
             END,
             dt.attended
         FROM json_populate_recordset(null::record, $datatable)
@@ -2822,9 +2835,9 @@ const queryExtras = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1),
+            dt.zyxmeconversationid,
             COALESCE(
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1),
+                dt.zyxmepersonid,
                 (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
             ),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
