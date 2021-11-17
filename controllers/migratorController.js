@@ -6,7 +6,7 @@ const axios = require('axios');
 const bcryptjs = require("bcryptjs");
 
 const logdna = require('@logdna/logger');
-const logger = logdna.createLogger('b7c813e09fbbaceff7e34d4488b90db6', { app: 'laraigoApi', level: 'debug', meta: { module: 'migratorController' } });
+const logger = logdna.createLogger('b7c813e09fbbaceff7e34d4488b90db6', { app: 'laraigoApi', level: 'trace', meta: { module: 'migratorController' } });
 
 /* Índice de tablas
 
@@ -99,6 +99,11 @@ Unknown
 SUNAT
 "groupconfiguration"
 */
+
+const parseHrtimeToSeconds = (hrtime) => {
+    var seconds = (hrtime[0] + (hrtime[1] / 1e9)).toFixed(3);
+    return seconds;
+}
 
 const errorSeq = err => {
     const messageerror = err.toString().replace("SequelizeDatabaseError: ", "");
@@ -442,16 +447,22 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
         executeResult[k] = {success: true, errors: []};
         try {
             if (q.alter) {
+                let startTime = process.hrtime();
                 try {
                     let alterResult = await laraigoQuery(q.alter.replace('\n',' '));
-                    if (!(alterResult instanceof Array)) {
-                        logger.error(alterResult, { meta: { function: 'alterResult', table: k }} );
+                    let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
+                    if (alterResult instanceof Array) {
+                        logger.trace(alterResult, { meta: { function: 'alterResult', table: k, seconds: elapsedSeconds }} );
+                    }
+                    else {
+                        logger.error(alterResult, { meta: { function: 'alterResult', table: k, seconds: elapsedSeconds }} );
                         console.log(alterResult);
                         executeResult[k].success = false;
                         executeResult[k].errors.push({script: alterResult});
                     }
                 } catch (error) {
-                    logger.error(error, { meta: { function: 'alterResult', table: k }} );
+                    let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
+                    logger.error(error, { meta: { function: 'alterResult', table: k, seconds: elapsedSeconds }} );
                     console.log(error);
                     executeResult[k].errors.push({script: error});
                 }
@@ -461,8 +472,11 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
             let counter = 0;
             const perChunk = 5000
             while (true) {
+                let selectStartTime = process.hrtime();
                 let selectResult = await zyxmeQuery(q.select.replace('\n',' '), {...corpidBind, offset: counter * limit, limit});
+                let selectElapsedSeconds = parseHrtimeToSeconds(process.hrtime(selectStartTime));
                 if (selectResult instanceof Array) {
+                    logger.trace(selectResult[0], { meta: { function: 'selectResult', table: k, seconds: selectElapsedSeconds }} );
                     if (selectResult.length === 0) {
                         break;
                     }
@@ -481,46 +495,64 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
     
                     for (const chunk of chunkArray) {
                         if (q.preprocess) {
+                            let startTime = process.hrtime();
                             try {
                                 let preprocessResult = await laraigoQuery(q.preprocess.replace('\n',' '), { datatable: JSON.stringify(chunk) });
-                                if (!(preprocessResult instanceof Array)) {
-                                    logger.info(preprocessResult, { meta: { function: 'preprocessResult', table: k }} );
+                                let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
+                                if (preprocessResult instanceof Array) {
+                                    logger.trace(preprocessResult, { meta: { function: 'preprocessResult', table: k, seconds: elapsedSeconds }} );
+                                }
+                                else {
+                                    logger.error(preprocessResult, { meta: { function: 'preprocessResult', table: k, seconds: elapsedSeconds }} );
                                     console.log(preprocessResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({script: preprocessResult});
                                 }
                             } catch (error) {
-                                logger.error(error, { meta: { function: 'preprocessResult', table: k }} );
+                                let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
+                                logger.error(error, { meta: { function: 'preprocessResult', table: k, seconds: elapsedSeconds }} );
                                 console.log(error);
                                 executeResult[k].errors.push({script: error});
                             }
                         }
                         if (q.insert) {
+                            let startTime = process.hrtime();
                             try {
                                 let insertResult = await laraigoQuery(q.insert.replace('\n',' '), { datatable: JSON.stringify(chunk) });
-                                if (!(insertResult instanceof Array)) {
-                                    logger.info(insertResult, { meta: { function: 'insertResult', table: k }} );
+                                let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
+                                if (insertResult instanceof Array) {
+                                    logger.trace(insertResult, { meta: { function: 'insertResult', table: k, seconds: elapsedSeconds }} );
+                                }
+                                else {
+                                    logger.error(insertResult, { meta: { function: 'insertResult', table: k, seconds: elapsedSeconds }} );
                                     console.log(insertResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({script: insertResult});
                                 }
                             } catch (error) {
-                                logger.error(error, { meta: { function: 'insertResult', table: k }} );
+                                let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
+                                logger.error(error, { meta: { function: 'insertResult', table: k, seconds: elapsedSeconds }} );
                                 console.log(error);
                                 executeResult[k].errors.push({script: error});
                             }
                         }
                         if (q.postprocess) {
+                            let startTime = process.hrtime();
                             try {
                                 let postprocessResult = await laraigoQuery(q.postprocess.replace('\n',' '), { datatable: JSON.stringify(chunk) });
-                                if (!(postprocessResult instanceof Array)) {
-                                    logger.info(postprocessResult, { meta: { function: 'postprocessResult', table: k }} );
+                                let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
+                                if (postprocessResult instanceof Array) {
+                                    logger.trace(postprocessResult, { meta: { function: 'postprocessResult', table: k, seconds: elapsedSeconds }} );
+                                }
+                                else {
+                                    logger.error(postprocessResult, { meta: { function: 'postprocessResult', table: k, seconds: elapsedSeconds }} );
                                     console.log(postprocessResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({script: postprocessResult});
                                 }
                             } catch (error) {
-                                logger.error(error, { meta: { function: 'postprocessResult', table: k }} );
+                                let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
+                                logger.error(error, { meta: { function: 'postprocessResult', table: k, seconds: elapsedSeconds }} );
                                 console.log(error);
                                 executeResult[k].errors.push({script: error});
                             }
@@ -530,7 +562,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     counter += 1;
                 }
                 else {
-                    logger.error(selectResult, { meta: { function: 'selectResult', table: k }} );
+                    logger.error(selectResult, { meta: { function: 'selectResult', table: k, seconds: selectElapsedSeconds }} );
                     console.log(selectResult);
                     executeResult[k].success = false;
                     executeResult[k].errors.push({script: selectResult});
@@ -539,16 +571,22 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
             }
 
             if (q.update) {
+                let startTime = process.hrtime();
                 try {
                     let updateResult = await laraigoQuery(q.update.replace('\n',' '), corpidBind);
-                    if (!(updateResult instanceof Array)) {
-                        logger.error(updateResult, { meta: { function: 'updateResult', table: k }} );
+                    let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
+                    if (updateResult instanceof Array) {
+                        logger.trace(updateResult, { meta: { function: 'updateResult', table: k, seconds: elapsedSeconds }} );
+                    }
+                    else {
+                        logger.error(updateResult, { meta: { function: 'updateResult', table: k, seconds: elapsedSeconds }} );
                         console.log(updateResult);
                         executeResult[k].success = false;
                         executeResult[k].errors.push({script: updateResult});
                     }
                 } catch (error) {
-                    logger.error(error, { meta: { function: 'updateResult', table: k }} );
+                    let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
+                    logger.error(error, { meta: { function: 'updateResult', table: k, seconds: elapsedSeconds }} );
                     console.log(error);
                     executeResult[k].errors.push({script: error});
                 }
@@ -1740,7 +1778,8 @@ const querySubcoreConversation = {
             dt.personcommunicationchannel,
             COALESCE(
                 (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1),
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) ORDER BY conversationid ASC LIMIT 1)
+                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) ORDER BY conversationid ASC LIMIT 1),
+                0
             ),
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
             COALESCE((SELECT classificationid FROM classification WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeclassificationid = dt.zyxmeclassificationid LIMIT 1), 0),
