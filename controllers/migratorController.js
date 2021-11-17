@@ -140,6 +140,7 @@ const recryptPwd = async (table, data) => {
                         data[i].pwd = await bcryptjs.hash(response.data.find(r => r.userid === data[i].zyxmeuserid).pwd, salt);
                     }
                 } catch (error) {
+                    logger.error(error, { meta: { function: 'recryptPwd' }} );
                     console.log(error);
                 }
             }
@@ -193,7 +194,11 @@ const reconfigWebhook = async (table, data, move = false) => {
                                     break;
                             }
                         }
+                        else {
+                            logger.error({data: zyxmeData, response: response.data}, { meta: { function: 'reconfigWebhook' }} );
+                        }
                     } catch (error) {
+                        logger.error(error, { meta: { function: 'reconfigWebhook' }} );
                         console.log(error);
                     }
                 }
@@ -231,10 +236,14 @@ const reconfigWebhookPart2 = async (table, data, move) => {
                                 if (response.data && response.data.success) {
                                     console.log(response.data)
                                 }
+                                else {
+                                    logger.error({data: zyxmeData, response: response.data}, { meta: { function: 'reconfigWebhookPart2' }} );
+                                }
                             default:
                                 break;
                         }
                     } catch (error) {
+                        logger.error(error, { meta: { function: 'reconfigWebhookPart2' }} );
                         console.log(error);
                     }
                 }
@@ -1071,7 +1080,7 @@ const queryCore = {
     userhistory: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, userid as zyxmeuserid,
         description, status, type, createdate, createby, changedate, changeby, edit,
-        motivetype, motivedescription, desconectedtime
+        motivetype, motivedescription, desconectedtime::text
         FROM userhistory
         WHERE corpid = $corpid
         ORDER BY userhistoryid
@@ -1548,15 +1557,15 @@ const querySubcoreConversation = {
         co.description, co.status, co.type, co.createdate, co.createby, co.changedate, co.changeby, co.edit,
         co.firstconversationdate, co.lastconversationdate,
         co.firstuserid, co.lastuserid,
-        co.firstreplytime, co.averagereplytime, co.userfirstreplytime, co.useraveragereplytime,
-        co.ticketnum, co.startdate, co.finishdate, co.totalduration, co.realduration, co.totalpauseduration, co.personaveragereplytime,
+        co.firstreplytime::text, co.averagereplytime::text, co.userfirstreplytime::text, co.useraveragereplytime::text,
+        co.ticketnum, co.startdate, co.finishdate, co.totalduration::text, co.realduration::text, co.totalpauseduration::text, co.personaveragereplytime::text,
         co.closetype, co.context, co.postexternalid, co.commentexternalid, co.replyexternalid,
-        co.botduration, co.autoclosetime, co.handoffdate, co.pausedauto,
+        co.botduration::text, co.autoclosetime::text, co.handoffdate, co.pausedauto,
         co.chatflowcontext, co.variablecontext, co.usergroup, co.mailflag,
         co.sentiment, co.sadness, co.joy, co.fear, co.disgust, co.anger,
         co.usersentiment, co.usersadness, co.userjoy, co.userfear, co.userdisgust, co.useranger,
         co.personsentiment, co.personsadness, co.personjoy, co.personfear, co.persondisgust, co.personanger,
-        co.balancetimes, co.firstassignedtime, co.extradata, co.holdingwaitingtime, co.closetabdate, co.abandoned,
+        co.balancetimes, co.firstassignedtime::text, co.extradata, co.holdingwaitingtime::text, co.closetabdate, co.abandoned,
         co.lastreplydate, co.personlastreplydate, co.tags,
         co.wnlucategories, co.wnluconcepts, co.wnluentities, co.wnlukeywords, co.wnlumetadata, co.wnlurelations, co.wnlusemanticroles,
         co.wnlcclass,
@@ -1569,7 +1578,7 @@ const querySubcoreConversation = {
         co.wnlusyntax, co.wnlusentiment, co.wnlusadness, co.wnlujoy, co.wnlufear, co.wnludisgust, co.wnluanger,
         co.wnluusersentiment, co.wnluusersadness, co.wnluuserjoy, co.wnluuserfear, co.wnluuserdisgust, co.wnluuseranger,
         co.wnlupersonsentiment, co.wnlupersonsadness, co.wnlupersonjoy, co.wnlupersonfear, co.wnlupersondisgust, co.wnlupersonanger,
-        co.enquiries, co.classification, co.firstusergroup, co.emailalertsent, co.tdatime,
+        co.enquiries, co.classification, co.firstusergroup, co.emailalertsent, co.tdatime::text,
         co.interactionquantity, co.interactionpersonquantity, co.interactionbotquantity, co.interactionasesorquantity,
         co.interactionaiquantity, co.interactionaipersonquantity, co.interactionaibotquantity, co.interactionaiasesorquantity,
         co.handoffafteransweruser, co.lastseendate, co.closecomment
@@ -2313,7 +2322,7 @@ const querySubcoreCampaign = {
                     (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
                 )
             END,
-            COALESCE(SELECT campaignmemberid FROM campaignmember WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignmemberid = dt.zyxmecampaignmemberid LIMIT 1), 0),
+            COALESCE((SELECT campaignmemberid FROM campaignmember WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignmemberid = dt.zyxmecampaignmemberid LIMIT 1), 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.success, dt.message, dt.rundate,
             CASE WHEN COALESCE(dt.zyxmeconversationid, 0) = 0 THEN 0
@@ -2888,8 +2897,8 @@ const queryExtras = {
         description, status, type, createdate, createby, changedate, changeby, edit,
         fullname, communicationchannel, communicationchanneldesc,
         datestr, hours, hoursrange,
-        worktime, busytimewithinwork, freetimewithinwork, busytimeoutsidework,
-        onlinetime, idletime, qtytickets, qtyconnection, qtydisconnection
+        worktime::text, busytimewithinwork::text, freetimewithinwork::text, busytimeoutsidework::text,
+        onlinetime::text, idletime::text, qtytickets, qtyconnection, qtydisconnection
         FROM productivity
         WHERE corpid = $corpid
         ORDER BY productivityid
@@ -2984,11 +2993,11 @@ const queryExtras = {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         company, communicationchannelid, usergroup,
-        totaltmo, totaltmopercentmax, totaltmopercentmin,
-        usertmo, usertmopercentmax, usertmopercentmin,
-        tme, tmepercentmax, tmepercentmin,
-        usertme, usertmepercentmax, usertmepercentmin,
-        productivitybyhour, totaltmomin, usertmomin, tmemin, usertmemin, tmoclosedby, tmeclosedby
+        totaltmo::text, totaltmopercentmax, totaltmopercentmin,
+        usertmo::text, usertmopercentmax, usertmopercentmin,
+        tme::text, tmepercentmax, tmepercentmin,
+        usertme::text, usertmepercentmax, usertmepercentmin,
+        productivitybyhour, totaltmomin::text, usertmomin::text, tmemin::text, usertmemin::text, tmoclosedby, tmeclosedby
         FROM sla
         WHERE corpid = $corpid
         ORDER BY slaid
@@ -3094,7 +3103,6 @@ exports.executeMigration = async (req, res) => {
         const corpidBind = { corpid: corpid }
         let queryResult = {core: {}, subcore: {}, extras: {}};
         try {
-            logger.debug(req.body, { meta: { function: 'executeMigration' }} );
             if (modules.includes('core')) {
                 if (clean === true) {
                     await laraigoQuery('SELECT FROM ufn_migration_core_delete($corpid)', bind = corpidBind);
