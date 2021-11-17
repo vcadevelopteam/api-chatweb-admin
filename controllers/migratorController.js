@@ -622,14 +622,14 @@ const queryCore = {
             corpid,
             zyxmeorgid,
             description, status, type, createdate, createby, changedate, changeby, edit,
-            timezoneoffset, timezone, currency, country
+            timezoneoffset, timezone, currency, country, ready
         )
         SELECT
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             dt.zyxmeorgid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
-            -5, 'America/Lima', 'PEN', 'PE'
+            -5, 'America/Lima', 'PEN', 'PE', false
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
             zyxmecorpid bigint, zyxmeorgid bigint,
