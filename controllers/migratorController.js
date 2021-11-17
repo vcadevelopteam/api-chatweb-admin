@@ -424,13 +424,28 @@ const restructureVariable = (table, data) => {
     return data;
 }
 
-const migrationExecute = async (corpidBind, queries) => {
+const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
     let executeResult = {};
     for (const [k,q] of Object.entries(queries)) {
         executeResult[k] = {success: true, errors: []};
         try {
+            if (q.alter) {
+                try {
+                    let alterResult = await laraigoQuery(q.alter.replace('\n',' '));
+                    if (!(alterResult instanceof Array)) {
+                        console.log(alterResult);
+                        executeResult[k].success = false;
+                        executeResult[k].errors.push({script: alterResult});
+                    }
+                } catch (error) {
+                    console.log(error);
+                    executeResult[k].errors.push({script: error});
+                }
+            }
+
             let limit = 10000;
             let counter = 0;
+            const perChunk = 5000
             while (true) {
                 let selectResult = await zyxmeQuery(q.select.replace('\n',' '), {...corpidBind, offset: counter * limit, limit});
                 if (selectResult instanceof Array) {
@@ -438,23 +453,9 @@ const migrationExecute = async (corpidBind, queries) => {
                         break;
                     }
                     selectResult = await recryptPwd(k, selectResult);
-                    selectResult = await reconfigWebhook(k, selectResult);
+                    selectResult = await reconfigWebhook(k, selectResult, movewebhook);
                     selectResult = renameVariable(k, selectResult);
                     selectResult = restructureVariable(k, selectResult);
-                    if (q.alter) {
-                        try {
-                            let alterResult = await laraigoQuery(q.alter.replace('\n',' '));
-                            if (!(alterResult instanceof Array)) {
-                                console.log(alterResult);
-                                executeResult[k].success = false;
-                                executeResult[k].errors.push({script: alterResult});
-                            }
-                        } catch (error) {
-                            console.log(error);
-                            executeResult[k].errors.push({script: error});
-                        }
-                    }
-                    const perChunk = 5000
                     let chunkArray = selectResult.reduce((chunk, item, index) => { 
                       const chunkIndex = Math.floor(index/perChunk)
                       if(!chunk[chunkIndex]) {
@@ -465,10 +466,9 @@ const migrationExecute = async (corpidBind, queries) => {
                     }, []);
     
                     for (const chunk of chunkArray) {
-                        let bind = { datatable: JSON.stringify(chunk) };
                         if (q.preprocess) {
                             try {
-                                let preprocessResult = await laraigoQuery(q.preprocess.replace('\n',' '), bind);
+                                let preprocessResult = await laraigoQuery(q.preprocess.replace('\n',' '), { datatable: JSON.stringify(chunk) });
                                 if (!(preprocessResult instanceof Array)) {
                                     console.log(preprocessResult);
                                     executeResult[k].success = false;
@@ -481,7 +481,7 @@ const migrationExecute = async (corpidBind, queries) => {
                         }
                         if (q.insert) {
                             try {
-                                let insertResult = await laraigoQuery(q.insert.replace('\n',' '), bind);
+                                let insertResult = await laraigoQuery(q.insert.replace('\n',' '), { datatable: JSON.stringify(chunk) });
                                 if (!(insertResult instanceof Array)) {
                                     console.log(insertResult);
                                     executeResult[k].success = false;
@@ -494,7 +494,7 @@ const migrationExecute = async (corpidBind, queries) => {
                         }
                         if (q.postprocess) {
                             try {
-                                let postprocessResult = await laraigoQuery(q.postprocess.replace('\n',' '), bind);
+                                let postprocessResult = await laraigoQuery(q.postprocess.replace('\n',' '), { datatable: JSON.stringify(chunk) });
                                 if (!(postprocessResult instanceof Array)) {
                                     console.log(postprocessResult);
                                     executeResult[k].success = false;
@@ -506,27 +506,27 @@ const migrationExecute = async (corpidBind, queries) => {
                             }
                         }
                     }
-                    if (q.update) {
-                        try {
-                            let updateResult = await laraigoQuery(q.update.replace('\n',' '), corpidBind);
-                            if (!(updateResult instanceof Array)) {
-                                console.log(updateResult);
-                                executeResult[k].success = false;
-                                executeResult[k].errors.push({script: updateResult, bind: corpidBind});
-                            }
-                        } catch (error) {
-                            console.log(error);
-                            executeResult[k].errors.push({script: error});
-                        }
-                    }
-                    await reconfigWebhookPart2(k, selectResult);
+                    await reconfigWebhookPart2(k, selectResult, movewebhook);
                     counter += 1;
                 }
                 else {
                     executeResult[k].success = false;
-                    executeResult[k].errors.push({script: selectResult, bind: corpidBind});
+                    executeResult[k].errors.push({script: selectResult});
                 }
+            }
 
+            if (q.update) {
+                try {
+                    let updateResult = await laraigoQuery(q.update.replace('\n',' '), corpidBind);
+                    if (!(updateResult instanceof Array)) {
+                        console.log(updateResult);
+                        executeResult[k].success = false;
+                        executeResult[k].errors.push({script: updateResult});
+                    }
+                } catch (error) {
+                    console.log(error);
+                    executeResult[k].errors.push({script: error});
+                }
             }
         } catch (error) {
             console.log(error);
@@ -3072,7 +3072,7 @@ exports.listCorp = async (req, res) => {
 }
 
 exports.executeMigration = async (req, res) => {
-    let { corpid, modules, clean = false } = req.body;
+    let { corpid, modules, clean = false, movewebhook = false } = req.body;
     if (!!corpid && !!modules) {
         const corpidBind = { corpid: corpid }
         let queryResult = {core: {}, subcore: {}, extras: {}};
@@ -3082,7 +3082,7 @@ exports.executeMigration = async (req, res) => {
                     await laraigoQuery('SELECT FROM ufn_migration_core_delete($corpid)', bind = corpidBind);
                     clean = false;
                 }
-                queryResult.core = await migrationExecute(corpidBind, queryCore);
+                queryResult.core = await migrationExecute(corpidBind, queryCore, movewebhook);
             }
             if (modules.includes('subcore')) {
                 if (clean === true) {
