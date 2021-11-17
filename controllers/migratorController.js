@@ -5,6 +5,9 @@ const { QueryTypes } = require('sequelize');
 const axios = require('axios');
 const bcryptjs = require("bcryptjs");
 
+const logdna = require('@logdna/logger');
+const logger = logdna.createLogger('b7c813e09fbbaceff7e34d4488b90db6', { app: 'laraigoApi', level: 'debug', meta: { module: 'migratorController' } });
+
 /* Índice de tablas
 
 Propios del sistema
@@ -433,11 +436,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 try {
                     let alterResult = await laraigoQuery(q.alter.replace('\n',' '));
                     if (!(alterResult instanceof Array)) {
+                        logger.error(alterResult, { meta: { function: 'alterResult', table: k }} );
                         console.log(alterResult);
                         executeResult[k].success = false;
                         executeResult[k].errors.push({script: alterResult});
                     }
                 } catch (error) {
+                    logger.error(error, { meta: { function: 'alterResult', table: k }} );
                     console.log(error);
                     executeResult[k].errors.push({script: error});
                 }
@@ -470,11 +475,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                             try {
                                 let preprocessResult = await laraigoQuery(q.preprocess.replace('\n',' '), { datatable: JSON.stringify(chunk) });
                                 if (!(preprocessResult instanceof Array)) {
+                                    logger.info(preprocessResult, { meta: { function: 'preprocessResult', table: k }} );
                                     console.log(preprocessResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({script: preprocessResult});
                                 }
                             } catch (error) {
+                                logger.error(error, { meta: { function: 'preprocessResult', table: k }} );
                                 console.log(error);
                                 executeResult[k].errors.push({script: error});
                             }
@@ -483,11 +490,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                             try {
                                 let insertResult = await laraigoQuery(q.insert.replace('\n',' '), { datatable: JSON.stringify(chunk) });
                                 if (!(insertResult instanceof Array)) {
+                                    logger.info(insertResult, { meta: { function: 'insertResult', table: k }} );
                                     console.log(insertResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({script: insertResult});
                                 }
                             } catch (error) {
+                                logger.error(error, { meta: { function: 'insertResult', table: k }} );
                                 console.log(error);
                                 executeResult[k].errors.push({script: error});
                             }
@@ -496,11 +505,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                             try {
                                 let postprocessResult = await laraigoQuery(q.postprocess.replace('\n',' '), { datatable: JSON.stringify(chunk) });
                                 if (!(postprocessResult instanceof Array)) {
+                                    logger.info(postprocessResult, { meta: { function: 'postprocessResult', table: k }} );
                                     console.log(postprocessResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({script: postprocessResult});
                                 }
                             } catch (error) {
+                                logger.error(error, { meta: { function: 'postprocessResult', table: k }} );
                                 console.log(error);
                                 executeResult[k].errors.push({script: error});
                             }
@@ -510,8 +521,11 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     counter += 1;
                 }
                 else {
+                    logger.error(selectResult, { meta: { function: 'selectResult', table: k }} );
+                    console.log(selectResult);
                     executeResult[k].success = false;
                     executeResult[k].errors.push({script: selectResult});
+                    break;
                 }
             }
 
@@ -519,16 +533,19 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 try {
                     let updateResult = await laraigoQuery(q.update.replace('\n',' '), corpidBind);
                     if (!(updateResult instanceof Array)) {
+                        logger.error(updateResult, { meta: { function: 'updateResult', table: k }} );
                         console.log(updateResult);
                         executeResult[k].success = false;
                         executeResult[k].errors.push({script: updateResult});
                     }
                 } catch (error) {
+                    logger.error(error, { meta: { function: 'updateResult', table: k }} );
                     console.log(error);
                     executeResult[k].errors.push({script: error});
                 }
             }
         } catch (error) {
+            logger.error(error, { meta: { function: 'migrationExecute', table: k }} );
             console.log(error);
             executeResult[k].success = false;
             executeResult[k].errors.push({script: error});
@@ -3077,6 +3094,7 @@ exports.executeMigration = async (req, res) => {
         const corpidBind = { corpid: corpid }
         let queryResult = {core: {}, subcore: {}, extras: {}};
         try {
+            logger.debug(req.body, { meta: { function: 'executeMigration' }} );
             if (modules.includes('core')) {
                 if (clean === true) {
                     await laraigoQuery('SELECT FROM ufn_migration_core_delete($corpid)', bind = corpidBind);
@@ -3169,9 +3187,11 @@ exports.executeMigration = async (req, res) => {
                 }
                 queryResult.extras.whitelist = await migrationExecute(corpidBind, {whitelist: queryExtras.whitelist});
             }
+            logger.debug(queryResult, { meta: { function: 'executeMigration' }} );
             return res.status(200).json({ error: false, success: true, data: queryResult });
         }
         catch (error) {
+            logger.error(error, { meta: { function: 'executeMigration' }} );
             return res.status(500).json({ error: true, success: false, data: queryResult, msg: error.message });
         }
     }
