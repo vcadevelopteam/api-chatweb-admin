@@ -2037,12 +2037,12 @@ const querySubcoreConversation = {
     },
     surveyanswered: {
         select: `SELECT sa.corpid as zyxmecorpid, sa.orgid as zyxmeorgid, sa.conversationid as zyxmeconversationid,
-        sa.description, sa.status, split_part(pr.propertyname, 'NUMEROPREGUNTA', 1) as type, sa.createdate, sa.createby, sa.changedate, sa.changeby, sa.edit,
+        sa.description, sa.status, COALESCE(split_part(pr.propertyname, 'NUMEROPREGUNTA', 1), 'NINGUNO') as type, sa.createdate, sa.createby, sa.changedate, sa.changeby, sa.edit,
         sa.answer, sa.answervalue, sa.comment,
         sq.question, (SELECT GREATEST(COUNT(q.a)::text, MAX(q.a[1])) FROM (SELECT regexp_matches(sq.question,'[\\d𝟏𝟐𝟑𝟒𝟓]+','g') a) q)::BIGINT scale
         FROM surveyanswered sa
-        JOIN surveyquestion sq ON sq.corpid = sa.corpid AND sq.orgid = sa.orgid AND sq.surveyquestionid = sa.surveyquestionid
-        JOIN property pr ON pr.corpid = sa.corpid AND pr.orgid = sa.orgid AND pr.status = 'ACTIVO'
+        LEFT JOIN surveyquestion sq ON sq.corpid = sa.corpid AND sq.orgid = sa.orgid AND sq.surveyquestionid = sa.surveyquestionid
+        LEFT JOIN property pr ON pr.corpid = sa.corpid AND pr.orgid = sa.orgid AND pr.status = 'ACTIVO'
         AND pr.propertyname ILIKE '%NUMEROPREGUNTA' AND pr.propertyvalue = sq.questionnumber::text
         WHERE sa.corpid = $corpid
         ORDER BY surveyansweredid
@@ -3106,9 +3106,9 @@ exports.executeMigration = async (req, res) => {
                 if (clean === true) {
                     await laraigoQuery('SELECT FROM ufn_migration_subcore_delete($corpid)', bind = corpidBind);
                 }
-                queryResult.subcore.classification = await migrationExecute(corpidBind, querySubcoreClassification);
-                queryResult.subcore.person = await migrationExecute(corpidBind, querySubcorePerson);
-                queryResult.subcore.conversation = await migrationExecute(corpidBind, querySubcoreConversation);
+                // queryResult.subcore.classification = await migrationExecute(corpidBind, querySubcoreClassification);
+                // queryResult.subcore.person = await migrationExecute(corpidBind, querySubcorePerson);
+                // queryResult.subcore.conversation = await migrationExecute(corpidBind, querySubcoreConversation);
                 queryResult.subcore.campaign = await migrationExecute(corpidBind, querySubcoreCampaign);
                 queryResult.subcore.others = await migrationExecute(corpidBind, querySubcoreOthers);
             }
