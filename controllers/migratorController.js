@@ -446,28 +446,6 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
     for (const [k,q] of Object.entries(queries)) {
         executeResult[k] = {success: true, errors: []};
         try {
-            if (q.alter) {
-                let startTime = process.hrtime();
-                try {
-                    let alterResult = await laraigoQuery(q.alter.replace('\n',' '));
-                    let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                    if (alterResult instanceof Array) {
-                        logger.trace(alterResult, { meta: { function: 'alterResult', table: k, seconds: elapsedSeconds }} );
-                    }
-                    else {
-                        logger.error(alterResult, { meta: { function: 'alterResult', table: k, seconds: elapsedSeconds }} );
-                        console.log(alterResult);
-                        executeResult[k].success = false;
-                        executeResult[k].errors.push({script: alterResult});
-                    }
-                } catch (error) {
-                    let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                    logger.error(error, { meta: { function: 'alterResult', table: k, seconds: elapsedSeconds }} );
-                    console.log(error);
-                    executeResult[k].errors.push({script: error});
-                }
-            }
-
             let limit = 10000;
             let counter = 0;
             const perChunk = 5000
@@ -611,7 +589,6 @@ const queryCore = {
         ORDER BY corpid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE corp ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO corp (
             zyxmecorpid,
             description, status, type, createdate, createby, changedate, changeby, edit,
@@ -640,8 +617,6 @@ const queryCore = {
         ORDER BY orgid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE org ADD COLUMN IF NOT EXISTS zyxmeorgid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO org (
             zyxmecorpid,
             corpid,
@@ -675,8 +650,6 @@ const queryCore = {
         ORDER BY domainid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE domain ADD COLUMN IF NOT EXISTS zyxmedomainid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO domain (
             zyxmecorpid,
             corpid,
@@ -715,7 +688,6 @@ const queryCore = {
         ORDER BY inputvalidationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE inputvalidation ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO inputvalidation (
             zyxmecorpid,
             corpid,
@@ -747,8 +719,6 @@ const queryCore = {
         ORDER BY appintegrationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE appintegration ADD COLUMN IF NOT EXISTS zyxmeappintegrationid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO appintegration (
             zyxmecorpid,
             corpid,
@@ -786,8 +756,6 @@ const queryCore = {
         ORDER BY botconfigurationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE botconfiguration ADD COLUMN IF NOT EXISTS zyxmebotconfigurationid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO botconfiguration (
             zyxmecorpid,
             corpid,
@@ -826,8 +794,6 @@ const queryCore = {
         ORDER BY communicationchannelid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE communicationchannel ADD COLUMN IF NOT EXISTS zyxmecommunicationchannelid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO communicationchannel (
             zyxmecorpid,
             corpid,
@@ -887,7 +853,6 @@ const queryCore = {
         ORDER BY ccs.communicationchannelstatusid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE communicationchannelstatus ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO communicationchannelstatus (
             zyxmecorpid,
             corpid,
@@ -921,8 +886,6 @@ const queryCore = {
         ORDER BY propertyid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE property ADD COLUMN IF NOT EXISTS zyxmepropertyid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO property (
             zyxmecorpid,
             corpid,
@@ -984,8 +947,6 @@ const queryCore = {
         ORDER BY usr.userid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE usr ADD COLUMN IF NOT EXISTS zyxmeuserid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         preprocess: `UPDATE usr
         SET zyxmecorpid = dt.zyxmecorpid,
         zyxmeuserid = dt.zyxmeuserid
@@ -1064,7 +1025,6 @@ const queryCore = {
         ORDER BY ut.usertokenid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE usertoken ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO usertoken (
             zyxmecorpid,
             userid,
@@ -1095,7 +1055,6 @@ const queryCore = {
         ORDER BY us.userstatusid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE userstatus ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO userstatus (
             zyxmecorpid,
             userid,
@@ -1124,7 +1083,6 @@ const queryCore = {
         ORDER BY userhistoryid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE userhistory ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO userhistory (
             zyxmecorpid,
             corpid,
@@ -1159,7 +1117,6 @@ const queryCore = {
         ORDER BY usrnotificationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE usrnotification ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO usrnotification (
             zyxmecorpid,
             corpid,
@@ -1197,7 +1154,6 @@ const queryCore = {
         ORDER BY ous.corpid, ous.orgid, ous.userid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE orguser ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO orguser (
             zyxmecorpid,
             corpid,
@@ -1258,8 +1214,6 @@ const querySubcoreClassification = {
         ORDER BY classificationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE classification ADD COLUMN IF NOT EXISTS zyxmeclassificationid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO classification (
             zyxmecorpid,
             corpid,
@@ -1314,7 +1268,6 @@ const querySubcoreClassification = {
         ORDER BY quickreplyid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE quickreply ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO quickreply (
             zyxmecorpid,
             corpid,
@@ -1360,8 +1313,6 @@ const querySubcorePerson = {
         ORDER BY personid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE person ADD COLUMN IF NOT EXISTS zyxmepersonid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO person (
             zyxmecorpid,
             corpid,
@@ -1434,7 +1385,6 @@ const querySubcorePerson = {
         ORDER BY personaddinfoid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE personaddinfo ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO personaddinfo (
             zyxmecorpid,
             corpid,
@@ -1473,7 +1423,6 @@ const querySubcorePerson = {
         ORDER BY pcc.personid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE personcommunicationchannel ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO personcommunicationchannel (
             zyxmecorpid,
             corpid,
@@ -1520,7 +1469,6 @@ const querySubcoreConversation = {
         ORDER BY postid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE post ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO post (
             zyxmecorpid,
             corpid,
@@ -1561,7 +1509,6 @@ const querySubcoreConversation = {
         ORDER BY pcc.pccstatusid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE pccstatus ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO pccstatus (
             zyxmecorpid,
             corpid,
@@ -1625,8 +1572,6 @@ const querySubcoreConversation = {
         ORDER BY co.conversationid ASC
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE conversation ADD COLUMN IF NOT EXISTS zyxmeconversationid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO conversation (
             zyxmecorpid,
             corpid,
@@ -1757,7 +1702,6 @@ const querySubcoreConversation = {
         ORDER BY co.conversationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE conversationclassification ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO conversationclassification (
             zyxmecorpid,
             corpid,
@@ -1811,7 +1755,6 @@ const querySubcoreConversation = {
         ORDER BY co.conversationnoteid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE conversationnote ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO conversationnote (
             zyxmecorpid,
             corpid,
@@ -1858,7 +1801,6 @@ const querySubcoreConversation = {
         ORDER BY co.conversationpauseid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE conversationpause ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO conversationpause (
             zyxmecorpid,
             corpid,
@@ -1905,7 +1847,6 @@ const querySubcoreConversation = {
         ORDER BY conversationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE conversationpending ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO conversationpending (
             zyxmecorpid,
             corpid,
@@ -1949,7 +1890,6 @@ const querySubcoreConversation = {
         ORDER BY co.conversationstatusid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE conversationstatus ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO conversationstatus (
             zyxmecorpid,
             corpid,
@@ -2004,7 +1944,6 @@ const querySubcoreConversation = {
         ORDER BY interactionid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE interaction ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO interaction (
             zyxmecorpid,
             corpid,
@@ -2096,7 +2035,6 @@ const querySubcoreConversation = {
         ORDER BY surveyansweredid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE surveyanswered ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO surveyanswered (
             zyxmecorpid,
             corpid,
@@ -2160,8 +2098,6 @@ const querySubcoreCampaign = {
         ORDER BY hsmtemplateid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE messagetemplate ADD COLUMN IF NOT EXISTS zyxmemessagetemplateid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO messagetemplate (
             zyxmecorpid,
             corpid,
@@ -2214,8 +2150,6 @@ const querySubcoreCampaign = {
         ORDER BY campaignid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE campaign ADD COLUMN IF NOT EXISTS zyxmecampaignid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO campaign (
             zyxmecorpid,
             corpid,
@@ -2287,8 +2221,6 @@ const querySubcoreCampaign = {
         ORDER BY campaignmemberid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE campaignmember ADD COLUMN IF NOT EXISTS zyxmecampaignmemberid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO campaignmember (
             zyxmecorpid,
             corpid,
@@ -2339,7 +2271,6 @@ const querySubcoreCampaign = {
         ORDER BY campaignhistoryid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE campaignhistory ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO campaignhistory (
             zyxmecorpid,
             corpid,
@@ -2412,8 +2343,6 @@ const querySubcoreOthers = {
         ORDER BY taskschedulerid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE taskscheduler ADD COLUMN IF NOT EXISTS zyxmetaskschedulerid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO taskscheduler (
             zyxmecorpid,
             corpid,
@@ -2468,8 +2397,6 @@ const querySubcoreOthers = {
         ORDER BY chatblockversionid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE blockversion ADD COLUMN IF NOT EXISTS zyxmechatblockversionid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO blockversion (
             zyxmecorpid,
             corpid,
@@ -2521,7 +2448,6 @@ const querySubcoreOthers = {
         ORDER BY ctid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE block ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO block (
             zyxmecorpid,
             corpid,
@@ -2571,7 +2497,6 @@ const querySubcoreOthers = {
         ORDER BY tablevariableconfigurationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE tablevariableconfiguration ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO tablevariableconfiguration (
             zyxmecorpid,
             corpid,
@@ -2607,7 +2532,6 @@ const querySubcoreOthers = {
         ORDER BY intelligentmodelsid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE intelligentmodels ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO intelligentmodels (
             zyxmecorpid,
             corpid,
@@ -2640,7 +2564,6 @@ const querySubcoreOthers = {
         ORDER BY intelligentmodelsconfigurationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE intelligentmodelsconfiguration ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO intelligentmodelsconfiguration (
             zyxmecorpid,
             corpid,
@@ -2710,8 +2633,6 @@ const queryExtras = {
         ORDER BY blacklistid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE blacklist ADD COLUMN IF NOT EXISTS zyxmeblacklistid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO blacklist (
             zyxmecorpid,
             corpid,
@@ -2747,9 +2668,6 @@ const queryExtras = {
         ORDER BY hsmhistoryid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE hsmhistory ADD COLUMN IF NOT EXISTS transactionid character varying,
-        ADD COLUMN IF NOT EXISTS externalid character varying,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO hsmhistory (
             zyxmecorpid,
             corpid,
@@ -2788,7 +2706,6 @@ const queryExtras = {
         ORDER BY inappropriatewordsid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE inappropriatewords ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO inappropriatewords (
             zyxmecorpid,
             corpid,
@@ -2818,7 +2735,6 @@ const queryExtras = {
         ORDER BY labelid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE label ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO label (
             zyxmecorpid,
             corpid,
@@ -2852,7 +2768,6 @@ const queryExtras = {
         ORDER BY locationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE location ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO location (
             zyxmecorpid,
             corpid,
@@ -2892,7 +2807,6 @@ const queryExtras = {
         ORDER BY paymentid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE payment ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO payment (
             zyxmecorpid,
             corpid,
@@ -2943,7 +2857,6 @@ const queryExtras = {
         ORDER BY productivityid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE productivity ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO productivity (
             zyxmecorpid,
             corpid,
@@ -2997,7 +2910,6 @@ const queryExtras = {
         ORDER BY reporttemplateid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE reporttemplate ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO reporttemplate (
             zyxmecorpid,
             corpid,
@@ -3042,7 +2954,6 @@ const queryExtras = {
         ORDER BY slaid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE sla ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO sla (
             zyxmecorpid,
             corpid,
@@ -3099,7 +3010,6 @@ const queryExtras = {
         ORDER BY whitelistid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE whitelist ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO whitelist (
             zyxmecorpid,
             corpid,
