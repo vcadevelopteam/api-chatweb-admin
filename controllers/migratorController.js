@@ -3106,9 +3106,9 @@ exports.executeMigration = async (req, res) => {
                 if (clean === true) {
                     await laraigoQuery('SELECT FROM ufn_migration_subcore_delete($corpid)', bind = corpidBind);
                 }
-                // queryResult.subcore.classification = await migrationExecute(corpidBind, querySubcoreClassification);
-                // queryResult.subcore.person = await migrationExecute(corpidBind, querySubcorePerson);
-                // queryResult.subcore.conversation = await migrationExecute(corpidBind, querySubcoreConversation);
+                queryResult.subcore.classification = await migrationExecute(corpidBind, querySubcoreClassification);
+                queryResult.subcore.person = await migrationExecute(corpidBind, querySubcorePerson);
+                queryResult.subcore.conversation = await migrationExecute(corpidBind, querySubcoreConversation);
                 queryResult.subcore.campaign = await migrationExecute(corpidBind, querySubcoreCampaign);
                 queryResult.subcore.others = await migrationExecute(corpidBind, querySubcoreOthers);
             }
