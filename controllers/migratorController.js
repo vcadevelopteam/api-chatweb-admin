@@ -5,6 +5,9 @@ const { QueryTypes } = require('sequelize');
 const axios = require('axios');
 const bcryptjs = require("bcryptjs");
 
+const logdna = require('@logdna/logger');
+const logger = logdna.createLogger('b7c813e09fbbaceff7e34d4488b90db6', { app: 'laraigoApi', level: 'trace', meta: { module: 'migratorController' } });
+
 /* Índice de tablas
 
 Propios del sistema
@@ -97,6 +100,11 @@ SUNAT
 "groupconfiguration"
 */
 
+const parseHrtimeToSeconds = (hrtime) => {
+    var seconds = (hrtime[0] + (hrtime[1] / 1e9)).toFixed(3);
+    return seconds;
+}
+
 const errorSeq = err => {
     const messageerror = err.toString().replace("SequelizeDatabaseError: ", "");
     const errorcode = messageerror.includes("Named bind parameter") ? "PARAMETER_IS_MISSING" : err.parent.code;
@@ -137,6 +145,7 @@ const recryptPwd = async (table, data) => {
                         data[i].pwd = await bcryptjs.hash(response.data.find(r => r.userid === data[i].zyxmeuserid).pwd, salt);
                     }
                 } catch (error) {
+                    logger.error(error, { meta: { function: 'recryptPwd' }} );
                     console.log(error);
                 }
             }
@@ -190,7 +199,11 @@ const reconfigWebhook = async (table, data, move = false) => {
                                     break;
                             }
                         }
+                        else {
+                            logger.error({data: zyxmeData, response: response.data}, { meta: { function: 'reconfigWebhook' }} );
+                        }
                     } catch (error) {
+                        logger.error(error, { meta: { function: 'reconfigWebhook' }} );
                         console.log(error);
                     }
                 }
@@ -228,10 +241,14 @@ const reconfigWebhookPart2 = async (table, data, move) => {
                                 if (response.data && response.data.success) {
                                     console.log(response.data)
                                 }
+                                else {
+                                    logger.error({data: zyxmeData, response: response.data}, { meta: { function: 'reconfigWebhookPart2' }} );
+                                }
                             default:
                                 break;
                         }
                     } catch (error) {
+                        logger.error(error, { meta: { function: 'reconfigWebhookPart2' }} );
                         console.log(error);
                     }
                 }
@@ -424,37 +441,40 @@ const restructureVariable = (table, data) => {
     return data;
 }
 
-const migrationExecute = async (corpidBind, queries) => {
+const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
     let executeResult = {};
     for (const [k,q] of Object.entries(queries)) {
         executeResult[k] = {success: true, errors: []};
         try {
-            let limit = 20000;
+            let conversations = await laraigoQuery(
+                `SELECT conversationid, zyxmeconversationid
+                FROM conversation
+                WHERE zyxmecorpid = $corpid`, corpidBind);
+            let persons = await laraigoQuery(
+                `SELECT personid, zyxmepersonid
+                FROM person
+                WHERE zyxmecorpid = $corpid`, corpidBind);
+            let limit = 10000;
             let counter = 0;
+            const perChunk = 5000
             while (true) {
+                let selectStartTime = process.hrtime();
                 let selectResult = await zyxmeQuery(q.select.replace('\n',' '), {...corpidBind, offset: counter * limit, limit});
+                let selectElapsedSeconds = parseHrtimeToSeconds(process.hrtime(selectStartTime));
                 if (selectResult instanceof Array) {
+                    logger.trace(selectResult[0], { meta: { function: 'selectResult', table: k, seconds: selectElapsedSeconds }} );
                     if (selectResult.length === 0) {
                         break;
                     }
                     selectResult = await recryptPwd(k, selectResult);
-                    selectResult = await reconfigWebhook(k, selectResult);
+                    selectResult = await reconfigWebhook(k, selectResult, movewebhook);
                     selectResult = renameVariable(k, selectResult);
                     selectResult = restructureVariable(k, selectResult);
-                    if (q.alter) {
-                        try {
-                            let alterResult = await laraigoQuery(q.alter.replace('\n',' '));
-                            if (!(alterResult instanceof Array)) {
-                                console.log(alterResult);
-                                executeResult[k].success = false;
-                                executeResult[k].errors.push({script: alterResult});
-                            }
-                        } catch (error) {
-                            console.log(error);
-                            executeResult[k].errors.push({script: error});
-                        }
-                    }
-                    const perChunk = 5000
+                    selectResult = selectResult.map(s => ({
+                        ...s,
+                        zyxmeconversationid: conversations.find(co => co.zyxmeconversationid === s.zyxmeconversationid)?.conversationid || s.zyxmeconversationid,
+                        zyxmepersonid: persons.find(pe => pe.zyxmepersonid === s.zyxmepersonid)?.personid || s.zyxmepersonid
+                    }))
                     let chunkArray = selectResult.reduce((chunk, item, index) => { 
                       const chunkIndex = Math.floor(index/perChunk)
                       if(!chunk[chunkIndex]) {
@@ -465,70 +485,105 @@ const migrationExecute = async (corpidBind, queries) => {
                     }, []);
     
                     for (const chunk of chunkArray) {
-                        let bind = { datatable: JSON.stringify(chunk) };
                         if (q.preprocess) {
+                            let startTime = process.hrtime();
                             try {
-                                let preprocessResult = await laraigoQuery(q.preprocess.replace('\n',' '), bind);
-                                if (!(preprocessResult instanceof Array)) {
+                                let preprocessResult = await laraigoQuery(q.preprocess.replace('\n',' '), { datatable: JSON.stringify(chunk) });
+                                let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
+                                if (preprocessResult instanceof Array) {
+                                    logger.trace(preprocessResult, { meta: { function: 'preprocessResult', table: k, seconds: elapsedSeconds }} );
+                                }
+                                else {
+                                    logger.error(preprocessResult, { meta: { function: 'preprocessResult', table: k, seconds: elapsedSeconds }} );
                                     console.log(preprocessResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({script: preprocessResult});
                                 }
                             } catch (error) {
+                                let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
+                                logger.error(error, { meta: { function: 'preprocessResult', table: k, seconds: elapsedSeconds }} );
                                 console.log(error);
                                 executeResult[k].errors.push({script: error});
                             }
                         }
                         if (q.insert) {
+                            let startTime = process.hrtime();
                             try {
-                                let insertResult = await laraigoQuery(q.insert.replace('\n',' '), bind);
-                                if (!(insertResult instanceof Array)) {
+                                let insertResult = await laraigoQuery(q.insert.replace('\n',' '), { datatable: JSON.stringify(chunk) });
+                                let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
+                                if (insertResult instanceof Array) {
+                                    logger.trace(insertResult, { meta: { function: 'insertResult', table: k, seconds: elapsedSeconds }} );
+                                }
+                                else {
+                                    logger.error(insertResult, { meta: { function: 'insertResult', table: k, seconds: elapsedSeconds }} );
                                     console.log(insertResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({script: insertResult});
                                 }
                             } catch (error) {
+                                let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
+                                logger.error(error, { meta: { function: 'insertResult', table: k, seconds: elapsedSeconds }} );
                                 console.log(error);
                                 executeResult[k].errors.push({script: error});
                             }
                         }
                         if (q.postprocess) {
+                            let startTime = process.hrtime();
                             try {
-                                let postprocessResult = await laraigoQuery(q.postprocess.replace('\n',' '), bind);
-                                if (!(postprocessResult instanceof Array)) {
+                                let postprocessResult = await laraigoQuery(q.postprocess.replace('\n',' '), { datatable: JSON.stringify(chunk) });
+                                let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
+                                if (postprocessResult instanceof Array) {
+                                    logger.trace(postprocessResult, { meta: { function: 'postprocessResult', table: k, seconds: elapsedSeconds }} );
+                                }
+                                else {
+                                    logger.error(postprocessResult, { meta: { function: 'postprocessResult', table: k, seconds: elapsedSeconds }} );
                                     console.log(postprocessResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({script: postprocessResult});
                                 }
                             } catch (error) {
+                                let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
+                                logger.error(error, { meta: { function: 'postprocessResult', table: k, seconds: elapsedSeconds }} );
                                 console.log(error);
                                 executeResult[k].errors.push({script: error});
                             }
                         }
                     }
-                    if (q.update) {
-                        try {
-                            let updateResult = await laraigoQuery(q.update.replace('\n',' '), corpidBind);
-                            if (!(updateResult instanceof Array)) {
-                                console.log(updateResult);
-                                executeResult[k].success = false;
-                                executeResult[k].errors.push({script: updateResult, bind: corpidBind});
-                            }
-                        } catch (error) {
-                            console.log(error);
-                            executeResult[k].errors.push({script: error});
-                        }
-                    }
-                    await reconfigWebhookPart2(k, selectResult);
+                    await reconfigWebhookPart2(k, selectResult, movewebhook);
                     counter += 1;
                 }
                 else {
+                    logger.error(selectResult, { meta: { function: 'selectResult', table: k, seconds: selectElapsedSeconds }} );
+                    console.log(selectResult);
                     executeResult[k].success = false;
-                    executeResult[k].errors.push({script: selectResult, bind: corpidBind});
+                    executeResult[k].errors.push({script: selectResult});
+                    break;
                 }
+            }
 
+            if (q.update) {
+                let startTime = process.hrtime();
+                try {
+                    let updateResult = await laraigoQuery(q.update.replace('\n',' '), corpidBind);
+                    let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
+                    if (updateResult instanceof Array) {
+                        logger.trace(updateResult, { meta: { function: 'updateResult', table: k, seconds: elapsedSeconds }} );
+                    }
+                    else {
+                        logger.error(updateResult, { meta: { function: 'updateResult', table: k, seconds: elapsedSeconds }} );
+                        console.log(updateResult);
+                        executeResult[k].success = false;
+                        executeResult[k].errors.push({script: updateResult});
+                    }
+                } catch (error) {
+                    let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
+                    logger.error(error, { meta: { function: 'updateResult', table: k, seconds: elapsedSeconds }} );
+                    console.log(error);
+                    executeResult[k].errors.push({script: error});
+                }
             }
         } catch (error) {
+            logger.error(error, { meta: { function: 'migrationExecute', table: k }} );
             console.log(error);
             executeResult[k].success = false;
             executeResult[k].errors.push({script: error});
@@ -547,7 +602,6 @@ const queryCore = {
         ORDER BY corpid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE corp ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO corp (
             zyxmecorpid,
             description, status, type, createdate, createby, changedate, changeby, edit,
@@ -576,21 +630,19 @@ const queryCore = {
         ORDER BY orgid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE org ADD COLUMN IF NOT EXISTS zyxmeorgid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO org (
             zyxmecorpid,
             corpid,
             zyxmeorgid,
             description, status, type, createdate, createby, changedate, changeby, edit,
-            timezoneoffset, timezone, currency, country
+            timezoneoffset, timezone, currency, country, ready
         )
         SELECT
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             dt.zyxmeorgid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
-            -5, 'America/Lima', 'PEN', 'PE'
+            -5, 'America/Lima', 'PEN', 'PE', false
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
             zyxmecorpid bigint, zyxmeorgid bigint,
@@ -611,8 +663,6 @@ const queryCore = {
         ORDER BY domainid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE domain ADD COLUMN IF NOT EXISTS zyxmedomainid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO domain (
             zyxmecorpid,
             corpid,
@@ -651,7 +701,6 @@ const queryCore = {
         ORDER BY inputvalidationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE inputvalidation ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO inputvalidation (
             zyxmecorpid,
             corpid,
@@ -683,8 +732,6 @@ const queryCore = {
         ORDER BY appintegrationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE appintegration ADD COLUMN IF NOT EXISTS zyxmeappintegrationid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO appintegration (
             zyxmecorpid,
             corpid,
@@ -722,8 +769,6 @@ const queryCore = {
         ORDER BY botconfigurationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE botconfiguration ADD COLUMN IF NOT EXISTS zyxmebotconfigurationid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO botconfiguration (
             zyxmecorpid,
             corpid,
@@ -762,8 +807,6 @@ const queryCore = {
         ORDER BY communicationchannelid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE communicationchannel ADD COLUMN IF NOT EXISTS zyxmecommunicationchannelid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO communicationchannel (
             zyxmecorpid,
             corpid,
@@ -823,7 +866,6 @@ const queryCore = {
         ORDER BY ccs.communicationchannelstatusid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE communicationchannelstatus ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO communicationchannelstatus (
             zyxmecorpid,
             corpid,
@@ -857,8 +899,6 @@ const queryCore = {
         ORDER BY propertyid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE property ADD COLUMN IF NOT EXISTS zyxmepropertyid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO property (
             zyxmecorpid,
             corpid,
@@ -920,8 +960,6 @@ const queryCore = {
         ORDER BY usr.userid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE usr ADD COLUMN IF NOT EXISTS zyxmeuserid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         preprocess: `UPDATE usr
         SET zyxmecorpid = dt.zyxmecorpid,
         zyxmeuserid = dt.zyxmeuserid
@@ -1000,7 +1038,6 @@ const queryCore = {
         ORDER BY ut.usertokenid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE usertoken ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO usertoken (
             zyxmecorpid,
             userid,
@@ -1031,7 +1068,6 @@ const queryCore = {
         ORDER BY us.userstatusid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE userstatus ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO userstatus (
             zyxmecorpid,
             userid,
@@ -1054,13 +1090,12 @@ const queryCore = {
     userhistory: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, userid as zyxmeuserid,
         description, status, type, createdate, createby, changedate, changeby, edit,
-        motivetype, motivedescription, desconectedtime
+        motivetype, motivedescription, desconectedtime::text
         FROM userhistory
         WHERE corpid = $corpid
         ORDER BY userhistoryid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE userhistory ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO userhistory (
             zyxmecorpid,
             corpid,
@@ -1095,7 +1130,6 @@ const queryCore = {
         ORDER BY usrnotificationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE usrnotification ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO usrnotification (
             zyxmecorpid,
             corpid,
@@ -1133,7 +1167,6 @@ const queryCore = {
         ORDER BY ous.corpid, ous.orgid, ous.userid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE orguser ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO orguser (
             zyxmecorpid,
             corpid,
@@ -1194,8 +1227,6 @@ const querySubcoreClassification = {
         ORDER BY classificationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE classification ADD COLUMN IF NOT EXISTS zyxmeclassificationid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO classification (
             zyxmecorpid,
             corpid,
@@ -1250,7 +1281,6 @@ const querySubcoreClassification = {
         ORDER BY quickreplyid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE quickreply ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO quickreply (
             zyxmecorpid,
             corpid,
@@ -1296,8 +1326,6 @@ const querySubcorePerson = {
         ORDER BY personid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE person ADD COLUMN IF NOT EXISTS zyxmepersonid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO person (
             zyxmecorpid,
             corpid,
@@ -1322,7 +1350,7 @@ const querySubcorePerson = {
             dt.zyxmepersonid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.groups, dt.name, dt.referringperson,
-            (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.referringpersonid LIMIT 1),
+            dt.referringpersonid,
             dt.persontype, dt.personstatus,
             dt.phone, dt.email, dt.alternativephone, dt.alternativeemail,
             dt.firstcontact, dt.lastcontact,
@@ -1370,7 +1398,6 @@ const querySubcorePerson = {
         ORDER BY personaddinfoid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE personaddinfo ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO personaddinfo (
             zyxmecorpid,
             corpid,
@@ -1383,7 +1410,7 @@ const querySubcorePerson = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1),
+            dt.zyxmepersonid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.addinfo
         FROM json_populate_recordset(null::record, $datatable)
@@ -1409,7 +1436,6 @@ const querySubcorePerson = {
         ORDER BY pcc.personid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE personcommunicationchannel ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO personcommunicationchannel (
             zyxmecorpid,
             corpid,
@@ -1424,7 +1450,7 @@ const querySubcorePerson = {
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
             COALESCE(
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1),
+                dt.zyxmepersonid,
                 (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
             ),
             dt.personcommunicationchannel,
@@ -1456,7 +1482,6 @@ const querySubcoreConversation = {
         ORDER BY postid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE post ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO post (
             zyxmecorpid,
             corpid,
@@ -1471,7 +1496,7 @@ const querySubcoreConversation = {
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
             (SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1),
-            (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1),
+            dt.zyxmepersonid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.postexternalid, dt.message, dt.content, dt.postexternalparentid, dt.commentexternalid
         FROM json_populate_recordset(null::record, $datatable)
@@ -1497,7 +1522,6 @@ const querySubcoreConversation = {
         ORDER BY pcc.pccstatusid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE pccstatus ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO pccstatus (
             zyxmecorpid,
             corpid,
@@ -1531,15 +1555,15 @@ const querySubcoreConversation = {
         co.description, co.status, co.type, co.createdate, co.createby, co.changedate, co.changeby, co.edit,
         co.firstconversationdate, co.lastconversationdate,
         co.firstuserid, co.lastuserid,
-        co.firstreplytime, co.averagereplytime, co.userfirstreplytime, co.useraveragereplytime,
-        co.ticketnum, co.startdate, co.finishdate, co.totalduration, co.realduration, co.totalpauseduration, co.personaveragereplytime,
+        co.firstreplytime::text, co.averagereplytime::text, co.userfirstreplytime::text, co.useraveragereplytime::text,
+        co.ticketnum, co.startdate, co.finishdate, co.totalduration::text, co.realduration::text, co.totalpauseduration::text, co.personaveragereplytime::text,
         co.closetype, co.context, co.postexternalid, co.commentexternalid, co.replyexternalid,
-        co.botduration, co.autoclosetime, co.handoffdate, co.pausedauto,
+        co.botduration::text, co.autoclosetime::text, co.handoffdate, co.pausedauto,
         co.chatflowcontext, co.variablecontext, co.usergroup, co.mailflag,
         co.sentiment, co.sadness, co.joy, co.fear, co.disgust, co.anger,
         co.usersentiment, co.usersadness, co.userjoy, co.userfear, co.userdisgust, co.useranger,
         co.personsentiment, co.personsadness, co.personjoy, co.personfear, co.persondisgust, co.personanger,
-        co.balancetimes, co.firstassignedtime, co.extradata, co.holdingwaitingtime, co.closetabdate, co.abandoned,
+        co.balancetimes, co.firstassignedtime::text, co.extradata, co.holdingwaitingtime::text, co.closetabdate, co.abandoned,
         co.lastreplydate, co.personlastreplydate, co.tags,
         co.wnlucategories, co.wnluconcepts, co.wnluentities, co.wnlukeywords, co.wnlumetadata, co.wnlurelations, co.wnlusemanticroles,
         co.wnlcclass,
@@ -1552,7 +1576,7 @@ const querySubcoreConversation = {
         co.wnlusyntax, co.wnlusentiment, co.wnlusadness, co.wnlujoy, co.wnlufear, co.wnludisgust, co.wnluanger,
         co.wnluusersentiment, co.wnluusersadness, co.wnluuserjoy, co.wnluuserfear, co.wnluuserdisgust, co.wnluuseranger,
         co.wnlupersonsentiment, co.wnlupersonsadness, co.wnlupersonjoy, co.wnlupersonfear, co.wnlupersondisgust, co.wnlupersonanger,
-        co.enquiries, co.classification, co.firstusergroup, co.emailalertsent, co.tdatime,
+        co.enquiries, co.classification, co.firstusergroup, co.emailalertsent, co.tdatime::text,
         co.interactionquantity, co.interactionpersonquantity, co.interactionbotquantity, co.interactionasesorquantity,
         co.interactionaiquantity, co.interactionaipersonquantity, co.interactionaibotquantity, co.interactionaiasesorquantity,
         co.handoffafteransweruser, co.lastseendate, co.closecomment
@@ -1561,8 +1585,6 @@ const querySubcoreConversation = {
         ORDER BY co.conversationid ASC
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE conversation ADD COLUMN IF NOT EXISTS zyxmeconversationid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO conversation (
             zyxmecorpid,
             corpid,
@@ -1604,7 +1626,7 @@ const querySubcoreConversation = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE((SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1), 0),
+            COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
             dt.zyxmeconversationid,
@@ -1693,7 +1715,6 @@ const querySubcoreConversation = {
         ORDER BY co.conversationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE conversationclassification ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO conversationclassification (
             zyxmecorpid,
             corpid,
@@ -1710,11 +1731,12 @@ const querySubcoreConversation = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE((SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1), 0),
+            COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
             COALESCE(
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1),
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) ORDER BY conversationid ASC LIMIT 1)
+                dt.zyxmeconversationid,
+                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) ORDER BY conversationid ASC LIMIT 1),
+                0
             ),
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
             COALESCE((SELECT classificationid FROM classification WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeclassificationid = dt.zyxmeclassificationid LIMIT 1), 0),
@@ -1746,7 +1768,6 @@ const querySubcoreConversation = {
         ORDER BY co.conversationnoteid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE conversationnote ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO conversationnote (
             zyxmecorpid,
             corpid,
@@ -1762,10 +1783,10 @@ const querySubcoreConversation = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE((SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1), 0),
+            COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
-            COALESCE((SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1), 0),
+            COALESCE(dt.zyxmeconversationid, 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.addpersonnote, dt.note
         FROM json_populate_recordset(null::record, $datatable)
@@ -1793,7 +1814,6 @@ const querySubcoreConversation = {
         ORDER BY co.conversationpauseid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE conversationpause ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO conversationpause (
             zyxmecorpid,
             corpid,
@@ -1809,10 +1829,10 @@ const querySubcoreConversation = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE((SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1), 0),
+            COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
-            COALESCE((SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1), 0),
+            COALESCE(dt.zyxmeconversationid, 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.startpause, dt.stoppause
         FROM json_populate_recordset(null::record, $datatable)
@@ -1840,7 +1860,6 @@ const querySubcoreConversation = {
         ORDER BY conversationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE conversationpending ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO conversationpending (
             zyxmecorpid,
             corpid,
@@ -1857,7 +1876,7 @@ const querySubcoreConversation = {
             dt.personcommunicationchannel,
             COALESCE((SELECT userid FROM usr WHERE zyxmeuserid = dt.zyxmeuserid LIMIT 1), 0),
             COALESCE(
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1),
+                dt.zyxmeconversationid,
                 (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) ORDER BY conversationid ASC LIMIT 1)
             ),
             dt.status, dt.communicationchannelsite, dt.interactiontext
@@ -1884,7 +1903,6 @@ const querySubcoreConversation = {
         ORDER BY co.conversationstatusid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE conversationstatus ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO conversationstatus (
             zyxmecorpid,
             corpid,
@@ -1899,10 +1917,10 @@ const querySubcoreConversation = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE((SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1), 0),
+            COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
-            COALESCE((SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1), 0),
+            COALESCE(dt.zyxmeconversationid, 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
@@ -1939,7 +1957,6 @@ const querySubcoreConversation = {
         ORDER BY interactionid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE interaction ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO interaction (
             zyxmecorpid,
             corpid,
@@ -1967,13 +1984,13 @@ const querySubcoreConversation = {
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
             COALESCE(
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1),
+                dt.zyxmepersonid,
                 (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
             ),
             dt.personcommunicationchannel,
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
             COALESCE(
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1),
+                dt.zyxmeconversationid,
                 (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) ORDER BY conversationid ASC LIMIT 1)
             ),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -2020,18 +2037,17 @@ const querySubcoreConversation = {
     },
     surveyanswered: {
         select: `SELECT sa.corpid as zyxmecorpid, sa.orgid as zyxmeorgid, sa.conversationid as zyxmeconversationid,
-        sa.description, sa.status, split_part(pr.propertyname, 'NUMEROPREGUNTA', 1) as type, sa.createdate, sa.createby, sa.changedate, sa.changeby, sa.edit,
+        sa.description, sa.status, COALESCE(split_part(pr.propertyname, 'NUMEROPREGUNTA', 1), 'NINGUNO') as type, sa.createdate, sa.createby, sa.changedate, sa.changeby, sa.edit,
         sa.answer, sa.answervalue, sa.comment,
         sq.question, (SELECT GREATEST(COUNT(q.a)::text, MAX(q.a[1])) FROM (SELECT regexp_matches(sq.question,'[\\d𝟏𝟐𝟑𝟒𝟓]+','g') a) q)::BIGINT scale
         FROM surveyanswered sa
-        JOIN surveyquestion sq ON sq.corpid = sa.corpid AND sq.orgid = sa.orgid AND sq.surveyquestionid = sa.surveyquestionid
-        JOIN property pr ON pr.corpid = sa.corpid AND pr.orgid = sa.orgid AND pr.status = 'ACTIVO'
+        LEFT JOIN surveyquestion sq ON sq.corpid = sa.corpid AND sq.orgid = sa.orgid AND sq.surveyquestionid = sa.surveyquestionid
+        LEFT JOIN property pr ON pr.corpid = sa.corpid AND pr.orgid = sa.orgid AND pr.status = 'ACTIVO'
         AND pr.propertyname ILIKE '%NUMEROPREGUNTA' AND pr.propertyvalue = sq.questionnumber::text
         WHERE sa.corpid = $corpid
         ORDER BY surveyansweredid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE surveyanswered ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO surveyanswered (
             zyxmecorpid,
             corpid,
@@ -2046,7 +2062,7 @@ const querySubcoreConversation = {
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
             COALESCE(
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1),
+                dt.zyxmeconversationid,
                 (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) ORDER BY conversationid ASC LIMIT 1)
             ),
             dt.description, dt.status, dt.type::CHARACTER VARYING, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -2095,8 +2111,6 @@ const querySubcoreCampaign = {
         ORDER BY hsmtemplateid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE messagetemplate ADD COLUMN IF NOT EXISTS zyxmemessagetemplateid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO messagetemplate (
             zyxmecorpid,
             corpid,
@@ -2149,8 +2163,6 @@ const querySubcoreCampaign = {
         ORDER BY campaignid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE campaign ADD COLUMN IF NOT EXISTS zyxmecampaignid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO campaign (
             zyxmecorpid,
             corpid,
@@ -2222,8 +2234,6 @@ const querySubcoreCampaign = {
         ORDER BY campaignmemberid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE campaignmember ADD COLUMN IF NOT EXISTS zyxmecampaignmemberid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO campaignmember (
             zyxmecorpid,
             corpid,
@@ -2241,7 +2251,7 @@ const querySubcoreCampaign = {
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
             (SELECT campaignid FROM campaign WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignid = dt.zyxmecampaignid LIMIT 1),
-            (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1),
+            dt.zyxmepersonid,
             dt.zyxmecampaignmemberid,
             dt.status, dt.personcommunicationchannel, dt.type, dt.displayname, dt.personcommunicationchannelowner,
             dt.field1, dt.field2, dt.field3, dt.field4, dt.field5, dt.field6, dt.field7, dt.field8, dt.field9,
@@ -2274,7 +2284,6 @@ const querySubcoreCampaign = {
         ORDER BY campaignhistoryid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE campaignhistory ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO campaignhistory (
             zyxmecorpid,
             corpid,
@@ -2292,15 +2301,15 @@ const querySubcoreCampaign = {
             (SELECT campaignid FROM campaign WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignid = dt.zyxmecampaignid LIMIT 1),
             CASE WHEN COALESCE(dt.zyxmepersonid, 0) = 0 THEN 0
             ELSE COALESCE(
-                    (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1),
+                    dt.zyxmepersonid,
                     (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
                 )
             END,
-            COALESCE(SELECT campaignmemberid FROM campaignmember WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignmemberid = dt.zyxmecampaignmemberid LIMIT 1), 0),
+            COALESCE((SELECT campaignmemberid FROM campaignmember WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignmemberid = dt.zyxmecampaignmemberid LIMIT 1), 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.success, dt.message, dt.rundate,
             CASE WHEN COALESCE(dt.zyxmeconversationid, 0) = 0 THEN 0
-            ELSE (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1)
+            ELSE dt.zyxmeconversationid
             END,
             dt.attended
         FROM json_populate_recordset(null::record, $datatable)
@@ -2347,8 +2356,6 @@ const querySubcoreOthers = {
         ORDER BY taskschedulerid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE taskscheduler ADD COLUMN IF NOT EXISTS zyxmetaskschedulerid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO taskscheduler (
             zyxmecorpid,
             corpid,
@@ -2403,8 +2410,6 @@ const querySubcoreOthers = {
         ORDER BY chatblockversionid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE blockversion ADD COLUMN IF NOT EXISTS zyxmechatblockversionid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO blockversion (
             zyxmecorpid,
             corpid,
@@ -2456,7 +2461,6 @@ const querySubcoreOthers = {
         ORDER BY ctid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE block ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO block (
             zyxmecorpid,
             corpid,
@@ -2506,7 +2510,6 @@ const querySubcoreOthers = {
         ORDER BY tablevariableconfigurationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE tablevariableconfiguration ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO tablevariableconfiguration (
             zyxmecorpid,
             corpid,
@@ -2542,7 +2545,6 @@ const querySubcoreOthers = {
         ORDER BY intelligentmodelsid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE intelligentmodels ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO intelligentmodels (
             zyxmecorpid,
             corpid,
@@ -2575,7 +2577,6 @@ const querySubcoreOthers = {
         ORDER BY intelligentmodelsconfigurationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE intelligentmodelsconfiguration ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO intelligentmodelsconfiguration (
             zyxmecorpid,
             corpid,
@@ -2645,8 +2646,6 @@ const queryExtras = {
         ORDER BY blacklistid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE blacklist ADD COLUMN IF NOT EXISTS zyxmeblacklistid BIGINT,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO blacklist (
             zyxmecorpid,
             corpid,
@@ -2682,9 +2681,6 @@ const queryExtras = {
         ORDER BY hsmhistoryid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE hsmhistory ADD COLUMN IF NOT EXISTS transactionid character varying,
-        ADD COLUMN IF NOT EXISTS externalid character varying,
-        ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO hsmhistory (
             zyxmecorpid,
             corpid,
@@ -2723,7 +2719,6 @@ const queryExtras = {
         ORDER BY inappropriatewordsid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE inappropriatewords ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO inappropriatewords (
             zyxmecorpid,
             corpid,
@@ -2753,7 +2748,6 @@ const queryExtras = {
         ORDER BY labelid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE label ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO label (
             zyxmecorpid,
             corpid,
@@ -2787,7 +2781,6 @@ const queryExtras = {
         ORDER BY locationid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE location ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO location (
             zyxmecorpid,
             corpid,
@@ -2827,7 +2820,6 @@ const queryExtras = {
         ORDER BY paymentid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE payment ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO payment (
             zyxmecorpid,
             corpid,
@@ -2843,9 +2835,9 @@ const queryExtras = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeconversationid = dt.zyxmeconversationid LIMIT 1),
+            dt.zyxmeconversationid,
             COALESCE(
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.zyxmepersonid LIMIT 1),
+                dt.zyxmepersonid,
                 (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
             ),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -2871,14 +2863,13 @@ const queryExtras = {
         description, status, type, createdate, createby, changedate, changeby, edit,
         fullname, communicationchannel, communicationchanneldesc,
         datestr, hours, hoursrange,
-        worktime, busytimewithinwork, freetimewithinwork, busytimeoutsidework,
-        onlinetime, idletime, qtytickets, qtyconnection, qtydisconnection
+        worktime::text, busytimewithinwork::text, freetimewithinwork::text, busytimeoutsidework::text,
+        onlinetime::text, idletime::text, qtytickets, qtyconnection, qtydisconnection
         FROM productivity
         WHERE corpid = $corpid
         ORDER BY productivityid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE productivity ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO productivity (
             zyxmecorpid,
             corpid,
@@ -2932,7 +2923,6 @@ const queryExtras = {
         ORDER BY reporttemplateid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE reporttemplate ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO reporttemplate (
             zyxmecorpid,
             corpid,
@@ -2967,17 +2957,16 @@ const queryExtras = {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         company, communicationchannelid, usergroup,
-        totaltmo, totaltmopercentmax, totaltmopercentmin,
-        usertmo, usertmopercentmax, usertmopercentmin,
-        tme, tmepercentmax, tmepercentmin,
-        usertme, usertmepercentmax, usertmepercentmin,
-        productivitybyhour, totaltmomin, usertmomin, tmemin, usertmemin, tmoclosedby, tmeclosedby
+        totaltmo::text, totaltmopercentmax, totaltmopercentmin,
+        usertmo::text, usertmopercentmax, usertmopercentmin,
+        tme::text, tmepercentmax, tmepercentmin,
+        usertme::text, usertmepercentmax, usertmepercentmin,
+        productivitybyhour, totaltmomin::text, usertmomin::text, tmemin::text, usertmemin::text, tmoclosedby, tmeclosedby
         FROM sla
         WHERE corpid = $corpid
         ORDER BY slaid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE sla ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO sla (
             zyxmecorpid,
             corpid,
@@ -3034,7 +3023,6 @@ const queryExtras = {
         ORDER BY whitelistid
         LIMIT $limit
         OFFSET $offset`,
-        alter: `ALTER TABLE whitelist ADD COLUMN IF NOT EXISTS zyxmecorpid BIGINT`,
         insert: `INSERT INTO whitelist (
             zyxmecorpid,
             corpid,
@@ -3072,7 +3060,7 @@ exports.listCorp = async (req, res) => {
 }
 
 exports.executeMigration = async (req, res) => {
-    let { corpid, modules, clean = false } = req.body;
+    let { corpid, modules, clean = false, movewebhook = false } = req.body;
     if (!!corpid && !!modules) {
         const corpidBind = { corpid: corpid }
         let queryResult = {core: {}, subcore: {}, extras: {}};
@@ -3082,7 +3070,7 @@ exports.executeMigration = async (req, res) => {
                     await laraigoQuery('SELECT FROM ufn_migration_core_delete($corpid)', bind = corpidBind);
                     clean = false;
                 }
-                queryResult.core = await migrationExecute(corpidBind, queryCore);
+                queryResult.core = await migrationExecute(corpidBind, queryCore, movewebhook);
             }
             if (modules.includes('subcore')) {
                 if (clean === true) {
@@ -3169,9 +3157,11 @@ exports.executeMigration = async (req, res) => {
                 }
                 queryResult.extras.whitelist = await migrationExecute(corpidBind, {whitelist: queryExtras.whitelist});
             }
+            logger.debug(queryResult, { meta: { function: 'executeMigration' }} );
             return res.status(200).json({ error: false, success: true, data: queryResult });
         }
         catch (error) {
+            logger.error(error, { meta: { function: 'executeMigration' }} );
             return res.status(500).json({ error: true, success: false, data: queryResult, msg: error.message });
         }
     }
