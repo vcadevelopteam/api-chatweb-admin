@@ -446,7 +446,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
     for (const [k,q] of Object.entries(queries)) {
         executeResult[k] = {success: true, errors: []};
         try {
-            if (['usr','person','conversation'].includes(k)) {
+            if (['usr','person','conversation','campaignmember'].includes(k)) {
                 if (q.id) {
                     // Ultimo registro en laraigo
                     max = await laraigoQuery(`SELECT MAX(${q.id}) FROM ${k}`);
@@ -592,7 +592,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 }
             }
 
-            if (['usr','person','conversation'].includes(k)) {
+            if (['usr','person','conversation','campaignmember'].includes(k)) {
                 if (q.id) {
                     // Actualizar secuencia
                     max = await laraigoQuery(`SELECT MAX(${q.id}) FROM ${k}`);
@@ -2337,7 +2337,7 @@ const querySubcoreCampaign = {
         id: 'campaignmemberid',
         sequence: 'campaignmemberseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, campaignid as zyxmecampaignid,
-        NULLIF(personid, 0) + $incpersonid as zyxmepersonid, campaignmemberid as zyxmecampaignmemberid,
+        NULLIF(personid, 0) + $incpersonid as zyxmepersonid, campaignmemberid + $inccampaignmemberid as zyxmecampaignmemberid,
         status, personcommunicationchannel, type, displayname, personcommunicationchannelowner,
         field1, field2, field3, field4, field5, field6, field7, field8, field9,
         field10, field11, field12, field13, field14, field15,
@@ -2391,7 +2391,7 @@ const querySubcoreCampaign = {
         id: 'campaignhistoryid',
         sequence: 'campaignhistoryseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, campaignid as zyxmecampaignid,
-        NULLIF(personid, 0) + $incpersonid as zyxmepersonid, campaignmemberid as zyxmecampaignmemberid,
+        NULLIF(personid, 0) + $incpersonid as zyxmepersonid, campaignmemberid + $inccampaignmemberid as zyxmecampaignmemberid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         success, message, rundate, NULLIF(conversationid, 0) + $incconversationid as zyxmeconversationid, attended
         FROM campaignhistory
@@ -2415,7 +2415,7 @@ const querySubcoreCampaign = {
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
             (SELECT campaignid FROM campaign WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignid = dt.zyxmecampaignid LIMIT 1),
             COALESCE(dt.zyxmepersonid, 0),
-            COALESCE((SELECT campaignmemberid FROM campaignmember WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignmemberid = dt.zyxmecampaignmemberid LIMIT 1), 0),
+            COALESCE(dt.zyxmecampaignmemberid, 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.success, dt.message, dt.rundate,
             COALESCE(dt.zyxmeconversationid, 0),
@@ -3198,6 +3198,7 @@ exports.executeMigration = async (req, res) => {
             incuserid: inc?.userid || 10000,
             incpersonid: inc?.personid || 10000000,
             incconversationid: inc?.conversationid || 10000000,
+            inccampaignmemberid: inc.campaignmemberid || 1000000,
         }
         let queryResult = {core: {}, subcore: {}, extras: {}};
         try {
