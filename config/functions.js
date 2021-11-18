@@ -1231,4 +1231,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_USERPASSWORD_UPDATE: {
+        query: "SELECT * FROM ufn_userpassword_update($userid, $pwd)",
+        module: "",
+        protected: "INSERT"
+    },
 }
