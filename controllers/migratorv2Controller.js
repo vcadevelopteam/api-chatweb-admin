@@ -441,24 +441,6 @@ const restructureVariable = (table, data) => {
     return data;
 }
 
-// const increments = {
-//     corpid: 100,
-//     orgid: 1000,
-//     botconfigurationid: 100,
-//     appintegrationid: 100,
-//     communicationchannelid: 1000,
-//     propertyid: 10000,
-//     userid: 10000,
-//     classificationid: 10000,
-//     personid: 1000000,
-//     conversationid: 100000,
-//     messagetemplateid: 10000,
-//     taskid: 100000,
-//     campaignid: 100000,
-//     campaignmemberid: 100000,
-//     chatblockverstionid: 1000
-// }
-
 const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
     let executeResult = {};
     for (const [k,q] of Object.entries(queries)) {
@@ -599,7 +581,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 if (q.id) {
                     // Actualizar secuencia
                     max = await laraigoQuery(`SELECT MAX(${q.id}) FROM ${k}`);
-                    await laraigoQuery(`ALTER SEQUENCE ${q.sequence} START ${max}`);
+                    await laraigoQuery(`ALTER SEQUENCE ${q.sequence} START ${max[0].max}`);
                     await laraigoQuery(`ALTER SEQUENCE ${q.sequence} RESTART`);
                 }
             }
@@ -1014,6 +996,7 @@ const queryCore = {
         WHERE usr = dt.username::CHARACTER VARYING`,
         insert: `INSERT INTO usr (
             zyxmecorpid,
+            userid,
             zyxmeuserid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             usr, doctype, docnum, pwd, firstname, lastname, email,
@@ -1028,6 +1011,7 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
+            dt.zyxmeuserid,
             dt.zyxmeuserid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.username::CHARACTER VARYING, dt.doctype, dt.docnum, dt.pwd, dt.firstname, dt.lastname, dt.email,
@@ -1218,8 +1202,8 @@ const queryCore = {
     },
     orguser: {
         select: `SELECT ous.corpid as zyxmecorpid, ous.orgid as zyxmeorgid,
-        CASE WHEN ous.type IN 'BOT' THEN 2
-        WHEN ous.type IN 'HOLDING' THEN 3
+        CASE WHEN ous.type = 'BOT' THEN 2
+        WHEN ous.type = 'HOLDING' THEN 3
         ELSE ous.userid + $incuserid
         END as zyxmeuserid,
         ous.roleid, ous.supervisor + $incuserid as supervisor,
@@ -1401,6 +1385,7 @@ const querySubcorePerson = {
             zyxmecorpid,
             corpid,
             orgid,
+            personid,
             zyxmepersonid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             groups, name, referringperson, referringpersonid, persontype, personstatus,
@@ -1418,6 +1403,7 @@ const querySubcorePerson = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            dt.zyxmepersonid,
             dt.zyxmepersonid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.groups, dt.name, dt.referringperson,
@@ -1678,6 +1664,7 @@ const querySubcoreConversation = {
             personid,
             personcommunicationchannel,
             communicationchannelid,
+            conversationid,
             zyxmeconversationid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             firstconversationdate, lastconversationdate,
@@ -1715,6 +1702,7 @@ const querySubcoreConversation = {
             COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
+            dt.zyxmeconversationid,
             dt.zyxmeconversationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.firstconversationdate, dt.lastconversationdate,
