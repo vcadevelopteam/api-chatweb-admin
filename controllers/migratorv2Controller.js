@@ -968,7 +968,8 @@ const queryCore = {
     usr: {
         id: 'userid',
         sequence: 'userseq',
-        select: `SELECT ous.corpid as zyxmecorpid, usr.userid + $incuserid as zyxmeuserid,
+        select: `SELECT DISTINCT ON(usr.userid) 
+        ous.corpid as zyxmecorpid, usr.userid + $incuserid as zyxmeuserid,
         usr.description, usr.status, usr.type, usr.createdate, usr.createby, usr.changedate, usr.changeby, usr.edit,
         usr.usr as username, usr.doctype, usr.docnum, usr.pwd, usr.firstname, usr.lastname, usr.email,
         usr.pwdchangefirstlogin, usr.facebookid, usr.googleid, usr.company,
@@ -1056,7 +1057,7 @@ const queryCore = {
     usertoken: {
         id: 'usertokenid',
         sequence: 'usertokenseq',
-        select: `SELECT ous.corpid as zyxmecorpid,
+        select: `SELECT (SELECT ous.corpid FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = ut.userid LIMIT 1) as zyxmecorpid,
         CASE WHEN ut.userid = 42 THEN 2
         WHEN ut.userid = 51 THEN 3
         ELSE ut.userid + $incuserid
@@ -1064,7 +1065,7 @@ const queryCore = {
         ut.description, ut.status, ut.type, ut.createdate, ut.createby, ut.changedate, ut.changeby, ut.edit,
         ut.token, ut.expirationproperty, ut.origin
         FROM usertoken ut
-        JOIN orguser ous ON ous.corpid = $corpid AND ous.userid = ut.userid
+        WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = ut.userid)
         ORDER BY ut.usertokenid
         LIMIT $limit
         OFFSET $offset`,
