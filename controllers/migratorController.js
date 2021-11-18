@@ -472,8 +472,8 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     selectResult = restructureVariable(k, selectResult);
                     selectResult = selectResult.map(s => ({
                         ...s,
-                        zyxmeconversationid: conversations.find(co => co.zyxmeconversationid)?.conversationid || s.zyxmeconversationid,
-                        zyxmepersonid: persons.find(pe => pe.zyxmepersonid)?.personid || s.zyxmepersonid
+                        zyxmeconversationid: conversations.find(co => co.zyxmeconversationid === s.zyxmeconversationid)?.conversationid || s.zyxmeconversationid,
+                        zyxmepersonid: persons.find(pe => pe.zyxmepersonid === s.zyxmepersonid)?.personid || s.zyxmepersonid
                     }))
                     let chunkArray = selectResult.reduce((chunk, item, index) => { 
                       const chunkIndex = Math.floor(index/perChunk)
@@ -1350,7 +1350,7 @@ const querySubcorePerson = {
             dt.zyxmepersonid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.groups, dt.name, dt.referringperson,
-            (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepersonid = dt.referringpersonid LIMIT 1),
+            dt.referringpersonid,
             dt.persontype, dt.personstatus,
             dt.phone, dt.email, dt.alternativephone, dt.alternativeemail,
             dt.firstcontact, dt.lastcontact,
