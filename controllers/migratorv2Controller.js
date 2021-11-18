@@ -2733,6 +2733,113 @@ const querySubcoreOthers = {
 			parameters text, channels character varying, color character varying, icontype character varying
         )`
     },
+    payment: {
+        id: 'paymentid',
+        sequence: 'paymentseq',
+        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
+        NULLIF(conversationid, 0) + $incconversationid as zyxmeconversationid, NULLIF(personid, 0) + $incpersonid as zyxmepersonid,
+        description, status, type, createdate, createby, changedate, changeby, edit,
+        pocketbook, tokenid, title, amount, currency, email, capture,
+        tokenjson, chargejson, refundjson, customerjson, cardjson, planjson, subscriptionjson
+        FROM payment
+        WHERE corpid = $corpid
+        ORDER BY paymentid
+        LIMIT $limit
+        OFFSET $offset`,
+        insert: `INSERT INTO payment (
+            zyxmecorpid,
+            corpid,
+            orgid,
+            conversationid,
+            personid,
+            description, status, type, createdate, createby, changedate, changeby, edit,
+            pocketbook, tokenid, title, amount, currency, email, capture,
+            tokenjson, chargejson, refundjson, customerjson, cardjson, planjson, subscriptionjson
+        )
+        SELECT
+            dt.zyxmecorpid,
+            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
+            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            dt.zyxmeconversationid,
+            dt.zyxmepersonid,
+            dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
+            dt.pocketbook, dt.tokenid, dt.title, dt.amount, dt.currency, dt.email, dt.capture,
+            dt.tokenjson, dt.chargejson, dt.refundjson, dt.customerjson, dt.cardjson, dt.planjson, dt.subscriptionjson
+        FROM json_populate_recordset(null::record, $datatable)
+        AS dt (
+            zyxmecorpid bigint, zyxmeorgid bigint,
+			zyxmeconversationid bigint,
+			zyxmepersonid bigint,
+			description character varying, status character varying, type character varying,
+			createdate timestamp without time zone, createby character varying,
+			changedate timestamp without time zone, changeby character varying,
+			edit boolean,
+			pocketbook text, tokenid text, title text, amount numeric, currency text, email text, capture boolean,
+			tokenjson text, chargejson text, refundjson text, customerjson text, cardjson text, planjson text, subscriptionjson text
+        )`
+    },
+    productivity: {
+        id: 'productivityid',
+        sequence: 'productivityseq',
+        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
+        CASE WHEN userid = 42 THEN 2
+        WHEN userid = 51 THEN 3
+        ELSE userid + $incuserid
+        END as zyxmeuserid,
+        description, status, type, createdate, createby, changedate, changeby, edit,
+        fullname, communicationchannel, communicationchanneldesc,
+        datestr, hours, hoursrange,
+        worktime::text, busytimewithinwork::text, freetimewithinwork::text, busytimeoutsidework::text,
+        onlinetime::text, idletime::text, qtytickets, qtyconnection, qtydisconnection
+        FROM productivity
+        WHERE corpid = $corpid
+        ORDER BY productivityid
+        LIMIT $limit
+        OFFSET $offset`,
+        insert: `INSERT INTO productivity (
+            zyxmecorpid,
+            corpid,
+            orgid,
+            userid,
+            description, status, type, createdate, createby, changedate, changeby, edit,
+            fullname, communicationchannel, communicationchanneldesc,
+            datestr, hours, hoursrange,
+            worktime, busytimewithinwork, freetimewithinwork, busytimeoutsidework,
+            onlinetime, idletime, qtytickets, qtyconnection, qtydisconnection
+        )
+        SELECT
+            dt.zyxmecorpid,
+            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
+            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            dt.zyxmeuserid,
+            dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
+            dt.fullname,
+            (
+                SELECT string_agg(communicationchannelid::text,',')
+                FROM communicationchannel
+                WHERE zyxmecorpid = dt.zyxmecorpid AND 
+                zyxmecommunicationchannelid IN (SELECT UNNEST(string_to_array(dt.communicationchannel,',')::BIGINT[]))
+            ),
+            dt.communicationchanneldesc,
+            dt.datestr, dt.hours, dt.hoursrange,
+            dt.worktime, dt.busytimewithinwork, dt.freetimewithinwork, dt.busytimeoutsidework,
+            dt.onlinetime, dt.idletime, dt.qtytickets, dt.qtyconnection, dt.qtydisconnection
+        FROM json_populate_recordset(null::record, $datatable)
+        AS dt (
+            zyxmecorpid bigint, zyxmeorgid bigint,
+			zyxmeuserid bigint,
+			description character varying, status character varying, type character varying,
+			createdate timestamp without time zone, createby character varying,
+			changedate timestamp without time zone, changeby character varying,
+			edit boolean,
+			fullname text,
+			communicationchannel character varying,
+			communicationchanneldesc text,
+			datestr text, hours text, hoursrange text,
+			worktime interval, busytimewithinwork interval, freetimewithinwork interval, busytimeoutsidework interval,
+			onlinetime interval, idletime interval, qtytickets bigint, qtyconnection bigint, qtydisconnection bigint
+        )`
+    },
 }
 
 const queryExtras = {
@@ -2915,113 +3022,6 @@ const queryExtras = {
 			latitude double precision, longitude double precision, googleurl character varying
         )`
     },
-    payment: {
-        id: 'paymentid',
-        sequence: 'paymentseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
-        NULLIF(conversationid, 0) + $incconversationid as zyxmeconversationid, NULLIF(personid, 0) + $incpersonid as zyxmepersonid,
-        description, status, type, createdate, createby, changedate, changeby, edit,
-        pocketbook, tokenid, title, amount, currency, email, capture,
-        tokenjson, chargejson, refundjson, customerjson, cardjson, planjson, subscriptionjson
-        FROM payment
-        WHERE corpid = $corpid
-        ORDER BY paymentid
-        LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO payment (
-            zyxmecorpid,
-            corpid,
-            orgid,
-            conversationid,
-            personid,
-            description, status, type, createdate, createby, changedate, changeby, edit,
-            pocketbook, tokenid, title, amount, currency, email, capture,
-            tokenjson, chargejson, refundjson, customerjson, cardjson, planjson, subscriptionjson
-        )
-        SELECT
-            dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            dt.zyxmeconversationid,
-            dt.zyxmepersonid,
-            dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
-            dt.pocketbook, dt.tokenid, dt.title, dt.amount, dt.currency, dt.email, dt.capture,
-            dt.tokenjson, dt.chargejson, dt.refundjson, dt.customerjson, dt.cardjson, dt.planjson, dt.subscriptionjson
-        FROM json_populate_recordset(null::record, $datatable)
-        AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
-			zyxmeconversationid bigint,
-			zyxmepersonid bigint,
-			description character varying, status character varying, type character varying,
-			createdate timestamp without time zone, createby character varying,
-			changedate timestamp without time zone, changeby character varying,
-			edit boolean,
-			pocketbook text, tokenid text, title text, amount numeric, currency text, email text, capture boolean,
-			tokenjson text, chargejson text, refundjson text, customerjson text, cardjson text, planjson text, subscriptionjson text
-        )`
-    },
-    productivity: {
-        id: 'productivityid',
-        sequence: 'productivityseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
-        CASE WHEN userid = 42 THEN 2
-        WHEN userid = 51 THEN 3
-        ELSE userid + $incuserid
-        END as zyxmeuserid,
-        description, status, type, createdate, createby, changedate, changeby, edit,
-        fullname, communicationchannel, communicationchanneldesc,
-        datestr, hours, hoursrange,
-        worktime::text, busytimewithinwork::text, freetimewithinwork::text, busytimeoutsidework::text,
-        onlinetime::text, idletime::text, qtytickets, qtyconnection, qtydisconnection
-        FROM productivity
-        WHERE corpid = $corpid
-        ORDER BY productivityid
-        LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO productivity (
-            zyxmecorpid,
-            corpid,
-            orgid,
-            userid,
-            description, status, type, createdate, createby, changedate, changeby, edit,
-            fullname, communicationchannel, communicationchanneldesc,
-            datestr, hours, hoursrange,
-            worktime, busytimewithinwork, freetimewithinwork, busytimeoutsidework,
-            onlinetime, idletime, qtytickets, qtyconnection, qtydisconnection
-        )
-        SELECT
-            dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            dt.zyxmeuserid,
-            dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
-            dt.fullname,
-            (
-                SELECT string_agg(communicationchannelid::text,',')
-                FROM communicationchannel
-                WHERE zyxmecorpid = dt.zyxmecorpid AND 
-                zyxmecommunicationchannelid IN (SELECT UNNEST(string_to_array(dt.communicationchannel,',')::BIGINT[]))
-            ),
-            dt.communicationchanneldesc,
-            dt.datestr, dt.hours, dt.hoursrange,
-            dt.worktime, dt.busytimewithinwork, dt.freetimewithinwork, dt.busytimeoutsidework,
-            dt.onlinetime, dt.idletime, dt.qtytickets, dt.qtyconnection, dt.qtydisconnection
-        FROM json_populate_recordset(null::record, $datatable)
-        AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
-			zyxmeuserid bigint,
-			description character varying, status character varying, type character varying,
-			createdate timestamp without time zone, createby character varying,
-			changedate timestamp without time zone, changeby character varying,
-			edit boolean,
-			fullname text,
-			communicationchannel character varying,
-			communicationchanneldesc text,
-			datestr text, hours text, hoursrange text,
-			worktime interval, busytimewithinwork interval, freetimewithinwork interval, busytimeoutsidework interval,
-			onlinetime interval, idletime interval, qtytickets bigint, qtyconnection bigint, qtydisconnection bigint
-        )`
-    },
     reporttemplate: {
         id: 'reporttemplateid',
         sequence: 'reporttemplateseq',
@@ -3190,7 +3190,6 @@ exports.executeMigration = async (req, res) => {
                     clean = false;
                 }
                 queryResult.core = await migrationExecute(corpidBind, queryCore, movewebhook);
-                await laraigoQuery(`ALTER SEQUENCE u`)
             }
             if (modules.includes('subcore')) {
                 if (clean === true) {
@@ -3211,8 +3210,6 @@ exports.executeMigration = async (req, res) => {
                 queryResult.extras.inappropriatewords = await migrationExecute(corpidBind, {inappropriatewords: queryExtras.inappropriatewords});
                 queryResult.extras.label = await migrationExecute(corpidBind, {label: queryExtras.label});
                 queryResult.extras.location = await migrationExecute(corpidBind, {location: queryExtras.location});
-                queryResult.extras.payment = await migrationExecute(corpidBind, {payment: queryExtras.payment});
-                queryResult.extras.productivity = await migrationExecute(corpidBind, {productivity: queryExtras.productivity});
                 queryResult.extras.reporttemplate = await migrationExecute(corpidBind, {reporttemplate: queryExtras.reporttemplate});
                 queryResult.extras.sla = await migrationExecute(corpidBind, {sla: queryExtras.sla});
                 queryResult.extras.whitelist = await migrationExecute(corpidBind, {whitelist: queryExtras.whitelist});
@@ -3246,18 +3243,6 @@ exports.executeMigration = async (req, res) => {
                     await laraigoQuery('DELETE FROM "location" WHERE zyxmecorpid = $corpid', bind = corpidBind);
                 }
                 queryResult.extras.location = await migrationExecute(corpidBind, {location: queryExtras.location});
-            }
-            if (!modules.includes('extras') && modules.includes('extras.payment')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "payment" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
-                queryResult.extras.payment = await migrationExecute(corpidBind, {payment: queryExtras.payment});
-            }
-            if (!modules.includes('extras') && modules.includes('extras.productivity')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "productivity" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
-                queryResult.extras.productivity = await migrationExecute(corpidBind, {productivity: queryExtras.productivity});
             }
             if (!modules.includes('extras') && modules.includes('extras.reporttemplate')) {
                 if (clean === true) {
