@@ -400,7 +400,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORG_INS: {
-        query: "SELECT * FROM ufn_org_ins($corpid,$id,$description,$status,$type,$username,$operation,$email,$password,$port,$host,$default_credentials,$ssl, $currency)",
+        query: "SELECT * FROM ufn_org_ins($corpid,$id,$description,$status,$type,$username,$operation,$email,$password,$port,$host,$default_credentials,$ssl, $private_mail, $currency)",
         module: "/extras/quickreplies",
         protected: "INSERT"
     },
@@ -1232,7 +1232,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_USERPASSWORD_UPDATE: {
-        query: "SELECT * FROM ufn_userpassword_update($userid, $pwd)",
+        query: "SELECT * FROM ufn_userpassword_update($userid, $password)",
         module: "",
         protected: "INSERT"
     },
