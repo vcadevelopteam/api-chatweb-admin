@@ -453,9 +453,24 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     corpidBind[`inc${q.id}`] = max[0].max + corpidBind[`inc${q.id}`];
                 }
             }
+
+            if (k === 'conversation') {
+                await laraigoQuery(`DROP INDEX public.idx_conversation_corpid_orgid_conversationid`);
+                await laraigoQuery(`DROP INDEX public.idx_conversation_corpid_orgid_finishdate`);
+                await laraigoQuery(`DROP INDEX public.idx_conversation_corpid_orgid_handoffdate`);
+                await laraigoQuery(`DROP INDEX public.idx_conversation_corpid_orgid_startdate`);
+                await laraigoQuery(`DROP INDEX public.idx_conversation_status`);
+            }
+
+            if (k === 'interaction') {
+                await laraigoQuery(`DROP INDEX IF EXISTS public.idx_interaction_conversationid`);
+                await laraigoQuery(`DROP INDEX IF EXISTS public.idx_interaction_corpid_orgid_createdate_notlog`);
+                await laraigoQuery(`DROP INDEX IF EXISTS public.idx_interaction_corpid_orgid_interactionid`);
+            }
+
             let limit = 10000;
             let counter = 0;
-            const perChunk = 1000
+            const perChunk = 1000;
             while (true) {
                 let selectStartTime = process.hrtime();
                 let selectResult = await zyxmeQuery(q.select.replace('\n',' '), {...corpidBind, offset: counter * limit, limit});
@@ -584,6 +599,20 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     await laraigoQuery(`ALTER SEQUENCE ${q.sequence} START ${max[0].max}`);
                     await laraigoQuery(`ALTER SEQUENCE ${q.sequence} RESTART`);
                 }
+            }
+
+            if (k === 'conversation') {
+                await laraigoQuery(`CREATE INDEX idx_conversation_corpid_orgid_conversationid ON public.conversation USING btree (corpid ASC NULLS LAST, orgid ASC NULLS LAST, conversationid ASC NULLS LAST)`);
+                await laraigoQuery(`CREATE INDEX idx_conversation_corpid_orgid_finishdate ON public.conversation USING btree (corpid ASC NULLS LAST, orgid ASC NULLS LAST, finishdate DESC NULLS FIRST)`);
+                await laraigoQuery(`CREATE INDEX idx_conversation_corpid_orgid_handoffdate ON public.conversation USING btree (corpid ASC NULLS LAST, orgid ASC NULLS LAST, handoffdate DESC NULLS FIRST)`);
+                await laraigoQuery(`CREATE INDEX idx_conversation_corpid_orgid_startdate ON public.conversation USING btree (corpid ASC NULLS LAST, orgid ASC NULLS LAST, startdate DESC NULLS FIRST)`);
+                await laraigoQuery(`CREATE INDEX idx_conversation_status ON public.conversation USING btree (status COLLATE pg_catalog."default" ASC NULLS LAST)`);
+            }
+
+            if (k === 'interaction') {
+                await laraigoQuery(`CREATE INDEX IF NOT EXISTS idx_interaction_conversationid ON public.interaction USING btree (conversationid ASC NULLS LAST)`);
+                await laraigoQuery(`CREATE INDEX IF NOT EXISTS idx_interaction_corpid_orgid_createdate_notlog ON public.interaction USING btree (corpid ASC NULLS LAST, orgid ASC NULLS LAST, createdate ASC NULLS LAST) WHERE interactiontype::text <> 'LOG'::text`);
+                await laraigoQuery(`CREATE INDEX IF NOT EXISTS idx_interaction_corpid_orgid_interactionid ON public.interaction USING btree (corpid ASC NULLS LAST, orgid ASC NULLS LAST, interactionid ASC NULLS LAST)`);
             }
         } catch (error) {
             logger.error(error, { meta: { function: 'migrationExecute', table: k }} );
