@@ -456,7 +456,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 WHERE zyxmecorpid = $corpid`, corpidBind);
             let limit = 10000;
             let counter = 0;
-            const perChunk = 5000
+            const perChunk = 1000
             while (true) {
                 let selectStartTime = process.hrtime();
                 let selectResult = await zyxmeQuery(q.select.replace('\n',' '), {...corpidBind, offset: counter * limit, limit});
