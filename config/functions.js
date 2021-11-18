@@ -1232,7 +1232,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_USERPASSWORD_UPDATE: {
-        query: "SELECT * FROM ufn_userpassword_update($userid, $pwd)",
+        query: "SELECT * FROM ufn_userpassword_update($userid, $password)",
         module: "",
         protected: "INSERT"
     },
