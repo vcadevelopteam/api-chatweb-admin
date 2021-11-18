@@ -455,7 +455,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
             }
             let limit = 10000;
             let counter = 0;
-            const perChunk = 5000
+            const perChunk = 1000
             while (true) {
                 let selectStartTime = process.hrtime();
                 let selectResult = await zyxmeQuery(q.select.replace('\n',' '), {...corpidBind, offset: counter * limit, limit});
@@ -984,8 +984,7 @@ const queryCore = {
         LIMIT $limit
         OFFSET $offset`,
         preprocess: `UPDATE usr
-        SET zyxmecorpid = dt.zyxmecorpid,
-        zyxmeuserid = dt.zyxmeuserid
+        SET zyxmeuserid = dt.zyxmeuserid
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
             zyxmecorpid bigint,
