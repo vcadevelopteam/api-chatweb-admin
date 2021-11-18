@@ -1094,14 +1094,14 @@ const queryCore = {
     userstatus: {
         id: 'userstatusid',
         sequence: 'userstatusseq',
-        select: `SELECT ous.corpid as zyxmecorpid,
+        select: `SELECT (SELECT ous.corpid FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = us.userid LIMIT 1) as zyxmecorpid,
         CASE WHEN us.userid = 42 THEN 2
         WHEN us.userid = 51 THEN 3
         ELSE us.userid + $incuserid
         END as zyxmeuserid,
         us.description, us.status, us.type, us.createdate, us.createby, us.changedate, us.changeby, us.edit
         FROM userstatus us
-        JOIN orguser ous ON ous.corpid = $corpid AND ous.userid = us.userid
+        WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = us.userid)
         ORDER BY us.userstatusid
         LIMIT $limit
         OFFSET $offset`,
