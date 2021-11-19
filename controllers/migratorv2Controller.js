@@ -446,18 +446,31 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
     for (const [k,q] of Object.entries(queries)) {
         executeResult[k] = {success: true, errors: []};
         try {
-            if (['usr','person','conversation'].includes(k)) {
+            let migrationstatus = await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind);
+            let running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
+            if (!running) {
+                break;
+            }
+
+            if (['usr','person','conversation','campaignmember'].includes(k)) {
                 if (q.id) {
                     // Ultimo registro en laraigo
                     max = await laraigoQuery(`SELECT MAX(${q.id}) FROM ${k}`);
                     corpidBind[`inc${q.id}`] = max[0].max + corpidBind[`inc${q.id}`];
                 }
             }
+
             let limit = 10000;
             let counter = 0;
-            const perChunk = 5000
+            const perChunk = 1000;
             while (true) {
-                let selectStartTime = process.hrtime();
+                migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind) : migrationstatus;
+                running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
+                if (!running) {
+                    break;
+                }
+                
+            let selectStartTime = process.hrtime();
                 let selectResult = await zyxmeQuery(q.select.replace('\n',' '), {...corpidBind, offset: counter * limit, limit});
                 let selectElapsedSeconds = parseHrtimeToSeconds(process.hrtime(selectStartTime));
                 if (selectResult instanceof Array) {
@@ -470,12 +483,12 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     selectResult = renameVariable(k, selectResult);
                     selectResult = restructureVariable(k, selectResult);
                     let chunkArray = selectResult.reduce((chunk, item, index) => { 
-                      const chunkIndex = Math.floor(index/perChunk)
-                      if(!chunk[chunkIndex]) {
+                        const chunkIndex = Math.floor(index/perChunk)
+                        if(!chunk[chunkIndex]) {
                         chunk[chunkIndex] = []
-                      }
-                      chunk[chunkIndex].push(item)
-                      return chunk
+                        }
+                        chunk[chunkIndex].push(item)
+                        return chunk
                     }, []);
     
                     for (const chunk of chunkArray) {
@@ -555,6 +568,12 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 }
             }
 
+            migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind) : migrationstatus;
+            running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
+            if (!running) {
+                break;
+            }
+
             if (q.update) {
                 let startTime = process.hrtime();
                 try {
@@ -577,7 +596,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 }
             }
 
-            if (['usr','person','conversation'].includes(k)) {
+            migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind) : migrationstatus;
+            running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
+            if (!running) {
+                break;
+            }
+
+            if (['usr','person','conversation','campaignmember'].includes(k)) {
                 if (q.id) {
                     // Actualizar secuencia
                     max = await laraigoQuery(`SELECT MAX(${q.id}) FROM ${k}`);
@@ -642,14 +667,14 @@ const queryCore = {
             corpid,
             zyxmeorgid,
             description, status, type, createdate, createby, changedate, changeby, edit,
-            timezoneoffset, timezone, currency, country, ready
+            timezoneoffset, timezone, currency, country
         )
         SELECT
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             dt.zyxmeorgid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
-            -5, 'America/Lima', 'PEN', 'PE', false
+            -5, 'America/Lima', 'PEN', 'PE'
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
             zyxmecorpid bigint, zyxmeorgid bigint,
@@ -968,7 +993,8 @@ const queryCore = {
     usr: {
         id: 'userid',
         sequence: 'userseq',
-        select: `SELECT ous.corpid as zyxmecorpid, usr.userid + $incuserid as zyxmeuserid,
+        select: `SELECT DISTINCT ON(usr.userid) 
+        ous.corpid as zyxmecorpid, usr.userid + $incuserid as zyxmeuserid,
         usr.description, usr.status, usr.type, usr.createdate, usr.createby, usr.changedate, usr.changeby, usr.edit,
         usr.usr as username, usr.doctype, usr.docnum, usr.pwd, usr.firstname, usr.lastname, usr.email,
         usr.pwdchangefirstlogin, usr.facebookid, usr.googleid, usr.company,
@@ -984,8 +1010,7 @@ const queryCore = {
         LIMIT $limit
         OFFSET $offset`,
         preprocess: `UPDATE usr
-        SET zyxmecorpid = dt.zyxmecorpid,
-        zyxmeuserid = dt.zyxmeuserid
+        SET zyxmeuserid = dt.zyxmeuserid
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
             zyxmecorpid bigint,
@@ -1057,7 +1082,7 @@ const queryCore = {
     usertoken: {
         id: 'usertokenid',
         sequence: 'usertokenseq',
-        select: `SELECT ous.corpid as zyxmecorpid,
+        select: `SELECT (SELECT ous.corpid FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = ut.userid LIMIT 1) as zyxmecorpid,
         CASE WHEN ut.userid = 42 THEN 2
         WHEN ut.userid = 51 THEN 3
         ELSE ut.userid + $incuserid
@@ -1065,7 +1090,7 @@ const queryCore = {
         ut.description, ut.status, ut.type, ut.createdate, ut.createby, ut.changedate, ut.changeby, ut.edit,
         ut.token, ut.expirationproperty, ut.origin
         FROM usertoken ut
-        JOIN orguser ous ON ous.corpid = $corpid AND ous.userid = ut.userid
+        WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = ut.userid)
         ORDER BY ut.usertokenid
         LIMIT $limit
         OFFSET $offset`,
@@ -1094,14 +1119,14 @@ const queryCore = {
     userstatus: {
         id: 'userstatusid',
         sequence: 'userstatusseq',
-        select: `SELECT ous.corpid as zyxmecorpid,
+        select: `SELECT (SELECT ous.corpid FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = us.userid LIMIT 1) as zyxmecorpid,
         CASE WHEN us.userid = 42 THEN 2
         WHEN us.userid = 51 THEN 3
         ELSE us.userid + $incuserid
         END as zyxmeuserid,
         us.description, us.status, us.type, us.createdate, us.createby, us.changedate, us.changeby, us.edit
         FROM userstatus us
-        JOIN orguser ous ON ous.corpid = $corpid AND ous.userid = us.userid
+        WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = us.userid)
         ORDER BY us.userstatusid
         LIMIT $limit
         OFFSET $offset`,
@@ -1730,8 +1755,8 @@ const querySubcoreConversation = {
             dt.wnluusersentiment, dt.wnluusersadness, dt.wnluuserjoy, dt.wnluuserfear, dt.wnluuserdisgust, dt.wnluuseranger,
             dt.wnlupersonsentiment, dt.wnlupersonsadness, dt.wnlupersonjoy, dt.wnlupersonfear, dt.wnlupersondisgust, dt.wnlupersonanger,
             dt.enquiries, dt.classification, dt.firstusergroup, dt.emailalertsent, dt.tdatime,
-            dt.interactionquantity, dt.interactionpersonquantity, dt.interactionbotquantity, dt.interactionasesorquantity,
-            dt.interactionaiquantity, dt.interactionaipersonquantity, dt.interactionaibotquantity, dt.interactionaiasesorquantity,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
             dt.handoffafteransweruser, dt.lastseendate, dt.closecomment
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
@@ -2016,7 +2041,7 @@ const querySubcoreConversation = {
         sequence: 'interactionseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, NULLIF(personid, 0) + $incpersonid as zyxmepersonid,
         personcommunicationchannel, communicationchannelid as zyxmecommunicationchannelid,
-        conversationid as zyxmeconversationid,
+        conversationid + $incconversationid as zyxmeconversationid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         interactiontext,
         CASE WHEN userid = 42 THEN 2
@@ -2116,8 +2141,8 @@ const querySubcoreConversation = {
         id: 'surveyansweredid',
         sequence: 'surveyansweredseq',
         select: `SELECT sa.corpid as zyxmecorpid, sa.orgid as zyxmeorgid, NULLIF(sa.conversationid, 0) + $incconversationid as zyxmeconversationid,
-        sa.description, sa.status, COALESCE(split_part(pr.propertyname, 'NUMEROPREGUNTA', 1), 'NINGUNO') as type, sa.createdate, sa.createby, sa.changedate, sa.changeby, sa.edit,
-        sa.answer, sa.answervalue, sa.comment,
+        sa.description, sa.status, COALESCE(split_part(pr.propertyname, 'NUMEROPREGUNTA', 1), CONCAT('QUESTION', sq.questionnumber::text)) as type, sa.createdate, sa.createby, sa.changedate, sa.changeby, sa.edit,
+        sa.answer, CASE WHEN sa.answer ~ '^[0-9]+$' AND sa.answervalue = 0 THEN sa.answer::integer ELSE sa.answervalue END as answervalue, sa.comment,
         sq.question, (SELECT GREATEST(COUNT(q.a)::text, MAX(q.a[1])) FROM (SELECT regexp_matches(sq.question,'[\\d𝟏𝟐𝟑𝟒𝟓]+','g') a) q)::BIGINT scale
         FROM surveyanswered sa
         LEFT JOIN surveyquestion sq ON sq.corpid = sa.corpid AND sq.orgid = sa.orgid AND sq.surveyquestionid = sa.surveyquestionid
@@ -2144,14 +2169,14 @@ const querySubcoreConversation = {
             dt.description, dt.status, dt.type::CHARACTER VARYING, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.answer, dt.answervalue, dt.comment,
             dt.question, dt.scale::BIGINT,
-            CASE WHEN dt.type IN ('FCR','FIX') THEN '1'
+            CASE WHEN dt.type IN ('FCR','FIX') OR dt.scale IN (2) THEN '1'
             WHEN dt.type NOT IN ('FCR','FIX') AND dt.scale IN (9,10) THEN '9,10'
             WHEN dt.type NOT IN ('FCR','FIX') AND dt.scale IN (5) THEN '4,5'
             END,
             CASE WHEN dt.scale IN (9,10) THEN '7,8'
             WHEN dt.type <> 'FCR' AND dt.scale IN (5) THEN '3'
             END,
-            CASE WHEN dt.type IN ('FCR','FIX') THEN '0,2'
+            CASE WHEN dt.type IN ('FCR','FIX') OR dt.scale IN (2) THEN '0,2'
             WHEN dt.type NOT IN ('FCR','FIX') AND dt.scale IN (9,10) THEN '1,2,3,4,5,6'
             WHEN dt.type NOT IN ('FCR','FIX') AND dt.scale IN (5) THEN '1,2'
             END,
@@ -2237,8 +2262,8 @@ const querySubcoreCampaign = {
         message, communicationchannelid as zyxmecommunicationchannelid, hsmid as messagetemplatename, hsmnamespace as messagetemplatenamespace,
         counter, lastrundate, usergroup, subject,
         hsmtemplateid as zyxmemessagetemplateid,
-        REGEXP_REPLACE(REGEXP_REPLACE(REGEXP_REPLACE(NULLIF(hsmheader,''), '\\\\+\\"', '"', 'g'),'^\\"+\\{','{','g'),'\\}\\"+dt.','}','g') as messagetemplateheader,
-        REGEXP_REPLACE(REGEXP_REPLACE(REGEXP_REPLACE(NULLIF(hsmbuttons,''), '\\\\+\\"', '"', 'g'),'^\\"+\\[','[','g'),'\\]\\"+dt.',']','g') as messagetemplatebuttons,
+        REGEXP_REPLACE(REGEXP_REPLACE(REGEXP_REPLACE(NULLIF(hsmheader,''), '\\\\+\\"', '"', 'g'),'^\\"+\\{','{','g'),'\\}\\"+$','}','g') as messagetemplateheader,
+        REGEXP_REPLACE(REGEXP_REPLACE(REGEXP_REPLACE(NULLIF(hsmbuttons,''), '\\\\+\\"', '"', 'g'),'^\\"+\\[','[','g'),'\\]\\"+$',']','g') as messagetemplatebuttons,
         executiontype, batchjson, taskid as zyxmetaskid, fields
         FROM campaign
         WHERE corpid = $corpid
@@ -2308,7 +2333,7 @@ const querySubcoreCampaign = {
         id: 'campaignmemberid',
         sequence: 'campaignmemberseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, campaignid as zyxmecampaignid,
-        NULLIF(personid, 0) + $incpersonid as zyxmepersonid, campaignmemberid as zyxmecampaignmemberid,
+        NULLIF(personid, 0) + $incpersonid as zyxmepersonid, campaignmemberid + $inccampaignmemberid as zyxmecampaignmemberid,
         status, personcommunicationchannel, type, displayname, personcommunicationchannelowner,
         field1, field2, field3, field4, field5, field6, field7, field8, field9,
         field10, field11, field12, field13, field14, field15,
@@ -2362,7 +2387,7 @@ const querySubcoreCampaign = {
         id: 'campaignhistoryid',
         sequence: 'campaignhistoryseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, campaignid as zyxmecampaignid,
-        NULLIF(personid, 0) + $incpersonid as zyxmepersonid, campaignmemberid as zyxmecampaignmemberid,
+        NULLIF(personid, 0) + $incpersonid as zyxmepersonid, campaignmemberid + $inccampaignmemberid as zyxmecampaignmemberid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         success, message, rundate, NULLIF(conversationid, 0) + $incconversationid as zyxmeconversationid, attended
         FROM campaignhistory
@@ -2386,7 +2411,7 @@ const querySubcoreCampaign = {
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
             (SELECT campaignid FROM campaign WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignid = dt.zyxmecampaignid LIMIT 1),
             COALESCE(dt.zyxmepersonid, 0),
-            COALESCE((SELECT campaignmemberid FROM campaignmember WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignmemberid = dt.zyxmecampaignmemberid LIMIT 1), 0),
+            COALESCE(dt.zyxmecampaignmemberid, 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.success, dt.message, dt.rundate,
             COALESCE(dt.zyxmeconversationid, 0),
@@ -3169,8 +3194,25 @@ exports.executeMigration = async (req, res) => {
             incuserid: inc?.userid || 10000,
             incpersonid: inc?.personid || 10000000,
             incconversationid: inc?.conversationid || 10000000,
+            inccampaignmemberid: inc.campaignmemberid || 1000000,
         }
         let queryResult = {core: {}, subcore: {}, extras: {}};
+        await zyxmeQuery(`CREATE TABLE IF NOT EXISTS migration (corpid bigint, run boolean, params jsonb, result jsonb, startdate timestamp without time zone, enddate timestamp without time zone)`);
+        let migrationstatus = await zyxmeQuery(`SELECT corpid FROM migration WHERE corpid = $corpid`, bind = {corpid: corpid});
+        if (migrationstatus.length > 0) {
+            await zyxmeQuery(`UPDATE migration SET run = $run, params = $params, startdate = NOW() WHERE corpid = $corpid`, bind = {
+                corpid: corpid,
+                run: true,
+                params: req.body
+            });
+        }
+        else {
+            await zyxmeQuery(`INSERT INTO migration (corpid, run, params, startdate) SELECT $corpid, $run, $params, NOW()`, bind = {
+                corpid: corpid,
+                run: true,
+                params: req.body
+            });
+        }
         try {
             if (modules.includes('core')) {
                 if (clean === true) {
@@ -3250,6 +3292,11 @@ exports.executeMigration = async (req, res) => {
                 }
                 queryResult.extras.whitelist = await migrationExecute(corpidBind, {whitelist: queryExtras.whitelist});
             }
+            await zyxmeQuery(`UPDATE migration SET run = $run, result = $result, finishdate = NOW() WHERE corpid = $corpid`, bind = {
+                corpid: corpid,
+                run: false,
+                result: queryResult
+            });
             logger.debug(queryResult, { meta: { function: 'executeMigration' }} );
             return res.status(200).json({ error: false, success: true, data: queryResult });
         }
