@@ -1755,8 +1755,8 @@ const querySubcoreConversation = {
             dt.wnluusersentiment, dt.wnluusersadness, dt.wnluuserjoy, dt.wnluuserfear, dt.wnluuserdisgust, dt.wnluuseranger,
             dt.wnlupersonsentiment, dt.wnlupersonsadness, dt.wnlupersonjoy, dt.wnlupersonfear, dt.wnlupersondisgust, dt.wnlupersonanger,
             dt.enquiries, dt.classification, dt.firstusergroup, dt.emailalertsent, dt.tdatime,
-            dt.interactionquantity, dt.interactionpersonquantity, dt.interactionbotquantity, dt.interactionasesorquantity,
-            dt.interactionaiquantity, dt.interactionaipersonquantity, dt.interactionaibotquantity, dt.interactionaiasesorquantity,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
             dt.handoffafteransweruser, dt.lastseendate, dt.closecomment
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
