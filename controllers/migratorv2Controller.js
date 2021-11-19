@@ -2045,7 +2045,7 @@ const querySubcoreConversation = {
         sequence: 'interactionseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, NULLIF(personid, 0) + $incpersonid as zyxmepersonid,
         personcommunicationchannel, communicationchannelid as zyxmecommunicationchannelid,
-        conversationid as zyxmeconversationid,
+        conversationid + $incconversationid as zyxmeconversationid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         interactiontext,
         CASE WHEN userid = 42 THEN 2
