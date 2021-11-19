@@ -2145,7 +2145,7 @@ const querySubcoreConversation = {
         id: 'surveyansweredid',
         sequence: 'surveyansweredseq',
         select: `SELECT sa.corpid as zyxmecorpid, sa.orgid as zyxmeorgid, NULLIF(sa.conversationid, 0) + $incconversationid as zyxmeconversationid,
-        sa.description, sa.status, COALESCE(split_part(pr.propertyname, 'NUMEROPREGUNTA', 1), 'NINGUNO') as type, sa.createdate, sa.createby, sa.changedate, sa.changeby, sa.edit,
+        sa.description, sa.status, COALESCE(split_part(pr.propertyname, 'NUMEROPREGUNTA', 1), CONCAT('QUESTION', sq.questionnumber::text)) as type, sa.createdate, sa.createby, sa.changedate, sa.changeby, sa.edit,
         sa.answer, sa.answervalue, sa.comment,
         sq.question, (SELECT GREATEST(COUNT(q.a)::text, MAX(q.a[1])) FROM (SELECT regexp_matches(sq.question,'[\\d𝟏𝟐𝟑𝟒𝟓]+','g') a) q)::BIGINT scale
         FROM surveyanswered sa
