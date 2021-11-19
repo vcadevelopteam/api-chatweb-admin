@@ -53,6 +53,7 @@ exports.authenticate = async (req, res) => {
         const tokenzyx = uuidv4();
 
         const dataSesion = {
+            corpid: user.corpid,
             userid: user.userid,
             orgid: user.orgid,
             username: usr,
@@ -63,15 +64,16 @@ exports.authenticate = async (req, res) => {
             type: 'LOGIN',
             description: null
         };
-
+        let notifications = [];
         if (user.status === 'ACTIVO') {
             const resConnection = await tf.executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...user, propertyname: 'CONEXIONAUTOMATICAINBOX' })
 
             const automaticConnection = validateResProperty(resConnection, 'bool');
 
-            await Promise.all([
+            const resList = await Promise.all([
                 tf.executesimpletransaction("UFN_USERTOKEN_INS", dataSesion),
                 tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", dataSesion),
+                tf.executesimpletransaction("UFN_LEADACTIVITY_DUEDATE_SEL", dataSesion),
                 ...(automaticConnection ? [tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", {
                     ...user,
                     type: 'INBOX',
@@ -81,7 +83,10 @@ exports.authenticate = async (req, res) => {
                     username: user.usr
                 })] : [])
             ]);
-            
+
+            if (resList[2] instanceof Array && resList[2].length > 0) {
+                notifications = resList[2];
+            }
             user.token = tokenzyx;
             delete user.pwd;
 
@@ -90,7 +95,7 @@ exports.authenticate = async (req, res) => {
                 delete user.corpid;
                 delete user.orgid;
                 delete user.userid;
-                return res.json({ data: { ...user, token, automaticConnection }, success: true });
+                return res.json({ data: { ...user, token, automaticConnection, notifications }, success: true });
             })
         } else if (user.status === 'PENDIENTE') {
             return res.status(401).json({ code: errors.LOGIN_USER_PENDING })
