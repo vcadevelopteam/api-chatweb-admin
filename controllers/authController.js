@@ -53,7 +53,6 @@ exports.authenticate = async (req, res) => {
         const tokenzyx = uuidv4();
 
         const dataSesion = {
-            corpid: user.corpid,
             userid: user.userid,
             orgid: user.orgid,
             username: usr,
@@ -73,7 +72,6 @@ exports.authenticate = async (req, res) => {
             const resList = await Promise.all([
                 tf.executesimpletransaction("UFN_USERTOKEN_INS", dataSesion),
                 tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", dataSesion),
-                tf.executesimpletransaction("UFN_LEADACTIVITY_DUEDATE_SEL", dataSesion),
                 ...(automaticConnection ? [tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", {
                     ...user,
                     type: 'INBOX',
@@ -83,10 +81,6 @@ exports.authenticate = async (req, res) => {
                     username: user.usr
                 })] : [])
             ]);
-
-            if (resList[2] instanceof Array && resList[2].length > 0) {
-                notifications = resList[2];
-            }
             user.token = tokenzyx;
             delete user.pwd;
 
@@ -123,6 +117,7 @@ exports.getUser = async (req, res) => {
         const resultBD = await Promise.all([
             tf.executesimpletransaction("UFN_APPLICATION_SEL", req.user),
             tf.executesimpletransaction("UFN_ORGANIZATION_CHANGEORG_SEL", { userid: req.user.userid }),
+            tf.executesimpletransaction("UFN_LEADACTIVITY_DUEDATE_SEL", {...req.user, username: req.user.usr}),
         ]);
 
         if (!resultBD[0] instanceof Array) {
@@ -143,7 +138,7 @@ exports.getUser = async (req, res) => {
             // delete req.user.corpid;
             // delete req.user.orgid;
             // delete req.user.userid;
-            return res.json({ data: { ...req.user, menu, token, organizations: resultBD[1] } });
+            return res.json({ data: { ...req.user, menu, token, organizations: resultBD[1], notifications: resultBD[2] } });
         })
     } catch (error) {
         console.log(error)
