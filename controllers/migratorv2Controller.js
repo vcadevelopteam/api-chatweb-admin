@@ -2146,7 +2146,7 @@ const querySubcoreConversation = {
         sequence: 'surveyansweredseq',
         select: `SELECT sa.corpid as zyxmecorpid, sa.orgid as zyxmeorgid, NULLIF(sa.conversationid, 0) + $incconversationid as zyxmeconversationid,
         sa.description, sa.status, COALESCE(split_part(pr.propertyname, 'NUMEROPREGUNTA', 1), CONCAT('QUESTION', sq.questionnumber::text)) as type, sa.createdate, sa.createby, sa.changedate, sa.changeby, sa.edit,
-        sa.answer, sa.answervalue, sa.comment,
+        sa.answer, CASE WHEN sa.answer ~ '^[0-9]+$' AND sa.answervalue = 0 THEN sa.answer::integer ELSE sa.answervalue END as answervalue, sa.comment,
         sq.question, (SELECT GREATEST(COUNT(q.a)::text, MAX(q.a[1])) FROM (SELECT regexp_matches(sq.question,'[\\d𝟏𝟐𝟑𝟒𝟓]+','g') a) q)::BIGINT scale
         FROM surveyanswered sa
         LEFT JOIN surveyquestion sq ON sq.corpid = sa.corpid AND sq.orgid = sa.orgid AND sq.surveyquestionid = sa.surveyquestionid
@@ -2173,14 +2173,14 @@ const querySubcoreConversation = {
             dt.description, dt.status, dt.type::CHARACTER VARYING, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.answer, dt.answervalue, dt.comment,
             dt.question, dt.scale::BIGINT,
-            CASE WHEN dt.type IN ('FCR','FIX') THEN '1'
+            CASE WHEN dt.type IN ('FCR','FIX') OR dt.scale IN (2) THEN '1'
             WHEN dt.type NOT IN ('FCR','FIX') AND dt.scale IN (9,10) THEN '9,10'
             WHEN dt.type NOT IN ('FCR','FIX') AND dt.scale IN (5) THEN '4,5'
             END,
             CASE WHEN dt.scale IN (9,10) THEN '7,8'
             WHEN dt.type <> 'FCR' AND dt.scale IN (5) THEN '3'
             END,
-            CASE WHEN dt.type IN ('FCR','FIX') THEN '0,2'
+            CASE WHEN dt.type IN ('FCR','FIX') OR dt.scale IN (2) THEN '0,2'
             WHEN dt.type NOT IN ('FCR','FIX') AND dt.scale IN (9,10) THEN '1,2,3,4,5,6'
             WHEN dt.type NOT IN ('FCR','FIX') AND dt.scale IN (5) THEN '1,2'
             END,
