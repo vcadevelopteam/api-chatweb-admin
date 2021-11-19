@@ -446,6 +446,12 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
     for (const [k,q] of Object.entries(queries)) {
         executeResult[k] = {success: true, errors: []};
         try {
+            let migrationstatus = await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind);
+            let running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
+            if (!running) {
+                break;
+            }
+
             if (['usr','person','conversation','campaignmember'].includes(k)) {
                 if (q.id) {
                     // Ultimo registro en laraigo
@@ -458,7 +464,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
             let counter = 0;
             const perChunk = 1000;
             while (true) {
-                let selectStartTime = process.hrtime();
+                migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind) : migrationstatus;
+                running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
+                if (!running) {
+                    break;
+                }
+                
+            let selectStartTime = process.hrtime();
                 let selectResult = await zyxmeQuery(q.select.replace('\n',' '), {...corpidBind, offset: counter * limit, limit});
                 let selectElapsedSeconds = parseHrtimeToSeconds(process.hrtime(selectStartTime));
                 if (selectResult instanceof Array) {
@@ -471,12 +483,12 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     selectResult = renameVariable(k, selectResult);
                     selectResult = restructureVariable(k, selectResult);
                     let chunkArray = selectResult.reduce((chunk, item, index) => { 
-                      const chunkIndex = Math.floor(index/perChunk)
-                      if(!chunk[chunkIndex]) {
+                        const chunkIndex = Math.floor(index/perChunk)
+                        if(!chunk[chunkIndex]) {
                         chunk[chunkIndex] = []
-                      }
-                      chunk[chunkIndex].push(item)
-                      return chunk
+                        }
+                        chunk[chunkIndex].push(item)
+                        return chunk
                     }, []);
     
                     for (const chunk of chunkArray) {
@@ -556,6 +568,12 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 }
             }
 
+            migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind) : migrationstatus;
+            running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
+            if (!running) {
+                break;
+            }
+
             if (q.update) {
                 let startTime = process.hrtime();
                 try {
@@ -576,6 +594,12 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     console.log(error);
                     executeResult[k].errors.push({script: error});
                 }
+            }
+
+            migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind) : migrationstatus;
+            running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
+            if (!running) {
+                break;
             }
 
             if (['usr','person','conversation','campaignmember'].includes(k)) {
@@ -3173,6 +3197,22 @@ exports.executeMigration = async (req, res) => {
             inccampaignmemberid: inc.campaignmemberid || 1000000,
         }
         let queryResult = {core: {}, subcore: {}, extras: {}};
+        await zyxmeQuery(`CREATE TABLE IF NOT EXISTS migration (corpid bigint, run boolean, params jsonb, result jsonb, startdate timestamp without time zone, enddate timestamp without time zone)`);
+        let migrationstatus = await zyxmeQuery(`SELECT corpid FROM migration WHERE corpid = $corpid`, bind = {corpid: corpid});
+        if (migrationstatus.length > 0) {
+            await zyxmeQuery(`UPDATE migration SET run = $run, params = $params, startdate = NOW() WHERE corpid = $corpid`, bind = {
+                corpid: corpid,
+                run: true,
+                params: req.body
+            });
+        }
+        else {
+            await zyxmeQuery(`INSERT INTO migration (corpid, run, params, startdate) SELECT $corpid, $run, $params, NOW()`, bind = {
+                corpid: corpid,
+                run: true,
+                params: req.body
+            });
+        }
         try {
             if (modules.includes('core')) {
                 if (clean === true) {
@@ -3252,6 +3292,11 @@ exports.executeMigration = async (req, res) => {
                 }
                 queryResult.extras.whitelist = await migrationExecute(corpidBind, {whitelist: queryExtras.whitelist});
             }
+            await zyxmeQuery(`UPDATE migration SET run = $run, result = $result, finishdate = NOW() WHERE corpid = $corpid`, bind = {
+                corpid: corpid,
+                run: false,
+                result: queryResult
+            });
             logger.debug(queryResult, { meta: { function: 'executeMigration' }} );
             return res.status(200).json({ error: false, success: true, data: queryResult });
         }
