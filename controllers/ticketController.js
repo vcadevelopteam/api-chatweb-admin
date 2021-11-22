@@ -1,11 +1,11 @@
 const axios = require('axios')
 const tf = require('../config/triggerfunctions');
 const { generatefilter, generateSort, errors, getErrorCode } = require('../config/helpers');
-var https = require('https');
+// var https = require('https');
 
-const agent = new https.Agent({
-    rejectUnauthorized: false
-});
+// const agent = new https.Agent({
+//     rejectUnauthorized: false
+// });
 exports.reply = async (req, res) => {
     try {
         const { data } = req.body;
@@ -273,7 +273,7 @@ exports.sendHSM = async (req, res) => {
             }
 
             const responseservices = await axios.post(
-                `${process.env.SERVICES}handler/external/sendhsm`, data, { httpsAgent: agent });
+                `${process.env.SERVICES}handler/external/sendhsm`, data);
 
             if (!responseservices.data || !responseservices.data instanceof Object) {
                 return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
