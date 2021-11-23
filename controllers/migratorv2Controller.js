@@ -606,7 +606,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 if (q.id) {
                     // Actualizar secuencia
                     max = await laraigoQuery(`SELECT MAX(${q.id}) FROM ${k}`);
-                    await laraigoQuery(`ALTER SEQUENCE ${q.sequence} START ${max[0].max}`);
+                    await laraigoQuery(`ALTER SEQUENCE ${q.sequence} START ${parseInt(max[0].max) + corpidBind[`inc${q.id}`]}`);
                     await laraigoQuery(`ALTER SEQUENCE ${q.sequence} RESTART`);
                 }
             }
