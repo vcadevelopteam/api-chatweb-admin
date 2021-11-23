@@ -1241,4 +1241,24 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    QUERY_GET_SMS_DEFAULT_BY_ORG: {
+        query: "SELECT type, communicationchannelid FROM communicationchannel where corpid = $corpid and orgid = $orgid and description = 'SMSINTERNAL' and type = 'SMSI';",
+        module: "",
+        protected: "INSERT"
+    },
+    QUERY_GET_CONFIG_MAIL: {
+        query: "select email, pass, port, host, ssl, default_credentials  from org where corpid = $corpid and orgid = $orgid and private_mail = true;",
+        module: "",
+        protected: "INSERT"
+    },
+    QUERY_INSERT_TASK_SCHEDULER: {
+        query: "INSERT INTO taskscheduler (corpid, orgid, tasktype, taskbody, repeatflag, repeatmode, repeatinterval, completed, datetimestart, datetimeend) values ($corpid, $orgid, $tasktype, $taskbody, $repeatflag, $repeatmode, $repeatinterval, $completed, NOW() - INTERVAL '5 hours', NOW())",
+        module: "",
+        protected: "INSERT"
+    },
+    QUERY_GET_MESSAGETEMPLATE: {
+        query: "select messagetemplateid, header, body, priority, attachment from messagetemplate where corpid = $corpid and orgid = $orgid and messagetemplateid = $hsmtemplateid",
+        module: "",
+        protected: "INSERT"
+    },
 }
