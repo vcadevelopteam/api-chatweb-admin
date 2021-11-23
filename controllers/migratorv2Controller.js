@@ -22,8 +22,8 @@ Propios del sistema
 "timezone"
 
 Core
-"corp" (Revisar planteamiento de los dominios ESTADOGENERICO, TIPOCORP, si aun no existe la corp no hay dominios de esa corp)
-|"org" (No existe tabla orggroupid, revisar planteamiento de los dominios ESTADOGENERICO, TIPOORG, si aun no existe la org no hay dominios de esa org)
+"corp"
+|"org"
 ||"domain"
 ||"inputvalidation"
 ||"appintegration"
@@ -31,7 +31,7 @@ Core
 |||"communicationchannel"
 ||||"communicationchannelstatus"
 ||||"property"
-"usr" (Falta la reencriptacion de la contraseña, no existe table billingroupid, que hacer con las columans nuevas?)
+"usr"
 |"usertoken"
 |"userstatus"
 ||"userhistory"
@@ -3292,6 +3292,16 @@ exports.executeMigration = async (req, res) => {
                 }
                 queryResult.extras.whitelist = await migrationExecute(corpidBind, {whitelist: queryExtras.whitelist});
             }
+            await laraigoQuery(`
+                SELECT ufn_columntemplate_ins(corpid, orgid)
+                FROM org
+                WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid)
+            `, bind = corpidBind);
+            await laraigoQuery(`
+                SELECT ufn_intelligentmodelsorgtemplate_ins(corpid, orgid)
+                FROM org
+                WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid)
+            `, bind = corpidBind);
             await zyxmeQuery(`UPDATE migration SET run = $run, result = $result, finishdate = NOW() WHERE corpid = $corpid`, bind = {
                 corpid: corpid,
                 run: false,
