@@ -3302,7 +3302,7 @@ exports.executeMigration = async (req, res) => {
                 FROM org
                 WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid)
             `, bind = corpidBind);
-            await zyxmeQuery(`UPDATE migration SET run = $run, result = $result, finishdate = NOW() WHERE corpid = $corpid`, bind = {
+            await zyxmeQuery(`UPDATE migration SET run = $run, result = $result, enddate = NOW() WHERE corpid = $corpid`, bind = {
                 corpid: corpid,
                 run: false,
                 result: queryResult
