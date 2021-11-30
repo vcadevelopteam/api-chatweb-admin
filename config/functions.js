@@ -460,7 +460,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_INS: {
-        query: "SELECT * FROM ufn_messagetemplate_ins($corpid,$orgid,$id,$description,$type,$status,$name,$namespace,$category,$language,$templatetype,$headerenabled,$headertype,$header,$body,$footerenabled,$footer,$buttonsenabled,$buttons,$priority,$attachment,$username,$operation)",
+        query: "SELECT * FROM ufn_messagetemplate_ins($corpid,$orgid,$id,$description,$type,$status,$name,$namespace,$category,$language,$templatetype,$headerenabled,$headertype,$header,$body,$bodyobject,$footerenabled,$footer,$buttonsenabled,$buttons,$priority,$attachment,$username,$operation)",
         module: "",
         protected: "INSERT"
     },
@@ -1260,5 +1260,15 @@ module.exports = {
         query: "select messagetemplateid, header, body, priority, attachment from messagetemplate where corpid = $corpid and orgid = $orgid and messagetemplateid = $hsmtemplateid",
         module: "",
         protected: "INSERT"
+    },
+    UFN_BILLINGSUPPORT_INS: {
+        query: "SELECT * FROM ufn_billingsupport_ins($year,$month,$plan,$basicfee,$starttime,$finishtime,$status,$type,$username,$operation )",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BILLINGSUPPORT_SEL: {
+        query: "SELECT * FROM ufn_billingsupport_sel($year,$month,$plan)",
+        module: "",
+        protected: "SELECT"
     },
 }
