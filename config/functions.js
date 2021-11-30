@@ -1261,4 +1261,9 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_BILLINGSUPPORT_SEL: {
+        query: "SELECT * FROM ufn_billingsupport_ins($year,$month,$plan,$basicfee,$starttime,$finishtime,$status,$type,$username,$operation )",
+        module: "",
+        protected: "INSERT"
+    },
 }
