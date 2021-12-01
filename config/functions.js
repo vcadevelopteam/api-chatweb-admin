@@ -1296,4 +1296,44 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_BILLINGPERIOD_SEL: {
+        query: "SELECT * FROM ufn_billingperiod_sel($corpid, $orgid, $year, $month, $billingplan, $supportplan, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIOD_NEWORG: {
+        query: "SELECT * FROM ufn_billingperiod_neworg($corpid, $orgid, $year, $month, $billingplan, $supportplan)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIOD_NEWMONTH: {
+        query: "SELECT * FROM ufn_billingperiod_newmonth($corpid, $orgid, $year, $month)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIOD_UPD: {
+        query: "SELECT * FROM ufn_billingperiod_upd($corpid, $orgid, $year, $month, $billingplan, $supportplan, $basicfee, $userfreequantity, $useradditionalfee, $channelfreequantity, $channelwhatsappfee, $channelotherfee, $conversationcompanywhatfee, $conversationclientwhatfee, $clientfreequantity, $clientadditionalfee, $supportbasicfee, $additionalservicename1, $additionalservicefee1, $additionalservicename2, $additionalservicefee2, $additionalservicename3, $additionalservicefee3, $force)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIOD_CALCONE: {
+        query: "SELECT * FROM ufn_billingperiod_calcone($corpid, $orgid, $year, $month, $force)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIOD_CALCALL: {
+        query: "SELECT * FROM ufn_billingperiod_calcall($year, $month)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIODHSM_SEL: {
+        query: "SELECT * FROM ufn_billingperiodhsm_sel($year, $month)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIODHSM_CALC: {
+        query: "SELECT * FROM ufn_billingperiodhsm_calc($corpid, $orgid, $year, $month, $force)",
+        module: "",
+        protected: "SELECT"
+    },
 }
