@@ -1277,12 +1277,22 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGCONFIGURATION_INS: {
-        query: "SELECT * FROM ufn_billingconfiguration_ins($year,$month,$plan,$id,$basicfee,$userfreequantity,$useradditionalfee,$channelfreequantity,$channelwhatsappfee,$channelotherfee,$clientfreequantity,$clientadditionalfee,$allowhsm,$hsmfee,$description,$status,$type,$username,$operation)",
+        query: "SELECT * FROM ufn_billingconfiguration_ins($year,$month,$plan,$id,$basicfee,$userfreequantity,$useradditionalfee,$channelfreequantity,$channelwhatsappfee,$channelotherfee,$clientfreequantity$clientadditionalfee,$allowhsm,$hsmfee,$description,$status,$type,$username,$operation)",
         module: "",
         protected: "INSERT"
     },
     UFN_BILLINGCONFIGURATION_SEL: {
         query: "SELECT * FROM ufn_billingconfiguration_sel($year, $month, $plan)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGCONVERSATION_INS: {
+        query: "SELECT * FROM ufn_billingconversation_ins($year,$month,$countrycode,$id,$companystartfee,$clientstartfee,$c250000,$c750000,$c2000000,$c3000000,$c4000000,$c5000000,$c10000000,$c25000000,$description,$status,$type,$username,$operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BILLINGCONVERSATION_SEL: {
+        query: "SELECT * FROM ufn_billingconversation_sel($year, $month, $countrycode)",
         module: "",
         protected: "SELECT"
     },
