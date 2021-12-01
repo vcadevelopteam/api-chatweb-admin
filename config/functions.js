@@ -1271,4 +1271,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_SUPPORTPLAN_SEL: {
+        query: "SELECT * FROM ufn_supportplan_sel()",
+        module: "",
+        protected: "SELECT"
+    },
 }
