@@ -1262,7 +1262,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_BILLINGSUPPORT_INS: {
-        query: "SELECT * FROM ufn_billingsupport_ins($year,$month,$plan,$basicfee,$starttime,$finishtime,$description,$status,$type,$username,$operation )",
+        query: "SELECT * FROM ufn_billingsupport_ins($year,$month,$plan,$id,$basicfee,$starttime,$finishtime,$description,$status,$type,$username,$operation )",
         module: "",
         protected: "INSERT"
     },
