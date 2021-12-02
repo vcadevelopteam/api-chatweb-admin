@@ -1237,7 +1237,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_LEADACTIVITY_DUEDATE_SEL: {
-        query: "SELECT * FROM ufn_leadactivity_duedate_sel($corpid, $orgid, $username);",
+        query: "SELECT * FROM ufn_leadactivity_duedate_sel($corpid, $orgid, $userid);",
         module: "",
         protected: "INSERT"
     },
