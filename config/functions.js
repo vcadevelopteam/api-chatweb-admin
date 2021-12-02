@@ -1327,7 +1327,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_BILLINGPERIODHSM_SEL: {
-        query: "SELECT * FROM ufn_billingperiodhsm_sel($year, $month)",
+        query: "SELECT * FROM ufn_billingperiodhsm_sel($corpid, $orgid, $year, $month, $userid)",
         module: "",
         protected: "SELECT"
     },
