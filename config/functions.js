@@ -1357,7 +1357,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGPERIOD_SUMMARYCORP: {
-        query: "SELECT * FROM ufn_billingperiod_summaryorg($corpid, $year, $month, $userid)",
+        query: "SELECT * FROM ufn_billingperiod_summarycorp($corpid, $year, $month, $userid)",
         module: "",
         protected: "SELECT"
     },
