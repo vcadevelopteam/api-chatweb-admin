@@ -544,6 +544,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_INTEGRATIONMANAGER_DELETEDATA: {
+        query: "SELECT * FROM ufn_integrationmanager_deletedata($corpid,$orgid,$id)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_INTEGRATIONMANAGER_LST: {
         query: "SELECT * FROM ufn_integrationmanager_lst($corpid,$orgid)",
         module: "",
