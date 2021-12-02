@@ -1316,8 +1316,8 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_BILLINGPERIOD_CALCONE: {
-        query: "SELECT * FROM ufn_billingperiod_calcone($corpid, $orgid, $year, $month, $force)",
+    UFN_BILLINGPERIOD_CALC: {
+        query: "SELECT * FROM ufn_billingperiod_calc($corpid, $orgid, $year, $month, $force)",
         module: "",
         protected: "SELECT"
     },
