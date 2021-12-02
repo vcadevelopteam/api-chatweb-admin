@@ -544,6 +544,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_INTEGRATIONMANAGER_DELETEDATA: {
+        query: "SELECT * FROM ufn_integrationmanager_deletedata($corpid,$orgid,$id)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_INTEGRATIONMANAGER_LST: {
         query: "SELECT * FROM ufn_integrationmanager_lst($corpid,$orgid)",
         module: "",
@@ -1262,12 +1267,77 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_BILLINGSUPPORT_INS: {
-        query: "SELECT * FROM ufn_billingsupport_ins($year,$month,$plan,$basicfee,$starttime,$finishtime,$status,$type,$username,$operation )",
+        query: "SELECT * FROM ufn_billingsupport_ins($year,$month,$plan,$id,$basicfee,$starttime,$finishtime,$description,$status,$type,$username,$operation )",
         module: "",
         protected: "INSERT"
     },
     UFN_BILLINGSUPPORT_SEL: {
         query: "SELECT * FROM ufn_billingsupport_sel($year,$month,$plan)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_SUPPORTPLAN_SEL: {
+        query: "SELECT * FROM ufn_supportplan_sel()",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGCONFIGURATION_INS: {
+        query: "SELECT * FROM ufn_billingconfiguration_ins($year,$month,$plan,$id,$basicfee,$userfreequantity,$useradditionalfee,$channelfreequantity,$channelwhatsappfee,$channelotherfee,$clientfreequantity$clientadditionalfee,$allowhsm,$hsmfee,$description,$status,$type,$username,$operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BILLINGCONFIGURATION_SEL: {
+        query: "SELECT * FROM ufn_billingconfiguration_sel($year, $month, $plan)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGCONVERSATION_INS: {
+        query: "SELECT * FROM ufn_billingconversation_ins($year,$month,$countrycode,$id,$companystartfee,$clientstartfee,$c250000,$c750000,$c2000000,$c3000000,$c4000000,$c5000000,$c10000000,$c25000000,$description,$status,$type,$username,$operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BILLINGCONVERSATION_SEL: {
+        query: "SELECT * FROM ufn_billingconversation_sel($year, $month, $countrycode)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIOD_SEL: {
+        query: "SELECT * FROM ufn_billingperiod_sel($corpid, $orgid, $year, $month, $billingplan, $supportplan, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIOD_NEWORG: {
+        query: "SELECT * FROM ufn_billingperiod_neworg($corpid, $orgid, $year, $month, $billingplan, $supportplan)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIOD_NEWMONTH: {
+        query: "SELECT * FROM ufn_billingperiod_newmonth($corpid, $orgid, $year, $month)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIOD_UPD: {
+        query: "SELECT * FROM ufn_billingperiod_upd($corpid, $orgid, $year, $month, $billingplan, $supportplan, $basicfee, $userfreequantity, $useradditionalfee, $channelfreequantity, $channelwhatsappfee, $channelotherfee, $clientfreequantity, $clientadditionalfee, $supportbasicfee, $additionalservicename1, $additionalservicefee1, $additionalservicename2, $additionalservicefee2, $additionalservicename3, $additionalservicefee3, $force)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIOD_CALC: {
+        query: "SELECT * FROM ufn_billingperiod_calc($corpid, $orgid, $year, $month, $force)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIOD_CALCALL: {
+        query: "SELECT * FROM ufn_billingperiod_calcall($year, $month)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIODHSM_SEL: {
+        query: "SELECT * FROM ufn_billingperiodhsm_sel($year, $month)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIODHSM_CALC: {
+        query: "SELECT * FROM ufn_billingperiodhsm_calc($corpid, $orgid, $year, $month, $force)",
         module: "",
         protected: "SELECT"
     },
