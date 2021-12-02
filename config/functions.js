@@ -1341,6 +1341,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_BILLINGPERIODHSM_UPD: {
+        query: "SELECT * FROM ufn_billingperiodhsm_upd($corpid, $orgid, $year, $month, $hsmutilityfee, $force)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_BILLINGPERIODHSM_CALC: {
         query: "SELECT * FROM ufn_billingperiodhsm_calc($corpid, $orgid, $year, $month, $force)",
         module: "",
