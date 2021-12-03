@@ -1366,4 +1366,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_BILLING_REPORT_PERSON: {
+        query: "SELECT * FROM ufn_billing_report_person($corpid, $orgid, $year, $month)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLING_REPORT_USER: {
+        query: "SELECT * FROM ufn_billing_report_user($corpid, $orgid, $year, $month)",
+        module: "",
+        protected: "SELECT"
+    },
 }
