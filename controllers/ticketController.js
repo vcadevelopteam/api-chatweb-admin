@@ -254,6 +254,7 @@ exports.sendHSM = async (req, res) => {
                         blindreceiver: "",
                         copyreceiver: "",
                         credentials: jsonconfigmail,
+                        attachments: mailtemplate.attachment ? mailtemplate.attachment.split(",") : []
                     }),
                     repeatflag: false,
                     repeatmode: 0,

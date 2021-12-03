@@ -1326,13 +1326,13 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
-    UFN_BILLINGPERIODHSM_SEL: {
+    UFN_ORG_LIST: {
         query: "SELECT * FROM ufn_org_lst($year, $month)",
         module: "",
         protected: "SELECT"
     },
-    UFN_ORG_LIST: {
-        query: "SELECT * FROM ufn_billingperiodhsm_sel($corpid, $userid)",
+    UUFN_BILLINGPERIODHSM_SEL: {
+        query: "SELECT * FROM ufn_billingperiodhsm_sel($corpid, $orgid, $year, $month, $userid)",
         module: "",
         protected: "SELECT"
     },
@@ -1355,5 +1355,15 @@ module.exports = {
         query: "SELECT * FROM ufn_billingperiodhsm_calc($corpid, $orgid, $year, $month, $force)",
         module: "",
         protected: "INSERT"
+    },
+    UFN_BILLINGPERIOD_SUMMARYORG: {
+        query: "SELECT * FROM ufn_billingperiod_summaryorg($corpid, $orgid, $year, $month, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIOD_SUMMARYCORP: {
+        query: "SELECT * FROM ufn_billingperiod_summarycorp($corpid, $year, $month, $userid)",
+        module: "",
+        protected: "SELECT"
     },
 }
