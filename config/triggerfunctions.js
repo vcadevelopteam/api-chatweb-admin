@@ -24,8 +24,8 @@ const executeQuery = async (query, bind = {}) => {
         bind
     }).catch(err => getErrorSeq(err));
 }
-
-exports.executesimpletransaction = async (method, data, permissions = false) => {
+//no se puede usar bind y replace en el mismo query 
+exports.executesimpletransaction = async (method, data, permissions = false, replacements = undefined) => {
     let functionMethod = functionsbd[method];
     if (functionMethod) {
         if (permissions && functionMethod.module) {
@@ -36,12 +36,16 @@ exports.executesimpletransaction = async (method, data, permissions = false) => 
             }
         }
         const query = functionMethod.query;
-        if (data instanceof Object) {
+        if (data instanceof Object || data === undefined) {
             
             return await sequelize.query(query, {
                 type: QueryTypes.SELECT,
+                replacements,
                 bind: data
-            }).catch(err => getErrorSeq(err));
+            }).catch(err => {
+                console.log(err)
+                return getErrorSeq(err)
+            });
         } else {
             return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
         }

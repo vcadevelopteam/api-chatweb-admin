@@ -1361,4 +1361,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_SEL_PROPERTY_ON_LOGIN: {
+        query: "SELECT propertyname, propertyvalue FROM property p WHERE p.corpid = :corpid AND p.orgid = :orgid AND p.propertyname IN (:propertynames) and p.status = 'ACTIVO';",
+        module: "",
+        protected: "SELECT"
+    },
 }
