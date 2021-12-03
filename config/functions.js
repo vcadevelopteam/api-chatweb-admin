@@ -1327,7 +1327,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_ORG_LIST: {
-        query: "SELECT * FROM ufn_org_lst($year, $month)",
+        query: "SELECT * FROM ufn_org_lst($corpid, $userid)",
         module: "",
         protected: "SELECT"
     },
