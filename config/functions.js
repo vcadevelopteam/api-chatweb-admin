@@ -1331,7 +1331,7 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UUFN_BILLINGPERIODHSM_SEL: {
+    UFN_BILLINGPERIODHSM_SEL: {
         query: "SELECT * FROM ufn_billingperiodhsm_sel($corpid, $orgid, $year, $month, $userid)",
         module: "",
         protected: "SELECT"
