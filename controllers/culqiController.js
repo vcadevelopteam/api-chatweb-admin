@@ -1,11 +1,13 @@
-// publicKey: 'pk_test_wXgBHymgNU4CZknl'
+const sequelize = require('../config/database');
+const { QueryTypes } = require('sequelize');
 const Culqi = require('culqi-node');
 const culqi = new Culqi({
     privateKey: 'sk_test_A21tqesxbjbJmX9y',
+    // publicKey: 'pk_test_wXgBHymgNU4CZknl'
 });
 
 exports.getToken = async (req, res) => {
-    const { publickey, settings, options, token, metadata } = req.body;
+    const { settings, token, metadata = {} } = req.body;
     try {
         const tk = await culqi.tokens.getToken({
             id: token.id, 
@@ -13,126 +15,150 @@ exports.getToken = async (req, res) => {
         console.log(tk);
         return res.json({ error: false, success: true, data: tk });
     } catch (error) {
-        return res.status(400).json({ error: true, success: false, data: error });
+        console.log(error);
+        return res.status(500).json({ msg: "There was a problem, please try again later" });
     }
 }
 
 exports.createCharge = async (req, res) => {
-    const { publickey, settings, options, token, metadata } = req.body;
+    const { corpid, orgid, userid } = req.user;
+    const { settings, token, metadata = {} } = req.body;
     try {
-        const charge = await culqi.charges.createCharge({
-            amount: settings.amount,
-            currency_code: settings.currency,
-            email: token.email,
-            source_id: token.id,
-            capture: false,
-            description: settings.description.slice(0,80),
-            metadata: {
-                title: settings.title,
-                browser: token.client.browser,
-                ip: token.client.ip,
-                ip_country: token.client.ip_country_code,
-                card_brand: token.iin.card_brand,
-                card_country: token.iin.issuer.country_code,
-                ...metadata
-            },
-            // antifraud_details: {
-            //     first_name: '',
-            //     last_name: '',
-            //     address: '',
-            //     address_city: '',
-            //     country_code: '',
-            //     phone: ''
-            // }
-        });
-        console.log(charge);
+        const userprofile_q = 'SELECT firstname, lastname, email, phone, country FROM usr WHERE userid = $userid'
+        const userprofile = await sequelize.query(userprofile_q, {type: QueryTypes.SELECT, bind: {userid}}).catch(err => getErrorSeq(err));
 
-        // Do some other operations, such as custom self-made fraud prevention
-
-        const capturedCharge = await culqi.charges.captureCharge({
-            // chr_test_xxxxxxxxxxxxxxxx
-            id: charge.id,
-        });
-        console.log(capturedCharge);
-
-        // Do some other operations, such save data of the charge
-
-        if (capturedCharge.object === 'error') {
-            return res.json({
-                error: false,
-                success: true,
-                data: {
-                    object: capturedCharge.object,
-                    id: capturedCharge.charge_id,
-                    code: capturedCharge.code,
-                    message: capturedCharge.user_message
+        if (userprofile.length > 0) {
+            const charge = await culqi.charges.createCharge({
+                amount: settings.amount,
+                currency_code: settings.currency,
+                email: token.email,
+                source_id: token.id,
+                capture: false,
+                description: `Laraigo ${settings.description}`.slice(0,80),
+                metadata: {
+                    title: settings.title,
+                    ...metadata,
+                    corpid: corpid,
+                    orgid: orgid,
+                    userid: userid,
+                },
+                antifraud_details: {
+                    first_name: userprofile[0].firstname,
+                    last_name: userprofile[0].lastname,
+                    address: userprofile[0].address || 'EMPTY',
+                    address_city: userprofile[0].address_city || 'N/A',
+                    country_code: userprofile[0].country || token.client.ip_country_code,
+                    phone: userprofile[0].phone,
                 }
             });
+            console.log(charge);
+    
+            // Do some other operations, such as custom self-made fraud prevention
+    
+            const capturedCharge = await culqi.charges.captureCharge({
+                // chr_test_xxxxxxxxxxxxxxxx
+                id: charge.id,
+            });
+            console.log(capturedCharge);
+    
+            // Do some other operations, such save data of the charge
+    
+            if (capturedCharge.object === 'error') {
+                return res.json({
+                    error: false,
+                    success: true,
+                    data: {
+                        object: capturedCharge.object,
+                        id: capturedCharge.charge_id,
+                        code: capturedCharge.code,
+                        message: capturedCharge.user_message
+                    }
+                });
+            }
+            else {
+                return res.json({
+                    error: false,
+                    success: true,
+                    code: capturedCharge.outcome.code,
+                    message: capturedCharge.outcome.user_message ,
+                    data: {
+                        object: capturedCharge.object,
+                        id: capturedCharge.id,
+                    }
+                });
+            }
         }
         else {
-            return res.json({
-                error: false,
-                success: true,
+            return res.status(404).json({
+                error: true,
+                success: false,
+                code: '',
+                message: 'user not found' ,
                 data: {
-                    object: capturedCharge.object,
-                    id: capturedCharge.id,
-                    code: capturedCharge.outcome.code,
-                    message: capturedCharge.outcome.user_message 
+                    object: 'error',
+                    id: '',
                 }
             });
         }
     } catch (error) {
-        return res.status(400).json({ error: true, success: false, data: error });
+        console.log(error);
+        return res.status(500).json({ msg: "There was a problem, please try again later" });
     }
 };
 
 exports.createSubscription = async (req, res) => {
-    const { publickey, settings, options, token, metadata } = req.body;
+    const { corpid, orgid, userid } = req.user;
+    const { settings, token, metadata } = req.body;
     try {
-        const plan = await culqi.plans.createPlan({
-            name: settings.title,
-            amount: settings.amount,
-            currency_code: settings.currency,
-            interval: 'meses',
-            interval_count: 1,
-            limit: 12,
-            metadata: {
-                title: settings.title,
-                browser: token.client.browser,
-                ip: token.client.ip,
-                ip_country: token.client.ip_country_code,
-                card_brand: token.iin.card_brand,
-                card_country: token.iin.issuer.country_code,
-                ...metadata
-            }
-        });
-        console.log(plan);
+        let plan = {}
+        if (!settings.planid) {
+            plan = await culqi.plans.createPlan({
+                name: settings.title,
+                amount: settings.amount,
+                currency_code: settings.currency,
+                interval: settings.interval || 'meses',
+                interval_count: settings.interval_count || 1,
+                limit: settings.limit || 12,
+                metadata: {
+                    title: settings.title,
+                    ...metadata,
+                    corpid: corpid,
+                    orgid: orgid,
+                    userid: userid,
+                },
+            });
+            console.log(plan);
+        }
+        else {
+            plan.id = settings.planid
+        }
 
         const customers = await culqi.customers.getCustomers({
             email: token.email
         });
-        let customer = {}
+        let customer = {};
         if (customers.data.length > 0) {
             customer = customers.data[0];
         }
         else {
+            const userprofile_q = 'SELECT firstname, lastname, email, phone, country FROM usr WHERE userid = $userid'
+            const userprofile = await sequelize.query(userprofile_q, {type: QueryTypes.SELECT, bind: {userid}}).catch(err => getErrorSeq(err));
+            
             customer = await culqi.customers.createCustomer({
-                first_name: metadata?.firstname || 'Laraigo',
-                last_name: metadata?.lastname || 'ACME',
+                first_name: userprofile[0].firstname,
+                last_name: userprofile[0].lastname,
                 email: token.email,
-                address: token.client.ip,
-                address_city: token.client.ip_country,
-                country_code: token.client.ip_country_code,
-                phone_number: metadata?.phone || '999999999',
+                address: userprofile[0].address || 'EMPTY',
+                address_city: userprofile[0].address_city || 'N/A',
+                country_code: userprofile[0].country || token.client.ip_country_code,
+                phone: userprofile[0].phone,
                 metadata: {
                     title: settings.title,
-                    browser: token.client.browser,
-                    ip: token.client.ip,
-                    ip_country: token.client.ip_country_code,
-                    card_brand: token.iin.card_brand,
-                    card_country: token.iin.issuer.country_code,
-                    ...metadata
-                }
+                    ...metadata,
+                    corpid: corpid,
+                    orgid: orgid,
+                    userid: userid,
+                },
             });
         }
         console.log(customer);
@@ -154,15 +180,16 @@ exports.createSubscription = async (req, res) => {
         return res.json({
             error: false,
             success: true,
+            code: subscription.charges[0].outcome.code,
+            message: subscription.charges[0].outcome.user_message,
             data: {
                 object: subscription.object,
                 id: subscription.id,
-                code: '',
-                message: ''
             }
         });
     } catch (error) {
-        return res.status(400).json({ error: true, success: false, data: error });
+        console.log(error);
+        return res.status(500).json({ msg: "There was a problem, please try again later"});
     }
 };
 
@@ -179,14 +206,15 @@ exports.deleteSubscription = async (req, res) => {
         return res.json({
             error: false,
             success: true,
+            code: '',
+            message: subscription.merchant_message,
             data: {
                 object: 'subscription',
                 id: subscription.id,
-                code: '',
-                message: subscription.merchant_message
             }
         });
     } catch (error) {
-        return res.status(400).json({ error: true, success: false, data: error });
+        console.log(error);
+        return res.status(500).json({ msg: "There was a problem, please try again later" });
     }
 }

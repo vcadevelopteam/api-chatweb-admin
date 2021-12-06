@@ -1,13 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const culqiController = require("../controllers/culqiController");
+const auth = require('../middleware/auth');
 
 router.post('/token', culqiController.getToken)
 
-router.post('/charge', culqiController.createCharge)
+router.post('/charge', auth, culqiController.createCharge)
 
-router.post('/subscription', culqiController.createSubscription)
+router.post('/subscribe', auth, culqiController.createSubscription)
 
-router.post('/unsubscribe', culqiController.deleteSubscription)
+router.post('/unsubscribe', auth, culqiController.deleteSubscription)
 
 module.exports = router;
