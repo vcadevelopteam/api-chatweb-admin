@@ -124,7 +124,7 @@ exports.deleteChannel = async (request, result) => {
                         });
                     }
                 }
-                
+
             case 'CHAZ':
                 if (typeof parameters.communicationchannelcontact !== 'undefined' && parameters.communicationchannelcontact) {
                     await axios({
@@ -258,6 +258,60 @@ exports.deleteChannel = async (request, result) => {
                     else {
                         return result.status(400).json({
                             msg: transactionDeleteFacebook.code,
+                            success: false
+                        });
+                    }
+                }
+
+            case 'INMS':
+                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+                    var serviceCredentials = JSON.parse(parameters.servicecredentials);
+    
+                    const requestDeleteInstagramSmooch = await axios({
+                        data: {
+                            linkType: 'WEBHOOKREMOVE',
+                            apiKeyId: serviceCredentials.apiKeyId,
+                            apiKeySecret: serviceCredentials.apiKeySecret,
+                            applicationId: parameters.communicationchannelsite,
+                            integrationId: parameters.integrationid
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
+                    });
+    
+                    if (requestDeleteInstagramSmooch.data.success) {
+                        const transactionDeleteInstagramSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
+    
+                        if (transactionDeleteInstagramSmooch instanceof Array) {
+                            return result.json({
+                                success: true
+                            });
+                        }
+                        else {
+                            return result.status(400).json({
+                                msg: transactionDeleteInstagramSmooch.code,
+                                success: false
+                            });
+                        }
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: requestDeleteInstagramSmooch.data.operationMessage,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    const transactionDeleteInstagramSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
+    
+                    if (transactionDeleteInstagramSmooch instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionDeleteInstagramSmooch.code,
                             success: false
                         });
                     }
@@ -451,6 +505,60 @@ exports.deleteChannel = async (request, result) => {
                     else {
                         return result.status(400).json({
                             msg: transactionDeleteWhatsApp.code,
+                            success: false
+                        });
+                    }
+                }
+
+            case 'WHAT':
+                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+                    var serviceCredentials = JSON.parse(parameters.servicecredentials);
+        
+                    const requestDeleteWhatsAppSmooch = await axios({
+                        data: {
+                            linkType: 'WEBHOOKCLEAR',
+                            apiKeyId: serviceCredentials.apiKeyId,
+                            apiKeySecret: serviceCredentials.apiKeySecret,
+                            applicationId: parameters.communicationchannelsite,
+                            integrationId: parameters.integrationid
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
+                    });
+        
+                    if (requestDeleteWhatsAppSmooch.data.success) {
+                        const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
+        
+                        if (transactionDeleteWhatsAppSmooch instanceof Array) {
+                            return result.json({
+                                success: true
+                            });
+                        }
+                        else {
+                            return result.status(400).json({
+                                msg: transactionDeleteWhatsAppSmooch.code,
+                                success: false
+                            });
+                        }
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: requestDeleteWhatsAppSmooch.data.operationMessage,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
+        
+                    if (transactionDeleteWhatsAppSmooch instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionDeleteWhatsAppSmooch.code,
                             success: false
                         });
                     }
@@ -1130,140 +1238,140 @@ exports.insertChannel = async (request, result) => {
                     });
                 }
 
-                case 'WHATSAPPSMOOCH':
-                    parameters.communicationchannelowner = '';
-                    parameters.communicationchannelsite = '';
-                    parameters.servicecredentials = JSON.stringify(service);
-                    parameters.status = 'PENDIENTE';
-                    parameters.type = 'WHAT';
+            case 'WHATSAPPSMOOCH':
+                parameters.communicationchannelowner = '';
+                parameters.communicationchannelsite = '';
+                parameters.servicecredentials = JSON.stringify(service);
+                parameters.status = 'PENDIENTE';
+                parameters.type = 'WHAT';
 
-                    const transactionCreateWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
+                const transactionCreateWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
-                    if (transactionCreateWhatsAppSmooch instanceof Array) {
-                        if (parameters.type === 'WHAT') {
-                            var domainMethod = 'UFN_DOMAIN_VALUES_SEL';
-                            var domainParameters = {
-                                all: false,
-                                corpid: 1,
-                                domainname: 'WHATSAPPRECIPIENT',
-                                orgid: 0,
-                                username: request.user.usr
-                            };
+                if (transactionCreateWhatsAppSmooch instanceof Array) {
+                    if (parameters.type === 'WHAT') {
+                        var domainMethod = 'UFN_DOMAIN_VALUES_SEL';
+                        var domainParameters = {
+                            all: false,
+                            corpid: 1,
+                            domainname: 'WHATSAPPRECIPIENT',
+                            orgid: 0,
+                            username: request.user.usr
+                        };
                             
-                            const transactionGetRecipient = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+                        const transactionGetRecipient = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
 
-                            if (transactionGetRecipient instanceof Array) {
-                                if (transactionGetRecipient.length > 0) {
-                                    domainParameters = {
-                                        all: false,
-                                        corpid: 1,
-                                        domainname: 'WHATSAPPSUBJECT',
-                                        orgid: 0,
-                                        username: request.user.usr
-                                    };
+                        if (transactionGetRecipient instanceof Array) {
+                            if (transactionGetRecipient.length > 0) {
+                                domainParameters = {
+                                    all: false,
+                                    corpid: 1,
+                                    domainname: 'WHATSAPPSUBJECT',
+                                    orgid: 0,
+                                    username: request.user.usr
+                                };
 
-                                    const transactionGetSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+                                const transactionGetSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
 
-                                    if (transactionGetSubject instanceof Array) {
-                                        if (transactionGetSubject.length > 0) {
-                                            domainParameters = {
-                                                all: false,
-                                                corpid: 1,
-                                                domainname: 'WHATSAPPBODY',
-                                                orgid: 0,
-                                                username: request.user.usr
-                                            };
+                                if (transactionGetSubject instanceof Array) {
+                                    if (transactionGetSubject.length > 0) {
+                                        domainParameters = {
+                                            all: false,
+                                            corpid: 1,
+                                            domainname: 'WHATSAPPBODY',
+                                            orgid: 0,
+                                            username: request.user.usr
+                                        };
 
-                                            const transactionGetBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+                                        const transactionGetBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
 
-                                            if (transactionGetBody instanceof Array) {
-                                                if (transactionGetBody.length > 0) {
-                                                    var mailBody = transactionGetBody[0].domainvalue;
-                                                    var mailRecipient = transactionGetRecipient[0].domainvalue;
-                                                    var mailSubject = transactionGetSubject[0].domainvalue;
+                                        if (transactionGetBody instanceof Array) {
+                                            if (transactionGetBody.length > 0) {
+                                                var mailBody = transactionGetBody[0].domainvalue;
+                                                var mailRecipient = transactionGetRecipient[0].domainvalue;
+                                                var mailSubject = transactionGetSubject[0].domainvalue;
 
-                                                    mailBody = mailBody.split("{{brandname}}").join(service.brandname);
-                                                    mailBody = mailBody.split("{{brandaddress}}").join(service.brandaddress);
-                                                    mailBody = mailBody.split("{{firstname}}").join(service.firstname);
-                                                    mailBody = mailBody.split("{{lastname}}").join(service.lastname);
-                                                    mailBody = mailBody.split("{{email}}").join(service.email);
-                                                    mailBody = mailBody.split("{{phone}}").join(service.phone);
-                                                    mailBody = mailBody.split("{{customerfacebookid}}").join(service.customerfacebookid);
-                                                    mailBody = mailBody.split("{{phonenumberwhatsappbusiness}}").join(service.phonenumberwhatsappbusiness);
-                                                    mailBody = mailBody.split("{{nameassociatednumber}}").join(service.nameassociatednumber);
-                                                    mailBody = mailBody.split("{{corpid}}").join(request.user.corpid);
-                                                    mailBody = mailBody.split("{{orgid}}").join(request.user.orgid);
-                                                    mailBody = mailBody.split("{{username}}").join(request.user.usr);
+                                                mailBody = mailBody.split("{{brandname}}").join(service.brandname);
+                                                mailBody = mailBody.split("{{brandaddress}}").join(service.brandaddress);
+                                                mailBody = mailBody.split("{{firstname}}").join(service.firstname);
+                                                mailBody = mailBody.split("{{lastname}}").join(service.lastname);
+                                                mailBody = mailBody.split("{{email}}").join(service.email);
+                                                mailBody = mailBody.split("{{phone}}").join(service.phone);
+                                                mailBody = mailBody.split("{{customerfacebookid}}").join(service.customerfacebookid);
+                                                mailBody = mailBody.split("{{phonenumberwhatsappbusiness}}").join(service.phonenumberwhatsappbusiness);
+                                                mailBody = mailBody.split("{{nameassociatednumber}}").join(service.nameassociatednumber);
+                                                mailBody = mailBody.split("{{corpid}}").join(request.user.corpid);
+                                                mailBody = mailBody.split("{{orgid}}").join(request.user.orgid);
+                                                mailBody = mailBody.split("{{username}}").join(request.user.usr);
 
-                                                    mailSubject = mailSubject.split("{{brandname}}").join(service.brandname);
-                                                    mailSubject = mailSubject.split("{{brandaddress}}").join(service.brandaddress);
-                                                    mailSubject = mailSubject.split("{{firstname}}").join(service.firstname);
-                                                    mailSubject = mailSubject.split("{{lastname}}").join(service.lastname);
-                                                    mailSubject = mailSubject.split("{{email}}").join(service.email);
-                                                    mailSubject = mailSubject.split("{{phone}}").join(service.phone);
-                                                    mailSubject = mailSubject.split("{{customerfacebookid}}").join(service.customerfacebookid);
-                                                    mailSubject = mailSubject.split("{{phonenumberwhatsappbusiness}}").join(service.phonenumberwhatsappbusiness);
-                                                    mailSubject = mailSubject.split("{{nameassociatednumber}}").join(service.nameassociatednumber);
-                                                    mailSubject = mailSubject.split("{{corpid}}").join(request.user.corpid);
-                                                    mailSubject = mailSubject.split("{{orgid}}").join(request.user.orgid);
-                                                    mailSubject = mailSubject.split("{{username}}").join(request.user.usr);
+                                                mailSubject = mailSubject.split("{{brandname}}").join(service.brandname);
+                                                mailSubject = mailSubject.split("{{brandaddress}}").join(service.brandaddress);
+                                                mailSubject = mailSubject.split("{{firstname}}").join(service.firstname);
+                                                mailSubject = mailSubject.split("{{lastname}}").join(service.lastname);
+                                                mailSubject = mailSubject.split("{{email}}").join(service.email);
+                                                mailSubject = mailSubject.split("{{phone}}").join(service.phone);
+                                                mailSubject = mailSubject.split("{{customerfacebookid}}").join(service.customerfacebookid);
+                                                mailSubject = mailSubject.split("{{phonenumberwhatsappbusiness}}").join(service.phonenumberwhatsappbusiness);
+                                                mailSubject = mailSubject.split("{{nameassociatednumber}}").join(service.nameassociatednumber);
+                                                mailSubject = mailSubject.split("{{corpid}}").join(request.user.corpid);
+                                                mailSubject = mailSubject.split("{{orgid}}").join(request.user.orgid);
+                                                mailSubject = mailSubject.split("{{username}}").join(request.user.usr);
 
-                                                    const requestSendMail = await axios({
-                                                        data: {
-                                                            mailAddress: mailRecipient,
-                                                            mailBody: mailBody,
-                                                            mailTitle: mailSubject
-                                                        },
-                                                        method: 'post',
-                                                        url: `${bridgeEndpoint}processscheduler/sendmail`
+                                                const requestSendMail = await axios({
+                                                    data: {
+                                                        mailAddress: mailRecipient,
+                                                        mailBody: mailBody,
+                                                        mailTitle: mailSubject
+                                                    },
+                                                    method: 'post',
+                                                    url: `${bridgeEndpoint}processscheduler/sendmail`
+                                                });
+                            
+                                                if (!requestSendMail.data.success) {
+                                                    return result.status(400).json({
+                                                        msg: requestSendMail.data.operationMessage,
+                                                        success: false,
+                                                        error: true
                                                     });
-                            
-                                                    if (!requestSendMail.data.success) {
-                                                        return result.status(400).json({
-                                                            msg: requestSendMail.data.operationMessage,
-                                                            success: false,
-                                                            error: true
-                                                        });
-                                                    }
                                                 }
                                             }
-                                            else {
-                                                return result.status(400).json({
-                                                    msg: transactionGetBody.code,
-                                                    success: false,
-                                                    error: true
-                                                });
-                                            }
+                                        }
+                                        else {
+                                            return result.status(400).json({
+                                                msg: transactionGetBody.code,
+                                                success: false,
+                                                error: true
+                                            });
                                         }
                                     }
-                                    else {
-                                        return result.status(400).json({
-                                            msg: transactionGetSubject.code,
-                                            success: false,
-                                            error: true
-                                        });
-                                    }
+                                }
+                                else {
+                                    return result.status(400).json({
+                                        msg: transactionGetSubject.code,
+                                        success: false,
+                                        error: true
+                                    });
                                 }
                             }
-                            else {
-                                return result.status(400).json({
-                                    msg: transactionGetRecipient.code,
-                                    success: false,
-                                    error: true
-                                });
-                            }
                         }
+                        else {
+                            return result.status(400).json({
+                                msg: transactionGetRecipient.code,
+                                success: false,
+                                error: true
+                            });
+                        }
+                    }
 
-                        return result.json({
-                            success: true
-                        });
-                    }
-                    else {
-                        return result.status(400).json({
-                            msg: transactionCreateWhatsAppSmooch.code,
-                            success: false
-                        });
-                    }
+                    return result.json({
+                        success: true
+                    });
+                }
+                else {
+                    return result.status(400).json({
+                        msg: transactionCreateWhatsAppSmooch.code,
+                        success: false
+                    });
+                }
 
             default:
                 return result.status(400).json({
@@ -1462,26 +1570,45 @@ exports.activateChannel = async (request, result) => {
             }
         }
         else {
-            parameters.communicationchannelsite = service.appid;
-            parameters.servicecredentials = JSON.stringify({
-                apiKeyId: service.apikeyid,
-                apiKeySecret: service.apikeysecret,
-                appId: service.appid,
-                endpoint: 'https://api.smooch.io/',
-                version: 'v1.1'
+            const requestMigrateWhatsApp = await axios({
+                data: {
+                    linkType: 'WEBHOOKMIGRATE',
+                    apiKeyId: service.apiKeyId,
+                    apiKeySecret: service.apiKeySecret,
+                    applicationId: service.appid
+                },
+                method: 'post',
+                url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
             });
-            parameters.type = 'WHAT';
 
-            const transactionActivateWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
-            
-            if (transactionActivateWhatsApp instanceof Array) {
-                return result.json({
-                    success: true
+            if (requestMigrateWhatsApp.data.success) {
+                parameters.communicationchannelsite = service.appid;
+                parameters.servicecredentials = JSON.stringify({
+                    apiKeyId: service.apikeyid,
+                    apiKeySecret: service.apikeysecret,
+                    appId: service.appid,
+                    endpoint: 'https://api.smooch.io/',
+                    version: 'v1.1'
                 });
+                parameters.type = 'WHAT';
+    
+                const transactionActivateWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
+                
+                if (transactionActivateWhatsApp instanceof Array) {
+                    return result.json({
+                        success: true
+                    });
+                }
+                else {
+                    return result.status(400).json({
+                        msg: transactionActivateWhatsApp.code,
+                        success: false
+                    });
+                }
             }
             else {
                 return result.status(400).json({
-                    msg: transactionActivateWhatsApp.code,
+                    msg: requestMigrateWhatsApp.data.operationMessage,
                     success: false
                 });
             }

@@ -6,6 +6,27 @@ const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { errors, getErrorCode } = require('../config/helpers');
 
+//type: int|string|bool
+const properties = [
+    {
+        propertyname: "SONIDOPORTICKETNUEVO",
+        key: "alertTicketNew",
+        type: 'int' 
+    },
+    {
+        propertyname: "SONIDOPORMENSAJEENTRANTE",
+        key: "alertMessageIn",
+        type: 'int'
+    },
+];
+
+const cleanPropertyValue = (property, type) => {
+    if (property) {
+        return type === "bool" ? property.propertyvalue === "1" : (type === "int" ? parseInt(property.propertyvalue) : property.propertyvalue);
+    }
+    return type === "bool" ? false : (type === "int" ? 0 : '');
+}
+
 const validateResProperty = (r, type) => {
     let vv;
     if (r instanceof Array && r.length > 0)
@@ -55,6 +76,7 @@ exports.authenticate = async (req, res) => {
         const dataSesion = {
             userid: user.userid,
             orgid: user.orgid,
+            corpid: user.corpid,
             username: usr,
             status: 'ACTIVO',
             motive: null,
@@ -64,12 +86,15 @@ exports.authenticate = async (req, res) => {
             description: null
         };
         let notifications = [];
+        
         if (user.status === 'ACTIVO') {
+            let resultProperties = {};
             const resConnection = await tf.executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...user, propertyname: 'CONEXIONAUTOMATICAINBOX' })
 
             const automaticConnection = validateResProperty(resConnection, 'bool');
 
             const resList = await Promise.all([
+                tf.executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN", undefined, false, { propertynames: properties.map(x => x.propertyname), corpid: user.corpid, orgid: user.orgid, userid: user.userid }),
                 tf.executesimpletransaction("UFN_USERTOKEN_INS", dataSesion),
                 tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", dataSesion),
                 ...(automaticConnection ? [tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", {
@@ -81,6 +106,15 @@ exports.authenticate = async (req, res) => {
                     username: user.usr
                 })] : [])
             ]);
+            const resultBDProperties = resList[0];
+            
+            if (resultBDProperties instanceof Array && resultBDProperties.length > 0) {
+                resultProperties = properties.reduce((acc, item) => ({
+                    ...acc,
+                    [item.key]: cleanPropertyValue(resultBDProperties.find(x => x.propertyname === item.propertyname), item.type)
+                }), {});
+            }
+            user.properties = resultProperties;
             user.token = tokenzyx;
             delete user.pwd;
 
@@ -183,7 +217,9 @@ exports.changeOrganization = async (req, res) => {
             corpid: parameters.newcorpid,
             corpdesc: parameters.corpdesc,
             orgdesc: parameters.orgdesc,
-            redirect: resultBD[0] ? resultBD[0].redirect : '/tickets'
+            redirect: resultBD[0] ? resultBD[0].redirect : '/tickets',
+            currencysymbol: resultBD[0] ? resultBD[0].currencysymbol : 'S/', 
+            countrycode: resultBD[0] ? resultBD[0].countrycode : 'PE'
         };
 
         const resBDMenu = await tf.executesimpletransaction("UFN_APPLICATION_SEL", newusertoken);

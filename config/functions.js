@@ -460,7 +460,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_INS: {
-        query: "SELECT * FROM ufn_messagetemplate_ins($corpid,$orgid,$id,$description,$type,$status,$name,$namespace,$category,$language,$templatetype,$headerenabled,$headertype,$header,$body,$footerenabled,$footer,$buttonsenabled,$buttons,$username,$operation)",
+        query: "SELECT * FROM ufn_messagetemplate_ins($corpid,$orgid,$id,$description,$type,$status,$name,$namespace,$category,$language,$templatetype,$headerenabled,$headertype,$header,$body,$bodyobject,$footerenabled,$footer,$buttonsenabled,$buttons,$priority,$attachment,$username,$operation)",
         module: "",
         protected: "INSERT"
     },
@@ -510,7 +510,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CONVERSATION_PERSON_SEL: {
-        query: "SELECT * FROM ufn_conversation_person_sel($personid)",
+        query: "SELECT * FROM ufn_conversation_person_sel($corpid, $orgid, $personid, $conversationid)",
         module: "", //supervisor and inbox
         protected: "SELECT"
     },
@@ -541,6 +541,11 @@ module.exports = {
     },
     UFN_INTEGRATIONMANAGER_IMPORT: {
         query: "SELECT * FROM ufn_integrationmanager_importdata($corpid,$orgid,$id,$table)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_INTEGRATIONMANAGER_DELETEDATA: {
+        query: "SELECT * FROM ufn_integrationmanager_deletedata($corpid,$orgid,$id)",
         module: "",
         protected: "INSERT"
     },
@@ -1237,9 +1242,144 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_LEADACTIVITY_DUEDATE_SEL: {
-        query: "SELECT * FROM ufn_leadactivity_duedate_sel($corpid, $orgid, $username);",
+        query: "SELECT * FROM ufn_leadactivity_duedate_sel($corpid, $orgid, $userid);",
         module: "",
         protected: "INSERT"
+    },
+    QUERY_GET_SMS_DEFAULT_BY_ORG: {
+        query: "SELECT type, communicationchannelid FROM communicationchannel where corpid = $corpid and orgid = $orgid and description = 'SMSINTERNAL' and type = 'SMSI';",
+        module: "",
+        protected: "INSERT"
+    },
+    QUERY_GET_CONFIG_MAIL: {
+        query: "select email, pass, port, host, ssl, default_credentials  from org where corpid = $corpid and orgid = $orgid and private_mail = true;",
+        module: "",
+        protected: "INSERT"
+    },
+    QUERY_INSERT_TASK_SCHEDULER: {
+        query: "INSERT INTO taskscheduler (corpid, orgid, tasktype, taskbody, repeatflag, repeatmode, repeatinterval, completed, datetimestart, datetimeend) values ($corpid, $orgid, $tasktype, $taskbody, $repeatflag, $repeatmode, $repeatinterval, $completed, NOW() - INTERVAL '5 hours', NOW())",
+        module: "",
+        protected: "INSERT"
+    },
+    QUERY_GET_MESSAGETEMPLATE: {
+        query: "select messagetemplateid, header, body, priority, attachment from messagetemplate where corpid = $corpid and orgid = $orgid and messagetemplateid = $hsmtemplateid",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BILLINGSUPPORT_INS: {
+        query: "SELECT * FROM ufn_billingsupport_ins($year,$month,$plan,$id,$basicfee,$starttime,$finishtime,$description,$status,$type,$username,$operation )",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BILLINGSUPPORT_SEL: {
+        query: "SELECT * FROM ufn_billingsupport_sel($year,$month,$plan)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_SUPPORTPLAN_SEL: {
+        query: "SELECT * FROM ufn_supportplan_sel()",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGCONFIGURATION_INS: {
+        query: "SELECT * FROM ufn_billingconfiguration_ins($year,$month,$plan,$id,$basicfee,$userfreequantity,$useradditionalfee,$channelfreequantity,$channelwhatsappfee,$channelotherfee,$clientfreequantity$clientadditionalfee,$allowhsm,$hsmfee,$description,$status,$type,$username,$operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BILLINGCONFIGURATION_SEL: {
+        query: "SELECT * FROM ufn_billingconfiguration_sel($year, $month, $plan)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGCONVERSATION_INS: {
+        query: "SELECT * FROM ufn_billingconversation_ins($year,$month,$countrycode,$id,$companystartfee,$clientstartfee,$c250000,$c750000,$c2000000,$c3000000,$c4000000,$c5000000,$c10000000,$c25000000,$description,$status,$type,$username,$operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BILLINGCONVERSATION_SEL: {
+        query: "SELECT * FROM ufn_billingconversation_sel($year, $month, $countrycode)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIOD_SEL: {
+        query: "SELECT * FROM ufn_billingperiod_sel($corpid, $orgid, $year, $month, $billingplan, $supportplan, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIOD_NEWORG: {
+        query: "SELECT * FROM ufn_billingperiod_neworg($corpid, $orgid, $year, $month, $billingplan, $supportplan)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BILLINGPERIOD_NEWMONTH: {
+        query: "SELECT * FROM ufn_billingperiod_newmonth($corpid, $orgid, $year, $month)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BILLINGPERIOD_UPD: {
+        query: "SELECT * FROM ufn_billingperiod_upd($corpid, $orgid, $year, $month, $billingplan, $supportplan, $basicfee, $userfreequantity, $useradditionalfee, $channelfreequantity, $channelwhatsappfee, $channelotherfee, $clientfreequantity, $clientadditionalfee, $supportbasicfee, $additionalservicename1, $additionalservicefee1, $additionalservicename2, $additionalservicefee2, $additionalservicename3, $additionalservicefee3, $force)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BILLINGPERIOD_CALC: {
+        query: "SELECT * FROM ufn_billingperiod_calc($corpid, $orgid, $year, $month, $force)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_ORG_LIST: {
+        query: "SELECT * FROM ufn_org_lst($corpid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIODHSM_SEL: {
+        query: "SELECT * FROM ufn_billingperiodhsm_sel($corpid, $orgid, $year, $month, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIODHSM_NEWORG: {
+        query: "SELECT * FROM ufn_billingperiodhsm_neworg($corpid, $orgid, $year, $month, $billingplan)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BILLINGPERIODHSM_NEWMONTH: {
+        query: "SELECT * FROM ufn_billingperiodhsm_newmonth($corpid, $orgid, $year, $month)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BILLINGPERIODHSM_UPD: {
+        query: "SELECT * FROM ufn_billingperiodhsm_upd($corpid, $orgid, $year, $month, $hsmutilityfee, $force)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BILLINGPERIODHSM_CALC: {
+        query: "SELECT * FROM ufn_billingperiodhsm_calc($corpid, $orgid, $year, $month, $force)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BILLINGPERIOD_SUMMARYORG: {
+        query: "SELECT * FROM ufn_billingperiod_summaryorg($corpid, $orgid, $year, $month, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIOD_SUMMARYCORP: {
+        query: "SELECT * FROM ufn_billingperiod_summarycorp($corpid, $year, $month, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLING_REPORT_PERSON: {
+        query: "SELECT * FROM ufn_billing_report_person($corpid, $orgid, $year, $month)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLING_REPORT_USER: {
+        query: "SELECT * FROM ufn_billing_report_user($corpid, $orgid, $year, $month)",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_SEL_PROPERTY_ON_LOGIN: {
+        query: "SELECT propertyname, propertyvalue FROM property p WHERE p.corpid = :corpid AND p.orgid = :orgid AND p.propertyname IN (:propertynames) and p.status = 'ACTIVO';",
+        module: "",
+        protected: "SELECT"
     },
     UFN_DASHBOARDTEMPLATE_SEL: {
         query: "SELECT * FROM ufn_dashboardtemplate_sel($corpid, $orgid, $id, $all);",
