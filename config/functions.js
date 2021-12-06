@@ -1391,4 +1391,14 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_INPUTVALIDATION_SEL: {
+        query: "SELECT * FROM ufn_inputvalidation_sel($corpid, $id, $username);",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INPUTVALIDATION_INS: {
+        query: "SELECT * FROM ufn_inputvalidation_ins($corpid, $id, $operation, $description, $inputvalue, $type, $status, $username);",
+        module: "",
+        protected: "INSERT"
+    },
 }
