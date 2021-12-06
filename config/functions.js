@@ -1381,4 +1381,34 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DASHBOARDTEMPLATE_SEL: {
+        query: "SELECT * FROM ufn_dashboardtemplate_sel($corpid, $orgid, $id, $all);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_DASHBOARDTEMPLATE_INS: {
+        query: "SELECT * FROM ufn_dashboardtemplate_ins($id, $corpid, $orgid, $description, $status, $type, $detailjson, $layoutjson, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_HSMHISTORY_LST: {
+        query: "SELECT * FROM ufn_hsmhistory_lst($corpid, $orgid, $startdate, $enddate, $offset);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_HSMHISTORY_REPORT: {
+        query: "SELECT * FROM ufn_hsmhistory_report($corpid, $orgid, $campaignname, $date, $offset);",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INPUTVALIDATION_SEL: {
+        query: "SELECT * FROM ufn_inputvalidation_sel($corpid, $id, $username);",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INPUTVALIDATION_INS: {
+        query: "SELECT * FROM ufn_inputvalidation_ins($corpid, $id, $operation, $description, $inputvalue, $type, $status, $username);",
+        module: "",
+        protected: "INSERT"
+    },
 }

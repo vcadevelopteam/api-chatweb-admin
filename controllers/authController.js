@@ -88,13 +88,12 @@ exports.authenticate = async (req, res) => {
         let notifications = [];
         
         if (user.status === 'ACTIVO') {
-            let resultProperties = {};
+            // let resultProperties = {};
             const resConnection = await tf.executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...user, propertyname: 'CONEXIONAUTOMATICAINBOX' })
 
             const automaticConnection = validateResProperty(resConnection, 'bool');
 
-            const resList = await Promise.all([
-                tf.executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN", undefined, false, { propertynames: properties.map(x => x.propertyname), corpid: user.corpid, orgid: user.orgid, userid: user.userid }),
+            await Promise.all([
                 tf.executesimpletransaction("UFN_USERTOKEN_INS", dataSesion),
                 tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", dataSesion),
                 ...(automaticConnection ? [tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", {
@@ -106,15 +105,7 @@ exports.authenticate = async (req, res) => {
                     username: user.usr
                 })] : [])
             ]);
-            const resultBDProperties = resList[0];
-            
-            if (resultBDProperties instanceof Array && resultBDProperties.length > 0) {
-                resultProperties = properties.reduce((acc, item) => ({
-                    ...acc,
-                    [item.key]: cleanPropertyValue(resultBDProperties.find(x => x.propertyname === item.propertyname), item.type)
-                }), {});
-            }
-            user.properties = resultProperties;
+
             user.token = tokenzyx;
             delete user.pwd;
 
@@ -147,15 +138,26 @@ exports.authenticate = async (req, res) => {
 }
 
 exports.getUser = async (req, res) => {
+    let resultProperties = {};
     try {
         const resultBD = await Promise.all([
             tf.executesimpletransaction("UFN_APPLICATION_SEL", req.user),
             tf.executesimpletransaction("UFN_ORGANIZATION_CHANGEORG_SEL", { userid: req.user.userid }),
             tf.executesimpletransaction("UFN_LEADACTIVITY_DUEDATE_SEL", {...req.user, username: req.user.usr}),
+            tf.executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN", undefined, false, { propertynames: properties.map(x => x.propertyname), corpid: req.user.corpid, orgid: req.user.orgid, userid: req.user.userid }),
         ]);
+
+        const resultBDProperties = resultBD[3];
 
         if (!resultBD[0] instanceof Array) {
             return res.status(500).json(getErrorCode());
+        }
+
+        if (resultBDProperties instanceof Array && resultBDProperties.length > 0) {
+            resultProperties = properties.reduce((acc, item) => ({
+                ...acc,
+                [item.key]: cleanPropertyValue(resultBDProperties.find(x => x.propertyname === item.propertyname), item.type)
+            }), {});
         }
 
         const menu = resultBD[0].reduce((acc, item) => ({
@@ -172,7 +174,7 @@ exports.getUser = async (req, res) => {
             // delete req.user.corpid;
             // delete req.user.orgid;
             // delete req.user.userid;
-            return res.json({ data: { ...req.user, menu, token, organizations: resultBD[1], notifications: resultBD[2] } });
+            return res.json({ data: { ...req.user, menu, properties: resultProperties, token, organizations: resultBD[1], notifications: resultBD[2] } });
         })
     } catch (error) {
         console.log(error)
