@@ -1391,4 +1391,14 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_HSMHISTORY_LST: {
+        query: "SELECT * FROM ufn_hsmhistory_lst($corpid, $orgid, $startdate, $enddate, $offset);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_HSMHISTORY_REPORT: {
+        query: "SELECT * FROM ufn_hsmhistory_report($corpid, $orgid, $campaignname, $date, $offset);",
+        module: "",
+        protected: "INSERT"
+    },
 }
