@@ -1241,4 +1241,14 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_DASHBOARDTEMPLATE_SEL: {
+        query: "SELECT * FROM ufn_dashboardtemplate_sel($corpid, $orgid, $id, $all);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_DASHBOARDTEMPLATE_INS: {
+        query: "SELECT * FROM ufn_dashboardtemplate_ins($id, $corpid, $orgid, $description, $status, $type, $detailjson, $layoutjson, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
 }
