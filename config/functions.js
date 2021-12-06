@@ -1399,6 +1399,16 @@ module.exports = {
     UFN_HSMHISTORY_REPORT: {
         query: "SELECT * FROM ufn_hsmhistory_report($corpid, $orgid, $campaignname, $date, $offset);",
         module: "",
+        protected: "SELECT"
+    },
+    UFN_INPUTVALIDATION_SEL: {
+        query: "SELECT * FROM ufn_inputvalidation_sel($corpid, $id, $username);",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INPUTVALIDATION_INS: {
+        query: "SELECT * FROM ufn_inputvalidation_ins($corpid, $id, $operation, $description, $inputvalue, $type, $status, $username);",
+        module: "",
         protected: "INSERT"
     },
 }
