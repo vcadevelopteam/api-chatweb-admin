@@ -5,10 +5,10 @@ const auth = require('../middleware/auth');
 
 router.post('/token', culqiController.getToken)
 
-router.post('/charge', auth, culqiController.createCharge)
+router.post('/charge', auth, culqiController.charge)
 
-router.post('/subscribe', auth, culqiController.createSubscription)
+router.post('/subscribe', auth, culqiController.subscribe)
 
-router.post('/unsubscribe', auth, culqiController.deleteSubscription)
+router.post('/unsubscribe', auth, culqiController.unsubscribe)
 
 module.exports = router;
