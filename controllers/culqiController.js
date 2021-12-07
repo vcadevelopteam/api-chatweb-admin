@@ -6,6 +6,50 @@ const culqi = new Culqi({
     // publicKey: 'pk_test_wXgBHymgNU4CZknl'
 });
 
+const saveCharge = async (corpid, orgid, id, token, charge) => {
+    const query = `
+        UPDATE billing
+        SET status = 'PAGADO',
+        pocketbook = 'CULQI',
+        paymentdate = NOW(),
+        email = $email,
+        tokenid = $tokenid,
+        capture = $capture,
+        tokenjson = $tokenjson,
+        chargejson = $chargejson
+        WHERE corpid = $corpid
+        AND orgid = $orgid
+        AND billingid = $id
+    `
+    await sequelize.query(query, {
+        type: QueryTypes.SELECT,
+        bind: {
+            corpid: corpid,
+            orgid: orgid,
+            id: id,
+            email: token.email,
+            tokenid: token.id,
+            capture: true,
+            tokenjson: token,
+            chargejson: charge,
+        }}).catch(err => getErrorSeq(err));
+}
+
+const saveCustomer = async (corpid, orgid, id, customer) => {
+    const query = "UPDATE billing SET customerjson = $customerjson WHERE corpid = $corpid AND orgid = $orgid AND billingid = $id"
+    await sequelize.query(query, { type: QueryTypes.SELECT, bind: { corpid: corpid, orgid: orgid, id: id, customerjson: customer }}).catch(err => getErrorSeq(err));
+}
+
+const saveCard = async (corpid, orgid, id, card) => {
+    const query = "UPDATE billing SET cardjson = $cardjson WHERE corpid = $corpid AND orgid = $orgid AND billingid = $id"
+    await sequelize.query(query, { type: QueryTypes.SELECT, bind: { corpid: corpid, orgid: orgid, id: id, cardjson: card }}).catch(err => getErrorSeq(err));
+}
+
+const saveSubscription = async (corpid, orgid, id, subscription) => {
+    const query = "UPDATE billing SET subscriptionjson = $subscriptionjson WHERE corpid = $corpid AND orgid = $orgid AND billingid = $id"
+    await sequelize.query(query, { type: QueryTypes.SELECT, bind: { corpid: corpid, orgid: orgid, id: id, subscriptionjson: subscription }}).catch(err => getErrorSeq(err));
+}
+
 exports.getToken = async (req, res) => {
     const { settings, token, metadata = {} } = req.body;
     try {
@@ -61,6 +105,8 @@ exports.createCharge = async (req, res) => {
             });
             console.log(capturedCharge);
     
+            await saveCharge(1, token, charge);
+
             // Do some other operations, such save data of the charge
     
             if (capturedCharge.object === 'error') {
@@ -161,18 +207,21 @@ exports.createSubscription = async (req, res) => {
                 },
             });
         }
+        await saveCustomer(corpid, orgid, 1, customer);
         console.log(customer);
         
         const card = await culqi.cards.createCard({
             customer_id: customer.id,
             token_id: token.id
         });
+        await saveCard(corpid, orgid, 1, card);
         console.log(card);
                 
         const subscription = await culqi.subscriptions.createSubscription({
             card_id: card.id,
             plan_id: plan.id
         });
+        await saveSubscription(corpid, orgid, 1, subscription);
         console.log(subscription);
 
         // Do some other operations, such save data of the subscription
