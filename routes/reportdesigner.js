@@ -13,4 +13,9 @@ router.post("/export",
     reportDesignerController.exportReport
 )
 
+router.post("/dashboard",
+    auth,
+    reportDesignerController.dashboardDesigner
+)
+
 module.exports = router;
