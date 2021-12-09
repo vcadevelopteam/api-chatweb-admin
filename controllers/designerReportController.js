@@ -37,7 +37,9 @@ exports.dashboardDesigner = async (req, res) => {
         const template = await executesimpletransaction("QUERY_GET_DASHBOARDTEMPLATE", parameters);
 
         if (template instanceof Array && template.length > 0) {
-            const indicatorList = Object.values(JSON.parse(template[0].detailjson));
+            const templateDashboard = JSON.parse(template[0].detailjson);
+            const keysIndicators = Object.keys(templateDashboard);
+            const indicatorList = Object.values(templateDashboard);
 
             const queryToGetReports = indicatorList.map((r) => executesimpletransaction("QUERY_GET_REPORTTEMPLATE", { ...parameters, reporttemplateid: r.reporttemplateid }))
 
@@ -61,26 +63,52 @@ exports.dashboardDesigner = async (req, res) => {
 
             const result = await Promise.all(triggerReports);
 
-            const cleanData = result.map((resReport, index) => {
+            const cleanDatat = result.map((resReport, index) => {
                 const column = indicatorList[index].column;
-                const reportname = resultReports[index][0].description;
-                const data = resReport.reduce((acc, item) => ({
+                return resReport.reduce((acc, item) => ({
                     ...acc,
-                    [item[column]]: (acc[item[column]] || 0) + 1
+                    [item[column] || ""]: (acc[item[column] || ""] || 0) + 1
                 }), {});
+            });
 
+            const gg = cleanDatat.reduce((acc, data, index) => {
+                const reportname = resultReports[index][0].description;
+                const sortedData = Object.fromEntries(Object.entries(data).sort(([, a], [, b]) => b - a));
                 return {
-                    data,
-                    reportname
+                    ...acc,
+                    [keysIndicators[index]]: {
+                        data: sortedData,
+                        reportname
+                    }
                 }
-            })
+            }, {});
 
-            return res.json({ result: cleanData });
+            // const cleanData = result.reduce((acc, resReport, index) => {
+            //     const column = indicatorList[index].column;
+            //     const reportname = resultReports[index][0].description;
+            //     const data = resReport.reduce((acc, item) => ({
+            //         ...acc,
+            //         [item[column] || ""]: (acc[item[column] || ""] || 0) + 1
+            //     }), {});
+
+            //     return {
+            //         ...acc,
+            //         [keysIndicators[index]]: {
+            //             data,
+            //             reportname
+            //         }
+            //     }
+            // }, {})
+
+            // const sortClean = cleanData
+
+            return res.json({ result: gg });
         } else {
             const rr = getErrorCode(errors.UNEXPECTED_ERROR);
             return res.status(rr.rescode).json(rr);
         }
     } catch (ex) {
+        console.log(ex);
         const rr = getErrorCode(errors.UNEXPECTED_ERROR);
         return res.status(rr.rescode).json(rr);
     }
