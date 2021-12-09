@@ -1,5 +1,5 @@
 const { buildQueryDynamic, exportData, executesimpletransaction } = require('../config/triggerfunctions');
-const { setSessionParameters, errors, getErrorSeq, getErrorCode } = require('../config/helpers');
+const { setSessionParameters, errors, getErrorCode } = require('../config/helpers');
 
 exports.drawReport = async (req, res) => {
     const { columns, filters, parameters = {} } = req.body;
@@ -35,14 +35,14 @@ exports.dashboardDesigner = async (req, res) => {
     setSessionParameters(parameters, req.user);
     try {
         const template = await executesimpletransaction("QUERY_GET_DASHBOARDTEMPLATE", parameters);
-    
+
         if (template instanceof Array && template.length > 0) {
             const indicatorList = Object.values(JSON.parse(template[0].detailjson));
-            
+
             const queryToGetReports = indicatorList.map((r) => executesimpletransaction("QUERY_GET_REPORTTEMPLATE", { ...parameters, reporttemplateid: r.reporttemplateid }))
-    
+
             const resultReports = await Promise.all(queryToGetReports);
-            
+
             const triggerReports = resultReports.map((resReport, index) => {
                 if (resReport instanceof Array && resReport[0]) {
                     const report = resReport[0];
@@ -51,20 +51,19 @@ exports.dashboardDesigner = async (req, res) => {
                         start: parameters.startdate,
                         end: parameters.enddate
                     }]
-                    
+
                     const columnstmp = JSON.parse(report.columnjson).filter(x => x.key === indicatorList[index].column);
-    
+
                     return buildQueryDynamic(columnstmp, filterHard, parameters);
                 }
                 return undefined;
             });
-    
+
             const result = await Promise.all(triggerReports);
-            
+
             const cleanData = result.map((resReport, index) => {
-                const column =  indicatorList[index].column;
+                const column = indicatorList[index].column;
                 const reportname = resultReports[index][0].description;
-                console.log(resultReports[index])
                 const data = resReport.reduce((acc, item) => ({
                     ...acc,
                     [item[column]]: (acc[item[column]] || 0) + 1
@@ -78,10 +77,11 @@ exports.dashboardDesigner = async (req, res) => {
 
             return res.json({ result: cleanData });
         } else {
-            return getErrorCode(errors.UNEXPECTED_ERROR);
+            const rr = getErrorCode(errors.UNEXPECTED_ERROR);
+            return res.status(rr.rescode).json(rr);
         }
     } catch (ex) {
-        console.log(ex)
-        return getErrorCode(errors.UNEXPECTED_ERROR);
+        const rr = getErrorCode(errors.UNEXPECTED_ERROR);
+        return res.status(rr.rescode).json(rr);
     }
 }
