@@ -1281,6 +1281,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PAYMENTPLAN_SEL: {
+        query: "SELECT * FROM ufn_paymentplan_sel($code,$all)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_BILLINGCONFIGURATION_INS: {
         query: "SELECT * FROM ufn_billingconfiguration_ins($year,$month,$plan,$id,$basicfee,$userfreequantity,$useradditionalfee,$channelfreequantity,$channelwhatsappfee,$channelotherfee,$clientfreequantity$clientadditionalfee,$allowhsm,$hsmfee,$description,$status,$type,$username,$operation)",
         module: "",
@@ -1408,16 +1413,6 @@ module.exports = {
     },
     UFN_INPUTVALIDATION_INS: {
         query: "SELECT * FROM ufn_inputvalidation_ins($corpid, $id, $operation, $description, $inputvalue, $type, $status, $username);",
-        module: "",
-        protected: "INSERT"
-    },
-    QUERY_GET_DASHBOARDTEMPLATE: {
-        query: "select detailjson from dashboardtemplate where corpid = $corpid and orgid = $orgid and dashboardtemplateid = $dashboardtemplateid",
-        module: "",
-        protected: "INSERT"
-    },
-    QUERY_GET_REPORTTEMPLATE: {
-        query: "select columnjson, description from reporttemplate where corpid = $corpid and orgid = $orgid and reporttemplateid = $reporttemplateid",
         module: "",
         protected: "INSERT"
     },
