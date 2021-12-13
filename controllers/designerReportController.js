@@ -82,26 +82,7 @@ exports.dashboardDesigner = async (req, res) => {
                     }
                 }
             }, {});
-
-            // const cleanData = result.reduce((acc, resReport, index) => {
-            //     const column = indicatorList[index].column;
-            //     const reportname = resultReports[index][0].description;
-            //     const data = resReport.reduce((acc, item) => ({
-            //         ...acc,
-            //         [item[column] || ""]: (acc[item[column] || ""] || 0) + 1
-            //     }), {});
-
-            //     return {
-            //         ...acc,
-            //         [keysIndicators[index]]: {
-            //             data,
-            //             reportname
-            //         }
-            //     }
-            // }, {})
-
-            // const sortClean = cleanData
-
+            
             return res.json({ result: gg });
         } else {
             const rr = getErrorCode(errors.UNEXPECTED_ERROR);
