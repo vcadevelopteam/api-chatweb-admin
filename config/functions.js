@@ -1416,4 +1416,14 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    QUERY_GET_DASHBOARDTEMPLATE: {
+        query: "select detailjson from dashboardtemplate where corpid = $corpid and orgid = $orgid and dashboardtemplateid = $dashboardtemplateid",
+        module: "",
+        protected: "INSERT"
+    },
+    QUERY_GET_REPORTTEMPLATE: {
+        query: "select columnjson, description from reporttemplate where corpid = $corpid and orgid = $orgid and reporttemplateid = $reporttemplateid",
+        module: "",
+        protected: "INSERT"
+    },
 }
