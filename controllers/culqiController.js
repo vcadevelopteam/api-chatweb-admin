@@ -95,10 +95,10 @@ exports.charge = async (req, res) => {
     const { corpid, orgid, userid } = req.user;
     const { id, settings, token, metadata = {} } = req.body;
     try {
-        const billing = await getBilling(corpid, orgid, id);
-        if (billing) {
-            if (billing.status === 'PENDIENTE') {
-                if (billing.currency === settings.currency && billing.amount * 100 === settings.amount) {
+        // const billing = await getBilling(corpid, orgid, id);
+        // if (billing) {
+        //     if (billing.status === 'PENDIENTE') {
+        //         if (billing.currency === settings.currency && billing.amount * 100 === settings.amount) {
                     const userprofile = await getUserProfile(userid);
                     if (userprofile) {
                         metadata.corpid = corpid;
@@ -137,18 +137,18 @@ exports.charge = async (req, res) => {
                     else {
                         return res.status(403).json({ error: true, success: false, code: '', message: 'invalid user' });
                     }
-                }
-                else {
-                    return res.status(403).json({ error: true, success: false, code: '', message: 'invalid bill data' });
-                }
-            }
-            else {
-                return res.json({ error: false, success: true, code: '', message: 'bill already paid' });
-            }
-        }
-        else {
-            return res.status(404).json({ error: true, success: false, code: '', message: 'bill not found' });
-        }
+        //         }
+        //         else {
+        //             return res.status(403).json({ error: true, success: false, code: '', message: 'invalid bill data' });
+        //         }
+        //     }
+        //     else {
+        //         return res.json({ error: false, success: true, code: '', message: 'bill already paid' });
+        //     }
+        // }
+        // else {
+        //     return res.status(404).json({ error: true, success: false, code: '', message: 'bill not found' });
+        // }
     } catch (error) {
         console.log(error);
         return res.status(500).json({ msg: "There was a problem, please try again later" });

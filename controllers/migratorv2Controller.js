@@ -1231,7 +1231,7 @@ const queryCore = {
         WHEN ous.type = 'HOLDING' THEN 3
         ELSE ous.userid + $incuserid
         END as zyxmeuserid,
-        ous.roleid, ous.supervisor + $incuserid as supervisor,
+        ous.roleid, CASE WHEN ous.supervisor = 0 THEN 0 ELSE ous.supervisor + $incuserid END as supervisor,
         ous.description, ous.status, ous.type, ous.createdate, ous.createby, ous.changedate, ous.changeby, ous.edit,
         ous.bydefault, ous.labels, ous.groups, ous.channels, ous.defaultsort, ous.redirect,
         r.code as rolecode
