@@ -598,6 +598,9 @@ module.exports = {
         locked: {
             column: "pcc.locked"
         },
+        lastuser: {
+            column: "co.lastuser"
+        }
     },
     blacklist: {
         phone: {
