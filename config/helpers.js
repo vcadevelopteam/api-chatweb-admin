@@ -14,7 +14,7 @@ exports.generatefilter = (filters, origin, daterange, offset) => {
                 if (f.value !== '') {
                     switch (type) {
                         case "json":
-                            where += ` and ${column.replace('###jvalue###', f.value)}`;
+                            where += ` and ${column.replace('###JVALUE###', f.value)}`;
                             break;
                         case "number":
                             switch (f.operator) {

@@ -602,7 +602,7 @@ module.exports = {
             column: "co.lastuser"
         },
         phasejson: {
-            column: "(pl.phasejson->>###jvalue###)::BIGINT > 0",
+            column: "(pl.phasejson->>'###JVALUE###')::BIGINT > 0",
             type: "json"
         }
     },
