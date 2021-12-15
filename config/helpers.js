@@ -13,6 +13,9 @@ exports.generatefilter = (filters, origin, daterange, offset) => {
                 const type = columnsFunction[origin][key].type;
                 if (f.value !== '') {
                     switch (type) {
+                        case "json":
+                            where += ` and ${column.replace('###jvalue###', f.value)}`;
+                            break;
                         case "number":
                             switch (f.operator) {
                                 case 'greater':

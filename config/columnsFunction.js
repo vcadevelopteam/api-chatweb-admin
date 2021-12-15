@@ -600,6 +600,10 @@ module.exports = {
         },
         lastuser: {
             column: "co.lastuser"
+        },
+        phasejson: {
+            column: "(pl.phasejson->>###jvalue###)::BIGINT > 0",
+            type: "json"
         }
     },
     blacklist: {
