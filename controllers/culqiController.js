@@ -3,8 +3,8 @@ const { QueryTypes } = require('sequelize');
 const { getErrorSeq } = require('../config/helpers');
 const Culqi = require('culqi-node');
 const culqi = new Culqi({
-    privateKey: 'sk_test_A21tqesxbjbJmX9y',
-    // publicKey: 'pk_test_wXgBHymgNU4CZknl'
+    privateKey: 'sk_test_d901e8f07d45a485',
+    // publicKey: 'pk_test_041501e753dcb2f9'
 });
 
 exports.getToken = async (req, res) => {
