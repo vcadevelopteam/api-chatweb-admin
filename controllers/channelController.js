@@ -513,20 +513,43 @@ exports.deleteChannel = async (request, result) => {
             case 'WHAT':
                 if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
                     var serviceCredentials = JSON.parse(parameters.servicecredentials);
-        
-                    const requestDeleteWhatsAppSmooch = await axios({
-                        data: {
-                            linkType: 'WEBHOOKCLEAR',
-                            apiKeyId: serviceCredentials.apiKeyId,
-                            apiKeySecret: serviceCredentials.apiKeySecret,
-                            applicationId: parameters.communicationchannelsite,
-                            integrationId: parameters.integrationid
-                        },
-                        method: 'post',
-                        url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
-                    });
-        
-                    if (requestDeleteWhatsAppSmooch.data.success) {
+
+                    if (typeof serviceCredentials.apiKeyId !== 'undefined' && serviceCredentials.apiKeyId) {
+                        const requestDeleteWhatsAppSmooch = await axios({
+                            data: {
+                                linkType: 'WEBHOOKCLEAR',
+                                apiKeyId: serviceCredentials.apiKeyId,
+                                apiKeySecret: serviceCredentials.apiKeySecret,
+                                applicationId: parameters.communicationchannelsite,
+                                integrationId: parameters.integrationid
+                            },
+                            method: 'post',
+                            url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
+                        });
+            
+                        if (requestDeleteWhatsAppSmooch.data.success) {
+                            const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
+            
+                            if (transactionDeleteWhatsAppSmooch instanceof Array) {
+                                return result.json({
+                                    success: true
+                                });
+                            }
+                            else {
+                                return result.status(400).json({
+                                    msg: transactionDeleteWhatsAppSmooch.code,
+                                    success: false
+                                });
+                            }
+                        }
+                        else {
+                            return result.status(400).json({
+                                msg: requestDeleteWhatsAppSmooch.data.operationMessage,
+                                success: false
+                            });
+                        }
+                    }
+                    else {
                         const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
         
                         if (transactionDeleteWhatsAppSmooch instanceof Array) {
@@ -540,12 +563,6 @@ exports.deleteChannel = async (request, result) => {
                                 success: false
                             });
                         }
-                    }
-                    else {
-                        return result.status(400).json({
-                            msg: requestDeleteWhatsAppSmooch.data.operationMessage,
-                            success: false
-                        });
                     }
                 }
                 else {
@@ -1369,6 +1386,52 @@ exports.insertChannel = async (request, result) => {
                 else {
                     return result.status(400).json({
                         msg: transactionCreateWhatsAppSmooch.code,
+                        success: false
+                    });
+                }
+
+            case 'WHATSAPPSMOOCHINSERT':
+                const requestInsertWhatsAppSmooch = await axios({
+                    data: {
+                        apiKeyId: service.apiKeyId,
+                        apiKeySecret: service.apiKeySecret,
+                        applicationId: service.appid,
+                        linkType: 'WEBHOOKMIGRATE'
+                    },
+                    method: 'post',
+                    url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
+                });
+
+                if (requestInsertWhatsAppSmooch.data.success) {
+                    var serviceCredentials = {
+                        apiKeyId: service.apikeyid,
+                        apiKeySecret: service.apikeysecret,
+                        appId: service.appid,
+                        endpoint: 'https://api.smooch.io/',
+                        version: 'v1.1'
+                    };
+
+                    parameters.communicationchannelsite = service.appid;
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.type = 'WHAT';
+
+                    const transactionInsertWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionInsertWhatsApp instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionInsertWhatsApp.code,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    return result.status(400).json({
+                        msg: requestInsertWhatsAppSmooch.data.operationMessage,
                         success: false
                     });
                 }
