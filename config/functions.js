@@ -1082,7 +1082,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_SEL: {
-        query: "select * from ufn_lead_sel($corpid, $orgid, $id, $all)",
+        query: "select * from ufn_lead_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $campaignid, $all)",
         module: "",
         protected: "SELECT"
     },
