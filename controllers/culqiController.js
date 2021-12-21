@@ -101,7 +101,7 @@ exports.createOrder = async (req, res) => {
         }
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ msg: "There was a problem, please try again later" });
+        return res.status(500).json({ message: "There was a problem, please try again later" });
     }
 }
 
@@ -146,11 +146,31 @@ exports.deleteOrder = async (req, res) => {
         }
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ msg: "There was a problem, please try again later" });
+        return res.status(500).json({ message: "There was a problem, please try again later" });
     }
 }
 
-exports.charge = async (req, res) => {
+const createCharge = async (userprofile, settings, token, metadata) => {
+    return await culqi.charges.createCharge({
+        amount: settings.amount,
+        currency_code: settings.currency,
+        email: token.email,
+        source_id: token.id,
+        capture: true,
+        description: `Laraigo ${settings.description}`.slice(0,80),
+        metadata: metadata,
+        antifraud_details: {
+            first_name: userprofile.firstname,
+            last_name: userprofile.lastname,
+            address: userprofile.address || 'EMPTY',
+            address_city: userprofile.address_city || 'N/A',
+            country_code: userprofile.country || token.client.ip_country_code,
+            phone: userprofile.phone,
+        }
+    });
+}
+
+exports.chargeInvoice = async (req, res) => {
     const { corpid, orgid, userid, usr } = req.user;
     const { invoiceid, settings, token, metadata = {} } = req.body;
     try {
@@ -163,23 +183,7 @@ exports.charge = async (req, res) => {
                         metadata.corpid = corpid;
                         metadata.orgid = orgid;
                         metadata.userid = userid;
-                        const charge = await culqi.charges.createCharge({
-                            amount: settings.amount,
-                            currency_code: settings.currency,
-                            email: token.email,
-                            source_id: token.id,
-                            capture: true,
-                            description: `Laraigo ${settings.description}`.slice(0,80),
-                            metadata: metadata,
-                            antifraud_details: {
-                                first_name: userprofile.firstname,
-                                last_name: userprofile.lastname,
-                                address: userprofile.address || 'EMPTY',
-                                address_city: userprofile.address_city || 'N/A',
-                                country_code: userprofile.country || token.client.ip_country_code,
-                                phone: userprofile.phone,
-                            }
-                        });
+                        const charge = await createCharge(userprofile, settings, token, metadata);
                         if (charge.object === 'error') {
                             return res.status(400).json({
                                 error: true,
@@ -193,20 +197,44 @@ exports.charge = async (req, res) => {
                             });
                         }
                         else {
-                            const query = "UFN_INVOICE_PAYMENT";
-                            const bind = {
+                            const chargequery = "UFN_CHARGE_INS";
+                            const chargebind = {
+                                corpid: corpid,
+                                orgid: orgid,
+                                id: null,
+                                invoiceid: invoiceid,
+                                description: settings.description,
+                                type: charge.object,
+                                status: 'PAID',
+                                paidby: usr,
+                                orderid: null,
+                                orderjson: null,
+                                email: token.email,
+                                tokenid: token.id,
+                                capture: true,
+                                tokenjson: token,
+                                chargetoken: charge.id,
+                                chargejson: charge,
+                                operation: 'INSERT'
+                            }
+                            const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
+                            
+                            const invoicequery = "UFN_INVOICE_PAYMENT";
+                            const invoicebind = {
                                 corpid: corpid,
                                 orgid: orgid,
                                 invoiceid: invoiceid,
+                                chargeid: chargeresult[0].chargeid,
                                 paidby: usr,
                                 email: token.email,
                                 tokenid: token.id,
                                 capture: true,
                                 tokenjson: token,
-                                chargeid: charge.id,
+                                chargetoken: charge.id,
                                 chargejson: charge
                             }
-                            const result = await triggerfunctions.executesimpletransaction(query, bind);
+                            const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
+                            
                             return res.json({
                                 error: false,
                                 success: true,
@@ -236,7 +264,82 @@ exports.charge = async (req, res) => {
         }
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ msg: "There was a problem, please try again later" });
+        if (error.charge_id) {
+            return res.status(500).json({ message: error.merchant_message });
+        }
+        else {
+            return res.status(500).json({ message: "There was a problem, please try again later" });
+        }
+    }
+};
+
+exports.charge = async (req, res) => {
+    const { corpid, orgid, userid, usr } = req.user;
+    const { settings, token, metadata = {} } = req.body;
+    try {
+        const userprofile = await getUserProfile(userid);
+        if (userprofile) {
+            metadata.corpid = corpid;
+            metadata.orgid = orgid;
+            metadata.userid = userid;
+            const charge = await createCharge(userprofile, settings, token, metadata);
+            if (charge.object === 'error') {
+                return res.status(400).json({
+                    error: true,
+                    success: false,
+                    data: {
+                        object: charge.object,
+                        id: charge.charge_id,
+                        code: charge.code,
+                        message: charge.user_message
+                    }
+                });
+            }
+            else {
+                const chargequery = "UFN_CHARGE_INS";
+                const chargebind = {
+                    corpid: corpid,
+                    orgid: orgid,
+                    id: null,
+                    invoiceid: null,
+                    description: settings.description,
+                    type: charge.object,
+                    status: 'PAID',
+                    paidby: usr,
+                    orderid: null,
+                    orderjson: null,
+                    email: token.email,
+                    tokenid: token.id,
+                    capture: true,
+                    tokenjson: token,
+                    chargetoken: charge.id,
+                    chargejson: charge,
+                    operation: 'INSERT'
+                }
+                const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
+                return res.json({
+                    error: false,
+                    success: true,
+                    code: charge.outcome.code,
+                    message: charge.outcome.user_message ,
+                    data: {
+                        object: charge.object,
+                        id: charge.id,
+                    }
+                });
+            }
+        }
+        else {
+            return res.status(403).json({ error: true, success: false, code: '', message: 'invalid user' });
+        }
+    } catch (error) {
+        console.log(error);
+        if (error.charge_id) {
+            return res.status(500).json({ message: error.merchant_message });
+        }
+        else {
+            return res.status(500).json({ message: "There was a problem, please try again later" });
+        }
     }
 };
 
@@ -273,7 +376,7 @@ exports.refund = async (req, res) => {
                         corpid: corpid,
                         orgid: orgid,
                         invoiceid: invoiceid,
-                        refundid: refund.id,
+                        refundtoken: refund.id,
                         refundjson: refund
                     }
                     const result = await triggerfunctions.executesimpletransaction(query, bind);
@@ -297,7 +400,7 @@ exports.refund = async (req, res) => {
         }
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ msg: "There was a problem, please try again later" });
+        return res.status(500).json({ message: "There was a problem, please try again later" });
     }
 };
 

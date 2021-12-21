@@ -1462,7 +1462,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVOICE_PAYMENT: {
-        query: "SELECT * FROM ufn_invoice_payment($corpid,$orgid,$invoiceid,$paidby,$email,$tokenid,$capture,$tokenjson,$chargeid,$chargejson)",
+        query: "SELECT * FROM ufn_invoice_payment($corpid,$orgid,$invoiceid,$paidby,$email,$tokenid,$capture,$tokenjson,$chargeid,$chargetoken,$chargejson)",
         module: "",
         protected: "INSERT"
     },
@@ -1472,7 +1472,12 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVOICE_REFUND: {
-        query: "SELECT * FROM ufn_invoice_refund($corpid,$orgid,$invoiceid,$refundid,$refundjson)",
+        query: "SELECT * FROM ufn_invoice_refund($corpid,$orgid,$invoiceid,$refundtoken,$refundjson)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CHARGE_INS: {
+        query: "SELECT * FROM ufn_charge_ins($corpid,$orgid,$id,$invoiceid,$description,$type,$status,$paidby,$orderid,$orderjson,$email,$tokenid,$capture,$tokenjson,$chargetoken,$chargejson,$operation)",
         module: "",
         protected: "INSERT"
     },
