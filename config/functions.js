@@ -1452,7 +1452,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVOICE_SEL: {
-        query: "SELECT * FROM ufn_invoice_sel($corpid,$orgid,$invoiceid)",
+        query: "SELECT * FROM ufn_invoice_sel($corpid,$orgid,$invoiceid,$year,$month)",
         module: "",
         protected: "SELECT"
     },

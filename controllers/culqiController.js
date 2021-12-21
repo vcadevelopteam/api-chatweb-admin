@@ -38,7 +38,9 @@ const getInvoice = async (corpid, orgid, id) => {
     const bind = {
         corpid: corpid,
         orgid: orgid,
-        invoiceid: id
+        invoiceid: id,
+        year: 0,
+        month: 0
     }
     const result = await triggerfunctions.executesimpletransaction(query, bind);
     if (result instanceof Array) {
