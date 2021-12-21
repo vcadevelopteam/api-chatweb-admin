@@ -390,7 +390,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CORP_INS: {
-        query: "SELECT * FROM ufn_corp_ins($id, $description, $status, $type, $username, $operation, $logo, $logotype)",
+        query: "SELECT * FROM ufn_corp_ins($id, $description, $status, $type, $username, $operation, $logo, $logotype, $companysize, $paymentplanid, $doctype, $docnum, $bussinessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $billbyorg)",
         module: "/corporations",
         protected: "INSERT"
     },
@@ -399,8 +399,13 @@ module.exports = {
         module: "/extras/quickreplies",
         protected: "SELECT"
     },
+    UFN_BUSINESSDOCTYPE_SEL: {
+        query: "SELECT * FROM ufn_businessdoctype_sel()",
+        module: "/extras/quickreplies",
+        protected: "SELECT"
+    },
     UFN_ORG_INS: {
-        query: "SELECT * FROM ufn_org_ins($corpid,$id,$description,$status,$type,$username,$operation,$email,$password,$port,$host,$default_credentials,$ssl, $private_mail, $currency)",
+        query: "SELECT * FROM ufn_org_ins($corpid,$id,$description,$status,$type,$username,$operation,$email,$password,$port,$host,$default_credentials,$ssl, $private_mail, $currency,$country, $timezoneoffset, $timezone, $doctype, $docnum, $bussinessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice)",
         module: "/extras/quickreplies",
         protected: "INSERT"
     },
