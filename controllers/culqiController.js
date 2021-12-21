@@ -346,7 +346,7 @@ exports.charge = async (req, res) => {
 };
 
 exports.refund = async (req, res) => {
-    const { corpid, orgid, userid } = req.user;
+    const { corpid, orgid, userid, usr } = req.user;
     const { invoiceid, metadata = {} } = req.body;
     try {
         const invoice = await getInvoice(corpid, orgid, invoiceid);
@@ -379,7 +379,8 @@ exports.refund = async (req, res) => {
                         orgid: orgid,
                         invoiceid: invoiceid,
                         refundtoken: refund.id,
-                        refundjson: refund
+                        refundjson: refund,
+                        username: usr
                     }
                     const result = await triggerfunctions.executesimpletransaction(query, bind);
                     return res.json({

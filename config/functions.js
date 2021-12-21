@@ -1461,6 +1461,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_INVOICE_CANCELED: {
+        query: "SELECT * FROM ufn_invoice_canceled($corpid,$orgid,$invoiceid,$username)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_INVOICE_ORDER: {
         query: "SELECT * FROM ufn_invoice_order($corpid,$orgid,$invoiceid,$orderid,$orderjson)",
         module: "",
@@ -1472,12 +1477,12 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVOICE_CHANGEPAYMENTSTATUS: {
-        query: "SELECT * FROM ufn_invoice_changepaymentstatus($corpid,$orgid,$invoiceid,$status)",
+        query: "SELECT * FROM ufn_invoice_changepaymentstatus($corpid,$orgid,$invoiceid,$status,$username)",
         module: "",
         protected: "INSERT"
     },
     UFN_INVOICE_REFUND: {
-        query: "SELECT * FROM ufn_invoice_refund($corpid,$orgid,$invoiceid,$refundtoken,$refundjson)",
+        query: "SELECT * FROM ufn_invoice_refund($corpid,$orgid,$invoiceid,$refundtoken,$refundjson,$username)",
         module: "",
         protected: "INSERT"
     },
