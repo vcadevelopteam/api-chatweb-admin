@@ -1,3 +1,4 @@
+const triggerfunctions = require('../config/triggerfunctions');
 const sequelize = require('../config/database');
 const { QueryTypes } = require('sequelize');
 const { getErrorSeq } = require('../config/helpers');
@@ -8,7 +9,7 @@ const culqi = new Culqi({
 });
 
 exports.getToken = async (req, res) => {
-    const { settings, token, metadata = {} } = req.body;
+    const { token } = req.body;
     try {
         const tk = await culqi.tokens.getToken({
             id: token.id, 
@@ -21,115 +22,199 @@ exports.getToken = async (req, res) => {
     }
 }
 
-const getBilling = async (corpid, orgid, id) => {
-    const query = "SELECT currency, amount, status FROM billing WHERE corpid = $corpid AND orgid = $orgid AND billingid = $id"
-    const result = await sequelize.query(query, { type: QueryTypes.SELECT, bind: { userid }}).catch(err => getErrorSeq(err));
-    if (result.length > 0) {
-        return result[0]
-    }
-    else {
-        return null
-    }
-}
-
 const getUserProfile = async (userid) => {
     const query = "SELECT firstname, lastname, email, phone, country FROM usr WHERE userid = $userid"
     const result = await sequelize.query(query, { type: QueryTypes.SELECT, bind: { userid }}).catch(err => getErrorSeq(err));
-    if (result.length > 0) {
-        return result[0]
-    }
-    else {
-        return null
-    }
-}
-const createCharge = async (settings, token, metadata, userprofile) => {
-    return await culqi.charges.createCharge({
-        amount: settings.amount,
-        currency_code: settings.currency,
-        email: token.email,
-        source_id: token.id,
-        capture: false,
-        description: `Laraigo ${settings.description}`.slice(0,80),
-        metadata: metadata,
-        antifraud_details: {
-            first_name: userprofile.firstname,
-            last_name: userprofile.lastname,
-            address: userprofile.address || 'EMPTY',
-            address_city: userprofile.address_city || 'N/A',
-            country_code: userprofile.country || token.client.ip_country_code,
-            phone: userprofile.phone,
+    if (result instanceof Array) {
+        if (result.length > 0) {
+            return result[0]
         }
-    });
+    }
+    return null
 }
 
-const saveCharge = async (corpid, orgid, id, token, charge) => {
-    const query = `
-        UPDATE billing
-        SET status = 'PAGADO',
-        pocketbook = 'CULQI',
-        paymentdate = NOW(),
-        email = $email,
-        tokenid = $tokenid,
-        capture = $capture,
-        tokenjson = $tokenjson,
-        chargejson = $chargejson
-        WHERE corpid = $corpid
-        AND orgid = $orgid
-        AND billingid = $id
-    `
-    await sequelize.query(query, {
-        type: QueryTypes.SELECT,
-        bind: {
-            corpid: corpid,
-            orgid: orgid,
-            id: id,
-            email: token.email,
-            tokenid: token.id,
-            capture: true,
-            tokenjson: token,
-            chargejson: charge,
-        }}).catch(err => getErrorSeq(err));
+const getInvoice = async (corpid, orgid, id) => {
+    const query = "UFN_INVOICE_SEL";
+    const bind = {
+        corpid: corpid,
+        orgid: orgid,
+        invoiceid: id
+    }
+    const result = await triggerfunctions.executesimpletransaction(query, bind);
+    if (result instanceof Array) {
+        if (result.length > 0) {
+            return result[0]
+        }
+    }
+    return null
+}
+
+exports.createOrder = async (req, res) => {
+    const { corpid, orgid, userid } = req.user;
+    const { invoiceid } = req.body;
+    try {
+        const userprofile = await getUserProfile(userid);
+        const invoice = await getInvoice(corpid, orgid, invoiceid);
+        if (invoice) {
+            const order = await culqi.orders.createOrder({
+                amount: invoice.totalamount * 100,
+                currency_code: invoice.currency,
+                description: invoice.description,
+                order_number: `${invoice.serie}-${invoice.correlative}`,
+                client_details: {
+                    first_name: userprofile.firstname,
+                    last_name: userprofile.lastname,
+                    email: userprofile.email,
+                    phone_number: userprofile.phone,
+                },
+                expiration_date: Math.trunc(new Date().setMonth(new Date().getMonth()+2)/1000)
+            });
+            const query = "UFN_INVOICE_ORDER";
+            const bind = {
+                corpid: corpid,
+                orgid: orgid,
+                invoiceid: invoiceid,
+                orderid: order.id,
+                orderjson: order
+            }
+            const result = await triggerfunctions.executesimpletransaction(query, bind);
+            if (result instanceof Array) {
+                if (result.length > 0) {
+                    return result.json({
+                        success: true,
+                        data: {
+                            id: order.id,
+                            state: order.state
+                        }
+                    });
+                }
+                else
+                {
+                    return result.json({
+                        success: false,
+                    });
+                }
+            }
+        }
+        else {
+            return res.status(404).json({ error: true, success: false, code: '', message: 'Invoice not found' });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ msg: "There was a problem, please try again later" });
+    }
+}
+
+exports.deleteOrder = async (req, res) => {
+    const { corpid, orgid, userid } = req.user;
+    const { invoiceid } = req.body;
+    try {
+        const invoice = await getInvoice(corpid, orgid, invoiceid);
+        if (invoice) {
+            const order = await culqi.orders.deleteOrder({
+                id: invoice.orderid
+            });
+            const query = "UFN_INVOICE_ORDER";
+            const bind = {
+                corpid: corpid,
+                orgid: orgid,
+                invoiceid: invoiceid,
+                orderid: null,
+                orderjson: null
+            }
+            const result = await triggerfunctions.executesimpletransaction(query, bind);
+            if (result instanceof Array) {
+                if (result.length > 0) {
+                    return result.json({
+                        success: true,
+                        data: {
+                            id: order.id,
+                            state: order.state
+                        }
+                    });
+                }
+                else
+                {
+                    return result.json({
+                        success: false,
+                    });
+                }
+            }
+        }
+        else {
+            return res.status(404).json({ error: true, success: false, code: '', message: 'Invoice not found' });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ msg: "There was a problem, please try again later" });
+    }
 }
 
 exports.charge = async (req, res) => {
-    const { corpid, orgid, userid } = req.user;
-    const { id, settings, token, metadata = {} } = req.body;
+    const { corpid, orgid, userid, usr } = req.user;
+    const { invoiceid, settings, token, metadata = {} } = req.body;
     try {
-        // const billing = await getBilling(corpid, orgid, id);
-        // if (billing) {
-        //     if (billing.status === 'PENDIENTE') {
-        //         if (billing.currency === settings.currency && billing.amount * 100 === settings.amount) {
+        const invoice = await getInvoice(corpid, orgid, invoiceid);
+        if (invoice) {
+            if (invoice.paymentstatus === 'PENDING') {
+                if (invoice.currency === settings.currency && invoice.totalamount * 100 === settings.amount) {
                     const userprofile = await getUserProfile(userid);
                     if (userprofile) {
                         metadata.corpid = corpid;
                         metadata.orgid = orgid;
                         metadata.userid = userid;
-                        const charge = await createCharge(settings, token, metadata, userprofile)
-                        console.log(charge);
-                        const capturedCharge = await culqi.charges.captureCharge({ id: charge.id, });
-                        console.log(capturedCharge);
-                        if (capturedCharge.object === 'error') {
+                        const charge = await culqi.charges.createCharge({
+                            amount: settings.amount,
+                            currency_code: settings.currency,
+                            email: token.email,
+                            source_id: token.id,
+                            capture: true,
+                            description: `Laraigo ${settings.description}`.slice(0,80),
+                            metadata: metadata,
+                            antifraud_details: {
+                                first_name: userprofile.firstname,
+                                last_name: userprofile.lastname,
+                                address: userprofile.address || 'EMPTY',
+                                address_city: userprofile.address_city || 'N/A',
+                                country_code: userprofile.country || token.client.ip_country_code,
+                                phone: userprofile.phone,
+                            }
+                        });
+                        if (charge.object === 'error') {
                             return res.status(400).json({
                                 error: true,
                                 success: false,
                                 data: {
-                                    object: capturedCharge.object,
-                                    id: capturedCharge.charge_id,
-                                    code: capturedCharge.code,
-                                    message: capturedCharge.user_message
+                                    object: charge.object,
+                                    id: charge.charge_id,
+                                    code: charge.code,
+                                    message: charge.user_message
                                 }
                             });
                         }
                         else {
-                            await saveCharge(corpid, orgid, id, token, charge);
+                            const query = "UFN_INVOICE_PAYMENT";
+                            const bind = {
+                                corpid: corpid,
+                                orgid: orgid,
+                                invoiceid: invoiceid,
+                                paidby: usr,
+                                email: token.email,
+                                tokenid: token.id,
+                                capture: true,
+                                tokenjson: token,
+                                chargeid: charge.id,
+                                chargejson: charge
+                            }
+                            const result = await triggerfunctions.executesimpletransaction(query, bind);
                             return res.json({
                                 error: false,
                                 success: true,
-                                code: capturedCharge.outcome.code,
-                                message: capturedCharge.outcome.user_message ,
+                                code: charge.outcome.code,
+                                message: charge.outcome.user_message ,
                                 data: {
-                                    object: capturedCharge.object,
-                                    id: capturedCharge.id,
+                                    object: charge.object,
+                                    id: charge.id,
                                 }
                             });
                         }
@@ -137,18 +222,79 @@ exports.charge = async (req, res) => {
                     else {
                         return res.status(403).json({ error: true, success: false, code: '', message: 'invalid user' });
                     }
-        //         }
-        //         else {
-        //             return res.status(403).json({ error: true, success: false, code: '', message: 'invalid bill data' });
-        //         }
-        //     }
-        //     else {
-        //         return res.json({ error: false, success: true, code: '', message: 'bill already paid' });
-        //     }
-        // }
-        // else {
-        //     return res.status(404).json({ error: true, success: false, code: '', message: 'bill not found' });
-        // }
+                }
+                else {
+                    return res.status(403).json({ error: true, success: false, code: '', message: 'invalid invoice data' });
+                }
+            }
+            else {
+                return res.json({ error: false, success: true, code: '', message: 'Invoice already paid' });
+            }
+        }
+        else {
+            return res.status(404).json({ error: true, success: false, code: '', message: 'Invoice not found' });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ msg: "There was a problem, please try again later" });
+    }
+};
+
+exports.refund = async (req, res) => {
+    const { corpid, orgid, userid } = req.user;
+    const { invoiceid, metadata = {} } = req.body;
+    try {
+        const invoice = await getInvoice(corpid, orgid, invoiceid);
+        if (invoice) {
+            if (invoice.paymentstatus === 'PAID') {
+                metadata.corpid = corpid;
+                metadata.orgid = orgid;
+                metadata.userid = userid;
+                const refund = await culqi.refunds.createRefund({
+                    amount: invoice.totalamount * 100,
+                    charge_id: invoice.chargeid,
+                    reason: "solicitud_comprador"
+                });
+                if (refund.object === 'error') {
+                    return res.status(400).json({
+                        error: true,
+                        success: false,
+                        data: {
+                            object: charge.object,
+                            id: charge.charge_id,
+                            code: charge.code,
+                            message: charge.user_message
+                        }
+                    });
+                }
+                else {
+                    const query = "UFN_INVOICE_REFUND";
+                    const bind = {
+                        corpid: corpid,
+                        orgid: orgid,
+                        invoiceid: invoiceid,
+                        refundid: refund.id,
+                        refundjson: refund
+                    }
+                    const result = await triggerfunctions.executesimpletransaction(query, bind);
+                    return res.json({
+                        error: false,
+                        success: true,
+                        message: "refunded",
+                        data: {
+                            object: refund.object,
+                            id: refund.id,
+                        }
+                    });
+                }
+            }
+            else {
+                return res.json({ error: false, success: true, code: '', message: 'Invoice already refunded' });
+            }
+        }
+        else {
+            return res.status(404).json({ error: true, success: false, code: '', message: 'Invoice not found' });
+        }
     } catch (error) {
         console.log(error);
         return res.status(500).json({ msg: "There was a problem, please try again later" });
@@ -176,109 +322,4 @@ const saveCustomer = async (corpid, orgid, customer) => {
 const saveCard = async (corpid, orgid, card) => {
     const query = "UPDATE org SET cardjson = $cardjson WHERE corpid = $corpid AND orgid = $orgid"
     await sequelize.query(query, { type: QueryTypes.SELECT, bind: { corpid: corpid, orgid: orgid, cardjson: card }}).catch(err => getErrorSeq(err));
-}
-
-const saveSubscription = async (corpid, orgid, id, subscription) => {
-    const query = "UPDATE billing SET subscriptionjson = $subscriptionjson WHERE corpid = $corpid AND orgid = $orgid AND billingid = $id"
-    await sequelize.query(query, { type: QueryTypes.SELECT, bind: { corpid: corpid, orgid: orgid, id: id, subscriptionjson: subscription }}).catch(err => getErrorSeq(err));
-}
-
-exports.subscribe = async (req, res) => {
-    const { corpid, orgid, userid } = req.user;
-    const { settings, token, metadata } = req.body;
-    try {
-        let plan = {}
-        if (!settings.planid) {
-            plan = await culqi.plans.createPlan({
-                name: settings.title,
-                amount: settings.amount,
-                currency_code: settings.currency,
-                interval: settings.interval || 'meses',
-                interval_count: settings.interval_count || 1,
-                limit: settings.limit || 12,
-                metadata: {
-                    title: settings.title,
-                    ...metadata,
-                    corpid: corpid,
-                    orgid: orgid,
-                    userid: userid,
-                },
-            });
-            console.log(plan);
-        }
-        else {
-            plan.id = settings.planid
-        }
-
-        const customers = await culqi.customers.getCustomers({ email: token.email });
-        let customer = {};
-        if (customers.data.length > 0) {
-            customer = customers.data[0];
-        }
-        else {
-            const userprofile = await getUserProfile(userid);
-            if (userprofile) {
-                customer = createCustomer(token, metadata, userprofile);
-            }
-            else {
-                return res.status(403).json({ error: true, success: false, code: '', message: 'invalid user' });
-            }
-        }
-        console.log(customer);
-        await saveCustomer(corpid, orgid, customer);
-        
-        const card = await culqi.cards.createCard({
-            customer_id: customer.id,
-            token_id: token.id
-        });
-        console.log(card);
-        await saveCard(corpid, orgid, card);
-                
-        const subscription = await culqi.subscriptions.createSubscription({
-            card_id: card.id,
-            plan_id: plan.id
-        });
-        console.log(subscription);
-        await saveSubscription(corpid, orgid, 1, subscription);
-
-        // Do some other operations, such save data of the subscription
-
-        return res.json({
-            error: false,
-            success: true,
-            code: subscription.charges[0].outcome.code,
-            message: subscription.charges[0].outcome.user_message,
-            data: {
-                object: subscription.object,
-                id: subscription.id,
-            }
-        });
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ msg: "There was a problem, please try again later"});
-    }
-};
-
-exports.unsubscribe = async (req, res) => {
-    const { id } = req.body;
-    try {
-        const subscription = await culqi.subscriptions.deleteSubscription({ id: id });
-        console.log(subscription);
-
-        // Do some other operations, such save data of the subscription
-
-        return res.json({
-            error: false,
-            success: true,
-            code: '',
-            message: subscription.merchant_message,
-            data: {
-                object: 'subscription',
-                id: subscription.id,
-            }
-        });
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ msg: "There was a problem, please try again later" });
-    }
 }

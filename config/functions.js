@@ -1426,4 +1426,54 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_INVOICE_CORP: {
+        query: "SELECT * FROM ufn_invoice_corp($corpid,$year,$month,$exchangerate)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_INVOICE_ORG: {
+        query: "SELECT * FROM ufn_invoice_org($corpid,$orgid,$year,$month,$exchangerate)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_INVOICEDETAIL_INS: {
+        query: "SELECT * FROM ufn_invoicedetail_ins($corpid,$orgid,$invoiceid,$amount,$national)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_INVOICE_SUNAT: {
+        query: "SELECT * FROM ufn_invoice_sunat($corpid,$orgid,$invoiceid,$status,$error,$qrcode,$hashcode,$urlcdr,$urlpdf,$urlxml)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_INVOICE_SEL: {
+        query: "SELECT * FROM ufn_invoice_sel($corpid,$orgid,$invoiceid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVOICE_INS: {
+        query: "SELECT * FROM ufn_invoice_ins($corpid,$orgid,$invoiceid,$description,$status,$type,$issuerruc,$issuerbusinessname,$issuertradename,$issuerfiscaladdress,$issuerubigeo,$emittertype,$annexcode,$printingformat,$token,$xmlversion,$ublversion,$receiverdoctype,$receiverdocnum,$receiverbusinessname,$receiverfiscaladdress,$receivercountry,$receivermail,$invoicetype,$sunatopecode,$serie,$correlative,$concept,$invoicedate,$expirationdate,$subtotal,$taxes,$totalamount,$currency,$exchangerate,$invoicestatus,$filenumber,$purchaseorder,$executingunitcode,$selectionprocessnumber,$contractnumber,$comments,$username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_INVOICE_ORDER: {
+        query: "SELECT * FROM ufn_invoice_order($corpid,$orgid,$invoiceid,$orderid,$orderjson)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_INVOICE_PAYMENT: {
+        query: "SELECT * FROM ufn_invoice_payment($corpid,$orgid,$invoiceid,$paidby,$email,$tokenid,$capture,$tokenjson,$chargeid,$chargejson)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_INVOICE_CHANGEPAYMENTSTATUS: {
+        query: "SELECT * FROM ufn_invoice_changepaymentstatus($corpid,$orgid,$invoiceid,$status)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_INVOICE_REFUND: {
+        query: "SELECT * FROM ufn_invoice_refund($corpid,$orgid,$invoiceid,$refundid,$refundjson)",
+        module: "",
+        protected: "INSERT"
+    },
 }
