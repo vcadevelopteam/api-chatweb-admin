@@ -73,12 +73,14 @@ exports.dashboardDesigner = async (req, res) => {
 
             const gg = cleanDatat.reduce((acc, data, index) => {
                 const reportname = resultReports[index][0].description;
+                const columnjson = resultReports[index][0].columnjson;
                 const sortedData = Object.fromEntries(Object.entries(data).sort(([, a], [, b]) => b - a));
                 return {
                     ...acc,
                     [keysIndicators[index]]: {
                         data: sortedData,
-                        reportname
+                        reportname,
+                        columnjson
                     }
                 }
             }, {});
