@@ -34,13 +34,11 @@ const getUserProfile = async (userid) => {
 }
 
 const getInvoice = async (corpid, orgid, id) => {
-    const query = "UFN_INVOICE_SEL";
+    const query = "UFN_INVOICE_SELBYID";
     const bind = {
         corpid: corpid,
         orgid: orgid,
-        invoiceid: id,
-        year: 0,
-        month: 0
+        invoiceid: id
     }
     const result = await triggerfunctions.executesimpletransaction(query, bind);
     if (result instanceof Array) {
