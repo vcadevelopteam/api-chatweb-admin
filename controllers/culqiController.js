@@ -207,6 +207,8 @@ exports.chargeInvoice = async (req, res) => {
                                 description: settings.description,
                                 type: charge.object,
                                 status: 'PAID',
+                                amount: settings.amount / 100,
+                                curency: settings.currency,
                                 paidby: usr,
                                 orderid: null,
                                 orderjson: null,
@@ -306,6 +308,8 @@ exports.charge = async (req, res) => {
                     description: settings.description,
                     type: charge.object,
                     status: 'PAID',
+                    amount: settings.amount / 100,
+                    curency: settings.currency,
                     paidby: usr,
                     orderid: null,
                     orderjson: null,
@@ -344,7 +348,7 @@ exports.charge = async (req, res) => {
     }
 };
 
-exports.refund = async (req, res) => {
+exports.refundInvoice = async (req, res) => {
     const { corpid, orgid, userid, usr } = req.user;
     const { invoiceid, metadata = {} } = req.body;
     try {
@@ -356,7 +360,7 @@ exports.refund = async (req, res) => {
                 metadata.userid = userid;
                 const refund = await culqi.refunds.createRefund({
                     amount: invoice.totalamount * 100,
-                    charge_id: invoice.chargeid,
+                    charge_id: invoice.chargetoken,
                     reason: "solicitud_comprador"
                 });
                 if (refund.object === 'error') {
@@ -364,10 +368,9 @@ exports.refund = async (req, res) => {
                         error: true,
                         success: false,
                         data: {
-                            object: charge.object,
-                            id: charge.charge_id,
-                            code: charge.code,
-                            message: charge.user_message
+                            object: refund.object,
+                            code: refund.code,
+                            message: refund.user_message
                         }
                     });
                 }
@@ -377,6 +380,84 @@ exports.refund = async (req, res) => {
                         corpid: corpid,
                         orgid: orgid,
                         invoiceid: invoiceid,
+                        refundtoken: refund.id,
+                        refundjson: refund,
+                        username: usr
+                    }
+                    const result = await triggerfunctions.executesimpletransaction(query, bind);
+                    return res.json({
+                        error: false,
+                        success: true,
+                        message: "refunded",
+                        data: {
+                            object: refund.object,
+                            id: refund.id,
+                        }
+                    });
+                }
+            }
+            else {
+                return res.json({ error: false, success: true, code: '', message: 'Invoice already refunded' });
+            }
+        }
+        else {
+            return res.status(404).json({ error: true, success: false, code: '', message: 'Invoice not found' });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "There was a problem, please try again later" });
+    }
+};
+
+const getCharge = async (corpid, orgid, userid, id) => {
+    const query = "UFN_CHARGE_SEL";
+    const bind = {
+        corpid: corpid,
+        orgid: orgid,
+        userid: userid,
+        invoiceid: id
+    }
+    const result = await triggerfunctions.executesimpletransaction(query, bind);
+    if (result instanceof Array) {
+        if (result.length > 0) {
+            return result[0]
+        }
+    }
+    return null
+}
+
+exports.refund = async (req, res) => {
+    const { corpid, orgid, userid, usr } = req.user;
+    const { chargeid, metadata = {} } = req.body;
+    try {
+        const charge = await getCharge(corpid, orgid, userid, chargeid);
+        if (charge) {
+            if (charge.status === 'PAID') {
+                metadata.corpid = corpid;
+                metadata.orgid = orgid;
+                metadata.userid = userid;
+                const refund = await culqi.refunds.createRefund({
+                    amount: charge.amount * 100,
+                    charge_id: charge.chargetoken,
+                    reason: "solicitud_comprador"
+                });
+                if (refund.object === 'error') {
+                    return res.status(400).json({
+                        error: true,
+                        success: false,
+                        data: {
+                            object: refund.object,
+                            code: refund.code,
+                            message: refund.user_message
+                        }
+                    });
+                }
+                else {
+                    const query = "UFN_CHARGE_REFUND";
+                    const bind = {
+                        corpid: corpid,
+                        orgid: orgid,
+                        chargeid: chargeid,
                         refundtoken: refund.id,
                         refundjson: refund,
                         username: usr
