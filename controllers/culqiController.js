@@ -177,13 +177,20 @@ exports.chargeInvoice = async (req, res) => {
     try {
         const invoice = await getInvoice(corpid, orgid, userid, invoiceid);
         if (invoice) {
-            if (invoice.paymentstatus === 'PENDING') {
+            if (invoice.invoicestatus === 'INVOICED' && invoice.paymentstatus === 'PENDING') {
                 if (invoice.currency === settings.currency && invoice.totalamount * 100 === settings.amount) {
                     const userprofile = await getUserProfile(userid);
                     if (userprofile) {
                         metadata.corpid = corpid;
+                        metadata.corporation = invoice.corpdesc;
                         metadata.orgid = orgid;
+                        metadata.organization = invoice.orgdesc;
+                        metadata.documentnumber = invoice.receiverdocnum;
+                        metadata.businessname = invoice.receiverbusinessname;
+                        metadata.invoiceid = invoiceid;
+                        metadata.invoicecode = `${invoice.serie}-${invoice.correlative}`;
                         metadata.userid = userid;
+                        metadata.usr = usr;
                         const charge = await createCharge(userprofile, settings, token, metadata);
                         if (charge.object === 'error') {
                             return res.status(400).json({
@@ -356,12 +363,20 @@ exports.refundInvoice = async (req, res) => {
         if (invoice) {
             if (invoice.paymentstatus === 'PAID') {
                 metadata.corpid = corpid;
+                metadata.corporation = invoice.corpdesc;
                 metadata.orgid = orgid;
+                metadata.organization = invoice.orgdesc;
+                metadata.documentnumber = invoice.receiverdocnum;
+                metadata.businessname = invoice.receiverbusinessname;
+                metadata.invoiceid = invoiceid;
+                metadata.invoicecode = `${invoice.serie}-${invoice.correlative}`;
                 metadata.userid = userid;
+                metadata.usr = usr;
                 const refund = await culqi.refunds.createRefund({
                     amount: invoice.totalamount * 100,
                     charge_id: invoice.chargetoken,
-                    reason: "solicitud_comprador"
+                    reason: "solicitud_comprador",
+                    
                 });
                 if (refund.object === 'error') {
                     return res.status(400).json({
