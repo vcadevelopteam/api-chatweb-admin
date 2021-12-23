@@ -1467,7 +1467,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INVOICE_INS: {
-        query: "SELECT * FROM ufn_invoice_ins($corpid,$orgid,$invoiceid,$description,$status,$type,$issuerruc,$issuerbusinessname,$issuertradename,$issuerfiscaladdress,$issuerubigeo,$emittertype,$annexcode,$printingformat,$token,$xmlversion,$ublversion,$receiverdoctype,$receiverdocnum,$receiverbusinessname,$receiverfiscaladdress,$receivercountry,$receivermail,$invoicetype,$sunatopecode,$serie,$correlative,$concept,$invoicedate,$expirationdate,$subtotal,$taxes,$totalamount,$currency,$exchangerate,$invoicestatus,$filenumber,$purchaseorder,$executingunitcode,$selectionprocessnumber,$contractnumber,$comments,$username)",
+        query: "SELECT * FROM ufn_invoice_ins($corpid,$orgid,$invoiceid,$description,$status,$type,$issuerruc,$issuerbusinessname,$issuertradename,$issuerfiscaladdress,$issuerubigeo,$emittertype,$annexcode,$printingformat,$xmlversion,$ublversion,$receiverdoctype,$receiverdocnum,$receiverbusinessname,$receiverfiscaladdress,$receivercountry,$receivermail,$invoicetype,$sunatopecode,$serie,$correlative,$concept,$invoicedate,$expirationdate,$subtotal,$taxes,$totalamount,$currency,$exchangerate,$invoicestatus,$filenumber,$purchaseorder,$executingunitcode,$selectionprocessnumber,$contractnumber,$comments,$username)",
         module: "",
         protected: "INSERT"
     },
