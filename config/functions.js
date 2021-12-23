@@ -1466,8 +1466,8 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
-    UFN_INVOICE_CANCELED: {
-        query: "SELECT * FROM ufn_invoice_canceled($corpid,$orgid,$invoiceid,$username)",
+    UFN_INVOICE_ANNULLED: {
+        query: "SELECT * FROM ufn_invoice_annulled($corpid,$orgid,$invoiceid,$username)",
         module: "",
         protected: "INSERT"
     },
