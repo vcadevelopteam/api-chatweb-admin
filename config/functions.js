@@ -1496,8 +1496,18 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_CHARGE_SEL: {
+        query: "SELECT * FROM ufn_charge_sel($corpid,$orgid,$userid,$chargeid)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_CHARGE_INS: {
-        query: "SELECT * FROM ufn_charge_ins($corpid,$orgid,$id,$invoiceid,$description,$type,$status,$paidby,$orderid,$orderjson,$email,$tokenid,$capture,$tokenjson,$chargetoken,$chargejson,$operation)",
+        query: "SELECT * FROM ufn_charge_ins($corpid,$orgid,$id,$invoiceid,$description,$type,$status,$amount,$currency,$paidby,$orderid,$orderjson,$email,$tokenid,$capture,$tokenjson,$chargetoken,$chargejson,$operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CHARGE_REFUND: {
+        query: "SELECT * FROM ufn_charge_refund($corpid,$orgid,$chargeid,$refundtoken,$refundjson,$username)",
         module: "",
         protected: "INSERT"
     },
