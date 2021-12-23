@@ -33,11 +33,12 @@ const getUserProfile = async (userid) => {
     return null
 }
 
-const getInvoice = async (corpid, orgid, id) => {
+const getInvoice = async (corpid, orgid, userid, id) => {
     const query = "UFN_INVOICE_SELBYID";
     const bind = {
         corpid: corpid,
         orgid: orgid,
+        userid: userid,
         invoiceid: id
     }
     const result = await triggerfunctions.executesimpletransaction(query, bind);
@@ -54,7 +55,7 @@ exports.createOrder = async (req, res) => {
     const { invoiceid } = req.body;
     try {
         const userprofile = await getUserProfile(userid);
-        const invoice = await getInvoice(corpid, orgid, invoiceid);
+        const invoice = await getInvoice(corpid, orgid, userid, invoiceid);
         if (invoice) {
             const order = await culqi.orders.createOrder({
                 amount: invoice.totalamount * 100,
@@ -109,7 +110,7 @@ exports.deleteOrder = async (req, res) => {
     const { corpid, orgid, userid } = req.user;
     const { invoiceid } = req.body;
     try {
-        const invoice = await getInvoice(corpid, orgid, invoiceid);
+        const invoice = await getInvoice(corpid, orgid, userid, invoiceid);
         if (invoice) {
             const order = await culqi.orders.deleteOrder({
                 id: invoice.orderid
@@ -174,7 +175,7 @@ exports.chargeInvoice = async (req, res) => {
     const { corpid, orgid, userid, usr } = req.user;
     const { invoiceid, settings, token, metadata = {} } = req.body;
     try {
-        const invoice = await getInvoice(corpid, orgid, invoiceid);
+        const invoice = await getInvoice(corpid, orgid, userid, invoiceid);
         if (invoice) {
             if (invoice.paymentstatus === 'PENDING') {
                 if (invoice.currency === settings.currency && invoice.totalamount * 100 === settings.amount) {
@@ -347,7 +348,7 @@ exports.refund = async (req, res) => {
     const { corpid, orgid, userid, usr } = req.user;
     const { invoiceid, metadata = {} } = req.body;
     try {
-        const invoice = await getInvoice(corpid, orgid, invoiceid);
+        const invoice = await getInvoice(corpid, orgid, userid, invoiceid);
         if (invoice) {
             if (invoice.paymentstatus === 'PAID') {
                 metadata.corpid = corpid;
