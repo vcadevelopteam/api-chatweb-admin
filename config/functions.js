@@ -1441,8 +1441,8 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
-    UFN_INVOICEDETAIL_INS: {
-        query: "SELECT * FROM ufn_invoicedetail_ins($corpid,$orgid,$invoiceid,$amount,$national)",
+    UFN_INVOICEDETAIL_AUTOINS: {
+        query: "SELECT * FROM ufn_invoicedetail_autoins($corpid,$orgid,$invoiceid,$amount,$national)",
         module: "",
         protected: "INSERT"
     },
@@ -1468,6 +1468,11 @@ module.exports = {
     },
     UFN_INVOICE_INS: {
         query: "SELECT * FROM ufn_invoice_ins($corpid,$orgid,$invoiceid,$description,$status,$type,$issuerruc,$issuerbusinessname,$issuertradename,$issuerfiscaladdress,$issuerubigeo,$emittertype,$annexcode,$printingformat,$token,$xmlversion,$ublversion,$receiverdoctype,$receiverdocnum,$receiverbusinessname,$receiverfiscaladdress,$receivercountry,$receivermail,$invoicetype,$sunatopecode,$serie,$correlative,$concept,$invoicedate,$expirationdate,$subtotal,$taxes,$totalamount,$currency,$exchangerate,$invoicestatus,$filenumber,$purchaseorder,$executingunitcode,$selectionprocessnumber,$contractnumber,$comments,$username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_INVOICE_REGENERATE: {
+        query: "SELECT * FROM ufn_invoice_regenerate($corpid,$orgid,$invoiceid,$username)",
         module: "",
         protected: "INSERT"
     },
