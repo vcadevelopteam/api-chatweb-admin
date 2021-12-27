@@ -79,7 +79,7 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
 
                 const queryCollectionCleaned = querycollection.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
                 const queryCountCleaned = querycount.replace("###WHERE###", data.where || "");
-                
+
                 console.time("pagination-" + methodcollection);
                 const results = await Promise.all([
                     sequelize.query(queryCollectionCleaned, {
@@ -125,7 +125,7 @@ exports.buildQueryWithFilterAndSort = async (method, data) => {
                 data.order = generateSort(data.sorts, data.origin);
 
                 const queryCollectionCleaned = query.replace("###WHERE###", data.where || "");
-                
+
                 console.time("build-" + method);
                 const result = await sequelize.query(queryCollectionCleaned, {
                     type: QueryTypes.SELECT,
@@ -147,7 +147,7 @@ exports.buildQueryWithFilterAndSort = async (method, data) => {
 }
 
 exports.GetMultiCollection = async (detail, permissions = false) => {
-    return await Promise.all(detail.map(async (item) => {
+    return await Promise.all(detail.map(async (item, index) => {
         let functionMethod = functionsbd[item.method];
         if (functionMethod) {
             if (permissions && functionMethod.module) {
@@ -156,12 +156,12 @@ exports.GetMultiCollection = async (detail, permissions = false) => {
                     return getErrorCode(errors.FORBIDDEN);
                 }
             }
-            console.time("multi-" + item.method);
+            console.time("multi-" + index + "-" + item.method);
             const r = await sequelize.query(functionMethod.query, {
                 type: QueryTypes.SELECT,
                 bind: item.parameters
             }).catch(err => getErrorSeq(err));
-            console.timeEnd("multi-" + item.method);
+            console.timeEnd("multi-" + index + "-" + item.method);
 
             if (!(r instanceof Array))
                 return r;
