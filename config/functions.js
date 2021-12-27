@@ -330,7 +330,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CONVERSATIONGRID_SEL: {
-        query: "SELECT * FROM ufn_conversationgrid_sel($corpid, $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $channel, $usergroup, $offset)",
+        query: "SELECT * FROM ufn_conversationgrid_sel($corpid, $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $channel, $usergroup, $lastuserid, $offset)",
         module: "/tickets",
         protected: "SELECT"
     },
@@ -1513,6 +1513,11 @@ module.exports = {
     },
     UFN_CHARGE_REFUND: {
         query: "SELECT * FROM ufn_charge_refund($corpid,$orgid,$chargeid,$refundtoken,$refundjson,$username)",
+        module: "",
+        protected: "INSERT"
+    },
+    QUERY_UPDATE_PERSON_BY_HSM: {
+        query: "SELECT propertyname, propertyvalue FROM property p WHERE p.corpid = :corpid AND p.orgid = :orgid AND p.propertyname IN (:propertynames) and p.status = 'ACTIVO';",
         module: "",
         protected: "INSERT"
     },

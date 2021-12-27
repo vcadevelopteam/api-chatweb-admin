@@ -37,8 +37,8 @@ exports.executesimpletransaction = async (method, data, permissions = false, rep
         }
         const query = functionMethod.query;
         if (data instanceof Object || data === undefined) {
-            
-            return await sequelize.query(query, {
+            console.time("simple-" + method);
+            const result = await sequelize.query(query, {
                 type: QueryTypes.SELECT,
                 replacements,
                 bind: data
@@ -46,6 +46,8 @@ exports.executesimpletransaction = async (method, data, permissions = false, rep
                 console.log(err)
                 return getErrorSeq(err)
             });
+            console.timeEnd("simple-" + method);
+            return result;
         } else {
             return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
         }
@@ -77,7 +79,8 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
 
                 const queryCollectionCleaned = querycollection.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
                 const queryCountCleaned = querycount.replace("###WHERE###", data.where || "");
-                
+
+                console.time("pagination-" + methodcollection);
                 const results = await Promise.all([
                     sequelize.query(queryCollectionCleaned, {
                         type: QueryTypes.SELECT,
@@ -88,6 +91,7 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
                         bind: data
                     })
                 ]).catch(err => getErrorSeq(err));
+                console.timeEnd("pagination-" + methodcollection);
 
                 if (!(results instanceof Array)) {
                     return results
@@ -122,10 +126,12 @@ exports.buildQueryWithFilterAndSort = async (method, data) => {
 
                 const queryCollectionCleaned = query.replace("###WHERE###", data.where || "");
 
+                console.time("build-" + method);
                 const result = await sequelize.query(queryCollectionCleaned, {
                     type: QueryTypes.SELECT,
                     bind: data
                 });
+                console.timeEnd("build-" + method);
                 return result;
 
             } else {
@@ -141,7 +147,7 @@ exports.buildQueryWithFilterAndSort = async (method, data) => {
 }
 
 exports.GetMultiCollection = async (detail, permissions = false) => {
-    return await Promise.all(detail.map(async (item) => {
+    return await Promise.all(detail.map(async (item, index) => {
         let functionMethod = functionsbd[item.method];
         if (functionMethod) {
             if (permissions && functionMethod.module) {
@@ -150,11 +156,12 @@ exports.GetMultiCollection = async (detail, permissions = false) => {
                     return getErrorCode(errors.FORBIDDEN);
                 }
             }
-
+            console.time("multi-" + index + "-" + item.method);
             const r = await sequelize.query(functionMethod.query, {
                 type: QueryTypes.SELECT,
                 bind: item.parameters
             }).catch(err => getErrorSeq(err));
+            console.timeEnd("multi-" + index + "-" + item.method);
 
             if (!(r instanceof Array))
                 return r;
@@ -188,13 +195,13 @@ exports.executeTransaction = async (header, detail, permissions = false) => {
             }
 
             if (parameters instanceof Object) {
-                //console.log(parameters);
+                console.time("header-" + method);
                 const result = await sequelize.query(functionMethod.query, {
                     type: QueryTypes.SELECT,
                     bind: parameters,
                     transaction
                 }).catch(err => getErrorSeq(err));
-
+                console.timeEnd("header-" + method);
                 if (!(result instanceof Array)) {
                     await transaction.rollback();
                     return result;
@@ -220,6 +227,7 @@ exports.executeTransaction = async (header, detail, permissions = false) => {
     try {
         await Promise.all(detailtmp.map(async (item) => {
             if (functionsbd[item.method]) {
+                console.time("detail-" + item.method);
                 const query = functionsbd[item.method];
                 await sequelize.query(query, {
                     type: QueryTypes.SELECT,
@@ -229,6 +237,7 @@ exports.executeTransaction = async (header, detail, permissions = false) => {
                     lasterror = getErrorSeq(err);
                     throw 'error'
                 });
+                console.timeEnd("detail-" + item.method);
             } else {
                 lasterror = getErrorCode(errors.NOT_FUNCTION_ERROR);
                 throw 'error'
