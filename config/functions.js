@@ -330,7 +330,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CONVERSATIONGRID_SEL: {
-        query: "SELECT * FROM ufn_conversationgrid_sel($corpid, $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $channel, $usergroup, $offset)",
+        query: "SELECT * FROM ufn_conversationgrid_sel($corpid, $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $channel, $usergroup, $lastuserid, $offset)",
         module: "/tickets",
         protected: "SELECT"
     },
