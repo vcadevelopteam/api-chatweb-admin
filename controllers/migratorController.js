@@ -22,8 +22,8 @@ Propios del sistema
 "timezone"
 
 Core
-"corp" (Revisar planteamiento de los dominios ESTADOGENERICO, TIPOCORP, si aun no existe la corp no hay dominios de esa corp)
-|"org" (No existe tabla orggroupid, revisar planteamiento de los dominios ESTADOGENERICO, TIPOORG, si aun no existe la org no hay dominios de esa org)
+"corp"
+|"org"
 ||"domain"
 ||"inputvalidation"
 ||"appintegration"
@@ -31,7 +31,7 @@ Core
 |||"communicationchannel"
 ||||"communicationchannelstatus"
 ||||"property"
-"usr" (Falta la reencriptacion de la contraseña, no existe table billingroupid, que hacer con las columans nuevas?)
+"usr"
 |"usertoken"
 |"userstatus"
 ||"userhistory"
@@ -446,19 +446,31 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
     for (const [k,q] of Object.entries(queries)) {
         executeResult[k] = {success: true, errors: []};
         try {
-            let conversations = await laraigoQuery(
-                `SELECT conversationid, zyxmeconversationid
-                FROM conversation
-                WHERE zyxmecorpid = $corpid`, corpidBind);
-            let persons = await laraigoQuery(
-                `SELECT personid, zyxmepersonid
-                FROM person
-                WHERE zyxmecorpid = $corpid`, corpidBind);
+            let migrationstatus = await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind);
+            let running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
+            if (!running) {
+                break;
+            }
+
+            if (['usr','person','conversation','campaignmember'].includes(k)) {
+                if (q.id) {
+                    // Ultimo registro en laraigo
+                    max = await laraigoQuery(`SELECT MAX(${q.id}) FROM ${k}`);
+                    corpidBind[`inc${q.id}`] = max[0].max + corpidBind[`inc${q.id}`];
+                }
+            }
+
             let limit = 10000;
             let counter = 0;
-            const perChunk = 1000
+            const perChunk = 1000;
             while (true) {
-                let selectStartTime = process.hrtime();
+                migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind) : migrationstatus;
+                running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
+                if (!running) {
+                    break;
+                }
+                
+            let selectStartTime = process.hrtime();
                 let selectResult = await zyxmeQuery(q.select.replace('\n',' '), {...corpidBind, offset: counter * limit, limit});
                 let selectElapsedSeconds = parseHrtimeToSeconds(process.hrtime(selectStartTime));
                 if (selectResult instanceof Array) {
@@ -470,18 +482,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     selectResult = await reconfigWebhook(k, selectResult, movewebhook);
                     selectResult = renameVariable(k, selectResult);
                     selectResult = restructureVariable(k, selectResult);
-                    selectResult = selectResult.map(s => ({
-                        ...s,
-                        zyxmeconversationid: conversations.find(co => co.zyxmeconversationid === s.zyxmeconversationid)?.conversationid || s.zyxmeconversationid,
-                        zyxmepersonid: persons.find(pe => pe.zyxmepersonid === s.zyxmepersonid)?.personid || s.zyxmepersonid
-                    }))
                     let chunkArray = selectResult.reduce((chunk, item, index) => { 
-                      const chunkIndex = Math.floor(index/perChunk)
-                      if(!chunk[chunkIndex]) {
+                        const chunkIndex = Math.floor(index/perChunk)
+                        if(!chunk[chunkIndex]) {
                         chunk[chunkIndex] = []
-                      }
-                      chunk[chunkIndex].push(item)
-                      return chunk
+                        }
+                        chunk[chunkIndex].push(item)
+                        return chunk
                     }, []);
     
                     for (const chunk of chunkArray) {
@@ -561,6 +568,12 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 }
             }
 
+            migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind) : migrationstatus;
+            running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
+            if (!running) {
+                break;
+            }
+
             if (q.update) {
                 let startTime = process.hrtime();
                 try {
@@ -582,6 +595,21 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     executeResult[k].errors.push({script: error});
                 }
             }
+
+            migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind) : migrationstatus;
+            running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
+            if (!running) {
+                break;
+            }
+
+            if (['usr','person','conversation','campaignmember'].includes(k)) {
+                if (q.id) {
+                    // Actualizar secuencia
+                    max = await laraigoQuery(`SELECT MAX(${q.id}) FROM ${k}`);
+                    await laraigoQuery(`ALTER SEQUENCE ${q.sequence} START ${parseInt(max[0].max) + corpidBind[`inc${q.id}`]}`);
+                    await laraigoQuery(`ALTER SEQUENCE ${q.sequence} RESTART`);
+                }
+            }
         } catch (error) {
             logger.error(error, { meta: { function: 'migrationExecute', table: k }} );
             console.log(error);
@@ -594,6 +622,8 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
 
 const queryCore = {
     corp: {
+        id: 'corpid',
+        sequence: 'corpseq',
         select: `SELECT corpid as zyxmecorpid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         logo, logotipo as logotype
@@ -623,6 +653,8 @@ const queryCore = {
         )`
     },
     org: {
+        id: 'orgid',
+        sequence: 'orgseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         description, status, type, createdate, createby, changedate, changeby, edit
         FROM org
@@ -635,14 +667,14 @@ const queryCore = {
             corpid,
             zyxmeorgid,
             description, status, type, createdate, createby, changedate, changeby, edit,
-            timezoneoffset, timezone, currency, country, ready
+            timezoneoffset, timezone, currency, country
         )
         SELECT
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             dt.zyxmeorgid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
-            -5, 'America/Lima', 'PEN', 'PE', false
+            -5, 'America/Lima', 'PEN', 'PE'
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
             zyxmecorpid bigint, zyxmeorgid bigint,
@@ -655,6 +687,8 @@ const queryCore = {
         )`
     },
     domain: {
+        id: 'domainid',
+        sequence: 'domainseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, domainid as zyxmedomainid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         domainname, domainvalue, domaindesc, bydefault, "system", priorityorder
@@ -693,6 +727,8 @@ const queryCore = {
         )`
     },
     inputvalidation: {
+        id: 'inputvalidationid',
+        sequence: 'inputvalidationseq',
         select: `SELECT corpid as zyxmecorpid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         inputvalue
@@ -724,6 +760,8 @@ const queryCore = {
     },
     /* appintegrationid is required for communicationchannel but no values seen */
     appintegration: {
+        id: 'appintegrationid',
+        sequence: 'appintegrationseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, appintegrationid as zyxmeappintegrationid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         appid, externalsource, environment, keyparameters, integrationid
@@ -761,6 +799,8 @@ const queryCore = {
     },
     /* botconfiguration is required for communicationchannel */
     botconfiguration: {
+        id: 'botconfigurationid',
+        sequence: 'botconfigurationseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, botconfigurationid as zyxmebotconfigurationid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         bottype, parameterjson
@@ -796,6 +836,8 @@ const queryCore = {
         )`
     },
     communicationchannel: {
+        id: 'communicationchannelid',
+        sequence: 'communicationchannelseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, communicationchannelid as zyxmecommunicationchannelid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         communicationchannelsite, communicationchannelowner, communicationchannelcontact, communicationchanneltoken,
@@ -859,6 +901,8 @@ const queryCore = {
         )`
     },
     communicationchannelstatus: {
+        id: 'communicationchannelstatusid',
+        sequence: 'communicationchannelstatusseq',
         select: `SELECT ccs.corpid as zyxmecorpid, ccs.orgid as zyxmeorgid, ccs.communicationchannelid as zyxmecommunicationchannelid,
         ccs.description, ccs.status, ccs.type, ccs.createdate, ccs.createby, ccs.changedate, ccs.changeby, ccs.edit
         FROM communicationchannelstatus ccs
@@ -890,6 +934,8 @@ const queryCore = {
         )`
     },
     property: {
+        id: 'propertyid',
+        sequence: 'propertyseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, communicationchannelid as zyxmecommunicationchannelid,
         propertyid as zyxmepropertyid,
         description, status, type, createdate, createby, changedate, changeby, edit,
@@ -945,7 +991,10 @@ const queryCore = {
         )`
     },
     usr: {
-        select: `SELECT ous.corpid as zyxmecorpid, usr.userid as zyxmeuserid,
+        id: 'userid',
+        sequence: 'userseq',
+        select: `SELECT DISTINCT ON(usr.userid) 
+        ous.corpid as zyxmecorpid, usr.userid + $incuserid as zyxmeuserid,
         usr.description, usr.status, usr.type, usr.createdate, usr.createby, usr.changedate, usr.changeby, usr.edit,
         usr.usr as username, usr.doctype, usr.docnum, usr.pwd, usr.firstname, usr.lastname, usr.email,
         usr.pwdchangefirstlogin, usr.facebookid, usr.googleid, usr.company,
@@ -961,8 +1010,7 @@ const queryCore = {
         LIMIT $limit
         OFFSET $offset`,
         preprocess: `UPDATE usr
-        SET zyxmecorpid = dt.zyxmecorpid,
-        zyxmeuserid = dt.zyxmeuserid
+        SET zyxmeuserid = dt.zyxmeuserid
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
             zyxmecorpid bigint,
@@ -973,6 +1021,7 @@ const queryCore = {
         WHERE usr = dt.username::CHARACTER VARYING`,
         insert: `INSERT INTO usr (
             zyxmecorpid,
+            userid,
             zyxmeuserid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             usr, doctype, docnum, pwd, firstname, lastname, email,
@@ -987,6 +1036,7 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
+            dt.zyxmeuserid,
             dt.zyxmeuserid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.username::CHARACTER VARYING, dt.doctype, dt.docnum, dt.pwd, dt.firstname, dt.lastname, dt.email,
@@ -1030,11 +1080,17 @@ const queryCore = {
         WHERE usr IN ('system.bot','system.holding')`,
     },
     usertoken: {
-        select: `SELECT ous.corpid as zyxmecorpid, ut.userid as zyxmeuserid,
+        id: 'usertokenid',
+        sequence: 'usertokenseq',
+        select: `SELECT (SELECT ous.corpid FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = ut.userid LIMIT 1) as zyxmecorpid,
+        CASE WHEN ut.userid = 42 THEN 2
+        WHEN ut.userid = 51 THEN 3
+        ELSE ut.userid + $incuserid
+        END as zyxmeuserid,
         ut.description, ut.status, ut.type, ut.createdate, ut.createby, ut.changedate, ut.changeby, ut.edit,
         ut.token, ut.expirationproperty, ut.origin
         FROM usertoken ut
-        JOIN orguser ous ON ous.corpid = $corpid AND ous.userid = ut.userid
+        WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = ut.userid)
         ORDER BY ut.usertokenid
         LIMIT $limit
         OFFSET $offset`,
@@ -1046,7 +1102,7 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT userid FROM usr WHERE zyxmeuserid = dt.zyxmeuserid LIMIT 1),
+            dt.zyxmeuserid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.token, dt.expirationproperty, dt.origin
         FROM json_populate_recordset(null::record, $datatable)
@@ -1061,10 +1117,16 @@ const queryCore = {
         )`
     },
     userstatus: {
-        select: `SELECT ous.corpid as zyxmecorpid, us.userid as zyxmeuserid,
+        id: 'userstatusid',
+        sequence: 'userstatusseq',
+        select: `SELECT (SELECT ous.corpid FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = us.userid LIMIT 1) as zyxmecorpid,
+        CASE WHEN us.userid = 42 THEN 2
+        WHEN us.userid = 51 THEN 3
+        ELSE us.userid + $incuserid
+        END as zyxmeuserid,
         us.description, us.status, us.type, us.createdate, us.createby, us.changedate, us.changeby, us.edit
         FROM userstatus us
-        JOIN orguser ous ON ous.corpid = $corpid AND ous.userid = us.userid
+        WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = us.userid)
         ORDER BY us.userstatusid
         LIMIT $limit
         OFFSET $offset`,
@@ -1075,7 +1137,7 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            COALESCE((SELECT userid FROM usr WHERE zyxmeuserid = dt.zyxmeuserid LIMIT 1), 0),
+            dt.zyxmeuserid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
@@ -1088,7 +1150,13 @@ const queryCore = {
         )`
     },
     userhistory: {
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, userid as zyxmeuserid,
+        id: 'userhistoryid',
+        sequence: 'userhistoryseq',
+        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
+        CASE WHEN userid = 42 THEN 2
+        WHEN userid = 51 THEN 3
+        ELSE userid + $incuserid
+        END as zyxmeuserid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         motivetype, motivedescription, desconectedtime::text
         FROM userhistory
@@ -1108,7 +1176,7 @@ const queryCore = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE((SELECT userid FROM usr WHERE zyxmeuserid = dt.zyxmeuserid LIMIT 1), 0),
+            dt.zyxmeuserid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.motivetype, dt.motivedescription, dt.desconectedtime
         FROM json_populate_recordset(null::record, $datatable)
@@ -1123,7 +1191,9 @@ const queryCore = {
         )`
     },
     usrnotification: {
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, usridfrom as zyxmeusridfrom, usrid as zyxmeusrid,
+        id: 'usrnotificationid',
+        sequence: 'usrnotificationid_seq',
+        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, usridfrom + $incuserid as zyxmeusridfrom, usrid + $incuserid as zyxmeusrid,
         description, status, type, createdate, createby, changedate, changeby, edit
         FROM usrnotification
         WHERE corpid = $corpid
@@ -1142,8 +1212,8 @@ const queryCore = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE((SELECT userid FROM usr WHERE zyxmeuserid = dt.zyxmeusridfrom LIMIT 1), 0),
-            COALESCE((SELECT userid FROM usr WHERE zyxmeuserid = dt.zyxmeusrid LIMIT 1), 0),
+            dt.zyxmeusridfrom,
+            dt.zyxmeusrid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
@@ -1156,8 +1226,12 @@ const queryCore = {
         )`
     },
     orguser: {
-        select: `SELECT ous.corpid as zyxmecorpid, ous.orgid as zyxmeorgid, ous.userid as zyxmeuserid,
-        ous.roleid, ous.supervisor,
+        select: `SELECT ous.corpid as zyxmecorpid, ous.orgid as zyxmeorgid,
+        CASE WHEN ous.type = 'BOT' THEN 2
+        WHEN ous.type = 'HOLDING' THEN 3
+        ELSE ous.userid + $incuserid
+        END as zyxmeuserid,
+        ous.roleid, CASE WHEN ous.supervisor = 0 THEN 0 ELSE ous.supervisor + $incuserid END as supervisor,
         ous.description, ous.status, ous.type, ous.createdate, ous.createby, ous.changedate, ous.changeby, ous.edit,
         ous.bydefault, ous.labels, ous.groups, ous.channels, ous.defaultsort, ous.redirect,
         r.code as rolecode
@@ -1183,9 +1257,9 @@ const queryCore = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            (SELECT userid FROM usr WHERE zyxmeuserid = dt.zyxmeuserid LIMIT 1),
+            dt.zyxmeuserid,
             (SELECT roleid FROM role WHERE corpid = 1 AND orgid = 1 AND code = dt.rolecode LIMIT 1),
-            (SELECT userid FROM usr WHERE zyxmeuserid = dt.supervisor LIMIT 1),
+            dt.supervisor,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.bydefault, dt.labels, dt.groups,
             (
@@ -1219,6 +1293,8 @@ const queryCore = {
 
 const querySubcoreClassification = {
     classification: {
+        id: 'classificationid',
+        sequence: 'classificationseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, classificationid as zyxmeclassificationid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         parent, communicationchannel, path, jobplan, usergroup, schedule
@@ -1273,6 +1349,8 @@ const querySubcoreClassification = {
 		AND zyxmecorpid = $corpid`
     },
     quickreply: {
+        id: 'quickreplyid',
+        sequence: 'quickreplyseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, classificationid as zyxmeclassificationid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         quickreply
@@ -1311,9 +1389,11 @@ const querySubcoreClassification = {
 
 const querySubcorePerson = {
     person: {
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, personid as zyxmepersonid,
+        id: 'personid',
+        sequence: 'personseq',
+        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, NULLIF(personid, 0) + $incpersonid as zyxmepersonid,
         description, status, type, createdate, createby, changedate, changeby, edit,
-        groups, name, referringperson, referringpersonid, persontype, personstatus,
+        groups, name, referringperson, NULLIF(referringpersonid, 0) + $incpersonid, persontype, personstatus,
         phone, email, alternativephone, alternativeemail,
         firstcontact, lastcontact, lastcommunicationchannelid, documenttype, documentnumber,
         firstname, lastname, imageurldef, sex, gender, birthday, civilstatus, occupation, educationlevel,
@@ -1330,6 +1410,7 @@ const querySubcorePerson = {
             zyxmecorpid,
             corpid,
             orgid,
+            personid,
             zyxmepersonid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             groups, name, referringperson, referringpersonid, persontype, personstatus,
@@ -1347,6 +1428,7 @@ const querySubcorePerson = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            dt.zyxmepersonid,
             dt.zyxmepersonid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.groups, dt.name, dt.referringperson,
@@ -1390,7 +1472,9 @@ const querySubcorePerson = {
         )`
     },
     personaddinfo: {
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, personid as zyxmepersonid,
+        id: 'personaddinfoid',
+        sequence: 'personaddinfoseq',
+        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, NULLIF(personid, 0) + $incpersonid as zyxmepersonid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         addinfo
         FROM personaddinfo
@@ -1425,7 +1509,7 @@ const querySubcorePerson = {
         )`
     },
     personcommunicationchannel: {
-        select: `SELECT pcc.corpid as zyxmecorpid, pcc.orgid as zyxmeorgid, pcc.personid as zyxmepersonid,
+        select: `SELECT pcc.corpid as zyxmecorpid, pcc.orgid as zyxmeorgid, NULLIF(pcc.personid, 0) + $incpersonid as zyxmepersonid,
         pcc.personcommunicationchannel,
         pcc.description, pcc.status, pcc.type, pcc.createdate, pcc.createby, pcc.changedate, pcc.changeby, pcc.edit,
         pcc.imageurl, pcc.personcommunicationchannelowner, pcc.displayname, pcc.pendingsurvey, pcc.surveycontext, pcc.locked, pcc.lastusergroup
@@ -1473,8 +1557,10 @@ const querySubcorePerson = {
 
 const querySubcoreConversation = {
     post: {
+        id: 'postid',
+        sequence: 'postseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
-        communicationchannelid as zyxmecommunicationchannelid, personid as zyxmepersonid,
+        communicationchannelid as zyxmecommunicationchannelid, NULLIF(personid, 0) + $incpersonid as zyxmepersonid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         postexternalid, message, content, postexternalparentid, commentexternalid
         FROM post
@@ -1513,6 +1599,8 @@ const querySubcoreConversation = {
         )`
     },
     pccstatus: {
+        id: 'pccstatusid',
+        sequence: 'pccstatusseq',
         select: `SELECT pcc.corpid as zyxmecorpid, pcc.orgid as zyxmeorgid,
         pcc.communicationchannelid as zyxmecommunicationchannelid,
         pcc.personcommunicationchannel,
@@ -1549,12 +1637,21 @@ const querySubcoreConversation = {
         )`
     },
     conversation: {
-        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, co.personid as zyxmepersonid,
+        id: 'conversationid',
+        sequence: 'conversationseq',
+        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, NULLIF(co.personid, 0) + $incpersonid as zyxmepersonid,
         co.personcommunicationchannel, co.communicationchannelid as zyxmecommunicationchannelid,
-        co.conversationid as zyxmeconversationid,
+        NULLIF(co.conversationid, 0) + $incconversationid as zyxmeconversationid,
         co.description, co.status, co.type, co.createdate, co.createby, co.changedate, co.changeby, co.edit,
         co.firstconversationdate, co.lastconversationdate,
-        co.firstuserid, co.lastuserid,
+        CASE WHEN co.firstuserid = 42 THEN 2
+        WHEN co.firstuserid = 51 THEN 3
+        ELSE co.firstuserid + $incuserid
+        END firstuserid,
+        CASE WHEN co.lastuserid = 42 THEN 2
+        WHEN co.lastuserid = 51 THEN 3
+        ELSE co.lastuserid + $incuserid
+        END lastuserid,
         co.firstreplytime::text, co.averagereplytime::text, co.userfirstreplytime::text, co.useraveragereplytime::text,
         co.ticketnum, co.startdate, co.finishdate, co.totalduration::text, co.realduration::text, co.totalpauseduration::text, co.personaveragereplytime::text,
         co.closetype, co.context, co.postexternalid, co.commentexternalid, co.replyexternalid,
@@ -1592,6 +1689,7 @@ const querySubcoreConversation = {
             personid,
             personcommunicationchannel,
             communicationchannelid,
+            conversationid,
             zyxmeconversationid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             firstconversationdate, lastconversationdate,
@@ -1630,10 +1728,11 @@ const querySubcoreConversation = {
             dt.personcommunicationchannel,
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
             dt.zyxmeconversationid,
+            dt.zyxmeconversationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.firstconversationdate, dt.lastconversationdate,
-            COALESCE((SELECT userid FROM usr WHERE zyxmeuserid = dt.firstuserid LIMIT 1), 0),
-            COALESCE((SELECT userid FROM usr WHERE zyxmeuserid = dt.lastuserid LIMIT 1), 0),
+            dt.firstuserid,
+            dt.lastuserid,
             dt.firstreplytime, dt.averagereplytime, dt.userfirstreplytime, dt.useraveragereplytime,
             dt.ticketnum, dt.startdate, dt.finishdate, dt.totalduration, dt.realduration, dt.totalpauseduration, dt.personaveragereplytime,
             dt.closetype, dt.context, dt.postexternalid, dt.commentexternalid, dt.replyexternalid,
@@ -1656,8 +1755,8 @@ const querySubcoreConversation = {
             dt.wnluusersentiment, dt.wnluusersadness, dt.wnluuserjoy, dt.wnluuserfear, dt.wnluuserdisgust, dt.wnluuseranger,
             dt.wnlupersonsentiment, dt.wnlupersonsadness, dt.wnlupersonjoy, dt.wnlupersonfear, dt.wnlupersondisgust, dt.wnlupersonanger,
             dt.enquiries, dt.classification, dt.firstusergroup, dt.emailalertsent, dt.tdatime,
-            dt.interactionquantity, dt.interactionpersonquantity, dt.interactionbotquantity, dt.interactionasesorquantity,
-            dt.interactionaiquantity, dt.interactionaipersonquantity, dt.interactionaibotquantity, dt.interactionaiasesorquantity,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
             dt.handoffafteransweruser, dt.lastseendate, dt.closecomment
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
@@ -1704,8 +1803,8 @@ const querySubcoreConversation = {
         WHERE zyxmecorpid = $corpid`
     },
     conversationclassification: {
-        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, co.personid as zyxmepersonid,
-        co.personcommunicationchannel, co.conversationid as zyxmeconversationid,
+        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, NULLIF(co.personid, 0) + $incpersonid as zyxmepersonid,
+        co.personcommunicationchannel, NULLIF(co.conversationid, 0) + $incconversationid as zyxmeconversationid,
         co.communicationchannelid as zyxmecommunicationchannelid,
         co.classificationid as zyxmeclassificationid,
         co.status, co.createdate, co.createby, co.changedate, co.changeby, co.edit,
@@ -1733,11 +1832,7 @@ const querySubcoreConversation = {
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
             COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
-            COALESCE(
-                dt.zyxmeconversationid,
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) ORDER BY conversationid ASC LIMIT 1),
-                0
-            ),
+            COALESCE(dt.zyxmeconversationid,0),
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
             COALESCE((SELECT classificationid FROM classification WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeclassificationid = dt.zyxmeclassificationid LIMIT 1), 0),
             dt.status, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -1758,9 +1853,11 @@ const querySubcoreConversation = {
         )`
     },
     conversationnote: {
-        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, co.personid as zyxmepersonid,
+        id: 'conversationnoteid',
+        sequence: 'conversationnoteseq',
+        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, NULLIF(co.personid, 0) + $incpersonid as zyxmepersonid,
         co.personcommunicationchannel, co.communicationchannelid as zyxmecommunicationchannelid,
-        co.conversationid as zyxmeconversationid,
+        NULLIF(co.conversationid, 0) + $incconversationid as zyxmeconversationid,
         co.description, co.status, co.type, co.createdate, co.createby, co.changedate, co.changeby, co.edit,
         co.addpersonnote, co.note
         FROM conversationnote co
@@ -1804,9 +1901,11 @@ const querySubcoreConversation = {
         )`
     },
     conversationpause: {
-        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, co.personid as zyxmepersonid,
+        id: 'conversationpauseid',
+        sequence: 'conversationpauseseq',
+        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, NULLIF(co.personid, 0) + $incpersonid as zyxmepersonid,
         co.personcommunicationchannel, co.communicationchannelid as zyxmecommunicationchannelid,
-        co.conversationid as zyxmeconversationid,
+        NULLIF(co.conversationid, 0) + $incconversationid as zyxmeconversationid,
         co.description, co.status, co.type, co.createdate, co.createby, co.changedate, co.changeby, co.edit,
         co.startpause, co.stoppause
         FROM conversationpause co
@@ -1852,8 +1951,11 @@ const querySubcoreConversation = {
     conversationpending: {
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         personcommunicationchannel,
-        userid as zyxmeuserid,
-        conversationid as zyxmeconversationid,
+        CASE WHEN userid = 42 THEN 2
+        WHEN userid = 51 THEN 3
+        ELSE userid + $incuserid
+        END as zyxmeuserid,
+        NULLIF(conversationid, 0) + $incconversationid as zyxmeconversationid,
         status, communicationchannelsite, interactiontext
         FROM conversationpending
         WHERE corpid = $corpid
@@ -1874,11 +1976,8 @@ const querySubcoreConversation = {
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
             dt.personcommunicationchannel,
-            COALESCE((SELECT userid FROM usr WHERE zyxmeuserid = dt.zyxmeuserid LIMIT 1), 0),
-            COALESCE(
-                dt.zyxmeconversationid,
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) ORDER BY conversationid ASC LIMIT 1)
-            ),
+            dt.zyxmeuserid,
+            dt.zyxmeconversationid,
             dt.status, dt.communicationchannelsite, dt.interactiontext
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
@@ -1894,9 +1993,11 @@ const querySubcoreConversation = {
         )`
     },
     conversationstatus: {
-        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, co.personid as zyxmepersonid,
+        id: 'conversationstatusid',
+        sequence: 'conversationstatusseq',
+        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, NULLIF(co.personid, 0) + $incpersonid as zyxmepersonid,
         co.personcommunicationchannel, co.communicationchannelid as zyxmecommunicationchannelid,
-        co.conversationid as zyxmeconversationid,
+        NULLIF(co.conversationid, 0) + $incconversationid as zyxmeconversationid,
         co.description, co.status, co.type, co.createdate, co.createby, co.changedate, co.changeby, co.edit
         FROM conversationstatus co
         WHERE co.corpid = $corpid
@@ -1936,11 +2037,18 @@ const querySubcoreConversation = {
         )`
     },
     interaction: {
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, personid as zyxmepersonid,
+        id: 'interactionid',
+        sequence: 'interactionseq',
+        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, NULLIF(personid, 0) + $incpersonid as zyxmepersonid,
         personcommunicationchannel, communicationchannelid as zyxmecommunicationchannelid,
-        conversationid as zyxmeconversationid,
+        conversationid + $incconversationid as zyxmeconversationid,
         description, status, type, createdate, createby, changedate, changeby, edit,
-        interactiontext, userid as zyxmeuserid, intent, intentexample, entityname, entityvalue,
+        interactiontext,
+        CASE WHEN userid = 42 THEN 2
+        WHEN userid = 51 THEN 3
+        ELSE userid + $incuserid
+        END as zyxmeuserid,
+        intent, intentexample, entityname, entityvalue,
         dialognode, dialogcondition, urlattachment, htmlattachment,
         interactiontype, highlight, labels, postexternalid,
         sentiment, sadness, joy, fear, disgust, anger,
@@ -1983,19 +2091,13 @@ const querySubcoreConversation = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE(
-                dt.zyxmepersonid,
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
-            ),
+            dt.zyxmepersonid,
             dt.personcommunicationchannel,
             COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
-            COALESCE(
-                dt.zyxmeconversationid,
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) ORDER BY conversationid ASC LIMIT 1)
-            ),
+            dt.zyxmeconversationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.interactiontext,
-            COALESCE((SELECT userid FROM usr WHERE zyxmeuserid = dt.zyxmeuserid LIMIT 1), 0),
+            dt.zyxmeuserid,
             dt.intent, dt.intentexample, dt.entityname, dt.entityvalue,
             dt.dialognode, dt.dialogcondition, dt.urlattachment, dt.htmlattachment,
             dt.interactiontype, dt.highlight, dt.labels, dt.postexternalid,
@@ -2036,9 +2138,11 @@ const querySubcoreConversation = {
         )`
     },
     surveyanswered: {
-        select: `SELECT sa.corpid as zyxmecorpid, sa.orgid as zyxmeorgid, sa.conversationid as zyxmeconversationid,
-        sa.description, sa.status, COALESCE(split_part(pr.propertyname, 'NUMEROPREGUNTA', 1), 'NINGUNO') as type, sa.createdate, sa.createby, sa.changedate, sa.changeby, sa.edit,
-        sa.answer, sa.answervalue, sa.comment,
+        id: 'surveyansweredid',
+        sequence: 'surveyansweredseq',
+        select: `SELECT sa.corpid as zyxmecorpid, sa.orgid as zyxmeorgid, NULLIF(sa.conversationid, 0) + $incconversationid as zyxmeconversationid,
+        sa.description, sa.status, COALESCE(split_part(pr.propertyname, 'NUMEROPREGUNTA', 1), CONCAT('QUESTION', sq.questionnumber::text)) as type, sa.createdate, sa.createby, sa.changedate, sa.changeby, sa.edit,
+        sa.answer, CASE WHEN sa.answer ~ '^[0-9]+$' AND sa.answervalue = 0 THEN sa.answer::integer ELSE sa.answervalue END as answervalue, sa.comment,
         sq.question, (SELECT GREATEST(COUNT(q.a)::text, MAX(q.a[1])) FROM (SELECT regexp_matches(sq.question,'[\\d𝟏𝟐𝟑𝟒𝟓]+','g') a) q)::BIGINT scale
         FROM surveyanswered sa
         LEFT JOIN surveyquestion sq ON sq.corpid = sa.corpid AND sq.orgid = sa.orgid AND sq.surveyquestionid = sa.surveyquestionid
@@ -2061,21 +2165,18 @@ const querySubcoreConversation = {
             dt.zyxmecorpid,
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE(
-                dt.zyxmeconversationid,
-                (SELECT conversationid FROM conversation WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) ORDER BY conversationid ASC LIMIT 1)
-            ),
+            dt.zyxmeconversationid,
             dt.description, dt.status, dt.type::CHARACTER VARYING, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.answer, dt.answervalue, dt.comment,
             dt.question, dt.scale::BIGINT,
-            CASE WHEN dt.type IN ('FCR','FIX') THEN '1'
+            CASE WHEN dt.type IN ('FCR','FIX') OR dt.scale IN (2) THEN '1'
             WHEN dt.type NOT IN ('FCR','FIX') AND dt.scale IN (9,10) THEN '9,10'
             WHEN dt.type NOT IN ('FCR','FIX') AND dt.scale IN (5) THEN '4,5'
             END,
             CASE WHEN dt.scale IN (9,10) THEN '7,8'
             WHEN dt.type <> 'FCR' AND dt.scale IN (5) THEN '3'
             END,
-            CASE WHEN dt.type IN ('FCR','FIX') THEN '0,2'
+            CASE WHEN dt.type IN ('FCR','FIX') OR dt.scale IN (2) THEN '0,2'
             WHEN dt.type NOT IN ('FCR','FIX') AND dt.scale IN (9,10) THEN '1,2,3,4,5,6'
             WHEN dt.type NOT IN ('FCR','FIX') AND dt.scale IN (5) THEN '1,2'
             END,
@@ -2102,6 +2203,10 @@ const querySubcoreConversation = {
 
 const querySubcoreCampaign = {    
     messagetemplate: {
+        oldtable: 'hsmtemplate',
+        id: 'hsmtemplateid',
+        newid: 'messagetemplateid',
+        sequence: 'messagetemplateseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, hsmtemplateid as zyxmemessagetemplateid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         hsmid as name, namespace, category, language,
@@ -2149,14 +2254,16 @@ const querySubcoreCampaign = {
         )`
     },
     campaign: {
+        id: 'campaignid',
+        sequence: 'campaignseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, campaignid as zyxmecampaignid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         title, members, startdate, enddate, repeatable, frecuency,
         message, communicationchannelid as zyxmecommunicationchannelid, hsmid as messagetemplatename, hsmnamespace as messagetemplatenamespace,
         counter, lastrundate, usergroup, subject,
         hsmtemplateid as zyxmemessagetemplateid,
-        REGEXP_REPLACE(REGEXP_REPLACE(REGEXP_REPLACE(NULLIF(hsmheader,''), '\\\\+\\"', '"', 'g'),'^\\"+\\{','{','g'),'\\}\\"+dt.','}','g') as messagetemplateheader,
-        REGEXP_REPLACE(REGEXP_REPLACE(REGEXP_REPLACE(NULLIF(hsmbuttons,''), '\\\\+\\"', '"', 'g'),'^\\"+\\[','[','g'),'\\]\\"+dt.',']','g') as messagetemplatebuttons,
+        REGEXP_REPLACE(REGEXP_REPLACE(REGEXP_REPLACE(NULLIF(hsmheader,''), '\\\\+\\"', '"', 'g'),'^\\"+\\{','{','g'),'\\}\\"+$','}','g') as messagetemplateheader,
+        REGEXP_REPLACE(REGEXP_REPLACE(REGEXP_REPLACE(NULLIF(hsmbuttons,''), '\\\\+\\"', '"', 'g'),'^\\"+\\[','[','g'),'\\]\\"+$',']','g') as messagetemplatebuttons,
         executiontype, batchjson, taskid as zyxmetaskid, fields
         FROM campaign
         WHERE corpid = $corpid
@@ -2223,8 +2330,10 @@ const querySubcoreCampaign = {
         )`
     },
     campaignmember: {
+        id: 'campaignmemberid',
+        sequence: 'campaignmemberseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, campaignid as zyxmecampaignid,
-        personid as zyxmepersonid, campaignmemberid as zyxmecampaignmemberid,
+        NULLIF(personid, 0) + $incpersonid as zyxmepersonid, campaignmemberid + $inccampaignmemberid as zyxmecampaignmemberid,
         status, personcommunicationchannel, type, displayname, personcommunicationchannelowner,
         field1, field2, field3, field4, field5, field6, field7, field8, field9,
         field10, field11, field12, field13, field14, field15,
@@ -2275,10 +2384,12 @@ const querySubcoreCampaign = {
         )`
     },
     campaignhistory: {
+        id: 'campaignhistoryid',
+        sequence: 'campaignhistoryseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, campaignid as zyxmecampaignid,
-        personid as zyxmepersonid, campaignmemberid as zyxmecampaignmemberid,
+        NULLIF(personid, 0) + $incpersonid as zyxmepersonid, campaignmemberid + $inccampaignmemberid as zyxmecampaignmemberid,
         description, status, type, createdate, createby, changedate, changeby, edit,
-        success, message, rundate, conversationid as zyxmeconversationid, attended
+        success, message, rundate, NULLIF(conversationid, 0) + $incconversationid as zyxmeconversationid, attended
         FROM campaignhistory
         WHERE corpid = $corpid
         ORDER BY campaignhistoryid
@@ -2299,18 +2410,11 @@ const querySubcoreCampaign = {
             (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
             (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
             (SELECT campaignid FROM campaign WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignid = dt.zyxmecampaignid LIMIT 1),
-            CASE WHEN COALESCE(dt.zyxmepersonid, 0) = 0 THEN 0
-            ELSE COALESCE(
-                    dt.zyxmepersonid,
-                    (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
-                )
-            END,
-            COALESCE((SELECT campaignmemberid FROM campaignmember WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignmemberid = dt.zyxmecampaignmemberid LIMIT 1), 0),
+            COALESCE(dt.zyxmepersonid, 0),
+            COALESCE(dt.zyxmecampaignmemberid, 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.success, dt.message, dt.rundate,
-            CASE WHEN COALESCE(dt.zyxmeconversationid, 0) = 0 THEN 0
-            ELSE dt.zyxmeconversationid
-            END,
+            COALESCE(dt.zyxmeconversationid, 0),
             dt.attended
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
@@ -2400,6 +2504,8 @@ const querySubcoreOthers = {
         )`
     },
     blockversion: {
+        id: 'chatblockversionid',
+        sequence: 'blockversionseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, chatblockversionid as zyxmechatblockversionid,
         communicationchannelid, chatblockid,
         description, status, type, createdate, createby, changedate, changeby, edit,
@@ -2501,6 +2607,8 @@ const querySubcoreOthers = {
         )`
     },
     tablevariableconfiguration: {
+        id: 'tablevariableconfigurationid',
+        sequence: 'tablevariableconfigurationseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         chatblockid,
         description, status, type, createdate, createby, changedate, changeby, edit,
@@ -2537,6 +2645,8 @@ const querySubcoreOthers = {
 		)`
     },
     intelligentmodels: {
+        id: 'intelligentmodelsid',
+        sequence: 'inteligentseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         endpoint, modelid, apikey, provider
@@ -2569,6 +2679,8 @@ const querySubcoreOthers = {
         )`
     },
     intelligentmodelsconfiguration: {
+        id: 'intelligentmodelsconfigurationid',
+        sequence: 'intelligentmodelsconfigurationseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, communicationchannelid as zyxmecommunicationchannelid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         parameters, channels, color, icontype
@@ -2634,10 +2746,119 @@ const querySubcoreOthers = {
 			parameters text, channels character varying, color character varying, icontype character varying
         )`
     },
+    payment: {
+        id: 'paymentid',
+        sequence: 'paymentseq',
+        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
+        NULLIF(conversationid, 0) + $incconversationid as zyxmeconversationid, NULLIF(personid, 0) + $incpersonid as zyxmepersonid,
+        description, status, type, createdate, createby, changedate, changeby, edit,
+        pocketbook, tokenid, title, amount, currency, email, capture,
+        tokenjson, chargejson, refundjson, customerjson, cardjson, planjson, subscriptionjson
+        FROM payment
+        WHERE corpid = $corpid
+        ORDER BY paymentid
+        LIMIT $limit
+        OFFSET $offset`,
+        insert: `INSERT INTO payment (
+            zyxmecorpid,
+            corpid,
+            orgid,
+            conversationid,
+            personid,
+            description, status, type, createdate, createby, changedate, changeby, edit,
+            pocketbook, tokenid, title, amount, currency, email, capture,
+            tokenjson, chargejson, refundjson, customerjson, cardjson, planjson, subscriptionjson
+        )
+        SELECT
+            dt.zyxmecorpid,
+            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
+            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            dt.zyxmeconversationid,
+            dt.zyxmepersonid,
+            dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
+            dt.pocketbook, dt.tokenid, dt.title, dt.amount, dt.currency, dt.email, dt.capture,
+            dt.tokenjson, dt.chargejson, dt.refundjson, dt.customerjson, dt.cardjson, dt.planjson, dt.subscriptionjson
+        FROM json_populate_recordset(null::record, $datatable)
+        AS dt (
+            zyxmecorpid bigint, zyxmeorgid bigint,
+			zyxmeconversationid bigint,
+			zyxmepersonid bigint,
+			description character varying, status character varying, type character varying,
+			createdate timestamp without time zone, createby character varying,
+			changedate timestamp without time zone, changeby character varying,
+			edit boolean,
+			pocketbook text, tokenid text, title text, amount numeric, currency text, email text, capture boolean,
+			tokenjson text, chargejson text, refundjson text, customerjson text, cardjson text, planjson text, subscriptionjson text
+        )`
+    },
+    productivity: {
+        id: 'productivityid',
+        sequence: 'productivityseq',
+        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
+        CASE WHEN userid = 42 THEN 2
+        WHEN userid = 51 THEN 3
+        ELSE userid + $incuserid
+        END as zyxmeuserid,
+        description, status, type, createdate, createby, changedate, changeby, edit,
+        fullname, communicationchannel, communicationchanneldesc,
+        datestr, hours, hoursrange,
+        worktime::text, busytimewithinwork::text, freetimewithinwork::text, busytimeoutsidework::text,
+        onlinetime::text, idletime::text, qtytickets, qtyconnection, qtydisconnection
+        FROM productivity
+        WHERE corpid = $corpid
+        ORDER BY productivityid
+        LIMIT $limit
+        OFFSET $offset`,
+        insert: `INSERT INTO productivity (
+            zyxmecorpid,
+            corpid,
+            orgid,
+            userid,
+            description, status, type, createdate, createby, changedate, changeby, edit,
+            fullname, communicationchannel, communicationchanneldesc,
+            datestr, hours, hoursrange,
+            worktime, busytimewithinwork, freetimewithinwork, busytimeoutsidework,
+            onlinetime, idletime, qtytickets, qtyconnection, qtydisconnection
+        )
+        SELECT
+            dt.zyxmecorpid,
+            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
+            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            dt.zyxmeuserid,
+            dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
+            dt.fullname,
+            (
+                SELECT string_agg(communicationchannelid::text,',')
+                FROM communicationchannel
+                WHERE zyxmecorpid = dt.zyxmecorpid AND 
+                zyxmecommunicationchannelid IN (SELECT UNNEST(string_to_array(dt.communicationchannel,',')::BIGINT[]))
+            ),
+            dt.communicationchanneldesc,
+            dt.datestr, dt.hours, dt.hoursrange,
+            dt.worktime, dt.busytimewithinwork, dt.freetimewithinwork, dt.busytimeoutsidework,
+            dt.onlinetime, dt.idletime, dt.qtytickets, dt.qtyconnection, dt.qtydisconnection
+        FROM json_populate_recordset(null::record, $datatable)
+        AS dt (
+            zyxmecorpid bigint, zyxmeorgid bigint,
+			zyxmeuserid bigint,
+			description character varying, status character varying, type character varying,
+			createdate timestamp without time zone, createby character varying,
+			changedate timestamp without time zone, changeby character varying,
+			edit boolean,
+			fullname text,
+			communicationchannel character varying,
+			communicationchanneldesc text,
+			datestr text, hours text, hoursrange text,
+			worktime interval, busytimewithinwork interval, freetimewithinwork interval, busytimeoutsidework interval,
+			onlinetime interval, idletime interval, qtytickets bigint, qtyconnection bigint, qtydisconnection bigint
+        )`
+    },
 }
 
 const queryExtras = {
     blacklist: {
+        id: 'blacklistid',
+        sequence: 'blacklistseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, blacklistid as zyxmeblacklistid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         phone
@@ -2673,6 +2894,8 @@ const queryExtras = {
         )`
     },
     hsmhistory: {
+        id: 'hsmhistoryid',
+        sequence: 'hsmhistoryseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         config, success, message, groupname, transactionid, externalid
@@ -2740,6 +2963,8 @@ const queryExtras = {
         )`
     },
     label: {
+        id: 'labelid',
+        sequence: 'labelseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         color, intent, tags
@@ -2772,6 +2997,8 @@ const queryExtras = {
         )`
     },
     location: {
+        id: 'locationid',
+        sequence: 'locationseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         name, address, district, city, country, schedule, phone, alternativephone, email, alternativeemail,
@@ -2808,113 +3035,9 @@ const queryExtras = {
 			latitude double precision, longitude double precision, googleurl character varying
         )`
     },
-    payment: {
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
-        conversationid as zyxmeconversationid, personid as zyxmepersonid,
-        description, status, type, createdate, createby, changedate, changeby, edit,
-        pocketbook, tokenid, title, amount, currency, email, capture,
-        tokenjson, chargejson, refundjson, customerjson, cardjson, planjson, subscriptionjson,
-        saleorderid, paymentdate, totaldiscount, obs
-        FROM payment
-        WHERE corpid = $corpid
-        ORDER BY paymentid
-        LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO payment (
-            zyxmecorpid,
-            corpid,
-            orgid,
-            conversationid,
-            personid,
-            description, status, type, createdate, createby, changedate, changeby, edit,
-            pocketbook, tokenid, title, amount, currency, email, capture,
-            tokenjson, chargejson, refundjson, customerjson, cardjson, planjson, subscriptionjson,
-            saleorderid, paymentdate, totaldiscount, obs
-        )
-        SELECT
-            dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            dt.zyxmeconversationid,
-            COALESCE(
-                dt.zyxmepersonid,
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
-            ),
-            dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
-            dt.pocketbook, dt.tokenid, dt.title, dt.amount, dt.currency, dt.email, dt.capture,
-            dt.tokenjson, dt.chargejson, dt.refundjson, dt.customerjson, dt.cardjson, dt.planjson, dt.subscriptionjson,
-            dt.saleorderid, dt.paymentdate, dt.totaldiscount, dt.obs
-        FROM json_populate_recordset(null::record, $datatable)
-        AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
-			zyxmeconversationid bigint,
-			zyxmepersonid bigint,
-			description character varying, status character varying, type character varying,
-			createdate timestamp without time zone, createby character varying,
-			changedate timestamp without time zone, changeby character varying,
-			edit boolean,
-			pocketbook text, tokenid text, title text, amount numeric, currency text, email text, capture boolean,
-			tokenjson text, chargejson text, refundjson text, customerjson text, cardjson text, planjson text, subscriptionjson text,
-			saleorderid bigint, paymentdate date, totaldiscount numeric, obs text
-        )`
-    },
-    productivity: {
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, userid as zyxmeuserid,
-        description, status, type, createdate, createby, changedate, changeby, edit,
-        fullname, communicationchannel, communicationchanneldesc,
-        datestr, hours, hoursrange,
-        worktime::text, busytimewithinwork::text, freetimewithinwork::text, busytimeoutsidework::text,
-        onlinetime::text, idletime::text, qtytickets, qtyconnection, qtydisconnection
-        FROM productivity
-        WHERE corpid = $corpid
-        ORDER BY productivityid
-        LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO productivity (
-            zyxmecorpid,
-            corpid,
-            orgid,
-            userid,
-            description, status, type, createdate, createby, changedate, changeby, edit,
-            fullname, communicationchannel, communicationchanneldesc,
-            datestr, hours, hoursrange,
-            worktime, busytimewithinwork, freetimewithinwork, busytimeoutsidework,
-            onlinetime, idletime, qtytickets, qtyconnection, qtydisconnection
-        )
-        SELECT
-            dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            (SELECT userid FROM usr WHERE zyxmeuserid = dt.zyxmeuserid LIMIT 1),
-            dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
-            dt.fullname,
-            (
-                SELECT string_agg(communicationchannelid::text,',')
-                FROM communicationchannel
-                WHERE zyxmecorpid = dt.zyxmecorpid AND 
-                zyxmecommunicationchannelid IN (SELECT UNNEST(string_to_array(dt.communicationchannel,',')::BIGINT[]))
-            ),
-            dt.communicationchanneldesc,
-            dt.datestr, dt.hours, dt.hoursrange,
-            dt.worktime, dt.busytimewithinwork, dt.freetimewithinwork, dt.busytimeoutsidework,
-            dt.onlinetime, dt.idletime, dt.qtytickets, dt.qtyconnection, dt.qtydisconnection
-        FROM json_populate_recordset(null::record, $datatable)
-        AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
-			zyxmeuserid bigint,
-			description character varying, status character varying, type character varying,
-			createdate timestamp without time zone, createby character varying,
-			changedate timestamp without time zone, changeby character varying,
-			edit boolean,
-			fullname text,
-			communicationchannel character varying,
-			communicationchanneldesc text,
-			datestr text, hours text, hoursrange text,
-			worktime interval, busytimewithinwork interval, freetimewithinwork interval, busytimeoutsidework interval,
-			onlinetime interval, idletime interval, qtytickets bigint, qtyconnection bigint, qtydisconnection bigint
-        )`
-    },
     reporttemplate: {
+        id: 'reporttemplateid',
+        sequence: 'reporttemplateseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         communicationchannelid, columnjson, filterjson
@@ -2954,6 +3077,8 @@ const queryExtras = {
         )`
     },
     sla: {
+        id: 'slaid',
+        sequence: 'slaseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         company, communicationchannelid, usergroup,
@@ -3015,6 +3140,8 @@ const queryExtras = {
         )`
     },
     whitelist: {
+        id: 'whitelistid',
+        sequence: 'whitelistseq',
         select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         phone, asesorname, documenttype, documentnumber, usergroup
@@ -3060,10 +3187,32 @@ exports.listCorp = async (req, res) => {
 }
 
 exports.executeMigration = async (req, res) => {
-    let { corpid, modules, clean = false, movewebhook = false } = req.body;
+    let { corpid, inc, modules, clean = false, movewebhook = false } = req.body;
     if (!!corpid && !!modules) {
-        const corpidBind = { corpid: corpid }
+        const corpidBind = {
+            corpid: corpid,
+            incuserid: inc?.userid || 10000,
+            incpersonid: inc?.personid || 10000000,
+            incconversationid: inc?.conversationid || 10000000,
+            inccampaignmemberid: inc?.campaignmemberid || 1000000,
+        }
         let queryResult = {core: {}, subcore: {}, extras: {}};
+        await zyxmeQuery(`CREATE TABLE IF NOT EXISTS migration (corpid bigint, run boolean, params jsonb, result jsonb, startdate timestamp without time zone, enddate timestamp without time zone)`);
+        let migrationstatus = await zyxmeQuery(`SELECT corpid FROM migration WHERE corpid = $corpid`, bind = {corpid: corpid});
+        if (migrationstatus.length > 0) {
+            await zyxmeQuery(`UPDATE migration SET run = $run, params = $params, startdate = NOW() WHERE corpid = $corpid`, bind = {
+                corpid: corpid,
+                run: true,
+                params: req.body
+            });
+        }
+        else {
+            await zyxmeQuery(`INSERT INTO migration (corpid, run, params, startdate) SELECT $corpid, $run, $params, NOW()`, bind = {
+                corpid: corpid,
+                run: true,
+                params: req.body
+            });
+        }
         try {
             if (modules.includes('core')) {
                 if (clean === true) {
@@ -3082,6 +3231,64 @@ exports.executeMigration = async (req, res) => {
                 queryResult.subcore.campaign = await migrationExecute(corpidBind, querySubcoreCampaign);
                 queryResult.subcore.others = await migrationExecute(corpidBind, querySubcoreOthers);
             }
+            if (!modules.includes('subcore') && modules.includes('subcore.classification')) {
+                if (clean === true) {
+                    await laraigoQuery('DELETE FROM "quickreply" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "classification" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                }
+                queryResult.subcore.classification = await migrationExecute(corpidBind, querySubcoreClassification);
+            }
+            if (!modules.includes('subcore') && modules.includes('subcore.person')) {
+                if (clean === true) {
+                    await laraigoQuery('DELETE FROM "personcommunicationchannel" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "personaddinfo" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "person" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                }
+                queryResult.subcore.person = await migrationExecute(corpidBind, querySubcorePerson);
+            }
+            if (!modules.includes('subcore') && modules.includes('subcore.conversation')) {
+                if (clean === true) {
+                    await laraigoQuery('DELETE FROM "surveyanswered" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "interaction" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "conversationstatus" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "conversationpending" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "conversationpause" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "conversationnote" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "conversationclassification" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "conversation" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "pccstatus" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "post" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                }
+                queryResult.subcore.conversation = await migrationExecute(corpidBind, querySubcoreConversation);
+            }
+            if (!modules.includes('subcore') && !modules.includes('subcore.conversation') && modules.includes('subcore.surveyanswered')) {
+                if (clean === true) {
+                    await laraigoQuery('DELETE FROM "surveyanswered" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                }
+                queryResult.subcore.surveyanswered = await migrationExecute(corpidBind, {surveyanswered: querySubcoreConversation.surveyanswered});
+            }
+            if (!modules.includes('subcore') && modules.includes('subcore.campaign')) {
+                if (clean === true) {
+                    await laraigoQuery('DELETE FROM "campaignhistory" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "campaignmember" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "campaign" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "messagetemplate" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                }
+                queryResult.subcore.campaign = await migrationExecute(corpidBind, querySubcoreCampaign);
+            }
+            if (!modules.includes('subcore') && modules.includes('subcore.others')) {
+                if (clean === true) {
+                    await laraigoQuery('DELETE FROM "productivity" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "payment" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "intelligentmodelsconfiguration" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "intelligentmodels" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "tablevariableconfiguration" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "block" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "blockversion" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                    await laraigoQuery('DELETE FROM "taskscheduler" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                }
+                queryResult.subcore.others = await migrationExecute(corpidBind, querySubcoreOthers);
+            }
             if (modules.includes('extras')) {
                 if (clean === true) {
                     await laraigoQuery('SELECT FROM ufn_migration_extras_delete($corpid)', bind = corpidBind);
@@ -3091,8 +3298,6 @@ exports.executeMigration = async (req, res) => {
                 queryResult.extras.inappropriatewords = await migrationExecute(corpidBind, {inappropriatewords: queryExtras.inappropriatewords});
                 queryResult.extras.label = await migrationExecute(corpidBind, {label: queryExtras.label});
                 queryResult.extras.location = await migrationExecute(corpidBind, {location: queryExtras.location});
-                queryResult.extras.payment = await migrationExecute(corpidBind, {payment: queryExtras.payment});
-                queryResult.extras.productivity = await migrationExecute(corpidBind, {productivity: queryExtras.productivity});
                 queryResult.extras.reporttemplate = await migrationExecute(corpidBind, {reporttemplate: queryExtras.reporttemplate});
                 queryResult.extras.sla = await migrationExecute(corpidBind, {sla: queryExtras.sla});
                 queryResult.extras.whitelist = await migrationExecute(corpidBind, {whitelist: queryExtras.whitelist});
@@ -3127,18 +3332,6 @@ exports.executeMigration = async (req, res) => {
                 }
                 queryResult.extras.location = await migrationExecute(corpidBind, {location: queryExtras.location});
             }
-            if (!modules.includes('extras') && modules.includes('extras.payment')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "payment" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
-                queryResult.extras.payment = await migrationExecute(corpidBind, {payment: queryExtras.payment});
-            }
-            if (!modules.includes('extras') && modules.includes('extras.productivity')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "productivity" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
-                queryResult.extras.productivity = await migrationExecute(corpidBind, {productivity: queryExtras.productivity});
-            }
             if (!modules.includes('extras') && modules.includes('extras.reporttemplate')) {
                 if (clean === true) {
                     await laraigoQuery('DELETE FROM "reporttemplate" WHERE zyxmecorpid = $corpid', bind = corpidBind);
@@ -3157,6 +3350,21 @@ exports.executeMigration = async (req, res) => {
                 }
                 queryResult.extras.whitelist = await migrationExecute(corpidBind, {whitelist: queryExtras.whitelist});
             }
+            await laraigoQuery(`
+                SELECT ufn_columntemplate_ins(corpid, orgid)
+                FROM org
+                WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid)
+            `, bind = corpidBind);
+            await laraigoQuery(`
+                SELECT ufn_intelligentmodelsorgtemplate_ins(corpid, orgid)
+                FROM org
+                WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid)
+            `, bind = corpidBind);
+            await zyxmeQuery(`UPDATE migration SET run = $run, result = $result, enddate = NOW() WHERE corpid = $corpid`, bind = {
+                corpid: corpid,
+                run: false,
+                result: queryResult
+            });
             logger.debug(queryResult, { meta: { function: 'executeMigration' }} );
             return res.status(200).json({ error: false, success: true, data: queryResult });
         }
