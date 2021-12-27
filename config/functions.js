@@ -1092,7 +1092,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_SEL: {
-        query: "select * from ufn_lead_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $campaignid, $all)",
+        query: "select * from ufn_lead_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $campaignid, $tags, $all)",
         module: "",
         protected: "SELECT"
     },
@@ -1525,5 +1525,25 @@ module.exports = {
         query: "SELECT propertyname, propertyvalue FROM property p WHERE p.corpid = :corpid AND p.orgid = :orgid AND p.propertyname IN (:propertynames) and p.status = 'ACTIVO';",
         module: "",
         protected: "INSERT"
+    },
+    QUERY_SEL_INOVICE_BY_ID: {
+        query: "select * from invoice where corpid = $corpid and orgid = $orgid and invoiceid = $invoiceid",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_SEL_INOVICEDETAIL_BY_ID: {
+        query: "select * from invoice where corpid = $corpid and orgid = $orgid and invoiceid = $invoiceid",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVOICE_CORRELATIVE: {
+        query: "select * from ufn_invoice_correlative($corpid, $orgid, $invoiceid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEAD_TAGSDISTINCT_SEL: {
+        query: "select * from ufn_lead_tagsdistinct_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
     },
 }
