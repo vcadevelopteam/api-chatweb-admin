@@ -3194,7 +3194,7 @@ exports.executeMigration = async (req, res) => {
             incuserid: inc?.userid || 10000,
             incpersonid: inc?.personid || 10000000,
             incconversationid: inc?.conversationid || 10000000,
-            inccampaignmemberid: inc.campaignmemberid || 1000000,
+            inccampaignmemberid: inc?.campaignmemberid || 1000000,
         }
         let queryResult = {core: {}, subcore: {}, extras: {}};
         await zyxmeQuery(`CREATE TABLE IF NOT EXISTS migration (corpid bigint, run boolean, params jsonb, result jsonb, startdate timestamp without time zone, enddate timestamp without time zone)`);
