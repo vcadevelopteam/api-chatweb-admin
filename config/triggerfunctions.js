@@ -46,7 +46,7 @@ exports.executesimpletransaction = async (method, data, permissions = false, rep
                 console.log(err)
                 return getErrorSeq(err)
             });
-            console.timeEnd("simple:" + method);
+            console.timeEnd("simple-" + method);
             return result;
         } else {
             return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
