@@ -1518,9 +1518,5 @@ module.exports = {
     },
     QUERY_UPDATE_PERSON_BY_HSM: {
         query: "SELECT propertyname, propertyvalue FROM property p WHERE p.corpid = :corpid AND p.orgid = :orgid AND p.propertyname IN (:propertynames) and p.status = 'ACTIVO';",
-
-        query: "UPDATE person pe SET firstcontact = CASE WHEN pe.firstcontact IS NULL THEN NOW() else pe.firstcontact END, lastcontact = NOW() where pe.personid IN (:personids) and pe.corpid = :corpid and pe.orgid = :orgid;",
-        module: "",
-        protected: "INSERT"
     },
 }
