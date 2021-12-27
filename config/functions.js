@@ -1518,5 +1518,7 @@ module.exports = {
     },
     QUERY_UPDATE_PERSON_BY_HSM: {
         query: "SELECT propertyname, propertyvalue FROM property p WHERE p.corpid = :corpid AND p.orgid = :orgid AND p.propertyname IN (:propertynames) and p.status = 'ACTIVO';",
+        module: "",
+        protected: "INSERT"
     },
 }
