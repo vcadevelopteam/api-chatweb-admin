@@ -99,7 +99,7 @@ exports.authenticate = async (req, res) => {
                 ...(automaticConnection ? [tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", {
                     ...user,
                     type: 'INBOX',
-                    status: 'ACTIVO',
+                    status: 'CONECTADO',
                     description: null,
                     motive: null,
                     username: user.usr
@@ -197,7 +197,7 @@ exports.connect = async (req, res) => {
         tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", {
             ...req.user,
             type: 'INBOX',
-            status: connect ? 'ACTIVO' : 'DESCONECTADO',
+            status: connect ? 'CONECTADO' : 'DESCONECTADO',
             description,
             motive,
             username: req.user.usr
