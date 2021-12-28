@@ -870,6 +870,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DASHBOARD_GERENCIAL_ENCUESTA3_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_encuesta3_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$question,$closedby,$target,$userid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
 
     UFN_DASHBOARD_GERENCIAL_DATA_TMO_GENERAL_SEL: {
         query: "SELECT * FROM ufn_dashboard_gerencial_data_tmo_general_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$userid,$offset)",
