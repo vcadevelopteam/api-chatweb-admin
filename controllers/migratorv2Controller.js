@@ -2834,7 +2834,7 @@ const querySubcoreOthers = {
                 zyxmecommunicationchannelid IN (SELECT UNNEST(string_to_array(dt.communicationchannel,',')::BIGINT[]))
             ),
             dt.communicationchanneldesc,
-            dt.datestr, dt.hours, dt.hoursrange,
+            dt.datestr::DATE, dt.hours, dt.hoursrange,
             dt.worktime, dt.busytimewithinwork, dt.freetimewithinwork, dt.busytimeoutsidework,
             dt.onlinetime, dt.idletime, dt.qtytickets, dt.qtyconnection, dt.qtydisconnection
         FROM json_populate_recordset(null::record, $datatable)
