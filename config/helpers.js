@@ -67,10 +67,10 @@ exports.generatefilter = (filters, origin, daterange, offset) => {
                                     where += ` and ${column} is not null`;
                                     break;
                                 case 'notequals':
-                                    where += column.includes("p_offset") ? ` and (${column})::DATE <> '${f.value}'::DATE` : ` and ${column}::DATE <> ('${f.value}'::DATE - ${offset} * INTERVAL '1HOUR')::DATE`;
+                                    where += column.includes("p_offset") ? ` and (${column})::DATE <> '${f.value}'::DATE` : ` and (${column} + ${offset} * INTERVAL '1HOUR')::DATE <> '${f.value}'::DATE`;
                                     break;
                                 case 'equals':
-                                    where += column.includes("p_offset") ? ` and (${column})::DATE = '${f.value}'::DATE` : ` and ${column}::DATE = ('${f.value}'::DATE - ${offset} * INTERVAL '1HOUR')::DATE`;
+                                    where += column.includes("p_offset") ? ` and (${column})::DATE = '${f.value}'::DATE` : ` and (${column} + ${offset} * INTERVAL '1HOUR')::DATE = '${f.value}'::DATE`;
                                     break;
                                 default:
                                     break;
