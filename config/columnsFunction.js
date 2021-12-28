@@ -10,7 +10,7 @@ module.exports = {
             column: "cc.description"
         },
         fecha: {
-            column: "to_char(inter.createdate + $offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI:SS')"
+            column: "to_char(inter.createdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI:SS')"
         },
         pregunta: {
             column: "inter.inputquestion"
@@ -30,16 +30,16 @@ module.exports = {
             column: "co.ticketnum"
         },
         anioticket: {
-            column: "extract(year from (co.startdate + $offset * INTERVAL '1hour'))::character varying"
+            column: "extract(year from (co.startdate + p_offset * INTERVAL '1hour'))::character varying"
         },
         mesticket: {
-            column: "extract(month from (co.startdate + $offset * INTERVAL '1hour'))::character varying"
+            column: "extract(month from (co.startdate + p_offset * INTERVAL '1hour'))::character varying"
         },
         fechaticket: {
-            column: "to_char(co.startdate + $offset * INTERVAL '1hour', 'DD/MM/YYYY')::character varying"
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')::character varying"
         },
         horaticket: {
-            column: "to_char(co.startdate + $offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')::character varying"
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')::character varying"
         },
         cliente: {
             column: "pe.name"
@@ -63,16 +63,16 @@ module.exports = {
             column: "case when cl2.description is null then null else cl.description end"
         },
         fechafin: {
-            column: "to_char(co.finishdate + $offset * INTERVAL '1hour', 'YYYY-MM-DD')::character varying"
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'YYYY-MM-DD')::character varying"
         },
         horafin: {
-            column: "to_char(co.finishdate + $offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')::character varying"
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')::character varying"
         },
         fechaprimerainteraccion: {
-            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + $offset * INTERVAL '1hour', 'YYYY-MM-DD'), to_char((co.startdate + co.userfirstreplytime) + $offset * INTERVAL '1hour', 'YYYY-MM-DD')) ELSE null END ::character varying"
+            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'YYYY-MM-DD'), to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'YYYY-MM-DD')) ELSE null END ::character varying"
         },
         horaprimerainteraccion: {
-            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + $offset * INTERVAL '1hour' :: time, 'HH24:MI:SS'), to_char((co.startdate + co.userfirstreplytime) + $offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')) ELSE null END ::character varying"
+            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS'), to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')) ELSE null END ::character varying"
         },
         cerradopor: {
             column: "ou.type"
@@ -148,19 +148,19 @@ module.exports = {
             column: "co.ticketnum"
         },
         anio: {
-            column: "extract(year from co.startdate + $offset * INTERVAL '1hour')::int"
+            column: "extract(year from co.startdate + p_offset * INTERVAL '1hour')::int"
         },
         mes: {
-            column: "extract(month from co.startdate + $offset * INTERVAL '1hour')::int"
+            column: "extract(month from co.startdate + p_offset * INTERVAL '1hour')::int"
         },
         semana: {
-            column: "extract(week from co.startdate + $offset * INTERVAL '1hour')::int"
+            column: "extract(week from co.startdate + p_offset * INTERVAL '1hour')::int"
         },
         dia: {
-            column: "extract(day from co.startdate + $offset * INTERVAL '1hour')::int"
+            column: "extract(day from co.startdate + p_offset * INTERVAL '1hour')::int"
         },
         hora: {
-            column: "extract(hour from co.startdate + $offset * INTERVAL '1hour')::int"
+            column: "extract(hour from co.startdate + p_offset * INTERVAL '1hour')::int"
         },
         canal: {
             column: "cc.description"
@@ -178,28 +178,28 @@ module.exports = {
             column: "coalesce(do2.domaindesc, co.closetype)"
         },
         fechainicio: {
-            column: "to_char(co.startdate + $offset * INTERVAL '1hour', 'DD/MM/YYYY')::character varying"
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')::character varying"
         },
         horainicio: {
-            column: "to_char(co.startdate + $offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')::character varying"
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')::character varying"
         },
         fechafin: {
-            column: "to_char(co.finishdate + $offset * INTERVAL '1hour', 'DD/MM/YYYY')::character varying"
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')::character varying"
         },
         horafin: {
-            column: "to_char(co.finishdate + $offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')::character varying"
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')::character varying"
         },
         fechaderivacion: {
-            column: "to_char(co.handoffdate + $offset * INTERVAL '1hour', 'DD/MM/YYYY')::character varying"
+            column: "to_char(co.handoffdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')::character varying"
         },
         horaderivacion: {
-            column: "coalesce(to_char(co.handoffdate + $offset * INTERVAL '1hour' :: time, 'HH24:MI:SS'),'')::character varying"
+            column: "coalesce(to_char(co.handoffdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS'),'')::character varying"
         },
         fechaprimerainteraccion: {
-            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + $offset * INTERVAL '1hour', 'DD/MM/YYYY'), to_char((co.startdate + co.userfirstreplytime) + $offset * INTERVAL '1hour', 'DD/MM/YYYY')) ELSE to_char((co.startdate + co.firstreplytime) + $offset * INTERVAL '1hour', 'DD/MM/YYYY') END ::character varying"
+            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY'), to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')) ELSE to_char((co.startdate + co.firstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY') END ::character varying"
         },
         horaprimerainteraccion: {
-            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + $offset * INTERVAL '1hour' :: time, 'HH24:MI:SS'), to_char((co.startdate + co.userfirstreplytime) + $offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')) ELSE to_char((co.startdate + co.firstreplytime) + $offset * INTERVAL '1hour' ::time, 'HH24:MI:SS') END ::character varying"
+            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS'), to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')) ELSE to_char((co.startdate + co.firstreplytime) + p_offset * INTERVAL '1hour' ::time, 'HH24:MI:SS') END ::character varying"
         },
         tmo: {
             column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.realduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') :: character varying"
@@ -295,34 +295,29 @@ module.exports = {
         }
     },
     loginhistory: {
-        nombre_usuario: {
+        datehour: {
+            column: "uh.createdate",
+            type: "date"
+        },
+        user: {
             column: "concat(u.firstname,' ',u.lastname)"
         },
-        usuario: {
+        username: {
             column: "u.usr"
-        },
-        createdate: {
-            column: "to_char(uh.createdate + $offset * INTERVAL '1hour', 'DD/MM/YYYY')::character varying"
-        },
-        createhour: {
-            column: "to_char(uh.createdate + $offset * INTERVAL '1hour', 'HH24:MI')::character varying"
-        },
-        type: {
-            column: "uh.type"
         },
         status: {
             column: "uh.status"
         },
-        motivetype: {
-            column: "uh.motivetype"
-        }
+        type: {
+            column: "uh.type"
+        },
     },
     ticket: {
         numeroticket: {
             column: "co.ticketnum"
         },
         fecha: {
-            column: "co.startdate + $offset * INTERVAL '1hour'",
+            column: "co.startdate + p_offset * INTERVAL '1hour'",
             type: "date"
         },
         firstusergroup: {
@@ -341,23 +336,23 @@ module.exports = {
             column: "pcc.personcommunicationchannelowner"
         },
         fechainicio: {
-            column: "co.startdate + $offset * INTERVAL '1hour'",
+            column: "co.startdate + p_offset * INTERVAL '1hour'",
             type: "date"
         },
         fechafin: {
-            column: "co.finishdate + $offset * INTERVAL '1hour'",
+            column: "co.finishdate + p_offset * INTERVAL '1hour'",
             type: "date"
         },
         fechaprimeraconversacion: {
-            column: "co.firstconversationdate + $offset * INTERVAL '1hour'",
+            column: "co.firstconversationdate + p_offset * INTERVAL '1hour'",
             type: "date"
         },
         fechaultimaconversacion: {
-            column: "co.lastconversationdate + $offset * INTERVAL '1hour'",
+            column: "co.lastconversationdate + p_offset * INTERVAL '1hour'",
             type: "date"
         },
         fechahandoff: {
-            column: "co.handoffdate + $offset * INTERVAL '1hour'",
+            column: "co.handoffdate + p_offset * INTERVAL '1hour'",
             type: "date"
         },
         asesorinicial: {
@@ -519,11 +514,11 @@ module.exports = {
             column: "pe.alternativeemail"
         },
         firstcontact: {
-            column: "pe.firstcontact + $offset * interval '1hour'",
+            column: "pe.firstcontact + p_offset * interval '1hour'",
             type: "date"
         },
         lastcontact: {
-            column: "pe.lastcontact + $offset * interval '1hour'",
+            column: "pe.lastcontact + p_offset * interval '1hour'",
             type: "date"
         },
         lastcommunicationchannelid: {
@@ -614,7 +609,7 @@ module.exports = {
             column: "bl.description"
         },
         createdate: {
-            column: "bl.createdate + $offset * interval '1hour'",
+            column: "bl.createdate + p_offset * interval '1hour'",
             type: "date"
         }
     },
@@ -676,7 +671,7 @@ module.exports = {
             column: "ld.description"
         },
         changedate: {
-            column: "ld.changedate + $offset * INTERVAL '1hour'",
+            column: "ld.changedate + p_offset * INTERVAL '1hour'",
             type: "date"
         },
         contact_name: {
@@ -704,7 +699,7 @@ module.exports = {
             column: "ld.tags"
         },
         notedate: {
-            column: "ldn.changedate + $offset * INTERVAL '1hour'",
+            column: "ldn.changedate + p_offset * INTERVAL '1hour'",
             type: "date"
         },
         notedescription: {
@@ -731,7 +726,7 @@ module.exports = {
             type: "number"
         },
         expected_closing: {
-            column: "ld.date_deadline + $offset * INTERVAL '1hour'",
+            column: "ld.date_deadline + p_offset * INTERVAL '1hour'",
             type: "date"
         },
     },
