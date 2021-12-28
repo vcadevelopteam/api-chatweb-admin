@@ -295,27 +295,22 @@ module.exports = {
         }
     },
     loginhistory: {
-        nombre_usuario: {
+        datehour: {
+            column: "uh.createdate",
+            type: "date"
+        },
+        user: {
             column: "concat(u.firstname,' ',u.lastname)"
         },
-        usuario: {
+        username: {
             column: "u.usr"
-        },
-        createdate: {
-            column: "to_char(uh.createdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')::character varying"
-        },
-        createhour: {
-            column: "to_char(uh.createdate + p_offset * INTERVAL '1hour', 'HH24:MI')::character varying"
-        },
-        type: {
-            column: "uh.type"
         },
         status: {
             column: "uh.status"
         },
-        motivetype: {
-            column: "uh.motivetype"
-        }
+        type: {
+            column: "uh.type"
+        },
     },
     ticket: {
         numeroticket: {
