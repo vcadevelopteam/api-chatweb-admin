@@ -560,7 +560,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CONVERSATION_REASSIGNTICKET_MASSIVE: {
-        query: "SELECT * FROM ufn_conversation_reassignticket_massive($conversationid, $newuserid, $username, $comment)",
+        query: "SELECT * FROM ufn_conversation_reassignticket_massive($conversationid, $newuserid, $username, $newusergroup, $comment)",
         module: "", //tickets
         protected: "SELECT"
     },
