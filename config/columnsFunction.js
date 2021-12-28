@@ -26,69 +26,34 @@ module.exports = {
         }
     },
     tipification: {
-        numeroticket: {
+        ticket: {
             column: "co.ticketnum"
         },
-        anioticket: {
-            column: "extract(year from (co.startdate + p_offset * INTERVAL '1hour'))::character varying"
+        datehour: {
+            column: "co.startdate",
+            type: "date"
         },
-        mesticket: {
-            column: "extract(month from (co.startdate + p_offset * INTERVAL '1hour'))::character varying"
-        },
-        fechaticket: {
-            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')::character varying"
-        },
-        horaticket: {
-            column: "to_char(co.startdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')::character varying"
-        },
-        cliente: {
-            column: "pe.name"
-        },
-        numerodocumento: {
-            column: "pe.documentnumber"
-        },
-        asesor: {
-            column: "concat(us.firstname,' ',us.lastname)::character varying"
-        },
-        canal: {
-            column: "cc.description canal"
-        },
-        tipo: {
-            column: "coalesce(cl2.description, cl1.description)"
-        },
-        submotivo: {
-            column: "case when cl2.description is null then cl.description else cl1.description end"
-        },
-        valoracion: {
-            column: "case when cl2.description is null then null else cl.description end"
-        },
-        fechafin: {
-            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'YYYY-MM-DD')::character varying"
-        },
-        horafin: {
-            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')::character varying"
-        },
-        fechaprimerainteraccion: {
-            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'YYYY-MM-DD'), to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'YYYY-MM-DD')) ELSE null END ::character varying"
-        },
-        horaprimerainteraccion: {
-            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS'), to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')) ELSE null END ::character varying"
-        },
-        cerradopor: {
-            column: "ou.type"
-        },
-        tipocierre: {
-            column: "coalesce(do2.domaindesc, co.closetype)"
-        },
-        displayname: {
+        person: {
             column: "pcc.displayname"
         },
         phone: {
             column: "pe.phone"
         },
-        contact: {
-            column: "pe.contact"
-        }
+        agent: {
+            column: "concat(us.firstname,' ',us.lastname)"
+        },
+        channel: {
+            column: "cc.description"
+        },
+        classificationlevel1: {
+            column: "coalesce(cl2.description, cl1.description)"
+        },
+        classificationlevel2: {
+            column: "case when cl2.description is null then cl.description else cl1.description end"
+        },
+        classificationlevel3: {
+            column: "case when cl2.description is null then null else cl.description end"
+        },
     },
     interaction: {
         numeroticket: {
