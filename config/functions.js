@@ -1551,4 +1551,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DASHBOARD_GERENCIAL_CONVERSATIONXHOUR_SEL: {
+        query: "select * from ufn_dashboard_gerencial_conversationxhour_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $skipdown, $skipup, $userid, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_OPERATIVO_ENCUESTA3_SEL: {
+        query: "select * from ufn_dashboard_operativo_encuesta3_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $question, $closedby, $target, $supervisorid, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
 }
