@@ -1522,12 +1522,12 @@ module.exports = {
         protected: "INSERT"
     },
     QUERY_SEL_INOVICE_BY_ID: {
-        query: "select * from invoice where corpid = $corpid and orgid = $orgid and invoiceid = $invoiceid",
+        query: "select * from invoice where corpid = $corpid and invoiceid = $invoiceid",
         module: "",
         protected: "SELECT"
     },
     QUERY_SEL_INOVICEDETAIL_BY_ID: {
-        query: "select * from invoice where corpid = $corpid and orgid = $orgid and invoiceid = $invoiceid",
+        query: "select * from invoicedetail where corpid = $corpid and invoiceid = $invoiceid",
         module: "",
         protected: "SELECT"
     },
@@ -1538,6 +1538,11 @@ module.exports = {
     },
     UFN_LEAD_TAGSDISTINCT_SEL: {
         query: "select * from ufn_lead_tagsdistinct_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVOICE_SUNAT: {
+        query: "select * from ufn_invoice_sunat($corpid, $orgid, $invoiceid, $status, $error, $qrcode, $hashcode, $urlcdr, $urlpdf, $urlxml)",
         module: "",
         protected: "SELECT"
     },

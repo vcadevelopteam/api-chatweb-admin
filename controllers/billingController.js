@@ -6,21 +6,30 @@ const { setSessionParameters } = require('../config/helpers');
 
 exports.sendInvoice = async (req, res) => {
     const { parameters = {} } = req.body;
-    setSessionParameters(parameters, parameters);
+    setSessionParameters(parameters, req.user);
+
+    parameters.status = "ERROR";
+    parameters.error = "";
+    parameters.qrcode = "";
+    parameters.hashcode = "";
+    parameters.urlcdr = "";
+    parameters.urlpdf = "";
+    parameters.urlxml = "";
 
     try {
         const resultBD = await Promise.all([
-            executesimpletransaction("QUERY_SEL_INOVICE_BY_ID", dataSesion),
-            executesimpletransaction("QUERY_SEL_INOVICEDETAIL_BY_ID", dataSesion),
-            executesimpletransaction("UFN_INVOICE_CORRELATIVE", dataSesion),
+            executesimpletransaction("QUERY_SEL_INOVICE_BY_ID", parameters),
+            executesimpletransaction("QUERY_SEL_INOVICEDETAIL_BY_ID", parameters),
+            executesimpletransaction("UFN_INVOICE_CORRELATIVE", parameters),
         ]);
+
         if (resultBD[0] instanceof Array) {
             const header = {};
             const invoice = resultBD[0][0];
             const invoiceDetail = resultBD[1];
             const invoiceCorrelative = resultBD[2][0];
             const correlative = invoiceCorrelative.p_correlative;
-            
+
             header.CodigoAnexoEmisor = invoice.annexcode;
             header.CodigoFormatoImpresion = invoice.printingformat;
             header.CodigoMoneda = invoice.currency;
@@ -52,6 +61,7 @@ exports.sendInvoice = async (req, res) => {
             header.Endpoint = invoice.sunaturl;
             header.Username = invoice.sunatusername;
             header.Token = invoice.token;
+            header.FechaEmision = new Date(new Date(invoice.invoicedate).setHours(5)).toISOString().substring(0, 10);
 
             header.ProductList = invoiceDetail.map(x => ({
                 CantidadProducto: x.quantity,
@@ -69,28 +79,35 @@ exports.sendInvoice = async (req, res) => {
                 ValorNetoProducto: x.productnetworth,
             }));
 
-            return res.json({ error: false, success: true, data: header });
+            const resSendInvoice = await axios({
+                data: header,
+                method: 'post',
+                url: `${process.env.BRIDGE}processmifact/sendinvoice`
+            });
+            console.log(resSendInvoice.data)
+            if (resSendInvoice.data.success) {
+                parameters.status = "INVOICED";
+                parameters.qrcode = resSendInvoice.data.result.cadenaCodigoQr;
+                parameters.hashcode = resSendInvoice.data.result.codigoHash;
+                parameters.urlcdr = resSendInvoice.data.result.urlCdrSunat;
+                parameters.urlpdf = resSendInvoice.data.result.urlPdf;
+                parameters.urlxml = resSendInvoice.data.result.urlXml;
+            } else {
+                parameters.error = resSendInvoice.data.operationMessage;
+            }
 
+            const resbd1 = await executesimpletransaction("UFN_INVOICE_SUNAT", parameters)
+
+            console.log(resbd1);
+
+            if (parameters.status === "INVOICED") {
+                return res.json({ error: false, success: true });
+            } else {
+                return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+            }
         } else {
             return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
         }
-        // const result = await executesimpletransaction("UFN_LEADBYPERSONCOMMUNICATIONCHANNEL_SEL", parameters);
-
-        // const requestDeleteSmooch = await axios({
-        //     data: {
-        //         // linkType: parameters.type === 'ANDR' ? 'ANDROIDREMOVE' : 'IOSREMOVE',
-        //         applicationId: parameters.communicationchannelsite,
-        //         integrationId: parameters.integrationid
-        //     },
-        //     method: 'post',
-        //     url: `${process.env.BRIDGE}processmifact/sendinvoice`
-        // });
-
-        // if (result instanceof Array)
-        //     return res.json({ error: false, success: true, data: result });
-        // else
-        //     return res.status(result.rescode).json(result);
-
     } catch (error) {
         console.log(error)
         return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
