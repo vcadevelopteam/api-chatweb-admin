@@ -56,57 +56,53 @@ module.exports = {
         },
     },
     interaction: {
-        numeroticket: {
+        ticketnum: {
             column: "co.ticketnum"
         },
-        anioticket: {
-            column: "to_char(co.startdate + $offset * INTERVAL '1hour','YYYY')::character varying"
+        ticketyear: {
+            column: "to_char(co.startdate + $offset * INTERVAL '1hour','YYYY')"
         },
-        mesticket: {
-            column: "to_char(co.startdate + $offset * INTERVAL '1hour','MM')::character varying"
+        ticketmonth: {
+            column: "to_char(co.startdate + $offset * INTERVAL '1hour','MM')"
         },
-        fechaticket: {
-            column: "to_char(co.startdate + $offset * INTERVAL '1hour','DD/MM/YYYY')::character varying"
+        ticketdatehour: {
+            column: "co.startdate",
+            type: "date"
         },
-        horaticket: {
-            column: "to_char(co.startdate + $offset * INTERVAL '1hour','HH24:MI:SS')::character varying"
-        },
-        linea: {
+        interactionid: {
             column: "inter.interactionid"
         },
-        fechalinea: {
-            column: "to_char(inter.createdate + $offset * INTERVAL '1hour','DD/MM/YYYY')::character varying"
+        interactiondatehour: {
+            column: "inter.createdate",
+            type: "date"
         },
-        horalinea: {
-            column: "to_char(inter.createdate + $offset * INTERVAL '1hour','HH24:MI:SS')::character varying"
-        },
-        cliente: {
+        person: {
             column: "pe.name"
         },
-        canal: {
-            column: "cc.description"
-        },
-        asesor: {
-            column: "concat(us.firstname,' ',us.lastname)::character varying"
-        },
-        intencion: {
-            column: "inter.intent"
-        },
-        tipotexto: {
-            column: "inter.interactiontype"
-        },
-        texto: {
-            column: "inter.interactiontext"
-        },
-        usergroup: {
-            column: "co.usergroup"
-        },
-        displayname: {
+        originalname: {
             column: "pcc.displayname"
         },
-        phone: {
+        channel: {
+            column: "cc.description"
+        },
+        agent: {
+            column: "concat(us.firstname,' ',us.lastname)"
+        },
+        intent: {
+            column: "inter.intent"
+        },
+        interactiontype: {
+            column: "inter.interactiontype"
+        },
+        interactiontext: {
+            column: "inter.interactiontext"
+        },
+        clientnumber: {
             column: "pe.phone"
-        }
+        },
+        personcommunicationchannel: {
+            column: "co.personcommunicationchannel"
+        },
     },
     productivity: {
         numeroticket: {
@@ -204,29 +200,11 @@ module.exports = {
         }
     },
     userproductivityhours: {
-        corpid: {
-            column: "pr.corpid"
+        datehour: {
+            column: "TO_CHAR(pr.datestr + pr.hours::BIGINT * INTERVAL '1HOUR', 'DD/MM/YYYY HH24:MI')"
         },
-        orgid: {
-            column: "pr.orgid"
-        },
-        userid: {
-            column: "pr.userid"
-        },
-        fullname: {
+        agent: {
             column: "pr.fullname"
-        },
-        channels: {
-            column: "pr.communicationchannel::text"
-        },
-        channelsdesc: {
-            column: "pr.communicationchanneldesc"
-        },
-        datestr: {
-            column: "TO_CHAR(pr.datestr::DATE,'dd/mm/yyyy')"
-        },
-        hours: {
-            column: "pr.hours"
         },
         hoursrange: {
             column: "pr.hoursrange"
