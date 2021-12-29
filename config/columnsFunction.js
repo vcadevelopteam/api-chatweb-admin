@@ -23,7 +23,8 @@ module.exports = {
             column: "inter.attempt"
         },
         valid: {
-            column: "CASE WHEN inter.validinput THEN 'YES' ELSE 'NO' END"
+            column: "inter.validinput",
+            type: "boolean"
         },
     },
     tipification: {
