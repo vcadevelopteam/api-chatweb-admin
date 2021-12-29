@@ -1,29 +1,30 @@
 module.exports = {
     inputretry: {
-        numeroticket: {
+        ticketnum: {
             column: "co.ticketnum"
         },
-        cliente: {
-            column: "pe.name"
-        },
-        canal: {
+        channel: {
             column: "cc.description"
         },
-        fecha: {
-            column: "to_char(inter.createdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI:SS')"
+        person: {
+            column: "pe.name"
         },
-        pregunta: {
+        datehour: {
+            column: "inter.createdate",
+            type: "date"
+        },
+        question: {
             column: "inter.inputquestion"
         },
-        respuesta: {
+        answer: {
             column: "inter.interactiontext"
         },
-        valido: {
-            column: "CASE WHEN inter.validinput THEN 'SI' ELSE 'NO' END"
-        },
-        intento: {
+        attempt: {
             column: "inter.attempt"
-        }
+        },
+        valid: {
+            column: "CASE WHEN inter.validinput THEN 'YES' ELSE 'NO' END"
+        },
     },
     tipification: {
         ticket: {
