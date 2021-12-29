@@ -1566,4 +1566,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_APPSETTING_INVOICE_SEL: {
+        query: "select * from public.ufn_appsetting_invoice_sel()",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_APPSETTING_INVOICE_UPDATE: {
+        query: "select * from public.ufn_appsetting_invoice_update($ruc, $businessname, $tradename, $fiscaladdress, $ubigeo, $country, $emittertype, $currency, $invoiceserie, $invoicecorrelative, $annexcode, $igv, $printingformat, $xmlversion, $ublversion, $returnpdf, $returnxmlsunat, $returnxml, $invoiceprovider, $sunaturl, $token, $sunatusername, $paymentprovider, $publickey, $privatekey)",
+        module: "",
+        protected: "UPDATE"
+    },
 }
