@@ -352,15 +352,36 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
     }
 }
 
-exports.exportData = (dataToExport, reportName, formatToExport) => {
+exports.exportData = (dataToExport, reportName, formatToExport, headerClient = null) => {
     let content = "";
     try {
         const titlefile = (reportName || "report") + new Date().toISOString() + (formatToExport ? ".xlsx" : ".csv");
         if (dataToExport instanceof Array && dataToExport.length > 0) {
             var s3 = new ibm.S3(config);
+            let keysHeaders;
+            const keys = Object.keys(dataToExport[0]);
+            keysHeaders = keys;
+
+            if (headerClient) {
+                keysHeaders = keys.reduce((acc, item) => {
+                    const keyclientfound = headerClient.find(x => x.key === item);
+                    if (!keyclientfound)
+                        return acc;
+                    else {
+                        return {
+                            ...acc,
+                            [item]: keyclientfound.alias
+                        }
+                    }
+                }, {});
+                dataToExport.unshift(keysHeaders);
+            }
 
             if (formatToExport === "excel") {
-                const ws = XLSX.utils.json_to_sheet(dataToExport);
+                const ws = XLSX.utils.json_to_sheet(dataToExport, headerClient ? {
+                    skipHeader: !!headerClient,
+                }: undefined);
+
                 const wb = { Sheets: { 'data': ws }, SheetNames: ['data'] };
                 const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
 
