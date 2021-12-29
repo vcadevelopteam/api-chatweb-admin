@@ -95,7 +95,10 @@ exports.authenticate = async (req, res) => {
 
             await Promise.all([
                 tf.executesimpletransaction("UFN_USERTOKEN_INS", dataSesion),
-                tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", dataSesion),
+                tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", {
+                    ...dataSesion,
+                    status: 'CONECTADO',
+                }),
                 ...(automaticConnection ? [tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", {
                     ...user,
                     type: 'INBOX',
