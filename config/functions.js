@@ -1561,4 +1561,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CONVERSATIONSTATUS_SEL: {
+        query: "select * from ufn_conversationstatus_sel($corpid, $orgid, $personid, $conversationid, $communicationchannelid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
