@@ -107,74 +107,77 @@ module.exports = {
         },
     },
     productivity: {
-        numeroticket: {
+        ticket: {
             column: "co.ticketnum"
         },
-        anio: {
-            column: "extract(year from co.startdate + p_offset * INTERVAL '1hour')::int"
+        ticketyear: {
+            column: "extract(year from co.startdate + p_offset * INTERVAL '1hour')::BIGINT"
         },
-        mes: {
-            column: "extract(month from co.startdate + p_offset * INTERVAL '1hour')::int"
+        ticketmonth: {
+            column: "extract(month from co.startdate + p_offset * INTERVAL '1hour')::BIGINT"
         },
-        semana: {
-            column: "extract(week from co.startdate + p_offset * INTERVAL '1hour')::int"
+        ticketweek: {
+            column: "extract(week from co.startdate + p_offset * INTERVAL '1hour')::BIGINT"
         },
-        dia: {
-            column: "extract(day from co.startdate + p_offset * INTERVAL '1hour')::int"
+        ticketday: {
+            column: "extract(day from co.startdate + p_offset * INTERVAL '1hour')::BIGINT"
         },
-        hora: {
-            column: "extract(hour from co.startdate + p_offset * INTERVAL '1hour')::int"
+        tickethour: {
+            column: "extract(hour from co.startdate + p_offset * INTERVAL '1hour')::BIGINT"
         },
-        canal: {
+        channel: {
             column: "cc.description"
         },
-        cliente: {
+        client: {
             column: "pe.name"
         },
-        cerradopor: {
+        person: {
+            column: "pcc.displayname"
+        },
+        closedby: {
             column: "ou.type"
         },
-        asesor: {
-            column: "concat(us.firstname,' ',us.lastname)::character varying"
+        agent: {
+            column: "concat(us.firstname,' ',us.lastname)"
         },
-        tipocierre: {
+        closetype: {
             column: "coalesce(do2.domaindesc, co.closetype)"
         },
-        fechainicio: {
-            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')::character varying"
+        startdate: {
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')"
         },
-        horainicio: {
-            column: "to_char(co.startdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')::character varying"
+        starttime: {
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')"
         },
-        fechafin: {
-            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')::character varying"
+        enddate: {
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')"
         },
-        horafin: {
-            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')::character varying"
+        endtime: {
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')"
         },
-        fechaderivacion: {
-            column: "to_char(co.handoffdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')::character varying"
+        derivationdate: {
+            column: "coalesce(to_char(co.handoffdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY'),'')"
         },
-        horaderivacion: {
-            column: "coalesce(to_char(co.handoffdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS'),'')::character varying"
+        derivationtime: {
+            column: "coalesce(to_char(co.handoffdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS'),'')"
         },
-        fechaprimerainteraccion: {
-            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY'), to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')) ELSE to_char((co.startdate + co.firstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY') END ::character varying"
+        firstinteractiondate: {
+            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY'), to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')) ELSE to_char((co.startdate + co.firstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY') END"
         },
-        horaprimerainteraccion: {
-            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS'), to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')) ELSE to_char((co.startdate + co.firstreplytime) + p_offset * INTERVAL '1hour' ::time, 'HH24:MI:SS') END ::character varying"
+        firstinteractiontime: {
+            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS'), to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')) ELSE to_char((co.startdate + co.firstreplytime) + p_offset * INTERVAL '1hour' ::time, 'HH24:MI:SS') END"
         },
         tmo: {
-            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.realduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') :: character varying"
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.realduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
         },
         tmg: {
-            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM CASE WHEN ou.type <> 'BOT' THEN (co.realduration - co.userfirstreplytime) ELSE null END)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') :: character varying"
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM CASE WHEN ou.type <> 'BOT' THEN (co.realduration - co.userfirstreplytime) ELSE null END)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
         },
-        tiemposuspension: {
-            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.totalpauseduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') :: character varying"
+        suspensiontime: {
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.totalpauseduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
         },
-        tiempopromediorespuestaasesor: {
-            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.useraveragereplytime)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') :: character varying"
+        avgagentresponse: {
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.useraveragereplytime)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
         },
         firstname: {
             column: "pe.firstname"
@@ -182,24 +185,21 @@ module.exports = {
         lastname: {
             column: "pe.lastname"
         },
-        phone: {
-            column: "pe.phone"
-        },
         email: {
             column: "pe.email"
         },
-        contact: {
-            column: "pe.contact"
+        phone: {
+            column: "pe.phone"
         },
-        displayname: {
-            column: "pcc.displayname"
+        swingingtimes: {
+            column: "co.balancetimes"
         },
-        holdingwaitingtime: {
-            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.holdingwaitingtime)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') :: character varying"
+        tmoagent: {
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.totalduration - co.firstassignedtime - co.botduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
         },
-        tmoasesor: {
-            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.totalduration - co.firstassignedtime - co.botduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') :: character varying"
-        }
+        holdingholdtime: {
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.holdingwaitingtime)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
+        },
     },
     userproductivityhours: {
         datehour: {
