@@ -1566,4 +1566,39 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_APPSETTING_INVOICE_SEL: {
+        query: "select * from public.ufn_appsetting_invoice_sel()",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_APPSETTING_INVOICE_UPDATE: {
+        query: "select * from public.ufn_appsetting_invoice_update($ruc, $businessname, $tradename, $fiscaladdress, $ubigeo, $country, $emittertype, $currency, $invoiceserie, $invoicecorrelative, $annexcode, $igv, $printingformat, $xmlversion, $ublversion, $returnpdf, $returnxmlsunat, $returnxml, $invoiceprovider, $sunaturl, $token, $sunatusername, $paymentprovider, $publickey, $privatekey)",
+        module: "",
+        protected: "UPDATE"
+    },
+    UFN_KPI_SEL: {
+        query: "SELECT * FROM ufn_kpi_sel($corpid,$orgid,$kpiid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_KPI_INS: {
+        query: "SELECT * FROM ufn_kpi_ins($corpid,$orgid,$id,$kpiname,$description,$status,$type,$sqlselect,$sqlwhere,$target,$cautionat,$alertat,$username,$operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_KPI_DUPLICATE: {
+        query: "SELECT * FROM ufn_kpi_duplicate($corpid,$orgid,$kpiid,$username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_KPI_CALC: {
+        query: "SELECT * FROM ufn_kpi_calc($corpid,$orgid,$kpiid,$username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_KPIHISTORY_SEL: {
+        query: "SELECT * FROM ufn_kpihistory_sel($corpid,$orgid,$kpiid,$startdate,$enddate,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
 }
