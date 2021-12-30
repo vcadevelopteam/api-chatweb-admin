@@ -1576,4 +1576,24 @@ module.exports = {
         module: "",
         protected: "UPDATE"
     },
+    UFN_KPI_SEL: {
+        query: "SELECT * FROM ufn_kpi_sel($corpid,$orgid,$kpiid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_KPI_INS: {
+        query: "SELECT * FROM ufn_kpi_ins($corpid,$orgid,$id,$description,$status,$type,$sqlselect,$sqlwhere,$target,$cautionat,$alertat,$username,$operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_KPIHISTORY_SEL: {
+        query: "SELECT * FROM ufn_kpihistory_sel($corpid,$orgid,$kpiid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_KPI_CALC: {
+        query: "SELECT * FROM ufn_kpi_calc($corpid,$orgid,$kpiid,$username)",
+        module: "",
+        protected: "INSERT"
+    },
 }
