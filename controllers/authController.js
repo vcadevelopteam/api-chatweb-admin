@@ -11,7 +11,7 @@ const properties = [
     {
         propertyname: "SONIDOPORTICKETNUEVO",
         key: "alertTicketNew",
-        type: 'int' 
+        type: 'int'
     },
     {
         propertyname: "SONIDOPORMENSAJEENTRANTE",
@@ -86,7 +86,7 @@ exports.authenticate = async (req, res) => {
             description: null
         };
         let notifications = [];
-        
+
         if (user.status === 'ACTIVO') {
             // let resultProperties = {};
             const resConnection = await tf.executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...user, propertyname: 'CONEXIONAUTOMATICAINBOX' })
@@ -98,16 +98,19 @@ exports.authenticate = async (req, res) => {
                 tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", {
                     ...dataSesion,
                     status: 'CONECTADO',
-                }),
-                ...(automaticConnection ? [tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", {
+                })
+            ]);
+
+            if (automaticConnection) {
+                await tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", {
                     ...user,
                     type: 'INBOX',
                     status: 'CONECTADO',
                     description: null,
                     motive: null,
                     username: user.usr
-                })] : [])
-            ]);
+                })
+            }
 
             user.token = tokenzyx;
             delete user.pwd;
@@ -146,7 +149,7 @@ exports.getUser = async (req, res) => {
         const resultBD = await Promise.all([
             tf.executesimpletransaction("UFN_APPLICATION_SEL", req.user),
             tf.executesimpletransaction("UFN_ORGANIZATION_CHANGEORG_SEL", { userid: req.user.userid }),
-            tf.executesimpletransaction("UFN_LEADACTIVITY_DUEDATE_SEL", {...req.user, username: req.user.usr}),
+            tf.executesimpletransaction("UFN_LEADACTIVITY_DUEDATE_SEL", { ...req.user, username: req.user.usr }),
             tf.executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN", undefined, false, { propertynames: properties.map(x => x.propertyname), corpid: req.user.corpid, orgid: req.user.orgid, userid: req.user.userid }),
         ]);
 
@@ -223,7 +226,7 @@ exports.changeOrganization = async (req, res) => {
             corpdesc: parameters.corpdesc,
             orgdesc: parameters.orgdesc,
             redirect: resultBD[0] ? resultBD[0].redirect : '/tickets',
-            currencysymbol: resultBD[0] ? resultBD[0].currencysymbol : 'S/', 
+            currencysymbol: resultBD[0] ? resultBD[0].currencysymbol : 'S/',
             countrycode: resultBD[0] ? resultBD[0].countrycode : 'PE'
         };
 
