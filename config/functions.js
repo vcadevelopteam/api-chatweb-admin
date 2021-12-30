@@ -1582,18 +1582,23 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_KPI_INS: {
-        query: "SELECT * FROM ufn_kpi_ins($corpid,$orgid,$id,$description,$status,$type,$sqlselect,$sqlwhere,$target,$cautionat,$alertat,$username,$operation)",
+        query: "SELECT * FROM ufn_kpi_ins($corpid,$orgid,$id,$kpiname,$description,$status,$type,$sqlselect,$sqlwhere,$target,$cautionat,$alertat,$username,$operation)",
         module: "",
         protected: "INSERT"
     },
-    UFN_KPIHISTORY_SEL: {
-        query: "SELECT * FROM ufn_kpihistory_sel($corpid,$orgid,$kpiid)",
+    UFN_KPI_DUPLICATE: {
+        query: "SELECT * FROM ufn_kpi_duplicate($corpid,$orgid,$kpiid,$username)",
         module: "",
-        protected: "SELECT"
+        protected: "INSERT"
     },
     UFN_KPI_CALC: {
         query: "SELECT * FROM ufn_kpi_calc($corpid,$orgid,$kpiid,$username)",
         module: "",
         protected: "INSERT"
+    },
+    UFN_KPIHISTORY_SEL: {
+        query: "SELECT * FROM ufn_kpihistory_sel($corpid,$orgid,$kpiid,$startdate,$enddate,$offset)",
+        module: "",
+        protected: "SELECT"
     },
 }
