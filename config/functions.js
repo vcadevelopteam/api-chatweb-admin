@@ -1582,7 +1582,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_KPI_INS: {
-        query: "SELECT * FROM ufn_kpi_ins($corpid,$orgid,$id,$kpiname,$description,$status,$type,$sqlselect,$sqlwhere,$target,$cautionat,$alertat,$username,$operation)",
+        query: "SELECT * FROM ufn_kpi_ins($corpid,$orgid,$id,$kpiname,$description,$status,$type,$sqlselect,$sqlwhere,$target,$cautionat,$alertat,$taskperiod,$taskinterval,$taskstartdate,$username,$operation,$offset)",
         module: "",
         protected: "INSERT"
     },
@@ -1592,7 +1592,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_KPI_CALC: {
-        query: "SELECT * FROM ufn_kpi_calc($corpid,$orgid,$kpiid,$username)",
+        query: "SELECT * FROM ufn_kpi_calc($corpid,$orgid,$kpiid,$username,$task)",
         module: "",
         protected: "INSERT"
     },
