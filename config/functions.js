@@ -1202,42 +1202,47 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_PAGE1_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_page1_sel($corpid, $orgid, $communicationchannel , $startdate , $enddate ,$closedby,$userid, $offset)",
+        query: "SELECT * FROM ufn_report_heatmap_page1_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$userid,$offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_DATE_DETAIL_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_date_detail_sel($corpid, $orgid, $communicationchannel, $startdate, $enddate, $closedby, $horanum,$userid, $offset)",
+        query: "SELECT * FROM ufn_report_heatmap_date_detail_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$horanum,$userid,$offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_ATENCIONESXFECHA_TOTAL_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_atencionesxfecha_total_sel($corpid, $orgid, $communicationchannel , $startdate , $enddate ,$closedby, $offset)",
+        query: "SELECT * FROM ufn_report_heatmap_atencionesxfecha_total_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_USER_ASESORBYORGID_LST: {
-        query: "SELECT * FROM ufn_user_asesorbyorgid_lst($corpid, $orgid, $userid)",
+        query: "SELECT * FROM ufn_user_asesorbyorgid_lst($corpid,$orgid,$userid)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_PAGE3_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_page3_sel($corpid, $orgid, $communicationchannel , $startdate , $enddate ,$closedby, $company,$userid, $offset)",
+        query: "SELECT * FROM ufn_report_heatmap_page3_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$company,$userid,$offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_ASESORESCONECTADOS_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_asesoresconectados_sel($corpid, $orgid, $communicationchannel , $startdate , $enddate , $offset)",
+        query: "SELECT * FROM ufn_report_heatmap_asesoresconectados_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_HEATMAP_ASESORESCONECTADOS_DETAIL_SEL: {
+        query: "SELECT * FROM ufn_report_heatmap_asesoresconectados_detail_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$horanum,$userid,$offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_RESUMEN_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_resumen_sel($corpid, $orgid, $communicationchannel , $startdate , $enddate ,$closedby,$userid, $offset)",
+        query: "SELECT * FROM ufn_report_heatmap_resumen_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$userid,$offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_TIPIFICACION_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_tipificacion_sel($corpid, $orgid, $communicationchannel , $startdate , $enddate ,$closedby, $userid, $offset)",
+        query: "SELECT * FROM ufn_report_heatmap_tipificacion_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$userid,$offset)",
         module: "",
         protected: "SELECT"
     },
@@ -1307,7 +1312,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGCONVERSATION_INS: {
-        query: "SELECT * FROM ufn_billingconversation_ins($year,$month,$countrycode,$id,$companystartfee,$clientstartfee,$c250000,$c750000,$c2000000,$c3000000,$c4000000,$c5000000,$c10000000,$c25000000,$description,$status,$type,$username,$operation)",
+        query: "SELECT * FROM ufn_billingconversation_ins($year, $month, $countrycode, $id, $companystartfee, $clientstartfee, $vcacomission, $description, $status, $type, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -1582,7 +1587,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_KPI_INS: {
-        query: "SELECT * FROM ufn_kpi_ins($corpid,$orgid,$id,$kpiname,$description,$status,$type,$sqlselect,$sqlwhere,$target,$cautionat,$alertat,$username,$operation)",
+        query: "SELECT * FROM ufn_kpi_ins($corpid,$orgid,$id,$kpiname,$description,$status,$type,$sqlselect,$sqlwhere,$target,$cautionat,$alertat,$taskperiod,$taskinterval,$taskstartdate,$username,$operation,$offset)",
         module: "",
         protected: "INSERT"
     },
@@ -1592,12 +1597,22 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_KPI_CALC: {
-        query: "SELECT * FROM ufn_kpi_calc($corpid,$orgid,$kpiid,$username)",
+        query: "SELECT * FROM ufn_kpi_calc($corpid,$orgid,$kpiid,$username,$task)",
         module: "",
         protected: "INSERT"
     },
     UFN_KPIHISTORY_SEL: {
         query: "SELECT * FROM ufn_kpihistory_sel($corpid,$orgid,$kpiid,$startdate,$enddate,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGNOTIFICATION_INS: {
+        query: "SELECT * FROM ufn_billingnotification_ins($year, $month, $countrycode, $id, $vcacomission, $c250000, $c750000, $c2000000, $c3000000, $c4000000, $c5000000, $c10000000, $c25000000, $description, $status, $type, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BILLINGNOTIFICATION_SEL: {
+        query: "SELECT * FROM ufn_billingnotification_sel($year, $month, $countrycode)",
         module: "",
         protected: "SELECT"
     },

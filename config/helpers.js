@@ -49,7 +49,7 @@ exports.generatefilter = (filters, origin, daterange, offset) => {
                         case "date":
                             switch (f.operator) {
                                 case 'after':
-                                    where += column.includes("p_offset") ? ` and (${column})::DATE > '${f.value}'::DATE` : ` and ${column} > '${f.value}'::DATE - ${offset} * INTERVAL '1HOUR'`;
+                                    where += column.includes("p_offset") ? ` and (${column})::DATE > '${f.value}'::DATE` : ` and ${column} > '${f.value}'::DATE + INTERVAL '1DAY' - ${offset} * INTERVAL '1HOUR'`;
                                     break;
                                 case 'afterequals':
                                     where += column.includes("p_offset") ? ` and (${column})::DATE >= '${f.value}'::DATE` : ` and ${column} >= '${f.value}'::DATE - ${offset} * INTERVAL '1HOUR'`;
@@ -58,7 +58,7 @@ exports.generatefilter = (filters, origin, daterange, offset) => {
                                     where += column.includes("p_offset") ? ` and (${column})::DATE < '${f.value}'::DATE` : ` and ${column} < '${f.value}'::DATE - ${offset} * INTERVAL '1HOUR'`;
                                     break;
                                 case 'beforeequals':
-                                    where += column.includes("p_offset") ? ` and (${column})::DATE <= '${f.value}'::DATE` : ` and ${column} <= '${f.value}'::DATE - ${offset} * INTERVAL '1HOUR'`;
+                                    where += column.includes("p_offset") ? ` and (${column})::DATE <= '${f.value}'::DATE` : ` and ${column} <= '${f.value}'::DATE + INTERVAL '1DAY' - ${offset} * INTERVAL '1HOUR'`;
                                     break;
                                 case 'isnull':
                                     where += ` and ${column} is null`;
@@ -79,7 +79,7 @@ exports.generatefilter = (filters, origin, daterange, offset) => {
                         case "datetime":
                             switch (f.operator) {
                                 case 'after':
-                                    where += column.includes("p_offset") ? ` and (${column})::TIMESTAMP > ('${f.value}')::TIMESTAMP` : ` and ${column} > ('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR'`;
+                                    where += column.includes("p_offset") ? ` and (${column})::TIMESTAMP > ('${f.value}')::TIMESTAMP` : ` and ${column} > ('${f.value}' + INTERVAL '1DAY')::TIMESTAMP - ${offset} * INTERVAL '1HOUR'`;
                                     break;
                                 case 'afterequals':
                                     where += column.includes("p_offset") ? ` and (${column})::TIMESTAMP >= ('${f.value}')::TIMESTAMP` : ` and ${column} >= ('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR'`;
@@ -88,7 +88,7 @@ exports.generatefilter = (filters, origin, daterange, offset) => {
                                     where += column.includes("p_offset") ? ` and (${column})::TIMESTAMP < ('${f.value}')::TIMESTAMP` : ` and ${column} < ('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR'`;
                                     break;
                                 case 'beforeequals':
-                                    where += column.includes("p_offset") ? ` and (${column})::TIMESTAMP <= ('${f.value}')::TIMESTAMP` : ` and ${column} <= ('${f.value}')::TIMESTAMP - ${offset} * INTERVAL '1HOUR'`;
+                                    where += column.includes("p_offset") ? ` and (${column})::TIMESTAMP <= ('${f.value}')::TIMESTAMP` : ` and ${column} <= ('${f.value}' + INTERVAL '1DAY')::TIMESTAMP - ${offset} * INTERVAL '1HOUR'`;
                                     break;
                                 case 'isnull':
                                     where += ` and ${column} is null`;
