@@ -164,6 +164,11 @@ module.exports = {
         module: "/extras/person",
         protected: "INSERT"
     },
+    UFN_PERSONCOMMUNICATIONCHANNEL_UPDATE_LOCKED_ARRAY: {
+        query: "SELECT * FROM ufn_personcommunicationchannel_update_locked_array($corpid, $orgid, $username, $table)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_PERSONREFERRER_SEL: {
         query: "SELECT * FROM ufn_personreferrer_sel($personid)",
         module: "/extras/person",
