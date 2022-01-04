@@ -18,13 +18,33 @@ const properties = [
         key: "alertMessageIn",
         type: 'int'
     },
+    {
+        propertyname: "CIERREAUTOMATICOHOLDING",
+        key: "auto_close_holding",
+        type: 'communicationchannelid',
+        subtype: 'int'
+    },
+    {
+        propertyname: "CIERREAUTOMATICO",
+        key: "auto_close",
+        type: 'communicationchannelid',
+        subtype: 'int'
+    },
 ];
 
-const cleanPropertyValue = (property, type) => {
-    if (property) {
-        return type === "bool" ? property.propertyvalue === "1" : (type === "int" ? parseInt(property.propertyvalue) : property.propertyvalue);
+const cleanPropertyValue = (listproperty, { type, subtype }) => {
+    if (type === "communicationchannelid") {
+        return listproperty.reduce((acc, item) => ({
+            ...acc,
+            [item.communicationchannelid]: subtype === "int" ? parseInt(item.propertyvalue || '0') : (subtype === "bool" ? item.propertyvalue === "1" : item.propertyvalue)
+        }), {})
+    } else {
+        const property = listproperty[0];
+        if (property) {
+            return type === "bool" ? property.propertyvalue === "1" : (type === "int" ? parseInt(property.propertyvalue) : property.propertyvalue);
+        }
+        return type === "bool" ? false : (type === "int" ? 0 : '');
     }
-    return type === "bool" ? false : (type === "int" ? 0 : '');
 }
 
 const validateResProperty = (r, type) => {
@@ -147,7 +167,12 @@ exports.getUser = async (req, res) => {
             tf.executesimpletransaction("UFN_APPLICATION_SEL", req.user),
             tf.executesimpletransaction("UFN_ORGANIZATION_CHANGEORG_SEL", { userid: req.user.userid }),
             tf.executesimpletransaction("UFN_LEADACTIVITY_DUEDATE_SEL", { ...req.user, username: req.user.usr }),
-            tf.executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN", undefined, false, { propertynames: properties.map(x => x.propertyname), corpid: req.user.corpid, orgid: req.user.orgid, userid: req.user.userid }),
+            tf.executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN", undefined, false, {
+                propertynames: properties.map(x => x.propertyname),
+                corpid: req.user.corpid,
+                orgid: req.user.orgid,
+                userid: req.user.userid
+            }),
         ]);
 
         const resultBDProperties = resultBD[3];
@@ -159,7 +184,7 @@ exports.getUser = async (req, res) => {
         if (resultBDProperties instanceof Array && resultBDProperties.length > 0) {
             resultProperties = properties.reduce((acc, item) => ({
                 ...acc,
-                [item.key]: cleanPropertyValue(resultBDProperties.find(x => x.propertyname === item.propertyname), item.type)
+                [item.key]: cleanPropertyValue(resultBDProperties.filter(x => x.propertyname === item.propertyname), item)
             }), {});
         }
 
