@@ -335,12 +335,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CONVERSATIONGRID_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_conversationgrid_totalrecords($corpid, $orgid, $where, $userid, $startdate, $enddate, $channel, $usergroup, $offset)",
+        query: "SELECT * FROM ufn_conversationgrid_totalrecords($corpid, $orgid, $where, $userid, $startdate, $enddate, $channel, $usergroup, $lastuserid, $offset)",
         module: "/tickets",
         protected: "SELECT"
     },
     UFN_CONVERSATIONGRID_EXPORT: {
-        query: "SELECT * FROM ufn_conversationgrid_export($corpid, $orgid, $where, $order, $userid, $startdate, $enddate, $channel, $usergroup, $offset)",
+        query: "SELECT * FROM ufn_conversationgrid_export($corpid, $orgid, $where, $order, $userid, $startdate, $enddate, $channel, $usergroup, $lastuserid, $offset)",
         module: "/tickets",
         protected: "SELECT"
     },
