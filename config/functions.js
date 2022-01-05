@@ -150,7 +150,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PERSON_EXPORT: {
-        query: "SELECT * FROM UFN_PERSON_EXPORT($corpid, $orgid, $where, $order, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM UFN_PERSON_EXPORT($corpid, $orgid, $where, $order, $startdate, $enddate, $offset, $userids, $personcommunicationchannels )",
         module: "/extras/person",
         protected: "SELECT"
     },
