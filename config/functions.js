@@ -1531,6 +1531,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_MESSAGETEMPLATE_LST: {
+        query: "SELECT * FROM ufn_messagetemplate_lst($corpid,$orgid,$username)",
+        module: "",
+        protected: "INSERT"
+    },
     QUERY_UPDATE_PERSON_BY_HSM: {
         query: "UPDATE person pe SET firstcontact = CASE WHEN pe.firstcontact IS NULL THEN NOW() else pe.firstcontact END, lastcontact = NOW() where pe.personid IN (:personids) and pe.corpid = :corpid and pe.orgid = :orgid;",
         module: "",
