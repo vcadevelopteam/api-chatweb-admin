@@ -439,6 +439,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DOMAIN_LST_VALUES_ONLY_DATA: {
+        query: "SELECT * FROM ufn_domain_lst_values_only_data($corpid,$orgid,$domainname)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_USERTOKEN_INS: {
         query: "select * from ufn_usertoken_ins($userid, $token, $origin)",
         module: "",
