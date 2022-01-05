@@ -1393,8 +1393,8 @@ exports.insertChannel = async (request, result) => {
             case 'WHATSAPPSMOOCHINSERT':
                 const requestInsertWhatsAppSmooch = await axios({
                     data: {
-                        apiKeyId: service.apiKeyId,
-                        apiKeySecret: service.apiKeySecret,
+                        apiKeyId: service.apikeyid,
+                        apiKeySecret: service.apikeysecret,
                         applicationId: service.appid,
                         linkType: 'WEBHOOKMIGRATE'
                     },
@@ -1636,8 +1636,8 @@ exports.activateChannel = async (request, result) => {
             const requestMigrateWhatsApp = await axios({
                 data: {
                     linkType: 'WEBHOOKMIGRATE',
-                    apiKeyId: service.apiKeyId,
-                    apiKeySecret: service.apiKeySecret,
+                    apiKeyId: service.apikeyid,
+                    apiKeySecret: service.apikeysecret,
                     applicationId: service.appid
                 },
                 method: 'post',
