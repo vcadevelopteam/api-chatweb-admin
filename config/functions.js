@@ -340,7 +340,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_EMOJI_INS: {
-        query: "select * from ufn_emoji_ins($corpid, $orgid, $description, $emojichar, $emojidec, $emojihex, $categorydesc, $categoryorder, $communicationchannel, $favoritechannels, $restrictedchannels, $username, $favorite, $allchannels);",
+        query: "select * from ufn_emoji_ins($corpid, $orgid, $description, $emojichar, $emojidec, $emojihex, $categorydesc, $categoryorder, $communicationchannel, $favoritechannels, $restrictedchannels, $favorite, $restricted, $username);",
         module: "/extras/emojis",
         protected: "SELECT"
     },
