@@ -64,6 +64,16 @@ module.exports = {
         module: "/extras/properties",
         protected: "SELECT"
     },
+    UFN_PROPERTY_SETTINGS_SEL: {
+        query: "SELECT * FROM ufn_property_settings_sel($corpid, $orgid)",
+        module: "/extras/properties",
+        protected: "SELECT"
+    },
+    UFN_PROPERTY_SETTINGS_UPD: {
+        query: "SELECT * FROM ufn_property_settings_upd($corpid, $orgid, $id, $propertyvalue, $username )",
+        module: "/extras/properties",
+        protected: "SELECT"
+    },
     UFN_DISTINCT_PROPERTY_SEL: {
         query: "SELECT * FROM ufn_distinct_property_sel($corpid, $category, $level)",
         module: "/extras/properties",
@@ -1637,7 +1647,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGPERIOD_CALC_REFRESHALL: {
-        query: "SELECT * FROM ufn_billingperiod_calc_refreshall(SELECT to_char((select now() at time zone 'utc'), 'YYYY'), SELECT to_char((select now() at time zone 'utc'), 'MM'))",
+        query: "SELECT * FROM ufn_billingperiod_calc_refreshall(SELECT to_char((select now() at time zone 'utc'), 'YYYY'), SELECT to_char((select now() at time zone 'utc'), 'MM'), $exchangerate)",
         module: "",
         protected: "INSERT"
     },
