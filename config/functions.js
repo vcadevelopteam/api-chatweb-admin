@@ -1642,7 +1642,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGPERIOD_CALC_REFRESHALL: {
-        query: "SELECT * FROM ufn_billingperiod_calc_refreshall(SELECT to_char((select now() at time zone 'utc'), 'YYYY'), SELECT to_char((select now() at time zone 'utc'), 'MM'), $exchangerate)",
+        query: "SELECT * FROM ufn_billingperiod_calc_refreshall((SELECT EXTRACT (YEAR from (select now() at time zone 'utc'))::bigint), (SELECT EXTRACT (MONTH from (select now() at time zone 'utc'))::bigint), $exchangerate)",
         module: "",
         protected: "INSERT"
     },
