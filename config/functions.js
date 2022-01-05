@@ -1136,6 +1136,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CONVERSATION_CHANGESTATUS: {
+        query: "select * from ufn_conversation_changestatus($corpid, $orgid, $conversationid, $status, $obs, $type, $userid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_ADVISERS_SEL: {
         query: "select * from ufn_advisers_sel($corpid, $orgid)",
         module: "",
