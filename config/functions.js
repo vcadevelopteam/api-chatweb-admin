@@ -500,7 +500,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CLASSIFICATION_LST_PARENT: {
-        query: "SELECT * FROM ufn_classification_lst_parent($corpid,$orgid,$classificationid)",
+        query: "SELECT * FROM ufn_classification_lst_parent($corpid,$orgid,$type,$classificationid)",
         module: "",
         protected: "SELECT"
     },
