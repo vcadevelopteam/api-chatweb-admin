@@ -8,4 +8,9 @@ router.post("/sendinvoice",
     billingController.sendInvoice
 )
 
+router.post("/exchangerate",
+    auth,
+    billingController.exchangeRate
+)
+
 module.exports = router;
