@@ -184,7 +184,7 @@ exports.chargeInvoice = async (req, res) => {
                         metadata.corpid = corpid;
                         metadata.corporation = invoice.corpdesc;
                         metadata.orgid = orgid;
-                        metadata.organization = invoice.orgdesc;
+                        metadata.organization = invoice.orgdesc || '';
                         metadata.documentnumber = invoice.receiverdocnum;
                         metadata.businessname = invoice.receiverbusinessname;
                         metadata.invoiceid = invoiceid;
