@@ -269,7 +269,7 @@ module.exports = {
             column: "co.firstusergroup"
         },
         ticketgroup: {
-            column: "co.usergroup"
+            column: "do5.domaindesc"
         },
         communicationchanneldescription: {
             column: "cc.description"
