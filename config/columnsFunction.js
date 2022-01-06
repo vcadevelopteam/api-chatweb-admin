@@ -203,7 +203,7 @@ module.exports = {
     },
     userproductivityhours: {
         datehour: {
-            column: "TO_CHAR(pr.datestr + pr.hours::BIGINT * INTERVAL '1HOUR', 'DD/MM/YYYY HH24:MI')"
+            column: "pr.datestr + pr.hours::BIGINT * INTERVAL '1HOUR'"
         },
         agent: {
             column: "pr.fullname"
