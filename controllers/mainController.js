@@ -3,13 +3,13 @@ const bcryptjs = require("bcryptjs");
 const { setSessionParameters } = require('../config/helpers');
 
 exports.GetCollection = async (req, res) => {
-    const { parameters = {}, method } = req.body;
+    const { parameters = {}, method, key } = req.body;
     setSessionParameters(parameters, req.user);
     // console.log(method, parameters)
     const result = await executesimpletransaction(method, parameters, req.user.menu || {});
 
     if (result instanceof Array)
-        return res.json({ error: false, success: true, data: result });
+        return res.json({ error: false, success: true, data: result, key });
     else
         return res.status(result.rescode).json(result);
 }
