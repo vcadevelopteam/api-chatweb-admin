@@ -203,7 +203,7 @@ module.exports = {
     },
     userproductivityhours: {
         datehour: {
-            column: "TO_CHAR(pr.datestr + pr.hours::BIGINT * INTERVAL '1HOUR', 'DD/MM/YYYY HH24:MI')"
+            column: "pr.datestr::text"
         },
         agent: {
             column: "pr.fullname"
@@ -400,6 +400,9 @@ module.exports = {
         tdatime: {
             column: "co.tdatime::text",
             type: "time"
+        },
+        campaign: {
+            column: "ca.title"
         }
     },
     person: {
