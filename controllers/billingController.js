@@ -4,6 +4,8 @@ const { errors, getErrorCode } = require('../config/helpers');
 const { executesimpletransaction } = require('../config/triggerfunctions');;
 const { setSessionParameters } = require('../config/helpers');
 
+const exchangeApiEndpoint = process.env.EXCHANGEAPI;
+
 exports.sendInvoice = async (req, res) => {
     const { parameters = {} } = req.body;
     setSessionParameters(parameters, req.user);
@@ -110,6 +112,47 @@ exports.sendInvoice = async (req, res) => {
         }
     } catch (error) {
         console.log(error)
+        return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+    }
+}
+
+exports.exchangeRate = async (req, res) => {
+    const { parameters = {} } = req.body;
+
+    setSessionParameters(parameters, req.user);
+
+    try {
+        var exchangeRate = 0;
+        var tries = 0;
+
+        var DateTime = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()));
+
+        while (exchangeRate === 0 && tries < 10) {
+            const requestExchangeRate = await axios({
+                method: 'get',
+                url: `${exchangeApiEndpoint}${DateTime.toISOString().substring(0, 10)}`
+            });
+
+            if (requestExchangeRate.data.venta) {
+                exchangeRate = requestExchangeRate.data.venta;
+
+                return res.json({
+                    exchangeRate: exchangeRate,
+                    success: true
+                });
+            }
+            else {
+                DateTime.setDate(DateTime.getDate() - 1);
+
+                tries++;
+            }
+        }
+
+        return res.status(400).json({
+            exchangeRate: exchangeRate,
+            success: false
+        });
+    } catch (error) {
         return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
     }
 }
