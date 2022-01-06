@@ -203,7 +203,7 @@ module.exports = {
     },
     userproductivityhours: {
         datehour: {
-            column: "pr.datestr"
+            column: "pr.datestr::text"
         },
         agent: {
             column: "pr.fullname"
@@ -400,6 +400,9 @@ module.exports = {
         tdatime: {
             column: "co.tdatime::text",
             type: "time"
+        },
+        campaign: {
+            column: "ca.title"
         }
     },
     person: {
