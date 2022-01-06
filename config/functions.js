@@ -345,17 +345,17 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CONVERSATIONGRID_SEL: {
-        query: "SELECT * FROM ufn_conversationgrid_sel($corpid, $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $channel, $usergroup, $lastuserid, $offset)",
+        query: "SELECT * FROM ufn_conversationgrid_sel($corpid, $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $channel, $usergroup, $lastuserid, $campaignid, $offset)",
         module: "/tickets",
         protected: "SELECT"
     },
     UFN_CONVERSATIONGRID_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_conversationgrid_totalrecords($corpid, $orgid, $where, $userid, $startdate, $enddate, $channel, $usergroup, $lastuserid, $offset)",
+        query: "SELECT * FROM ufn_conversationgrid_totalrecords($corpid, $orgid, $where, $userid, $startdate, $enddate, $channel, $usergroup, $lastuserid, $campaignid, $offset)",
         module: "/tickets",
         protected: "SELECT"
     },
     UFN_CONVERSATIONGRID_EXPORT: {
-        query: "SELECT * FROM ufn_conversationgrid_export($corpid, $orgid, $where, $order, $userid, $startdate, $enddate, $channel, $usergroup, $lastuserid, $offset)",
+        query: "SELECT * FROM ufn_conversationgrid_export($corpid, $orgid, $where, $order, $userid, $startdate, $enddate, $channel, $usergroup, $lastuserid, $campaignid, $offset)",
         module: "/tickets",
         protected: "SELECT"
     },
