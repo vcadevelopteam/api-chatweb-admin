@@ -150,7 +150,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PERSON_EXPORT: {
-        query: "SELECT * FROM UFN_PERSON_EXPORT($corpid, $orgid, $where, $order, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM UFN_PERSON_EXPORT($corpid, $orgid, $where, $order, $startdate, $enddate, $offset, $userids, $personcommunicationchannels )",
         module: "/extras/person",
         protected: "SELECT"
     },
@@ -340,7 +340,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_EMOJI_INS: {
-        query: "select * from ufn_emoji_ins($corpid, $orgid, $description, $emojichar, $emojidec, $emojihex, $categorydesc, $categoryorder, $communicationchannel, $favoritechannels, $restrictedchannels, $username, $favorite, $allchannels);",
+        query: "select * from ufn_emoji_ins($corpid, $orgid, $description, $emojichar, $emojidec, $emojihex, $categorydesc, $categoryorder, $communicationchannel, $favoritechannels, $restrictedchannels, $favorite, $restricted, $username);",
         module: "/extras/emojis",
         protected: "SELECT"
     },
