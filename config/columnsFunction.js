@@ -212,22 +212,22 @@ module.exports = {
             column: "pr.hoursrange"
         },
         worktime: {
-            column: "COALESCE(pr.worktime::text,'00:00:00')"
+            column: "date_trunc('seconds', COALESCE(pr.worktime::text,'00:00:00'))"
         },
         busytimewithinwork: {
-            column: "COALESCE(pr.busytimewithinwork::text,'00:00:00')"
+            column: "date_trunc('seconds', COALESCE(pr.busytimewithinwork::text,'00:00:00'))"
         },
         freetimewithinwork: {
-            column: "COALESCE(pr.freetimewithinwork::text,'00:00:00')"
+            column: "date_trunc('seconds', COALESCE(pr.freetimewithinwork::text,'00:00:00'))"
         },
         busytimeoutsidework: {
-            column: "COALESCE(pr.busytimeoutsidework::text,'00:00:00')"
+            column: "date_trunc('seconds', COALESCE(pr.busytimeoutsidework::text,'00:00:00'))"
         },
         onlinetime: {
-            column: "COALESCE(pr.onlinetime::text,'00:00:00')"
+            column: "date_trunc('seconds', COALESCE(pr.onlinetime::text,'00:00:00'))"
         },
         idletime: {
-            column: "COALESCE(pr.idletime::text,'00:00:00')"
+            column: "date_trunc('seconds', COALESCE(pr.idletime::text,'00:00:00'))"
         },
         qtytickets: {
             column: "COALESCE(pr.qtytickets,0)"
