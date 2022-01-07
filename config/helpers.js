@@ -46,6 +46,36 @@ exports.generatefilter = (filters, origin, daterange, offset) => {
                                     break;
                                 }
                             break;
+                        case "datestr":
+                            switch (f.operator) {
+                                case 'after':
+                                    where += ` and (${column})::DATE > '${f.value}'::DATE`;
+                                    break;
+                                case 'afterequals':
+                                    where += ` and (${column})::DATE >= '${f.value}'::DATE`;
+                                    break;
+                                case 'before':
+                                    where += ` and (${column})::DATE < '${f.value}'::DATE`;
+                                    break;
+                                case 'beforeequals':
+                                    where += ` and (${column})::DATE <= '${f.value}'::DATE`;
+                                    break;
+                                case 'isnull':
+                                    where += ` and ${column} is null`;
+                                    break;
+                                case 'isnotnull':
+                                    where += ` and ${column} is not null`;
+                                    break;
+                                case 'notequals':
+                                    where += ` and (${column})::DATE <> '${f.value}'::DATE`;
+                                    break;
+                                case 'equals':
+                                    where += ` and (${column})::DATE = '${f.value}'::DATE`;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
                         case "date":
                             switch (f.operator) {
                                 case 'after':

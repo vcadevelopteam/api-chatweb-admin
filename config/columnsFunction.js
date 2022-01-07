@@ -203,7 +203,8 @@ module.exports = {
     },
     userproductivityhours: {
         datehour: {
-            column: "pr.datestr::text"
+            column: "pr.datestr",
+            type: "datestr"
         },
         agent: {
             column: "pr.fullname"
