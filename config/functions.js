@@ -1482,12 +1482,12 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVOICE_SEL: {
-        query: "SELECT * FROM ufn_invoice_sel($corpid,$orgid,$invoiceid,$userid,$year,$month)",
+        query: "SELECT * FROM ufn_invoice_sel($corpid,$orgid,$invoiceid,$userid,$year,$month,$currency,$paymentstatus)",
         module: "",
         protected: "SELECT"
     },
     UFN_INVOICE_SELCLIENT: {
-        query: "SELECT * FROM ufn_invoice_selclient($corpid, $orgid, $invoiceid, $userid, $year, $month)",
+        query: "SELECT * FROM ufn_invoice_selclient($corpid, $orgid, $invoiceid, $userid, $year, $month,$currency,$paymentstatus)",
         module: "",
         protected: "SELECT"
     },
