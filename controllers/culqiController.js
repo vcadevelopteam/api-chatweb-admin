@@ -1,12 +1,16 @@
+const axios = require('axios');
 const triggerfunctions = require('../config/triggerfunctions');
 const sequelize = require('../config/database');
 const { QueryTypes } = require('sequelize');
 const { getErrorSeq } = require('../config/helpers');
 const Culqi = require('culqi-node');
+const { stringify } = require('uuid');
 const culqi = new Culqi({
     privateKey: 'sk_test_d901e8f07d45a485',
     // publicKey: 'pk_test_041501e753dcb2f9'
 });
+
+const bridgeEndpoint = process.env.BRIDGE;
 
 exports.getToken = async (req, res) => {
     const { token } = req.body;
@@ -21,6 +25,8 @@ exports.getToken = async (req, res) => {
         return res.status(500).json({ msg: "There was a problem, please try again later" });
     }
 }
+
+const zeroPad = (num, places) => String(num).padStart(places, '0')
 
 const getUserProfile = async (userid) => {
     const query = "SELECT firstname, lastname, email, phone, country FROM usr WHERE userid = $userid"
@@ -40,6 +46,62 @@ const getInvoice = async (corpid, orgid, userid, id) => {
         orgid: orgid,
         userid: userid,
         invoiceid: id
+    }
+    const result = await triggerfunctions.executesimpletransaction(query, bind);
+    if (result instanceof Array) {
+        if (result.length > 0) {
+            return result[0]
+        }
+    }
+    return null
+}
+
+const getInvoiceDetail = async (corpid, orgid, userid, id) => {
+    const query = "UFN_INVOICEDETAIL_SELBYINVOICEID";
+    const bind = {
+        corpid: corpid,
+        orgid: orgid,
+        userid: userid,
+        invoiceid: id
+    }
+    const result = await triggerfunctions.executesimpletransaction(query, bind);
+    if (result instanceof Array) {
+        if (result.length > 0) {
+            return result
+        }
+    }
+    return null
+}
+
+const getInvoiceCorrelative = async (corpid, orgid, id) => {
+    const query = "UFN_INVOICE_CORRELATIVE";
+    const bind = {
+        corpid: corpid,
+        orgid: orgid,
+        invoiceid: id
+    }
+    const result = await triggerfunctions.executesimpletransaction(query, bind);
+    if (result instanceof Array) {
+        if (result.length > 0) {
+            return result[0]
+        }
+    }
+    return null
+}
+
+const invoiceSunat = async (corpid, orgid, invoiceid, status, error, qrcode, hashcode, urlcdr, urlpdf, urlxml) => {
+    const query = "UFN_INVOICE_SUNAT";
+    const bind = {
+        corpid: corpid,
+        orgid: orgid,
+        invoiceid: invoiceid,
+        status: status,
+        error: error,
+        qrcode: qrcode,
+        hashcode: hashcode,
+        urlcdr: urlcdr,
+        urlpdf: urlpdf,
+        urlxml: urlxml
     }
     const result = await triggerfunctions.executesimpletransaction(query, bind);
     if (result instanceof Array) {
@@ -176,97 +238,181 @@ exports.chargeInvoice = async (req, res) => {
     const { invoiceid, settings, token, metadata = {} } = req.body;
     try {
         const invoice = await getInvoice(corpid, orgid, userid, invoiceid);
-        if (invoice) {
-            if (invoice.invoicestatus === 'INVOICED' && invoice.paymentstatus === 'PENDING') {
-                if (invoice.currency === settings.currency && invoice.totalamount * 100 === settings.amount) {
-                    const userprofile = await getUserProfile(userid);
-                    if (userprofile) {
-                        metadata.corpid = corpid;
-                        metadata.corporation = invoice.corpdesc;
-                        metadata.orgid = orgid;
-                        metadata.organization = invoice.orgdesc || '';
-                        metadata.documentnumber = invoice.receiverdocnum;
-                        metadata.businessname = invoice.receiverbusinessname;
-                        metadata.invoiceid = invoiceid;
-                        metadata.invoicecode = `${invoice.serie}-${invoice.correlative}`;
-                        metadata.userid = userid;
-                        metadata.usr = usr;
-                        const charge = await createCharge(userprofile, settings, token, metadata);
-                        if (charge.object === 'error') {
-                            return res.status(400).json({
-                                error: true,
-                                success: false,
-                                data: {
-                                    object: charge.object,
-                                    id: charge.charge_id,
-                                    code: charge.code,
-                                    message: charge.user_message
+        const invoicedetail = await getInvoiceDetail(corpid, orgid, userid, invoiceid);
+        const invoicecorrelative = await getInvoiceCorrelative(corpid, orgid, invoiceid);
+
+        if (invoice && invoicedetail && invoicecorrelative) {
+            if (invoice.receiverdoctype && invoice.receiverdocnum && invoice.receiverbusinessname) {
+                if (invoice.invoicestatus === 'DRAFT' && invoice.paymentstatus === 'PENDING') {
+                    if (invoice.currency === settings.currency && invoice.totalamount * 100 === settings.amount) {
+                        const userprofile = await getUserProfile(userid);
+                        if (userprofile) {
+                            metadata.corpid = corpid;
+                            metadata.corporation = invoice.corpdesc;
+                            metadata.orgid = orgid;
+                            metadata.organization = invoice.orgdesc || '';
+                            metadata.documentnumber = invoice.receiverdocnum;
+                            metadata.businessname = invoice.receiverbusinessname;
+                            metadata.invoiceid = invoiceid;
+                            metadata.invoicecode = `${invoice.serie}-${invoice.correlative}`;
+                            metadata.userid = userid;
+                            metadata.usr = usr;
+                            const charge = await createCharge(userprofile, settings, token, metadata);
+                            if (charge.object === 'error') {
+                                return res.status(400).json({
+                                    error: true,
+                                    success: false,
+                                    data: {
+                                        object: charge.object,
+                                        id: charge.charge_id,
+                                        code: charge.code,
+                                        message: charge.user_message
+                                    }
+                                });
+                            }
+                            else {
+                                const chargequery = "UFN_CHARGE_INS";
+                                const chargebind = {
+                                    corpid: corpid,
+                                    orgid: orgid,
+                                    id: null,
+                                    invoiceid: invoiceid,
+                                    description: settings.description,
+                                    type: charge.object,
+                                    status: 'PAID',
+                                    amount: settings.amount / 100,
+                                    currency: settings.currency,
+                                    paidby: usr,
+                                    orderid: null,
+                                    orderjson: null,
+                                    email: token.email,
+                                    tokenid: token.id,
+                                    capture: true,
+                                    tokenjson: token,
+                                    chargetoken: charge.id,
+                                    chargejson: charge,
+                                    operation: 'INSERT'
                                 }
-                            });
+                                const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
+                                
+                                const invoicequery = "UFN_INVOICE_PAYMENT";
+    
+                                const invoicebind = {
+                                    corpid: corpid,
+                                    orgid: orgid,
+                                    invoiceid: invoiceid,
+                                    chargeid: chargeresult[0].chargeid,
+                                    paidby: usr,
+                                    email: token.email,
+                                    tokenid: token.id,
+                                    capture: true,
+                                    tokenjson: token,
+                                    chargetoken: charge.id,
+                                    chargejson: charge
+                                }
+    
+                                const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
+    
+                                try {
+                                    var invoicedata = {
+                                        CodigoAnexoEmisor: invoice.annexcode,
+                                        CodigoFormatoImpresion: invoice.printingformat,
+                                        CodigoMoneda: invoice.currency,
+                                        CodigoRucReceptor: invoice.receiverdoctype,
+                                        CodigoOperacionSunat: invoice.sunatopecode,
+                                        CodigoUbigeoEmisor: invoice.issuerubigeo,
+                                        EnviarSunat: invoice.sendtosunat,
+                                        MailEnvio: invoice.receivermail,
+                                        MontoTotal: invoice.totalamount,
+                                        MontoTotalGravado: invoice.subtotal,
+                                        MontoTotalIgv: invoice.taxes,
+                                        NombreComercialEmisor: invoice.issuertradename,
+                                        RazonSocialEmisor: invoice.issuerbusinessname,
+                                        RazonSocialReceptor: invoice.receiverbusinessname,
+                                        CorrelativoDocumento: zeroPad(invoicecorrelative.p_correlative, 8),
+                                        RucEmisor: invoice.issuerruc,
+                                        NumeroDocumentoReceptor: invoice.receiverdocnum,
+                                        NumeroSerieDocumento: (invoice.invoicetype === '01' ? `F${invoice.serie}` : `B${invoice.serie}`),
+                                        RetornaPdf: invoice.returnpdf,
+                                        RetornaXmlSunat: invoice.returnxmlsunat,
+                                        RetornaXml: invoice.returnxml,
+                                        TipoCambio: invoice.exchangerate,
+                                        DireccionFiscalEmisor: invoice.issuerfiscaladdress,
+                                        DireccionFiscalReceptor: invoice.receiverfiscaladdress,
+                                        VersionXml: invoice.xmlversion,
+                                        VersionUbl: invoice.ublversion,
+                                        TipoDocumento: invoice.invoicetype,
+                                        TipoRucEmisor: invoice.emittertype,
+                                        Endpoint: invoice.sunaturl,
+                                        Username: invoice.sunatusername,
+                                        Token: invoice.token,
+                                        FechaEmision: invoice.invoicedate,
+                                        ProductList: [],
+                                    };
+    
+                                    invoicedetail.forEach(async data => {
+                                        var invoicedetaildata = {
+                                            CantidadProducto: data.quantity,
+                                            CodigoProducto: data.productcode,
+                                            AfectadoIgv: data.hasigv,
+                                            TipoVenta: data.saletype,
+                                            TributoIgv: data.igvtribute,
+                                            UnidadMedida: data.measureunit,
+                                            IgvTotal: data.totaligv,
+                                            MontoTotal: data.totalamount,
+                                            TasaIgv: data.igvrate,
+                                            PrecioProducto: data.productprice,
+                                            DescripcionProducto: data.productdescription,
+                                            PrecioNetoProducto: data.productnetprice,
+                                            ValorNetoProducto: data.productnetworth,
+                                        };
+    
+                                        invoicedata.ProductList.push(invoicedetaildata);
+                                    })
+                                    
+                                    const requestSendToSunat = await axios({
+                                        data: invoicedata,
+                                        method: 'post',
+                                        url: `${bridgeEndpoint}processmifact/sendinvoice`
+                                    });
+    
+                                    if (requestSendToSunat.data.result) {
+                                        invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', '', requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml);
+                                    }
+                                    else {
+                                        invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, '', '', '', '', '');
+                                    }
+                                }
+                                catch (error) {
+                                    invoiceSunat(corpid, orgid, invoiceid, 'ERROR', error.message, '', '', '', '', '');
+                                }
+    
+                                return res.json({
+                                    error: false,
+                                    success: true,
+                                    code: charge.outcome.code,
+                                    message: charge.outcome.user_message ,
+                                    data: {
+                                        object: charge.object,
+                                        id: charge.id,
+                                    }
+                                });
+                            }
                         }
                         else {
-                            const chargequery = "UFN_CHARGE_INS";
-                            const chargebind = {
-                                corpid: corpid,
-                                orgid: orgid,
-                                id: null,
-                                invoiceid: invoiceid,
-                                description: settings.description,
-                                type: charge.object,
-                                status: 'PAID',
-                                amount: settings.amount / 100,
-                                currency: settings.currency,
-                                paidby: usr,
-                                orderid: null,
-                                orderjson: null,
-                                email: token.email,
-                                tokenid: token.id,
-                                capture: true,
-                                tokenjson: token,
-                                chargetoken: charge.id,
-                                chargejson: charge,
-                                operation: 'INSERT'
-                            }
-                            const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
-                            
-                            const invoicequery = "UFN_INVOICE_PAYMENT";
-                            const invoicebind = {
-                                corpid: corpid,
-                                orgid: orgid,
-                                invoiceid: invoiceid,
-                                chargeid: chargeresult[0].chargeid,
-                                paidby: usr,
-                                email: token.email,
-                                tokenid: token.id,
-                                capture: true,
-                                tokenjson: token,
-                                chargetoken: charge.id,
-                                chargejson: charge
-                            }
-                            const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
-                            
-                            return res.json({
-                                error: false,
-                                success: true,
-                                code: charge.outcome.code,
-                                message: charge.outcome.user_message ,
-                                data: {
-                                    object: charge.object,
-                                    id: charge.id,
-                                }
-                            });
+                            return res.status(403).json({ error: true, success: false, code: '', message: 'invalid user' });
                         }
                     }
                     else {
-                        return res.status(403).json({ error: true, success: false, code: '', message: 'invalid user' });
+                        return res.status(403).json({ error: true, success: false, code: '', message: 'invalid invoice data' });
                     }
                 }
                 else {
-                    return res.status(403).json({ error: true, success: false, code: '', message: 'invalid invoice data' });
+                    return res.json({ error: false, success: true, code: '', message: 'Invoice already paid' });
                 }
             }
             else {
-                return res.json({ error: false, success: true, code: '', message: 'Invoice already paid' });
+                return res.json({ error: false, success: true, code: '', message: 'Incomplete corporation information' });
             }
         }
         else {

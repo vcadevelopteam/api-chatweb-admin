@@ -1481,11 +1481,6 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
-    UFN_INVOICE_SUNAT: {
-        query: "SELECT * FROM ufn_invoice_sunat($corpid,$orgid,$invoiceid,$status,$error,$qrcode,$hashcode,$urlcdr,$urlpdf,$urlxml)",
-        module: "",
-        protected: "INSERT"
-    },
     UFN_INVOICE_SEL: {
         query: "SELECT * FROM ufn_invoice_sel($corpid,$orgid,$invoiceid,$userid,$year,$month)",
         module: "",
@@ -1582,9 +1577,9 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INVOICE_SUNAT: {
-        query: "select * from ufn_invoice_sunat($corpid, $orgid, $invoiceid, $status, $error, $qrcode, $hashcode, $urlcdr, $urlpdf, $urlxml)",
+        query: "SELECT * FROM ufn_invoice_sunat($corpid, $orgid, $invoiceid, $status, $error, $qrcode, $hashcode, $urlcdr, $urlpdf, $urlxml)",
         module: "",
-        protected: "SELECT"
+        protected: "INSERT"
     },
     UFN_DASHBOARD_GERENCIAL_CONVERSATIONXHOUR_SEL: {
         query: "select * from ufn_dashboard_gerencial_conversationxhour_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $skipdown, $skipup, $userid, $offset)",
@@ -1650,5 +1645,10 @@ module.exports = {
         query: "SELECT * FROM ufn_billingperiod_calc_refreshall((SELECT EXTRACT (YEAR from (select now() at time zone 'utc'))::bigint), (SELECT EXTRACT (MONTH from (select now() at time zone 'utc'))::bigint), $exchangerate)",
         module: "",
         protected: "INSERT"
+    },
+    UFN_INVOICEDETAIL_SELBYINVOICEID: {
+        query: "SELECT * FROM ufn_invoicedetail_selbyinvoiceid($corpid,$orgid,$invoiceid,$userid)",
+        module: "",
+        protected: "SELECT"
     },
 }
