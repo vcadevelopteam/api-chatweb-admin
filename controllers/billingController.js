@@ -8,6 +8,7 @@ const exchangeApiEndpoint = process.env.EXCHANGEAPI;
 
 exports.sendInvoice = async (req, res) => {
     const { parameters = {} } = req.body;
+    
     setSessionParameters(parameters, req.user);
 
     parameters.status = "ERROR";
@@ -49,7 +50,7 @@ exports.sendInvoice = async (req, res) => {
             header.CorrelativoDocumento = correlative.toString().padStart(8, '0');
             header.RucEmisor = invoice.issuerruc;
             header.NumeroDocumentoReceptor = invoice.receiverdocnum;
-            header.NumeroSerieDocumento = invoice.serie;
+            header.NumeroSerieDocumento = (invoice.invoicetype === '01' ? `F${invoice.serie}` : `B${invoice.serie}`);
             header.RetornaPdf = invoice.returnpdf;
             header.RetornaXmlSunat = invoice.returnxmlsunat;
             header.RetornaXml = invoice.returnxml;

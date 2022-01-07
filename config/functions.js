@@ -1487,7 +1487,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INVOICE_SELCLIENT: {
-        query: "SELECT * FROM ufn_invoice_selclient($corpid,$orgid,$invoiceid,$userid,$year,$month)",
+        query: "SELECT * FROM ufn_invoice_selclient($corpid, $orgid, $invoiceid, $userid, $year, $month)",
         module: "",
         protected: "SELECT"
     },
@@ -1522,7 +1522,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVOICE_CHANGEPAYMENTSTATUS: {
-        query: "SELECT * FROM ufn_invoice_changepaymentstatus($corpid,$orgid,$invoiceid,$status,$paymentnote,$paymentfile,$username)",
+        query: "SELECT * FROM ufn_invoice_changepaymentstatus($corpid, $orgid, $invoiceid, $status, $paymentnote, $paymentfile, $username)",
         module: "",
         protected: "INSERT"
     },
