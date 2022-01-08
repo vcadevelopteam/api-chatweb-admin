@@ -1241,6 +1241,21 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_REPORT_HEATMAP_PAGE2_SEL: {
+        query: "SELECT * FROM ufn_report_heatmap_page2_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$company,$group,$userid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_HEATMAP_PAGE2_1_AGENT_DETAIL_SEL: {
+        query: "SELECT * FROM ufn_report_heatmap_page2_1_agent_detail_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$company,$group,$agentid,$option,$userid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_HEATMAP_PAGE2_2_AGENT_DETAIL_SEL: {
+        query: "SELECT * FROM ufn_report_heatmap_page2_2_agent_detail_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$company,$group,$agentid,$option,$userid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_REPORT_HEATMAP_ATENCIONESXFECHA_TOTAL_SEL: {
         query: "SELECT * FROM ufn_report_heatmap_atencionesxfecha_total_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$offset)",
         module: "",
