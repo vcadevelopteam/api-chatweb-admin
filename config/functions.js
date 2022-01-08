@@ -1266,6 +1266,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_USER_REPORT_HEATMAP_ASESOR_LST: {
+        query: "SELECT * FROM ufn_report_heatmap_asesor_lst($corpid,$orgid,$bot)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_REPORT_HEATMAP_PAGE3_SEL: {
         query: "SELECT * FROM ufn_report_heatmap_page3_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$company,$userid,$offset)",
         module: "",
