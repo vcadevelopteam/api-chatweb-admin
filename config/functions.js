@@ -1466,6 +1466,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_REPORT_SENTMESSAGES_LST: {
+        query: "SELECT * FROM ufn_report_sentmessages_lst($corpid, $orgid, $type, $startdate, $enddate, $offset);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_REPORT_SENTMESSAGES_REPORT: {
+        query: "SELECT * FROM ufn_hsmhistory_report($corpid, $orgid, $type, $date, $name, $from, $offset);",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_INPUTVALIDATION_SEL: {
         query: "SELECT * FROM ufn_inputvalidation_sel($corpid, $id, $username);",
         module: "",
