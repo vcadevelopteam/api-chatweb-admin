@@ -1477,7 +1477,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_SENTMESSAGES_REPORT: {
-        query: "SELECT * FROM ufn_hsmhistory_report($corpid, $orgid, $type, $date, $name, $from, $offset);",
+        query: "SELECT * FROM ufn_report_sentmessages_sel($corpid, $orgid, $type, $date, $name, $from, $offset);",
         module: "",
         protected: "SELECT"
     },
