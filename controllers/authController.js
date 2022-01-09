@@ -212,7 +212,7 @@ exports.getUser = async (req, res) => {
                     organizations: resultBD[1],
                     notifications: resultBD[2],
                     domains: {
-                        reasons_disconnection: resultBD[5]
+                        reasons_disconnection: resultBD[4]
                     }
                 }
             });
