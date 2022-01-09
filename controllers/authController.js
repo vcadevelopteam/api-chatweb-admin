@@ -173,6 +173,7 @@ exports.getUser = async (req, res) => {
                 orgid: req.user.orgid,
                 userid: req.user.userid
             }),
+            tf.executesimpletransaction("UFN_DOMAIN_LST_VALUES_ONLY_DATA", { ...req.user, domainname: "TIPODESCONEXION" }),
         ]);
 
         const resultBDProperties = resultBD[3];
@@ -202,7 +203,19 @@ exports.getUser = async (req, res) => {
             // delete req.user.corpid;
             // delete req.user.orgid;
             // delete req.user.userid;
-            return res.json({ data: { ...req.user, menu, properties: resultProperties, token, organizations: resultBD[1], notifications: resultBD[2] } });
+            return res.json({
+                data: {
+                    ...req.user,
+                    menu,
+                    properties: resultProperties,
+                    token,
+                    organizations: resultBD[1],
+                    notifications: resultBD[2],
+                    domains: {
+                        reasons_disconnection: resultBD[5]
+                    }
+                }
+            });
         })
     } catch (error) {
         console.log(error)
