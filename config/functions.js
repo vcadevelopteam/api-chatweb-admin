@@ -1232,7 +1232,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_PAGE1_DATE_DETAIL_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_page1_date_detail_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$horanum,$userid,$offset)",
+        query: "SELECT * FROM ufn_report_heatmap_page1_date_detail_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$horanum,$option,$userid,$offset)",
         module: "",
         protected: "SELECT"
     },
