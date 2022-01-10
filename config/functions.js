@@ -1137,7 +1137,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_UPDATE_ACTIVE_USER_SEL: {
-        query: "select * from ufn_update_active_user_sel($usr, $firstname)",
+        query: "select * from ufn_update_active_user_sel($usr, $firstname, $corpid)",
         module: "",
         protected: "SELECT"
     },
