@@ -396,7 +396,7 @@ module.exports = {
     },
     UFN_QUICKREPLY_SEL: {
         query: "SELECT * FROM ufn_quickreply_sel($corpid ,$orgid ,$id  ,$username ,$all)",
-        module: "/extras/quickreplies",
+        module: "",
         protected: "SELECT"
     },
     UFN_CORP_SEL: {
@@ -411,22 +411,22 @@ module.exports = {
     },
     UFN_ORG_SEL: {
         query: "SELECT * FROM ufn_org_sel($corpid ,$orgid ,$all)",
-        module: "/extras/quickreplies",
+        module: "",
         protected: "SELECT"
     },
     UFN_BUSINESSDOCTYPE_SEL: {
         query: "SELECT * FROM ufn_businessdoctype_sel()",
-        module: "/extras/quickreplies",
+        module: "",
         protected: "SELECT"
     },
     UFN_ORG_INS: {
         query: "SELECT * FROM ufn_org_ins($corpid,$id,$description,$status,$type,$username,$operation,$email,$password,$port,$host,$default_credentials,$ssl, $private_mail, $currency,$country, $timezoneoffset, $timezone, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $iconbot, $iconadvisor, $iconclient)",
-        module: "/extras/quickreplies",
+        module: "",
         protected: "INSERT"
     },
     UFN_QUICKREPLY_INS: {
         query: "SELECT * FROM ufn_quickreply_ins($corpid,$orgid,$id,$classificationid,$description,$quickreply,$status,$type,$username,$operation,$favorite)",
-        module: "/extras/quickreplies",
+        module: "",
         protected: "INSERT"
     },
     UFN_CORPBYUSER_LST: {
