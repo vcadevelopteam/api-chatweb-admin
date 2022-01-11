@@ -1686,4 +1686,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_REPORT_PERSONALIZED_ORIGIN_SEL: {
+        query: "SELECT * FROM ufn_report_personalized_origin_sel()",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_PERSONALIZED_COLUMNS_SEL: {
+        query: "SELECT * FROM ufn_report_personalized_columns_sel($tablename)",
+        module: "",
+        protected: "SELECT"
+    },
 }
