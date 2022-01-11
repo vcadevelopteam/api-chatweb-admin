@@ -1362,7 +1362,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGCONVERSATION_INS: {
-        query: "SELECT * FROM ufn_billingconversation_ins($year, $month, $countrycode, $id, $companystartfee, $clientstartfee, $vcacomission, $description, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_billingconversation_ins($year, $month, $countrycode, $id, $companystartfee, $clientstartfee, $vcacomission, $freeconversations, $description, $status, $type, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -1683,6 +1683,16 @@ module.exports = {
     },
     UFN_INVOICEDETAIL_SELBYINVOICEID: {
         query: "SELECT * FROM ufn_invoicedetail_selbyinvoiceid($corpid,$orgid,$invoiceid,$userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGMESSAGING_INS: {
+        query: "SELECT * FROM ufn_billingmessaging_ins($year, $month, $id, $pricepersms, $vcacomissionpersms, $pricepermail, $vcacomissionpermail, $description, $status, $type, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BILLINGMESSAGING_SEL: {
+        query: "SELECT * FROM ufn_billingmessaging_sel($year, $month)",
         module: "",
         protected: "SELECT"
     },
