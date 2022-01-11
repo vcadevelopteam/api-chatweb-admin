@@ -811,7 +811,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CREATEZYXMEACCOUNT_INS: {
-        query: "SELECT * FROM ufn_createzyxmeaccount_ins($firstname, $lastname, $username, $password, $email, $doctype, $docnumber, $phone, $facebookid, $googleid, $join_reason, $rolecompany, $companysize, $organizationname, $paymentplanid, $currency, $country)",
+        query: "SELECT * FROM ufn_createzyxmeaccount_ins($firstname, $lastname, $username, $password, $email, $doctype, $docnumber, $phone, $facebookid, $googleid, $join_reason, $rolecompany, $companysize, $organizationname, $paymentplanid, $currency, $country, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice)",
         module: "",
         protected: "INSERT"
     },
@@ -1122,7 +1122,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_UPDATE_LEADS: {
-        query: "select * from ufn_update_leads($corpid, $orgid, $cards_startingcolumn, $cards_finalcolumn, $startingcolumn_uuid, $finalcolumn_uuid, $leadid)",
+        query: "select * from ufn_update_leads($corpid, $orgid, $cards_startingcolumn, $cards_finalcolumn, $startingcolumn_uuid, $finalcolumn_uuid, $leadid, $username)",
         module: "",
         protected: "INSERT"
     },
@@ -1137,7 +1137,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_UPDATE_ACTIVE_USER_SEL: {
-        query: "select * from ufn_update_active_user_sel($usr, $firstname)",
+        query: "select * from ufn_update_active_user_sel($usr, $firstname, $corpid)",
         module: "",
         protected: "SELECT"
     },
@@ -1637,7 +1637,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_APPSETTING_INVOICE_UPDATE: {
-        query: "select * from public.ufn_appsetting_invoice_update($ruc, $businessname, $tradename, $fiscaladdress, $ubigeo, $country, $emittertype, $currency, $invoiceserie, $invoicecorrelative, $annexcode, $igv, $printingformat, $xmlversion, $ublversion, $returnpdf, $returnxmlsunat, $returnxml, $invoiceprovider, $sunaturl, $token, $sunatusername, $paymentprovider, $publickey, $privatekey)",
+        query: "select * from public.ufn_appsetting_invoice_update($ruc, $businessname, $tradename, $fiscaladdress, $ubigeo, $country, $emittertype, $currency, $invoiceserie, $invoicecorrelative, $annexcode, $igv, $printingformat, $xmlversion, $ublversion, $returnpdf, $returnxmlsunat, $returnxml, $invoiceprovider, $sunaturl, $token, $sunatusername, $paymentprovider, $publickey, $privatekey, $ticketserie, $ticketcorrelative, $invoicecreditserie, $invoicecreditcorrelative, $ticketcreditserie, $ticketcreditcorrelative, $detraction, $detractioncode, $detractionaccount, $operationcodeperu, $operationcodeother)",
         module: "",
         protected: "UPDATE"
     },

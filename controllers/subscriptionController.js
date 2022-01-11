@@ -45,7 +45,8 @@ exports.activateUser = async (request, result) => {
         var userMethod = 'UFN_UPDATE_ACTIVE_USER_SEL';
         var userParameters = {
             usr: userData.username,
-            firstname: userData.firstname
+            firstname: userData.firstname,
+            corpid: userData.corpid,
         };
         
         const transactionActivateUser = await triggerfunctions.executesimpletransaction(userMethod, userParameters);
@@ -137,7 +138,7 @@ exports.createSubscription = async (request, result) => {
                     channelParameters.operation = 'INSERT';
                     channelParameters.resolvelithium = null;
                     channelParameters.schedule = null;
-                    channelParameters.status = 'ACTIVO';
+                    channelParameters.status = 'PENDIENTE';
                     channelParameters.updintegration = null;
 
                     switch (channel.type) {
@@ -566,12 +567,12 @@ exports.createSubscription = async (request, result) => {
                             });
                         
                             if (requestCreateWhatsApp.data.success) {
-                                var serviceCredentials = {
-                                    apiKey: channelService.accesstoken,
-                                    endpoint: whatsAppEndpoint,
-                                    number: requestCreateWhatsApp.data.phoneNumber
-                                };
-                            
+                                channelParameters.servicecredentials = JSON.stringify(channelService);
+
+                                channelParameters.servicecredentials.apiKey = channelService.accesstoken;
+                                channelParameters.servicecredentials.endpoint = whatsAppEndpoint;
+                                channelParameters.servicecredentials.number = requestCreateWhatsApp.data.phoneNumber;
+
                                 channelParameters.communicationchannelsite = requestCreateWhatsApp.data.phoneNumber;
                                 channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
                                 channelParameters.type = 'WHAD';
@@ -593,7 +594,6 @@ exports.createSubscription = async (request, result) => {
                             channelParameters.communicationchannelowner = '';
                             channelParameters.communicationchannelsite = '';
                             channelParameters.servicecredentials = JSON.stringify(channelService);
-                            channelParameters.status = 'PENDIENTE';
                             channelParameters.type = 'WHAT';
 
                             channelMethodArray.push(channelMethod);
@@ -665,7 +665,7 @@ exports.createSubscription = async (request, result) => {
                             });
                         }
 
-                        if (channelParametersArray[index].type === 'WHAT') {
+                        if (channelParametersArray[index].type === 'WHAT' || channelParametersArray[index].type === 'WHAD') {
                             if ((typeof channelServiceArray[index] !== 'undefined' && channelServiceArray[index])) {
                                 var domainMethod = 'UFN_DOMAIN_VALUES_SEL';
                                 var domainParameters = {
@@ -852,7 +852,7 @@ exports.createSubscription = async (request, result) => {
 
                     if (transactionGetBody instanceof Array) {
                         if (transactionGetBody.length > 0) {
-                            var userCode = cryptojs.AES.encrypt(JSON.stringify({ username: parameters.username, firstname: parameters.firstname }), userSecret).toString();
+                            var userCode = cryptojs.AES.encrypt(JSON.stringify({ username: parameters.username, firstname: parameters.firstname, corpid: transactionCreateSubscription[0].corpid }), userSecret).toString();
 
                             var processedUserCode = userCode;
 
