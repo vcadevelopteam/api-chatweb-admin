@@ -42,7 +42,7 @@ module.exports = {
             column: "pe.phone"
         },
         agent: {
-            column: "concat(us.firstname,' ',us.lastname)"
+            column: "nullif(concat(us.firstname,' ',us.lastname), ' '), ' ')"
         },
         channel: {
             column: "cc.description"
@@ -88,7 +88,7 @@ module.exports = {
             column: "cc.description"
         },
         agent: {
-            column: "concat(us.firstname,' ',us.lastname)"
+            column: "nullif(concat(us.firstname,' ',us.lastname), ' ')"
         },
         intent: {
             column: "inter.intent"
@@ -138,7 +138,7 @@ module.exports = {
             column: "ou.type"
         },
         agent: {
-            column: "concat(us.firstname,' ',us.lastname)"
+            column: "nullif(concat(us.firstname,' ',us.lastname), ' ')"
         },
         closetype: {
             column: "coalesce(do2.domaindesc, co.closetype)"
@@ -246,7 +246,7 @@ module.exports = {
             type: "date"
         },
         user: {
-            column: "concat(u.firstname,' ',u.lastname)"
+            column: "nullif(concat(u.firstname,' ',u.lastname), ' ')"
         },
         username: {
             column: "u.usr"
@@ -302,13 +302,13 @@ module.exports = {
             type: "date"
         },
         asesorinicial: {
-            column: "(select concat(us.firstname,' ',us.lastname) from usr us where co.firstuserid = us.userid )"
+            column: "(select nullif(concat(us.firstname,' ',us.lastname), ' ') from usr us where co.firstuserid = us.userid )"
         },
         asesorfinal: {
-            column: "concat(us.firstname,' ',us.lastname)"
+            column: "nullif(concat(us.firstname,' ',us.lastname), ' ')"
         },
         supervisor: {
-            column: "concat(usr2.firstname,' ',usr2.lastname)"
+            column: "nullif(concat(usr2.firstname,' ',usr2.lastname), ' ')"
         },
         empresa: {
             column: "case when us.firstname in ('Bot','HOLDING') then 'VCA Perú' else us.company end"
@@ -636,7 +636,7 @@ module.exports = {
             column: "ld.priority"
         },
         name: {
-            column: "CONCAT(usr.firstname,'' '',usr.lastname)"
+            column: "nullif(CONCAT(usr.firstname,' ',usr.lastname), ' ')"
         },
         phase: {
             column: "col.description"
