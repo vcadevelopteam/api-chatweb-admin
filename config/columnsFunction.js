@@ -267,7 +267,7 @@ module.exports = {
             type: "date"
         },
         firstusergroup: {
-            column: "co.firstusergroup"
+            column: "do6.domaindesc"
         },
         ticketgroup: {
             column: "do5.domaindesc"
