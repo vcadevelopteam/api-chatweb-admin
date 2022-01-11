@@ -1686,7 +1686,6 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-<<<<<<< HEAD
     UFN_BILLINGMESSAGING_INS: {
         query: "SELECT * FROM ufn_billingmessaging_ins($year, $month, $id, $pricepersms, $vcacomissionpersms, $pricepermail, $vcacomissionpermail, $description, $status, $type, $username, $operation)",
         module: "",
@@ -1694,7 +1693,7 @@ module.exports = {
     },
     UFN_BILLINGMESSAGING_SEL: {
         query: "SELECT * FROM ufn_billingmessaging_sel($year, $month)",
-=======
+    },
     UFN_REPORT_PERSONALIZED_ORIGIN_SEL: {
         query: "SELECT * FROM ufn_report_personalized_origin_sel()",
         module: "",
@@ -1702,7 +1701,6 @@ module.exports = {
     },
     UFN_REPORT_PERSONALIZED_COLUMNS_SEL: {
         query: "SELECT * FROM ufn_report_personalized_columns_sel($tablename)",
->>>>>>> 58096086e452f427cd24f1a38a6f487f5af76be7
         module: "",
         protected: "SELECT"
     },
