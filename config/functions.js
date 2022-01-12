@@ -331,7 +331,7 @@ module.exports = {
     },
     UFN_EMOJI_ALL_SEL: {
         query: "select * from ufn_emoji_all_sel($corpid ,$orgid ,$userid ,$all);",
-        module: "/extras/emojis",
+        module: "",
         protected: "SELECT"
     },
     UFN_EMOJI_SEL: {
