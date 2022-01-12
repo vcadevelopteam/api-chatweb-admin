@@ -265,7 +265,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_INTERACTION_EXPORT: {
-        query: "WITH w1 AS (     SELECT DISTINCT unnest(string_to_array(groups,',')) AS groups     FROM orguser ous     WHERE ous.corpid = $corpid     AND ous.orgid = $orgid     AND ous.userid = $userid ) SELECT co.ticketnum, to_char(co.startdate + $offset * INTERVAL '1hour', 'YYYY') as ticketyear, to_char(co.startdate + $offset * INTERVAL '1hour', 'MM') as ticketmonth, to_char(co.startdate + $offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI:SS') as ticketdatehour, inter.interactionid, to_char(inter.createdate + $offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI:SS') interactiondatehour, REGEXP_REPLACE(pe.name, E'[\\n\\r\\t]+',' ','g') as person, pcc.displayname as originalname, cc.description channel, concat(us.firstname,' ',us.lastname) as agent, inter.intent, inter.interactiontype, REGEXP_REPLACE(inter.interactiontext, E'[\\n\\r\\t]+',' ','g') as interactiontext, pe.phone as clientnumber, co.personcommunicationchannel FROM conversation co LEFT JOIN orguser ous ON co.corpid = ous.corpid AND co.orgid = ous.orgid AND co.lastuserid = ous.userid LEFT JOIN communicationchannel cc on co.corpid = cc.corpid and co.orgid = cc.orgid and co.communicationchannelid = cc.communicationchannelid LEFT JOIN person pe on co.personid = pe.personid LEFT JOIN personcommunicationchannel pcc on co.corpid = pcc.corpid and co.orgid = pcc.orgid and co.personid = pcc.personid and co. personcommunicationchannel = pcc.personcommunicationchannel LEFT JOIN interaction inter ON co.conversationid = inter.conversationid LEFT JOIN orguser ous2 ON inter.corpid = ous2.corpid AND inter.orgid = ous2.orgid AND inter.userid = ous2.userid LEFT JOIN usr us on ous2.userid = us.userid WHERE co.corpid = $corpid AND co.orgid = $orgid AND inter.createdate >= $startdate::timestamp - $offset * INTERVAL '1hour' and inter.createdate < $enddate::timestamp + interval '1 day' - $offset * INTERVAL '1hour' AND CASE WHEN (SELECT(array_length(array_agg(groups), 1)) FROM w1) IS NOT NULL THEN (string_to_array(ous2.groups,',') && (SELECT array_agg(groups) FROM w1)) OR COALESCE(ous2.groups,'') = '' ELSE TRUE END AND inter.interactiontype <> 'LOG' ###WHERE### ",
+        query: "WITH w1 AS (     SELECT DISTINCT unnest(string_to_array(groups,',')) AS groups     FROM orguser ous     WHERE ous.corpid = $corpid     AND ous.orgid = $orgid     AND ous.userid = $userid ) SELECT co.ticketnum, to_char(co.startdate + $offset * INTERVAL '1hour', 'YYYY') as ticketyear, to_char(co.startdate + $offset * INTERVAL '1hour', 'MM') as ticketmonth, to_char(co.startdate + $offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI:SS') as ticketdatehour, inter.interactionid, to_char(inter.createdate + $offset * INTERVAL '1hour', 'DD/MM/YYYY HH24:MI:SS') interactiondatehour, REGEXP_REPLACE(pe.name, E'[\\n\\r\\t]+',' ','g') as person, pcc.displayname as originalname, cc.description channel, concat(us.firstname,' ',us.lastname) as agent, inter.intent, inter.interactiontype, REGEXP_REPLACE(inter.interactiontext, E'[\\n\\r\\t]+',' ','g') as interactiontext, pe.phone as clientnumber, co.personcommunicationchannel FROM conversation co LEFT JOIN orguser ous ON co.corpid = ous.corpid AND co.orgid = ous.orgid AND co.lastuserid = ous.userid LEFT JOIN communicationchannel cc on co.corpid = cc.corpid and co.orgid = cc.orgid and co.communicationchannelid = cc.communicationchannelid LEFT JOIN person pe on co.personid = pe.personid LEFT JOIN personcommunicationchannel pcc on co.corpid = pcc.corpid and co.orgid = pcc.orgid and co.personid = pcc.personid and co. personcommunicationchannel = pcc.personcommunicationchannel LEFT JOIN interaction inter ON co.conversationid = inter.conversationid LEFT JOIN orguser ous2 ON inter.corpid = ous2.corpid AND inter.orgid = ous2.orgid AND inter.userid = ous2.userid LEFT JOIN usr us on ous2.userid = us.userid WHERE co.corpid = $corpid AND co.orgid = $orgid AND inter.createdate >= $startdate::timestamp - $offset * INTERVAL '1hour' and inter.createdate < $enddate::timestamp + interval '1 day' - $offset * INTERVAL '1hour' AND CASE WHEN (SELECT(array_length(array_agg(groups), 1)) FROM w1) IS NOT NULL THEN (string_to_array(ous2.groups,',') && (SELECT array_agg(groups) FROM w1)) OR COALESCE(ous2.groups,'') = '' ELSE TRUE END AND inter.interactiontype <> 'LOG' ###WHERE### ###ORDER###",
         module: "/reports",
         protected: "SELECT"
     },
@@ -1112,7 +1112,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_SEL: {
-        query: "select * from ufn_lead_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $campaignid, $tags, $all)",
+        query: "select * from ufn_lead_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $campaignid, $tags, $userid, $all)",
         module: "",
         protected: "SELECT"
     },
@@ -1362,7 +1362,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGCONVERSATION_INS: {
-        query: "SELECT * FROM ufn_billingconversation_ins($year, $month, $countrycode, $id, $companystartfee, $clientstartfee, $vcacomission, $description, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_billingconversation_ins($year, $month, $countrycode, $id, $companystartfee, $clientstartfee, $vcacomission, $freeconversations, $description, $status, $type, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -1685,6 +1685,14 @@ module.exports = {
         query: "SELECT * FROM ufn_invoicedetail_selbyinvoiceid($corpid,$orgid,$invoiceid,$userid)",
         module: "",
         protected: "SELECT"
+    },
+    UFN_BILLINGMESSAGING_INS: {
+        query: "SELECT * FROM ufn_billingmessaging_ins($year, $month, $id, $pricepersms, $vcacomissionpersms, $pricepermail, $vcacomissionpermail, $description, $status, $type, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_BILLINGMESSAGING_SEL: {
+        query: "SELECT * FROM ufn_billingmessaging_sel($year, $month)",
     },
     UFN_REPORT_PERSONALIZED_ORIGIN_SEL: {
         query: "SELECT * FROM ufn_report_personalized_origin_sel()",

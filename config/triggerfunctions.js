@@ -124,7 +124,7 @@ exports.buildQueryWithFilterAndSort = async (method, data) => {
                 data.where = generatefilter(data.filters, data.origin, data.daterange, data.offset);
                 data.order = generateSort(data.sorts, data.origin);
 
-                const queryCollectionCleaned = query.replace("###WHERE###", data.where || "");
+                const queryCollectionCleaned = query.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
 
                 console.time("build-" + method);
                 const result = await sequelize.query(queryCollectionCleaned, {
