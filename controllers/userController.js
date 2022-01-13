@@ -112,7 +112,9 @@ exports.sendMailPassword = async (req, res) => {
                 blindreceiver: "",
                 copyreceiver: "",
                 credentials: jsonconfigmail,
-                config: {},
+                config: {
+                    ShippingReason: "SENDPASSWORD",
+                },
                 attachments: []
             }),
             repeatflag: false,
