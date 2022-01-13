@@ -1,4 +1,4 @@
-const { executesimpletransaction } = require('../config/triggerfunctions');
+const { executesimpletransaction, executeTransaction } = require('../config/triggerfunctions');
 const jwt = require("jsonwebtoken");
 require('dotenv').config();
 const bcryptjs = require("bcryptjs");
@@ -46,4 +46,84 @@ exports.updateInformation = async (req, res) => {
     } catch (error) {
         return res.status(500).json(getErrorCode(null, error));
     }
+}
+
+exports.sendMailPassword = async (req, res) => {
+    const { header, detail: detailtmp } = req.body;
+    const parameters = header.parameters;
+    
+    const passwordtext = parameters.password;
+
+    if (header && header.parameters.password) {
+        const salt = await bcryptjs.genSalt(10);
+        header.parameters.password = await bcryptjs.hash(header.parameters.password, salt);
+    }
+
+    if (header) {
+        setSessionParameters(header.parameters, req.user);
+    }
+
+    const detail = detailtmp.map(x => {
+        setSessionParameters(x.parameters, req.user);
+        return x;
+    })
+
+    const result = await executeTransaction(header, detail, req.user.menu || {});
+
+    if (parameters.sendMailPassword && result.success === true) {
+        parameters.namespace = parameters.language === "es" ? "TEMPLATESENDPASSWORD-SPANISH" : "TEMPLATESENDPASSWORD-ENGLISH";
+    
+        let jsonconfigmail = "";
+        const resBD = await Promise.all([
+            executesimpletransaction("QUERY_GET_CONFIG_MAIL", parameters),
+            executesimpletransaction("QUERY_GET_MESSAGETEMPLATE_BYNAMESPACE", parameters)
+        ]);
+        const configmail = resBD[0];
+        const mailtemplate = resBD[1][0];
+    
+        if (configmail instanceof Array && configmail.length > 0) {
+            jsonconfigmail = JSON.stringify({
+                username: configmail[0].email,
+                password: configmail[0].pass,
+                port: configmail[0].port,
+                host: configmail[0].host,
+                enableSsl: configmail[0].ssl,
+                default_credentials: configmail[0].default_credentials,
+            })
+        }
+    
+        const variablereplace = [
+            { name: "firstname", text: parameters.firstname },
+            { name: "lastname", text: parameters.lastname },
+            { name: "username", text: parameters.usr },
+            { name: "password", text: passwordtext },
+        ]
+    
+        const result1 = await executesimpletransaction("QUERY_INSERT_TASK_SCHEDULER", {
+            corpid: parameters.corpid,
+            orgid: parameters.orgid,
+            tasktype: "sendmail",
+            taskbody: JSON.stringify({
+                messagetype: "OWNERBODY",
+                receiver: parameters.email,
+                subject: mailtemplate.header,
+                priority: mailtemplate.priority,
+                body: variablereplace.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), mailtemplate.body),
+                blindreceiver: "",
+                copyreceiver: "",
+                credentials: jsonconfigmail,
+                config: {},
+                attachments: []
+            }),
+            repeatflag: false,
+            repeatmode: 0,
+            repeatinterval: 0,
+            completed: false,
+        });
+    }
+
+    if (!result.error)
+        return res.json(result);
+    else
+        return res.status(result.rescode).json(result);
 }

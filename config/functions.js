@@ -1331,6 +1331,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    QUERY_GET_MESSAGETEMPLATE_BYNAMESPACE: {
+        query: "select messagetemplateid, header, body, priority, attachment from messagetemplate where corpid = $corpid and orgid = $orgid and namespace = $namespace",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_BILLINGSUPPORT_INS: {
         query: "SELECT * FROM ufn_billingsupport_ins($year,$month,$plan,$id,$basicfee,$starttime,$finishtime,$description,$status,$type,$username,$operation )",
         module: "",

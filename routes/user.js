@@ -7,5 +7,9 @@ router.post("/update/info",
     auth,
     userController.updateInformation
 )
+router.post("/sendmail/password",
+    auth,
+    userController.sendMailPassword
+)
 
 module.exports = router;
