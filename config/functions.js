@@ -331,7 +331,7 @@ module.exports = {
     },
     UFN_EMOJI_ALL_SEL: {
         query: "select * from ufn_emoji_all_sel($corpid ,$orgid ,$userid ,$all);",
-        module: "/extras/emojis",
+        module: "",
         protected: "SELECT"
     },
     UFN_EMOJI_SEL: {
@@ -806,7 +806,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORTTEMPLATE_INS: {
-        query: "select * from ufn_reporttemplate_ins($id, $corpid, $orgid, $description, $status, $type, $columnjson, $filterjson, $communicationchannelid, $username, $operation)",
+        query: "select * from ufn_reporttemplate_ins($id, $corpid, $orgid, $description, $status, $type, $dataorigin, $columnjson, $filterjson, $summaryjson, $communicationchannelid, $username, $operation)",
         module: "",
         protected: "SELECT"
     },
@@ -1701,6 +1701,16 @@ module.exports = {
     },
     UFN_REPORT_PERSONALIZED_COLUMNS_SEL: {
         query: "SELECT * FROM ufn_report_personalized_columns_sel($tablename)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVOICE_TICKETCORRELATIVE: {
+        query: "select * from ufn_invoice_ticketcorrelative($corpid, $orgid, $invoiceid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVOICE_REFRESHTEST: {
+        query: "select * from ufn_invoice_refreshtest()",
         module: "",
         protected: "SELECT"
     },
