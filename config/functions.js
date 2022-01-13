@@ -1704,4 +1704,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_INVOICE_TICKETCORRELATIVE: {
+        query: "select * from ufn_invoice_ticketcorrelative($corpid, $orgid, $invoiceid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVOICE_REFRESHTEST: {
+        query: "select * from ufn_invoice_refreshtest()",
+        module: "",
+        protected: "SELECT"
+    },
 }
