@@ -218,7 +218,7 @@ exports.sendHSM = async (req, res) => {
             data.username = req.user.usr;
         if (!data.userid)
             data.userid = req.user.userid;
-        
+
         const ff = await tf.executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", undefined, false, {
             personids: data.listmembers.map(x => x.personid),
             corpid: req.user.corpid,
@@ -260,6 +260,16 @@ exports.sendHSM = async (req, res) => {
                         blindreceiver: "",
                         copyreceiver: "",
                         credentials: jsonconfigmail,
+                        config: {
+                            CommunicationChannelSite: "",
+                            FirstName: x.firstname,
+                            LastName: x.lastname,
+                            HsmTo: x.email,
+                            Origin: "EXTERNAL",
+                            ShippingReason: data.shippingreason,
+                            HsmID: data.hsmtemplatename,
+                            Body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), mailtemplate.body)
+                        },
                         attachments: mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
                             type: 'FILE',
                             x: value
@@ -284,7 +294,7 @@ exports.sendHSM = async (req, res) => {
 
             const responseservices = await axios.post(
                 `${process.env.SERVICES}handler/external/sendhsm`, data);
-
+            console.log(responseservices.data)
             if (!responseservices.data || !responseservices.data instanceof Object) {
                 return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
             }
