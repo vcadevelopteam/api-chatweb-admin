@@ -393,9 +393,9 @@ exports.chargeInvoice = async (req, res) => {
                                             FechaEmision: invoice.invoicedate,
                                             MailEnvio: corp.contactemail,
                                             MontoTotal: invoice.totalamount,
-                                            MontoTotalGravado: corp.sunatcountry === 'PE' ? invoice.subtotal : '0',
+                                            MontoTotalGravado: corp.sunatcountry === 'PE' ? invoice.subtotal : null,
                                             MontoTotalInafecto: corp.sunatcountry === 'PE' ? '0' : invoice.subtotal,
-                                            MontoTotalIgv: invoice.taxes,
+                                            MontoTotalIgv: corp.sunatcountry === 'PE' ? invoice.taxes : null,
                                             NombreComercialEmisor: appsetting.tradename,
                                             RazonSocialEmisor: appsetting.businessname,
                                             RazonSocialReceptor: corp.businessname,
@@ -455,7 +455,7 @@ exports.chargeInvoice = async (req, res) => {
                                         });
 
                                         var adicional01 = {
-                                            CodigoDatoAdicional: '01',
+                                            CodigoDatoAdicional: '05',
                                             DescripcionDatoAdicional: 'TRANSFERENCIA'
                                         }
 
@@ -490,7 +490,7 @@ exports.chargeInvoice = async (req, res) => {
 
                                         if (tipocredito) {
                                             var adicional05 = {
-                                                CodigoDatoAdicional: '05',
+                                                CodigoDatoAdicional: '01',
                                                 DescripcionDatoAdicional: tipocredito === '0' ? 'AL CONTADO' : `TIPO DE CREDITO: ${tipocredito} DIAS`
                                             }
     
