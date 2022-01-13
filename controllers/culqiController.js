@@ -90,7 +90,7 @@ const getInvoiceCorrelative = async (corpid, orgid, id) => {
 }
 
 const getInvoiceTicketCorrelative = async (corpid, orgid, id) => {
-    const query = "UFN_INVOICE_CORRELATIVE";
+    const query = "UFN_INVOICE_TICKETCORRELATIVE";
     const bind = {
         corpid: corpid,
         orgid: orgid,
