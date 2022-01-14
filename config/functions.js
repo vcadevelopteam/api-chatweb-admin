@@ -131,7 +131,7 @@ module.exports = {
     },
     UFN_INAPPROPRIATEWORDS_SEL: {
         query: "SELECT * FROM ufn_inappropriatewords_sel($corpid, $orgid,$id, $username)",
-        module: "/extras/inappropriatewords",
+        module: "",
         protected: "SELECT"
     },
     UFN_INAPPROPRIATEWORDS_INS: {
