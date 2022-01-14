@@ -1709,6 +1709,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_REPORT_PERSONALIZED_VARIABLE_SEL: {
+        query: "SELECT * FROM ufn_report_personalized_variable_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_REPORT_PERSONALIZED_COLUMNS_SEL: {
         query: "SELECT * FROM ufn_report_personalized_columns_sel($tablename, $corpid, $orgid)",
         module: "",
