@@ -43,15 +43,17 @@ const stringToSeconds = (str) => {
 
 const secondsToTime = (sec_num) => {
     sec_num = parseInt(sec_num)
-    let hours = Math.floor(sec_num / 3600);
-    let minutes = Math.floor((sec_num - (hours * 3600)) / 60);
-    let seconds = sec_num - (hours * 3600) - (minutes * 60);
+    let days = Math.floor(sec_num / 86400);
+    let hours = Math.floor((sec_num - (days * 86400)) / 3600);
+    let minutes = Math.floor((sec_num - (days * 86400) - (hours * 3600)) / 60);
+    let seconds = sec_num - (days * 86400) - (hours * 3600) - (minutes * 60);
 
     if (hours < 10) { hours = "0" + hours; }
     if (minutes < 10) { minutes = "0" + minutes; }
     if (seconds < 10) { seconds = "0" + seconds; }
 
-    return hours + ':' + minutes + ':' + seconds;
+    const stringdays = days === 0 ? days + " day " : (days > 1 ? days + " days " : days + " day ");
+    return stringdays + hours + ':' + minutes + ':' + seconds;
 }
 
 const executeQuery = async (query, bind = {}) => {
@@ -289,7 +291,8 @@ exports.executeTransaction = async (header, detail, permissions = false) => {
         return lasterror;
     }
 }
-const NUMBERS = ["bigint", "integer", "numeric"];
+const NUMBERS = ["bigint", "integer", "numeric", "double precision"];
+const DATES = ["timestamp without time zone", "date"];
 /*
 { function: 'total' },
     { function: 'count' },
@@ -301,23 +304,38 @@ const NUMBERS = ["bigint", "integer", "numeric"];
 */
 exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries) => {
     try {
-        console.log("aaa", summaries)
         const TABLENAME = columns[0].tablename;
-
-        const JOINNERS = Array.from(new Set(columns.filter(x => !!x.join_alias).map(x => x.join_alias))).reduce((acc, join_alias) => {
-            const { join_table, join_on } = columns.find(x => x.join_alias === join_alias);
+        const ALLCOLUMNS = [...columns, ...filters];
+        const JOINNERS = Array.from(new Set(ALLCOLUMNS.filter(x => !!x.join_alias).map(x => x.join_alias))).reduce((acc, join_alias) => {
+            const { join_table, join_on } = ALLCOLUMNS.find(x => x.join_alias === join_alias);
             return acc + `\nLEFT JOIN ${join_table} ${join_alias} ${join_on}`;
         }, "");
 
-        const COLUMNESSELECT = columns.reduce((acc, item, index) => acc + (index === 0 ? "" : ",") + `${item.type === "interval" ? "date_trunc('seconds', " + item.columnname + ")::text" : item.columnname} as "${item.columnname.replace(".", "")}"`, "")
+        const COLUMNESSELECT = columns.reduce((acc, item, index) => {
+            let selcol = item.columnname;
+
+            if (item.type === "interval") {
+                selcol = `date_trunc('seconds', ${item.columnname})::text`;
+            } else if (item.type === "variable") {
+                selcol = `(conversation.variablecontext::jsonb)->'${item.columnname}'->>'Value'`;
+            }
+
+            return acc + (index === 0 ? "" : ",") + `${selcol} as "${item.columnname.replace(".", "")}"`
+        }, "")
 
         const FILTERS = filters.reduce((acc, { type, columnname, start, end, value }) => {
-            if (type === "timestamp without time zone" || type === "date") {
-                return `\n${acc} and ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
-            } else if (NUMBERS.includes(type)) {
-                return `\n${acc} and ${columnname} = ${value}`
+            if (DATES.includes(type)) {
+                return `${acc}\nand ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
+            } else if (!!value) {
+                if (NUMBERS.includes(type)) {
+                    return `${acc}\nand ${columnname} = ${value}`
+                } else if (type === "variable") {
+                    return `${acc}\nand (conversation.variablecontext::jsonb)->'${columnname}'->>'Value' ilike '${value}'`
+                } else {
+                    return `${acc}\nand ${columnname} ilike '${value}'`
+                }
             } else {
-                return `\n${acc} and ${columnname} = '${value}'`
+                return acc;
             }
         }, "")
 
@@ -332,8 +350,8 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries) => 
         `;
 
         const resultbd = await executeQuery(query, parameters);
-
-        if (summaries.length > 0) {
+        
+        if (summaries.length > 0 && resultbd.length > 0) {
             const firstColumn = columns.reduce((acc, item) => ({
                 ...acc,
                 [item.columnname.replace(".", "")]: ''
@@ -361,7 +379,6 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries) => 
                     acc[columnnameonly] = item.type === "interval" ? secondsToTime(auxq) : auxq;
                 } else if (item.function === "average") {
                     const auxq = tmpdata.map(x => x[columnname]).reduce((a, b) => a + b, 0) / tmpdata.length;
-                    console.log(columnname, auxq, tmpdata.length, tmpdata)
                     acc[columnnameonly] = item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
                 } else if (item.function === "minimum") {
                     const auxq = tmpdata.reduce((a, b) => a < b[columnname] ? a : b[columnname], tmpdata[0][columnname]);
@@ -392,8 +409,6 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries) => 
         return getErrorCode(errors.UNEXPECTED_ERROR, error);
     }
 }
-
-
 
 exports.buildQueryDynamic = async (columns, filters, parameters) => {
     try {

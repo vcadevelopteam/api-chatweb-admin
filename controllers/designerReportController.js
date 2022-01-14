@@ -18,7 +18,7 @@ exports.exportReport = async (req, res) => {
 
     setSessionParameters(parameters, req.user);
 
-    const resultBD = await buildQueryDynamic2(columns, filters, parameters);
+    const resultBD = await buildQueryDynamic2(columns, filters, parameters, summaries);
 
     const result = await exportData(resultBD, parameters.reportName, parameters.formatToExport, parameters.headerClient);
 
