@@ -267,7 +267,7 @@ exports.sendHSM = async (req, res) => {
                             HsmTo: x.email,
                             Origin: "EXTERNAL",
                             ShippingReason: data.shippingreason,
-                            HsmID: data.hsmtemplatename,
+                            HsmId: data.hsmtemplatename,
                             Body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), mailtemplate.body)
                         },
                         attachments: mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
