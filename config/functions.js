@@ -1117,7 +1117,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_SEL: {
-        query: "select * from ufn_lead_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $campaignid, $tags, $userid, $all)",
+        query: "select * from ufn_lead_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $campaignid, $tags, $userid, $supervisorid, $all)",
         module: "",
         protected: "SELECT"
     },
@@ -1721,6 +1721,11 @@ module.exports = {
     },
     UFN_INVOICE_REFRESHTEST: {
         query: "select * from ufn_invoice_refreshtest()",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ADVISERSBYUSERID_SEL: {
+        query: "select * from ufn_advisersbyuserid_sel($corpid, $orgid, $userid)",
         module: "",
         protected: "SELECT"
     },
