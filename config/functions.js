@@ -124,6 +124,11 @@ module.exports = {
         module: "/extras/whitelist",
         protected: "INSERT"
     },
+    UFN_INAPPROPRIATEWORDS_LST: {
+        query: "SELECT * FROM ufn_inappropriatewords_lst($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_INAPPROPRIATEWORDS_SEL: {
         query: "SELECT * FROM ufn_inappropriatewords_sel($corpid, $orgid,$id, $username)",
         module: "/extras/inappropriatewords",
