@@ -1,12 +1,12 @@
-const { buildQueryDynamic, exportData, executesimpletransaction } = require('../config/triggerfunctions');
+const { buildQueryDynamic, buildQueryDynamic2, exportData, executesimpletransaction } = require('../config/triggerfunctions');
 const { setSessionParameters, errors, getErrorCode } = require('../config/helpers');
 
 exports.drawReport = async (req, res) => {
-    const { columns, filters, parameters = {} } = req.body;
+    const { columns, filters, summaries, parameters = {} } = req.body;
 
     setSessionParameters(parameters, req.user);
 
-    const result = await buildQueryDynamic(columns, filters, parameters);
+    const result = await buildQueryDynamic2(columns, filters, parameters, summaries);
     if (!result.error)
         return res.json(result);
     else
@@ -14,13 +14,13 @@ exports.drawReport = async (req, res) => {
 }
 
 exports.exportReport = async (req, res) => {
-    const { columns, filters, parameters = {} } = req.body;
+    const { columns, filters, summaries, parameters = {} } = req.body;
 
     setSessionParameters(parameters, req.user);
 
-    const resultBD = await buildQueryDynamic(columns, filters, parameters);
+    const resultBD = await buildQueryDynamic2(columns, filters, parameters);
 
-    const result = await exportData(resultBD, parameters.reportName, parameters.formatToExport);
+    const result = await exportData(resultBD, parameters.reportName, parameters.formatToExport, parameters.headerClient);
 
     if (!result.error) {
         return res.json(result);

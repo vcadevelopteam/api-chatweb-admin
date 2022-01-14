@@ -18,6 +18,42 @@ const COS_BUCKET_NAME = "staticfileszyxme"
 const REPLACEFILTERS = "###FILTERS###";
 const REPLACESEL = "###REPLACESEL###";
 
+const stringToSeconds = (str) => {
+    let seconds = 0;
+    let days = 0;
+    let newstr = str;
+    if (str.includes("day")) {
+        days = parseInt(str.split(" day")[0]);
+        newstr = str.split(" day")[1];
+    }
+
+    let parts = str.split(":");
+
+    seconds += parseInt(parts[2]);
+    const minutes = parseInt(parts[1]);
+    const hours = parseInt(parts[0]);
+
+    seconds += minutes * 60;
+    seconds += hours * 60 * 60;
+    seconds += days * 24 * 60 * 60;
+
+
+    return seconds;
+}
+
+const secondsToTime = (sec_num) => {
+    sec_num = parseInt(sec_num)
+    let hours = Math.floor(sec_num / 3600);
+    let minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+    let seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+    if (hours < 10) { hours = "0" + hours; }
+    if (minutes < 10) { minutes = "0" + minutes; }
+    if (seconds < 10) { seconds = "0" + seconds; }
+
+    return hours + ':' + minutes + ':' + seconds;
+}
+
 const executeQuery = async (query, bind = {}) => {
     return await sequelize.query(query, {
         type: QueryTypes.SELECT,
@@ -253,6 +289,110 @@ exports.executeTransaction = async (header, detail, permissions = false) => {
         return lasterror;
     }
 }
+const NUMBERS = ["bigint", "integer", "numeric"];
+/*
+{ function: 'total' },
+    { function: 'count' },
+    { function: 'average' },
+    { function: 'minimum' },
+    { function: 'maximum' },
+    { function: 'median' },
+    { function: 'mode' },
+*/
+exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries) => {
+    try {
+        console.log("aaa", summaries)
+        const TABLENAME = columns[0].tablename;
+
+        const JOINNERS = Array.from(new Set(columns.filter(x => !!x.join_alias).map(x => x.join_alias))).reduce((acc, join_alias) => {
+            const { join_table, join_on } = columns.find(x => x.join_alias === join_alias);
+            return acc + `\nLEFT JOIN ${join_table} ${join_alias} ${join_on}`;
+        }, "");
+
+        const COLUMNESSELECT = columns.reduce((acc, item, index) => acc + (index === 0 ? "" : ",") + `${item.type === "interval" ? "date_trunc('seconds', " + item.columnname + ")::text" : item.columnname} as "${item.columnname.replace(".", "")}"`, "")
+
+        const FILTERS = filters.reduce((acc, { type, columnname, start, end, value }) => {
+            if (type === "timestamp without time zone" || type === "date") {
+                return `\n${acc} and ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
+            } else if (NUMBERS.includes(type)) {
+                return `\n${acc} and ${columnname} = ${value}`
+            } else {
+                return `\n${acc} and ${columnname} = '${value}'`
+            }
+        }, "")
+
+        let query = `
+        select
+            ${COLUMNESSELECT}
+        from ${TABLENAME}
+        ${JOINNERS}
+        WHERE 
+            ${TABLENAME}.corpid = $corpid and ${TABLENAME}.orgid = $orgid
+            ${FILTERS}
+        `;
+
+        const resultbd = await executeQuery(query, parameters);
+
+        if (summaries.length > 0) {
+            const firstColumn = columns.reduce((acc, item) => ({
+                ...acc,
+                [item.columnname.replace(".", "")]: ''
+            }), {})
+
+            const datawith = summaries.reduce((acc, item) => {
+                let columnname = item.columnname.replace(".", "");
+                const columnnameonly = item.columnname.replace(".", "");
+                let tmpdata = [...resultbd];
+
+                if (item.type === "interval") {
+                    tmpdata = tmpdata.map(x => ({
+                        ...x,
+                        [columnname + "seconds"]: stringToSeconds(x[columnname] || "00:00:00")
+                    }))
+                    columnname = columnname + "seconds";
+                }
+
+                if (item.function === "total") {
+                    acc[columnname] = item.function.toUpperCase() + ": " + tmpdata.length;
+                } else if (item.function === "count") {
+                    acc[columnname] = item.function.toUpperCase() + ": " + tmpdata.length;
+                } else if (item.function === "sum") {
+                    const auxq = item.function.toUpperCase() + ": " + tmpdata.reduce((a, b) => a + b[columnname], 0);
+                    acc[columnnameonly] = item.type === "interval" ? secondsToTime(auxq) : auxq;
+                } else if (item.function === "average") {
+                    const auxq = tmpdata.map(x => x[columnname]).reduce((a, b) => a + b, 0) / tmpdata.length;
+                    console.log(columnname, auxq, tmpdata.length, tmpdata)
+                    acc[columnnameonly] = item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
+                } else if (item.function === "minimum") {
+                    const auxq = tmpdata.reduce((a, b) => a < b[columnname] ? a : b[columnname], tmpdata[0][columnname]);
+                    acc[columnnameonly] = item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
+                } else if (item.function === "maximum") {
+                    const auxq = tmpdata.reduce((a, b) => a > b[columnname] ? a : b[columnname], tmpdata[0][columnname]);
+                    acc[columnnameonly] = item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
+                } else if (item.function === "median") {
+                    const mid = Math.floor(tmpdata.length / 2);
+                    const numbs = tmpdata.map(x => x[columnname]).sort((a, b) => a - b);
+                    const auxq = tmpdata.length % 2 !== 0 ? numbs[mid] : (numbs[mid - 1] + numbs[mid]) / 2;
+                    acc[columnnameonly] = item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
+                } else if (item.function === "mode") {
+                    const auxq = tmpdata.map(x => x[columnname]).sort((a, b) =>
+                        tmpdata.filter(v => v === a).length
+                        - tmpdata.filter(v => v === b).length
+                    ).pop();
+                    acc[columnnameonly] = item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
+                }
+                return acc;
+            }, firstColumn)
+
+            resultbd.unshift(datawith);
+        }
+        return resultbd;
+    } catch (error) {
+        console.log(error)
+        return getErrorCode(errors.UNEXPECTED_ERROR, error);
+    }
+}
+
 
 
 exports.buildQueryDynamic = async (columns, filters, parameters) => {
@@ -361,7 +501,7 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
             let keysHeaders;
             const keys = Object.keys(dataToExport[0]);
             keysHeaders = keys;
-
+            console.log(headerClient)
             if (headerClient) {
                 keysHeaders = keys.reduce((acc, item) => {
                     const keyclientfound = headerClient.find(x => x.key === item);
@@ -380,7 +520,7 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
             if (formatToExport === "excel") {
                 const ws = XLSX.utils.json_to_sheet(dataToExport, headerClient ? {
                     skipHeader: !!headerClient,
-                }: undefined);
+                } : undefined);
 
                 const wb = { Sheets: { 'data': ws }, SheetNames: ['data'] };
                 const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
