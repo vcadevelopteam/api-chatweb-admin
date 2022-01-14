@@ -438,7 +438,7 @@ exports.chargeInvoice = async (req, res) => {
                                             var invoicedetaildata = {
                                                 CantidadProducto: data.quantity,
                                                 CodigoProducto: data.productcode,
-                                                AfectadoIgv: corp.sunatcountry === 'PE' ? '10' : '30',
+                                                AfectadoIgv: corp.sunatcountry === 'PE' ? '10' : '40',
                                                 TipoVenta: data.saletype,
                                                 TributoIgv: corp.sunatcountry === 'PE' ? '1000' : '9998',
                                                 UnidadMedida: data.measureunit,
