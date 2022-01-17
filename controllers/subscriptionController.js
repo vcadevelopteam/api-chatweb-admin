@@ -708,26 +708,26 @@ exports.createSubscription = async (request, result) => {
                                                         var mailRecipient = transactionGetRecipient[0].domainvalue;
                                                         var mailSubject = transactionGetSubject[0].domainvalue;
 
-                                                        mailBody = mailBody.split("{{brandname}}").join(channelServiceArray[index].brandname);
-                                                        mailBody = mailBody.split("{{brandaddress}}").join(channelServiceArray[index].brandaddress);
+                                                        mailBody = mailBody.split("{{brandname}}").join(parameters.companybusinessname);
+                                                        mailBody = mailBody.split("{{brandaddress}}").join(parameters.fiscaladdress);
                                                         mailBody = mailBody.split("{{firstname}}").join(channelServiceArray[index].firstname);
                                                         mailBody = mailBody.split("{{lastname}}").join(channelServiceArray[index].lastname);
                                                         mailBody = mailBody.split("{{email}}").join(channelServiceArray[index].email);
                                                         mailBody = mailBody.split("{{phone}}").join(channelServiceArray[index].phone);
-                                                        mailBody = mailBody.split("{{customerfacebookid}}").join(channelServiceArray[index].customerfacebookid);
+                                                        mailBody = mailBody.split("{{customerfacebookid}}").join(parameters.contact);
                                                         mailBody = mailBody.split("{{phonenumberwhatsappbusiness}}").join(channelServiceArray[index].phonenumberwhatsappbusiness);
                                                         mailBody = mailBody.split("{{nameassociatednumber}}").join(channelServiceArray[index].nameassociatednumber);
                                                         mailBody = mailBody.split("{{corpid}}").join(corpId);
                                                         mailBody = mailBody.split("{{orgid}}").join(orgId);
                                                         mailBody = mailBody.split("{{username}}").join(parameters.username);
 
-                                                        mailSubject = mailSubject.split("{{brandname}}").join(channelServiceArray[index].brandname);
-                                                        mailSubject = mailSubject.split("{{brandaddress}}").join(channelServiceArray[index].brandaddress);
+                                                        mailSubject = mailSubject.split("{{brandname}}").join(parameters.companybusinessname);
+                                                        mailSubject = mailSubject.split("{{brandaddress}}").join(parameters.fiscaladdress);
                                                         mailSubject = mailSubject.split("{{firstname}}").join(channelServiceArray[index].firstname);
                                                         mailSubject = mailSubject.split("{{lastname}}").join(channelServiceArray[index].lastname);
                                                         mailSubject = mailSubject.split("{{email}}").join(channelServiceArray[index].email);
                                                         mailSubject = mailSubject.split("{{phone}}").join(channelServiceArray[index].phone);
-                                                        mailSubject = mailSubject.split("{{customerfacebookid}}").join(channelServiceArray[index].customerfacebookid);
+                                                        mailSubject = mailSubject.split("{{customerfacebookid}}").join(parameters.contact);
                                                         mailSubject = mailSubject.split("{{phonenumberwhatsappbusiness}}").join(channelServiceArray[index].phonenumberwhatsappbusiness);
                                                         mailSubject = mailSubject.split("{{nameassociatednumber}}").join(channelServiceArray[index].nameassociatednumber);
                                                         mailSubject = mailSubject.split("{{corpid}}").join(corpId);
@@ -870,6 +870,7 @@ exports.createSubscription = async (request, result) => {
                             mailBody = mailBody.split("{{lastname}}").join(parameters.lastname);
                             mailBody = mailBody.split("{{username}}").join(parameters.username);
                             mailBody = mailBody.split("{{country}}").join(parameters.country);
+                            mailBody = mailBody.split("{{address}}").join(parameters.fiscaladdress);
                             mailBody = mailBody.split("{{channeldata}}").join(channelData);
 
                             var mailSubject = transactionGetSubject[0].domainvalue;
@@ -881,6 +882,7 @@ exports.createSubscription = async (request, result) => {
                             mailSubject = mailSubject.split("{{lastname}}").join(parameters.lastname);
                             mailSubject = mailSubject.split("{{username}}").join(parameters.username);
                             mailSubject = mailSubject.split("{{country}}").join(parameters.country);
+                            mailSubject = mailSubject.split("{{address}}").join(parameters.fiscaladdress);
                             mailSubject = mailSubject.split("{{channeldata}}").join(channelData);
 
                             const requestSendMail = await axios({
