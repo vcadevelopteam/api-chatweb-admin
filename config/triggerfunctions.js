@@ -371,32 +371,32 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries) => 
                 }
 
                 if (item.function === "total") {
-                    acc[columnname] = item.function.toUpperCase() + ": " + tmpdata.length;
+                    acc[columnname] += (acc[columnname] ? " - " : "") + item.function.toUpperCase() + ": " + tmpdata.length;
                 } else if (item.function === "count") {
-                    acc[columnname] = item.function.toUpperCase() + ": " + tmpdata.length;
+                    acc[columnname] += (acc[columnname] ? " - " : "") + item.function.toUpperCase() + ": " + tmpdata.length;
                 } else if (item.function === "sum") {
                     const auxq = item.function.toUpperCase() + ": " + tmpdata.reduce((a, b) => a + b[columnname], 0);
-                    acc[columnnameonly] = item.type === "interval" ? secondsToTime(auxq) : auxq;
+                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.type === "interval" ? secondsToTime(auxq) : auxq;
                 } else if (item.function === "average") {
                     const auxq = tmpdata.map(x => x[columnname]).reduce((a, b) => a + b, 0) / tmpdata.length;
-                    acc[columnnameonly] = item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
+                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
                 } else if (item.function === "minimum") {
                     const auxq = tmpdata.reduce((a, b) => a < b[columnname] ? a : b[columnname], tmpdata[0][columnname]);
-                    acc[columnnameonly] = item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
+                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
                 } else if (item.function === "maximum") {
                     const auxq = tmpdata.reduce((a, b) => a > b[columnname] ? a : b[columnname], tmpdata[0][columnname]);
-                    acc[columnnameonly] = item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
+                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
                 } else if (item.function === "median") {
                     const mid = Math.floor(tmpdata.length / 2);
                     const numbs = tmpdata.map(x => x[columnname]).sort((a, b) => a - b);
                     const auxq = tmpdata.length % 2 !== 0 ? numbs[mid] : (numbs[mid - 1] + numbs[mid]) / 2;
-                    acc[columnnameonly] = item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
+                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
                 } else if (item.function === "mode") {
                     const auxq = tmpdata.map(x => x[columnname]).sort((a, b) =>
                         tmpdata.filter(v => v === a).length
                         - tmpdata.filter(v => v === b).length
                     ).pop();
-                    acc[columnnameonly] = item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
+                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
                 }
                 return acc;
             }, firstColumn)
