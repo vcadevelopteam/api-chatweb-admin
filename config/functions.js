@@ -1511,6 +1511,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    QUERY_GET_KPI: {
+        query: "select target, cautionat, alertat, currentvalue where corpid = $corpid and orgid = $orgid and kpiid = $kpiid",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_INVOICE_CORP: {
         query: "SELECT * FROM ufn_invoice_corp($corpid,$year,$month,$exchangerate)",
         module: "",
