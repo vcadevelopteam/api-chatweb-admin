@@ -1542,7 +1542,12 @@ module.exports = {
         protected: "INSERT"
     },
     QUERY_GET_REPORTTEMPLATE: {
-        query: "select columnjson, description from reporttemplate where corpid = $corpid and orgid = $orgid and reporttemplateid = $reporttemplateid",
+        query: "select columnjson, description, dataorigin from reporttemplate where corpid = $corpid and orgid = $orgid and reporttemplateid = $reporttemplateid",
+        module: "",
+        protected: "INSERT"
+    },
+    QUERY_GET_KPI: {
+        query: "select target, cautionat, alertat, currentvalue from kpi where corpid = $corpid and orgid = $orgid and kpiid = $kpiid",
         module: "",
         protected: "INSERT"
     },
@@ -1688,6 +1693,11 @@ module.exports = {
     },
     UFN_KPI_SEL: {
         query: "SELECT * FROM ufn_kpi_sel($corpid,$orgid,$kpiid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_KPI_LST: {
+        query: "SELECT * FROM ufn_kpi_lst($corpid,$orgid)",
         module: "",
         protected: "SELECT"
     },

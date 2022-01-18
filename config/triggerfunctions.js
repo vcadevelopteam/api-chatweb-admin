@@ -371,9 +371,9 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries) => 
                 }
 
                 if (item.function === "total") {
-                    acc[columnname] += (acc[columnname] ? " - " : "") + item.function.toUpperCase() + ": " + tmpdata.length;
+                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + tmpdata.length;
                 } else if (item.function === "count") {
-                    acc[columnname] += (acc[columnname] ? " - " : "") + item.function.toUpperCase() + ": " + tmpdata.length;
+                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + tmpdata.length;
                 } else if (item.function === "sum") {
                     const auxq = item.function.toUpperCase() + ": " + tmpdata.reduce((a, b) => a + b[columnname], 0);
                     acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.type === "interval" ? secondsToTime(auxq) : auxq;
