@@ -244,6 +244,11 @@ module.exports = {
         module: "/reports",
         protected: "SELECT"
     },
+    UFN_REPORT_INPUTRETRY_GRAPHIC: {
+        query: "SELECT * FROM ufn_report_inputretry_graphic($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate, $column, $summarization, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
     UFN_REPORT_TIPIFICATION_SEL: {
         query: "SELECT * FROM ufn_report_tipification_sel($corpid ,$orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
@@ -256,6 +261,11 @@ module.exports = {
     },
     UFN_REPORT_TIPIFICATION_EXPORT: {
         query: "SELECT * FROM ufn_report_tipification_export($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_TIPIFICATION_GRAPHIC: {
+        query: "SELECT * FROM ufn_report_tipification_graphic($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate, $column, $summarization, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -274,6 +284,11 @@ module.exports = {
         module: "/reports",
         protected: "SELECT"
     },
+    UFN_REPORT_INTERACTION_GRAPHIC: {
+        query: "SELECT * FROM ufn_report_interaction_graphic($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate, $column, $summarization, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
     UFN_REPORT_PRODUCTIVITY_SEL: {
         query: "SELECT * FROM ufn_report_productivity_sel($corpid ,$orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
@@ -289,6 +304,11 @@ module.exports = {
         module: "/reports",
         protected: "SELECT"
     },
+    UFN_REPORT_PRODUCTIVITY_GRAPHIC: {
+        query: "SELECT * FROM ufn_report_productivity_graphic($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate, $column, $summarization, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
     UFN_REPORT_USERPRODUCTIVITYHOURS_SEL: {
         query: "SELECT * FROM ufn_report_userproductivityhours_sel($corpid ,$orgid, $startdate, $enddate, $channel, $hours, $asesorid, $take, $skip, $where, $order, $userid, $offset)",
         module: "/reports",
@@ -301,6 +321,11 @@ module.exports = {
     },
     UFN_REPORT_USERPRODUCTIVITYHOURS_EXPORT: {
         query: "SELECT * FROM ufn_report_userproductivityhours_export($corpid ,$orgid, $startdate, $enddate, $channel, $hours, $asesorid, $where, $order, $userid, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_USERPRODUCTIVITYHOURS_GRAPHIC: {
+        query: "SELECT * FROM ufn_report_userproductivityhours_graphic($corpid ,$orgid, $startdate, $enddate, $channel, $hours, $asesorid, $where, $order, $userid, $column, $summarization, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -331,6 +356,11 @@ module.exports = {
     },
     UFN_REPORT_USERPRODUCTIVITY_SEL: {
         query: "SELECT * FROM ufn_report_userproductivity_sel($corpid ,$orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $userid, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_USERPRODUCTIVITY_GRAPHIC: {
+        query: "SELECT * FROM ufn_report_userproductivity_graphic($corpid ,$orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $userid, $column, $summarization, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -1488,6 +1518,11 @@ module.exports = {
     },
     UFN_REPORT_SENTMESSAGES_REPORT: {
         query: "SELECT * FROM ufn_report_sentmessages_sel($corpid, $orgid, $date, $name, $from, $offset);",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_SENTMESSAGES_GRAPHIC: {
+        query: "SELECT * FROM ufn_report_sentmessages_graphic($corpid, $orgid, $startdate, $enddate, $column, $summarization, $offset);",
         module: "",
         protected: "SELECT"
     },
