@@ -1656,6 +1656,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_KPI_LST: {
+        query: "SELECT * FROM ufn_kpi_lst($corpid,$orgid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_KPI_INS: {
         query: "SELECT * FROM ufn_kpi_ins($corpid,$orgid,$id,$kpiname,$description,$status,$type,$sqlselect,$sqlwhere,$target,$cautionat,$alertat,$taskperiod,$taskinterval,$taskstartdate,$username,$operation,$offset)",
         module: "",
