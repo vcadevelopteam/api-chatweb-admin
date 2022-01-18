@@ -105,6 +105,38 @@ const getInvoiceTicketCorrelative = async (corpid, orgid, id) => {
     return null
 }
 
+const getInvoiceCorrelativeError = async (corpid, orgid, id) => {
+    const query = "UFN_INVOICE_CORRELATIVEERROR";
+    const bind = {
+        corpid: corpid,
+        orgid: orgid,
+        invoiceid: id
+    }
+    const result = await triggerfunctions.executesimpletransaction(query, bind);
+    if (result instanceof Array) {
+        if (result.length > 0) {
+            return result[0]
+        }
+    }
+    return null
+}
+
+const getInvoiceTicketCorrelativeError = async (corpid, orgid, id) => {
+    const query = "UFN_INVOICE_TICKETCORRELATIVEERROR";
+    const bind = {
+        corpid: corpid,
+        orgid: orgid,
+        invoiceid: id
+    }
+    const result = await triggerfunctions.executesimpletransaction(query, bind);
+    if (result instanceof Array) {
+        if (result.length > 0) {
+            return result[0]
+        }
+    }
+    return null
+}
+
 const getCorporation = async (corpid) => {
     const query = "UFN_CORP_SEL";
     const bind = {
@@ -134,7 +166,7 @@ const getAppSetting = async () => {
     return null
 }
 
-const invoiceSunat = async (corpid, orgid, invoiceid, status, error, qrcode, hashcode, urlcdr, urlpdf, urlxml) => {
+const invoiceSunat = async (corpid, orgid, invoiceid, status, error, qrcode, hashcode, urlcdr, urlpdf, urlxml, serie) => {
     const query = "UFN_INVOICE_SUNAT";
     const bind = {
         corpid: corpid,
@@ -146,7 +178,8 @@ const invoiceSunat = async (corpid, orgid, invoiceid, status, error, qrcode, has
         hashcode: hashcode,
         urlcdr: urlcdr,
         urlpdf: urlpdf,
-        urlxml: urlxml
+        urlxml: urlxml,
+        serie: serie
     }
     const result = await triggerfunctions.executesimpletransaction(query, bind);
     if (result instanceof Array) {
@@ -456,7 +489,7 @@ exports.chargeInvoice = async (req, res) => {
 
                                         var adicional01 = {
                                             CodigoDatoAdicional: '05',
-                                            DescripcionDatoAdicional: 'TRANSFERENCIA'
+                                            DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
                                         }
 
                                         invoicedata.DataList.push(adicional01);
@@ -464,7 +497,7 @@ exports.chargeInvoice = async (req, res) => {
                                         if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && corp.sunatcountry === 'PE') {
                                             var adicional02 = {
                                                 CodigoDatoAdicional: '06',
-                                                DescripcionDatoAdicional: appsetting.detractionaccount
+                                                DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
                                             }
     
                                             invoicedata.DataList.push(adicional02);
@@ -491,7 +524,7 @@ exports.chargeInvoice = async (req, res) => {
                                         if (tipocredito) {
                                             var adicional05 = {
                                                 CodigoDatoAdicional: '01',
-                                                DescripcionDatoAdicional: tipocredito === '0' ? 'AL CONTADO' : `TIPO DE CREDITO: ${tipocredito} DIAS`
+                                                DescripcionDatoAdicional: tipocredito === '0' ? 'AL CONTADO' : `CREDITO A ${tipocredito} DIAS`
                                             }
     
                                             invoicedata.DataList.push(adicional05);
@@ -506,14 +539,30 @@ exports.chargeInvoice = async (req, res) => {
                                         });
         
                                         if (requestSendToSunat.data.result) {
-                                            invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', '', requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml);
+                                            invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', '', requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento);
                                         }
                                         else {
-                                            invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, '', '', '', '', '');
+                                            invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, '', '', '', '', '', null);
+
+                                            if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
+                                                getInvoiceCorrelativeError(corpid, orgid, invoiceid);
+                                            }
+                    
+                                            if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
+                                                getInvoiceTicketCorrelativeError(corpid, orgid, invoiceid);
+                                            }
                                         }
                                     }
                                     catch (error) {
-                                        invoiceSunat(corpid, orgid, invoiceid, 'ERROR', error.message, '', '', '', '', '');
+                                        invoiceSunat(corpid, orgid, invoiceid, 'ERROR', error.message, '', '', '', '', '', null);
+
+                                        if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
+                                            getInvoiceCorrelativeError(corpid, orgid, invoiceid);
+                                        }
+                
+                                        if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
+                                            getInvoiceTicketCorrelativeError(corpid, orgid, invoiceid);
+                                        }
                                     }
 
                                     return res.json({
