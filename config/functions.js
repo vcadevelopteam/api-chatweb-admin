@@ -1482,12 +1482,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_SENTMESSAGES_LST: {
-        query: "SELECT * FROM ufn_report_sentmessages_lst($corpid, $orgid, $type, $startdate, $enddate, $offset);",
+        query: "SELECT * FROM ufn_report_sentmessages_lst($corpid, $orgid, $startdate, $enddate, $offset);",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_SENTMESSAGES_REPORT: {
-        query: "SELECT * FROM ufn_report_sentmessages_sel($corpid, $orgid, $type, $date, $name, $from, $offset);",
+        query: "SELECT * FROM ufn_report_sentmessages_sel($corpid, $orgid, $date, $name, $from, $offset);",
         module: "",
         protected: "SELECT"
     },
