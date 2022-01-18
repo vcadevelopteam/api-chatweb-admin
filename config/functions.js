@@ -1397,7 +1397,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_BILLINGPERIOD_UPD: {
-        query: "SELECT * FROM ufn_billingperiod_upd($corpid, $orgid, $year, $month, $billingplan, $supportplan, $basicfee, $userfreequantity, $useradditionalfee, $channelfreequantity, $channelwhatsappfee, $channelotherfee, $clientfreequantity, $clientadditionalfee, $supportbasicfee, $additionalservicename1, $additionalservicefee1, $additionalservicename2, $additionalservicefee2, $additionalservicename3, $additionalservicefee3, $force)",
+        query: "SELECT * FROM ufn_billingperiod_upd($corpid, $orgid, $year, $month, $billingplan, $supportplan, $basicfee, $userfreequantity, $useradditionalfee, $channelfreequantity, $channelwhatsappfee, $channelotherfee, $clientfreequantity, $clientadditionalfee, $supportbasicfee, $unitpricepersms, $vcacomissionpersms, $unitepricepermail, $vcacomissionpermail, $additionalservicename1, $additionalservicefee1, $additionalservicename2, $additionalservicefee2, $additionalservicename3, $additionalservicefee3, $force)",
         module: "",
         protected: "INSERT"
     },
@@ -1522,7 +1522,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVOICEDETAIL_AUTOINS: {
-        query: "SELECT * FROM ufn_invoicedetail_autoins($corpid,$orgid,$invoiceid,$amount,$national)",
+        query: "SELECT * FROM ufn_invoicedetail_autoins($corpid, $orgid, $invoiceid, $amount, $national, $year, $month)",
         module: "",
         protected: "INSERT"
     },
@@ -1622,7 +1622,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INVOICE_SUNAT: {
-        query: "SELECT * FROM ufn_invoice_sunat($corpid, $orgid, $invoiceid, $status, $error, $qrcode, $hashcode, $urlcdr, $urlpdf, $urlxml)",
+        query: "SELECT * FROM ufn_invoice_sunat($corpid, $orgid, $invoiceid, $status, $error, $qrcode, $hashcode, $urlcdr, $urlpdf, $urlxml, $serie)",
         module: "",
         protected: "INSERT"
     },
@@ -1731,6 +1731,16 @@ module.exports = {
     },
     UFN_ADVISERSBYUSERID_SEL: {
         query: "select * from ufn_advisersbyuserid_sel($corpid, $orgid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVOICE_CORRELATIVEERROR: {
+        query: "select * from ufn_invoice_correlativeerror($corpid, $orgid, $invoiceid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVOICE_TICKETCORRELATIVEERROR: {
+        query: "select * from ufn_invoice_ticketcorrelativeerror($corpid, $orgid, $invoiceid)",
         module: "",
         protected: "SELECT"
     },
