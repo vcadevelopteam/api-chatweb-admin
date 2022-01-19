@@ -17,7 +17,7 @@ exports.upload = async (req, res) => {
         }
         const params = {
             ACL: 'public-read',
-            Key: new Date().getTime() + req.file.originalname,
+            Key: "78064" + new Date().getTime() + req.file.originalname,
             Body: req.file.buffer,
             Bucket: COS_BUCKET_NAME,
             ContentType: req.file.mimetype,
