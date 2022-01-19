@@ -584,7 +584,7 @@ exports.chargeInvoice = async (req, res) => {
                                                 
                                                 if (invoice.totalamount > compareamount) {
                                                     invoicedata.MontoTotalDetraccion = invoice.totalamount * appsetting.detraction;
-                                                    invoicedata.PorcentajeTotalDetraccion = appsetting.detraction;
+                                                    invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
                                                     invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
                                                     invoicedata.CodigoDetraccion = appsetting.detractioncode;
     
@@ -615,7 +615,7 @@ exports.chargeInvoice = async (req, res) => {
                                                 UnidadMedida: data.measureunit,
                                                 IgvTotal: data.totaligv,
                                                 MontoTotal: data.totalamount,
-                                                TasaIgv: data.igvrate,
+                                                TasaIgv: data.igvrate * 100,
                                                 PrecioProducto: data.productprice,
                                                 DescripcionProducto: data.productdescription,
                                                 PrecioNetoProducto: data.productnetprice,
