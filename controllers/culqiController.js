@@ -575,14 +575,14 @@ exports.chargeInvoice = async (req, res) => {
                                                     if (invoice.currency === 'USD') {
                                                         var exchangerate = await getLastExchange();
     
-                                                        compareamount = appsetting.detractionminimum * exchangerate;
+                                                        compareamount = invoice.totalamount * exchangerate;
                                                     }
                                                     else {
-                                                        compareamount = appsetting.detractionminimum;
+                                                        compareamount = invoice.totalamount;
                                                     }
                                                 }
                                                 
-                                                if (invoice.totalamount > compareamount) {
+                                                if (compareamount > appsetting.detractionminimum) {
                                                     invoicedata.MontoTotalDetraccion = invoice.totalamount * appsetting.detraction;
                                                     invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
                                                     invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
