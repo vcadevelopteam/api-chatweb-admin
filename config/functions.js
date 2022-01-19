@@ -354,6 +354,11 @@ module.exports = {
         module: "/reports",
         protected: "SELECT"
     },
+    UFN_LOGINHISTORY_GRAPHIC: {
+        query: "SELECT * FROM ufn_loginhistory_graphic($corpid ,$orgid, $where, $order, $startdate, $enddate, $column, $summarization, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
     UFN_REPORT_USERPRODUCTIVITY_SEL: {
         query: "SELECT * FROM ufn_report_userproductivity_sel($corpid ,$orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $userid, $offset)",
         module: "/reports",
