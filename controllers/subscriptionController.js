@@ -822,6 +822,15 @@ exports.createSubscription = async (request, result) => {
         }
 
         if ((typeof parameters.facebookid !== 'undefined' && parameters.facebookid) || (typeof parameters.googleid !== 'undefined' && parameters.googleid)) {
+            var userMethod = 'UFN_UPDATE_ACTIVE_USER_SEL';
+            var userParameters = {
+                usr: parameters.username,
+                firstname: parameters.firstname,
+                corpid: transactionCreateSubscription[0].corpid,
+            };
+
+            await triggerfunctions.executesimpletransaction(userMethod, userParameters);
+
             return result.json({
                 success: true
             });

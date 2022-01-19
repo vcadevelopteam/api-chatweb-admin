@@ -27,6 +27,11 @@ router.post("/paginated",
     mainController.getCollectionPagination
 )
 
+router.post("/graphic",
+    auth,
+    mainController.getGraphic
+)
+
 router.post("/export",
     auth,
     mainController.export

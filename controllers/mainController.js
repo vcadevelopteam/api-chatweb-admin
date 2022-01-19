@@ -94,6 +94,20 @@ exports.getCollectionPagination = async (req, res) => {
         return res.status(result.rescode).json(result);
     }
 }
+
+exports.getGraphic = async (req, res) => {
+    const { parameters, method } = req.body;
+
+    setSessionParameters(parameters, req.user);
+
+    const result = !parameters.isNotPaginated ? await buildQueryWithFilterAndSort(method, parameters) : await executesimpletransaction(method, parameters);
+    if (!result.error) {
+        res.json(result);
+    } else {
+        return res.status(result.rescode).json(result);
+    }
+}
+
 exports.export = async (req, res) => {
     const { parameters, method } = req.body;
 

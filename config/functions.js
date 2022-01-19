@@ -244,6 +244,11 @@ module.exports = {
         module: "/reports",
         protected: "SELECT"
     },
+    UFN_REPORT_INPUTRETRY_GRAPHIC: {
+        query: "SELECT * FROM ufn_report_inputretry_graphic($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate, $column, $summarization, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
     UFN_REPORT_TIPIFICATION_SEL: {
         query: "SELECT * FROM ufn_report_tipification_sel($corpid ,$orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
@@ -256,6 +261,11 @@ module.exports = {
     },
     UFN_REPORT_TIPIFICATION_EXPORT: {
         query: "SELECT * FROM ufn_report_tipification_export($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_TIPIFICATION_GRAPHIC: {
+        query: "SELECT * FROM ufn_report_tipification_graphic($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate, $column, $summarization, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -274,6 +284,11 @@ module.exports = {
         module: "/reports",
         protected: "SELECT"
     },
+    UFN_REPORT_INTERACTION_GRAPHIC: {
+        query: "SELECT * FROM ufn_report_interaction_graphic($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate, $column, $summarization, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
     UFN_REPORT_PRODUCTIVITY_SEL: {
         query: "SELECT * FROM ufn_report_productivity_sel($corpid ,$orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
@@ -289,6 +304,11 @@ module.exports = {
         module: "/reports",
         protected: "SELECT"
     },
+    UFN_REPORT_PRODUCTIVITY_GRAPHIC: {
+        query: "SELECT * FROM ufn_report_productivity_graphic($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate, $column, $summarization, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
     UFN_REPORT_USERPRODUCTIVITYHOURS_SEL: {
         query: "SELECT * FROM ufn_report_userproductivityhours_sel($corpid ,$orgid, $startdate, $enddate, $channel, $hours, $asesorid, $take, $skip, $where, $order, $userid, $offset)",
         module: "/reports",
@@ -301,6 +321,11 @@ module.exports = {
     },
     UFN_REPORT_USERPRODUCTIVITYHOURS_EXPORT: {
         query: "SELECT * FROM ufn_report_userproductivityhours_export($corpid ,$orgid, $startdate, $enddate, $channel, $hours, $asesorid, $where, $order, $userid, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_USERPRODUCTIVITYHOURS_GRAPHIC: {
+        query: "SELECT * FROM ufn_report_userproductivityhours_graphic($corpid ,$orgid, $startdate, $enddate, $channel, $hours, $asesorid, $where, $order, $userid, $column, $summarization, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -329,8 +354,18 @@ module.exports = {
         module: "/reports",
         protected: "SELECT"
     },
+    UFN_LOGINHISTORY_GRAPHIC: {
+        query: "SELECT * FROM ufn_loginhistory_graphic($corpid ,$orgid, $where, $order, $startdate, $enddate, $column, $summarization, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
     UFN_REPORT_USERPRODUCTIVITY_SEL: {
         query: "SELECT * FROM ufn_report_userproductivity_sel($corpid ,$orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $userid, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_USERPRODUCTIVITY_GRAPHIC: {
+        query: "SELECT * FROM ufn_report_userproductivity_graphic($corpid ,$orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $userid, $column, $summarization, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -1491,6 +1526,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_REPORT_SENTMESSAGES_GRAPHIC: {
+        query: "SELECT * FROM ufn_report_sentmessages_graphic($corpid, $orgid, $startdate, $enddate, $column, $summarization, $offset);",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_INPUTVALIDATION_SEL: {
         query: "SELECT * FROM ufn_inputvalidation_sel($corpid, $id, $username);",
         module: "",
@@ -1652,7 +1692,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_APPSETTING_INVOICE_UPDATE: {
-        query: "select * from public.ufn_appsetting_invoice_update($ruc, $businessname, $tradename, $fiscaladdress, $ubigeo, $country, $emittertype, $currency, $invoiceserie, $invoicecorrelative, $annexcode, $igv, $printingformat, $xmlversion, $ublversion, $returnpdf, $returnxmlsunat, $returnxml, $invoiceprovider, $sunaturl, $token, $sunatusername, $paymentprovider, $publickey, $privatekey, $ticketserie, $ticketcorrelative, $invoicecreditserie, $invoicecreditcorrelative, $ticketcreditserie, $ticketcreditcorrelative, $detraction, $detractioncode, $detractionaccount, $operationcodeperu, $operationcodeother, $culqiurl)",
+        query: "select * from public.ufn_appsetting_invoice_update($ruc, $businessname, $tradename, $fiscaladdress, $ubigeo, $country, $emittertype, $currency, $invoiceserie, $invoicecorrelative, $annexcode, $igv, $printingformat, $xmlversion, $ublversion, $returnpdf, $returnxmlsunat, $returnxml, $invoiceprovider, $sunaturl, $token, $sunatusername, $paymentprovider, $publickey, $privatekey, $ticketserie, $ticketcorrelative, $invoicecreditserie, $invoicecreditcorrelative, $ticketcreditserie, $ticketcreditcorrelative, $detraction, $detractioncode, $detractionaccount, $operationcodeperu, $operationcodeother, $culqiurl, $detractionminimum)",
         module: "",
         protected: "UPDATE"
     },
