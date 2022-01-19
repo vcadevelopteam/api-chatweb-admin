@@ -181,7 +181,7 @@ const getLastExchange = async () => {
 
     var currenDate = new Date();
 
-    while (exchangeRate === 0 || maximumretry <= 10) {
+    while (exchangeRate === 0 && maximumretry <= 10) {
         const requestExchange = await axios({
             method: 'get',
             url: `${exchangeEndpoint}${currenDate.toISOString().split('T')[0]}`
@@ -196,6 +196,8 @@ const getLastExchange = async () => {
 
         maximumretry++;
     }
+
+    return exchangeRate;
 }
 
 const invoiceSunat = async (corpid, orgid, invoiceid, status, error, qrcode, hashcode, urlcdr, urlpdf, urlxml, serie) => {
@@ -492,10 +494,10 @@ exports.chargeInvoice = async (req, res) => {
                                                 if (invoice.currency === 'USD') {
                                                     var exchangerate = await getLastExchange();
 
-                                                    compareamount = detractionminimum * exchangerate;
+                                                    compareamount = appsetting.detractionminimum * exchangerate;
                                                 }
                                                 else {
-                                                    compareamount = detractionminimum;
+                                                    compareamount = appsetting.detractionminimum;
                                                 }
                                             }
                                             
