@@ -5,6 +5,9 @@ const { QueryTypes } = require('sequelize');
 const { getErrorSeq } = require('../config/helpers');
 const Culqi = require('culqi-node');
 const { stringify } = require('uuid');
+
+const exchangeEndpoint = process.env.EXCHANGE;
+
 const culqi = new Culqi({
     privateKey: 'sk_test_d901e8f07d45a485',
     // publicKey: 'pk_test_041501e753dcb2f9'
@@ -24,6 +27,12 @@ exports.getToken = async (req, res) => {
         console.log(error);
         return res.status(500).json({ msg: "There was a problem, please try again later" });
     }
+}
+
+Date.prototype.addDays = function(days) {
+    var date = new Date(this.valueOf());
+    date.setDate(date.getDate() + days);
+    return date;
 }
 
 const zeroPad = (num, places) => String(num).padStart(places, '0')
@@ -164,6 +173,29 @@ const getAppSetting = async () => {
         }
     }
     return null
+}
+
+const getLastExchange = async () => {
+    var exchangeRate = 0;
+    var maximumretry = 0;
+
+    var currenDate = new Date();
+
+    while (exchangeRate === 0 || maximumretry <= 10) {
+        const requestExchange = await axios({
+            method: 'get',
+            url: `${exchangeEndpoint}${currenDate.toISOString().split('T')[0]}`
+        });
+
+        if (requestExchange.data.venta) {
+            exchangeRate = requestExchange.data.venta;
+        }
+        else {
+            currenDate.addDays(-1);
+        }
+
+        maximumretry++;
+    }
 }
 
 const invoiceSunat = async (corpid, orgid, invoiceid, status, error, qrcode, hashcode, urlcdr, urlpdf, urlxml, serie) => {
@@ -313,11 +345,12 @@ const createCharge = async (userprofile, settings, token, metadata) => {
 
 exports.chargeInvoice = async (req, res) => {
     const { corpid, orgid, userid, usr } = req.user;
-    const { invoiceid, settings, token, metadata = {}, purchaseorder, comments, tipocredito } = req.body;
+    const { invoiceid, settings, token, metadata = {}, purchaseorder, comments } = req.body;
 
     try {
         const corp = await getCorporation(corpid);
-
+        const tipocredito = '0';
+        
         if (corp) {
             if (corp.docnum && corp.doctype && corp.businessname && corp.fiscaladdress && corp.sunatcountry) {
                 const invoice = await getInvoice(corpid, orgid, userid, invoiceid);
@@ -325,92 +358,93 @@ exports.chargeInvoice = async (req, res) => {
 
                 if (invoice && invoicedetail) {
                     if (invoice.invoicestatus === 'DRAFT' && invoice.paymentstatus === 'PENDING' && invoice.currency === settings.currency && invoice.totalamount * 100 === settings.amount) {
-                        var invoicecorrelative = null;
-                        var documenttype = null;
+                        const appsetting = await getAppSetting();
+                        const userprofile = await getUserProfile(userid);
+                        
+                        if (userprofile && appsetting) {
+                            metadata.corpid = corpid;
+                            metadata.corporation = corp.description;
+                            metadata.orgid = orgid;
+                            metadata.organization = invoice.orgdesc || '';
+                            metadata.document = corp.docnum;
+                            metadata.businessname = corp.businessname;
+                            metadata.invoiceid = invoiceid;
+                            metadata.seriecode = '';
+                            metadata.emissiondate = invoice.invoicedate;
+                            metadata.user = usr;
+                            metadata.reference = invoice.description;
 
-                        if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
-                            invoicecorrelative = await getInvoiceCorrelative(corpid, orgid, invoiceid);
-                            documenttype = '01';
-                        }
+                            const charge = await createCharge(userprofile, settings, token, metadata);
 
-                        if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                            invoicecorrelative = await getInvoiceTicketCorrelative(corpid, orgid, invoiceid);
-                            documenttype = '03'
-                        }
-
-                        if (invoicecorrelative) {
-                            const appsetting = await getAppSetting();
-                            const userprofile = await getUserProfile(userid);
-
-                            if (userprofile && invoicecorrelative) {
-                                metadata.businessname = corp.businessname;
-                                metadata.corpid = corpid;
-                                metadata.corporation = corp.description;
-                                metadata.documentnumber = corp.docnum;
-                                metadata.invoiceid = invoiceid;
-                                metadata.invoicecode = `${(documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie)}-${zeroPad(invoicecorrelative.p_correlative, 8)}`;
-                                metadata.orgid = orgid;
-                                metadata.organization = invoice.orgdesc || '';
-                                metadata.userid = userid;
-                                metadata.usr = usr;
-    
-                                const charge = await createCharge(userprofile, settings, token, metadata);
-    
-                                if (charge.object === 'error') {
-                                    return res.status(400).json({
-                                        data: {
-                                            code: charge.code,
-                                            id: charge.charge_id,
-                                            message: charge.user_message,
-                                            object: charge.object
-                                        },
-                                        error: true,
-                                        success: false
-                                    });
+                            if (charge.object === 'error') {
+                                return res.status(400).json({
+                                    data: {
+                                        code: charge.code,
+                                        id: charge.charge_id,
+                                        message: charge.user_message,
+                                        object: charge.object
+                                    },
+                                    error: true,
+                                    success: false
+                                });
+                            }
+                            else {
+                                const chargequery = "UFN_CHARGE_INS";
+                                const chargebind = {
+                                    amount: settings.amount / 100,
+                                    capture: true,
+                                    chargejson: charge,
+                                    chargetoken: charge.id,
+                                    corpid: corpid,
+                                    currency: settings.currency,
+                                    description: settings.description,
+                                    email: token.email,
+                                    id: null,
+                                    invoiceid: invoiceid,
+                                    orderid: null,
+                                    orderjson: null,
+                                    orgid: orgid,
+                                    operation: 'INSERT',
+                                    paidby: usr,
+                                    status: 'PAID',
+                                    tokenid: token.id,
+                                    tokenjson: token,
+                                    type: charge.object
                                 }
-                                else {
-                                    const chargequery = "UFN_CHARGE_INS";
-                                    const chargebind = {
-                                        amount: settings.amount / 100,
-                                        capture: true,
-                                        chargejson: charge,
-                                        chargetoken: charge.id,
-                                        corpid: corpid,
-                                        currency: settings.currency,
-                                        description: settings.description,
-                                        email: token.email,
-                                        id: null,
-                                        invoiceid: invoiceid,
-                                        orderid: null,
-                                        orderjson: null,
-                                        orgid: orgid,
-                                        operation: 'INSERT',
-                                        paidby: usr,
-                                        status: 'PAID',
-                                        tokenid: token.id,
-                                        tokenjson: token,
-                                        type: charge.object
-                                    }
 
-                                    const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
+                                const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
 
-                                    const invoicequery = "UFN_INVOICE_PAYMENT";
-                                    const invoicebind = {
-                                        capture: true,
-                                        chargeid: chargeresult[0].chargeid,
-                                        chargejson: charge,
-                                        chargetoken: charge.id,
-                                        corpid: corpid,
-                                        email: token.email,
-                                        invoiceid: invoiceid,
-                                        orgid: orgid,
-                                        paidby: usr,
-                                        tokenid: token.id,
-                                        tokenjson: token
-                                    }
+                                const invoicequery = "UFN_INVOICE_PAYMENT";
+                                const invoicebind = {
+                                    capture: true,
+                                    chargeid: chargeresult[0].chargeid,
+                                    chargejson: charge,
+                                    chargetoken: charge.id,
+                                    corpid: corpid,
+                                    email: token.email,
+                                    invoiceid: invoiceid,
+                                    orgid: orgid,
+                                    paidby: usr,
+                                    tokenid: token.id,
+                                    tokenjson: token
+                                }
+    
+                                const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
+
+                                var invoicecorrelative = null;
+                                var documenttype = null;
         
-                                    const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
-
+                                if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
+                                    invoicecorrelative = await getInvoiceCorrelative(corpid, orgid, invoiceid);
+                                    documenttype = '01';
+                                }
+        
+                                if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
+                                    invoicecorrelative = await getInvoiceTicketCorrelative(corpid, orgid, invoiceid);
+                                    documenttype = '03'
+                                }
+        
+                                if (invoicecorrelative) {
                                     try {
                                         var invoicedata = {
                                             CodigoAnexoEmisor: appsetting.annexcode,
@@ -450,14 +484,36 @@ exports.chargeInvoice = async (req, res) => {
                                             ProductList: [],
                                             DataList: []
                                         }
+    
+                                        if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0) && corp.sunatcountry === 'PE') {
+                                            var compareamount = 0;
 
-                                        if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && corp.sunatcountry === 'PE') {
-                                            invoicedata.MontoTotalDetraccion = invoice.totalamount * appsetting.detraction;
-                                            invoicedata.PorcentajeTotalDetraccion = appsetting.detraction;
-                                            invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
-                                            invoicedata.CodigoDetraccion = appsetting.detractioncode;
+                                            if (appsetting.detractionminimum) {
+                                                if (invoice.currency === 'USD') {
+                                                    var exchangerate = await getLastExchange();
+
+                                                    compareamount = detractionminimum * exchangerate;
+                                                }
+                                                else {
+                                                    compareamount = detractionminimum;
+                                                }
+                                            }
+                                            
+                                            if (invoice.totalamount > compareamount) {
+                                                invoicedata.MontoTotalDetraccion = invoice.totalamount * appsetting.detraction;
+                                                invoicedata.PorcentajeTotalDetraccion = appsetting.detraction;
+                                                invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
+                                                invoicedata.CodigoDetraccion = appsetting.detractioncode;
+
+                                                var adicional02 = {
+                                                    CodigoDatoAdicional: '06',
+                                                    DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
+                                                }
+        
+                                                invoicedata.DataList.push(adicional02);
+                                            }
                                         }
-
+    
                                         if (tipocredito) {
                                             if (tipocredito === '0') {
                                                 invoicedata.FechaVencimiento = invoicedata.FechaEmision;
@@ -466,7 +522,7 @@ exports.chargeInvoice = async (req, res) => {
                                                 invoicedata.FechaVencimiento = new Date(new Date().setDate(new Date(invoice.invoicedate).getDate()+(Number.parseFloat(tipocredito)))).toISOString().substring(0, 10);
                                             }
                                         }
-
+    
                                         invoicedetail.forEach(async data => {
                                             var invoicedetaildata = {
                                                 CantidadProducto: data.quantity,
@@ -486,23 +542,14 @@ exports.chargeInvoice = async (req, res) => {
         
                                             invoicedata.ProductList.push(invoicedetaildata);
                                         });
-
+    
                                         var adicional01 = {
                                             CodigoDatoAdicional: '05',
                                             DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
                                         }
-
-                                        invoicedata.DataList.push(adicional01);
-
-                                        if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && corp.sunatcountry === 'PE') {
-                                            var adicional02 = {
-                                                CodigoDatoAdicional: '06',
-                                                DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
-                                            }
     
-                                            invoicedata.DataList.push(adicional02);
-                                        }
-
+                                        invoicedata.DataList.push(adicional01);
+                                        
                                         if (purchaseorder) {
                                             var adicional03 = {
                                                 CodigoDatoAdicional: '15',
@@ -511,7 +558,7 @@ exports.chargeInvoice = async (req, res) => {
     
                                             invoicedata.DataList.push(adicional03);
                                         }
-
+    
                                         if (comments) {
                                             var adicional04 = {
                                                 CodigoDatoAdicional: '07',
@@ -520,7 +567,7 @@ exports.chargeInvoice = async (req, res) => {
     
                                             invoicedata.DataList.push(adicional04);
                                         }
-
+    
                                         if (tipocredito) {
                                             var adicional05 = {
                                                 CodigoDatoAdicional: '01',
@@ -530,8 +577,6 @@ exports.chargeInvoice = async (req, res) => {
                                             invoicedata.DataList.push(adicional05);
                                         }
 
-                                        console.log(JSON.stringify(invoicedata));
-
                                         const requestSendToSunat = await axios({
                                             data: invoicedata,
                                             method: 'post',
@@ -539,50 +584,50 @@ exports.chargeInvoice = async (req, res) => {
                                         });
         
                                         if (requestSendToSunat.data.result) {
-                                            invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', '', requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento);
+                                            await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', '', requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento);
                                         }
                                         else {
-                                            invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, '', '', '', '', '', null);
-
+                                            await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, '', '', '', '', '', null);
+    
                                             if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
-                                                getInvoiceCorrelativeError(corpid, orgid, invoiceid);
+                                                await getInvoiceCorrelativeError(corpid, orgid, invoiceid);
                                             }
                     
                                             if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                getInvoiceTicketCorrelativeError(corpid, orgid, invoiceid);
+                                                await getInvoiceTicketCorrelativeError(corpid, orgid, invoiceid);
                                             }
                                         }
                                     }
                                     catch (error) {
-                                        invoiceSunat(corpid, orgid, invoiceid, 'ERROR', error.message, '', '', '', '', '', null);
-
+                                        await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', error.message, '', '', '', '', '', null);
+    
                                         if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
-                                            getInvoiceCorrelativeError(corpid, orgid, invoiceid);
+                                            await getInvoiceCorrelativeError(corpid, orgid, invoiceid);
                                         }
                 
                                         if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                            getInvoiceTicketCorrelativeError(corpid, orgid, invoiceid);
+                                            await getInvoiceTicketCorrelativeError(corpid, orgid, invoiceid);
                                         }
                                     }
-
-                                    return res.json({
-                                        code: charge.outcome.code,
-                                        data: {
-                                            id: charge.id,
-                                            object: charge.object
-                                        },
-                                        error: false,
-                                        message: charge.outcome.user_message,
-                                        success: true
-                                    });
                                 }
-                            }
-                            else {
-                                return res.status(403).json({ error: true, success: false, code: '', message: 'Invalid user' });
+                                else {
+                                    await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', 'Correlative not found', '', '', '', '', '', null);
+                                }
+
+                                return res.json({
+                                    code: charge.outcome.code,
+                                    data: {
+                                        id: charge.id,
+                                        object: charge.object
+                                    },
+                                    error: false,
+                                    message: charge.outcome.user_message,
+                                    success: true
+                                });
                             }
                         }
                         else {
-                            return res.status(403).json({ error: true, success: false, code: '', message: 'Correlative number not found' });
+                            return res.status(403).json({ error: true, success: false, code: '', message: 'Invalid user' });
                         }
                     }
                     else {
