@@ -93,7 +93,7 @@ exports.dashboardDesigner = async (req, res) => {
                         [item[column.replace(".", "")] || ""]: (acc[item[column.replace(".", "")] || ""] || 0) + 1
                     }), {});
 
-                    if (grouping !== "percentage") {
+                    if (grouping === "percentage") {
                         Object.keys(res).forEach(key => {
                             res[key] = Number(((res[key]/resIndicator.length) * 100).toFixed(2));
                         })
