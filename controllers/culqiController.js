@@ -575,16 +575,16 @@ exports.chargeInvoice = async (req, res) => {
                                                     if (invoice.currency === 'USD') {
                                                         var exchangerate = await getLastExchange();
     
-                                                        compareamount = appsetting.detractionminimum * exchangerate;
+                                                        compareamount = invoice.totalamount * exchangerate;
                                                     }
                                                     else {
-                                                        compareamount = appsetting.detractionminimum;
+                                                        compareamount = invoice.totalamount;
                                                     }
                                                 }
                                                 
-                                                if (invoice.totalamount > compareamount) {
+                                                if (compareamount > appsetting.detractionminimum) {
                                                     invoicedata.MontoTotalDetraccion = invoice.totalamount * appsetting.detraction;
-                                                    invoicedata.PorcentajeTotalDetraccion = appsetting.detraction;
+                                                    invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
                                                     invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
                                                     invoicedata.CodigoDetraccion = appsetting.detractioncode;
     
@@ -615,7 +615,7 @@ exports.chargeInvoice = async (req, res) => {
                                                 UnidadMedida: data.measureunit,
                                                 IgvTotal: data.totaligv,
                                                 MontoTotal: data.totalamount,
-                                                TasaIgv: data.igvrate,
+                                                TasaIgv: data.igvrate * 100,
                                                 PrecioProducto: data.productprice,
                                                 DescripcionProducto: data.productdescription,
                                                 PrecioNetoProducto: data.productnetprice,
