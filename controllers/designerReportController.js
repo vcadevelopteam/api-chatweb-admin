@@ -53,8 +53,6 @@ exports.dashboardDesigner = async (req, res) => {
 
             const resultReports = await Promise.all(queryIndicator);
 
-            console.log("resultReports", resultReports)
-
             const triggerIndicators = resultReports.map((resIndicator, index) => {
                 if (resIndicator instanceof Array && resIndicator[0]) {
                     const indicator = indicatorList[index];
@@ -83,7 +81,7 @@ exports.dashboardDesigner = async (req, res) => {
             });
 
             const result = await Promise.all(triggerIndicators);
-            
+
             const cleanDatat = result.map((resIndicator, index) => {
                 const indicator = indicatorList[index];
 
@@ -99,12 +97,10 @@ exports.dashboardDesigner = async (req, res) => {
             });
 
             const gg = cleanDatat.reduce((acc, data, index) => {
-                const  { contentType } = indicatorList[index];
+                const { contentType } = indicatorList[index];
 
-                const reportname = resultReports[index][0].description;
-                const columnjson = resultReports[index][0].columnjson;
-                console.log(columnjson)
-                // console.log(JSON.parse(columnjson))
+                const { description: reportname, columnjson, dataorigin } = resultReports[index][0];
+
                 const sortedData = contentType === "report" ? Object.fromEntries(Object.entries(data).sort(([, a], [, b]) => b - a)) : data;
                 return {
                     ...acc,
@@ -112,7 +108,8 @@ exports.dashboardDesigner = async (req, res) => {
                         contentType,
                         data: sortedData,
                         reportname,
-                        columns: contentType === "report" ? JSON.parse(columnjson).map(x => ({ columnname: x.columnname.replace(".", ""), alias: x.alias })) : undefined
+                        dataorigin,
+                        columns: contentType === "report" ? JSON.parse(columnjson).map(x => ({ ...x, disabled: undefined, descriptionT: undefined, columnname: x.columnname.replace(".", "") })) : undefined
                     }
                 }
             }, {});
