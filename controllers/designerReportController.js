@@ -83,16 +83,23 @@ exports.dashboardDesigner = async (req, res) => {
             const result = await Promise.all(triggerIndicators);
 
             const cleanDatat = result.map((resIndicator, index) => {
-                const indicator = indicatorList[index];
+                const { column, contentType, grouping} = indicatorList[index];
 
-                if (indicator.contentType === "kpi") {
+                if (contentType === "kpi") {
                     return resIndicator;
                 } else {
                     const { column } = indicator;
-                    return resIndicator.reduce((acc, item) => ({
+                    const res = resIndicator.reduce((acc, item) => ({
                         ...acc,
                         [item[column.replace(".", "")] || ""]: (acc[item[column.replace(".", "")] || ""] || 0) + 1
                     }), {});
+
+                    if (grouping !== "percentage") {
+                        return Object.keys(res).map(key => ({
+                            [key]: (res[key]/resIndicator.length) * 100
+                        }));
+                    }
+                    return res;
                 }
             });
 
