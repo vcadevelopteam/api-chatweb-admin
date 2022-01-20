@@ -109,7 +109,7 @@ exports.dashboardDesigner = async (req, res) => {
                         data: sortedData,
                         reportname,
                         dataorigin,
-                        columns: contentType === "report" ? JSON.parse(columnjson).map(x => ({ ...x, disabled: undefined, descriptionT: undefined, columnname: x.columnname.replace(".", "") })) : undefined
+                        columns: contentType === "report" ? JSON.parse(columnjson).map(x => ({ ...x, disabled: undefined, descriptionT: undefined })) : undefined
                     }
                 }
             }, {});
