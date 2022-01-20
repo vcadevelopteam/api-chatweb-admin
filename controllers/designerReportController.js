@@ -88,7 +88,6 @@ exports.dashboardDesigner = async (req, res) => {
                 if (contentType === "kpi") {
                     return resIndicator;
                 } else {
-                    const { column } = indicator;
                     const res = resIndicator.reduce((acc, item) => ({
                         ...acc,
                         [item[column.replace(".", "")] || ""]: (acc[item[column.replace(".", "")] || ""] || 0) + 1
