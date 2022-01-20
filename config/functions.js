@@ -1547,7 +1547,7 @@ module.exports = {
         protected: "INSERT"
     },
     QUERY_GET_REPORTTEMPLATE: {
-        query: "select columnjson, description, dataorigin from reporttemplate where corpid = $corpid and orgid = $orgid and reporttemplateid = $reporttemplateid",
+        query: "select columnjson, description, dataorigin from reporttemplate where corpid = $corpid and orgid = $orgid and reporttemplateid = $reporttemplateid and status = 'ACTIVO'",
         module: "",
         protected: "INSERT"
     },
