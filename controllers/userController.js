@@ -11,7 +11,14 @@ exports.updateInformation = async (req, res) => {
     console.log("updateInformation", parameters)
 
     setSessionParameters(parameters, req.user);
-
+    /*
+    oldpassword
+    password
+    firstname
+    lastname
+    image
+    operation="UPDATEINFORMATION"
+    */
     try {
         if (parameters.password) {
             const resUser = await executesimpletransaction("QUERY_GET_PWD_BY_USERID", parameters)
@@ -25,6 +32,11 @@ exports.updateInformation = async (req, res) => {
             const salt = await bcryptjs.genSalt(10);
 
             parameters.password = await bcryptjs.hash(parameters.password, salt);
+            parameters.firstname = "";
+            parameters.lastname = "";
+            parameters.image = "";
+        } else {
+            parameters.password = "";
         }
 
         const result = await executesimpletransaction("UFN_USER_UPDATE", parameters)
@@ -32,9 +44,9 @@ exports.updateInformation = async (req, res) => {
         if (result instanceof Array) {
             const newusertoken = {
                 ...req.user,
-                firstname: parameters.firstname,
-                lastname: parameters.lastname,
-                image: parameters.image,
+                firstname: parameters.firstname || req.user.firstname,
+                lastname: parameters.lastname || req.user.lastname,
+                image: parameters.image || req.user.image,
             };
             jwt.sign({ user: newusertoken }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
                 if (error) throw error;
