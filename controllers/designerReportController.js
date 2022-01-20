@@ -94,9 +94,9 @@ exports.dashboardDesigner = async (req, res) => {
                     }), {});
 
                     if (grouping !== "percentage") {
-                        return Object.keys(res).map(key => ({
-                            [key]: (res[key]/resIndicator.length) * 100
-                        }));
+                        return Object.keys(res).forEach(key => {
+                            res[key] = (res[key]/resIndicator.length) * 100
+                        })
                     }
                     return res;
                 }
