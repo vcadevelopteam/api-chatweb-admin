@@ -374,13 +374,27 @@ exports.chargeInvoice = async (req, res) => {
         const org = await getOrganization(corpid, orgid);
         const tipocredito = '0';
 
+        var correctcorrelative = false;
         var proceedpayment = false;
 
         if (corp) {
             if (corp.billbyorg) {
                 if (org) {
                     if (org.docnum && org.doctype && org.businessname && org.fiscaladdress && org.sunatcountry) {
-                        proceedpayment = true;
+                        if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
+                            correctcorrelative = true;
+                        }
+
+                        if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
+                            correctcorrelative = true;
+                        }
+
+                        if (correctcorrelative) {
+                            proceedpayment = true;
+                        }
+                        else {
+                            return res.status(403).json({ error: true, success: false, code: '', message: 'Could not match correlative. Check organization configuration' });
+                        }
                     }
                     else {
                         return res.status(403).json({ error: true, success: false, code: '', message: 'Organization missing parameters' });
@@ -392,7 +406,20 @@ exports.chargeInvoice = async (req, res) => {
             }
             else {
                 if (corp.docnum && corp.doctype && corp.businessname && corp.fiscaladdress && corp.sunatcountry) {
-                    proceedpayment = true;
+                    if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
+                        correctcorrelative = true;
+                    }
+                
+                    if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
+                        correctcorrelative = true;
+                    }
+
+                    if (correctcorrelative) {
+                        proceedpayment = true;
+                    }
+                    else {
+                        return res.status(403).json({ error: true, success: false, code: '', message: 'Could not match correlative. Check corporation configuration' });
+                    }
                 }
                 else {
                     return res.status(403).json({ error: true, success: false, code: '', message: 'Corporation missing parameters' });
