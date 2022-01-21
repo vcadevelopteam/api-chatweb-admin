@@ -1799,4 +1799,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CORP_PAYMENTPLAN_UPD: {
+        query: "SELECT * from ufn_corp_paymentplan_upd($corpid, $paymentplanid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
 }

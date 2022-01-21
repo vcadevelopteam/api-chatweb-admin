@@ -17,20 +17,20 @@ exports.upload = async (req, res) => {
         }
         const params = {
             ACL: 'public-read',
-            Key: "78064" + new Date().getTime() + req.file.originalname,
+            Key: `${req.user?.orgdesc || "anonymous"}/${req.file.originalname}`,
             Body: req.file.buffer,
             Bucket: COS_BUCKET_NAME,
             ContentType: req.file.mimetype,
         }
-    
+
         s3.upload(params, (err, data) => {
             if (err) {
                 return res.json({ success: false, msg: 'Hubo un error#1 en la carga de archivo.', err })
             }
-            
+
             return res.json({ success: true, url: data.Location })
-        })   
-    } 
+        })
+    }
     catch (error) {
         return res.json({ success: false, msg: 'Hubo un error#2 en la carga de archivo.', err })
     }
