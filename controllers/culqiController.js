@@ -29,12 +29,6 @@ exports.getToken = async (req, res) => {
     }
 }
 
-Date.prototype.addDays = function(days) {
-    var date = new Date(this.valueOf());
-    date.setDate(date.getDate() + days);
-    return date;
-}
-
 const zeroPad = (num, places) => String(num).padStart(places, '0')
 
 const getUserProfile = async (userid) => {
@@ -199,28 +193,33 @@ const getLastExchange = async () => {
     var exchangeRate = 0;
     var maximumretry = 0;
 
-    var currenDate = new Date();
+    var currentDate = new Date();
 
     while (exchangeRate === 0 && maximumretry <= 10) {
-        const requestExchange = await axios({
-            method: 'get',
-            url: `${exchangeEndpoint}${currenDate.toISOString().split('T')[0]}`
-        });
-
-        if (requestExchange.data.venta) {
-            exchangeRate = requestExchange.data.venta;
+        try {
+            const requestExchange = await axios({
+                method: 'get',
+                url: `${exchangeEndpoint}${currentDate.toISOString().split('T')[0]}`
+            });
+    
+            if (requestExchange.data.venta) {
+                exchangeRate = requestExchange.data.venta;
+            }
+            else {
+                currentDate = new Date(currentDate.setDate(currentDate.getDate()-1));
+            }
         }
-        else {
-            currenDate.addDays(-1);
+        catch {
+            currentDate = new Date(currentDate.setDate(currentDate.getDate()-1));
         }
-
+        
         maximumretry++;
     }
 
     return exchangeRate;
 }
 
-const invoiceSunat = async (corpid, orgid, invoiceid, status, error, qrcode, hashcode, urlcdr, urlpdf, urlxml, serie) => {
+const invoiceSunat = async (corpid, orgid, invoiceid, status, error, qrcode, hashcode, urlcdr, urlpdf, urlxml, serie, issuerruc, issuerbusinessname, issuertradename, issuerfiscaladdress, issuerubigeo, emittertype, annexcode, printingformat, sendtosunat, returnpdf, returnxmlsunat, returnxml, token, sunaturl, sunatusername, xmlversion, ublversion, receiverdoctype, receiverdocnum, receiverbusinessname, receiverfiscaladdress, receivercountry, receivermail, invoicetype, sunatopecode, expirationdate, purchaseorder, comments, credittype, detractioncode, detraction, detractionaccount) => {
     const query = "UFN_INVOICE_SUNAT";
     const bind = {
         corpid: corpid,
@@ -233,8 +232,41 @@ const invoiceSunat = async (corpid, orgid, invoiceid, status, error, qrcode, has
         urlcdr: urlcdr,
         urlpdf: urlpdf,
         urlxml: urlxml,
-        serie: serie
+        serie: serie,
+        issuerruc: issuerruc,
+        issuerbusinessname: issuerbusinessname,
+        issuertradename: issuertradename,
+        issuerfiscaladdress: issuerfiscaladdress,
+        issuerubigeo: issuerubigeo,
+        emittertype: emittertype,
+        annexcode: annexcode,
+        printingformat: printingformat,
+        sendtosunat: sendtosunat,
+        returnpdf: returnpdf,
+        returnxmlsunat: returnxmlsunat,
+        returnxml: returnxml,
+        token: token,
+        sunaturl: sunaturl,
+        sunatusername: sunatusername,
+        xmlversion: xmlversion,
+        ublversion: ublversion,
+        receiverdoctype: receiverdoctype,
+        receiverdocnum: receiverdocnum,
+        receiverbusinessname: receiverbusinessname,
+        receiverfiscaladdress: receiverfiscaladdress,
+        receivercountry: receivercountry,
+        receivermail: receivermail,
+        invoicetype: invoicetype,
+        sunatopecode: sunatopecode,
+        expirationdate: expirationdate,
+        purchaseorder: purchaseorder,
+        comments: comments,
+        credittype: credittype,
+        detractioncode: detractioncode,
+        detraction: detraction,
+        detractionaccount: detractionaccount
     }
+    console.log(JSON.stringify(bind));
     const result = await triggerfunctions.executesimpletransaction(query, bind);
     if (result instanceof Array) {
         if (result.length > 0) {
@@ -695,6 +727,10 @@ exports.chargeInvoice = async (req, res) => {
                                             invoicedata.DataList.push(adicional05);
                                         }
 
+                                        await invoiceSunat(corpid, orgid, invoiceid, 'PENDING', null, null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, purchaseorder || null, comments || null, 'AL CONTADO'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount);
+
+                                        console.log(JSON.stringify(invoicedata));
+
                                         const requestSendToSunat = await axios({
                                             data: invoicedata,
                                             method: 'post',
@@ -702,10 +738,10 @@ exports.chargeInvoice = async (req, res) => {
                                         });
         
                                         if (requestSendToSunat.data.result) {
-                                            await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', '', requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento);
+                                            await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, purchaseorder || null, comments || null, 'AL CONTADO'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount);
                                         }
                                         else {
-                                            await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, '', '', '', '', '', null);
+                                            await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, purchaseorder || null, comments || null, 'AL CONTADO'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount);
     
                                             if (corp.billbyorg) {
                                                 if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
@@ -728,7 +764,7 @@ exports.chargeInvoice = async (req, res) => {
                                         }
                                     }
                                     catch (error) {
-                                        await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', error.message, '', '', '', '', '', null);
+                                        await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', error.message, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     
                                         if (corp.billbyorg) {
                                             if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
@@ -751,7 +787,7 @@ exports.chargeInvoice = async (req, res) => {
                                     }
                                 }
                                 else {
-                                    await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', 'Correlative not found', '', '', '', '', '', null);
+                                    await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
                                 }
 
                                 return res.json({
