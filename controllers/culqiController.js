@@ -13,13 +13,15 @@ const bridgeEndpoint = process.env.BRIDGE;
 exports.getToken = async (req, res) => {
     const { token } = req.body;
     try {
+        const culqi = new Culqi({
+            privateKey: 'sk_test_d901e8f07d45a485'
+        });
+
         const tk = await culqi.tokens.getToken({
             id: token.id, 
         });
-        console.log(tk);
         return res.json({ error: false, success: true, data: tk });
     } catch (error) {
-        console.log(error);
         return res.status(500).json({ msg: "There was a problem, please try again later" });
     }
 }
@@ -261,7 +263,6 @@ const invoiceSunat = async (corpid, orgid, invoiceid, status, error, qrcode, has
         detraction: detraction,
         detractionaccount: detractionaccount
     }
-    console.log(JSON.stringify(bind));
     const result = await triggerfunctions.executesimpletransaction(query, bind);
     if (result instanceof Array) {
         if (result.length > 0) {
@@ -326,7 +327,6 @@ exports.createOrder = async (req, res) => {
             return res.status(404).json({ error: true, success: false, code: '', message: 'Invoice not found' });
         }
     } catch (error) {
-        console.log(error);
         return res.status(500).json({ message: "There was a problem, please try again later" });
     }
 }
@@ -376,7 +376,6 @@ exports.deleteOrder = async (req, res) => {
             return res.status(404).json({ error: true, success: false, code: '', message: 'Invoice not found' });
         }
     } catch (error) {
-        console.log(error);
         return res.status(500).json({ message: "There was a problem, please try again later" });
     }
 }
@@ -735,10 +734,6 @@ exports.chargeInvoice = async (req, res) => {
                                             invoicedata.DataList.push(adicional05);
                                         }
 
-                                        await invoiceSunat(corpid, orgid, invoiceid, 'PENDING', null, null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, purchaseorder || null, comments || null, 'typecredit_alcontado'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount);
-
-                                        console.log(JSON.stringify(invoicedata));
-
                                         const requestSendToSunat = await axios({
                                             data: invoicedata,
                                             method: 'post',
@@ -898,7 +893,6 @@ exports.charge = async (req, res) => {
             return res.status(403).json({ error: true, success: false, code: '', message: 'invalid user' });
         }
     } catch (error) {
-        console.log(error);
         if (error.charge_id) {
             return res.status(500).json({ message: error.merchant_message });
         }
@@ -972,7 +966,6 @@ exports.refundInvoice = async (req, res) => {
             return res.status(404).json({ error: true, success: false, code: '', message: 'Invoice not found' });
         }
     } catch (error) {
-        console.log(error);
         return res.status(500).json({ message: "There was a problem, please try again later" });
     }
 };
@@ -1050,7 +1043,6 @@ exports.refund = async (req, res) => {
             return res.status(404).json({ error: true, success: false, code: '', message: 'Invoice not found' });
         }
     } catch (error) {
-        console.log(error);
         return res.status(500).json({ message: "There was a problem, please try again later" });
     }
 };
@@ -1077,3 +1069,391 @@ const saveCard = async (corpid, orgid, card) => {
     const query = "UPDATE org SET cardjson = $cardjson WHERE corpid = $corpid AND orgid = $orgid"
     await sequelize.query(query, { type: QueryTypes.SELECT, bind: { corpid: corpid, orgid: orgid, cardjson: card }}).catch(err => getErrorSeq(err));
 }
+
+const createInvoice = async (corpid, orgid, invoiceid, description, status, type, issuerruc, issuerbusinessname, issuertradename, issuerfiscaladdress, issuerubigeo, emittertype, annexcode, printingformat, xmlversion, ublversion, receiverdoctype, receiverdocnum, receiverbusinessname, receiverfiscaladdress, receivercountry, receivermail, invoicetype, sunatopecode, serie, correlative, concept, invoicedate, expirationdate, subtotal, taxes, totalamount, currency, exchangerate, invoicestatus, filenumber, purchaseorder, executingunitcode, selectionprocessnumber, contractnumber, comments, credittype, username) => {
+    const query = "UFN_INVOICE_INS";
+    const bind = {
+        corpid: corpid,
+        orgid: orgid,
+        invoiceid: invoiceid,
+        description: description,
+        status: status,
+        type: type,
+        issuerruc: issuerruc,
+        issuerbusinessname: issuerbusinessname,
+        issuertradename: issuertradename,
+        issuerfiscaladdress: issuerfiscaladdress,
+        issuerubigeo: issuerubigeo,
+        emittertype: emittertype,
+        annexcode: annexcode,
+        printingformat: printingformat,
+        xmlversion: xmlversion,
+        ublversion: ublversion,
+        receiverdoctype: receiverdoctype,
+        receiverdocnum: receiverdocnum,
+        receiverbusinessname: receiverbusinessname,
+        receiverfiscaladdress: receiverfiscaladdress,
+        receivercountry: receivercountry,
+        receivermail: receivermail,
+        invoicetype: invoicetype,
+        sunatopecode: sunatopecode,
+        serie: serie,
+        correlative: correlative,
+        concept: concept,
+        invoicedate: invoicedate,
+        expirationdate: expirationdate,
+        subtotal: subtotal,
+        taxes: taxes,
+        totalamount: totalamount,
+        currency: currency,
+        exchangerate: exchangerate,
+        invoicestatus: invoicestatus,
+        filenumber: filenumber,
+        purchaseorder: purchaseorder,
+        executingunitcode: executingunitcode,
+        selectionprocessnumber: selectionprocessnumber,
+        contractnumber: contractnumber,
+        comments: comments,
+        credittype: credittype,
+        username: username,
+    }
+
+    const result = await triggerfunctions.executesimpletransaction(query, bind);
+
+    if (result instanceof Array) {
+        if (result.length > 0) {
+            return result[0]
+        }
+    }
+
+    return null
+}
+
+const createInvoiceDetail = async (corpid, orgid, invoiceid, description, status, type, quantity, productcode, hasigv, saletype, igvtribute, measureunit, totaligv, totalamount, igvrate, productprice, productdescription, productnetprice, productnetworth, username) => {
+    const query = "UFN_INVOICEDETAIL_INS";
+    const bind = {
+        corpid: corpid,
+        orgid: orgid,
+        invoiceid: invoiceid,
+        description: description,
+        status: status,
+        type: type,
+        quantity: quantity,
+        productcode: productcode,
+        hasigv: hasigv,
+        saletype: saletype,
+        igvtribute: igvtribute,
+        measureunit: measureunit,
+        totaligv: totaligv,
+        totalamount: totalamount,
+        igvrate: igvrate,
+        productprice: productprice,
+        productdescription: productdescription,
+        productnetprice: productnetprice,
+        productnetworth: productnetworth,
+        username: username
+    }
+    
+    const result = await triggerfunctions.executesimpletransaction(query, bind);
+
+    if (result instanceof Array) {
+        return result;
+    }
+
+    return null
+}
+
+exports.createInvoice = async (request, response) => {
+    const { userid, usr } = request.user;
+    const { corpid, orgid, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, clientcredittype, invoicecreatedate, invoiceduedate, invoicecurrency, invoicetotalamount, invoicepurchaseorder, invoicecomments, autosendinvoice, productdetail } = request.body;
+
+    try {
+        if (corpid || orgid) {
+            if (productdetail) {
+                const appsetting = await getAppSetting();
+
+                if (appsetting) {
+                    var productinfo = [];
+
+                    var invoicesubtotal = 0;
+                    var invoicetaxes = 0;
+                    var invoicetotalcharge = 0;
+
+                    var lastExchange = await getLastExchange();
+
+                    if (clientdoctype !== '0') {
+                        invoicesubtotal = invoicetotalamount;
+                        invoicetaxes = appsetting.igv * invoicetotalamount;
+                        invoicetotalcharge = (appsetting.igv * invoicetotalamount) + invoicetotalamount;
+                    }
+                    else {
+                        invoicesubtotal = (appsetting.igv * 100) * invoicetotalamount;
+                        invoicetaxes = 0;
+                        invoicetotalcharge = (appsetting.igv * invoicetotalamount) + invoicetotalamount;
+                    }
+
+                    var invoiceResponse = await createInvoice(corpid, orgid, 0, `GENERATED FOR ${clientdocnumber}`, 'ACTIVO', 'PENDING', null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchange, 'DRAFT', null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, usr);
+
+                    if (invoiceResponse) {
+                        await Promise.all(productdetail.map(async (element) => {
+                            var producthasigv = '';
+                            var productigvtribute = '';
+                            var producttotaligv = 0;
+                            var producttotalamount = 0;
+                            var productigvrate = 0;
+                            var productprice = 0;
+                            var productnetprice = 0;
+                            var productnetworth = 0;
+
+                            if (clientdoctype !== '0') {
+                                producthasigv = '10';
+                                productigvtribute = '1000';
+                                producttotaligv = (element.productquantity * element.productsubtotal) * appsetting.igv;
+                                producttotalamount = (element.productquantity * element.productsubtotal) * (1 + appsetting.igv);
+                                productigvrate = appsetting.igv;
+                                productprice = element.productsubtotal * (1 + appsetting.igv);
+                                productnetprice = element.productsubtotal;
+                                productnetworth = element.productquantity * element.productsubtotal;
+                            }
+                            else {
+                                producthasigv = '40';
+                                productigvtribute = '9998';
+                                producttotaligv = 0;
+                                producttotalamount = element.productquantity * element.productsubtotal;
+                                productigvrate = 0;
+                                productprice = element.productsubtotal;
+                                productnetprice = element.productsubtotal;
+                                productnetworth = element.productquantity * element.productsubtotal;
+                            }
+
+                            await createInvoiceDetail(corpid, orgid, invoiceResponse.invoiceid, element.productdescription, 'ACTIVO', 'NINGUNO', element.productquantity, element.productcode, producthasigv, '10', productigvtribute, element.productmeasure, producttotaligv, producttotalamount, productigvrate, productprice, element.productdescription, productnetprice, productnetworth, usr);
+
+                            productinfo.push({
+                                producthasigv: producthasigv,
+                                productigvtribute: productigvtribute,
+                                producttotaligv: producttotaligv,
+                                producttotalamount: producttotalamount,
+                                productigvrate: productigvrate,
+                                productprice: productprice,
+                                productnetprice: productnetprice,
+                                productnetworth: productnetworth,
+                                productdescription: element.productdescription,
+                                productcode: element.productcode,
+                                productmeasure: element.productmeasure,
+                                productquantity: element.productquantity,
+                                productsubtotal: element.productsubtotal,
+                            });
+                        }));
+
+                        var invoicecorrelative = null;
+                        var documenttype = null;
+
+                        if ((clientcountry === 'PE' && clientdoctype === '6') || (clientcountry !== 'PE' && clientdoctype === '0')) {
+                            invoicecorrelative = await getInvoiceCorrelative(corpid, orgid, invoiceResponse.invoiceid);
+                            documenttype = '01';
+                        }
+
+                        if ((clientcountry === 'PE') && (clientdoctype === '1' || clientdoctype === '4' || clientdoctype === '7')) {
+                            invoicecorrelative = await getInvoiceTicketCorrelative(corpid, orgid, invoiceResponse.invoiceid);
+                            documenttype = '03'
+                        }
+
+                        if (invoicecorrelative) {
+                            try {
+                                var invoicedata = {
+                                    CodigoAnexoEmisor: appsetting.annexcode,
+                                    CodigoFormatoImpresion: appsetting.printingformat,
+                                    CodigoMoneda: invoicecurrency,
+                                    Username: appsetting.sunatusername,
+                                    TipoDocumento: documenttype,
+                                    TipoRucEmisor: appsetting.emittertype,
+                                    CodigoRucReceptor: clientdoctype,
+                                    CodigoUbigeoEmisor: appsetting.ubigeo,
+                                    EnviarSunat: autosendinvoice || true,
+                                    FechaEmision: invoicecreatedate,
+                                    MailEnvio: clientmail,
+                                    MontoTotal: invoicetotalcharge,
+                                    NombreComercialEmisor: appsetting.tradename,
+                                    RazonSocialEmisor: appsetting.businessname,
+                                    RazonSocialReceptor: clientbusinessname,
+                                    CorrelativoDocumento: zeroPad(invoicecorrelative.p_correlative, 8),
+                                    RucEmisor: appsetting.ruc,
+                                    NumeroDocumentoReceptor: clientdocnumber,
+                                    NumeroSerieDocumento: documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie,
+                                    RetornaPdf: appsetting.returnpdf,
+                                    RetornaXmlSunat: appsetting.returnxmlsunat,
+                                    RetornaXml: appsetting.returnxml,
+                                    TipoCambio: lastExchange,
+                                    Token: appsetting.token,
+                                    DireccionFiscalEmisor: appsetting.fiscaladdress,
+                                    DireccionFiscalReceptor: clientfiscaladdress,
+                                    VersionXml: appsetting.xmlversion,
+                                    VersionUbl: appsetting.ublversion,
+                                    Endpoint: appsetting.sunaturl,
+                                    PaisRecepcion: clientcountry,
+                                    CodigoOperacionSunat: clientcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother,
+                                    MontoTotalGravado: clientcountry === 'PE' ? invoicesubtotal : null,
+                                    MontoTotalInafecto: clientcountry === 'PE' ? '0' : invoicesubtotal,
+                                    MontoTotalIgv: clientcountry === 'PE' ? invoicetaxes : null,
+                                    ProductList: [],
+                                    DataList: []
+                                }
+
+                                if (clientcountry === 'PE') {
+                                    if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
+                                        var compareamount = 0;
+
+                                        if (appsetting.detractionminimum) {
+                                            if (invoicecurrency === 'USD') {
+                                                compareamount = invoicetotalamount * lastExchange;
+                                            }
+                                            else {
+                                                compareamount = invoicetotalamount;
+                                            }
+                                        }
+                                        
+                                        if (compareamount > appsetting.detractionminimum) {
+                                            invoicedata.MontoTotalDetraccion = invoicetotalamount * appsetting.detraction;
+                                            invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
+                                            invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
+                                            invoicedata.CodigoDetraccion = appsetting.detractioncode;
+
+                                            var adicional02 = {
+                                                CodigoDatoAdicional: '06',
+                                                DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
+                                            }
+    
+                                            invoicedata.DataList.push(adicional02);
+                                        }
+                                    }
+                                }
+
+                                productinfo.forEach(async element => {
+                                    var invoicedetaildata = {
+                                        CantidadProducto: element.productquantity,
+                                        CodigoProducto: element.productcode,
+                                        TipoVenta: '10',
+                                        UnidadMedida: element.productmeasure,
+                                        IgvTotal: element.producttotaligv,
+                                        MontoTotal: element.producttotalamount,
+                                        TasaIgv: element.productigvrate * 100,
+                                        PrecioProducto: element.productprice,
+                                        DescripcionProducto: element.productdescription,
+                                        PrecioNetoProducto: element.productnetprice,
+                                        ValorNetoProducto: element.productnetworth,
+                                        AfectadoIgv: element.producthasigv,
+                                        TributoIgv: element.productigvtribute,
+                                    };
+
+                                    invoicedata.ProductList.push(invoicedetaildata);
+                                });
+
+                                var adicional01 = {
+                                    CodigoDatoAdicional: '05',
+                                    DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
+                                }
+
+                                invoicedata.DataList.push(adicional01);
+
+                                if (invoicepurchaseorder) {
+                                    var adicional03 = {
+                                        CodigoDatoAdicional: '15',
+                                        DescripcionDatoAdicional: invoicepurchaseorder
+                                    }
+
+                                    invoicedata.DataList.push(adicional03);
+                                }
+
+                                if (invoicecomments) {
+                                    var adicional04 = {
+                                        CodigoDatoAdicional: '07',
+                                        DescripcionDatoAdicional: invoicecomments
+                                    }
+
+                                    invoicedata.DataList.push(adicional04);
+                                }
+
+                                if (clientcredittype) {
+                                    var adicional05 = {
+                                        CodigoDatoAdicional: '01',
+                                        DescripcionDatoAdicional: 'AL CONTADO'
+                                    }
+
+                                    switch (clientcredittype) {
+                                        case 'typecredit_15':
+                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 15 DIAS';
+                                            break;
+                                        case 'typecredit_30':
+                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 30 DIAS';
+                                            break;
+                                        case 'typecredit_45':
+                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 45 DIAS';
+                                            break;
+                                        case 'typecredit_60':
+                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 60 DIAS';
+                                            break;
+                                        case 'typecredit_90':
+                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 90 DIAS';
+                                            break;
+                                    }
+
+                                    invoicedata.DataList.push(adicional05);
+                                }
+
+                                const requestSendToSunat = await axios({
+                                    data: invoicedata,
+                                    method: 'post',
+                                    url: `${bridgeEndpoint}processmifact/sendinvoice`
+                                });
+
+                                console.log(JSON.stringify(requestSendToSunat.data));
+
+                                if (requestSendToSunat.data.result) {
+                                    await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, autosendinvoice, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat|| null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount);
+
+                                    return res.json({
+                                        code: '',
+                                        data: null,
+                                        error: false,
+                                        message: 'successinvoiced',
+                                        success: true
+                                    });
+                                }
+                                else {
+                                    await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, autosendinvoice, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat|| null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount);
+
+                                    if ((clientcountry === 'PE' && clientdoctype === '6') || (clientcountry !== 'PE' && clientdoctype === '0')) {
+                                        await getInvoiceCorrelativeError(corpid, orgid, invoiceResponse.invoiceid);
+                                    }
+            
+                                    if ((clientcountry === 'PE') && (clientdoctype === '1' || clientdoctype === '4' || clientdoctype === '7')) {
+                                        await getInvoiceTicketCorrelativeError(corpid, orgid, invoiceResponse.invoiceid);
+                                    }
+
+                                    return response.status(403).json({ error: true, success: false, code: '', message: 'createdbutnotinvoiced' });
+                                }
+                            }
+                            catch (error) {
+                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, autosendinvoice, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, null, null, null);
+                            }
+                        }
+                    }
+                    else {
+                        return response.status(403).json({ error: true, success: false, code: '', message: 'errorcreatinginvoice' });
+                    }
+                }
+                else {
+                    return response.status(403).json({ error: true, success: false, code: '', message: 'appsettingnotfound' });
+                }
+            }
+            else {
+                return response.status(403).json({ error: true, success: false, code: '', message: 'productdetailnotfound' });
+            }
+        }
+        else {
+            return response.status(403).json({ error: true, success: false, code: '', message: 'corporationnotfound' });
+        }
+    } catch (error) {
+        return response.status(500).json({ error: true, success: false, code: '', message: "generalproblem" });
+    }
+};
