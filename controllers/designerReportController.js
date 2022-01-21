@@ -73,10 +73,17 @@ exports.dashboardDesigner = async (req, res) => {
                         }]
 
                         const columnstmp = JSON.parse(report.columnjson).filter(x => x.columnname === indicator.column);
-
-                        return buildQueryDynamic2(columnstmp, filterHard, parameters, []);
+                        if (columnstmp.length > 0) 
+                            return buildQueryDynamic2(columnstmp, filterHard, parameters, []);
+                        else {
+                            indicatorList[index].error = true;
+                            indicatorList[index].errorcode = "COLUMN_NOT_FOUND";
+                            return []
+                        }
                     }
                 }
+                indicatorList[index].error = true;
+                indicatorList[index].errorcode = "REPORT_NOT_FOUND";
                 return undefined;
             });
 
@@ -85,38 +92,55 @@ exports.dashboardDesigner = async (req, res) => {
             const cleanDatat = result.map((resIndicator, index) => {
                 const { column, contentType, grouping} = indicatorList[index];
 
-                if (contentType === "kpi") {
-                    return resIndicator;
-                } else {
-                    const res = resIndicator.reduce((acc, item) => ({
-                        ...acc,
-                        [item[column.replace(".", "")] || ""]: (acc[item[column.replace(".", "")] || ""] || 0) + 1
-                    }), {});
-
-                    if (grouping === "percentage") {
-                        Object.keys(res).forEach(key => {
-                            res[key] = Number(((res[key]/resIndicator.length) * 100).toFixed(2));
-                        })
+                if (resIndicator) {
+                    if (contentType === "kpi") {
+                        return resIndicator;
+                    } else {
+                        const res = resIndicator.reduce((acc, item) => ({
+                            ...acc,
+                            [item[column.replace(".", "")] || ""]: (acc[item[column.replace(".", "")] || ""] || 0) + 1
+                        }), {});
+    
+                        if (grouping === "percentage") {
+                            Object.keys(res).forEach(key => {
+                                res[key] = Number(((res[key]/resIndicator.length) * 100).toFixed(2));
+                            })
+                        }
+                        return res;
                     }
-                    console.log(res)
-                    return res;
+                } else {
+                    return {
+                        error: true
+                    }
                 }
             });
 
             const gg = cleanDatat.reduce((acc, data, index) => {
-                const { contentType } = indicatorList[index];
+                const { contentType, error, errorcode } = indicatorList[index];
 
-                const { description: reportname, columnjson, dataorigin } = resultReports[index][0];
-
-                const sortedData = contentType === "report" ? Object.fromEntries(Object.entries(data).sort(([, a], [, b]) => b - a)) : data;
-                return {
-                    ...acc,
-                    [keysIndicators[index]]: {
-                        contentType,
-                        data: sortedData,
-                        reportname,
-                        dataorigin,
-                        columns: contentType === "report" ? JSON.parse(columnjson).map(x => ({ ...x, disabled: undefined, descriptionT: undefined })) : undefined
+                if (resultReports[index][0]) {
+                    const { description: reportname, columnjson, dataorigin } = resultReports[index][0];
+    
+                    const sortedData = contentType === "report" ? Object.fromEntries(Object.entries(data).sort(([, a], [, b]) => b - a)) : data;
+                    return {
+                        ...acc,
+                        [keysIndicators[index]]: {
+                            contentType,
+                            data: sortedData,
+                            reportname,
+                            dataorigin,
+                            columns: contentType === "report" ? JSON.parse(columnjson).map(x => ({ ...x, disabled: undefined, descriptionT: undefined })) : undefined,
+                            error,
+                            errorcode
+                        }
+                    }
+                } else {
+                    return {
+                        [keysIndicators[index]]: {
+                            contentType,
+                            error,
+                            errorcode
+                        }
                     }
                 }
             }, {});
