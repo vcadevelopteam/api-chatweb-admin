@@ -8,11 +8,6 @@ const { stringify } = require('uuid');
 
 const exchangeEndpoint = process.env.EXCHANGE;
 
-const culqi = new Culqi({
-    privateKey: 'sk_test_d901e8f07d45a485',
-    // publicKey: 'pk_test_041501e753dcb2f9'
-});
-
 const bridgeEndpoint = process.env.BRIDGE;
 
 exports.getToken = async (req, res) => {
@@ -277,6 +272,10 @@ const invoiceSunat = async (corpid, orgid, invoiceid, status, error, qrcode, has
 }
 
 exports.createOrder = async (req, res) => {
+    const culqi = new Culqi({
+        privateKey: 'sk_test_d901e8f07d45a485'
+    });
+
     const { corpid, orgid, userid } = req.user;
     const { invoiceid } = req.body;
     try {
@@ -333,8 +332,13 @@ exports.createOrder = async (req, res) => {
 }
 
 exports.deleteOrder = async (req, res) => {
+    const culqi = new Culqi({
+        privateKey: 'sk_test_d901e8f07d45a485'
+    });
+
     const { corpid, orgid, userid } = req.user;
     const { invoiceid } = req.body;
+
     try {
         const invoice = await getInvoice(corpid, orgid, userid, invoiceid);
         if (invoice) {
@@ -377,7 +381,11 @@ exports.deleteOrder = async (req, res) => {
     }
 }
 
-const createCharge = async (userprofile, settings, token, metadata) => {
+const createCharge = async (userprofile, settings, token, metadata, privatekey) => {
+    const culqi = new Culqi({
+        privateKey: privatekey
+    });
+
     return await culqi.charges.createCharge({
         amount: settings.amount,
         currency_code: settings.currency,
@@ -480,7 +488,7 @@ exports.chargeInvoice = async (req, res) => {
                             metadata.user = usr;
                             metadata.reference = invoice.description;
 
-                            const charge = await createCharge(userprofile, settings, token, metadata);
+                            const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
 
                             if (charge.object === 'error') {
                                 return res.status(400).json({
@@ -837,7 +845,7 @@ exports.charge = async (req, res) => {
             metadata.corpid = corpid;
             metadata.orgid = orgid;
             metadata.userid = userid;
-            const charge = await createCharge(userprofile, settings, token, metadata);
+            const charge = await createCharge(userprofile, settings, token, metadata, 'sk_test_d901e8f07d45a485');
             if (charge.object === 'error') {
                 return res.status(400).json({
                     error: true,
