@@ -1794,4 +1794,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_MEASUREUNIT_SEL: {
+        query: "SELECT code, description, status FROM measureunit",
+        module: "",
+        protected: "SELECT"
+    },
 }
