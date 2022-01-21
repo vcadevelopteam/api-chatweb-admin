@@ -263,12 +263,15 @@ const invoiceSunat = async (corpid, orgid, invoiceid, status, error, qrcode, has
         detraction: detraction,
         detractionaccount: detractionaccount
     }
+    
     const result = await triggerfunctions.executesimpletransaction(query, bind);
+
     if (result instanceof Array) {
         if (result.length > 0) {
             return result[0]
         }
     }
+
     return null
 }
 
@@ -739,7 +742,7 @@ exports.chargeInvoice = async (req, res) => {
                                             method: 'post',
                                             url: `${bridgeEndpoint}processmifact/sendinvoice`
                                         });
-        
+
                                         if (requestSendToSunat.data.result) {
                                             await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, purchaseorder || null, comments || null, 'AL CONTADO'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount);
                                         }
@@ -1272,7 +1275,7 @@ exports.createInvoice = async (request, response) => {
                                     EnviarSunat: autosendinvoice || true,
                                     FechaEmision: invoicecreatedate,
                                     MailEnvio: clientmail,
-                                    MontoTotal: invoicetotalcharge,
+                                    MontoTotal: Math.round((invoicetotalcharge + Number.EPSILON) * 100) / 100,
                                     NombreComercialEmisor: appsetting.tradename,
                                     RazonSocialEmisor: appsetting.businessname,
                                     RazonSocialReceptor: clientbusinessname,
@@ -1292,9 +1295,9 @@ exports.createInvoice = async (request, response) => {
                                     Endpoint: appsetting.sunaturl,
                                     PaisRecepcion: clientcountry,
                                     CodigoOperacionSunat: clientcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother,
-                                    MontoTotalGravado: clientcountry === 'PE' ? invoicesubtotal : null,
+                                    MontoTotalGravado: clientcountry === 'PE' ? Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100 : null,
                                     MontoTotalInafecto: clientcountry === 'PE' ? '0' : invoicesubtotal,
-                                    MontoTotalIgv: clientcountry === 'PE' ? invoicetaxes : null,
+                                    MontoTotalIgv: clientcountry === 'PE' ? Math.round((invoicetaxes + Number.EPSILON) * 100) / 100 : null,
                                     ProductList: [],
                                     DataList: []
                                 }
@@ -1313,7 +1316,7 @@ exports.createInvoice = async (request, response) => {
                                         }
                                         
                                         if (compareamount > appsetting.detractionminimum) {
-                                            invoicedata.MontoTotalDetraccion = invoicetotalamount * appsetting.detraction;
+                                            invoicedata.MontoTotalDetraccion = Math.round(((invoicetotalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100;
                                             invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
                                             invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
                                             invoicedata.CodigoDetraccion = appsetting.detractioncode;
@@ -1335,12 +1338,12 @@ exports.createInvoice = async (request, response) => {
                                         TipoVenta: '10',
                                         UnidadMedida: element.productmeasure,
                                         IgvTotal: element.producttotaligv,
-                                        MontoTotal: element.producttotalamount,
+                                        MontoTotal: Math.round((element.producttotalamount + Number.EPSILON) * 100) / 100,
                                         TasaIgv: element.productigvrate * 100,
-                                        PrecioProducto: element.productprice,
+                                        PrecioProducto: Math.round((element.productprice + Number.EPSILON) * 100) / 100,
                                         DescripcionProducto: element.productdescription,
                                         PrecioNetoProducto: element.productnetprice,
-                                        ValorNetoProducto: element.productnetworth,
+                                        ValorNetoProducto: Math.round((element.productnetworth + Number.EPSILON) * 100) / 100,
                                         AfectadoIgv: element.producthasigv,
                                         TributoIgv: element.productigvtribute,
                                     };
@@ -1406,12 +1409,10 @@ exports.createInvoice = async (request, response) => {
                                     url: `${bridgeEndpoint}processmifact/sendinvoice`
                                 });
 
-                                console.log(JSON.stringify(requestSendToSunat.data));
-
                                 if (requestSendToSunat.data.result) {
                                     await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, autosendinvoice, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat|| null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount);
 
-                                    return res.json({
+                                    return response.json({
                                         code: '',
                                         data: null,
                                         error: false,
