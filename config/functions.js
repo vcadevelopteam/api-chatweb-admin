@@ -1800,7 +1800,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CORP_PAYMENTPLAN_UPD: {
-        query: "SELECT * from ufn_corp_paymentplan_upd($corpid, $paymentplanid, $username)",
+        query: "SELECT * from ufn_corp_paymentplan_upd($corpid, $paymentplancode, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CORP_PAYMENTPLAN_CANCEL: {
+        query: "SELECT * from ufn_corp_paymentplan_cancel($corpid, $username, $offset)",
         module: "",
         protected: "SELECT"
     },
