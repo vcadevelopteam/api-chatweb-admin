@@ -587,7 +587,7 @@ exports.chargeInvoice = async (req, res) => {
                                             EnviarSunat: org ? org.autosendinvoice : corp.autosendinvoice,
                                             FechaEmision: invoice.invoicedate,
                                             MailEnvio: org ? org.contactemail : corp.contactemail,
-                                            MontoTotal: invoice.totalamount,
+                                            MontoTotal: Math.round((invoice.totalamount + Number.EPSILON) * 100) / 100,
                                             NombreComercialEmisor: appsetting.tradename,
                                             RazonSocialEmisor: appsetting.businessname,
                                             RazonSocialReceptor: org ? org.businessname : corp.businessname,
@@ -612,15 +612,15 @@ exports.chargeInvoice = async (req, res) => {
 
                                         if (corp.billbyorg) {
                                             invoicedata.CodigoOperacionSunat = org.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                            invoicedata.MontoTotalGravado = org.sunatcountry === 'PE' ? invoice.subtotal : null;
-                                            invoicedata.MontoTotalInafecto = org.sunatcountry === 'PE' ? '0' : invoice.subtotal;
-                                            invoicedata.MontoTotalIgv = org.sunatcountry === 'PE' ? invoice.taxes : null;
+                                            invoicedata.MontoTotalGravado = org.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
+                                            invoicedata.MontoTotalInafecto = org.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
+                                            invoicedata.MontoTotalIgv = org.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
                                         }
                                         else {
                                             invoicedata.CodigoOperacionSunat = corp.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                            invoicedata.MontoTotalGravado = corp.sunatcountry === 'PE' ? invoice.subtotal : null;
-                                            invoicedata.MontoTotalInafecto = corp.sunatcountry === 'PE' ? '0' : invoice.subtotal;
-                                            invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? invoice.taxes : null;
+                                            invoicedata.MontoTotalGravado = corp.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
+                                            invoicedata.MontoTotalInafecto = corp.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
+                                            invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
                                         }
     
                                         var calcdetraction = false;
@@ -652,7 +652,7 @@ exports.chargeInvoice = async (req, res) => {
                                                 }
                                                 
                                                 if (compareamount > appsetting.detractionminimum) {
-                                                    invoicedata.MontoTotalDetraccion = invoice.totalamount * appsetting.detraction;
+                                                    invoicedata.MontoTotalDetraccion = Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100;
                                                     invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
                                                     invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
                                                     invoicedata.CodigoDetraccion = appsetting.detractioncode;
@@ -683,12 +683,12 @@ exports.chargeInvoice = async (req, res) => {
                                                 TipoVenta: data.saletype,
                                                 UnidadMedida: data.measureunit,
                                                 IgvTotal: data.totaligv,
-                                                MontoTotal: data.totalamount,
+                                                MontoTotal: Math.round((data.totalamount + Number.EPSILON) * 100) / 100,
                                                 TasaIgv: data.igvrate * 100,
-                                                PrecioProducto: data.productprice,
+                                                PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
                                                 DescripcionProducto: data.productdescription,
                                                 PrecioNetoProducto: data.productnetprice,
-                                                ValorNetoProducto: data.productnetworth,
+                                                ValorNetoProducto: Math.round((data.productnetworth + Number.EPSILON) * 100) / 100,
                                             };
 
                                             if (corp.billbyorg) {
