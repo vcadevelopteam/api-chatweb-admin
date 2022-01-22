@@ -682,7 +682,7 @@ exports.chargeInvoice = async (req, res) => {
                                                 CodigoProducto: data.productcode,
                                                 TipoVenta: data.saletype,
                                                 UnidadMedida: data.measureunit,
-                                                IgvTotal: data.totaligv,
+                                                IgvTotal: Math.round((data.totaligv + Number.EPSILON) * 100) / 100,
                                                 MontoTotal: Math.round((data.totalamount + Number.EPSILON) * 100) / 100,
                                                 TasaIgv: data.igvrate * 100,
                                                 PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
@@ -1337,7 +1337,7 @@ exports.createInvoice = async (request, response) => {
                                         CodigoProducto: element.productcode,
                                         TipoVenta: '10',
                                         UnidadMedida: element.productmeasure,
-                                        IgvTotal: element.producttotaligv,
+                                        IgvTotal: Math.round((element.producttotaligv + Number.EPSILON) * 100) / 100,
                                         MontoTotal: Math.round((element.producttotalamount + Number.EPSILON) * 100) / 100,
                                         TasaIgv: element.productigvrate * 100,
                                         PrecioProducto: Math.round((element.productprice + Number.EPSILON) * 100) / 100,
@@ -1435,10 +1435,15 @@ exports.createInvoice = async (request, response) => {
                                 }
                             }
                             catch (error) {
-                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, autosendinvoice, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, null, null, null);
+                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', error.message, null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, autosendinvoice, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, null, null, null);
 
-                                return response.status(403).json({ error: true, success: false, code: '', message: 'correlativenotfound' });
+                                return response.status(403).json({ error: true, success: false, code: '', message: 'createdbutnotinvoiced' });
                             }
+                        }
+                        else {
+                            await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, autosendinvoice, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, null, null, null);
+
+                            return response.status(403).json({ error: true, success: false, code: '', message: 'correlativenotfound' });
                         }
                     }
                     else {
