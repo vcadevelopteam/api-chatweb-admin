@@ -17,4 +17,8 @@ router.post('/refund', auth, culqiController.refund)
 
 router.post('/createinvoice', auth, culqiController.createInvoice)
 
+router.post('/createcreditnote', auth, culqiController.createCreditNote)
+
+router.post('/regularizeinvoice', auth, culqiController.regularizeInvoice)
+
 module.exports = router;

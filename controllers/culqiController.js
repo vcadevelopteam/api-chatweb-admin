@@ -1465,3 +1465,25 @@ exports.createInvoice = async (request, response) => {
         return response.status(500).json({ error: true, success: false, code: '', message: "generalproblem" });
     }
 };
+
+exports.createCreditNote = async (request, response) => {
+    const { userid, usr } = request.user;
+    const { corpid, orgid, invoiceid } = request.body;
+
+    try {
+        return response.status(500).json({ error: true, success: false, code: '', message: "generalproblem" });
+    } catch (error) {
+        return response.status(500).json({ error: true, success: false, code: '', message: "generalproblem" });
+    }
+};
+
+exports.regularizeInvoice = async (request, response) => {
+    const { userid, usr } = request.user;
+    const { corpid, orgid, invoiceid } = request.body;
+
+    try {
+        return response.status(500).json({ error: true, success: false, code: '', message: "generalproblem" });
+    } catch (error) {
+        return response.status(500).json({ error: true, success: false, code: '', message: "generalproblem" });
+    }
+};
