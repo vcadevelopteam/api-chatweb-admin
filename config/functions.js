@@ -1587,7 +1587,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INVOICE_INS: {
-        query: "SELECT * FROM ufn_invoice_ins($corpid,$orgid,$invoiceid,$description,$status,$type,$issuerruc,$issuerbusinessname,$issuertradename,$issuerfiscaladdress,$issuerubigeo,$emittertype,$annexcode,$printingformat,$xmlversion,$ublversion,$receiverdoctype,$receiverdocnum,$receiverbusinessname,$receiverfiscaladdress,$receivercountry,$receivermail,$invoicetype,$sunatopecode,$serie,$correlative,$concept,$invoicedate,$expirationdate,$subtotal,$taxes,$totalamount,$currency,$exchangerate,$invoicestatus,$filenumber,$purchaseorder,$executingunitcode,$selectionprocessnumber,$contractnumber,$comments,$credittype,$username)",
+        query: "SELECT * FROM ufn_invoice_ins($corpid,$orgid,$invoiceid,$description,$status,$type,$issuerruc,$issuerbusinessname,$issuertradename,$issuerfiscaladdress,$issuerubigeo,$emittertype,$annexcode,$printingformat,$xmlversion,$ublversion,$receiverdoctype,$receiverdocnum,$receiverbusinessname,$receiverfiscaladdress,$receivercountry,$receivermail,$invoicetype,$sunatopecode,$serie,$correlative,$concept,$invoicedate,$expirationdate,$subtotal,$taxes,$totalamount,$currency,$exchangerate,$invoicestatus,$filenumber,$purchaseorder,$executingunitcode,$selectionprocessnumber,$contractnumber,$comments,$credittype,$creditnotetype,$creditnotemotive,$creditnotediscount,$invoicereferencefile,$invoicepaymentnote,$username,$referenceinvoiceid)",
         module: "",
         protected: "INSERT"
     },
@@ -1811,6 +1811,26 @@ module.exports = {
     },
     UFN_CORP_PAYMENTPLAN_CANCEL: {
         query: "SELECT * from ufn_corp_paymentplan_cancel($corpid, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVOICECREDIT_CORRELATIVE: {
+        query: "select * from ufn_invoicecredit_correlative($corpid, $orgid, $invoiceid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVOICECREDIT_CORRELATIVEERROR: {
+        query: "select * from ufn_invoicecredit_correlativeerror($corpid, $orgid, $invoiceid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVOICECREDIT_TICKETCREDITCORRELATIVE: {
+        query: "select * from ufn_invoicecredit_ticketcreditcorrelative($corpid, $orgid, $invoiceid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVOICECREDIT_TICKETCREDITCORRELATIVEERROR: {
+        query: "select * from ufn_invoicecredit_ticketcreditcorrelativeerror($corpid, $orgid, $invoiceid)",
         module: "",
         protected: "SELECT"
     },

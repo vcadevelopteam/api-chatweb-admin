@@ -73,67 +73,50 @@ const getInvoiceDetail = async (corpid, orgid, userid, id) => {
     return null
 }
 
-const getInvoiceCorrelative = async (corpid, orgid, id) => {
-    const query = "UFN_INVOICE_CORRELATIVE";
-    const bind = {
-        corpid: corpid,
-        orgid: orgid,
-        invoiceid: id
-    }
-    const result = await triggerfunctions.executesimpletransaction(query, bind);
-    if (result instanceof Array) {
-        if (result.length > 0) {
-            return result[0]
-        }
-    }
-    return null
-}
+const getCorrelativeNumber = async (corpid, orgid, id, correlativetype) => {
+    var query = null;
 
-const getInvoiceTicketCorrelative = async (corpid, orgid, id) => {
-    const query = "UFN_INVOICE_TICKETCORRELATIVE";
+    switch (correlativetype) {
+        case 'INVOICE':
+            query = 'UFN_INVOICE_CORRELATIVE';
+            break;
+        case 'INVOICEERROR':
+            query = 'UFN_INVOICE_CORRELATIVEERROR';
+            break;
+        case 'TICKET':
+            query = 'UFN_INVOICE_TICKETCORRELATIVE';
+            break;
+        case 'TICKETERROR':
+            query = 'UFN_INVOICE_TICKETCORRELATIVEERROR';
+            break;
+        case 'CREDITINVOICE':
+            query = 'UFN_INVOICECREDIT_CORRELATIVE';
+            break;
+        case 'CREDITINVOICEERROR':
+            query = 'UFN_INVOICECREDIT_CORRELATIVEERROR';
+            break;
+        case 'CREDITTICKET':
+            query = 'UFN_INVOICECREDIT_TICKETCREDITCORRELATIVE';
+            break;
+        case 'CREDITTICKETERROR':
+            query = 'UFN_INVOICECREDIT_TICKETCREDITCORRELATIVEERROR';
+            break;
+    }
+    
     const bind = {
         corpid: corpid,
         orgid: orgid,
         invoiceid: id
     }
-    const result = await triggerfunctions.executesimpletransaction(query, bind);
-    if (result instanceof Array) {
-        if (result.length > 0) {
-            return result[0]
-        }
-    }
-    return null
-}
 
-const getInvoiceCorrelativeError = async (corpid, orgid, id) => {
-    const query = "UFN_INVOICE_CORRELATIVEERROR";
-    const bind = {
-        corpid: corpid,
-        orgid: orgid,
-        invoiceid: id
-    }
     const result = await triggerfunctions.executesimpletransaction(query, bind);
-    if (result instanceof Array) {
-        if (result.length > 0) {
-            return result[0]
-        }
-    }
-    return null
-}
 
-const getInvoiceTicketCorrelativeError = async (corpid, orgid, id) => {
-    const query = "UFN_INVOICE_TICKETCORRELATIVEERROR";
-    const bind = {
-        corpid: corpid,
-        orgid: orgid,
-        invoiceid: id
-    }
-    const result = await triggerfunctions.executesimpletransaction(query, bind);
     if (result instanceof Array) {
         if (result.length > 0) {
             return result[0]
         }
     }
+
     return null
 }
 
@@ -552,23 +535,23 @@ exports.chargeInvoice = async (req, res) => {
 
                                 if (corp.billbyorg) {
                                     if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
-                                        invoicecorrelative = await getInvoiceCorrelative(corpid, orgid, invoiceid);
+                                        invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICE');
                                         documenttype = '01';
                                     }
             
                                     if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                        invoicecorrelative = await getInvoiceTicketCorrelative(corpid, orgid, invoiceid);
+                                        invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKET');
                                         documenttype = '03'
                                     }
                                 }
                                 else {
                                     if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
-                                        invoicecorrelative = await getInvoiceCorrelative(corpid, orgid, invoiceid);
+                                        invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICE');
                                         documenttype = '01';
                                     }
             
                                     if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                        invoicecorrelative = await getInvoiceTicketCorrelative(corpid, orgid, invoiceid);
+                                        invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKET');
                                         documenttype = '03'
                                     }
                                 }
@@ -751,20 +734,20 @@ exports.chargeInvoice = async (req, res) => {
     
                                             if (corp.billbyorg) {
                                                 if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
-                                                    await getInvoiceCorrelativeError(corpid, orgid, invoiceid);
+                                                    await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
                                                 }
                         
                                                 if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                    await getInvoiceTicketCorrelativeError(corpid, orgid, invoiceid);
+                                                    await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
                                                 }
                                             }
                                             else {
                                                 if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
-                                                    await getInvoiceCorrelativeError(corpid, orgid, invoiceid);
+                                                    await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
                                                 }
                         
                                                 if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                    await getInvoiceTicketCorrelativeError(corpid, orgid, invoiceid);
+                                                    await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
                                                 }
                                             }
                                         }
@@ -774,20 +757,20 @@ exports.chargeInvoice = async (req, res) => {
     
                                         if (corp.billbyorg) {
                                             if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
-                                                await getInvoiceCorrelativeError(corpid, orgid, invoiceid);
+                                                await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
                                             }
                     
                                             if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                await getInvoiceTicketCorrelativeError(corpid, orgid, invoiceid);
+                                                await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
                                             }
                                         }
                                         else {
                                             if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
-                                                await getInvoiceCorrelativeError(corpid, orgid, invoiceid);
+                                                await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
                                             }
                     
                                             if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                await getInvoiceTicketCorrelativeError(corpid, orgid, invoiceid);
+                                                await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
                                             }
                                         }
                                     }
@@ -1073,7 +1056,7 @@ const saveCard = async (corpid, orgid, card) => {
     await sequelize.query(query, { type: QueryTypes.SELECT, bind: { corpid: corpid, orgid: orgid, cardjson: card }}).catch(err => getErrorSeq(err));
 }
 
-const createInvoice = async (corpid, orgid, invoiceid, description, status, type, issuerruc, issuerbusinessname, issuertradename, issuerfiscaladdress, issuerubigeo, emittertype, annexcode, printingformat, xmlversion, ublversion, receiverdoctype, receiverdocnum, receiverbusinessname, receiverfiscaladdress, receivercountry, receivermail, invoicetype, sunatopecode, serie, correlative, concept, invoicedate, expirationdate, subtotal, taxes, totalamount, currency, exchangerate, invoicestatus, filenumber, purchaseorder, executingunitcode, selectionprocessnumber, contractnumber, comments, credittype, username) => {
+const createInvoice = async (corpid, orgid, invoiceid, description, status, type, issuerruc, issuerbusinessname, issuertradename, issuerfiscaladdress, issuerubigeo, emittertype, annexcode, printingformat, xmlversion, ublversion, receiverdoctype, receiverdocnum, receiverbusinessname, receiverfiscaladdress, receivercountry, receivermail, invoicetype, sunatopecode, serie, correlative, concept, invoicedate, expirationdate, subtotal, taxes, totalamount, currency, exchangerate, invoicestatus, filenumber, purchaseorder, executingunitcode, selectionprocessnumber, contractnumber, comments, credittype, creditnotetype, creditnotemotive, creditnotediscount, invoicereferencefile, invoicepaymentnote, username, referenceinvoiceid) => {
     const query = "UFN_INVOICE_INS";
     const bind = {
         corpid: corpid,
@@ -1118,7 +1101,13 @@ const createInvoice = async (corpid, orgid, invoiceid, description, status, type
         contractnumber: contractnumber,
         comments: comments,
         credittype: credittype,
+        creditnotetype: creditnotetype,
+        creditnotemotive: creditnotemotive,
+        creditnotediscount: creditnotediscount,
+        invoicereferencefile: invoicereferencefile,
+        invoicepaymentnote: invoicepaymentnote,
         username: username,
+        referenceinvoiceid: referenceinvoiceid,
     }
 
     const result = await triggerfunctions.executesimpletransaction(query, bind);
@@ -1195,7 +1184,7 @@ exports.createInvoice = async (request, response) => {
                         invoicetotalcharge = (appsetting.igv * invoicetotalamount) + invoicetotalamount;
                     }
 
-                    var invoiceResponse = await createInvoice(corpid, orgid, 0, `GENERATED FOR ${clientdocnumber}`, 'ACTIVO', 'PENDING', null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchange, 'DRAFT', null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, usr);
+                    var invoiceResponse = await createInvoice(corpid, orgid, 0, `GENERATED FOR ${clientdocnumber}`, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchange, 'DRAFT', null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, null, null, null, null, null, usr, null);
 
                     if (invoiceResponse) {
                         await Promise.all(productdetail.map(async (element) => {
@@ -1252,12 +1241,12 @@ exports.createInvoice = async (request, response) => {
                         var documenttype = null;
 
                         if ((clientcountry === 'PE' && clientdoctype === '6') || (clientcountry !== 'PE' && clientdoctype === '0')) {
-                            invoicecorrelative = await getInvoiceCorrelative(corpid, orgid, invoiceResponse.invoiceid);
+                            invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'INVOICE');
                             documenttype = '01';
                         }
 
                         if ((clientcountry === 'PE') && (clientdoctype === '1' || clientdoctype === '4' || clientdoctype === '7')) {
-                            invoicecorrelative = await getInvoiceTicketCorrelative(corpid, orgid, invoiceResponse.invoiceid);
+                            invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'TICKET');
                             documenttype = '03'
                         }
 
@@ -1424,11 +1413,11 @@ exports.createInvoice = async (request, response) => {
                                     await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, autosendinvoice, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat|| null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount);
 
                                     if ((clientcountry === 'PE' && clientdoctype === '6') || (clientcountry !== 'PE' && clientdoctype === '0')) {
-                                        await getInvoiceCorrelativeError(corpid, orgid, invoiceResponse.invoiceid);
+                                        await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR');
                                     }
             
                                     if ((clientcountry === 'PE') && (clientdoctype === '1' || clientdoctype === '4' || clientdoctype === '7')) {
-                                        await getInvoiceTicketCorrelativeError(corpid, orgid, invoiceResponse.invoiceid);
+                                        await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR');
                                     }
 
                                     return response.status(403).json({ error: true, success: false, code: '', message: 'createdbutnotinvoiced' });
@@ -1468,10 +1457,185 @@ exports.createInvoice = async (request, response) => {
 
 exports.createCreditNote = async (request, response) => {
     const { userid, usr } = request.user;
-    const { corpid, orgid, invoiceid } = request.body;
+    const { corpid, orgid, invoiceid, creditnotetype, creditnotemotive, creditnotediscount } = request.body;
 
     try {
-        return response.status(500).json({ error: true, success: false, code: '', message: "generalproblem" });
+        const invoice = await getInvoice(corpid, orgid, userid, invoiceid);
+
+        if (invoice) {
+            if (invoice.type === 'INVOICE' && invoice.invoicestatus === 'INVOICED' && (invoice.invoicetype === '01' || invoice.invoicetype === '03')) {
+                const appsetting = await getAppSetting();
+
+                if (appsetting) {
+                    const invoiceDate = new Date().toISOString().split('T')[0];
+
+                    const invoiceResponse = await createInvoice(invoice.corpid, invoice.orgid, 0, `NOTA DE CREDITO: ${invoice.description}`, invoice.status, 'CREDITNOTE', appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, null, null, `NOTA DE CREDITO: ${invoice.concept}`, invoiceDate, invoiceDate, creditnotetype === '01' ? invoice.subtotal : parseFloat(creditnotediscount), invoice.taxes, creditnotetype === '01' ? invoice.totalamount : (parseFloat(creditnotediscount) * (appsetting.igv + 1)), invoice.currency, invoice.exchangerate, 'PENDING', null, invoice.purchaseorder, null, null, null, invoice.comments, invoice.credittype, creditnotetype, creditnotemotive, parseFloat(creditnotediscount), null, null, usr, invoice.invoiceid);
+
+                    if (invoiceResponse) {
+                        var invoicecorrelative = null;
+
+                        if (invoice.invoicetype == '01') {
+                            invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'CREDITINVOICE');
+                        }
+                        else {
+                            invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'CREDITTICKET');
+                        }
+
+                        if (invoicecorrelative) {
+                            try {
+                                var invoicedata = {
+                                    CodigoAnexoEmisor: appsetting.annexcode,
+                                    CodigoFormatoImpresion: appsetting.printingformat,
+                                    CodigoMoneda: invoice.currency,
+                                    Username: appsetting.sunatusername,
+                                    TipoDocumento: '07',
+                                    TipoRucEmisor: appsetting.emittertype,
+                                    CodigoRucReceptor: invoice.receiverdoctype,
+                                    CodigoUbigeoEmisor: appsetting.ubigeo,
+                                    EnviarSunat: invoice.sendtosunat,
+                                    FechaEmision: invoiceDate,
+                                    MailEnvio: invoice.receivermail,
+                                    MontoTotal: Math.round(((creditnotetype === '01' ? invoice.totalamount : parseFloat(parseFloat(creditnotediscount) * (appsetting.igv + 1))) + Number.EPSILON) * 100) / 100,
+                                    NombreComercialEmisor: appsetting.tradename,
+                                    RazonSocialEmisor: appsetting.businessname,
+                                    RazonSocialReceptor: invoice.receiverbusinessname,
+                                    CorrelativoDocumento: zeroPad(invoicecorrelative.p_correlative, 8),
+                                    RucEmisor: appsetting.ruc,
+                                    NumeroDocumentoReceptor: invoice.receiverdocnum,
+                                    NumeroSerieDocumento: invoice.invoicetype === '01' ? appsetting.invoicecreditserie : appsetting.ticketcreditserie,
+                                    RetornaPdf: appsetting.returnpdf,
+                                    RetornaXmlSunat: appsetting.returnxmlsunat,
+                                    RetornaXml: appsetting.returnxml,
+                                    TipoCambio: invoice.exchangerate,
+                                    Token: appsetting.token,
+                                    DireccionFiscalEmisor: appsetting.fiscaladdress,
+                                    DireccionFiscalReceptor: invoice.receiverfiscaladdress,
+                                    VersionXml: appsetting.xmlversion,
+                                    VersionUbl: appsetting.ublversion,
+                                    Endpoint: appsetting.sunaturl,
+                                    PaisRecepcion: invoice.receivercountry,
+                                    CodigoOperacionSunat: invoice.sunatopecode,
+                                    MontoTotalGravado: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((parseFloat(creditnotediscount) + Number.EPSILON) * 100) / 100 : null),
+                                    MontoTotalInafecto: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? '0' : invoice.subtotal) : (invoice.receivercountry === 'PE' ? '0' : parseFloat(creditnotediscount) * (appsetting.igv + 1)),
+                                    MontoTotalIgv: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((parseFloat(creditnotediscount) * appsetting.igv + Number.EPSILON) * 100) / 100 : null),
+                                    TipoNotaCredito: creditnotetype,
+                                    MotivoNotaCredito: creditnotemotive,
+                                    CodigoDocumentoNotaCredito: invoice.invoicetype,
+                                    NumeroSerieNotaCredito: invoice.serie,
+                                    NumeroCorrelativoNotaCredito: zeroPad(invoice.correlative, 8),
+                                    FechaEmisionNotaCredito: invoice.invoicedate,
+                                    ProductList: []
+                                }
+
+                                const invoicedetail = await getInvoiceDetail(corpid, orgid, userid, invoice.invoiceid);
+
+                                if (creditnotetype === '01') {
+                                    invoicedetail.forEach(async data => {
+                                        var invoicedetaildata = {
+                                            CantidadProducto: data.quantity,
+                                            CodigoProducto: data.productcode,
+                                            TipoVenta: data.saletype,
+                                            UnidadMedida: data.measureunit,
+                                            IgvTotal: Math.round((data.totaligv + Number.EPSILON) * 100) / 100,
+                                            MontoTotal: Math.round((data.totalamount + Number.EPSILON) * 100) / 100,
+                                            TasaIgv: data.igvrate * 100,
+                                            PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
+                                            DescripcionProducto: data.productdescription,
+                                            PrecioNetoProducto: data.productnetprice,
+                                            ValorNetoProducto: Math.round((data.productnetworth + Number.EPSILON) * 100) / 100,
+                                            AfectadoIgv: invoice.receivercountry === 'PE' ? '10' : '40',
+                                            TributoIgv: invoice.receivercountry === 'PE' ? '1000' : '9998',
+                                        };
+    
+                                        invoicedata.ProductList.push(invoicedetaildata);
+                                    });
+                                }
+                                else {
+                                    var invoicedetaildata = {
+                                        CantidadProducto: '1',
+                                        CodigoProducto: invoicedetail[0].productcode,
+                                        TipoVenta: invoicedetail[0].saletype,
+                                        UnidadMedida: invoicedetail[0].measureunit,
+                                        IgvTotal: Math.round((parseFloat(creditnotediscount) * appsetting.igv + Number.EPSILON) * 100) / 100,
+                                        MontoTotal: Math.round(((parseFloat(creditnotediscount) * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100,
+                                        TasaIgv: appsetting.igv * 100,
+                                        PrecioProducto: Math.round(((parseFloat(creditnotediscount) * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100,
+                                        DescripcionProducto: `DISCOUNT: ${creditnotemotive}`,
+                                        PrecioNetoProducto: Math.round((parseFloat(creditnotediscount) + Number.EPSILON) * 100) / 100,
+                                        ValorNetoProducto: Math.round((parseFloat(creditnotediscount) + Number.EPSILON) * 100) / 100,
+                                        AfectadoIgv: invoice.receivercountry === 'PE' ? '10' : '40',
+                                        TributoIgv: invoice.receivercountry === 'PE' ? '1000' : '9998',
+                                    };
+
+                                    invoicedata.ProductList.push(invoicedetaildata);
+                                }
+
+                                console.log(JSON.stringify(invoicedata));
+
+                                const requestSendToSunat = await axios({
+                                    data: invoicedata,
+                                    method: 'post',
+                                    url: `${bridgeEndpoint}processmifact/sendinvoice`
+                                });
+
+                                if (requestSendToSunat.data.result) {
+                                    await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat, invoice.returnpdf, invoice.returnxmlsunat, invoice.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, invoiceDate, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null);
+
+                                    return response.json({
+                                        code: '',
+                                        data: null,
+                                        error: false,
+                                        message: 'successinvoiced',
+                                        success: true
+                                    });
+                                }
+                                else {
+                                    await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat, invoice.returnpdf, invoice.returnxmlsunat, invoice.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, invoiceDate, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null);
+
+                                    if (invoice.invoicetype == '01') {
+                                        invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'CREDITINVOICEERROR');
+                                    }
+                                    else {
+                                        invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'CREDITTICKETERROR');
+                                    }
+
+                                    return response.status(403).json({ error: true, success: false, code: '', message: 'createdbutnotinvoiced' });
+                                }
+                            }
+                            catch (error) {
+                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', error.message, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat, invoice.returnpdf, invoice.returnxmlsunat, invoice.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, invoiceDate, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null);
+
+                                if (invoice.invoicetype == '01') {
+                                    invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'CREDITINVOICEERROR');
+                                }
+                                else {
+                                    invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'CREDITTICKETERROR');
+                                }
+
+                                return response.status(403).json({ error: true, success: false, code: '', message: 'createdbutnotinvoiced' });
+                            }
+                        }
+                        else {
+                            await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat, invoice.returnpdf, invoice.returnxmlsunat, invoice.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, invoiceDate, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null);
+
+                            return response.status(403).json({ error: true, success: false, code: '', message: 'correlativenotfound' });
+                        }
+                    }
+                    else {
+                        return response.status(403).json({ error: true, success: false, code: '', message: 'errorcreatinginvoice' });
+                    }
+                }
+                else {
+                    return response.status(403).json({ error: true, success: false, code: '', message: 'appsettingnotfound' });
+                }
+            }
+            else {
+                return response.status(403).json({ error: true, success: false, code: '', message: 'invoicenotmatch' });
+            }
+        }
+        else {
+            return response.status(403).json({ error: true, success: false, code: '', message: 'invoicenotfound' });
+        }
     } catch (error) {
         return response.status(500).json({ error: true, success: false, code: '', message: "generalproblem" });
     }
@@ -1479,7 +1643,7 @@ exports.createCreditNote = async (request, response) => {
 
 exports.regularizeInvoice = async (request, response) => {
     const { userid, usr } = request.user;
-    const { corpid, orgid, invoiceid } = request.body;
+    const { corpid, orgid, invoiceid, invoicereferencefile, invoicepaymentnote } = request.body;
 
     try {
         return response.status(500).json({ error: true, success: false, code: '', message: "generalproblem" });
