@@ -261,6 +261,7 @@ exports.changeOrganization = async (req, res) => {
             corpdesc: parameters.corpdesc,
             orgdesc: parameters.orgdesc,
             redirect: resultBD[0] ? resultBD[0].redirect : '/tickets',
+            plan: resultBD[0] ? resultBD[0].plan : '',
             currencysymbol: resultBD[0] ? resultBD[0].currencysymbol : 'S/',
             countrycode: resultBD[0] ? resultBD[0].countrycode : 'PE'
         };
