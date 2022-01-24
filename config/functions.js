@@ -930,6 +930,7 @@ module.exports = {
         select cw.personcommunicationchannel, cw.conversationid, pcc.personcommunicationchannelowner, c.ticketnum, cw.conversationstart, cw.conversationend, cw.initiatedby from conversationwhatsapp cw 
         inner join conversation c on c.conversationid = cw.conversationid and c.corpid = cw.corpid and c.orgid = cw.orgid and c.personid = cw.personid and c.communicationchannelid = cw.communicationchannelid
         inner join personcommunicationchannel pcc on pcc.personcommunicationchannel = cw.personcommunicationchannel and pcc.corpid = cw.corpid and pcc.orgid = cw.orgid and pcc.personid = cw.personid
+        where cw.corpid = $corpid and cw.orgid = $orgid
         order by cw.conversationstart desc
         `,
         module: "",
