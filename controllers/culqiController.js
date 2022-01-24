@@ -889,6 +889,10 @@ exports.charge = async (req, res) => {
 };
 
 exports.refundInvoice = async (req, res) => {
+    const culqi = new Culqi({
+        privateKey: 'sk_test_d901e8f07d45a485'
+    });
+
     const { corpid, orgid, userid, usr } = req.user;
     const { invoiceid, metadata = {} } = req.body;
     try {
@@ -974,8 +978,13 @@ const getCharge = async (corpid, orgid, userid, id) => {
 }
 
 exports.refund = async (req, res) => {
+    const culqi = new Culqi({
+        privateKey: 'sk_test_d901e8f07d45a485'
+    });
+
     const { corpid, orgid, userid, usr } = req.user;
     const { chargeid, metadata = {} } = req.body;
+
     try {
         const charge = await getCharge(corpid, orgid, userid, chargeid);
         if (charge) {
@@ -1034,6 +1043,10 @@ exports.refund = async (req, res) => {
 };
 
 const createCustomer = async (token, metadata, userprofile) => {
+    const culqi = new Culqi({
+        privateKey: 'sk_test_d901e8f07d45a485'
+    });
+    
     return await culqi.customers.createCustomer({
         first_name: userprofile.firstname,
         last_name: userprofile.lastname,
