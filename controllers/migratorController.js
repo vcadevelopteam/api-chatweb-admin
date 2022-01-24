@@ -671,7 +671,7 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
             dt.zyxmeorgid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             -5, 'America/Lima', 'PEN', 'PE'
@@ -707,9 +707,9 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
             CASE WHEN COALESCE(dt.zyxmeorgid, 0) = 0 THEN 0
-            ELSE (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1)
+            ELSE (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1)
             END,
             dt.zyxmedomainid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -745,7 +745,7 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.inputvalue
         FROM json_populate_recordset(null::record, $datatable)
@@ -780,8 +780,8 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmeappintegrationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.appid, dt.externalsource, dt.environment, dt.keyparameters, dt.integrationid
@@ -819,8 +819,8 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmebotconfigurationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.bottype, dt.parameterjson
@@ -867,17 +867,17 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmecommunicationchannelid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             COALESCE(dt.communicationchannelsite, ''), COALESCE(dt.communicationchannelowner, ''), COALESCE(dt.communicationchannelcontact, ''), dt.communicationchanneltoken,
             dt.botenabled, dt.customicon, dt.coloricon,
-            (SELECT botconfigurationid FROM botconfiguration WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmebotconfigurationid = dt.zyxmebotconfigurationid LIMIT 1),
+            (SELECT b.botconfigurationid FROM botconfiguration b WHERE b.zyxmecorpid = dt.zyxmecorpid AND b.zyxmebotconfigurationid = dt.zyxmebotconfigurationid ORDER BY b.botconfigurationid DESC LIMIT 1),
             dt.relatedid, dt.schedule, dt.chatflowenabled,
             dt.integrationid,
             CASE WHEN COALESCE(dt.zyxmeappintegrationid, 0) = 0 THEN 0
-            ELSE (SELECT appintegrationid FROM appintegration WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeappintegrationid = dt.zyxmeappintegrationid LIMIT 1)
+            ELSE (SELECT a.appintegrationid FROM appintegration a WHERE a.zyxmecorpid = dt.zyxmecorpid AND a.zyxmeappintegrationid = dt.zyxmeappintegrationid ORDER BY a.appintegrationid DESC LIMIT 1)
             END,
             dt.country, dt.channelparameters, dt.channelactive, dt.resolvelithium,
             dt.color, dt.icons, dt.other, dt.form, dt.apikey,
@@ -919,9 +919,9 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
@@ -961,12 +961,12 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
             CASE WHEN COALESCE(dt.zyxmeorgid, 0) = 0 THEN 0
-            ELSE (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1)
+            ELSE (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1)
             END,
             CASE WHEN COALESCE(dt.zyxmecommunicationchannelid, 0) = 0 THEN 0
-            ELSE (SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1)
+            ELSE (SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1)
             END,
             dt.zyxmepropertyid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -1042,7 +1042,7 @@ const queryCore = {
             dt.email::CHARACTER VARYING, dt.doctype, dt.docnum, dt.pwd, dt.firstname, dt.lastname, dt.email,
             dt.pwdchangefirstlogin, dt.facebookid, dt.googleid, dt.company,
             dt.twofactorauthentication, dt.usersupport,
-            (SELECT propertyid FROM property WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepropertyid = dt.billinggroup LIMIT 1),
+            (SELECT p.propertyid FROM property p WHERE p.zyxmecorpid = dt.zyxmecorpid AND p.zyxmepropertyid = dt.billinggroup ORDER BY p.propertyid DESC LIMIT 1),
             dt.registercode, dt.usercall,
             dt.passwordchangedate, dt.lastlogin, dt.lastlogout, dt.lasttokenorigin, dt.lasttokenstatus,
             dt.lasthistorystatus, dt.lasthistorytype, dt.lastmotivetype, dt.lastmotivedescription,
@@ -1174,8 +1174,8 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmeuserid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.motivetype, dt.motivedescription, dt.desconectedtime
@@ -1210,8 +1210,8 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmeusridfrom,
             dt.zyxmeusrid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
@@ -1255,10 +1255,10 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmeuserid,
-            (SELECT roleid FROM role WHERE corpid = 1 AND orgid = 1 AND code = dt.rolecode LIMIT 1),
+            (SELECT r.roleid FROM role r WHERE r.corpid = 1 AND r.orgid = 1 AND r.code = dt.rolecode AND r.status = 'ACTIVO' LIMIT 1),
             dt.supervisor,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.bydefault, dt.labels, dt.groups,
@@ -1315,14 +1315,14 @@ const querySubcoreClassification = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmeclassificationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.description,
             dt.parent,
             dt.communicationchannel, dt.path, dt.jobplan,
-            (SELECT propertyid FROM property WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepropertyid = dt.usergroup LIMIT 1),
+            (SELECT p.propertyid FROM property p WHERE p.zyxmecorpid = dt.zyxmecorpid AND p.zyxmepropertyid = dt.usergroup ORDER BY p.propertyid DESC LIMIT 1),
             dt.schedule
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
@@ -1369,9 +1369,9 @@ const querySubcoreClassification = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            (SELECT classificationid FROM classification WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeclassificationid = dt.zyxmeclassificationid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            (SELECT c.classificationid FROM classification c WHERE c.zyxmecorpid = dt.zyxmecorpid AND c.zyxmeclassificationid = dt.zyxmeclassificationid ORDER BY c.classificationid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.quickreply
         FROM json_populate_recordset(null::record, $datatable)
@@ -1426,8 +1426,8 @@ const querySubcorePerson = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmepersonid,
             dt.zyxmepersonid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -1436,7 +1436,7 @@ const querySubcorePerson = {
             dt.persontype, dt.personstatus,
             dt.phone, dt.email, dt.alternativephone, dt.alternativeemail,
             dt.firstcontact, dt.lastcontact,
-            (SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.lastcommunicationchannelid LIMIT 1),
+            (SELECT c.communicationchannelid FROM communicationchannel c WHERE c.zyxmecorpid = dt.zyxmecorpid AND c.zyxmecommunicationchannelid = dt.lastcommunicationchannelid ORDER BY c.communicationchannelid DESC LIMIT 1),
             dt.documenttype, dt.documentnumber,
             dt.firstname, dt.lastname, dt.imageurldef, dt.sex, dt.gender, dt.birthday, dt.civilstatus, dt.occupation, dt.educationlevel,
             dt.termsandconditions, dt.installments, dt.feeamount, dt.approvedamount, dt.evaluationstatus,
@@ -1492,8 +1492,8 @@ const querySubcorePerson = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmepersonid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.addinfo
@@ -1531,11 +1531,11 @@ const querySubcorePerson = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             COALESCE(
                 dt.zyxmepersonid,
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
+                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1) LIMIT 1)
             ),
             dt.personcommunicationchannel,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -1579,9 +1579,9 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            (SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            (SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1),
             dt.zyxmepersonid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.postexternalid, dt.message, dt.content, dt.postexternalparentid, dt.commentexternalid
@@ -1620,9 +1620,9 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
             dt.personcommunicationchannel,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
         FROM json_populate_recordset(null::record, $datatable)
@@ -1722,11 +1722,11 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
-            COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
+            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
             dt.zyxmeconversationid,
             dt.zyxmeconversationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -1828,13 +1828,13 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
             COALESCE(dt.zyxmeconversationid,0),
-            COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
-            COALESCE((SELECT classificationid FROM classification WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeclassificationid = dt.zyxmeclassificationid LIMIT 1), 0),
+            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
+            COALESCE((SELECT c.classificationid FROM classification c WHERE c.zyxmecorpid = dt.zyxmecorpid AND c.zyxmeclassificationid = dt.zyxmeclassificationid ORDER BY c.classificationid DESC LIMIT 1), 0),
             dt.status, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.jobplan
         FROM json_populate_recordset(null::record, $datatable)
@@ -1878,11 +1878,11 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
-            COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
+            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
             COALESCE(dt.zyxmeconversationid, 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.addpersonnote, dt.note
@@ -1926,11 +1926,11 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
-            COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
+            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
             COALESCE(dt.zyxmeconversationid, 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.startpause, dt.stoppause
@@ -1973,8 +1973,8 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.personcommunicationchannel,
             dt.zyxmeuserid,
             dt.zyxmeconversationid,
@@ -2016,11 +2016,11 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
-            COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
+            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
             COALESCE(dt.zyxmeconversationid, 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
         FROM json_populate_recordset(null::record, $datatable)
@@ -2089,11 +2089,11 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmepersonid,
             dt.personcommunicationchannel,
-            COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
+            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
             dt.zyxmeconversationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.interactiontext,
@@ -2163,8 +2163,8 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmeconversationid,
             dt.description, dt.status, dt.type::CHARACTER VARYING, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.answer, dt.answervalue, dt.comment,
@@ -2228,8 +2228,8 @@ const querySubcoreCampaign = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmemessagetemplateid,
             dt.description, dt.status, dt.type::CHARACTER VARYING, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.name, dt.namespace, dt.category, dt.language,
@@ -2288,16 +2288,16 @@ const querySubcoreCampaign = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmecampaignid,
             dt.description, dt.status, REPLACE(dt.type, 'HSMID', 'HSM'), dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.title, dt.members, dt.startdate::DATE, dt.enddate::DATE, dt.repeatable, dt.frecuency,
             dt.message,
-            (SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1),
+            (SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1),
             dt.messagetemplatename, dt.messagetemplatenamespace,
             dt.counter, dt.lastrundate, dt.usergroup, dt.subject,
-            (SELECT messagetemplateid FROM messagetemplate WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmemessagetemplateid = dt.zyxmemessagetemplateid LIMIT 1),
+            (SELECT mt.messagetemplateid FROM messagetemplate mt WHERE mt.zyxmecorpid = dt.zyxmecorpid AND mt.zyxmemessagetemplateid = dt.zyxmemessagetemplateid ORDER BY mt.messagetemplateid DESC LIMIT 1),
             dt.messagetemplateheader::JSONB,
             REPLACE(REPLACE(NULLIF(NULLIF(dt.messagetemplatebuttons, '[]'),''),'"value":','"payload":'),'"text":','"title":')::JSONB,
             dt.executiontype, dt.batchjson::JSONB,
@@ -2357,9 +2357,9 @@ const querySubcoreCampaign = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            (SELECT campaignid FROM campaign WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignid = dt.zyxmecampaignid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            (SELECT ca.campaignid FROM campaign ca WHERE ca.zyxmecorpid = dt.zyxmecorpid AND ca.zyxmecampaignid = dt.zyxmecampaignid ORDER BY ca.campaignid DESC LIMIT 1),
             dt.zyxmepersonid,
             dt.zyxmecampaignmemberid,
             dt.status, dt.personcommunicationchannel, dt.type, dt.displayname, dt.personcommunicationchannelowner,
@@ -2407,9 +2407,9 @@ const querySubcoreCampaign = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            (SELECT campaignid FROM campaign WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignid = dt.zyxmecampaignid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            (SELECT ca.campaignid FROM campaign ca WHERE ca.zyxmecorpid = dt.zyxmecorpid AND ca.zyxmecampaignid = dt.zyxmecampaignid ORDER BY ca.campaignid DESC LIMIT 1),
             COALESCE(dt.zyxmepersonid, 0),
             COALESCE(dt.zyxmecampaignmemberid, 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -2472,15 +2472,15 @@ const querySubcoreOthers = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmetaskschedulerid,
             dt.tasktype::TEXT,
             CASE WHEN dt.tasktype = 'ExecuteCampaign'
             THEN jsonb_set(
                 dt.taskbody::JSONB,
                 '{campaignid}',
-                to_jsonb((SELECT campaignid FROM campaign WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignid = (dt.taskbody::JSONB->>'campaignid')::BIGINT LIMIT 1)),
+                to_jsonb((SELECT ca.campaignid FROM campaign ca WHERE ca.zyxmecorpid = dt.zyxmecorpid AND ca.zyxmecampaignid = (dt.taskbody::JSONB->>'campaignid')::BIGINT ORDER BY ca.campaignid DESC LIMIT 1)),
                 false
             )::TEXT
             ELSE dt.taskbody::TEXT
@@ -2529,8 +2529,8 @@ const querySubcoreOthers = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmechatblockversionid,
             (
                 SELECT string_agg(communicationchannelid::text,',')
@@ -2580,8 +2580,8 @@ const querySubcoreOthers = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             (
                 SELECT string_agg(communicationchannelid::text,',')
                 FROM communicationchannel
@@ -2592,7 +2592,7 @@ const querySubcoreOthers = {
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.title, dt.defaultgroupid, dt.defaultblockid, dt.firstblockid, dt.aiblockid, dt.blockgroup, dt.variablecustom,
             dt.color, dt.icontype, dt.tag,
-            (SELECT chatblockversionid FROM blockversion WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmechatblockversionid = dt.zyxmechatblockversionid LIMIT 1)
+            (SELECT bv.chatblockversionid FROM blockversion bv WHERE bv.zyxmecorpid = dt.zyxmecorpid AND bv.zyxmechatblockversionid = dt.zyxmechatblockversionid ORDER BY bv.chatblockversionid DESC LIMIT 1)
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
             zyxmecorpid bigint, zyxmeorgid bigint,
@@ -2628,8 +2628,8 @@ const querySubcoreOthers = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.chatblockid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.variable, dt.fontcolor, dt.fontbold, dt.priority, dt.visible
@@ -2664,8 +2664,8 @@ const querySubcoreOthers = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.endpoint, dt.modelid, dt.apikey, dt.provider
         FROM json_populate_recordset(null::record, $datatable)
@@ -2698,8 +2698,8 @@ const querySubcoreOthers = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             (SELECT jsonb_agg(
                         jsonb_set(
@@ -2717,7 +2717,7 @@ const querySubcoreOthers = {
                     FROM (
                         SELECT
                         ja.value as jv,
-                        (SELECT intelligentmodelsid FROM intelligentmodels WHERE zyxmecorpid = dt.zyxmecorpid AND intelligentmodelsid = (ja.value->>'intelligentmodelsid')::BIGINT) as zyxmeintelligentmodelsid,
+                        (SELECT i.intelligentmodelsid FROM intelligentmodels i WHERE i.zyxmecorpid = dt.zyxmecorpid AND i.intelligentmodelsid = (ja.value->>'intelligentmodelsid')::BIGINT ORDER BY i.intelligentmodelsid DESC LIMIT 1) as zyxmeintelligentmodelsid,
                         CASE ja.value->>'service'
                         WHEN 'WATSON ASSISTANT' THEN 'ASSISTANT'
                         WHEN 'RASA' THEN 'ASSISTANT'
@@ -2771,8 +2771,8 @@ const querySubcoreOthers = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmeconversationid,
             dt.zyxmepersonid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -2822,8 +2822,8 @@ const querySubcoreOthers = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmeuserid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.fullname,
@@ -2877,8 +2877,8 @@ const queryExtras = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmeblacklistid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.phone
@@ -2914,13 +2914,13 @@ const queryExtras = {
         )
         SELECT 
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             COALESCE(jsonb_set(
                 dt.config::JSONB,
                 '{CommunicationChannelId}',
-                to_jsonb((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = (dt.config::JSONB->>'CommunicationChannelId')::BIGINT LIMIT 1)),
+                to_jsonb((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = (dt.config::JSONB->>'CommunicationChannelId')::BIGINT ORDER BY cc.communicationchannelid DESC LIMIT 1)),
                 false
             ), dt.config::JSONB)::TEXT,
             dt.success, dt.message, dt.groupname, dt.transactionid, dt.externalid
@@ -2950,8 +2950,8 @@ const queryExtras = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
@@ -2982,8 +2982,8 @@ const queryExtras = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.color, dt.intent, dt.tags
         FROM json_populate_recordset(null::record, $datatable)
@@ -3018,8 +3018,8 @@ const queryExtras = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.name, dt.address, dt.district, dt.city, dt.country, dt.schedule, dt.phone, dt.alternativephone, dt.email, dt.alternativeemail,
             dt.latitude, dt.longitude, dt.googleurl
@@ -3055,8 +3055,8 @@ const queryExtras = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             (
                 SELECT string_agg(communicationchannelid::text,',')
@@ -3106,8 +3106,8 @@ const queryExtras = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.company,
             (
@@ -3159,8 +3159,8 @@ const queryExtras = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.phone, dt.asesorname, dt.documenttype, dt.documentnumber, dt.usergroup
         FROM json_populate_recordset(null::record, $datatable)
