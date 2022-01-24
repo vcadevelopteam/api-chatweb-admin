@@ -1056,6 +1056,26 @@ const saveCard = async (corpid, orgid, card) => {
     await sequelize.query(query, { type: QueryTypes.SELECT, bind: { corpid: corpid, orgid: orgid, cardjson: card }}).catch(err => getErrorSeq(err));
 }
 
+const nullInvoice = async (corpid, orgid, invoiceid, username) => {
+    const query = "UFN_INVOICE_ANNULLED";
+    const bind = {
+        corpid: corpid,
+        orgid: orgid,
+        invoiceid: invoiceid,
+        username: username,
+    }
+
+    const result = await triggerfunctions.executesimpletransaction(query, bind);
+
+    if (result instanceof Array) {
+        if (result.length > 0) {
+            return result[0]
+        }
+    }
+
+    return null
+}
+
 const createInvoice = async (corpid, orgid, invoiceid, description, status, type, issuerruc, issuerbusinessname, issuertradename, issuerfiscaladdress, issuerubigeo, emittertype, annexcode, printingformat, xmlversion, ublversion, receiverdoctype, receiverdocnum, receiverbusinessname, receiverfiscaladdress, receivercountry, receivermail, invoicetype, sunatopecode, serie, correlative, concept, invoicedate, expirationdate, subtotal, taxes, totalamount, currency, exchangerate, invoicestatus, filenumber, purchaseorder, executingunitcode, selectionprocessnumber, contractnumber, comments, credittype, creditnotetype, creditnotemotive, creditnotediscount, invoicereferencefile, invoicepaymentnote, username, referenceinvoiceid) => {
     const query = "UFN_INVOICE_INS";
     const bind = {
@@ -1570,8 +1590,6 @@ exports.createCreditNote = async (request, response) => {
                                     invoicedata.ProductList.push(invoicedetaildata);
                                 }
 
-                                console.log(JSON.stringify(invoicedata));
-
                                 const requestSendToSunat = await axios({
                                     data: invoicedata,
                                     method: 'post',
@@ -1581,6 +1599,10 @@ exports.createCreditNote = async (request, response) => {
                                 if (requestSendToSunat.data.result) {
                                     await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat, invoice.returnpdf, invoice.returnxmlsunat, invoice.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, invoiceDate, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null);
 
+                                    if (creditnotetype === '01') {
+                                        await nullInvoice(corpid, orgid, invoice.invoiceid, usr);
+                                    }
+                                    
                                     return response.json({
                                         code: '',
                                         data: null,
