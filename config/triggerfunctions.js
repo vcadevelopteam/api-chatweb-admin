@@ -370,11 +370,9 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries) => 
                     columnname = columnname + "seconds";
                 }
 
-                if (item.function === "total") {
-                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + tmpdata.length;
-                } else if (item.function === "count") {
-                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + tmpdata.length;
-                } else if (item.function === "sum") {
+                if (item.function === "count") {
+                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + tmpdata.filter(x => !!x[columnname]).length;
+                } else if (item.function === "total") {
                     const auxq = item.function.toUpperCase() + ": " + tmpdata.reduce((a, b) => a + b[columnname], 0);
                     acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.type === "interval" ? secondsToTime(auxq) : auxq;
                 } else if (item.function === "average") {
