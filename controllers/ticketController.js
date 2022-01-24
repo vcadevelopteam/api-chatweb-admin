@@ -224,7 +224,6 @@ exports.sendHSM = async (req, res) => {
             corpid: req.user.corpid,
             orgid: req.user.orgid,
         })
-        console.log("ff", ff)
 
         if (data.type === "MAIL") {
             let jsonconfigmail = "";
@@ -266,6 +265,7 @@ exports.sendHSM = async (req, res) => {
                             LastName: x.lastname,
                             HsmTo: x.email,
                             Origin: "EXTERNAL",
+                            MessageTemplateId: data.hsmtemplateid,
                             ShippingReason: data.shippingreason,
                             HsmId: data.hsmtemplatename,
                             Body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), mailtemplate.body)

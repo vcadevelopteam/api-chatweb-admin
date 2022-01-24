@@ -304,6 +304,8 @@ const errorstmp = {
     "42601": "SINTAX_ERROR",
     "E-ZYX-42601": "SINTAX_ERROR",
     "42883": "FUNCTION_NOT_EXISTS",
+    "E-ZYX-50051": "EXCESS_CHANNELS",
+    "E-ZYX-50052": "EXCESS_USERS",
 }
 exports.errors = errorstmp;
 
