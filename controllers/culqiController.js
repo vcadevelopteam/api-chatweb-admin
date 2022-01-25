@@ -1083,7 +1083,7 @@ exports.chargeInvoice = async (req, res) => {
                                                 PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
                                                 DescripcionProducto: data.productdescription,
                                                 PrecioNetoProducto: data.productnetprice,
-                                                ValorNetoProducto: Math.round((data.productnetworth + Number.EPSILON) * 100) / 100,
+                                                ValorNetoProducto: Math.round(((data.quantity * data.productnetworth) + Number.EPSILON) * 100) / 100,
                                             };
 
                                             if (corp.billbyorg) {
@@ -1139,7 +1139,7 @@ exports.chargeInvoice = async (req, res) => {
                                         });
 
                                         if (requestSendToSunat.data.result) {
-                                            await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, purchaseorder || null, comments || null, 'AL CONTADO'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount);
+                                            await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, purchaseorder || null, comments || null, 'typecredit_alcontado'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount);
                                         }
                                         else {
                                             await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, purchaseorder || null, comments || null, 'typecredit_alcontado'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount);
@@ -1604,7 +1604,7 @@ exports.createCreditNote = async (request, response) => {
                                     PaisRecepcion: invoice.receivercountry,
                                     CodigoOperacionSunat: invoice.sunatopecode,
                                     MontoTotalGravado: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((parseFloat(creditnotediscount) + Number.EPSILON) * 100) / 100 : null),
-                                    MontoTotalInafecto: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? '0' : invoice.subtotal) : (invoice.receivercountry === 'PE' ? '0' : parseFloat(creditnotediscount) * (appsetting.igv + 1)),
+                                    MontoTotalInafecto: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100) : (invoice.receivercountry === 'PE' ? '0' : Math.round((parseFloat(creditnotediscount) * (appsetting.igv + 1) + Number.EPSILON) * 100) / 100),
                                     MontoTotalIgv: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((parseFloat(creditnotediscount) * appsetting.igv + Number.EPSILON) * 100) / 100 : null),
                                     TipoNotaCredito: creditnotetype,
                                     MotivoNotaCredito: creditnotemotive,
@@ -1644,13 +1644,13 @@ exports.createCreditNote = async (request, response) => {
                                         CodigoProducto: invoicedetail[0].productcode,
                                         TipoVenta: invoicedetail[0].saletype,
                                         UnidadMedida: invoicedetail[0].measureunit,
-                                        IgvTotal: Math.round((parseFloat(creditnotediscount) * appsetting.igv + Number.EPSILON) * 100) / 100,
+                                        IgvTotal: invoice.receivercountry === 'PE' ? Math.round((parseFloat(creditnotediscount) * appsetting.igv + Number.EPSILON) * 100) / 100 : 0,
                                         MontoTotal: Math.round(((parseFloat(creditnotediscount) * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100,
-                                        TasaIgv: appsetting.igv * 100,
+                                        TasaIgv: invoice.receivercountry === 'PE' ? appsetting.igv * 100 : 0,
                                         PrecioProducto: Math.round(((parseFloat(creditnotediscount) * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100,
                                         DescripcionProducto: `DISCOUNT: ${creditnotemotive}`,
-                                        PrecioNetoProducto: Math.round((parseFloat(creditnotediscount) + Number.EPSILON) * 100) / 100,
-                                        ValorNetoProducto: Math.round((parseFloat(creditnotediscount) + Number.EPSILON) * 100) / 100,
+                                        PrecioNetoProducto: invoice.receivercountry === 'PE' ? (Math.round((parseFloat(creditnotediscount) + Number.EPSILON) * 100) / 100) : (Math.round(((parseFloat(creditnotediscount) * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100),
+                                        ValorNetoProducto: invoice.receivercountry === 'PE' ? (Math.round((parseFloat(creditnotediscount) + Number.EPSILON) * 100) / 100) : (Math.round(((parseFloat(creditnotediscount) * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100),
                                         AfectadoIgv: invoice.receivercountry === 'PE' ? '10' : '40',
                                         TributoIgv: invoice.receivercountry === 'PE' ? '1000' : '9998',
                                     };
