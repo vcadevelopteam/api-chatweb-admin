@@ -1845,4 +1845,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_INVOICE_DELETE: {
+        query: "SELECT * FROM ufn_invoice_delete($corpid, $orgid, $invoiceid, $username)",
+        module: "",
+        protected: "DELETE"
+    },
+    UFN_INVOICEDETAIL_DELETE: {
+        query: "SELECT * FROM ufn_invoicedetail_delete($corpid, $orgid, $invoiceid)",
+        module: "",
+        protected: "DELETE"
+    },
 }

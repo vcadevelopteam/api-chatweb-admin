@@ -10,32 +10,19 @@ const exchangeEndpoint = process.env.EXCHANGE;
 
 const bridgeEndpoint = process.env.BRIDGE;
 
-exports.getToken = async (req, res) => {
-    const { token } = req.body;
-    try {
-        const culqi = new Culqi({
-            privateKey: 'sk_test_d901e8f07d45a485'
-        });
-
-        const tk = await culqi.tokens.getToken({
-            id: token.id, 
-        });
-        return res.json({ error: false, success: true, data: tk });
-    } catch (error) {
-        return res.status(500).json({ msg: "There was a problem, please try again later" });
-    }
-}
-
 const zeroPad = (num, places) => String(num).padStart(places, '0')
 
 const getUserProfile = async (userid) => {
-    const query = "SELECT firstname, lastname, email, phone, country FROM usr WHERE userid = $userid"
+    const query = "SELECT firstname, lastname, email, phone, country FROM usr WHERE userid = $userid";
+
     const result = await sequelize.query(query, { type: QueryTypes.SELECT, bind: { userid }}).catch(err => getErrorSeq(err));
+
     if (result instanceof Array) {
         if (result.length > 0) {
             return result[0]
         }
     }
+
     return null
 }
 
@@ -47,12 +34,15 @@ const getInvoice = async (corpid, orgid, userid, id) => {
         userid: userid,
         invoiceid: id
     }
+
     const result = await triggerfunctions.executesimpletransaction(query, bind);
+
     if (result instanceof Array) {
         if (result.length > 0) {
             return result[0]
         }
     }
+
     return null
 }
 
@@ -64,17 +54,25 @@ const getInvoiceDetail = async (corpid, orgid, userid, id) => {
         userid: userid,
         invoiceid: id
     }
+
     const result = await triggerfunctions.executesimpletransaction(query, bind);
+
     if (result instanceof Array) {
         if (result.length > 0) {
             return result
         }
     }
+
     return null
 }
 
 const getCorrelativeNumber = async (corpid, orgid, id, correlativetype) => {
     var query = null;
+    const bind = {
+        corpid: corpid,
+        orgid: orgid,
+        invoiceid: id
+    }
 
     switch (correlativetype) {
         case 'INVOICE':
@@ -102,12 +100,6 @@ const getCorrelativeNumber = async (corpid, orgid, id, correlativetype) => {
             query = 'UFN_INVOICECREDIT_TICKETCREDITCORRELATIVEERROR';
             break;
     }
-    
-    const bind = {
-        corpid: corpid,
-        orgid: orgid,
-        invoiceid: id
-    }
 
     const result = await triggerfunctions.executesimpletransaction(query, bind);
 
@@ -129,12 +121,15 @@ const getCorporation = async (corpid) => {
         username: 'admin',
         all: false
     }
+
     const result = await triggerfunctions.executesimpletransaction(query, bind);
+
     if (result instanceof Array) {
         if (result.length > 0) {
             return result[0]
         }
     }
+
     return null
 }
 
@@ -148,32 +143,38 @@ const getOrganization = async (corpid, orgid) => {
             username: 'admin',
             all: false
         }
+
         const result = await triggerfunctions.executesimpletransaction(query, bind);
+
         if (result instanceof Array) {
             if (result.length > 0) {
                 return result[0]
             }
         }
     }
+
     return null
 }
 
 const getAppSetting = async () => {
     const query = "UFN_APPSETTING_INVOICE_SEL";
+
     const result = await triggerfunctions.executesimpletransaction(query);
+
     if (result instanceof Array) {
         if (result.length > 0) {
             return result[0]
         }
     }
+
     return null
 }
 
 const getLastExchange = async () => {
+    var currentDate = new Date();
+
     var exchangeRate = 0;
     var maximumretry = 0;
-
-    var currentDate = new Date();
 
     while (exchangeRate === 0 && maximumretry <= 10) {
         try {
@@ -258,6 +259,205 @@ const invoiceSunat = async (corpid, orgid, invoiceid, status, error, qrcode, has
     return null
 }
 
+const createCharge = async (userprofile, settings, token, metadata, privatekey) => {
+    const culqi = new Culqi({
+        privateKey: privatekey
+    });
+
+    return await culqi.charges.createCharge({
+        amount: settings.amount,
+        currency_code: settings.currency,
+        email: token.email,
+        source_id: token.id,
+        capture: true,
+        description: `Laraigo ${settings.description}`.slice(0,80),
+        metadata: metadata,
+        antifraud_details: {
+            first_name: userprofile.firstname,
+            last_name: userprofile.lastname,
+            address: userprofile.address || 'EMPTY',
+            address_city: userprofile.address_city || 'N/A',
+            country_code: userprofile.country || token.client.ip_country_code,
+            phone: userprofile.phone,
+        }
+    });
+}
+
+const getCharge = async (corpid, orgid, userid, id) => {
+    const query = "UFN_CHARGE_SEL";
+    const bind = {
+        corpid: corpid,
+        orgid: orgid,
+        userid: userid,
+        invoiceid: id
+    }
+
+    const result = await triggerfunctions.executesimpletransaction(query, bind);
+
+    if (result instanceof Array) {
+        if (result.length > 0) {
+            return result[0]
+        }
+    }
+
+    return null
+}
+
+const createInvoice = async (corpid, orgid, invoiceid, description, status, type, issuerruc, issuerbusinessname, issuertradename, issuerfiscaladdress, issuerubigeo, emittertype, annexcode, printingformat, xmlversion, ublversion, receiverdoctype, receiverdocnum, receiverbusinessname, receiverfiscaladdress, receivercountry, receivermail, invoicetype, sunatopecode, serie, correlative, concept, invoicedate, expirationdate, subtotal, taxes, totalamount, currency, exchangerate, invoicestatus, filenumber, purchaseorder, executingunitcode, selectionprocessnumber, contractnumber, comments, credittype, creditnotetype, creditnotemotive, creditnotediscount, invoicereferencefile, invoicepaymentnote, username, referenceinvoiceid) => {
+    const query = "UFN_INVOICE_INS";
+    const bind = {
+        corpid: corpid,
+        orgid: orgid,
+        invoiceid: invoiceid,
+        description: description,
+        status: status,
+        type: type,
+        issuerruc: issuerruc,
+        issuerbusinessname: issuerbusinessname,
+        issuertradename: issuertradename,
+        issuerfiscaladdress: issuerfiscaladdress,
+        issuerubigeo: issuerubigeo,
+        emittertype: emittertype,
+        annexcode: annexcode,
+        printingformat: printingformat,
+        xmlversion: xmlversion,
+        ublversion: ublversion,
+        receiverdoctype: receiverdoctype,
+        receiverdocnum: receiverdocnum,
+        receiverbusinessname: receiverbusinessname,
+        receiverfiscaladdress: receiverfiscaladdress,
+        receivercountry: receivercountry,
+        receivermail: receivermail,
+        invoicetype: invoicetype,
+        sunatopecode: sunatopecode,
+        serie: serie,
+        correlative: correlative,
+        concept: concept,
+        invoicedate: invoicedate,
+        expirationdate: expirationdate,
+        subtotal: subtotal,
+        taxes: taxes,
+        totalamount: totalamount,
+        currency: currency,
+        exchangerate: exchangerate,
+        invoicestatus: invoicestatus,
+        filenumber: filenumber,
+        purchaseorder: purchaseorder,
+        executingunitcode: executingunitcode,
+        selectionprocessnumber: selectionprocessnumber,
+        contractnumber: contractnumber,
+        comments: comments,
+        credittype: credittype,
+        creditnotetype: creditnotetype,
+        creditnotemotive: creditnotemotive,
+        creditnotediscount: creditnotediscount,
+        invoicereferencefile: invoicereferencefile,
+        invoicepaymentnote: invoicepaymentnote,
+        username: username,
+        referenceinvoiceid: referenceinvoiceid,
+    }
+
+    const result = await triggerfunctions.executesimpletransaction(query, bind);
+
+    if (result instanceof Array) {
+        if (result.length > 0) {
+            return result[0]
+        }
+    }
+
+    return null
+}
+
+const createInvoiceDetail = async (corpid, orgid, invoiceid, description, status, type, quantity, productcode, hasigv, saletype, igvtribute, measureunit, totaligv, totalamount, igvrate, productprice, productdescription, productnetprice, productnetworth, username) => {
+    const query = "UFN_INVOICEDETAIL_INS";
+    const bind = {
+        corpid: corpid,
+        orgid: orgid,
+        invoiceid: invoiceid,
+        description: description,
+        status: status,
+        type: type,
+        quantity: quantity,
+        productcode: productcode,
+        hasigv: hasigv,
+        saletype: saletype,
+        igvtribute: igvtribute,
+        measureunit: measureunit,
+        totaligv: totaligv,
+        totalamount: totalamount,
+        igvrate: igvrate,
+        productprice: productprice,
+        productdescription: productdescription,
+        productnetprice: productnetprice,
+        productnetworth: productnetworth,
+        username: username
+    }
+    
+    const result = await triggerfunctions.executesimpletransaction(query, bind);
+
+    if (result instanceof Array) {
+        return result;
+    }
+
+    return null
+}
+
+const deleteInvoiceDetail = async (corpid, orgid, invoiceid) => {
+    const query = "UFN_INVOICEDETAIL_DELETE";
+    const bind = {
+        corpid: corpid,
+        orgid: orgid,
+        invoiceid: invoiceid
+    }
+    
+    const result = await triggerfunctions.executesimpletransaction(query, bind);
+
+    if (result instanceof Array) {
+        return result;
+    }
+
+    return null
+}
+
+const changePaymentInvoice = async (corpid, orgid, invoiceid, status, paymentnote, paymentfile, username) => {
+    const query = "UFN_INVOICE_CHANGEPAYMENTSTATUS";
+    const bind = {
+        corpid: corpid,
+        orgid: orgid,
+        invoiceid: invoiceid,
+        status: status,
+        paymentnote: paymentnote,
+        paymentfile: paymentfile,
+        username, username,
+    }
+    
+    const result = await triggerfunctions.executesimpletransaction(query, bind);
+
+    if (result instanceof Array) {
+        return result;
+    }
+
+    return null
+}
+
+exports.getToken = async (req, res) => {
+    const { token } = req.body;
+
+    try {
+        const culqi = new Culqi({
+            privateKey: 'sk_test_d901e8f07d45a485'
+        });
+
+        const tk = await culqi.tokens.getToken({
+            id: token.id, 
+        });
+
+        return res.json({ error: false, success: true, data: tk });
+    } catch (error) {
+        return res.status(500).json({ msg: "There was a problem, please try again later" });
+    }
+}
+
 exports.createOrder = async (req, res) => {
     const culqi = new Culqi({
         privateKey: 'sk_test_d901e8f07d45a485'
@@ -265,9 +465,12 @@ exports.createOrder = async (req, res) => {
 
     const { corpid, orgid, userid } = req.user;
     const { invoiceid } = req.body;
+
     try {
-        const userprofile = await getUserProfile(userid);
         const invoice = await getInvoice(corpid, orgid, userid, invoiceid);
+
+        const userprofile = await getUserProfile(userid);
+
         if (invoice) {
             const order = await culqi.orders.createOrder({
                 amount: invoice.totalamount * 100,
@@ -282,6 +485,7 @@ exports.createOrder = async (req, res) => {
                 },
                 expiration_date: Math.trunc(new Date().setMonth(new Date().getMonth()+2)/1000)
             });
+
             const query = "UFN_INVOICE_ORDER";
             const bind = {
                 corpid: corpid,
@@ -290,7 +494,9 @@ exports.createOrder = async (req, res) => {
                 orderid: order.id,
                 orderjson: order
             }
+
             const result = await triggerfunctions.executesimpletransaction(query, bind);
+
             if (result instanceof Array) {
                 if (result.length > 0) {
                     return result.json({
@@ -327,10 +533,12 @@ exports.deleteOrder = async (req, res) => {
 
     try {
         const invoice = await getInvoice(corpid, orgid, userid, invoiceid);
+
         if (invoice) {
             const order = await culqi.orders.deleteOrder({
                 id: invoice.orderid
             });
+
             const query = "UFN_INVOICE_ORDER";
             const bind = {
                 corpid: corpid,
@@ -339,7 +547,9 @@ exports.deleteOrder = async (req, res) => {
                 orderid: null,
                 orderjson: null
             }
+
             const result = await triggerfunctions.executesimpletransaction(query, bind);
+
             if (result instanceof Array) {
                 if (result.length > 0) {
                     return result.json({
@@ -366,29 +576,230 @@ exports.deleteOrder = async (req, res) => {
     }
 }
 
-const createCharge = async (userprofile, settings, token, metadata, privatekey) => {
+exports.charge = async (req, res) => {
+    const { corpid, orgid, userid, usr } = req.user;
+    const { settings, token, metadata = {} } = req.body;
+
+    try {
+        const userprofile = await getUserProfile(userid);
+
+        if (userprofile) {
+            metadata.corpid = corpid;
+            metadata.orgid = orgid;
+            metadata.userid = userid;
+
+            const charge = await createCharge(userprofile, settings, token, metadata, 'sk_test_d901e8f07d45a485');
+
+            if (charge.object === 'error') {
+                return res.status(400).json({
+                    error: true,
+                    success: false,
+                    data: {
+                        object: charge.object,
+                        id: charge.charge_id,
+                        code: charge.code,
+                        message: charge.user_message
+                    }
+                });
+            }
+            else {
+                const chargequery = "UFN_CHARGE_INS";
+                const chargebind = {
+                    corpid: corpid,
+                    orgid: orgid,
+                    id: null,
+                    invoiceid: null,
+                    description: settings.description,
+                    type: charge.object,
+                    status: 'PAID',
+                    amount: settings.amount / 100,
+                    currency: settings.currency,
+                    paidby: usr,
+                    orderid: null,
+                    orderjson: null,
+                    email: token.email,
+                    tokenid: token.id,
+                    capture: true,
+                    tokenjson: token,
+                    chargetoken: charge.id,
+                    chargejson: charge,
+                    operation: 'INSERT'
+                }
+
+                const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
+
+                return res.json({
+                    error: false,
+                    success: true,
+                    code: charge.outcome.code,
+                    message: charge.outcome.user_message ,
+                    data: {
+                        object: charge.object,
+                        id: charge.id,
+                    }
+                });
+            }
+        }
+        else {
+            return res.status(403).json({ error: true, success: false, code: '', message: 'invalid user' });
+        }
+    } catch (error) {
+        if (error.charge_id) {
+            return res.status(500).json({ message: error.merchant_message });
+        }
+        else {
+            return res.status(500).json({ message: "There was a problem, please try again later" });
+        }
+    }
+};
+
+exports.refundInvoice = async (req, res) => {
     const culqi = new Culqi({
-        privateKey: privatekey
+        privateKey: 'sk_test_d901e8f07d45a485'
     });
 
-    return await culqi.charges.createCharge({
-        amount: settings.amount,
-        currency_code: settings.currency,
-        email: token.email,
-        source_id: token.id,
-        capture: true,
-        description: `Laraigo ${settings.description}`.slice(0,80),
-        metadata: metadata,
-        antifraud_details: {
-            first_name: userprofile.firstname,
-            last_name: userprofile.lastname,
-            address: userprofile.address || 'EMPTY',
-            address_city: userprofile.address_city || 'N/A',
-            country_code: userprofile.country || token.client.ip_country_code,
-            phone: userprofile.phone,
+    const { corpid, orgid, userid, usr } = req.user;
+    const { invoiceid, metadata = {} } = req.body;
+
+    try {
+        const invoice = await getInvoice(corpid, orgid, userid, invoiceid);
+
+        if (invoice) {
+            if (invoice.paymentstatus === 'PAID') {
+                metadata.corpid = corpid;
+                metadata.corporation = invoice.corpdesc;
+                metadata.orgid = orgid;
+                metadata.organization = invoice.orgdesc;
+                metadata.documentnumber = invoice.receiverdocnum;
+                metadata.businessname = invoice.receiverbusinessname;
+                metadata.invoiceid = invoiceid;
+                metadata.invoicecode = `${invoice.serie}-${invoice.correlative}`;
+                metadata.userid = userid;
+                metadata.usr = usr;
+
+                const refund = await culqi.refunds.createRefund({
+                    amount: invoice.totalamount * 100,
+                    charge_id: invoice.chargetoken,
+                    reason: "solicitud_comprador",
+                    
+                });
+
+                if (refund.object === 'error') {
+                    return res.status(400).json({
+                        error: true,
+                        success: false,
+                        data: {
+                            object: refund.object,
+                            code: refund.code,
+                            message: refund.user_message
+                        }
+                    });
+                }
+                else {
+                    const query = "UFN_INVOICE_REFUND";
+                    const bind = {
+                        corpid: corpid,
+                        orgid: orgid,
+                        invoiceid: invoiceid,
+                        refundtoken: refund.id,
+                        refundjson: refund,
+                        username: usr
+                    }
+
+                    const result = await triggerfunctions.executesimpletransaction(query, bind);
+
+                    return res.json({
+                        error: false,
+                        success: true,
+                        message: "refunded",
+                        data: {
+                            object: refund.object,
+                            id: refund.id,
+                        }
+                    });
+                }
+            }
+            else {
+                return res.json({ error: false, success: true, code: '', message: 'Invoice already refunded' });
+            }
         }
+        else {
+            return res.status(404).json({ error: true, success: false, code: '', message: 'Invoice not found' });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: "There was a problem, please try again later" });
+    }
+};
+
+exports.refund = async (req, res) => {
+    const culqi = new Culqi({
+        privateKey: 'sk_test_d901e8f07d45a485'
     });
-}
+
+    const { corpid, orgid, userid, usr } = req.user;
+    const { chargeid, metadata = {} } = req.body;
+
+    try {
+        const charge = await getCharge(corpid, orgid, userid, chargeid);
+
+        if (charge) {
+            if (charge.status === 'PAID') {
+                metadata.corpid = corpid;
+                metadata.orgid = orgid;
+                metadata.userid = userid;
+
+                const refund = await culqi.refunds.createRefund({
+                    amount: charge.amount * 100,
+                    charge_id: charge.chargetoken,
+                    reason: "solicitud_comprador"
+                });
+                
+                if (refund.object === 'error') {
+                    return res.status(400).json({
+                        error: true,
+                        success: false,
+                        data: {
+                            object: refund.object,
+                            code: refund.code,
+                            message: refund.user_message
+                        }
+                    });
+                }
+                else {
+                    const query = "UFN_CHARGE_REFUND";
+                    const bind = {
+                        corpid: corpid,
+                        orgid: orgid,
+                        chargeid: chargeid,
+                        refundtoken: refund.id,
+                        refundjson: refund,
+                        username: usr
+                    }
+
+                    const result = await triggerfunctions.executesimpletransaction(query, bind);
+
+                    return res.json({
+                        error: false,
+                        success: true,
+                        message: "refunded",
+                        data: {
+                            object: refund.object,
+                            id: refund.id,
+                        }
+                    });
+                }
+            }
+            else {
+                return res.json({ error: false, success: true, code: '', message: 'Invoice already refunded' });
+            }
+        }
+        else {
+            return res.status(404).json({ error: true, success: false, code: '', message: 'Invoice not found' });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: "There was a problem, please try again later" });
+    }
+};
 
 exports.chargeInvoice = async (req, res) => {
     const { corpid, userid, usr } = req.user;
@@ -581,7 +992,7 @@ exports.chargeInvoice = async (req, res) => {
                                             RetornaPdf: appsetting.returnpdf,
                                             RetornaXmlSunat: appsetting.returnxmlsunat,
                                             RetornaXml: appsetting.returnxml,
-                                            TipoCambio: invoice.exchangerate,
+                                            TipoCambio: invoice.currency === 'USD' ? invoice.exchangerate : '1.000',
                                             Token: appsetting.token,
                                             DireccionFiscalEmisor: appsetting.fiscaladdress,
                                             DireccionFiscalReceptor: org ? org.fiscaladdress : corp.fiscaladdress,
@@ -817,360 +1228,9 @@ exports.chargeInvoice = async (req, res) => {
     }
 };
 
-exports.charge = async (req, res) => {
-    const { corpid, orgid, userid, usr } = req.user;
-    const { settings, token, metadata = {} } = req.body;
-    try {
-        const userprofile = await getUserProfile(userid);
-        if (userprofile) {
-            metadata.corpid = corpid;
-            metadata.orgid = orgid;
-            metadata.userid = userid;
-            const charge = await createCharge(userprofile, settings, token, metadata, 'sk_test_d901e8f07d45a485');
-            if (charge.object === 'error') {
-                return res.status(400).json({
-                    error: true,
-                    success: false,
-                    data: {
-                        object: charge.object,
-                        id: charge.charge_id,
-                        code: charge.code,
-                        message: charge.user_message
-                    }
-                });
-            }
-            else {
-                const chargequery = "UFN_CHARGE_INS";
-                const chargebind = {
-                    corpid: corpid,
-                    orgid: orgid,
-                    id: null,
-                    invoiceid: null,
-                    description: settings.description,
-                    type: charge.object,
-                    status: 'PAID',
-                    amount: settings.amount / 100,
-                    currency: settings.currency,
-                    paidby: usr,
-                    orderid: null,
-                    orderjson: null,
-                    email: token.email,
-                    tokenid: token.id,
-                    capture: true,
-                    tokenjson: token,
-                    chargetoken: charge.id,
-                    chargejson: charge,
-                    operation: 'INSERT'
-                }
-                const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
-                return res.json({
-                    error: false,
-                    success: true,
-                    code: charge.outcome.code,
-                    message: charge.outcome.user_message ,
-                    data: {
-                        object: charge.object,
-                        id: charge.id,
-                    }
-                });
-            }
-        }
-        else {
-            return res.status(403).json({ error: true, success: false, code: '', message: 'invalid user' });
-        }
-    } catch (error) {
-        if (error.charge_id) {
-            return res.status(500).json({ message: error.merchant_message });
-        }
-        else {
-            return res.status(500).json({ message: "There was a problem, please try again later" });
-        }
-    }
-};
-
-exports.refundInvoice = async (req, res) => {
-    const culqi = new Culqi({
-        privateKey: 'sk_test_d901e8f07d45a485'
-    });
-
-    const { corpid, orgid, userid, usr } = req.user;
-    const { invoiceid, metadata = {} } = req.body;
-    try {
-        const invoice = await getInvoice(corpid, orgid, userid, invoiceid);
-        if (invoice) {
-            if (invoice.paymentstatus === 'PAID') {
-                metadata.corpid = corpid;
-                metadata.corporation = invoice.corpdesc;
-                metadata.orgid = orgid;
-                metadata.organization = invoice.orgdesc;
-                metadata.documentnumber = invoice.receiverdocnum;
-                metadata.businessname = invoice.receiverbusinessname;
-                metadata.invoiceid = invoiceid;
-                metadata.invoicecode = `${invoice.serie}-${invoice.correlative}`;
-                metadata.userid = userid;
-                metadata.usr = usr;
-                const refund = await culqi.refunds.createRefund({
-                    amount: invoice.totalamount * 100,
-                    charge_id: invoice.chargetoken,
-                    reason: "solicitud_comprador",
-                    
-                });
-                if (refund.object === 'error') {
-                    return res.status(400).json({
-                        error: true,
-                        success: false,
-                        data: {
-                            object: refund.object,
-                            code: refund.code,
-                            message: refund.user_message
-                        }
-                    });
-                }
-                else {
-                    const query = "UFN_INVOICE_REFUND";
-                    const bind = {
-                        corpid: corpid,
-                        orgid: orgid,
-                        invoiceid: invoiceid,
-                        refundtoken: refund.id,
-                        refundjson: refund,
-                        username: usr
-                    }
-                    const result = await triggerfunctions.executesimpletransaction(query, bind);
-                    return res.json({
-                        error: false,
-                        success: true,
-                        message: "refunded",
-                        data: {
-                            object: refund.object,
-                            id: refund.id,
-                        }
-                    });
-                }
-            }
-            else {
-                return res.json({ error: false, success: true, code: '', message: 'Invoice already refunded' });
-            }
-        }
-        else {
-            return res.status(404).json({ error: true, success: false, code: '', message: 'Invoice not found' });
-        }
-    } catch (error) {
-        return res.status(500).json({ message: "There was a problem, please try again later" });
-    }
-};
-
-const getCharge = async (corpid, orgid, userid, id) => {
-    const query = "UFN_CHARGE_SEL";
-    const bind = {
-        corpid: corpid,
-        orgid: orgid,
-        userid: userid,
-        invoiceid: id
-    }
-    const result = await triggerfunctions.executesimpletransaction(query, bind);
-    if (result instanceof Array) {
-        if (result.length > 0) {
-            return result[0]
-        }
-    }
-    return null
-}
-
-exports.refund = async (req, res) => {
-    const culqi = new Culqi({
-        privateKey: 'sk_test_d901e8f07d45a485'
-    });
-
-    const { corpid, orgid, userid, usr } = req.user;
-    const { chargeid, metadata = {} } = req.body;
-
-    try {
-        const charge = await getCharge(corpid, orgid, userid, chargeid);
-        if (charge) {
-            if (charge.status === 'PAID') {
-                metadata.corpid = corpid;
-                metadata.orgid = orgid;
-                metadata.userid = userid;
-                const refund = await culqi.refunds.createRefund({
-                    amount: charge.amount * 100,
-                    charge_id: charge.chargetoken,
-                    reason: "solicitud_comprador"
-                });
-                if (refund.object === 'error') {
-                    return res.status(400).json({
-                        error: true,
-                        success: false,
-                        data: {
-                            object: refund.object,
-                            code: refund.code,
-                            message: refund.user_message
-                        }
-                    });
-                }
-                else {
-                    const query = "UFN_CHARGE_REFUND";
-                    const bind = {
-                        corpid: corpid,
-                        orgid: orgid,
-                        chargeid: chargeid,
-                        refundtoken: refund.id,
-                        refundjson: refund,
-                        username: usr
-                    }
-                    const result = await triggerfunctions.executesimpletransaction(query, bind);
-                    return res.json({
-                        error: false,
-                        success: true,
-                        message: "refunded",
-                        data: {
-                            object: refund.object,
-                            id: refund.id,
-                        }
-                    });
-                }
-            }
-            else {
-                return res.json({ error: false, success: true, code: '', message: 'Invoice already refunded' });
-            }
-        }
-        else {
-            return res.status(404).json({ error: true, success: false, code: '', message: 'Invoice not found' });
-        }
-    } catch (error) {
-        return res.status(500).json({ message: "There was a problem, please try again later" });
-    }
-};
-
-const createCustomer = async (token, metadata, userprofile) => {
-    const culqi = new Culqi({
-        privateKey: 'sk_test_d901e8f07d45a485'
-    });
-    
-    return await culqi.customers.createCustomer({
-        first_name: userprofile.firstname,
-        last_name: userprofile.lastname,
-        email: token.email,
-        address: userprofile.address || 'EMPTY',
-        address_city: userprofile.address_city || 'N/A',
-        country_code: userprofile.country || token.client.ip_country_code,
-        phone: userprofile.phone,
-        metadata: metadata,
-    });
-}
-
-const saveCustomer = async (corpid, orgid, customer) => {
-    const query = "UPDATE org SET customerjson = $customerjson WHERE corpid = $corpid AND orgid = $orgid"
-    await sequelize.query(query, { type: QueryTypes.SELECT, bind: { corpid: corpid, orgid: orgid, customerjson: customer }}).catch(err => getErrorSeq(err));
-}
-
-const saveCard = async (corpid, orgid, card) => {
-    const query = "UPDATE org SET cardjson = $cardjson WHERE corpid = $corpid AND orgid = $orgid"
-    await sequelize.query(query, { type: QueryTypes.SELECT, bind: { corpid: corpid, orgid: orgid, cardjson: card }}).catch(err => getErrorSeq(err));
-}
-
-const createInvoice = async (corpid, orgid, invoiceid, description, status, type, issuerruc, issuerbusinessname, issuertradename, issuerfiscaladdress, issuerubigeo, emittertype, annexcode, printingformat, xmlversion, ublversion, receiverdoctype, receiverdocnum, receiverbusinessname, receiverfiscaladdress, receivercountry, receivermail, invoicetype, sunatopecode, serie, correlative, concept, invoicedate, expirationdate, subtotal, taxes, totalamount, currency, exchangerate, invoicestatus, filenumber, purchaseorder, executingunitcode, selectionprocessnumber, contractnumber, comments, credittype, creditnotetype, creditnotemotive, creditnotediscount, invoicereferencefile, invoicepaymentnote, username, referenceinvoiceid) => {
-    const query = "UFN_INVOICE_INS";
-    const bind = {
-        corpid: corpid,
-        orgid: orgid,
-        invoiceid: invoiceid,
-        description: description,
-        status: status,
-        type: type,
-        issuerruc: issuerruc,
-        issuerbusinessname: issuerbusinessname,
-        issuertradename: issuertradename,
-        issuerfiscaladdress: issuerfiscaladdress,
-        issuerubigeo: issuerubigeo,
-        emittertype: emittertype,
-        annexcode: annexcode,
-        printingformat: printingformat,
-        xmlversion: xmlversion,
-        ublversion: ublversion,
-        receiverdoctype: receiverdoctype,
-        receiverdocnum: receiverdocnum,
-        receiverbusinessname: receiverbusinessname,
-        receiverfiscaladdress: receiverfiscaladdress,
-        receivercountry: receivercountry,
-        receivermail: receivermail,
-        invoicetype: invoicetype,
-        sunatopecode: sunatopecode,
-        serie: serie,
-        correlative: correlative,
-        concept: concept,
-        invoicedate: invoicedate,
-        expirationdate: expirationdate,
-        subtotal: subtotal,
-        taxes: taxes,
-        totalamount: totalamount,
-        currency: currency,
-        exchangerate: exchangerate,
-        invoicestatus: invoicestatus,
-        filenumber: filenumber,
-        purchaseorder: purchaseorder,
-        executingunitcode: executingunitcode,
-        selectionprocessnumber: selectionprocessnumber,
-        contractnumber: contractnumber,
-        comments: comments,
-        credittype: credittype,
-        creditnotetype: creditnotetype,
-        creditnotemotive: creditnotemotive,
-        creditnotediscount: creditnotediscount,
-        invoicereferencefile: invoicereferencefile,
-        invoicepaymentnote: invoicepaymentnote,
-        username: username,
-        referenceinvoiceid: referenceinvoiceid,
-    }
-
-    const result = await triggerfunctions.executesimpletransaction(query, bind);
-
-    if (result instanceof Array) {
-        if (result.length > 0) {
-            return result[0]
-        }
-    }
-
-    return null
-}
-
-const createInvoiceDetail = async (corpid, orgid, invoiceid, description, status, type, quantity, productcode, hasigv, saletype, igvtribute, measureunit, totaligv, totalamount, igvrate, productprice, productdescription, productnetprice, productnetworth, username) => {
-    const query = "UFN_INVOICEDETAIL_INS";
-    const bind = {
-        corpid: corpid,
-        orgid: orgid,
-        invoiceid: invoiceid,
-        description: description,
-        status: status,
-        type: type,
-        quantity: quantity,
-        productcode: productcode,
-        hasigv: hasigv,
-        saletype: saletype,
-        igvtribute: igvtribute,
-        measureunit: measureunit,
-        totaligv: totaligv,
-        totalamount: totalamount,
-        igvrate: igvrate,
-        productprice: productprice,
-        productdescription: productdescription,
-        productnetprice: productnetprice,
-        productnetworth: productnetworth,
-        username: username
-    }
-    
-    const result = await triggerfunctions.executesimpletransaction(query, bind);
-
-    if (result instanceof Array) {
-        return result;
-    }
-
-    return null
-}
-
 exports.createInvoice = async (request, response) => {
     const { userid, usr } = request.user;
-    const { corpid, orgid, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, clientcredittype, invoicecreatedate, invoiceduedate, invoicecurrency, invoicetotalamount, invoicepurchaseorder, invoicecomments, autosendinvoice, productdetail } = request.body;
+    const { corpid, orgid, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, clientcredittype, invoicecreatedate, invoiceduedate, invoicecurrency, invoicetotalamount, invoicepurchaseorder, invoicecomments, autosendinvoice, productdetail, onlyinsert, invoiceid } = request.body;
 
     try {
         if (corpid || orgid) {
@@ -1192,14 +1252,18 @@ exports.createInvoice = async (request, response) => {
                         invoicetotalcharge = (appsetting.igv * invoicetotalamount) + invoicetotalamount;
                     }
                     else {
-                        invoicesubtotal = (appsetting.igv * 100) * invoicetotalamount;
+                        invoicesubtotal = (appsetting.igv + 1) * invoicetotalamount;
                         invoicetaxes = 0;
                         invoicetotalcharge = (appsetting.igv * invoicetotalamount) + invoicetotalamount;
                     }
 
-                    var invoiceResponse = await createInvoice(corpid, orgid, 0, `GENERATED FOR ${clientdocnumber}`, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchange, 'DRAFT', null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, null, null, null, null, null, usr, null);
+                    var invoiceResponse = await createInvoice(corpid, orgid, (invoiceid || 0), `GENERATED FOR ${clientdocnumber}`, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchange, 'DRAFT', null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, null, null, null, null, null, usr, null);
 
                     if (invoiceResponse) {
+                        if (invoiceid) {
+                            await deleteInvoiceDetail(corpid, orgid, invoiceid);
+                        }
+                        
                         await Promise.all(productdetail.map(async (element) => {
                             var producthasigv = '';
                             var productigvtribute = '';
@@ -1213,22 +1277,22 @@ exports.createInvoice = async (request, response) => {
                             if (clientdoctype !== '0') {
                                 producthasigv = '10';
                                 productigvtribute = '1000';
-                                producttotaligv = (element.productquantity * element.productsubtotal) * appsetting.igv;
-                                producttotalamount = (element.productquantity * element.productsubtotal) * (1 + appsetting.igv);
+                                producttotaligv = (element.productquantity * parseFloat(element.productsubtotal)) * appsetting.igv;
+                                producttotalamount = (element.productquantity * parseFloat(element.productsubtotal)) * (1 + appsetting.igv);
                                 productigvrate = appsetting.igv;
-                                productprice = element.productsubtotal * (1 + appsetting.igv);
-                                productnetprice = element.productsubtotal;
-                                productnetworth = element.productquantity * element.productsubtotal;
+                                productprice = parseFloat(element.productsubtotal) * (1 + appsetting.igv);
+                                productnetprice = parseFloat(element.productsubtotal);
+                                productnetworth = element.productquantity * parseFloat(element.productsubtotal);
                             }
                             else {
                                 producthasigv = '40';
                                 productigvtribute = '9998';
                                 producttotaligv = 0;
-                                producttotalamount = element.productquantity * element.productsubtotal;
+                                producttotalamount = (element.productquantity * parseFloat(element.productsubtotal)) * (1 + appsetting.igv);
                                 productigvrate = 0;
-                                productprice = element.productsubtotal;
-                                productnetprice = element.productsubtotal;
-                                productnetworth = element.productquantity * element.productsubtotal;
+                                productprice = parseFloat(element.productsubtotal) * (1 + appsetting.igv);
+                                productnetprice = parseFloat(element.productsubtotal) * (1 + appsetting.igv);
+                                productnetworth = (element.productquantity * parseFloat(element.productsubtotal)) * (1 + appsetting.igv);
                             }
 
                             await createInvoiceDetail(corpid, orgid, invoiceResponse.invoiceid, element.productdescription, 'ACTIVO', 'NINGUNO', element.productquantity, element.productcode, producthasigv, '10', productigvtribute, element.productmeasure, producttotaligv, producttotalamount, productigvrate, productprice, element.productdescription, productnetprice, productnetworth, usr);
@@ -1246,9 +1310,19 @@ exports.createInvoice = async (request, response) => {
                                 productcode: element.productcode,
                                 productmeasure: element.productmeasure,
                                 productquantity: element.productquantity,
-                                productsubtotal: element.productsubtotal,
+                                productsubtotal: parseFloat(element.productsubtotal),
                             });
                         }));
+
+                        if (onlyinsert) {
+                            return response.json({
+                                code: '',
+                                data: null,
+                                error: false,
+                                message: 'successful_register',
+                                success: true
+                            });
+                        }
 
                         var invoicecorrelative = null;
                         var documenttype = null;
@@ -1288,7 +1362,7 @@ exports.createInvoice = async (request, response) => {
                                     RetornaPdf: appsetting.returnpdf,
                                     RetornaXmlSunat: appsetting.returnxmlsunat,
                                     RetornaXml: appsetting.returnxml,
-                                    TipoCambio: lastExchange,
+                                    TipoCambio: invoicecurrency === 'USD' ? lastExchange : '1.000',
                                     Token: appsetting.token,
                                     DireccionFiscalEmisor: appsetting.fiscaladdress,
                                     DireccionFiscalReceptor: clientfiscaladdress,
@@ -1298,7 +1372,7 @@ exports.createInvoice = async (request, response) => {
                                     PaisRecepcion: clientcountry,
                                     CodigoOperacionSunat: clientcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother,
                                     MontoTotalGravado: clientcountry === 'PE' ? Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100 : null,
-                                    MontoTotalInafecto: clientcountry === 'PE' ? '0' : invoicesubtotal,
+                                    MontoTotalInafecto: clientcountry === 'PE' ? '0' : Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100,
                                     MontoTotalIgv: clientcountry === 'PE' ? Math.round((invoicetaxes + Number.EPSILON) * 100) / 100 : null,
                                     ProductList: [],
                                     DataList: []
@@ -1310,15 +1384,15 @@ exports.createInvoice = async (request, response) => {
 
                                         if (appsetting.detractionminimum) {
                                             if (invoicecurrency === 'USD') {
-                                                compareamount = invoicetotalamount * lastExchange;
+                                                compareamount = invoicetotalcharge * lastExchange;
                                             }
                                             else {
-                                                compareamount = invoicetotalamount;
+                                                compareamount = invoicetotalcharge;
                                             }
                                         }
                                         
                                         if (compareamount > appsetting.detractionminimum) {
-                                            invoicedata.MontoTotalDetraccion = Math.round(((invoicetotalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100;
+                                            invoicedata.MontoTotalDetraccion = Math.round(((invoicetotalcharge * appsetting.detraction) + Number.EPSILON) * 100) / 100;
                                             invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
                                             invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
                                             invoicedata.CodigoDetraccion = appsetting.detractioncode;
@@ -1344,7 +1418,7 @@ exports.createInvoice = async (request, response) => {
                                         TasaIgv: element.productigvrate * 100,
                                         PrecioProducto: Math.round((element.productprice + Number.EPSILON) * 100) / 100,
                                         DescripcionProducto: element.productdescription,
-                                        PrecioNetoProducto: element.productnetprice,
+                                        PrecioNetoProducto: Math.round((element.productnetprice + Number.EPSILON) * 100) / 100,
                                         ValorNetoProducto: Math.round((element.productnetworth + Number.EPSILON) * 100) / 100,
                                         AfectadoIgv: element.producthasigv,
                                         TributoIgv: element.productigvtribute,
@@ -1519,7 +1593,7 @@ exports.createCreditNote = async (request, response) => {
                                     RetornaPdf: appsetting.returnpdf,
                                     RetornaXmlSunat: appsetting.returnxmlsunat,
                                     RetornaXml: appsetting.returnxml,
-                                    TipoCambio: invoice.exchangerate,
+                                    TipoCambio: invoice.currency === 'USD' ? invoice.exchangerate : '1.000',
                                     Token: appsetting.token,
                                     DireccionFiscalEmisor: appsetting.fiscaladdress,
                                     DireccionFiscalReceptor: invoice.receiverfiscaladdress,
@@ -1657,7 +1731,15 @@ exports.regularizeInvoice = async (request, response) => {
     const { corpid, orgid, invoiceid, invoicereferencefile, invoicepaymentnote } = request.body;
 
     try {
-        return response.status(500).json({ error: true, success: false, code: '', message: "generalproblem" });
+        await changePaymentInvoice(corpid, orgid, invoiceid, 'PAID', invoicepaymentnote, invoicereferencefile, usr);
+
+        return response.json({
+            code: '',
+            data: null,
+            error: false,
+            message: 'success',
+            success: true
+        });
     } catch (error) {
         return response.status(500).json({ error: true, success: false, code: '', message: "generalproblem" });
     }
