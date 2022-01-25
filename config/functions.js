@@ -1598,17 +1598,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INVOICE_INS: {
-        query: "SELECT * FROM ufn_invoice_ins($corpid,$orgid,$invoiceid,$description,$status,$type,$issuerruc,$issuerbusinessname,$issuertradename,$issuerfiscaladdress,$issuerubigeo,$emittertype,$annexcode,$printingformat,$xmlversion,$ublversion,$receiverdoctype,$receiverdocnum,$receiverbusinessname,$receiverfiscaladdress,$receivercountry,$receivermail,$invoicetype,$sunatopecode,$serie,$correlative,$concept,$invoicedate,$expirationdate,$subtotal,$taxes,$totalamount,$currency,$exchangerate,$invoicestatus,$filenumber,$purchaseorder,$executingunitcode,$selectionprocessnumber,$contractnumber,$comments,$credittype,$creditnotetype,$creditnotemotive,$creditnotediscount,$invoicereferencefile,$invoicepaymentnote,$username,$referenceinvoiceid)",
+        query: "SELECT * FROM ufn_invoice_ins($corpid,$orgid,$invoiceid,$description,$status,$type,$issuerruc,$issuerbusinessname,$issuertradename,$issuerfiscaladdress,$issuerubigeo,$emittertype,$annexcode,$printingformat,$xmlversion,$ublversion,$receiverdoctype,$receiverdocnum,$receiverbusinessname,$receiverfiscaladdress,$receivercountry,$receivermail,$invoicetype,$sunatopecode,$serie,$correlative,$concept,$invoicedate,$expirationdate,$subtotal,$taxes,$totalamount,$currency,$exchangerate,$invoicestatus,$filenumber,$purchaseorder,$executingunitcode,$selectionprocessnumber,$contractnumber,$comments,$credittype,$creditnotetype,$creditnotemotive,$creditnotediscount,$invoicereferencefile,$invoicepaymentnote,$username,$referenceinvoiceid,$netamount)",
         module: "",
         protected: "INSERT"
     },
     UFN_INVOICE_REGENERATE: {
         query: "SELECT * FROM ufn_invoice_regenerate($corpid,$orgid,$invoiceid,$username)",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_INVOICE_ANNULLED: {
-        query: "SELECT * FROM ufn_invoice_annulled($corpid,$orgid,$invoiceid,$username)",
         module: "",
         protected: "INSERT"
     },
@@ -1811,7 +1806,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INVOICEDETAIL_INS: {
-        query: "SELECT * FROM ufn_invoicedetail_ins($corpid, $orgid, $invoiceid, $description, $status, $type, $quantity, $productcode, $hasigv, $saletype, $igvtribute, $measureunit, $totaligv, $totalamount, $igvrate, $productprice, $productdescription, $productnetprice, $productnetworth, $username)",
+        query: "SELECT * FROM ufn_invoicedetail_ins($corpid, $orgid, $invoiceid, $description, $status, $type, $quantity, $productcode, $hasigv, $saletype, $igvtribute, $measureunit, $totaligv, $totalamount, $igvrate, $productprice, $productdescription, $productnetprice, $productnetworth, $netamount, $username)",
         module: "",
         protected: "INSERT"
     },
