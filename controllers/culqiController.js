@@ -402,6 +402,44 @@ const createInvoiceDetail = async (corpid, orgid, invoiceid, description, status
     return null
 }
 
+const deleteInvoiceDetail = async (corpid, orgid, invoiceid) => {
+    const query = "UFN_INVOICEDETAIL_DELETE";
+    const bind = {
+        corpid: corpid,
+        orgid: orgid,
+        invoiceid: invoiceid
+    }
+    
+    const result = await triggerfunctions.executesimpletransaction(query, bind);
+
+    if (result instanceof Array) {
+        return result;
+    }
+
+    return null
+}
+
+const changePaymentInvoice = async (corpid, orgid, invoiceid, status, paymentnote, paymentfile, username) => {
+    const query = "UFN_INVOICE_CHANGEPAYMENTSTATUS";
+    const bind = {
+        corpid: corpid,
+        orgid: orgid,
+        invoiceid: invoiceid,
+        status: status,
+        paymentnote: paymentnote,
+        paymentfile: paymentfile,
+        username, username,
+    }
+    
+    const result = await triggerfunctions.executesimpletransaction(query, bind);
+
+    if (result instanceof Array) {
+        return result;
+    }
+
+    return null
+}
+
 exports.getToken = async (req, res) => {
     const { token } = req.body;
 
@@ -1192,7 +1230,7 @@ exports.chargeInvoice = async (req, res) => {
 
 exports.createInvoice = async (request, response) => {
     const { userid, usr } = request.user;
-    const { corpid, orgid, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, clientcredittype, invoicecreatedate, invoiceduedate, invoicecurrency, invoicetotalamount, invoicepurchaseorder, invoicecomments, autosendinvoice, productdetail, onlyinsert } = request.body;
+    const { corpid, orgid, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, clientcredittype, invoicecreatedate, invoiceduedate, invoicecurrency, invoicetotalamount, invoicepurchaseorder, invoicecomments, autosendinvoice, productdetail, onlyinsert, invoiceid } = request.body;
 
     try {
         if (corpid || orgid) {
@@ -1219,9 +1257,13 @@ exports.createInvoice = async (request, response) => {
                         invoicetotalcharge = (appsetting.igv * invoicetotalamount) + invoicetotalamount;
                     }
 
-                    var invoiceResponse = await createInvoice(corpid, orgid, 0, `GENERATED FOR ${clientdocnumber}`, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchange, 'DRAFT', null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, null, null, null, null, null, usr, null);
+                    var invoiceResponse = await createInvoice(corpid, orgid, (invoiceid || 0), `GENERATED FOR ${clientdocnumber}`, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchange, 'DRAFT', null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, null, null, null, null, null, usr, null);
 
                     if (invoiceResponse) {
+                        if (invoiceid) {
+                            await deleteInvoiceDetail(corpid, orgid, invoiceid);
+                        }
+                        
                         await Promise.all(productdetail.map(async (element) => {
                             var producthasigv = '';
                             var productigvtribute = '';
@@ -1689,7 +1731,15 @@ exports.regularizeInvoice = async (request, response) => {
     const { corpid, orgid, invoiceid, invoicereferencefile, invoicepaymentnote } = request.body;
 
     try {
-        return response.status(500).json({ error: true, success: false, code: '', message: "generalproblem" });
+        await changePaymentInvoice(corpid, orgid, invoiceid, 'PAID', invoicepaymentnote, invoicereferencefile, usr);
+
+        return response.json({
+            code: '',
+            data: null,
+            error: false,
+            message: 'success',
+            success: true
+        });
     } catch (error) {
         return response.status(500).json({ error: true, success: false, code: '', message: "generalproblem" });
     }
