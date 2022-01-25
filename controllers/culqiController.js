@@ -1214,7 +1214,7 @@ exports.createInvoice = async (request, response) => {
                         invoicetotalcharge = (appsetting.igv * invoicetotalamount) + invoicetotalamount;
                     }
                     else {
-                        invoicesubtotal = (appsetting.igv + 100) * invoicetotalamount;
+                        invoicesubtotal = (appsetting.igv + 1) * invoicetotalamount;
                         invoicetaxes = 0;
                         invoicetotalcharge = (appsetting.igv * invoicetotalamount) + invoicetotalamount;
                     }
