@@ -1384,15 +1384,15 @@ exports.createInvoice = async (request, response) => {
 
                                         if (appsetting.detractionminimum) {
                                             if (invoicecurrency === 'USD') {
-                                                compareamount = invoicetotalamount * lastExchange;
+                                                compareamount = invoicetotalcharge * lastExchange;
                                             }
                                             else {
-                                                compareamount = invoicetotalamount;
+                                                compareamount = invoicetotalcharge;
                                             }
                                         }
                                         
                                         if (compareamount > appsetting.detractionminimum) {
-                                            invoicedata.MontoTotalDetraccion = Math.round(((invoicetotalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100;
+                                            invoicedata.MontoTotalDetraccion = Math.round(((invoicetotalcharge * appsetting.detraction) + Number.EPSILON) * 100) / 100;
                                             invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
                                             invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
                                             invoicedata.CodigoDetraccion = appsetting.detractioncode;
