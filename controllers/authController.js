@@ -260,10 +260,10 @@ exports.changeOrganization = async (req, res) => {
             corpid: parameters.newcorpid,
             corpdesc: parameters.corpdesc,
             orgdesc: parameters.orgdesc,
-            redirect: resultBD[0] ? resultBD[0].redirect : '/tickets',
-            plan: resultBD[0] ? resultBD[0].plan : '',
-            currencysymbol: resultBD[0] ? resultBD[0].currencysymbol : 'S/',
-            countrycode: resultBD[0] ? resultBD[0].countrycode : 'PE'
+            redirect: resultBD[0]?.redirect || '/tickets',
+            plan: resultBD[0]?.plan || '',
+            currencysymbol: resultBD[0]?.currencysymbol || 'S/',
+            countrycode: resultBD[0]?.countrycode || 'PE'
         };
 
         const resBDMenu = await tf.executesimpletransaction("UFN_APPLICATION_SEL", newusertoken);
