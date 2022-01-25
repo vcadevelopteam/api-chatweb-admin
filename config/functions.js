@@ -925,6 +925,17 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_GET_CONVERSATION_WHATSAPP: {
+        query: `
+        select cw.personcommunicationchannel, cw.conversationid, pcc.personcommunicationchannelowner, c.ticketnum, cw.conversationstart, cw.conversationend, cw.initiatedby from conversationwhatsapp cw 
+        inner join conversation c on c.conversationid = cw.conversationid and c.corpid = cw.corpid and c.orgid = cw.orgid and c.personid = cw.personid and c.communicationchannelid = cw.communicationchannelid
+        inner join personcommunicationchannel pcc on pcc.personcommunicationchannel = cw.personcommunicationchannel and pcc.corpid = cw.corpid and pcc.orgid = cw.orgid and pcc.personid = cw.personid
+        where cw.corpid = $corpid and cw.orgid = $orgid
+        order by cw.conversationstart desc
+        `,
+        module: "",
+        protected: "SELECT"
+    },
     UFN_DASHBOARD_GERENCIAL_TMO_GENERAL_SEL: {
         query: "SELECT * FROM ufn_dashboard_gerencial_tmo_general_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$userid,$offset)",
         module: "",
@@ -986,7 +997,7 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_DASHBOARD_GERENCIAL_ETIQUETAS_SEL : {
+    UFN_DASHBOARD_GERENCIAL_ETIQUETAS_SEL: {
         query: "SELECT * FROM ufn_dashboard_gerencial_etiquetas_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$limit ,$userid,$offset )",
         module: "",
         protected: "SELECT"
@@ -1001,12 +1012,12 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_DATA_DASHBOARD_GERENCIAL_ASESORESCONECTADOSBAR_SEL  : {
+    UFN_DATA_DASHBOARD_GERENCIAL_ASESORESCONECTADOSBAR_SEL: {
         query: "SELECT * FROM ufn_data_dashboard_gerencial_asesoresconectadosbar_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company ,$userid,$offset )",
         module: "",
         protected: "SELECT"
     },
-    UFN_COUNT_CONFIGURATION  : {
+    UFN_COUNT_CONFIGURATION: {
         query: "SELECT * FROM ufn_count_configuration($corpid, $orgid, $username)",
         module: "",
         protected: "SELECT"
@@ -1046,7 +1057,7 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_GET_TOKEN_LOGGED_MOVIL  : {
+    UFN_GET_TOKEN_LOGGED_MOVIL: {
         query: "SELECT * FROM ufn_get_token_logged_movil($userid)",
         module: "",
         protected: "SELECT"
@@ -1056,12 +1067,12 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_DATA_DASHBOARD_OPERATIVO_SUMMARY_SEL  : {
+    UFN_DATA_DASHBOARD_OPERATIVO_SUMMARY_SEL: {
         query: "SELECT * FROM ufn_data_dashboard_operativo_summary_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$skipdowntmo,$skipuptmo,$skipdowntme,$skipuptme,$supervisorid,$offset)",
         module: "",
         protected: "SELECT"
     },
-    UFN_DASHBOARD_OPERATIVO_PRODXHORA_SEL  : {
+    UFN_DASHBOARD_OPERATIVO_PRODXHORA_SEL: {
         query: "SELECT * FROM ufn_dashboard_operativo_prodxhora_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$level,$supervisorid,$offset)",
         module: "",
         protected: "SELECT"
