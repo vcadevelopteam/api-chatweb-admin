@@ -1235,22 +1235,22 @@ exports.createInvoice = async (request, response) => {
                             if (clientdoctype !== '0') {
                                 producthasigv = '10';
                                 productigvtribute = '1000';
-                                producttotaligv = (element.productquantity * element.productsubtotal) * appsetting.igv;
-                                producttotalamount = (element.productquantity * element.productsubtotal) * (1 + appsetting.igv);
+                                producttotaligv = (element.productquantity * parseFloat(element.productsubtotal)) * appsetting.igv;
+                                producttotalamount = (element.productquantity * parseFloat(element.productsubtotal)) * (1 + appsetting.igv);
                                 productigvrate = appsetting.igv;
-                                productprice = element.productsubtotal * (1 + appsetting.igv);
-                                productnetprice = element.productsubtotal;
-                                productnetworth = element.productquantity * element.productsubtotal;
+                                productprice = parseFloat(element.productsubtotal) * (1 + appsetting.igv);
+                                productnetprice = parseFloat(element.productsubtotal);
+                                productnetworth = element.productquantity * parseFloat(element.productsubtotal);
                             }
                             else {
                                 producthasigv = '40';
                                 productigvtribute = '9998';
                                 producttotaligv = 0;
-                                producttotalamount = element.productquantity * element.productsubtotal;
+                                producttotalamount = (element.productquantity * parseFloat(element.productsubtotal)) * (1 + appsetting.igv);
                                 productigvrate = 0;
-                                productprice = element.productsubtotal;
-                                productnetprice = element.productsubtotal;
-                                productnetworth = element.productquantity * element.productsubtotal;
+                                productprice = parseFloat(element.productsubtotal) * (1 + appsetting.igv);
+                                productnetprice = parseFloat(element.productsubtotal) * (1 + appsetting.igv);
+                                productnetworth = (element.productquantity * parseFloat(element.productsubtotal)) * (1 + appsetting.igv);
                             }
 
                             await createInvoiceDetail(corpid, orgid, invoiceResponse.invoiceid, element.productdescription, 'ACTIVO', 'NINGUNO', element.productquantity, element.productcode, producthasigv, '10', productigvtribute, element.productmeasure, producttotaligv, producttotalamount, productigvrate, productprice, element.productdescription, productnetprice, productnetworth, usr);
@@ -1268,7 +1268,7 @@ exports.createInvoice = async (request, response) => {
                                 productcode: element.productcode,
                                 productmeasure: element.productmeasure,
                                 productquantity: element.productquantity,
-                                productsubtotal: element.productsubtotal,
+                                productsubtotal: parseFloat(element.productsubtotal),
                             });
                         }));
 
@@ -1330,7 +1330,7 @@ exports.createInvoice = async (request, response) => {
                                     PaisRecepcion: clientcountry,
                                     CodigoOperacionSunat: clientcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother,
                                     MontoTotalGravado: clientcountry === 'PE' ? Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100 : null,
-                                    MontoTotalInafecto: clientcountry === 'PE' ? '0' : invoicesubtotal,
+                                    MontoTotalInafecto: clientcountry === 'PE' ? '0' : Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100,
                                     MontoTotalIgv: clientcountry === 'PE' ? Math.round((invoicetaxes + Number.EPSILON) * 100) / 100 : null,
                                     ProductList: [],
                                     DataList: []
@@ -1376,7 +1376,7 @@ exports.createInvoice = async (request, response) => {
                                         TasaIgv: element.productigvrate * 100,
                                         PrecioProducto: Math.round((element.productprice + Number.EPSILON) * 100) / 100,
                                         DescripcionProducto: element.productdescription,
-                                        PrecioNetoProducto: element.productnetprice,
+                                        PrecioNetoProducto: Math.round((element.productnetprice + Number.EPSILON) * 100) / 100,
                                         ValorNetoProducto: Math.round((element.productnetworth + Number.EPSILON) * 100) / 100,
                                         AfectadoIgv: element.producthasigv,
                                         TributoIgv: element.productigvtribute,
