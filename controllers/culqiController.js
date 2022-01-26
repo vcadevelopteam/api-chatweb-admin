@@ -1234,7 +1234,7 @@ exports.createInvoice = async (request, response) => {
     const { corpid, orgid, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, clientcredittype, invoicecreatedate, invoiceduedate, invoicecurrency, invoicetotalamount, invoicepurchaseorder, invoicecomments, autosendinvoice, productdetail, onlyinsert, invoiceid } = request.body;
 
     try {
-        if (corpid || orgid) {
+        if ((corpid || orgid) && clientcountry) {
             if (productdetail) {
                 const appsetting = await getAppSetting();
 
