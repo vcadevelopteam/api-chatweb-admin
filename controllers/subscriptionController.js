@@ -140,6 +140,7 @@ exports.createSubscription = async (request, result) => {
                     channelParameters.schedule = null;
                     channelParameters.status = 'PENDIENTE';
                     channelParameters.updintegration = null;
+                    channelParameters.phone = null;
 
                     switch (channel.type) {
                         case 'CHATWEB':
@@ -508,16 +509,16 @@ exports.createSubscription = async (request, result) => {
 
                                     if (requestCreateTwitter.data.success) {
                                         if (channelTotal === '') {
-                                            channelTotal = `${transactionCreateTwitter[0].ufn_communicationchannel_ins2}`;
+                                            channelTotal = `${transactionCreateTwitter[0].ufn_communicationchannel_ins}`;
                                         }
                                         else {
-                                            channelTotal = `${channelTotal},${transactionCreateTwitter[0].ufn_communicationchannel_ins2}`;
+                                            channelTotal = `${channelTotal},${transactionCreateTwitter[0].ufn_communicationchannel_ins}`;
                                         }
 
                                         channelData = `<b>${channelParameters.description}</b>;${channelData}`;
                                     }
                                     else {
-                                        channelParameters.id = transactionCreateTwitter[0].ufn_communicationchannel_ins2;
+                                        channelParameters.id = transactionCreateTwitter[0].ufn_communicationchannel_ins;
                                         channelParameters.motive = 'Delete from API';
                                         channelParameters.operation = 'DELETE';
 
@@ -575,6 +576,7 @@ exports.createSubscription = async (request, result) => {
 
                                 channelParameters.communicationchannelsite = requestCreateWhatsApp.data.phoneNumber;
                                 channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
+                                channelParameters.phone = requestCreateWhatsApp.data.phoneNumber;
                                 channelParameters.type = 'WHAD';
 
                                 channelMethodArray.push(channelMethod);
@@ -634,10 +636,10 @@ exports.createSubscription = async (request, result) => {
 
                         if (transactionCreateGeneric instanceof Array) {
                             if (channelTotal === '') {
-                                channelTotal = `${transactionCreateGeneric[0].ufn_communicationchannel_ins2}`;
+                                channelTotal = `${transactionCreateGeneric[0].ufn_communicationchannel_ins}`;
                             }
                             else {
-                                channelTotal = `${channelTotal},${transactionCreateGeneric[0].ufn_communicationchannel_ins2}`;
+                                channelTotal = `${channelTotal},${transactionCreateGeneric[0].ufn_communicationchannel_ins}`;
                             }
 
                             channelData = `<b>${channelParametersArray[index].description}</b>;${channelData}`;
