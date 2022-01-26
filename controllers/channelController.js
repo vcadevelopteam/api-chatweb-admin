@@ -762,6 +762,7 @@ exports.insertChannel = async (request, result) => {
         parameters.status = 'ACTIVO';
         parameters.updintegration = null;
         parameters.username = request.user.usr;
+        parameters.phone = null;
        
         switch (request.body.type) {
             case 'CHATWEB':
@@ -1179,7 +1180,7 @@ exports.insertChannel = async (request, result) => {
                         }
                         else
                         {
-                            parameters.id = transactionCreateTwitter[0].ufn_communicationchannel_ins2;
+                            parameters.id = transactionCreateTwitter[0].ufn_communicationchannel_ins;
                             parameters.motive = 'Delete from API';
                             parameters.operation = 'DELETE';
 
@@ -1232,6 +1233,7 @@ exports.insertChannel = async (request, result) => {
 
                     parameters.communicationchannelsite = requestCreateWhatsApp.data.phoneNumber;
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.phone = requestCreateWhatsApp.data.phoneNumber;
                     parameters.type = 'WHAD';
 
                     const transactionCreateWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
@@ -1413,6 +1415,7 @@ exports.insertChannel = async (request, result) => {
 
                     parameters.communicationchannelsite = service.appid;
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.phone = requestInsertWhatsAppSmooch.data.phoneNumber;
                     parameters.type = 'WHAT';
 
                     const transactionInsertWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
@@ -1460,6 +1463,7 @@ exports.updateChannel = async (request, result) => {
         parameters.corpid = request.user.corpid;
         parameters.orgid = request.user.orgid;
         parameters.username = request.user.usr;
+        parameters.phone = null;
 
         const webChatData = {
             applicationId: webChatApplication,
@@ -1589,6 +1593,7 @@ exports.activateChannel = async (request, result) => {
         parameters.channelparameters = null;
         parameters.updintegration = null;
         parameters.resolvelithium = null;
+        parameters.phone = null;
 
         if (request.body.type === 'WHATSAPP') {
             const requestCreateWhatsApp = await axios({
@@ -1609,6 +1614,7 @@ exports.activateChannel = async (request, result) => {
 
                 parameters.communicationchannelsite = requestCreateWhatsApp.data.phoneNumber;
                 parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                parameters.phone = requestCreateWhatsApp.data.phoneNumber;
                 parameters.type = 'WHAD';
 
                 const transactionActivateWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
@@ -1653,6 +1659,7 @@ exports.activateChannel = async (request, result) => {
                     endpoint: 'https://api.smooch.io/',
                     version: 'v1.1'
                 });
+                parameters.phone = requestMigrateWhatsApp.data.phoneNumber;
                 parameters.type = 'WHAT';
     
                 const transactionActivateWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
