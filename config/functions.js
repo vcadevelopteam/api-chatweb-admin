@@ -1217,6 +1217,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_USER_PAYMENTPLAN_CHECK: {
+        query: "SELECT * FROM ufn_user_paymentplan_check($corpid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CURRENCY_SEL: {
         query: "SELECT code, description FROM currency",
         module: "",
