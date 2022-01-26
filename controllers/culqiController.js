@@ -1253,9 +1253,9 @@ exports.createInvoice = async (request, response) => {
                         invoicetotalcharge = (appsetting.igv * invoicetotalamount) + invoicetotalamount;
                     }
                     else {
-                        invoicesubtotal = (appsetting.igv + 1) * invoicetotalamount;
+                        invoicesubtotal = invoicetotalamount;
                         invoicetaxes = 0;
-                        invoicetotalcharge = (appsetting.igv * invoicetotalamount) + invoicetotalamount;
+                        invoicetotalcharge = invoicetotalamount;
                     }
 
                     var invoiceResponse = await createInvoice(corpid, orgid, (invoiceid || 0), `GENERATED FOR ${clientdocnumber}`, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchange, 'DRAFT', null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, null, null, null, null, null, usr, null, invoicetotalamount);
@@ -1289,11 +1289,11 @@ exports.createInvoice = async (request, response) => {
                                 producthasigv = '40';
                                 productigvtribute = '9998';
                                 producttotaligv = 0;
-                                producttotalamount = (element.productquantity * parseFloat(element.productsubtotal)) * (1 + appsetting.igv);
+                                producttotalamount = element.productquantity * parseFloat(element.productsubtotal);
                                 productigvrate = 0;
-                                productprice = parseFloat(element.productsubtotal) * (1 + appsetting.igv);
-                                productnetprice = parseFloat(element.productsubtotal) * (1 + appsetting.igv);
-                                productnetworth = (element.productquantity * parseFloat(element.productsubtotal)) * (1 + appsetting.igv);
+                                productprice = parseFloat(element.productsubtotal);
+                                productnetprice = parseFloat(element.productsubtotal);
+                                productnetworth = element.productquantity * parseFloat(element.productsubtotal);
                             }
 
                             await createInvoiceDetail(corpid, orgid, invoiceResponse.invoiceid, element.productdescription, 'ACTIVO', 'NINGUNO', element.productquantity, element.productcode, producthasigv, '10', productigvtribute, element.productmeasure, producttotaligv, producttotalamount, productigvrate, productprice, element.productdescription, productnetprice, productnetworth, parseFloat(element.productsubtotal), usr);
