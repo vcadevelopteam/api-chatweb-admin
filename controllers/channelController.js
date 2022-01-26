@@ -17,7 +17,7 @@ const whatsAppEndpoint = process.env.WHATSAPPAPI;
 
 exports.checkPaymentPlan = async (request, result) => {
     try {
-        var method = 'UFN_PAYMENTPLAN_CHECK';
+        var method = 'UFN_COMMUNICATIONCHANNEL_PAYMENTPLAN_CHECK';
         var parameters = {};
 
         setSessionParameters(parameters, request.user);

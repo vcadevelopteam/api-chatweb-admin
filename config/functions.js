@@ -1212,8 +1212,8 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_PAYMENTPLAN_CHECK: {
-        query: "SELECT * FROM ufn_paymentplan_check($corpid)",
+    UFN_COMMUNICATIONCHANNEL_PAYMENTPLAN_CHECK: {
+        query: "SELECT * FROM ufn_communicationchannel_paymentplan_check($corpid)",
         module: "",
         protected: "SELECT"
     },
