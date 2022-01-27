@@ -4,7 +4,6 @@ const sequelize = require('../config/database');
 const { QueryTypes } = require('sequelize');
 const { getErrorSeq } = require('../config/helpers');
 const Culqi = require('culqi-node');
-const { stringify } = require('uuid');
 
 const exchangeEndpoint = process.env.EXCHANGE;
 
@@ -303,7 +302,7 @@ const getCharge = async (corpid, orgid, userid, id) => {
     return null
 }
 
-const createInvoice = async (corpid, orgid, invoiceid, description, status, type, issuerruc, issuerbusinessname, issuertradename, issuerfiscaladdress, issuerubigeo, emittertype, annexcode, printingformat, xmlversion, ublversion, receiverdoctype, receiverdocnum, receiverbusinessname, receiverfiscaladdress, receivercountry, receivermail, invoicetype, sunatopecode, serie, correlative, concept, invoicedate, expirationdate, subtotal, taxes, totalamount, currency, exchangerate, invoicestatus, filenumber, purchaseorder, executingunitcode, selectionprocessnumber, contractnumber, comments, credittype, creditnotetype, creditnotemotive, creditnotediscount, invoicereferencefile, invoicepaymentnote, username, referenceinvoiceid) => {
+const createInvoice = async (corpid, orgid, invoiceid, description, status, type, issuerruc, issuerbusinessname, issuertradename, issuerfiscaladdress, issuerubigeo, emittertype, annexcode, printingformat, xmlversion, ublversion, receiverdoctype, receiverdocnum, receiverbusinessname, receiverfiscaladdress, receivercountry, receivermail, invoicetype, sunatopecode, serie, correlative, concept, invoicedate, expirationdate, subtotal, taxes, totalamount, currency, exchangerate, invoicestatus, filenumber, purchaseorder, executingunitcode, selectionprocessnumber, contractnumber, comments, credittype, creditnotetype, creditnotemotive, creditnotediscount, invoicereferencefile, invoicepaymentnote, username, referenceinvoiceid, netamount) => {
     const query = "UFN_INVOICE_INS";
     const bind = {
         corpid: corpid,
@@ -355,6 +354,7 @@ const createInvoice = async (corpid, orgid, invoiceid, description, status, type
         invoicepaymentnote: invoicepaymentnote,
         username: username,
         referenceinvoiceid: referenceinvoiceid,
+        netamount: netamount,
     }
 
     const result = await triggerfunctions.executesimpletransaction(query, bind);
@@ -368,7 +368,7 @@ const createInvoice = async (corpid, orgid, invoiceid, description, status, type
     return null
 }
 
-const createInvoiceDetail = async (corpid, orgid, invoiceid, description, status, type, quantity, productcode, hasigv, saletype, igvtribute, measureunit, totaligv, totalamount, igvrate, productprice, productdescription, productnetprice, productnetworth, username) => {
+const createInvoiceDetail = async (corpid, orgid, invoiceid, description, status, type, quantity, productcode, hasigv, saletype, igvtribute, measureunit, totaligv, totalamount, igvrate, productprice, productdescription, productnetprice, productnetworth, netamount, username) => {
     const query = "UFN_INVOICEDETAIL_INS";
     const bind = {
         corpid: corpid,
@@ -390,6 +390,7 @@ const createInvoiceDetail = async (corpid, orgid, invoiceid, description, status
         productdescription: productdescription,
         productnetprice: productnetprice,
         productnetworth: productnetworth,
+        netamount: netamount,
         username: username
     }
     
@@ -1082,7 +1083,7 @@ exports.chargeInvoice = async (req, res) => {
                                                 PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
                                                 DescripcionProducto: data.productdescription,
                                                 PrecioNetoProducto: data.productnetprice,
-                                                ValorNetoProducto: Math.round((data.productnetworth + Number.EPSILON) * 100) / 100,
+                                                ValorNetoProducto: Math.round(((data.quantity * data.productnetworth) + Number.EPSILON) * 100) / 100,
                                             };
 
                                             if (corp.billbyorg) {
@@ -1138,7 +1139,7 @@ exports.chargeInvoice = async (req, res) => {
                                         });
 
                                         if (requestSendToSunat.data.result) {
-                                            await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, purchaseorder || null, comments || null, 'AL CONTADO'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount);
+                                            await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, purchaseorder || null, comments || null, 'typecredit_alcontado'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount);
                                         }
                                         else {
                                             await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, purchaseorder || null, comments || null, 'typecredit_alcontado'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount);
@@ -1233,7 +1234,7 @@ exports.createInvoice = async (request, response) => {
     const { corpid, orgid, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, clientcredittype, invoicecreatedate, invoiceduedate, invoicecurrency, invoicetotalamount, invoicepurchaseorder, invoicecomments, autosendinvoice, productdetail, onlyinsert, invoiceid } = request.body;
 
     try {
-        if (corpid || orgid) {
+        if ((corpid || orgid) && clientcountry) {
             if (productdetail) {
                 const appsetting = await getAppSetting();
 
@@ -1252,12 +1253,12 @@ exports.createInvoice = async (request, response) => {
                         invoicetotalcharge = (appsetting.igv * invoicetotalamount) + invoicetotalamount;
                     }
                     else {
-                        invoicesubtotal = (appsetting.igv + 1) * invoicetotalamount;
+                        invoicesubtotal = invoicetotalamount;
                         invoicetaxes = 0;
-                        invoicetotalcharge = (appsetting.igv * invoicetotalamount) + invoicetotalamount;
+                        invoicetotalcharge = invoicetotalamount;
                     }
 
-                    var invoiceResponse = await createInvoice(corpid, orgid, (invoiceid || 0), `GENERATED FOR ${clientdocnumber}`, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchange, 'DRAFT', null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, null, null, null, null, null, usr, null);
+                    var invoiceResponse = await createInvoice(corpid, orgid, (invoiceid || 0), `GENERATED FOR ${clientdocnumber}`, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchange, 'DRAFT', null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, null, null, null, null, null, usr, null, invoicetotalamount);
 
                     if (invoiceResponse) {
                         if (invoiceid) {
@@ -1288,14 +1289,14 @@ exports.createInvoice = async (request, response) => {
                                 producthasigv = '40';
                                 productigvtribute = '9998';
                                 producttotaligv = 0;
-                                producttotalamount = (element.productquantity * parseFloat(element.productsubtotal)) * (1 + appsetting.igv);
+                                producttotalamount = element.productquantity * parseFloat(element.productsubtotal);
                                 productigvrate = 0;
-                                productprice = parseFloat(element.productsubtotal) * (1 + appsetting.igv);
-                                productnetprice = parseFloat(element.productsubtotal) * (1 + appsetting.igv);
-                                productnetworth = (element.productquantity * parseFloat(element.productsubtotal)) * (1 + appsetting.igv);
+                                productprice = parseFloat(element.productsubtotal);
+                                productnetprice = parseFloat(element.productsubtotal);
+                                productnetworth = element.productquantity * parseFloat(element.productsubtotal);
                             }
 
-                            await createInvoiceDetail(corpid, orgid, invoiceResponse.invoiceid, element.productdescription, 'ACTIVO', 'NINGUNO', element.productquantity, element.productcode, producthasigv, '10', productigvtribute, element.productmeasure, producttotaligv, producttotalamount, productigvrate, productprice, element.productdescription, productnetprice, productnetworth, usr);
+                            await createInvoiceDetail(corpid, orgid, invoiceResponse.invoiceid, element.productdescription, 'ACTIVO', 'NINGUNO', element.productquantity, element.productcode, producthasigv, '10', productigvtribute, element.productmeasure, producttotaligv, producttotalamount, productigvrate, productprice, element.productdescription, productnetprice, productnetworth, parseFloat(element.productsubtotal), usr);
 
                             productinfo.push({
                                 producthasigv: producthasigv,
@@ -1556,7 +1557,7 @@ exports.createCreditNote = async (request, response) => {
                 if (appsetting) {
                     const invoiceDate = new Date().toISOString().split('T')[0];
 
-                    const invoiceResponse = await createInvoice(invoice.corpid, invoice.orgid, 0, `NOTA DE CREDITO: ${invoice.description}`, invoice.status, 'CREDITNOTE', appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, null, null, `NOTA DE CREDITO: ${invoice.concept}`, invoiceDate, invoiceDate, creditnotetype === '01' ? invoice.subtotal : parseFloat(creditnotediscount), invoice.taxes, creditnotetype === '01' ? invoice.totalamount : (parseFloat(creditnotediscount) * (appsetting.igv + 1)), invoice.currency, invoice.exchangerate, 'PENDING', null, invoice.purchaseorder, null, null, null, invoice.comments, invoice.credittype, creditnotetype, creditnotemotive, parseFloat(creditnotediscount), null, null, usr, invoice.invoiceid);
+                    const invoiceResponse = await createInvoice(invoice.corpid, invoice.orgid, 0, `NOTA DE CREDITO: ${invoice.description}`, invoice.status, 'CREDITNOTE', appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, null, null, `NOTA DE CREDITO: ${invoice.concept}`, invoiceDate, invoiceDate, creditnotetype === '01' ? invoice.subtotal : parseFloat(creditnotediscount), invoice.taxes, creditnotetype === '01' ? invoice.totalamount : (parseFloat(creditnotediscount) * (appsetting.igv + 1)), invoice.currency, invoice.exchangerate, 'PENDING', null, invoice.purchaseorder, null, null, null, invoice.comments, invoice.credittype, creditnotetype, creditnotemotive, parseFloat(creditnotediscount), null, null, usr, invoice.invoiceid, invoice.netamount);
 
                     if (invoiceResponse) {
                         var invoicecorrelative = null;
@@ -1603,7 +1604,7 @@ exports.createCreditNote = async (request, response) => {
                                     PaisRecepcion: invoice.receivercountry,
                                     CodigoOperacionSunat: invoice.sunatopecode,
                                     MontoTotalGravado: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((parseFloat(creditnotediscount) + Number.EPSILON) * 100) / 100 : null),
-                                    MontoTotalInafecto: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? '0' : invoice.subtotal) : (invoice.receivercountry === 'PE' ? '0' : parseFloat(creditnotediscount) * (appsetting.igv + 1)),
+                                    MontoTotalInafecto: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100) : (invoice.receivercountry === 'PE' ? '0' : Math.round((parseFloat(creditnotediscount) * (appsetting.igv + 1) + Number.EPSILON) * 100) / 100),
                                     MontoTotalIgv: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((parseFloat(creditnotediscount) * appsetting.igv + Number.EPSILON) * 100) / 100 : null),
                                     TipoNotaCredito: creditnotetype,
                                     MotivoNotaCredito: creditnotemotive,
@@ -1643,13 +1644,13 @@ exports.createCreditNote = async (request, response) => {
                                         CodigoProducto: invoicedetail[0].productcode,
                                         TipoVenta: invoicedetail[0].saletype,
                                         UnidadMedida: invoicedetail[0].measureunit,
-                                        IgvTotal: Math.round((parseFloat(creditnotediscount) * appsetting.igv + Number.EPSILON) * 100) / 100,
+                                        IgvTotal: invoice.receivercountry === 'PE' ? Math.round((parseFloat(creditnotediscount) * appsetting.igv + Number.EPSILON) * 100) / 100 : 0,
                                         MontoTotal: Math.round(((parseFloat(creditnotediscount) * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100,
-                                        TasaIgv: appsetting.igv * 100,
+                                        TasaIgv: invoice.receivercountry === 'PE' ? appsetting.igv * 100 : 0,
                                         PrecioProducto: Math.round(((parseFloat(creditnotediscount) * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100,
                                         DescripcionProducto: `DISCOUNT: ${creditnotemotive}`,
-                                        PrecioNetoProducto: Math.round((parseFloat(creditnotediscount) + Number.EPSILON) * 100) / 100,
-                                        ValorNetoProducto: Math.round((parseFloat(creditnotediscount) + Number.EPSILON) * 100) / 100,
+                                        PrecioNetoProducto: invoice.receivercountry === 'PE' ? (Math.round((parseFloat(creditnotediscount) + Number.EPSILON) * 100) / 100) : (Math.round(((parseFloat(creditnotediscount) * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100),
+                                        ValorNetoProducto: invoice.receivercountry === 'PE' ? (Math.round((parseFloat(creditnotediscount) + Number.EPSILON) * 100) / 100) : (Math.round(((parseFloat(creditnotediscount) * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100),
                                         AfectadoIgv: invoice.receivercountry === 'PE' ? '10' : '40',
                                         TributoIgv: invoice.receivercountry === 'PE' ? '1000' : '9998',
                                     };

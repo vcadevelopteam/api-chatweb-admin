@@ -50,7 +50,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_USER_INS: {
-        query: "SELECT * FROM ufn_user_ins($id, $usr, $doctype, $docnum, $password, $firstname, $lastname, $email, $pwdchangefirstlogin, $type, $status,$description, $username, $operation, $company, $twofactorauthentication, $registercode, $billinggroup, $image)",
+        query: "SELECT * FROM ufn_user_ins($corpid, $id, $usr, $doctype, $docnum, $password, $firstname, $lastname, $email, $pwdchangefirstlogin, $type, $status,$description, $username, $operation, $company, $twofactorauthentication, $registercode, $billinggroup, $image)",
         module: "/extras/users",
         protected: "INSERT"
     },
@@ -609,6 +609,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_INTEGRATIONMANAGER_EXPORT: {
+        query: "SELECT * FROM ufn_integrationmanager_exportdata($corpid,$orgid,$id)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_INTEGRATIONMANAGER_DELETEDATA: {
         query: "SELECT * FROM ufn_integrationmanager_deletedata($corpid,$orgid,$id)",
         module: "",
@@ -625,7 +630,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_COMMUNICATIONCHANNEL_INS: {
-        query: "SELECT * FROM ufn_communicationchannel_ins2($corpid, $orgid, $id, $description, $type, $communicationchannelsite, $communicationchannelowner, $communicationchannelcontact, $communicationchanneltoken, $customicon, $coloricon, $status, $username, $operation, $botenabled, $botconfigurationid, $chatflowenabled, $schedule, $integrationid, $appintegrationid, $country, $channelparameters, $updintegration, $resolvelithium, $color, $icons, $other, $form, $apikey, $servicecredentials, $motive)",
+        query: "SELECT * FROM ufn_communicationchannel_ins($corpid, $orgid, $id, $description, $type, $communicationchannelsite, $communicationchannelowner, $communicationchannelcontact, $communicationchanneltoken, $customicon, $coloricon, $status, $username, $operation, $botenabled, $botconfigurationid, $chatflowenabled, $schedule, $integrationid, $appintegrationid, $country, $channelparameters, $updintegration, $resolvelithium, $color, $icons, $other, $form, $apikey, $servicecredentials, $motive, $phone)",
         module: "",
         protected: "INSERT"
     },
@@ -1212,8 +1217,13 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_PAYMENTPLAN_CHECK: {
-        query: "SELECT * FROM ufn_paymentplan_check($corpid)",
+    UFN_COMMUNICATIONCHANNEL_PAYMENTPLAN_CHECK: {
+        query: "SELECT * FROM ufn_communicationchannel_paymentplan_check($corpid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_USER_PAYMENTPLAN_CHECK: {
+        query: "SELECT * FROM ufn_user_paymentplan_check($corpid)",
         module: "",
         protected: "SELECT"
     },
@@ -1603,17 +1613,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INVOICE_INS: {
-        query: "SELECT * FROM ufn_invoice_ins($corpid,$orgid,$invoiceid,$description,$status,$type,$issuerruc,$issuerbusinessname,$issuertradename,$issuerfiscaladdress,$issuerubigeo,$emittertype,$annexcode,$printingformat,$xmlversion,$ublversion,$receiverdoctype,$receiverdocnum,$receiverbusinessname,$receiverfiscaladdress,$receivercountry,$receivermail,$invoicetype,$sunatopecode,$serie,$correlative,$concept,$invoicedate,$expirationdate,$subtotal,$taxes,$totalamount,$currency,$exchangerate,$invoicestatus,$filenumber,$purchaseorder,$executingunitcode,$selectionprocessnumber,$contractnumber,$comments,$credittype,$creditnotetype,$creditnotemotive,$creditnotediscount,$invoicereferencefile,$invoicepaymentnote,$username,$referenceinvoiceid)",
+        query: "SELECT * FROM ufn_invoice_ins($corpid,$orgid,$invoiceid,$description,$status,$type,$issuerruc,$issuerbusinessname,$issuertradename,$issuerfiscaladdress,$issuerubigeo,$emittertype,$annexcode,$printingformat,$xmlversion,$ublversion,$receiverdoctype,$receiverdocnum,$receiverbusinessname,$receiverfiscaladdress,$receivercountry,$receivermail,$invoicetype,$sunatopecode,$serie,$correlative,$concept,$invoicedate,$expirationdate,$subtotal,$taxes,$totalamount,$currency,$exchangerate,$invoicestatus,$filenumber,$purchaseorder,$executingunitcode,$selectionprocessnumber,$contractnumber,$comments,$credittype,$creditnotetype,$creditnotemotive,$creditnotediscount,$invoicereferencefile,$invoicepaymentnote,$username,$referenceinvoiceid,$netamount)",
         module: "",
         protected: "INSERT"
     },
     UFN_INVOICE_REGENERATE: {
         query: "SELECT * FROM ufn_invoice_regenerate($corpid,$orgid,$invoiceid,$username)",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_INVOICE_ANNULLED: {
-        query: "SELECT * FROM ufn_invoice_annulled($corpid,$orgid,$invoiceid,$username)",
         module: "",
         protected: "INSERT"
     },
@@ -1821,7 +1826,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INVOICEDETAIL_INS: {
-        query: "SELECT * FROM ufn_invoicedetail_ins($corpid, $orgid, $invoiceid, $description, $status, $type, $quantity, $productcode, $hasigv, $saletype, $igvtribute, $measureunit, $totaligv, $totalamount, $igvrate, $productprice, $productdescription, $productnetprice, $productnetworth, $username)",
+        query: "SELECT * FROM ufn_invoicedetail_ins($corpid, $orgid, $invoiceid, $description, $status, $type, $quantity, $productcode, $hasigv, $saletype, $igvtribute, $measureunit, $totaligv, $totalamount, $igvrate, $productprice, $productdescription, $productnetprice, $productnetworth, $netamount, $username)",
         module: "",
         protected: "INSERT"
     },
