@@ -804,7 +804,7 @@ exports.refund = async (req, res) => {
 
 exports.chargeInvoice = async (req, res) => {
     const { corpid, userid, usr } = req.user;
-    const { invoiceid, settings, token, metadata = {}, purchaseorder, comments, orgid } = req.body;
+    const { invoiceid, settings, token, metadata = {}, purchaseorder, comments, orgid, override } = req.body;
 
     try {
         const corp = await getCorporation(corpid);
@@ -868,7 +868,7 @@ exports.chargeInvoice = async (req, res) => {
                 const invoicedetail = await getInvoiceDetail(corpid, orgid, userid, invoiceid);
 
                 if (invoice && invoicedetail) {
-                    if (invoice.invoicestatus === 'DRAFT' && invoice.paymentstatus === 'PENDING' && invoice.currency === settings.currency && invoice.totalamount * 100 === settings.amount) {
+                    if (invoice.invoicestatus === 'DRAFT' && invoice.paymentstatus === 'PENDING' && invoice.currency === settings.currency && ((invoice.totalamount * 100 === settings.amount) || override)) {
                         const appsetting = await getAppSetting();
                         const userprofile = await getUserProfile(userid);
                         
@@ -1121,6 +1121,15 @@ exports.chargeInvoice = async (req, res) => {
                                             }
     
                                             invoicedata.DataList.push(adicional04);
+                                        }
+
+                                        if (override) {
+                                            var adicional08 = {
+                                                CodigoDatoAdicional: '08',
+                                                DescripcionDatoAdicional: 'El monto a pagar incluye el descuento por el concepto de detracción.'
+                                            }
+    
+                                            invoicedata.DataList.push(adicional08);
                                         }
     
                                         if (tipocredito) {
@@ -1737,6 +1746,24 @@ exports.regularizeInvoice = async (request, response) => {
         return response.json({
             code: '',
             data: null,
+            error: false,
+            message: 'success',
+            success: true
+        });
+    } catch (error) {
+        return response.status(500).json({ error: true, success: false, code: '', message: "generalproblem" });
+    }
+};
+
+exports.getExchangeRate = async (request, response) => {
+    const { userid, usr } = request.user;
+
+    try {
+        var lastExchange = await getLastExchange();
+
+        return response.json({
+            code: '',
+            exchangerate: lastExchange,
             error: false,
             message: 'success',
             success: true
