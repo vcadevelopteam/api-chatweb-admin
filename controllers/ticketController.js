@@ -219,7 +219,7 @@ exports.sendHSM = async (req, res) => {
         if (!data.userid)
             data.userid = req.user.userid;
 
-        const ff = await tf.executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", undefined, false, {
+        await tf.executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", undefined, false, {
             personids: data.listmembers.map(x => x.personid),
             corpid: req.user.corpid,
             orgid: req.user.orgid,
@@ -245,22 +245,53 @@ exports.sendHSM = async (req, res) => {
                 })
             }
 
-            data.listmembers.forEach(x => {
-                tf.executesimpletransaction("QUERY_INSERT_TASK_SCHEDULER", {
-                    corpid: data.corpid,
-                    orgid: data.orgid,
-                    tasktype: "sendmail",
-                    taskbody: JSON.stringify({
-                        messagetype: "OWNERBODY",
-                        receiver: x.email,
-                        subject: mailtemplate.header,
-                        priority: mailtemplate.priority,
-                        body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), mailtemplate.body),
-                        blindreceiver: "",
-                        copyreceiver: "",
-                        credentials: jsonconfigmail,
-                        config: {
-                            CommunicationChannelSite: "",
+            data.listmembers.forEach(async x => {
+                const resValidate = await tf.executesimpletransaction("UFN_BALANCE_OUTPUT", { ...data, receiver: x.email, communicationchannelid: 0 })
+                console.log(resValidate)
+                if (resValidate instanceof Array && resValidate.length > 0) {
+                    tf.executesimpletransaction("QUERY_INSERT_TASK_SCHEDULER", {
+                        corpid: data.corpid,
+                        orgid: data.orgid,
+                        tasktype: "sendmail",
+                        taskbody: JSON.stringify({
+                            messagetype: "OWNERBODY",
+                            receiver: x.email,
+                            subject: mailtemplate.header,
+                            priority: mailtemplate.priority,
+                            body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), mailtemplate.body),
+                            blindreceiver: "",
+                            copyreceiver: "",
+                            credentials: jsonconfigmail,
+                            config: {
+                                CommunicationChannelSite: "",
+                                FirstName: x.firstname,
+                                LastName: x.lastname,
+                                HsmTo: x.email,
+                                Origin: "EXTERNAL",
+                                MessageTemplateId: data.hsmtemplateid,
+                                ShippingReason: data.shippingreason,
+                                HsmId: data.hsmtemplatename,
+                                Body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), mailtemplate.body)
+                            },
+                            attachments: mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
+                                type: 'FILE',
+                                x: x.value
+                            })) : []
+                        }),
+                        repeatflag: false,
+                        repeatmode: 0,
+                        repeatinterval: 0,
+                        completed: false,
+                    })
+                } else {
+                    tf.executesimpletransaction("QUERY_INSER_HSM_HISTORY", {
+                        ...data,
+                        status: 'FINALIZADO',
+                        success: false,
+                        message: 'no credit',
+                        messatemplateid: data.hsmtemplateid,
+                        config: JSON.stringify({
+                            CommunicationChannelSite: "zyxme@vcaperu.com",
                             FirstName: x.firstname,
                             LastName: x.lastname,
                             HsmTo: x.email,
@@ -269,17 +300,9 @@ exports.sendHSM = async (req, res) => {
                             ShippingReason: data.shippingreason,
                             HsmId: data.hsmtemplatename,
                             Body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), mailtemplate.body)
-                        },
-                        attachments: mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
-                            type: 'FILE',
-                            x: x.value
-                        })) : []
-                    }),
-                    repeatflag: false,
-                    repeatmode: 0,
-                    repeatinterval: 0,
-                    completed: false,
-                })
+                        }),
+                    })
+                }
             })
         } else {
             if (data.type === "SMS") {

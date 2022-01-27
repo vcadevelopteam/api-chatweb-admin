@@ -137,7 +137,7 @@ exports.authenticate = async (req, res) => {
                 delete user.corpid;
                 delete user.orgid;
                 delete user.userid;
-                return res.json({ data: { ...user, token, automaticConnection, notifications }, success: true });
+                return res.json({ data: { ...user, token, automaticConnection, notifications, redirect: user.redirect || '/tickets' }, success: true });
             })
         } else if (user.status === 'PENDIENTE') {
             return res.status(401).json({ code: errors.LOGIN_USER_PENDING })
