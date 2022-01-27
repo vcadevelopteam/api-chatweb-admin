@@ -1921,4 +1921,9 @@ module.exports = {
         module: "",
         protected: "DELETE"
     },
+    UFN_BALANCE_SEL: {
+        query: "select * from ufn_balance_sel($corpid, $orgid, $balanceid, $type, $operationtype, $all)",
+        module: "",
+        protected: "SELECT"
+    }
 }
