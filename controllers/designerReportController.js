@@ -73,7 +73,7 @@ exports.dashboardDesigner = async (req, res) => {
                         }]
 
                         const columnstmp = JSON.parse(report.columnjson).filter(x => x.columnname === indicator.column);
-                        if (columnstmp.length > 0) 
+                        if (columnstmp.length > 0)
                             return buildQueryDynamic2(columnstmp, filterHard, parameters, []);
                         else {
                             indicatorList[index].error = true;
@@ -90,7 +90,7 @@ exports.dashboardDesigner = async (req, res) => {
             const result = await Promise.all(triggerIndicators);
 
             const cleanDatat = result.map((resIndicator, index) => {
-                const { column, contentType, grouping} = indicatorList[index];
+                const { column, contentType, grouping } = indicatorList[index];
 
                 if (resIndicator) {
                     if (contentType === "kpi") {
@@ -100,10 +100,10 @@ exports.dashboardDesigner = async (req, res) => {
                             ...acc,
                             [item[column.replace(".", "")] || ""]: (acc[item[column.replace(".", "")] || ""] || 0) + 1
                         }), {});
-    
+
                         if (grouping === "percentage") {
                             Object.keys(res).forEach(key => {
-                                res[key] = Number(((res[key]/resIndicator.length) * 100).toFixed(2));
+                                res[key] = Number(((res[key] / resIndicator.length) * 100).toFixed(2));
                             })
                         }
                         return res;
@@ -120,7 +120,7 @@ exports.dashboardDesigner = async (req, res) => {
 
                 if (resultReports[index][0]) {
                     const { description: reportname, columnjson, dataorigin } = resultReports[index][0];
-    
+
                     const sortedData = contentType === "report" ? Object.fromEntries(Object.entries(data).sort(([, a], [, b]) => b - a)) : data;
                     return {
                         ...acc,
@@ -136,6 +136,7 @@ exports.dashboardDesigner = async (req, res) => {
                     }
                 } else {
                     return {
+                        ...acc,
                         [keysIndicators[index]]: {
                             contentType,
                             error,
@@ -144,7 +145,6 @@ exports.dashboardDesigner = async (req, res) => {
                     }
                 }
             }, {});
-
             return res.json({ result: gg });
         } else {
             const rr = getErrorCode(errors.UNEXPECTED_ERROR);
