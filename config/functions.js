@@ -1517,6 +1517,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    QUERY_INSER_HSM_HISTORY: {
+        query: "insert into hsmhistory (corpid, orgid, description, status, type, createdate, createby, changedate, changeby, config, success, message, shippingreason, messagetemplateid) values ($corpid, $orgid, '', $status, $type, NOW(), 'admin', NOW(), 'admin', $config, $success, $message, $shippingreason, $messatemplateid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_HSMHISTORY_LST: {
         query: "SELECT * FROM ufn_hsmhistory_lst($corpid, $orgid, $startdate, $enddate, $offset);",
         module: "",
@@ -1797,6 +1802,11 @@ module.exports = {
     },
     UFN_INVOICE_CORRELATIVEERROR: {
         query: "select * from ufn_invoice_correlativeerror($corpid, $orgid, $invoiceid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BALANCE_OUTPUT: {
+        query: "select * from ufn_balance_output($corpid, $orgid, $communicationchannelid, '', 'ACTIVO', $type, $shippingreason, $receiver, $username)",
         module: "",
         protected: "SELECT"
     },
