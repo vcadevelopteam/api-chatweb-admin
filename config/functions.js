@@ -941,19 +941,18 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DASHBOARD_GERENCIAL_SUMMARY_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_summary_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$userid,$offset )",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_DASHBOARD_GERENCIAL_TMO_GENERAL_SEL: {
         query: "SELECT * FROM ufn_dashboard_gerencial_tmo_general_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$userid,$offset)",
         module: "",
         protected: "SELECT"
     },
-    UFN_DASHBOARD_GERENCIAL_ENCUESTA3_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_encuesta3_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$question,$closedby,$target,$userid,$offset)",
-        module: "",
-        protected: "SELECT"
-    },
-
-    UFN_DASHBOARD_GERENCIAL_DATA_TMO_GENERAL_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_data_tmo_general_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$userid,$offset)",
+    UFN_DASHBOARD_GERENCIAL_TMO_GENERAL_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_tmo_general_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$userid,$offset)",
         module: "",
         protected: "SELECT"
     },
@@ -962,13 +961,8 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_DASHBOARD_GERENCIAL_SUMMARY_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_summary_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$userid,$offset )",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_DATA_DASHBOARD_GERENCIAL_SUMMARY_SEL: {
-        query: "SELECT * FROM ufn_data_dashboard_gerencial_summary_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$userid,$offset )",
+    UFN_DASHBOARD_GERENCIAL_TME_GENERAL_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_tme_general_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$userid,$offset)",
         module: "",
         protected: "SELECT"
     },
@@ -977,38 +971,23 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_DATA_DASHBOARD_GERENCIAL_ENCUESTA_SEL: {
-        query: "SELECT * FROM ufn_data_dashboard_gerencial_encuesta_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$closedby ,$userid,$offset )",
+    UFN_DASHBOARD_GERENCIAL_ENCUESTA3_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_encuesta3_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$question,$closedby,$target,$userid,$offset)",
         module: "",
         protected: "SELECT"
     },
-    UFN_DASHBOARD_GERENCIAL_CONVERSATION_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_conversation_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company ,$userid,$offset )",
+    UFN_DASHBOARD_GERENCIAL_ENCUESTA3_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_encuesta3_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$question,$closedby,$target,$userid,$offset)",
         module: "",
         protected: "SELECT"
     },
-    UFN_DATA_DASHBOARD_GERENCIAL_CONVERSATION_SEL: {
-        query: "SELECT * FROM ufn_data_dashboard_gerencial_conversation_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company ,$userid,$offset )",
+    UFN_DASHBOARD_GERENCIAL_ENCUESTA2_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_encuesta2_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$question,$closedby,$target,$userid,$offset)",
         module: "",
         protected: "SELECT"
     },
-    UFN_DASHBOARD_GERENCIAL_INTERACTION_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_interaction_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company ,$userid,$offset )",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_DATA_DASHBOARD_GERENCIAL_INTERACTION_SEL: {
-        query: "SELECT * FROM ufn_data_dashboard_gerencial_interaction_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company ,$userid,$offset )",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_DASHBOARD_GERENCIAL_ETIQUETAS_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_etiquetas_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$limit ,$userid,$offset )",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_DATA_DASHBOARD_GERENCIAL_ETIQUETAS_SEL: {
-        query: "SELECT * FROM ufn_data_dashboard_gerencial_etiquetas_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$limit ,$userid,$offset )",
+    UFN_DASHBOARD_GERENCIAL_ENCUESTA2_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_encuesta2_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$question,$closedby,$target,$userid,$offset)",
         module: "",
         protected: "SELECT"
     },
@@ -1017,11 +996,118 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_DATA_DASHBOARD_GERENCIAL_ASESORESCONECTADOSBAR_SEL: {
-        query: "SELECT * FROM ufn_data_dashboard_gerencial_asesoresconectadosbar_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company ,$userid,$offset )",
+    UFN_DASHBOARD_GERENCIAL_ASESORESCONECTADOSBAR_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_asesoresconectadosbar_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company ,$userid,$offset )",
         module: "",
         protected: "SELECT"
     },
+    UFN_DASHBOARD_GERENCIAL_CONVERSATION_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_conversation_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company ,$userid,$offset )",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_GERENCIAL_CONVERSATION_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_conversation_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company ,$userid,$offset )",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_GERENCIAL_INTERACTION_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_interaction_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company ,$userid,$offset )",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_GERENCIAL_INTERACTION_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_interaction_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company ,$userid,$offset )",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_GERENCIAL_ETIQUETAS_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_etiquetas_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$limit ,$userid,$offset )",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_GERENCIAL_ETIQUETAS_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_etiquetas_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$limit ,$userid,$offset )",
+        module: "",
+        protected: "SELECT"
+    },
+
+    UFN_DASHBOARD_OPERATIVO_SUMMARY_SEL: {
+        query: "SELECT * FROM ufn_dashboard_operativo_summary_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$skipdowntmo,$skipuptmo,$skipdowntme,$skipuptme,$supervisorid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_OPERATIVO_TMO_GENERAL_SEL: {
+        query: "SELECT * FROM ufn_dashboard_operativo_tmo_general_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$supervisorid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_OPERATIVO_TMO_GENERAL_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_operativo_tmo_general_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$supervisorid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_OPERATIVO_TME_GENERAL_SEL: {
+        query: "SELECT * FROM ufn_dashboard_operativo_tme_general_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$supervisorid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_OPERATIVO_TME_GENERAL_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_operativo_tme_general_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$supervisorid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_OPERATIVO_PRODXHORA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_operativo_prodxhora_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$level,$supervisorid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_OPERATIVO_TMODIST_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_operativo_tmodist_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$skipdowntmo,$skipuptmo,$skipdowntme,$skipuptme,$supervisorid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_OPERATIVO_TMEDIST_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_operativo_tmedist_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$skipdowntmo,$skipuptmo,$skipdowntme,$skipuptme,$supervisorid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_OPERATIVO_PRODXHORADIST_SEL: {
+        query: "SELECT * FROM ufn_dashboard_operativo_prodxhoradist_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$supervisorid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_OPERATIVO_PRODXHORADIST_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_operativo_prodxhoradist_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$supervisorid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_OPERATIVO_ENCUESTA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_operativo_encuesta_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$closedby,$supervisorid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_OPERATIVO_ENCUESTA3_SEL: {
+        query: "SELECT * FROM ufn_dashboard_operativo_encuesta3_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$question,$closedby,$target,$supervisorid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_OPERATIVO_ENCUESTA3_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_operativo_encuesta3_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$question,$closedby,$target,$supervisorid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_OPERATIVO_ENCUESTA2_SEL: {
+        query: "SELECT * FROM ufn_dashboard_operativo_encuesta2_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$question,$closedby,$target,$supervisorid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_OPERATIVO_ENCUESTA2_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_operativo_encuesta2_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$question,$closedby,$target,$supervisorid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+
     UFN_COUNT_CONFIGURATION: {
         query: "SELECT * FROM ufn_count_configuration($corpid, $orgid, $username)",
         module: "",
@@ -1037,8 +1123,18 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DASHBOARD_PUSH_HSMCATEGORYRANK_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_push_hsmcategoryrank_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_DASHBOARD_PUSH_SUMMARY_SEL: {
         query: "SELECT * FROM ufn_dashboard_push_summary_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_PUSH_SUMMARY_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_push_summary_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
         module: "",
         protected: "SELECT"
     },
@@ -1047,8 +1143,18 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DASHBOARD_PUSH_HSMRANK_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_push_hsmrank_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_DASHBOARD_PUSH_MENSAJEXDIA_SEL: {
         query: "SELECT * FROM ufn_dashboard_push_mensajexdia_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_PUSH_MENSAJEXDIA_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_push_mensajexdia_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
         module: "",
         protected: "SELECT"
     },
@@ -1064,61 +1170,6 @@ module.exports = {
     },
     UFN_GET_TOKEN_LOGGED_MOVIL: {
         query: "SELECT * FROM ufn_get_token_logged_movil($userid)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_DASHBOARD_OPERATIVO_SUMMARY_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_summary_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$skipdowntmo,$skipuptmo,$skipdowntme,$skipuptme,$supervisorid,$offset)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_DATA_DASHBOARD_OPERATIVO_SUMMARY_SEL: {
-        query: "SELECT * FROM ufn_data_dashboard_operativo_summary_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$skipdowntmo,$skipuptmo,$skipdowntme,$skipuptme,$supervisorid,$offset)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_DASHBOARD_OPERATIVO_PRODXHORA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_prodxhora_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$level,$supervisorid,$offset)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_DASHBOARD_OPERATIVO_PRODXHORADIST_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_prodxhoradist_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$supervisorid,$offset)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_DATA_DASHBOARD_OPERATIVO_PRODXHORADIST_SEL: {
-        query: "SELECT * FROM ufn_data_dashboard_operativo_prodxhoradist_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$supervisorid,$offset)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_DASHBOARD_OPERATIVO_TMO_GENERAL_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_tmo_general_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$supervisorid,$offset)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_DATA_DASHBOARD_OPERATIVO_TMO_GENERAL_SEL: {
-        query: "SELECT * FROM ufn_data_dashboard_operativo_tmo_general_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$supervisorid,$offset)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_DASHBOARD_OPERATIVO_TME_GENERAL_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_tme_general_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$supervisorid,$offset)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_DATA_DASHBOARD_OPERATIVO_TME_GENERAL_SEL: {
-        query: "SELECT * FROM ufn_data_dashboard_operativo_tme_general_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$supervisorid,$offset)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_DASHBOARD_OPERATIVO_ENCUESTA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_encuesta_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$closedby,$supervisorid,$offset)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_DATA_DASHBOARD_OPERATIVO_ENCUESTA_SEL: {
-        query: "SELECT * FROM ufn_data_dashboard_operativo_encuesta_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$closedby,$supervisorid,$offset)",
         module: "",
         protected: "SELECT"
     },
