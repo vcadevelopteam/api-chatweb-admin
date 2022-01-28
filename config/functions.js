@@ -1925,5 +1925,10 @@ module.exports = {
         query: "select * from ufn_balance_sel($corpid, $orgid, $balanceid, $type, $operationtype, $all)",
         module: "",
         protected: "SELECT"
-    }
+    },
+    UFN_BALANCE_INS_PAYMENT: {
+        query: "select * from ufn_balance_ins_payment($corpid, $orgid, $communicationchannelid, $description, $status, $type, $module, $receiver, $amount, $balance, $documenttype, $documentnumber, $paymentstatus, $transactiondate, $transactionuser, $username)",
+        module: "",
+        protected: "INSERT"
+    },
 }
