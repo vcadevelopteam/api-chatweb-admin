@@ -898,7 +898,7 @@ exports.chargeInvoice = async (req, res) => {
                 const invoicedetail = await getInvoiceDetail(corpid, orgid, userid, invoiceid);
 
                 if (invoice && invoicedetail) {
-                    if (invoice.invoicestatus === 'DRAFT' && invoice.paymentstatus === 'PENDING' && invoice.currency === settings.currency && ((invoice.totalamount * 100 === settings.amount) || override)) {
+                    if (invoice.invoicestatus === 'DRAFT' && invoice.paymentstatus === 'PENDING' && invoice.currency === settings.currency && (((Math.round((invoice.totalamount + Number.EPSILON) * 100) / 100) * 100 === settings.amount) || override)) {
                         const appsetting = await getAppSetting();
                         const userprofile = await getUserProfile(userid);
                         
@@ -1151,15 +1151,6 @@ exports.chargeInvoice = async (req, res) => {
                                             }
     
                                             invoicedata.DataList.push(adicional04);
-                                        }
-
-                                        if (override) {
-                                            var adicional08 = {
-                                                CodigoDatoAdicional: '08',
-                                                DescripcionDatoAdicional: 'El monto a pagar incluye el descuento por el concepto de detracción.'
-                                            }
-    
-                                            invoicedata.DataList.push(adicional08);
                                         }
     
                                         if (tipocredito) {
@@ -1873,7 +1864,7 @@ exports.createBalance = async (req, res) => {
             }
 
             if (proceedpayment) {
-                if (totalpay * 100 === settings.amount) {
+                if ((Math.round((totalpay + Number.EPSILON) * 100) / 100) * 100 === settings.amount) {
                     const appsetting = await getAppSetting();
                     const userprofile = await getUserProfile(userid);
 
@@ -2108,27 +2099,6 @@ exports.createBalance = async (req, res) => {
                                                     }
             
                                                     invoicedata.DataList.push(adicional02);
-
-                                                    if (billbyorg) {
-                                                        if (org.doctype === '6' && org.sunatcountry === 'PE') {
-                                                            var adicional08 = {
-                                                                CodigoDatoAdicional: '08',
-                                                                DescripcionDatoAdicional: 'El monto a pagar incluye el descuento por el concepto de detracción.'
-                                                            }
-                    
-                                                            invoicedata.DataList.push(adicional08);
-                                                        }
-                                                    }
-                                                    else {
-                                                        if (corp.doctype === '6' && corp.sunatcountry === 'PE') {
-                                                            var adicional08 = {
-                                                                CodigoDatoAdicional: '08',
-                                                                DescripcionDatoAdicional: 'El monto a pagar incluye el descuento por el concepto de detracción.'
-                                                            }
-                    
-                                                            invoicedata.DataList.push(adicional08);
-                                                        }
-                                                    }
                                                 }
                                             }
                                         }
