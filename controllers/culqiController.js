@@ -803,8 +803,8 @@ exports.refund = async (req, res) => {
 };
 
 exports.chargeInvoice = async (req, res) => {
-    const { corpid, userid, usr } = req.user;
-    const { invoiceid, settings, token, metadata = {}, purchaseorder, comments, orgid, override } = req.body;
+    const { userid, usr } = req.user;
+    const { invoiceid, settings, token, metadata = {}, purchaseorder, comments, corpid, orgid, override } = req.body;
 
     try {
         const corp = await getCorporation(corpid);
