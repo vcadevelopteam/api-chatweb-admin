@@ -1388,6 +1388,10 @@ exports.createInvoice = async (request, response) => {
                                     DataList: []
                                 }
 
+                                if (invoiceduedate) {
+                                    invoicedata.FechaVencimiento = invoiceduedate;
+                                }
+
                                 if (clientcountry === 'PE') {
                                     if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
                                         var compareamount = 0;
