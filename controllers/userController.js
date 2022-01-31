@@ -63,7 +63,7 @@ exports.updateInformation = async (req, res) => {
 exports.sendMailPassword = async (req, res) => {
     const { header, detail: detailtmp } = req.body;
     const parameters = header.parameters;
-    
+
     const passwordtext = parameters.password;
 
     if (header && header.parameters.password) {
@@ -84,7 +84,7 @@ exports.sendMailPassword = async (req, res) => {
 
     if (parameters.sendMailPassword && result.success === true) {
         parameters.namespace = parameters.language === "es" ? "TEMPLATESENDPASSWORD-SPANISH" : "TEMPLATESENDPASSWORD-ENGLISH";
-    
+
         let jsonconfigmail = "";
         const resBD = await Promise.all([
             executesimpletransaction("QUERY_GET_CONFIG_MAIL", parameters),
@@ -92,7 +92,7 @@ exports.sendMailPassword = async (req, res) => {
         ]);
         const configmail = resBD[0];
         const mailtemplate = resBD[1][0];
-    
+
         if (configmail instanceof Array && configmail.length > 0) {
             jsonconfigmail = JSON.stringify({
                 username: configmail[0].email,
@@ -103,14 +103,14 @@ exports.sendMailPassword = async (req, res) => {
                 default_credentials: configmail[0].default_credentials,
             })
         }
-    
+
         const variablereplace = [
             { name: "firstname", text: parameters.firstname },
             { name: "lastname", text: parameters.lastname },
             { name: "username", text: parameters.usr },
             { name: "password", text: passwordtext },
         ]
-    
+
         const result1 = await executesimpletransaction("QUERY_INSERT_TASK_SCHEDULER", {
             corpid: parameters.corpid,
             orgid: parameters.orgid,
@@ -139,5 +139,5 @@ exports.sendMailPassword = async (req, res) => {
     if (!result.error)
         return res.json(result);
     else
-        return res.status(result.rescode).json(result);
+        return res.status(result.rescode).json({ ...result, key: header.key });
 }
