@@ -946,6 +946,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DASHBOARD_GERENCIAL_SUMMARY_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_summary_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$userid,$offset )",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_DASHBOARD_GERENCIAL_TMO_GENERAL_SEL: {
         query: "SELECT * FROM ufn_dashboard_gerencial_tmo_general_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$userid,$offset)",
         module: "",
@@ -1920,5 +1925,15 @@ module.exports = {
         query: "SELECT * FROM ufn_invoicedetail_delete($corpid, $orgid, $invoiceid)",
         module: "",
         protected: "DELETE"
+    },
+    UFN_BALANCE_SEL: {
+        query: "select * from ufn_balance_sel($corpid, $orgid, $balanceid, $type, $operationtype, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BALANCE_INS_PAYMENT: {
+        query: "select * from ufn_balance_ins_payment($corpid, $orgid, $communicationchannelid, $description, $status, $type, $module, $receiver, $amount, $balance, $documenttype, $documentnumber, $paymentstatus, $transactiondate, $transactionuser, $username)",
+        module: "",
+        protected: "INSERT"
     },
 }

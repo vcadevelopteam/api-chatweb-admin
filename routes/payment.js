@@ -23,4 +23,6 @@ router.post('/regularizeinvoice', auth, culqiController.regularizeInvoice)
 
 router.post('/getexchangerate', auth, culqiController.getExchangeRate)
 
+router.post('/createbalance', auth, culqiController.createBalance)
+
 module.exports = router;
