@@ -79,7 +79,7 @@ exports.executeTransaction = async (req, res) => {
     if (!result.error)
         return res.json(result);
     else
-        return res.status(result.rescode).json(result);
+        return res.status(result.rescode).json({ ...result, key: header.key });
 }
 
 exports.getCollectionPagination = async (req, res) => {
