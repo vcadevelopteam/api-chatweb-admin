@@ -1684,7 +1684,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVOICE_PAYMENT: {
-        query: "SELECT * FROM ufn_invoice_payment($corpid,$orgid,$invoiceid,$paidby,$email,$tokenid,$capture,$tokenjson,$chargeid,$chargetoken,$chargejson)",
+        query: "SELECT * FROM ufn_invoice_payment($corpid, $orgid, $invoiceid, $paidby, $email, $tokenid, $capture, $tokenjson, $chargeid, $chargetoken, $chargejson, $culqiamount)",
         module: "",
         protected: "INSERT"
     },
@@ -1943,6 +1943,16 @@ module.exports = {
     },
     UFN_BILLINGMESSAGING_CURRENT: {
         query: "SELECT * FROM ufn_billingmessaging_current($year, $month, $country)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BALANCE_CHANGEINVOICE: {
+        query: "SELECT * FROM ufn_balance_changeinvoice($corpid, $orgid, $balanceid, $invoiceid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BALANCE_SEL_SENT: {
+        query: "SELECT * FROM ufn_balance_sel_sent($corpid, $orgid, $date, $type, $module, $messagetemplateid)",
         module: "",
         protected: "SELECT"
     },
