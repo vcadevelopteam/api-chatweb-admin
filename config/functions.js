@@ -1,6 +1,6 @@
 module.exports = {
     QUERY_AUTHENTICATED: {
-        query: "select us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.redirect,pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode from usr us inner join orguser ous on ous.userid = us.userid inner join org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency inner join corp corp on corp.corpid = ous.corpid LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid inner join role role on role.roleid = ous.roleid where us.usr = $usr and ous.bydefault and ous.status <> 'ELIMINADO' limit 1",
+        query: "select us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.redirect,pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod from usr us inner join orguser ous on ous.userid = us.userid inner join org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency inner join corp corp on corp.corpid = ous.corpid LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid inner join role role on role.roleid = ous.roleid where us.usr = $usr and ous.bydefault and ous.status <> 'ELIMINADO' limit 1",
         module: "",
         protected: false
     },
@@ -10,12 +10,12 @@ module.exports = {
         protected: false
     },
     QUERY_AUTHENTICATED_BY_FACEBOOKID: {
-        query: "select us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode from usr us inner join orguser ous on ous.userid = us.userid inner join org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency inner join corp corp on corp.corpid = ous.corpid LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid inner join role role on role.roleid = ous.roleid where us.facebookid = $facebookid and ous.bydefault and ous.status <> 'ELIMINADO'limit 1",
+        query: "select us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod from usr us inner join orguser ous on ous.userid = us.userid inner join org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency inner join corp corp on corp.corpid = ous.corpid LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid inner join role role on role.roleid = ous.roleid where us.facebookid = $facebookid and ous.bydefault and ous.status <> 'ELIMINADO'limit 1",
         module: "",
         protected: false
     },
     QUERY_AUTHENTICATED_BY_GOOGLEID: {
-        query: "select us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode from usr us inner join orguser ous on ous.userid = us.userid inner join org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency inner join corp corp on corp.corpid = ous.corpid LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid inner join role role on role.roleid = ous.roleid where us.googleid = $googleid and ous.bydefault and ous.status <> 'ELIMINADO' limit 1",
+        query: "select us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod from usr us inner join orguser ous on ous.userid = us.userid inner join org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency inner join corp corp on corp.corpid = ous.corpid LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid inner join role role on role.roleid = ous.roleid where us.googleid = $googleid and ous.bydefault and ous.status <> 'ELIMINADO' limit 1",
         module: "",
         protected: false
     },
@@ -1663,7 +1663,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INVOICE_INS: {
-        query: "SELECT * FROM ufn_invoice_ins($corpid,$orgid,$invoiceid,$description,$status,$type,$issuerruc,$issuerbusinessname,$issuertradename,$issuerfiscaladdress,$issuerubigeo,$emittertype,$annexcode,$printingformat,$xmlversion,$ublversion,$receiverdoctype,$receiverdocnum,$receiverbusinessname,$receiverfiscaladdress,$receivercountry,$receivermail,$invoicetype,$sunatopecode,$serie,$correlative,$concept,$invoicedate,$expirationdate,$subtotal,$taxes,$totalamount,$currency,$exchangerate,$invoicestatus,$filenumber,$purchaseorder,$executingunitcode,$selectionprocessnumber,$contractnumber,$comments,$credittype,$creditnotetype,$creditnotemotive,$creditnotediscount,$invoicereferencefile,$invoicepaymentnote,$username,$referenceinvoiceid,$netamount)",
+        query: "SELECT * FROM ufn_invoice_ins($corpid, $orgid, $invoiceid, $description, $status, $type, $issuerruc, $issuerbusinessname, $issuertradename, $issuerfiscaladdress, $issuerubigeo, $emittertype, $annexcode, $printingformat, $xmlversion, $ublversion, $receiverdoctype, $receiverdocnum, $receiverbusinessname, $receiverfiscaladdress, $receivercountry, $receivermail, $invoicetype, $sunatopecode, $serie, $correlative, $concept, $invoicedate, $expirationdate, $subtotal, $taxes, $totalamount, $currency, $exchangerate, $invoicestatus, $filenumber, $purchaseorder, $executingunitcode, $selectionprocessnumber, $contractnumber, $comments, $credittype, $creditnotetype, $creditnotemotive, $creditnotediscount, $invoicereferencefile, $invoicepaymentnote, $username, $referenceinvoiceid, $netamount, $paymentstatus, $hasreport)",
         module: "",
         protected: "INSERT"
     },
@@ -1678,12 +1678,12 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVOICE_PAYMENT: {
-        query: "SELECT * FROM ufn_invoice_payment($corpid,$orgid,$invoiceid,$paidby,$email,$tokenid,$capture,$tokenjson,$chargeid,$chargetoken,$chargejson)",
+        query: "SELECT * FROM ufn_invoice_payment($corpid, $orgid, $invoiceid, $paidby, $email, $tokenid, $capture, $tokenjson, $chargeid, $chargetoken, $chargejson, $culqiamount)",
         module: "",
         protected: "INSERT"
     },
     UFN_INVOICE_CHANGEPAYMENTSTATUS: {
-        query: "SELECT * FROM ufn_invoice_changepaymentstatus($corpid, $orgid, $invoiceid, $status, $paymentnote, $paymentfile, $username)",
+        query: "SELECT * FROM ufn_invoice_changepaymentstatus($corpid, $orgid, $invoiceid, $status, $paymentnote, $paymentfile, $paymentcommentary, $username)",
         module: "",
         protected: "INSERT"
     },
@@ -1929,5 +1929,25 @@ module.exports = {
         query: "select * from ufn_balance_ins_payment($corpid, $orgid, $communicationchannelid, $description, $status, $type, $module, $receiver, $amount, $balance, $documenttype, $documentnumber, $paymentstatus, $transactiondate, $transactionuser, $username)",
         module: "",
         protected: "INSERT"
+    },
+    UFN_INVOICE_CHANGEINVOICESTATUS: {
+        query: "SELECT * FROM ufn_invoice_changeinvoicestatus($corpid, $orgid, $invoiceid, $status, $username)",
+        module: "",
+        protected: "UPDATE"
+    },
+    UFN_BILLINGMESSAGING_CURRENT: {
+        query: "SELECT * FROM ufn_billingmessaging_current($year, $month, $country)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BALANCE_CHANGEINVOICE: {
+        query: "SELECT * FROM ufn_balance_changeinvoice($corpid, $orgid, $balanceid, $invoiceid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BALANCE_SEL_SENT: {
+        query: "SELECT * FROM ufn_balance_sel_sent($corpid, $orgid, $date, $type, $module, $messagetemplateid)",
+        module: "",
+        protected: "SELECT"
     },
 }

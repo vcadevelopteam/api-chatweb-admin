@@ -263,7 +263,8 @@ exports.changeOrganization = async (req, res) => {
             redirect: resultBD[0]?.redirect || '/tickets',
             plan: resultBD[0]?.plan || '',
             currencysymbol: resultBD[0]?.currencysymbol || 'S/',
-            countrycode: resultBD[0]?.countrycode || 'PE'
+            countrycode: resultBD[0]?.countrycode || 'PE',
+            paymentmethod: resultBD[0]?.paymentmethod || 'POSTPAGO',
         };
 
         const resBDMenu = await tf.executesimpletransaction("UFN_APPLICATION_SEL", newusertoken);
