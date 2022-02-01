@@ -1689,7 +1689,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVOICE_CHANGEPAYMENTSTATUS: {
-        query: "SELECT * FROM ufn_invoice_changepaymentstatus($corpid, $orgid, $invoiceid, $status, $paymentnote, $paymentfile, $username)",
+        query: "SELECT * FROM ufn_invoice_changepaymentstatus($corpid, $orgid, $invoiceid, $status, $paymentnote, $paymentfile, $paymentcommentary, $username)",
         module: "",
         protected: "INSERT"
     },
@@ -1935,5 +1935,15 @@ module.exports = {
         query: "select * from ufn_balance_ins_payment($corpid, $orgid, $communicationchannelid, $description, $status, $type, $module, $receiver, $amount, $balance, $documenttype, $documentnumber, $paymentstatus, $transactiondate, $transactionuser, $username)",
         module: "",
         protected: "INSERT"
+    },
+    UFN_INVOICE_CHANGEINVOICESTATUS: {
+        query: "SELECT * FROM ufn_invoice_changeinvoicestatus($corpid, $orgid, $invoiceid, $status, $username)",
+        module: "",
+        protected: "UPDATE"
+    },
+    UFN_BILLINGMESSAGING_CURRENT: {
+        query: "SELECT * FROM ufn_billingmessaging_current($year, $month, $country)",
+        module: "",
+        protected: "SELECT"
     },
 }
