@@ -441,7 +441,7 @@ module.exports = {
     },
     UFN_CORP_SEL: {
         query: "SELECT * FROM ufn_corp_sel($corpid, $orgid, $id, $username, $all)",
-        module: "/corporations",
+        module: "",
         protected: "SELECT"
     },
     UFN_CORP_INS: {
