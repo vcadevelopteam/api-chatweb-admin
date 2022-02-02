@@ -283,9 +283,7 @@ const createCharge = async (userprofile, settings, token, metadata, privatekey) 
             phone_number: (userprofile.phone ? userprofile.phone.replace(/[^0-9]/g, '') : '51999999999').slice(0, 15),
         },
     }
-
-    console.log(JSON.stringify(culqiBody));
-
+    
     return await culqi.charges.createCharge(culqiBody);
 }
 
