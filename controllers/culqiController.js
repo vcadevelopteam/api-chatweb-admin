@@ -11,6 +11,10 @@ const bridgeEndpoint = process.env.BRIDGE;
 
 const zeroPad = (num, places) => String(num).padStart(places, '0')
 
+const removeAccent = (text) => {
+    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
 const getUserProfile = async (userid) => {
     const query = "SELECT firstname, lastname, email, phone, country FROM usr WHERE userid = $userid";
 
@@ -263,23 +267,26 @@ const createCharge = async (userprofile, settings, token, metadata, privatekey) 
         privateKey: privatekey
     });
 
-    return await culqi.charges.createCharge({
+    var culqiBody = {
         amount: settings.amount,
         currency_code: settings.currency,
-        email: token.email,
+        email: token.email.slice(0, 50),
         source_id: token.id,
-        capture: true,
-        description: `Laraigo ${settings.description}`.slice(0,80),
+        description: (removeAccent('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
         metadata: metadata,
         antifraud_details: {
-            first_name: userprofile.firstname,
-            last_name: userprofile.lastname,
-            address: userprofile.address || 'EMPTY',
-            address_city: userprofile.address_city || 'N/A',
-            country_code: userprofile.country || token.client.ip_country_code,
-            phone: userprofile.phone,
-        }
-    });
+            address: (removeAccent(userprofile.address || 'EMPTY')).slice(0, 100),
+            address_city: (removeAccent(userprofile.address_city || 'EMPTY')).slice(0, 30),
+            country_code: ((userprofile.country || token.client.ip_country_code) || 'PE'),
+            first_name: (removeAccent(userprofile.firstname || 'EMPTY')).slice(0, 50),
+            last_name: (removeAccent(userprofile.lastname || 'EMPTY')).slice(0, 50),
+            phone_number: (userprofile.phone ? userprofile.phone.replace(/[^0-9]/g, '') : '51999999999').slice(0, 15),
+        },
+    }
+
+    console.log(JSON.stringify(culqiBody));
+
+    return await culqi.charges.createCharge(culqiBody);
 }
 
 const getCharge = async (corpid, orgid, userid, id) => {
@@ -950,17 +957,17 @@ exports.chargeInvoice = async (req, res) => {
                                 const userprofile = await getUserProfile(userid);
                                 
                                 if (userprofile && appsetting) {
-                                    metadata.corpid = corpid;
-                                    metadata.corporation = corp.description;
-                                    metadata.orgid = orgid;
-                                    metadata.organization = invoice.orgdesc || '';
-                                    metadata.document = org ? org.docnum : corp.docnum;
-                                    metadata.businessname = org ? org.businessname : corp.businessname;
-                                    metadata.invoiceid = invoiceid;
+                                    metadata.corpid = (corpid || '');
+                                    metadata.corporation = removeAccent(corp.description || '');
+                                    metadata.orgid = (orgid || '');
+                                    metadata.organization = removeAccent(invoice.orgdesc || '');
+                                    metadata.document = ((org ? org.docnum : corp.docnum) || '');
+                                    metadata.businessname = removeAccent((org ? org.businessname : corp.businessname) || '');
+                                    metadata.invoiceid = (invoiceid || '');
                                     metadata.seriecode = '';
-                                    metadata.emissiondate = invoice.invoicedate;
-                                    metadata.user = usr;
-                                    metadata.reference = invoice.description;
+                                    metadata.emissiondate = (invoice.invoicedate || '');
+                                    metadata.user = removeAccent(usr || '');
+                                    metadata.reference = removeAccent(invoice.description || '');
         
                                     const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
         
@@ -1307,17 +1314,17 @@ exports.chargeInvoice = async (req, res) => {
                     const userprofile = await getUserProfile(userid);
 
                     if (userprofile && appsetting) {
-                        metadata.corpid = corpid;
-                        metadata.corporation = invoice.corpdesc;
-                        metadata.orgid = orgid;
-                        metadata.organization = invoice.orgdesc || '';
-                        metadata.document = invoice.receiverdocnum;
-                        metadata.businessname = invoice.receiverbusinessname;
-                        metadata.invoiceid = invoiceid;
-                        metadata.seriecode = `${invoice.serie}-${invoice.correlative}`;
-                        metadata.emissiondate = invoice.invoicedate;
-                        metadata.user = usr;
-                        metadata.reference = invoice.description;
+                        metadata.corpid = (corpid || '');
+                        metadata.corporation = removeAccent(invoice.corpdesc || '');
+                        metadata.orgid = (orgid || '');
+                        metadata.organization = removeAccent(invoice.orgdesc || '');
+                        metadata.document = (invoice.receiverdocnum || '');
+                        metadata.businessname = removeAccent(invoice.receiverbusinessname || '');
+                        metadata.invoiceid = (invoiceid || '');
+                        metadata.seriecode = (invoice.serie ? invoice.serie : 'X000') + '-' + (invoice.correlative ? invoice.correlative.toString().padStart(8, '0') : '00000000');
+                        metadata.emissiondate = (invoice.invoicedate || '');
+                        metadata.user = removeAccent(usr || '');
+                        metadata.reference = removeAccent(invoice.description || '');
     
                         const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
     
@@ -2025,17 +2032,17 @@ exports.createBalance = async (req, res) => {
                     const userprofile = await getUserProfile(userid);
 
                     if (userprofile && appsetting) {
-                        metadata.corpid = corpid;
-                        metadata.corporation = corp.description;
-                        metadata.orgid = orgid;
-                        metadata.organization = (org?.orgdesc || '');
-                        metadata.document = billbyorg ? org.docnum : corp.docnum;
-                        metadata.businessname = billbyorg ? org.businessname : corp.businessname;
+                        metadata.corpid = (corpid || '');
+                        metadata.corporation = removeAccent(corp.description || '');
+                        metadata.orgid = (orgid || '');
+                        metadata.organization = removeAccent(org?.orgdesc || '');
+                        metadata.document = ((billbyorg ? org.docnum : corp.docnum) || '');
+                        metadata.businessname = removeAccent((billbyorg ? org.businessname : corp.businessname) || '');
                         metadata.invoiceid = '';
                         metadata.seriecode = '';
                         metadata.emissiondate = new Date().toISOString().split('T')[0];
-                        metadata.user = usr;
-                        metadata.reference = reference;
+                        metadata.user = removeAccent(usr || '');
+                        metadata.reference = removeAccent(reference || '');
     
                         const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
 
