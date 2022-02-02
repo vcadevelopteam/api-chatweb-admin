@@ -710,6 +710,7 @@ exports.getPageList = async (request, result) => {
         const requestGetPageList = await axios({
             data: {
                 accessToken: request.body.accessToken,
+                appId: request.body.appId,
                 linkType: 'GETPAGES'
             },
             method: 'post',
