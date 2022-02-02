@@ -490,7 +490,14 @@ exports.createSubscription = async (request, result) => {
                                     channelParameters.type = 'TWMS';
                                 }
 
-                                const transactionCreateTwitter = await triggerfunctions.executesimpletransaction(channelMethod, channelParameters);
+                                var channelParametersVariant = channelParameters;
+
+                                channelParametersVariant.corpid = 1;
+                                channelParametersVariant.orgid = 1;
+                                channelParametersVariant.username = '';
+                                channelParametersVariant.status = 'ACTIVO';
+
+                                const transactionCreateTwitter = await triggerfunctions.executesimpletransaction(channelMethod, channelParametersVariant);
 
                                 if (transactionCreateTwitter instanceof Array) {
                                     const requestCreateTwitter = await axios({
@@ -507,37 +514,40 @@ exports.createSubscription = async (request, result) => {
                                         url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`
                                     });
 
-                                    if (requestCreateTwitter.data.success) {
-                                        if (channelTotal === '') {
-                                            channelTotal = `${transactionCreateTwitter[0].ufn_communicationchannel_ins}`;
-                                        }
-                                        else {
-                                            channelTotal = `${channelTotal},${transactionCreateTwitter[0].ufn_communicationchannel_ins}`;
-                                        }
+                                    if (!requestCreateTwitter.data.success) {
+                                        return result.status(400).json({
+                                            msg: requestCreateTwitter.data.operationMessage,
+                                            success: false,
+                                            error: true
+                                        });
+                                    }
 
-                                        channelData = `<b>${channelParameters.description}</b>;${channelData}`;
+                                    channelParametersVariant.id = transactionCreateTwitter[0].ufn_communicationchannel_ins;
+                                    channelParametersVariant.motive = 'Delete from API';
+                                    channelParametersVariant.operation = 'DELETE';
+                                    channelParametersVariant.status = 'ELIMINADO';
+
+                                    const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(channelMethod, channelParametersVariant);
+
+                                    if (!(transactionDeleteTwitter instanceof Array)) {
+                                        return result.status(400).json({
+                                            msg: transactionDeleteTwitter.code,
+                                            success: false,
+                                            error: true
+                                        });
                                     }
                                     else {
-                                        channelParameters.id = transactionCreateTwitter[0].ufn_communicationchannel_ins;
-                                        channelParameters.motive = 'Delete from API';
-                                        channelParameters.operation = 'DELETE';
+                                        channelParameters.corpid = null;
+                                        channelParameters.orgid = null;
+                                        channelParameters.username = null;
+                                        channelParameters.status = 'PENDIENTE';
+                                        channelParameters.id = null;
+                                        channelParameters.motive = 'Insert from API';
+                                        channelParameters.operation = 'INSERT';
 
-                                        const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
-
-                                        if (transactionDeleteTwitter instanceof Array) {
-                                            return result.status(400).json({
-                                                msg: requestCreateTwitter.data.operationMessage,
-                                                success: false,
-                                                error: true
-                                            });
-                                        }
-                                        else {
-                                            return result.status(400).json({
-                                                msg: transactionDeleteTwitter.code,
-                                                success: false,
-                                                error: true
-                                            });
-                                        }
+                                        channelMethodArray.push(channelMethod);
+                                        channelParametersArray.push(channelParameters);
+                                        channelServiceArray.push(channelService);
                                     }
                                 }
                                 else {
