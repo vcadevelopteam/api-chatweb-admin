@@ -2020,7 +2020,7 @@ exports.createBalance = async (req, res) => {
             }
 
             if (proceedpayment) {
-                if ((Math.round((totalpay + Number.EPSILON) * 100) / 100) * 100 === settings.amount) {
+                if ((Math.round((totalpay * 100 + Number.EPSILON) * 100) / 100) === settings.amount) {
                     const appsetting = await getAppSetting();
                     const userprofile = await getUserProfile(userid);
 
