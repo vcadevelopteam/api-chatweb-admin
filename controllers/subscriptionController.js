@@ -977,6 +977,7 @@ exports.getPageList = async (request, result) => {
         const requestGetFacebook = await axios({
             data: {
                 accessToken: request.body.accessToken,
+                appId: request.body.appId,
                 linkType: 'GETPAGES'
             },
             method: 'post',
