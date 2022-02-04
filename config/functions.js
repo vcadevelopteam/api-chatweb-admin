@@ -1950,4 +1950,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_BILLING_REPORT_CONVERSATIONWHATSAPP: {
+        query: "SELECT * FROM ufn_billing_report_conversationwhatsapp($corpid, $orgid, $year, $month)",
+        module: "",
+        protected: "SELECT"
+    },
 }
