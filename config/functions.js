@@ -1808,7 +1808,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGPERIOD_CALC_REFRESHALL: {
-        query: "SELECT * FROM ufn_billingperiod_calc_refreshall((SELECT EXTRACT (YEAR from (select now() at time zone 'utc'))::bigint), (SELECT EXTRACT (MONTH from (select now() at time zone 'utc'))::bigint), $exchangerate)",
+        query: "SELECT * FROM ufn_billingperiod_calc_refreshall((SELECT EXTRACT (YEAR from (select now() at time zone 'utc'))::bigint), (SELECT EXTRACT (MONTH from (select now() at time zone 'utc'))::bigint), $corpid, $orgid)",
         module: "",
         protected: "INSERT"
     },
@@ -1846,7 +1846,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INVOICE_REFRESHTEST: {
-        query: "select * from ufn_invoice_refreshtest()",
+        query: "select * from ufn_invoice_refreshtest((SELECT EXTRACT (YEAR from (select now() at time zone 'utc'))::bigint), (SELECT EXTRACT (MONTH from (select now() at time zone 'utc'))::bigint), $corpid)",
         module: "",
         protected: "SELECT"
     },
