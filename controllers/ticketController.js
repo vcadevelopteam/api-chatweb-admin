@@ -246,9 +246,25 @@ exports.sendHSM = async (req, res) => {
             }
 
             data.listmembers.forEach(async x => {
-                const resValidate = await tf.executesimpletransaction("UFN_BALANCE_OUTPUT", { ...data, receiver: x.email, communicationchannelid: 0 })
-                console.log(resValidate)
-                if (resValidate instanceof Array && resValidate.length > 0) {
+                const resCheck = await tf.executesimpletransaction("UFN_BALANCE_CHECK", { ...data, receiver: x.email, communicationchannelid: 0 })
+
+                let send = false;
+                if (resCheck instanceof Array && resCheck.length > 0) {
+                    data.fee = resCheck[0].fee;
+                    const balanceid = resCheck[0].balanceid;
+                    console.log(resCheck)
+                    if (balanceid == 0) {
+                        send = true;
+                    } else {
+                        const resValidate = await tf.executesimpletransaction("UFN_BALANCE_OUTPUT", { ...data, receiver: x.email, communicationchannelid: 0 })
+                        if (resValidate instanceof Array) {
+                            send = true;
+                        }
+                    }
+                }
+                
+                
+                if (send) {
                     tf.executesimpletransaction("QUERY_INSERT_TASK_SCHEDULER", {
                         corpid: data.corpid,
                         orgid: data.orgid,
