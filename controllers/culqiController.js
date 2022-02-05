@@ -950,7 +950,7 @@ exports.chargeInvoice = async (req, res) => {
                         const invoicedetail = await getInvoiceDetail(corpid, orgid, userid, invoiceid);
         
                         if (invoicedetail) {
-                            if (invoice.invoicestatus === 'DRAFT' && invoice.paymentstatus === 'PENDING' && invoice.currency === settings.currency && (((Math.round((invoice.totalamount + Number.EPSILON) * 100) / 100) * 100 === settings.amount) || override)) {
+                            if (invoice.invoicestatus === 'DRAFT' && invoice.paymentstatus === 'PENDING' && invoice.currency === settings.currency && (((Math.round((invoice.totalamount * 100 + Number.EPSILON) * 100) / 100) === settings.amount) || override)) {
                                 const appsetting = await getAppSetting();
                                 const userprofile = await getUserProfile(userid);
                                 
@@ -1307,7 +1307,7 @@ exports.chargeInvoice = async (req, res) => {
                 }
             }
             else {
-                if (((Math.round((invoice.totalamount + Number.EPSILON) * 100) / 100) * 100 === settings.amount) || override) {
+                if (((Math.round((invoice.totalamount * 100 + Number.EPSILON) * 100) / 100) === settings.amount) || override) {
                     const appsetting = await getAppSetting();
                     const userprofile = await getUserProfile(userid);
 
