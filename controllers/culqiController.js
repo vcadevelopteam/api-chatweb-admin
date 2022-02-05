@@ -1418,9 +1418,12 @@ exports.chargeInvoice = async (req, res) => {
 
 exports.createInvoice = async (request, response) => {
     const { userid, usr } = request.user;
-    const { corpid, orgid, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, clientcredittype, invoicecreatedate, invoiceduedate, invoicecurrency, invoicetotalamount, invoicepurchaseorder, invoicecomments, autosendinvoice, productdetail, onlyinsert, invoiceid } = request.body;
+    const { corpid, orgid, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, clientcredittype, invoicecreatedate, invoiceduedate, invoicecurrency, invoicepurchaseorder, invoicecomments, autosendinvoice, productdetail, onlyinsert, invoiceid } = request.body;
+    var { invoicetotalamount } = request.body;
 
     try {
+        invoicetotalamount = Math.round((parseFloat(invoicetotalamount) + Number.EPSILON) * 100) / 100;
+
         if ((corpid || orgid) && clientcountry) {
             if (productdetail) {
                 const appsetting = await getAppSetting();
@@ -1436,8 +1439,8 @@ exports.createInvoice = async (request, response) => {
 
                     if (clientdoctype !== '0') {
                         invoicesubtotal = invoicetotalamount;
-                        invoicetaxes = appsetting.igv * invoicetotalamount;
-                        invoicetotalcharge = (appsetting.igv * invoicetotalamount) + invoicetotalamount;
+                        invoicetaxes = Math.round(((appsetting.igv * invoicetotalamount) + Number.EPSILON) * 100) / 100;
+                        invoicetotalcharge = Math.round((((appsetting.igv * invoicetotalamount) + invoicetotalamount) + Number.EPSILON) * 100) / 100;
                     }
                     else {
                         invoicesubtotal = invoicetotalamount;
@@ -1453,6 +1456,9 @@ exports.createInvoice = async (request, response) => {
                         }
                         
                         await Promise.all(productdetail.map(async (element) => {
+                            var elementproductsubtotal = Math.round((parseFloat(element.productsubtotal) + Number.EPSILON) * 100) / 100;
+                            var elementproductquantity = Math.round((parseFloat(element.productquantity) + Number.EPSILON) * 100) / 100;
+
                             var producthasigv = '';
                             var productigvtribute = '';
                             var producttotaligv = 0;
@@ -1465,25 +1471,25 @@ exports.createInvoice = async (request, response) => {
                             if (clientdoctype !== '0') {
                                 producthasigv = '10';
                                 productigvtribute = '1000';
-                                producttotaligv = (element.productquantity * parseFloat(element.productsubtotal)) * appsetting.igv;
-                                producttotalamount = (element.productquantity * parseFloat(element.productsubtotal)) * (1 + appsetting.igv);
-                                productigvrate = appsetting.igv;
-                                productprice = parseFloat(element.productsubtotal) * (1 + appsetting.igv);
-                                productnetprice = parseFloat(element.productsubtotal);
-                                productnetworth = element.productquantity * parseFloat(element.productsubtotal);
+                                producttotaligv = Math.round((((elementproductquantity * elementproductsubtotal) * appsetting.igv) + Number.EPSILON) * 100) / 100;
+                                producttotalamount = Math.round((((elementproductquantity * elementproductsubtotal) * (1 + appsetting.igv)) + Number.EPSILON) * 100) / 100;
+                                productigvrate = Math.round(((appsetting.igv) + Number.EPSILON) * 100) / 100;
+                                productprice = Math.round(((elementproductsubtotal * (1 + appsetting.igv)) + Number.EPSILON) * 100) / 100;
+                                productnetprice = elementproductsubtotal;
+                                productnetworth = Math.round(((elementproductquantity * elementproductsubtotal) + Number.EPSILON) * 100) / 100;
                             }
                             else {
                                 producthasigv = '40';
                                 productigvtribute = '9998';
                                 producttotaligv = 0;
-                                producttotalamount = element.productquantity * parseFloat(element.productsubtotal);
+                                producttotalamount = Math.round(((elementproductquantity * elementproductsubtotal) + Number.EPSILON) * 100) / 100;
                                 productigvrate = 0;
-                                productprice = parseFloat(element.productsubtotal);
-                                productnetprice = parseFloat(element.productsubtotal);
-                                productnetworth = element.productquantity * parseFloat(element.productsubtotal);
+                                productprice = elementproductsubtotal;
+                                productnetprice = elementproductsubtotal;
+                                productnetworth = Math.round(((elementproductquantity * elementproductsubtotal) + Number.EPSILON) * 100) / 100;
                             }
 
-                            await createInvoiceDetail(corpid, orgid, invoiceResponse.invoiceid, element.productdescription, 'ACTIVO', 'NINGUNO', element.productquantity, element.productcode, producthasigv, '10', productigvtribute, element.productmeasure, producttotaligv, producttotalamount, productigvrate, productprice, element.productdescription, productnetprice, productnetworth, parseFloat(element.productsubtotal), usr);
+                            await createInvoiceDetail(corpid, orgid, invoiceResponse.invoiceid, element.productdescription, 'ACTIVO', 'NINGUNO', elementproductquantity, element.productcode, producthasigv, '10', productigvtribute, element.productmeasure, producttotaligv, producttotalamount, productigvrate, productprice, element.productdescription, productnetprice, productnetworth, elementproductsubtotal, usr);
 
                             productinfo.push({
                                 producthasigv: producthasigv,
@@ -1497,8 +1503,8 @@ exports.createInvoice = async (request, response) => {
                                 productdescription: element.productdescription,
                                 productcode: element.productcode,
                                 productmeasure: element.productmeasure,
-                                productquantity: element.productquantity,
-                                productsubtotal: parseFloat(element.productsubtotal),
+                                productquantity: elementproductquantity,
+                                productsubtotal: elementproductsubtotal,
                             });
                         }));
 
@@ -1736,9 +1742,12 @@ exports.createInvoice = async (request, response) => {
 
 exports.createCreditNote = async (request, response) => {
     const { userid, usr } = request.user;
-    const { corpid, orgid, invoiceid, creditnotetype, creditnotemotive, creditnotediscount } = request.body;
+    const { corpid, orgid, invoiceid, creditnotetype, creditnotemotive } = request.body;
+    var { creditnotediscount } = request.body;
 
     try {
+        creditnotediscount = Math.round((parseFloat(creditnotediscount) + Number.EPSILON) * 100) / 100;
+
         const invoice = await getInvoice(corpid, orgid, userid, invoiceid);
 
         if (invoice) {
@@ -1774,7 +1783,7 @@ exports.createCreditNote = async (request, response) => {
                                     EnviarSunat: invoice.sendtosunat,
                                     FechaEmision: invoiceDate,
                                     MailEnvio: invoice.receivermail,
-                                    MontoTotal: Math.round(((creditnotetype === '01' ? invoice.totalamount : parseFloat(parseFloat(creditnotediscount) * (appsetting.igv + 1))) + Number.EPSILON) * 100) / 100,
+                                    MontoTotal: Math.round(((creditnotetype === '01' ? invoice.totalamount : parseFloat(creditnotediscount * (appsetting.igv + 1))) + Number.EPSILON) * 100) / 100,
                                     NombreComercialEmisor: appsetting.tradename,
                                     RazonSocialEmisor: appsetting.businessname,
                                     RazonSocialReceptor: invoice.receiverbusinessname,
@@ -1794,9 +1803,9 @@ exports.createCreditNote = async (request, response) => {
                                     Endpoint: appsetting.sunaturl,
                                     PaisRecepcion: invoice.receivercountry,
                                     CodigoOperacionSunat: invoice.sunatopecode,
-                                    MontoTotalGravado: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((parseFloat(creditnotediscount) + Number.EPSILON) * 100) / 100 : null),
-                                    MontoTotalInafecto: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100) : (invoice.receivercountry === 'PE' ? '0' : Math.round((parseFloat(creditnotediscount) * (appsetting.igv + 1) + Number.EPSILON) * 100) / 100),
-                                    MontoTotalIgv: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((parseFloat(creditnotediscount) * appsetting.igv + Number.EPSILON) * 100) / 100 : null),
+                                    MontoTotalGravado: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((creditnotediscount + Number.EPSILON) * 100) / 100 : null),
+                                    MontoTotalInafecto: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100) : (invoice.receivercountry === 'PE' ? '0' : Math.round((creditnotediscount * (appsetting.igv + 1) + Number.EPSILON) * 100) / 100),
+                                    MontoTotalIgv: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((creditnotediscount * appsetting.igv + Number.EPSILON) * 100) / 100 : null),
                                     TipoNotaCredito: creditnotetype,
                                     MotivoNotaCredito: creditnotemotive,
                                     CodigoDocumentoNotaCredito: invoice.invoicetype,
@@ -1835,13 +1844,13 @@ exports.createCreditNote = async (request, response) => {
                                         CodigoProducto: invoicedetail[0].productcode,
                                         TipoVenta: invoicedetail[0].saletype,
                                         UnidadMedida: invoicedetail[0].measureunit,
-                                        IgvTotal: invoice.receivercountry === 'PE' ? Math.round((parseFloat(creditnotediscount) * appsetting.igv + Number.EPSILON) * 100) / 100 : 0,
-                                        MontoTotal: Math.round(((parseFloat(creditnotediscount) * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100,
+                                        IgvTotal: invoice.receivercountry === 'PE' ? Math.round((creditnotediscount * appsetting.igv + Number.EPSILON) * 100) / 100 : 0,
+                                        MontoTotal: Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100,
                                         TasaIgv: invoice.receivercountry === 'PE' ? appsetting.igv * 100 : 0,
-                                        PrecioProducto: Math.round(((parseFloat(creditnotediscount) * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100,
+                                        PrecioProducto: Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100,
                                         DescripcionProducto: `DISCOUNT: ${creditnotemotive}`,
-                                        PrecioNetoProducto: invoice.receivercountry === 'PE' ? (Math.round((parseFloat(creditnotediscount) + Number.EPSILON) * 100) / 100) : (Math.round(((parseFloat(creditnotediscount) * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100),
-                                        ValorNetoProducto: invoice.receivercountry === 'PE' ? (Math.round((parseFloat(creditnotediscount) + Number.EPSILON) * 100) / 100) : (Math.round(((parseFloat(creditnotediscount) * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100),
+                                        PrecioNetoProducto: invoice.receivercountry === 'PE' ? (Math.round((creditnotediscount + Number.EPSILON) * 100) / 100) : (Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100),
+                                        ValorNetoProducto: invoice.receivercountry === 'PE' ? (Math.round((creditnotediscount + Number.EPSILON) * 100) / 100) : (Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100),
                                         AfectadoIgv: invoice.receivercountry === 'PE' ? '10' : '40',
                                         TributoIgv: invoice.receivercountry === 'PE' ? '1000' : '9998',
                                     };
@@ -1961,9 +1970,14 @@ exports.getExchangeRate = async (request, response) => {
 
 exports.createBalance = async (req, res) => {
     const { userid, usr } = req.user;
-    const { invoiceid, settings, token, metadata = {}, corpid, orgid, reference, buyamount, totalamount, comments, purchaseorder, totalpay } = req.body;
+    const { invoiceid, settings, token, metadata = {}, corpid, orgid, reference,  comments, purchaseorder  } = req.body;
+    var { buyamount, totalamount, totalpay } = req.body;
 
     try {
+        buyamount = Math.round((parseFloat(buyamount) + Number.EPSILON) * 100) / 100;
+        totalamount = Math.round((parseFloat(totalamount) + Number.EPSILON) * 100) / 100;
+        totalpay = Math.round((parseFloat(totalpay) + Number.EPSILON) * 100) / 100;
+
         const corp = await getCorporation(corpid);
         const org = await getOrganization(corpid, orgid);
 
@@ -2077,15 +2091,15 @@ exports.createBalance = async (req, res) => {
 
                                 if (billbyorg ? org.doctype !== '0' : org.doctype !== '0') {
                                     invoicesubtotal = buyamount;
-                                    invoicetaxes = appsetting.igv * buyamount;
-                                    invoicetotalcharge = (appsetting.igv * buyamount) + buyamount;
+                                    invoicetaxes = Math.round(((appsetting.igv * buyamount) + Number.EPSILON) * 100) / 100;
+                                    invoicetotalcharge = Math.round((((appsetting.igv * buyamount) + buyamount) + Number.EPSILON) * 100) / 100;
 
                                     producthasigv = '10';
                                     productigvtribute = '1000';
-                                    producttotaligv = appsetting.igv * buyamount;
-                                    producttotalamount = (appsetting.igv * buyamount) + buyamount;
-                                    productigvrate = appsetting.igv;
-                                    productprice = (appsetting.igv * buyamount) + buyamount;
+                                    producttotaligv = Math.round(((appsetting.igv * buyamount) + Number.EPSILON) * 100) / 100;
+                                    producttotalamount = Math.round((((appsetting.igv * buyamount) + buyamount) + Number.EPSILON) * 100) / 100;
+                                    productigvrate = Math.round(((appsetting.igv) + Number.EPSILON) * 100) / 100;
+                                    productprice = Math.round((((appsetting.igv * buyamount) + buyamount) + Number.EPSILON) * 100) / 100;
                                     productnetprice = buyamount;
                                     productnetworth = buyamount;
                                 }
@@ -2624,7 +2638,7 @@ exports.emitInvoice = async (req, res) => {
                                             TasaIgv: data.igvrate * 100,
                                             PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
                                             DescripcionProducto: data.productdescription,
-                                            PrecioNetoProducto: Math.round(((data.productnetprice) + Number.EPSILON) * 100) / 100,
+                                            PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
                                             ValorNetoProducto: Math.round(((data.quantity * data.productnetprice) + Number.EPSILON) * 100) / 100,
                                         };
 
