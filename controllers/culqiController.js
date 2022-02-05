@@ -1165,7 +1165,7 @@ exports.chargeInvoice = async (req, res) => {
                                                         TasaIgv: data.igvrate * 100,
                                                         PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
                                                         DescripcionProducto: data.productdescription,
-                                                        PrecioNetoProducto: data.productnetprice,
+                                                        PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
                                                         ValorNetoProducto: Math.round(((data.quantity * data.productnetprice) + Number.EPSILON) * 100) / 100,
                                                     };
         
@@ -1820,7 +1820,7 @@ exports.createCreditNote = async (request, response) => {
                                             TasaIgv: data.igvrate * 100,
                                             PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
                                             DescripcionProducto: data.productdescription,
-                                            PrecioNetoProducto: data.productnetprice,
+                                            PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
                                             ValorNetoProducto: Math.round((data.productnetworth + Number.EPSILON) * 100) / 100,
                                             AfectadoIgv: invoice.receivercountry === 'PE' ? '10' : '40',
                                             TributoIgv: invoice.receivercountry === 'PE' ? '1000' : '9998',
@@ -2624,7 +2624,7 @@ exports.emitInvoice = async (req, res) => {
                                             TasaIgv: data.igvrate * 100,
                                             PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
                                             DescripcionProducto: data.productdescription,
-                                            PrecioNetoProducto: data.productnetprice,
+                                            PrecioNetoProducto: Math.round(((data.productnetprice) + Number.EPSILON) * 100) / 100,
                                             ValorNetoProducto: Math.round(((data.quantity * data.productnetprice) + Number.EPSILON) * 100) / 100,
                                         };
 
