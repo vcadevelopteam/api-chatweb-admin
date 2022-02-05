@@ -1961,7 +1961,7 @@ exports.getExchangeRate = async (request, response) => {
 
 exports.createBalance = async (req, res) => {
     const { userid, usr } = req.user;
-    const { invoiceid, settings, token, metadata = {}, corpid, orgid, reference, buyamount, comments, purchaseorder, totalpay } = req.body;
+    const { invoiceid, settings, token, metadata = {}, corpid, orgid, reference, buyamount, totalamount, comments, purchaseorder, totalpay } = req.body;
 
     try {
         const corp = await getCorporation(corpid);
@@ -2057,7 +2057,7 @@ exports.createBalance = async (req, res) => {
                             });
                         }
                         else {
-                            var balanceResponse = await createBalanceData(corpid, orgid, 0, reference, 'ACTIVO', 'GENERAL', null, null, buyamount, ((org?.balance || 0) + buyamount), billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, 'PAID', new Date().toISOString().split('T')[0], usr, usr);
+                            var balanceResponse = await createBalanceData(corpid, orgid, 0, reference, 'ACTIVO', 'GENERAL', null, null, (totalamount || buyamount), ((org?.balance || 0) + (totalamount || buyamount)), billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, 'PAID', new Date().toISOString().split('T')[0], usr, usr);
 
                             if (balanceResponse) {
                                 var lastExchange = await getLastExchange();

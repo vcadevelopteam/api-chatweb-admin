@@ -445,7 +445,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CORP_INS: {
-        query: "SELECT * FROM ufn_corp_ins($id, $description, $status, $type, $username, $operation, $logo, $logotype, $companysize, $paymentplanid, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $billbyorg, $credittype)",
+        query: "SELECT * FROM ufn_corp_ins($id, $description, $status, $type, $username, $operation, $logo, $logotype, $companysize, $paymentplanid, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $billbyorg, $credittype, $paymentmethod)",
         module: "/corporations",
         protected: "INSERT"
     },
@@ -1468,7 +1468,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGCONFIGURATION_INS: {
-        query: "SELECT * FROM ufn_billingconfiguration_ins($year,$month,$plan,$id,$basicfee,$userfreequantity,$useradditionalfee,$channelfreequantity,$channelwhatsappfee,$channelotherfee,$clientfreequantity,$clientadditionalfee,$allowhsm,$hsmfee,$description,$status,$type,$username,$operation)",
+        query: "SELECT * FROM ufn_billingconfiguration_ins($year,$month,$plan,$id,$basicfee,$userfreequantity,$useradditionalfee,$channelfreequantity,$channelwhatsappfee,$channelotherfee,$clientfreequantity,$clientadditionalfee,$allowhsm,$hsmfee,$description,$status,$whatsappconversationfreequantity,$type,$username,$operation)",
         module: "",
         protected: "INSERT"
     },
@@ -1808,7 +1808,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGPERIOD_CALC_REFRESHALL: {
-        query: "SELECT * FROM ufn_billingperiod_calc_refreshall((SELECT EXTRACT (YEAR from (select now() at time zone 'utc'))::bigint), (SELECT EXTRACT (MONTH from (select now() at time zone 'utc'))::bigint), $exchangerate)",
+        query: "SELECT * FROM ufn_billingperiod_calc_refreshall((SELECT EXTRACT (YEAR from (select now() at time zone 'utc'))::bigint), (SELECT EXTRACT (MONTH from (select now() at time zone 'utc'))::bigint), $corpid, $orgid)",
         module: "",
         protected: "INSERT"
     },
@@ -1846,7 +1846,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INVOICE_REFRESHTEST: {
-        query: "select * from ufn_invoice_refreshtest()",
+        query: "select * from ufn_invoice_refreshtest((SELECT EXTRACT (YEAR from (select now() at time zone 'utc'))::bigint), (SELECT EXTRACT (MONTH from (select now() at time zone 'utc'))::bigint), $corpid)",
         module: "",
         protected: "SELECT"
     },
@@ -1952,6 +1952,11 @@ module.exports = {
     },
     UFN_BALANCE_SEL_SENT: {
         query: "SELECT * FROM ufn_balance_sel_sent($corpid, $orgid, $date, $type, $module, $messagetemplateid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLING_REPORT_CONVERSATIONWHATSAPP: {
+        query: "SELECT * FROM ufn_billing_report_conversationwhatsapp($corpid, $orgid, $year, $month)",
         module: "",
         protected: "SELECT"
     },
