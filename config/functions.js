@@ -1861,7 +1861,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BALANCE_OUTPUT: {
-        query: "select * from ufn_balance_output($corpid, $orgid, $communicationchannelid, '', 'ACTIVO', $type, $shippingreason, $receiver, $username)",
+        query: "select * from ufn_balance_output($corpid, $orgid, $communicationchannelid, $hsmtemplateid, '', 'ACTIVO', $type, $shippingreason, $receiver, $fee, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BALANCE_CHECK: {
+        query: "select * from ufn_balance_check($corpid, $orgid, $communicationchannelid, $type, $receiver, $username)",
         module: "",
         protected: "SELECT"
     },
