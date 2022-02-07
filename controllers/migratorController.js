@@ -136,13 +136,19 @@ const recryptPwd = async (table, data) => {
             if (apiServiceEndpoint) {
                 try {
                     const response = await axios({
-                        data: data.map(d => ({userid: d.zyxmeuserid, pwd: d.pwd})),
+                        data: data.map(d => ({userid: d.zyxmeuserid, pwd: d.pwd, secret: "VCAPERU2022LARAIGO#!"})),
                         method: 'post',
                         url: `${apiServiceEndpoint}decryption`,
                     });
                     const salt = await bcryptjs.genSalt(10);
                     for (let i = 0; i < data.length; i++) {
-                        data[i].pwd = await bcryptjs.hash(response.data.find(r => r.userid === data[i].zyxmeuserid).pwd, salt);
+                        try {
+                            data[i].pwd = await bcryptjs.hash(response.data.find(r => r.userid === data[i].zyxmeuserid).pwd, salt);
+                        }
+                        catch (error) {
+                            logger.error(error, { meta: { function: 'recryptPwd-hash' }} );
+                            console.log(error);
+                        }
                     }
                 } catch (error) {
                     logger.error(error, { meta: { function: 'recryptPwd' }} );
