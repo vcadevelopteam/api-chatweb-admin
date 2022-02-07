@@ -1039,7 +1039,7 @@ const queryCore = {
             dt.zyxmeuserid,
             dt.zyxmeuserid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
-            dt.email::CHARACTER VARYING, dt.doctype, dt.docnum, dt.pwd, dt.firstname, dt.lastname, dt.email,
+            dt.username::CHARACTER VARYING, dt.doctype, dt.docnum, dt.pwd, dt.firstname, dt.lastname, dt.username::CHARACTER VARYING,
             dt.pwdchangefirstlogin, dt.facebookid, dt.googleid, dt.company,
             dt.twofactorauthentication, dt.usersupport,
             (SELECT p.propertyid FROM property p WHERE p.zyxmecorpid = dt.zyxmecorpid AND p.zyxmepropertyid = dt.billinggroup ORDER BY p.propertyid DESC LIMIT 1),
