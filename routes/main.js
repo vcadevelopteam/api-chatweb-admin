@@ -41,4 +41,8 @@ router.post("/getToken",
     mainController.getToken
 )
 
+router.get("/validateConversationWhatsapp",
+    mainController.validateConversationWhatsapp
+)
+
 module.exports = router;

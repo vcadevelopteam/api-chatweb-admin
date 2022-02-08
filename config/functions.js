@@ -1960,4 +1960,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_MIGRATION_CONVERSATIONWHATSAPP_SEL: {
+        query: "SELECT * FROM ufn_migration_conversationwhatsapp_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_MIGRATION_CONVERSATIONWHATSAPP_INS: {
+        query: "SELECT * FROM ufn_migration_conversationwhatsapp_ins($corpid, $orgid, $table)",
+        module: "",
+        protected: "SELECT"
+    },
 }

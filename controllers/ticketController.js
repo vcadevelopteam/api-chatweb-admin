@@ -252,7 +252,7 @@ exports.sendHSM = async (req, res) => {
                 if (resCheck instanceof Array && resCheck.length > 0) {
                     data.fee = resCheck[0].fee;
                     const balanceid = resCheck[0].balanceid;
-                    console.log(resCheck)
+                    
                     if (balanceid == 0) {
                         send = true;
                     } else {
