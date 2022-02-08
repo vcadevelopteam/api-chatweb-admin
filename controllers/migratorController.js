@@ -136,13 +136,19 @@ const recryptPwd = async (table, data) => {
             if (apiServiceEndpoint) {
                 try {
                     const response = await axios({
-                        data: data.map(d => ({userid: d.zyxmeuserid, pwd: d.pwd})),
+                        data: data.map(d => ({userid: d.zyxmeuserid, pwd: d.pwd, secret: "VCAPERU2022LARAIGO#!"})),
                         method: 'post',
                         url: `${apiServiceEndpoint}decryption`,
                     });
                     const salt = await bcryptjs.genSalt(10);
                     for (let i = 0; i < data.length; i++) {
-                        data[i].pwd = await bcryptjs.hash(response.data.find(r => r.userid === data[i].zyxmeuserid).pwd, salt);
+                        try {
+                            data[i].pwd = await bcryptjs.hash(response.data.find(r => r.userid === data[i].zyxmeuserid).pwd, salt);
+                        }
+                        catch (error) {
+                            logger.error(error, { meta: { function: 'recryptPwd-hash' }} );
+                            console.log(error);
+                        }
                     }
                 } catch (error) {
                     logger.error(error, { meta: { function: 'recryptPwd' }} );
@@ -1039,7 +1045,7 @@ const queryCore = {
             dt.zyxmeuserid,
             dt.zyxmeuserid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
-            dt.email::CHARACTER VARYING, dt.doctype, dt.docnum, dt.pwd, dt.firstname, dt.lastname, dt.email,
+            dt.username::CHARACTER VARYING, dt.doctype, dt.docnum, dt.pwd, dt.firstname, dt.lastname, dt.username::CHARACTER VARYING,
             dt.pwdchangefirstlogin, dt.facebookid, dt.googleid, dt.company,
             dt.twofactorauthentication, dt.usersupport,
             (SELECT p.propertyid FROM property p WHERE p.zyxmecorpid = dt.zyxmecorpid AND p.zyxmepropertyid = dt.billinggroup ORDER BY p.propertyid DESC LIMIT 1),
@@ -3192,9 +3198,9 @@ exports.executeMigration = async (req, res) => {
         const corpidBind = {
             corpid: corpid,
             incuserid: inc?.userid || 10000,
-            incpersonid: inc?.personid || 10000000,
-            incconversationid: inc?.conversationid || 10000000,
-            inccampaignmemberid: inc?.campaignmemberid || 1000000,
+            incpersonid: inc?.personid || 1000000,
+            incconversationid: inc?.conversationid || 1000000,
+            inccampaignmemberid: inc?.campaignmemberid || 100000,
         }
         let queryResult = {core: {}, subcore: {}, extras: {}};
         await zyxmeQuery(`CREATE TABLE IF NOT EXISTS migration (corpid bigint, run boolean, params jsonb, result jsonb, startdate timestamp without time zone, enddate timestamp without time zone)`);
