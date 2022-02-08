@@ -1468,7 +1468,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGCONFIGURATION_INS: {
-        query: "SELECT * FROM ufn_billingconfiguration_ins($year,$month,$plan,$id,$basicfee,$userfreequantity,$useradditionalfee,$channelfreequantity,$channelwhatsappfee,$channelotherfee,$clientfreequantity,$clientadditionalfee,$allowhsm,$hsmfee,$description,$status,$whatsappconversationfreequantity,$freewhatsappchannel,$type,$username,$operation)",
+        query: "SELECT * FROM ufn_billingconfiguration_ins($year,$month,$plan,$id,$basicfee,$userfreequantity,$useradditionalfee,$channelfreequantity,$channelwhatsappfee,$channelotherfee,$clientfreequantity,$clientadditionalfee,$allowhsm,$hsmfee,$description,$status,$whatsappconversationfreequantity,$freewhatsappchannel,$usercreateoverride,$type,$username,$operation)",
         module: "",
         protected: "INSERT"
     },
@@ -1957,6 +1957,16 @@ module.exports = {
     },
     UFN_BILLING_REPORT_CONVERSATIONWHATSAPP: {
         query: "SELECT * FROM ufn_billing_report_conversationwhatsapp($corpid, $orgid, $year, $month)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_MIGRATION_CONVERSATIONWHATSAPP_SEL: {
+        query: "SELECT * FROM ufn_migration_conversationwhatsapp_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_MIGRATION_CONVERSATIONWHATSAPP_INS: {
+        query: "SELECT * FROM ufn_migration_conversationwhatsapp_ins($corpid, $orgid, $table)",
         module: "",
         protected: "SELECT"
     },

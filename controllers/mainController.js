@@ -157,3 +157,44 @@ exports.getToken = async (req, res) => {
     else
         return res.status(result.rescode).json(result);
 }
+
+exports.validateConversationWhatsapp = async (req, res) => {
+    const corpid = 383, orgid = 517;
+    const result = await executesimpletransaction("UFN_MIGRATION_CONVERSATIONWHATSAPP_SEL", { corpid, orgid });
+
+    const indexChannels = {}
+
+    const cwsp = result.reduce((acc, item) => {
+        const foundConversation = acc.some(x =>
+            x.communicationchannelid === item.communicationchannelid &&
+            x.personcommunicationchannel === item.personcommunicationchannel &&
+            new Date(x.startconversation) < new Date(item.createdate) &&
+            new Date(x.endconversation) >= new Date(item.createdate))
+        
+        let indexchannel = 0;
+        if (!foundConversation) {
+            indexchannel = (indexChannels[item.communicationchannelid] || 0) + 1;
+            indexChannels[item.communicationchannelid] = indexchannel;
+        }
+        return foundConversation ? acc : [
+            ...acc,
+            {
+                communicationchannelid: item.communicationchannelid,
+                personcommunicationchannel: item.personcommunicationchannel,
+                personid: item.personid,
+                conversationid: item.conversationid,
+                corpid: item.corpid,
+                orgid: item.orgid,
+                initiatedby: item.userid ? "BUSINESS" : "CLIENT",
+                phonenumber: item.personcommunicationchannelowner,
+                startconversation: item.createdate,
+                isfree: indexchannel <= 1000,
+                endconversation: new Date(new Date(item.createdate).getTime() + 24 * 60 * 60 * 1000).toISOString()
+            }
+        ]
+    }, []);
+
+    const insert = await executesimpletransaction("UFN_MIGRATION_CONVERSATIONWHATSAPP_INS", { corpid, orgid, table: JSON.stringify(cwsp) });
+
+    return res.json({ error: false, success: true, insert, cwsp });
+}
