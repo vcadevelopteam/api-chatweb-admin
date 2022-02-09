@@ -41,7 +41,7 @@ router.post("/getToken",
     mainController.getToken
 )
 
-router.get("/validateConversationWhatsapp",
+router.post("/validateConversationWhatsapp",
     mainController.validateConversationWhatsapp
 )
 
