@@ -1343,16 +1343,16 @@ const querySubcoreClassification = {
 			communicationchannel character varying, path character varying, jobplan text,
 			usergroup bigint, schedule text, tags character varying
         )`,
-		update: `UPDATE classification
+		update: `UPDATE classification cla
 		SET parent = (
-			SELECT classificationid
-			FROM classification
-			WHERE zyxmeclassificationid = parent
-			AND zyxmecorpid = $corpid
+			SELECT clatemp.classificationid
+			FROM classification clatemp
+			WHERE clatemp.zyxmeclassificationid = cla.parent
+			AND clatemp.zyxmecorpid = $corpid
 			LIMIT 1
 		)
-		WHERE COALESCE(parent, 0) <> 0
-		AND zyxmecorpid = $corpid`
+		WHERE COALESCE(cla.parent, 0) <> 0
+		AND cla.zyxmecorpid = $corpid`
     },
     quickreply: {
         id: 'quickreplyid',
