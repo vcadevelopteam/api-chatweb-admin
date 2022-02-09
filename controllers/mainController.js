@@ -159,7 +159,9 @@ exports.getToken = async (req, res) => {
 }
 
 exports.validateConversationWhatsapp = async (req, res) => {
-    const corpid = 383, orgid = 517;
+    const { corpid, orgid } = req.body;
+
+    // const corpid = 383, orgid = 517;
     const result = await executesimpletransaction("UFN_MIGRATION_CONVERSATIONWHATSAPP_SEL", { corpid, orgid });
 
     const indexChannels = {}
@@ -170,7 +172,7 @@ exports.validateConversationWhatsapp = async (req, res) => {
             x.personcommunicationchannel === item.personcommunicationchannel &&
             new Date(x.startconversation) < new Date(item.createdate) &&
             new Date(x.endconversation) >= new Date(item.createdate))
-        
+
         let indexchannel = 0;
         if (!foundConversation) {
             indexchannel = (indexChannels[item.communicationchannelid] || 0) + 1;
