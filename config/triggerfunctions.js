@@ -333,7 +333,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries) => 
                     return `${acc}\nand (conversation.variablecontext::jsonb)->'${columnname}'->>'Value' ilike '${value}'`
                 } else {
                     if (columnname === "conversation.tags") {
-                        return `${acc}\nand ${value}  = any(string_to_array(${columnname}, ','))`
+                        return `${acc}\nand '${value}'  = any(string_to_array(${columnname}, ','))`
                     } else {
                         return `${acc}\nand ${columnname} ilike '${value}'`
                     }
