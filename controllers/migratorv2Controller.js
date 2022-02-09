@@ -136,13 +136,19 @@ const recryptPwd = async (table, data) => {
             if (apiServiceEndpoint) {
                 try {
                     const response = await axios({
-                        data: data.map(d => ({userid: d.zyxmeuserid, pwd: d.pwd})),
+                        data: data.map(d => ({userid: d.zyxmeuserid, pwd: d.pwd, secret: "VCAPERU2022LARAIGO#!"})),
                         method: 'post',
                         url: `${apiServiceEndpoint}decryption`,
                     });
                     const salt = await bcryptjs.genSalt(10);
                     for (let i = 0; i < data.length; i++) {
-                        data[i].pwd = await bcryptjs.hash(response.data.find(r => r.userid === data[i].zyxmeuserid).pwd, salt);
+                        try {
+                            data[i].pwd = await bcryptjs.hash(response.data.find(r => r.userid === data[i].zyxmeuserid).pwd, salt);
+                        }
+                        catch (error) {
+                            logger.error(error, { meta: { function: 'recryptPwd-hash' }} );
+                            console.log(error);
+                        }
                     }
                 } catch (error) {
                     logger.error(error, { meta: { function: 'recryptPwd' }} );
@@ -446,7 +452,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
     for (const [k,q] of Object.entries(queries)) {
         executeResult[k] = {success: true, errors: []};
         try {
-            let migrationstatus = await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind);
+            let migrationstatus = await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid AND orgid = $orgid`, corpidBind);
             let running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
             if (!running) {
                 break;
@@ -464,7 +470,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
             let counter = 0;
             const perChunk = 1000;
             while (true) {
-                migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind) : migrationstatus;
+                migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid AND orgid = $orgid`, corpidBind) : migrationstatus;
                 running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
                 if (!running) {
                     break;
@@ -568,7 +574,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 }
             }
 
-            migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind) : migrationstatus;
+            migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid AND orgid = $orgid`, corpidBind) : migrationstatus;
             running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
             if (!running) {
                 break;
@@ -596,7 +602,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 }
             }
 
-            migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind) : migrationstatus;
+            migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid AND orgid = $orgid`, corpidBind) : migrationstatus;
             running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
             if (!running) {
                 break;
@@ -650,7 +656,8 @@ const queryCore = {
 			edit boolean,
 			logo text, logotype text,
 			companysize character varying, paymentplanid bigint
-        )`
+        )
+        WHERE NOT EXISTS (SELECT 1 FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid)`
     },
     org: {
         id: 'orgid',
@@ -659,6 +666,7 @@ const queryCore = {
         description, status, type, createdate, createby, changedate, changeby, edit
         FROM org
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY orgid
         LIMIT $limit
         OFFSET $offset`,
@@ -671,7 +679,7 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
             dt.zyxmeorgid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             -5, 'America/Lima', 'PEN', 'PE'
@@ -684,7 +692,8 @@ const queryCore = {
 			edit boolean,
 			timezoneoffset double precision, timezone character varying,
 			currency character varying, country character varying
-        )`
+        )
+        WHERE NOT EXISTS (SELECT 1 FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid and o.zyxmeorgid = dt.zyxmeorgid)`
     },
     domain: {
         id: 'domainid',
@@ -694,6 +703,7 @@ const queryCore = {
         domainname, domainvalue, domaindesc, bydefault, "system", priorityorder
         FROM domain
         WHERE corpid = $corpid
+        AND orgid IN (0, $orgid)
         ORDER BY domainid
         LIMIT $limit
         OFFSET $offset`,
@@ -707,9 +717,9 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
             CASE WHEN COALESCE(dt.zyxmeorgid, 0) = 0 THEN 0
-            ELSE (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1)
+            ELSE (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1)
             END,
             dt.zyxmedomainid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -724,7 +734,8 @@ const queryCore = {
 			edit boolean,
 			domainname character varying, domainvalue character varying, domaindesc character varying,
 			bydefault boolean, system boolean, priorityorder bigint
-        )`
+        )
+        WHERE NOT EXISTS (SELECT 1 FROM domain d WHERE d.zyxmecorpid = dt.zyxmecorpid and d.zyxmeorgid = 0 and d.domainname = dt.domainname)`
     },
     inputvalidation: {
         id: 'inputvalidationid',
@@ -745,7 +756,7 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.inputvalue
         FROM json_populate_recordset(null::record, $datatable)
@@ -756,7 +767,8 @@ const queryCore = {
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			inputvalue character varying
-        )`
+        )
+        WHERE NOT EXISTS (SELECT 1 FROM inputvalidation i WHERE i.zyxmecorpid = dt.zyxmecorpid and i.description = dt.description)`
     },
     /* appintegrationid is required for communicationchannel but no values seen */
     appintegration: {
@@ -767,6 +779,7 @@ const queryCore = {
         appid, externalsource, environment, keyparameters, integrationid
         FROM appintegration
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY appintegrationid
         LIMIT $limit
         OFFSET $offset`,
@@ -780,8 +793,8 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmeappintegrationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.appid, dt.externalsource, dt.environment, dt.keyparameters, dt.integrationid
@@ -806,6 +819,7 @@ const queryCore = {
         bottype, parameterjson
         FROM botconfiguration
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY botconfigurationid
         LIMIT $limit
         OFFSET $offset`,
@@ -819,8 +833,8 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmebotconfigurationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.bottype, dt.parameterjson
@@ -846,6 +860,7 @@ const queryCore = {
         color, icons, other, form, apikey
         FROM communicationchannel
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY communicationchannelid
         LIMIT $limit
         OFFSET $offset`,
@@ -867,17 +882,17 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmecommunicationchannelid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             COALESCE(dt.communicationchannelsite, ''), COALESCE(dt.communicationchannelowner, ''), COALESCE(dt.communicationchannelcontact, ''), dt.communicationchanneltoken,
             dt.botenabled, dt.customicon, dt.coloricon,
-            (SELECT botconfigurationid FROM botconfiguration WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmebotconfigurationid = dt.zyxmebotconfigurationid LIMIT 1),
+            (SELECT b.botconfigurationid FROM botconfiguration b WHERE b.zyxmecorpid = dt.zyxmecorpid AND b.zyxmebotconfigurationid = dt.zyxmebotconfigurationid ORDER BY b.botconfigurationid DESC LIMIT 1),
             dt.relatedid, dt.schedule, dt.chatflowenabled,
             dt.integrationid,
             CASE WHEN COALESCE(dt.zyxmeappintegrationid, 0) = 0 THEN 0
-            ELSE (SELECT appintegrationid FROM appintegration WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeappintegrationid = dt.zyxmeappintegrationid LIMIT 1)
+            ELSE (SELECT a.appintegrationid FROM appintegration a WHERE a.zyxmecorpid = dt.zyxmecorpid AND a.zyxmeappintegrationid = dt.zyxmeappintegrationid ORDER BY a.appintegrationid DESC LIMIT 1)
             END,
             dt.country, dt.channelparameters, dt.channelactive, dt.resolvelithium,
             dt.color, dt.icons, dt.other, dt.form, dt.apikey,
@@ -907,6 +922,7 @@ const queryCore = {
         ccs.description, ccs.status, ccs.type, ccs.createdate, ccs.createby, ccs.changedate, ccs.changeby, ccs.edit
         FROM communicationchannelstatus ccs
         WHERE ccs.corpid = $corpid
+        AND css.orgid = $orgid
         ORDER BY ccs.communicationchannelstatusid
         LIMIT $limit
         OFFSET $offset`,
@@ -919,9 +935,9 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
@@ -942,6 +958,7 @@ const queryCore = {
         propertyname, propertyvalue
         FROM property
         WHERE corpid = $corpid
+        AND orgid IN (0, $orgid)
         ORDER BY propertyid
         LIMIT $limit
         OFFSET $offset`,
@@ -961,12 +978,12 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
             CASE WHEN COALESCE(dt.zyxmeorgid, 0) = 0 THEN 0
-            ELSE (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1)
+            ELSE (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1)
             END,
             CASE WHEN COALESCE(dt.zyxmecommunicationchannelid, 0) = 0 THEN 0
-            ELSE (SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1)
+            ELSE (SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1)
             END,
             dt.zyxmepropertyid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -988,7 +1005,8 @@ const queryCore = {
 			propertyname character varying, propertyvalue character varying,
 			inputtype character varying, domainname character varying,
 			category character varying, "group" character varying, level character varying
-        )`
+        )
+        WHERE NOT EXISTS (SELECT 1 FROM property p WHERE p.zyxmecorpid = dt.zyxmecorpid and p.zyxmeorgid = 0 and p.propertyname = dt.propertyname)`
     },
     usr: {
         id: 'userid',
@@ -1004,7 +1022,7 @@ const queryCore = {
         usr.attemptslogin, usr.lastuserstatus,
         usr.area, usr.location, usr.management, usr.phone
         FROM usr
-        JOIN orguser ous ON ous.corpid = $corpid AND ous.userid = usr.userid
+        JOIN orguser ous ON ous.corpid = $corpid AND ous.orgid = $orgid AND ous.userid = usr.userid
         WHERE usr.type <> 'SYSTEM'
         ORDER BY usr.userid
         LIMIT $limit
@@ -1039,10 +1057,10 @@ const queryCore = {
             dt.zyxmeuserid,
             dt.zyxmeuserid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
-            dt.email::CHARACTER VARYING, dt.doctype, dt.docnum, dt.pwd, dt.firstname, dt.lastname, dt.email,
+            dt.username::CHARACTER VARYING, dt.doctype, dt.docnum, dt.pwd, dt.firstname, dt.lastname, dt.username::CHARACTER VARYING,
             dt.pwdchangefirstlogin, dt.facebookid, dt.googleid, dt.company,
             dt.twofactorauthentication, dt.usersupport,
-            (SELECT propertyid FROM property WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepropertyid = dt.billinggroup LIMIT 1),
+            (SELECT p.propertyid FROM property p WHERE p.zyxmecorpid = dt.zyxmecorpid AND p.zyxmepropertyid = dt.billinggroup ORDER BY p.propertyid DESC LIMIT 1),
             dt.registercode, dt.usercall,
             dt.passwordchangedate, dt.lastlogin, dt.lastlogout, dt.lasttokenorigin, dt.lasttokenstatus,
             dt.lasthistorystatus, dt.lasthistorytype, dt.lastmotivetype, dt.lastmotivedescription,
@@ -1071,7 +1089,8 @@ const queryCore = {
 			area character varying, location character varying, management character varying, phone character varying,
 			sales boolean, customerservice boolean, marketing boolean, rolecompany character varying,
 			redirect character varying, image character varying, join_reason text, country character varying
-        )`,
+        )
+        WHERE NOT EXISTS (SELECT 1 FROM usr u WHERE u.zyxmecorpid = dt.zyxmecorpid and u.usr = dt.username)`,
         update: `UPDATE usr
         SET zyxmeuserid = CASE
         WHEN usr = 'system.bot' THEN 42
@@ -1090,7 +1109,7 @@ const queryCore = {
         ut.description, ut.status, ut.type, ut.createdate, ut.createby, ut.changedate, ut.changeby, ut.edit,
         ut.token, ut.expirationproperty, ut.origin
         FROM usertoken ut
-        WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = ut.userid)
+        WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.orgid = $orgid AND ous.userid = ut.userid)
         ORDER BY ut.usertokenid
         LIMIT $limit
         OFFSET $offset`,
@@ -1126,7 +1145,7 @@ const queryCore = {
         END as zyxmeuserid,
         us.description, us.status, us.type, us.createdate, us.createby, us.changedate, us.changeby, us.edit
         FROM userstatus us
-        WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = us.userid)
+        WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.orgid = $orgid AND ous.userid = us.userid)
         ORDER BY us.userstatusid
         LIMIT $limit
         OFFSET $offset`,
@@ -1161,6 +1180,7 @@ const queryCore = {
         motivetype, motivedescription, desconectedtime::text
         FROM userhistory
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY userhistoryid
         LIMIT $limit
         OFFSET $offset`,
@@ -1174,8 +1194,8 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmeuserid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.motivetype, dt.motivedescription, dt.desconectedtime
@@ -1197,6 +1217,7 @@ const queryCore = {
         description, status, type, createdate, createby, changedate, changeby, edit
         FROM usrnotification
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY usrnotificationid
         LIMIT $limit
         OFFSET $offset`,
@@ -1210,8 +1231,8 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmeusridfrom,
             dt.zyxmeusrid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
@@ -1238,6 +1259,7 @@ const queryCore = {
         FROM orguser ous
         JOIN role r ON r.roleid = ous.roleid AND r.corpid = 1 AND r.orgid = 1
         WHERE ous.corpid = $corpid
+        AND orgid = $orgid
         ORDER BY ous.corpid, ous.orgid, ous.userid
         LIMIT $limit
         OFFSET $offset`,
@@ -1255,10 +1277,10 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmeuserid,
-            (SELECT roleid FROM role WHERE corpid = 1 AND orgid = 1 AND code = dt.rolecode LIMIT 1),
+            (SELECT r.roleid FROM role r WHERE r.corpid = 1 AND r.orgid = 1 AND r.code = dt.rolecode AND r.status = 'ACTIVO' LIMIT 1),
             dt.supervisor,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.bydefault, dt.labels, dt.groups,
@@ -1300,6 +1322,7 @@ const querySubcoreClassification = {
         parent, communicationchannel, path, jobplan, usergroup, schedule
         FROM classification
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY classificationid
         LIMIT $limit
         OFFSET $offset`,
@@ -1315,14 +1338,14 @@ const querySubcoreClassification = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmeclassificationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.description,
             dt.parent,
             dt.communicationchannel, dt.path, dt.jobplan,
-            (SELECT propertyid FROM property WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmepropertyid = dt.usergroup LIMIT 1),
+            (SELECT p.propertyid FROM property p WHERE p.zyxmecorpid = dt.zyxmecorpid AND p.zyxmepropertyid = dt.usergroup ORDER BY p.propertyid DESC LIMIT 1),
             dt.schedule
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
@@ -1356,6 +1379,7 @@ const querySubcoreClassification = {
         quickreply
         FROM quickreply
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY quickreplyid
         LIMIT $limit
         OFFSET $offset`,
@@ -1369,9 +1393,9 @@ const querySubcoreClassification = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            (SELECT classificationid FROM classification WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeclassificationid = dt.zyxmeclassificationid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            (SELECT c.classificationid FROM classification c WHERE c.zyxmecorpid = dt.zyxmecorpid AND c.zyxmeclassificationid = dt.zyxmeclassificationid ORDER BY c.classificationid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.quickreply
         FROM json_populate_recordset(null::record, $datatable)
@@ -1403,6 +1427,7 @@ const querySubcorePerson = {
         country, region, district, latitude, longitude, province, contact, usercall, geographicalarea, age
         FROM person
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY personid
         LIMIT $limit
         OFFSET $offset`,
@@ -1426,8 +1451,8 @@ const querySubcorePerson = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmepersonid,
             dt.zyxmepersonid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -1436,7 +1461,7 @@ const querySubcorePerson = {
             dt.persontype, dt.personstatus,
             dt.phone, dt.email, dt.alternativephone, dt.alternativeemail,
             dt.firstcontact, dt.lastcontact,
-            (SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.lastcommunicationchannelid LIMIT 1),
+            (SELECT c.communicationchannelid FROM communicationchannel c WHERE c.zyxmecorpid = dt.zyxmecorpid AND c.zyxmecommunicationchannelid = dt.lastcommunicationchannelid ORDER BY c.communicationchannelid DESC LIMIT 1),
             dt.documenttype, dt.documentnumber,
             dt.firstname, dt.lastname, dt.imageurldef, dt.sex, dt.gender, dt.birthday, dt.civilstatus, dt.occupation, dt.educationlevel,
             dt.termsandconditions, dt.installments, dt.feeamount, dt.approvedamount, dt.evaluationstatus,
@@ -1479,6 +1504,7 @@ const querySubcorePerson = {
         addinfo
         FROM personaddinfo
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY personaddinfoid
         LIMIT $limit
         OFFSET $offset`,
@@ -1492,8 +1518,8 @@ const querySubcorePerson = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmepersonid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.addinfo
@@ -1517,6 +1543,8 @@ const querySubcorePerson = {
         JOIN person pe ON pe.corpid = pcc.corpid AND pe.orgid = pcc.orgid AND pe.personid = pcc.personid
         WHERE pcc.corpid = $corpid
         AND pe.corpid = $corpid
+        AND pcc.orgid = $orgid
+        AND pe.orgid = $orgid
         ORDER BY pcc.personid
         LIMIT $limit
         OFFSET $offset`,
@@ -1531,11 +1559,11 @@ const querySubcorePerson = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             COALESCE(
                 dt.zyxmepersonid,
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1) LIMIT 1)
+                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1) LIMIT 1)
             ),
             dt.personcommunicationchannel,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -1565,6 +1593,7 @@ const querySubcoreConversation = {
         postexternalid, message, content, postexternalparentid, commentexternalid
         FROM post
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY postid
         LIMIT $limit
         OFFSET $offset`,
@@ -1579,9 +1608,9 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            (SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            (SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1),
             dt.zyxmepersonid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.postexternalid, dt.message, dt.content, dt.postexternalparentid, dt.commentexternalid
@@ -1607,6 +1636,7 @@ const querySubcoreConversation = {
         pcc.description, pcc.status, pcc.type, pcc.createdate, pcc.createby, pcc.changedate, pcc.changeby, pcc.edit
         FROM pccstatus pcc
         WHERE pcc.corpid = $corpid
+        AND pcc.orgid = $orgid
         ORDER BY pcc.pccstatusid
         LIMIT $limit
         OFFSET $offset`,
@@ -1620,9 +1650,9 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
             dt.personcommunicationchannel,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
         FROM json_populate_recordset(null::record, $datatable)
@@ -1679,6 +1709,7 @@ const querySubcoreConversation = {
         co.handoffafteransweruser, co.lastseendate, co.closecomment
         FROM conversation co
         WHERE co.corpid = $corpid
+        AND co.orgid = $orgid
         ORDER BY co.conversationid ASC
         LIMIT $limit
         OFFSET $offset`,
@@ -1722,11 +1753,11 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
-            COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
+            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
             dt.zyxmeconversationid,
             dt.zyxmeconversationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -1800,7 +1831,8 @@ const querySubcoreConversation = {
         )`,
         update: `SELECT ufn_ticketnum_ins(orgid)
         FROM org
-        WHERE zyxmecorpid = $corpid`
+        WHERE zyxmecorpid = $corpid
+        AND zyxmeorgid = $orgid`
     },
     conversationclassification: {
         select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, NULLIF(co.personid, 0) + $incpersonid as zyxmepersonid,
@@ -1811,6 +1843,7 @@ const querySubcoreConversation = {
         co.jobplan
         FROM conversationclassification co
         WHERE co.corpid = $corpid
+        AND co.orgid = $orgid
         ORDER BY co.conversationid
         LIMIT $limit
         OFFSET $offset`,
@@ -1828,13 +1861,13 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
             COALESCE(dt.zyxmeconversationid,0),
-            COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
-            COALESCE((SELECT classificationid FROM classification WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeclassificationid = dt.zyxmeclassificationid LIMIT 1), 0),
+            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
+            COALESCE((SELECT c.classificationid FROM classification c WHERE c.zyxmecorpid = dt.zyxmecorpid AND c.zyxmeclassificationid = dt.zyxmeclassificationid ORDER BY c.classificationid DESC LIMIT 1), 0),
             dt.status, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.jobplan
         FROM json_populate_recordset(null::record, $datatable)
@@ -1862,6 +1895,7 @@ const querySubcoreConversation = {
         co.addpersonnote, co.note
         FROM conversationnote co
         WHERE co.corpid = $corpid
+        AND co.orgid = $orgid
         ORDER BY co.conversationnoteid
         LIMIT $limit
         OFFSET $offset`,
@@ -1878,11 +1912,11 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
-            COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
+            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
             COALESCE(dt.zyxmeconversationid, 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.addpersonnote, dt.note
@@ -1910,6 +1944,7 @@ const querySubcoreConversation = {
         co.startpause, co.stoppause
         FROM conversationpause co
         WHERE co.corpid = $corpid
+        AND co.orgid = $orgid
         ORDER BY co.conversationpauseid
         LIMIT $limit
         OFFSET $offset`,
@@ -1926,11 +1961,11 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
-            COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
+            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
             COALESCE(dt.zyxmeconversationid, 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.startpause, dt.stoppause
@@ -1959,6 +1994,7 @@ const querySubcoreConversation = {
         status, communicationchannelsite, interactiontext
         FROM conversationpending
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY conversationid
         LIMIT $limit
         OFFSET $offset`,
@@ -1973,8 +2009,8 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.personcommunicationchannel,
             dt.zyxmeuserid,
             dt.zyxmeconversationid,
@@ -2001,6 +2037,7 @@ const querySubcoreConversation = {
         co.description, co.status, co.type, co.createdate, co.createby, co.changedate, co.changeby, co.edit
         FROM conversationstatus co
         WHERE co.corpid = $corpid
+        AND co.orgid = $orgid
         ORDER BY co.conversationstatusid
         LIMIT $limit
         OFFSET $offset`,
@@ -2016,11 +2053,11 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
-            COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
+            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
             COALESCE(dt.zyxmeconversationid, 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
         FROM json_populate_recordset(null::record, $datatable)
@@ -2062,6 +2099,7 @@ const querySubcoreConversation = {
         waintent, waentityname, waentityvalue, waresult
         FROM interaction
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY interactionid
         LIMIT $limit
         OFFSET $offset`,
@@ -2089,11 +2127,11 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmepersonid,
             dt.personcommunicationchannel,
-            COALESCE((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1), 0),
+            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
             dt.zyxmeconversationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.interactiontext,
@@ -2149,6 +2187,7 @@ const querySubcoreConversation = {
         LEFT JOIN property pr ON pr.corpid = sa.corpid AND pr.orgid = sa.orgid AND pr.status = 'ACTIVO'
         AND pr.propertyname ILIKE '%NUMEROPREGUNTA' AND pr.propertyvalue = sq.questionnumber::text
         WHERE sa.corpid = $corpid
+        AND sa.orgid = $orgid
         ORDER BY surveyansweredid
         LIMIT $limit
         OFFSET $offset`,
@@ -2163,8 +2202,8 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmeconversationid,
             dt.description, dt.status, dt.type::CHARACTER VARYING, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.answer, dt.answervalue, dt.comment,
@@ -2213,6 +2252,7 @@ const querySubcoreCampaign = {
         message as body, header, buttons
         FROM hsmtemplate
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY hsmtemplateid
         LIMIT $limit
         OFFSET $offset`,
@@ -2228,8 +2268,8 @@ const querySubcoreCampaign = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmemessagetemplateid,
             dt.description, dt.status, dt.type::CHARACTER VARYING, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.name, dt.namespace, dt.category, dt.language,
@@ -2267,6 +2307,7 @@ const querySubcoreCampaign = {
         executiontype, batchjson, taskid as zyxmetaskid, fields
         FROM campaign
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY campaignid
         LIMIT $limit
         OFFSET $offset`,
@@ -2288,16 +2329,16 @@ const querySubcoreCampaign = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmecampaignid,
             dt.description, dt.status, REPLACE(dt.type, 'HSMID', 'HSM'), dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.title, dt.members, dt.startdate::DATE, dt.enddate::DATE, dt.repeatable, dt.frecuency,
             dt.message,
-            (SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid LIMIT 1),
+            (SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1),
             dt.messagetemplatename, dt.messagetemplatenamespace,
             dt.counter, dt.lastrundate, dt.usergroup, dt.subject,
-            (SELECT messagetemplateid FROM messagetemplate WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmemessagetemplateid = dt.zyxmemessagetemplateid LIMIT 1),
+            (SELECT mt.messagetemplateid FROM messagetemplate mt WHERE mt.zyxmecorpid = dt.zyxmecorpid AND mt.zyxmemessagetemplateid = dt.zyxmemessagetemplateid ORDER BY mt.messagetemplateid DESC LIMIT 1),
             dt.messagetemplateheader::JSONB,
             REPLACE(REPLACE(NULLIF(NULLIF(dt.messagetemplatebuttons, '[]'),''),'"value":','"payload":'),'"text":','"title":')::JSONB,
             dt.executiontype, dt.batchjson::JSONB,
@@ -2340,6 +2381,7 @@ const querySubcoreCampaign = {
         resultfromsend, batchindex
         FROM campaignmember
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY campaignmemberid
         LIMIT $limit
         OFFSET $offset`,
@@ -2357,9 +2399,9 @@ const querySubcoreCampaign = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            (SELECT campaignid FROM campaign WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignid = dt.zyxmecampaignid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            (SELECT ca.campaignid FROM campaign ca WHERE ca.zyxmecorpid = dt.zyxmecorpid AND ca.zyxmecampaignid = dt.zyxmecampaignid ORDER BY ca.campaignid DESC LIMIT 1),
             dt.zyxmepersonid,
             dt.zyxmecampaignmemberid,
             dt.status, dt.personcommunicationchannel, dt.type, dt.displayname, dt.personcommunicationchannelowner,
@@ -2392,6 +2434,7 @@ const querySubcoreCampaign = {
         success, message, rundate, NULLIF(conversationid, 0) + $incconversationid as zyxmeconversationid, attended
         FROM campaignhistory
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY campaignhistoryid
         LIMIT $limit
         OFFSET $offset`,
@@ -2407,9 +2450,9 @@ const querySubcoreCampaign = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
-            (SELECT campaignid FROM campaign WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignid = dt.zyxmecampaignid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            (SELECT ca.campaignid FROM campaign ca WHERE ca.zyxmecorpid = dt.zyxmecorpid AND ca.zyxmecampaignid = dt.zyxmecampaignid ORDER BY ca.campaignid DESC LIMIT 1),
             COALESCE(dt.zyxmepersonid, 0),
             COALESCE(dt.zyxmecampaignmemberid, 0),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -2440,6 +2483,7 @@ const querySubcoreOthers = {
         datetimestart, datetimeend, datetimeoriginalstart, datetimelastrun, taskprocessedids
         FROM taskscheduler
         WHERE corpid = $corpid
+        AND orgid = $orgid
         AND tasktype NOT IN
         ('CHECKABANDONMENT',
         'CLEANSMOOCHSESSION',
@@ -2472,15 +2516,15 @@ const querySubcoreOthers = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmetaskschedulerid,
             dt.tasktype::TEXT,
             CASE WHEN dt.tasktype = 'ExecuteCampaign'
             THEN jsonb_set(
                 dt.taskbody::JSONB,
                 '{campaignid}',
-                to_jsonb((SELECT campaignid FROM campaign WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecampaignid = (dt.taskbody::JSONB->>'campaignid')::BIGINT LIMIT 1)),
+                to_jsonb((SELECT ca.campaignid FROM campaign ca WHERE ca.zyxmecorpid = dt.zyxmecorpid AND ca.zyxmecampaignid = (dt.taskbody::JSONB->>'campaignid')::BIGINT ORDER BY ca.campaignid DESC LIMIT 1)),
                 false
             )::TEXT
             ELSE dt.taskbody::TEXT
@@ -2513,6 +2557,7 @@ const querySubcoreOthers = {
         color, icontype, tag
         FROM blockversion
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY chatblockversionid
         LIMIT $limit
         OFFSET $offset`,
@@ -2529,8 +2574,8 @@ const querySubcoreOthers = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmechatblockversionid,
             (
                 SELECT string_agg(communicationchannelid::text,',')
@@ -2564,6 +2609,7 @@ const querySubcoreOthers = {
         color, icontype, tag, chatblockversionid as zyxmechatblockversionid
         FROM block
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY ctid
         LIMIT $limit
         OFFSET $offset`,
@@ -2580,8 +2626,8 @@ const querySubcoreOthers = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             (
                 SELECT string_agg(communicationchannelid::text,',')
                 FROM communicationchannel
@@ -2592,7 +2638,7 @@ const querySubcoreOthers = {
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.title, dt.defaultgroupid, dt.defaultblockid, dt.firstblockid, dt.aiblockid, dt.blockgroup, dt.variablecustom,
             dt.color, dt.icontype, dt.tag,
-            (SELECT chatblockversionid FROM blockversion WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmechatblockversionid = dt.zyxmechatblockversionid LIMIT 1)
+            (SELECT bv.chatblockversionid FROM blockversion bv WHERE bv.zyxmecorpid = dt.zyxmecorpid AND bv.zyxmechatblockversionid = dt.zyxmechatblockversionid ORDER BY bv.chatblockversionid DESC LIMIT 1)
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
             zyxmecorpid bigint, zyxmeorgid bigint,
@@ -2615,6 +2661,7 @@ const querySubcoreOthers = {
         variable, fontcolor, fontbold, priority, visible
         FROM tablevariableconfiguration
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY tablevariableconfigurationid
         LIMIT $limit
         OFFSET $offset`,
@@ -2628,8 +2675,8 @@ const querySubcoreOthers = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.chatblockid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.variable, dt.fontcolor, dt.fontbold, dt.priority, dt.visible
@@ -2652,6 +2699,7 @@ const querySubcoreOthers = {
         endpoint, modelid, apikey, provider
         FROM intelligentmodels
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY intelligentmodelsid
         LIMIT $limit
         OFFSET $offset`,
@@ -2664,8 +2712,8 @@ const querySubcoreOthers = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.endpoint, dt.modelid, dt.apikey, dt.provider
         FROM json_populate_recordset(null::record, $datatable)
@@ -2686,6 +2734,7 @@ const querySubcoreOthers = {
         parameters, channels, color, icontype
         FROM intelligentmodelsconfiguration
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY intelligentmodelsconfigurationid
         LIMIT $limit
         OFFSET $offset`,
@@ -2698,8 +2747,8 @@ const querySubcoreOthers = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             (SELECT jsonb_agg(
                         jsonb_set(
@@ -2717,7 +2766,7 @@ const querySubcoreOthers = {
                     FROM (
                         SELECT
                         ja.value as jv,
-                        (SELECT intelligentmodelsid FROM intelligentmodels WHERE zyxmecorpid = dt.zyxmecorpid AND intelligentmodelsid = (ja.value->>'intelligentmodelsid')::BIGINT) as zyxmeintelligentmodelsid,
+                        (SELECT i.intelligentmodelsid FROM intelligentmodels i WHERE i.zyxmecorpid = dt.zyxmecorpid AND i.intelligentmodelsid = (ja.value->>'intelligentmodelsid')::BIGINT ORDER BY i.intelligentmodelsid DESC LIMIT 1) as zyxmeintelligentmodelsid,
                         CASE ja.value->>'service'
                         WHEN 'WATSON ASSISTANT' THEN 'ASSISTANT'
                         WHEN 'RASA' THEN 'ASSISTANT'
@@ -2756,6 +2805,7 @@ const querySubcoreOthers = {
         tokenjson, chargejson, refundjson, customerjson, cardjson, planjson, subscriptionjson
         FROM payment
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY paymentid
         LIMIT $limit
         OFFSET $offset`,
@@ -2771,8 +2821,8 @@ const querySubcoreOthers = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmeconversationid,
             dt.zyxmepersonid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
@@ -2806,6 +2856,7 @@ const querySubcoreOthers = {
         onlinetime::text, idletime::text, qtytickets, qtyconnection, qtydisconnection
         FROM productivity
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY productivityid
         LIMIT $limit
         OFFSET $offset`,
@@ -2822,8 +2873,8 @@ const querySubcoreOthers = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmeuserid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.fullname,
@@ -2864,6 +2915,7 @@ const queryExtras = {
         phone
         FROM blacklist
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY blacklistid
         LIMIT $limit
         OFFSET $offset`,
@@ -2877,8 +2929,8 @@ const queryExtras = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.zyxmeblacklistid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.phone
@@ -2901,6 +2953,7 @@ const queryExtras = {
         config, success, message, groupname, transactionid, externalid
         FROM hsmhistory
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY hsmhistoryid
         LIMIT $limit
         OFFSET $offset`,
@@ -2914,13 +2967,13 @@ const queryExtras = {
         )
         SELECT 
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             COALESCE(jsonb_set(
                 dt.config::JSONB,
                 '{CommunicationChannelId}',
-                to_jsonb((SELECT communicationchannelid FROM communicationchannel WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmecommunicationchannelid = (dt.config::JSONB->>'CommunicationChannelId')::BIGINT LIMIT 1)),
+                to_jsonb((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = (dt.config::JSONB->>'CommunicationChannelId')::BIGINT ORDER BY cc.communicationchannelid DESC LIMIT 1)),
                 false
             ), dt.config::JSONB)::TEXT,
             dt.success, dt.message, dt.groupname, dt.transactionid, dt.externalid
@@ -2939,6 +2992,7 @@ const queryExtras = {
         description, status, type, createdate, createby, changedate, changeby, edit
         FROM inappropriatewords
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY inappropriatewordsid
         LIMIT $limit
         OFFSET $offset`,
@@ -2950,8 +3004,8 @@ const queryExtras = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
@@ -2970,6 +3024,7 @@ const queryExtras = {
         color, intent, tags
         FROM label
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY labelid
         LIMIT $limit
         OFFSET $offset`,
@@ -2982,8 +3037,8 @@ const queryExtras = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.color, dt.intent, dt.tags
         FROM json_populate_recordset(null::record, $datatable)
@@ -3005,6 +3060,7 @@ const queryExtras = {
         latitude, longitude, googleurl
         FROM location
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY locationid
         LIMIT $limit
         OFFSET $offset`,
@@ -3018,8 +3074,8 @@ const queryExtras = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.name, dt.address, dt.district, dt.city, dt.country, dt.schedule, dt.phone, dt.alternativephone, dt.email, dt.alternativeemail,
             dt.latitude, dt.longitude, dt.googleurl
@@ -3043,6 +3099,7 @@ const queryExtras = {
         communicationchannelid, columnjson, filterjson
         FROM reporttemplate
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY reporttemplateid
         LIMIT $limit
         OFFSET $offset`,
@@ -3055,8 +3112,8 @@ const queryExtras = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             (
                 SELECT string_agg(communicationchannelid::text,',')
@@ -3089,6 +3146,7 @@ const queryExtras = {
         productivitybyhour, totaltmomin::text, usertmomin::text, tmemin::text, usertmemin::text, tmoclosedby, tmeclosedby
         FROM sla
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY slaid
         LIMIT $limit
         OFFSET $offset`,
@@ -3106,8 +3164,8 @@ const queryExtras = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.company,
             (
@@ -3147,6 +3205,7 @@ const queryExtras = {
         phone, asesorname, documenttype, documentnumber, usergroup
         FROM whitelist
         WHERE corpid = $corpid
+        AND orgid = $orgid
         ORDER BY whitelistid
         LIMIT $limit
         OFFSET $offset`,
@@ -3159,8 +3218,8 @@ const queryExtras = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT corpid FROM corp WHERE zyxmecorpid = dt.zyxmecorpid LIMIT 1),
-            (SELECT orgid FROM org WHERE zyxmecorpid = dt.zyxmecorpid AND zyxmeorgid = dt.zyxmeorgid LIMIT 1),
+            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.phone, dt.asesorname, dt.documenttype, dt.documentnumber, dt.usergroup
         FROM json_populate_recordset(null::record, $datatable)
@@ -3187,54 +3246,116 @@ exports.listCorp = async (req, res) => {
 }
 
 exports.executeMigration = async (req, res) => {
-    let { corpid, inc, modules, clean = false, movewebhook = false } = req.body;
+    let { corpid, orgid, inc, modules, clean = false, movewebhook = false } = req.body;
     if (!!corpid && !!modules) {
         const corpidBind = {
             corpid: corpid,
+            orgid: orgid,
             incuserid: inc?.userid || 10000,
-            incpersonid: inc?.personid || 10000000,
-            incconversationid: inc?.conversationid || 10000000,
-            inccampaignmemberid: inc?.campaignmemberid || 1000000,
+            incpersonid: inc?.personid || 1000000,
+            incconversationid: inc?.conversationid || 1000000,
+            inccampaignmemberid: inc?.campaignmemberid || 100000,
         }
         let queryResult = {core: {}, subcore: {}, extras: {}};
         await zyxmeQuery(`CREATE TABLE IF NOT EXISTS migration (corpid bigint, run boolean, params jsonb, result jsonb, startdate timestamp without time zone, enddate timestamp without time zone)`);
-        let migrationstatus = await zyxmeQuery(`SELECT corpid FROM migration WHERE corpid = $corpid`, bind = {corpid: corpid});
+        await zyxmeQuery(`ALTER TABLE migration ADD COLUMN IF NOT EXISTS orgid bigint`);
+        let migrationstatus = await zyxmeQuery(`SELECT corpid, orgid FROM migration WHERE corpid = $corpid and orgid = $orgid`, bind = {corpid: corpid, orgid: orgid});
         if (migrationstatus.length > 0) {
-            await zyxmeQuery(`UPDATE migration SET run = $run, params = $params, startdate = NOW() WHERE corpid = $corpid`, bind = {
+            await zyxmeQuery(`UPDATE migration SET run = $run, params = $params, startdate = NOW() WHERE corpid = $corpid and orgid = $orgid`, bind = {
                 corpid: corpid,
+                orgid: orgid,
                 run: true,
                 params: req.body
             });
         }
         else {
-            await zyxmeQuery(`INSERT INTO migration (corpid, run, params, startdate) SELECT $corpid, $run, $params, NOW()`, bind = {
+            await zyxmeQuery(`INSERT INTO migration (corpid, orgid, run, params, startdate) SELECT $corpid, $orgid, $run, $params, NOW()`, bind = {
                 corpid: corpid,
+                orgid: orgid,
                 run: true,
                 params: req.body
             });
         }
         try {
             if (modules.includes('core')) {
-                if (clean === true) {
-                    await laraigoQuery('SELECT FROM ufn_migration_core_delete($corpid)', bind = corpidBind);
-                    clean = false;
-                }
+                // if (clean === true) {
+                //     await laraigoQuery('SELECT FROM ufn_migration_core_delete($corpid)', bind = corpidBind);
+                //     clean = false;
+                // }
                 queryResult.core = await migrationExecute(corpidBind, queryCore, movewebhook);
             }
             if (modules.includes('subcore')) {
-                if (clean === true) {
-                    await laraigoQuery('SELECT FROM ufn_migration_subcore_delete($corpid)', bind = corpidBind);
-                }
+                // if (clean === true) {
+                //     await laraigoQuery('SELECT FROM ufn_migration_subcore_delete($corpid)', bind = corpidBind);
+                // }
                 queryResult.subcore.classification = await migrationExecute(corpidBind, querySubcoreClassification);
                 queryResult.subcore.person = await migrationExecute(corpidBind, querySubcorePerson);
                 queryResult.subcore.conversation = await migrationExecute(corpidBind, querySubcoreConversation);
                 queryResult.subcore.campaign = await migrationExecute(corpidBind, querySubcoreCampaign);
                 queryResult.subcore.others = await migrationExecute(corpidBind, querySubcoreOthers);
             }
+            if (!modules.includes('subcore') && modules.includes('subcore.classification')) {
+                // if (clean === true) {
+                //     await laraigoQuery('DELETE FROM "quickreply" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "classification" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                // }
+                queryResult.subcore.classification = await migrationExecute(corpidBind, querySubcoreClassification);
+            }
+            if (!modules.includes('subcore') && modules.includes('subcore.person')) {
+                // if (clean === true) {
+                //     await laraigoQuery('DELETE FROM "personcommunicationchannel" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "personaddinfo" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "person" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                // }
+                queryResult.subcore.person = await migrationExecute(corpidBind, querySubcorePerson);
+            }
+            if (!modules.includes('subcore') && modules.includes('subcore.conversation')) {
+                // if (clean === true) {
+                //     await laraigoQuery('DELETE FROM "surveyanswered" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "interaction" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "conversationstatus" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "conversationpending" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "conversationpause" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "conversationnote" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "conversationclassification" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "conversation" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "pccstatus" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "post" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                // }
+                queryResult.subcore.conversation = await migrationExecute(corpidBind, querySubcoreConversation);
+            }
+            if (!modules.includes('subcore') && !modules.includes('subcore.conversation') && modules.includes('subcore.surveyanswered')) {
+                // if (clean === true) {
+                //     await laraigoQuery('DELETE FROM "surveyanswered" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                // }
+                queryResult.subcore.surveyanswered = await migrationExecute(corpidBind, {surveyanswered: querySubcoreConversation.surveyanswered});
+            }
+            if (!modules.includes('subcore') && modules.includes('subcore.campaign')) {
+                // if (clean === true) {
+                //     await laraigoQuery('DELETE FROM "campaignhistory" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "campaignmember" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "campaign" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "messagetemplate" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                // }
+                queryResult.subcore.campaign = await migrationExecute(corpidBind, querySubcoreCampaign);
+            }
+            if (!modules.includes('subcore') && modules.includes('subcore.others')) {
+                // if (clean === true) {
+                //     await laraigoQuery('DELETE FROM "productivity" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "payment" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "intelligentmodelsconfiguration" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "intelligentmodels" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "tablevariableconfiguration" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "block" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "blockversion" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                //     await laraigoQuery('DELETE FROM "taskscheduler" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
+                // }
+                queryResult.subcore.others = await migrationExecute(corpidBind, querySubcoreOthers);
+            }
             if (modules.includes('extras')) {
-                if (clean === true) {
-                    await laraigoQuery('SELECT FROM ufn_migration_extras_delete($corpid)', bind = corpidBind);
-                }
+                // if (clean === true) {
+                //     await laraigoQuery('SELECT FROM ufn_migration_extras_delete($corpid)', bind = corpidBind);
+                // }
                 queryResult.extras.blacklist = await migrationExecute(corpidBind, {blacklist: queryExtras.blacklist});
                 queryResult.extras.hsmhistory = await migrationExecute(corpidBind, {hsmhistory: queryExtras.hsmhistory});
                 queryResult.extras.inappropriatewords = await migrationExecute(corpidBind, {inappropriatewords: queryExtras.inappropriatewords});
@@ -3245,65 +3366,68 @@ exports.executeMigration = async (req, res) => {
                 queryResult.extras.whitelist = await migrationExecute(corpidBind, {whitelist: queryExtras.whitelist});
             }
             if (!modules.includes('extras') && modules.includes('extras.blacklist')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "blacklist" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
+                // if (clean === true) {
+                //     await laraigoQuery('DELETE FROM "blacklist" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+                // }
                 queryResult.extras.blacklist = await migrationExecute(corpidBind, {blacklist: queryExtras.blacklist});
             }
             if (!modules.includes('extras') && modules.includes('extras.hsmhistory')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "hsmhistory" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
+                // if (clean === true) {
+                //     await laraigoQuery('DELETE FROM "hsmhistory" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+                // }
                 queryResult.extras.hsmhistory = await migrationExecute(corpidBind, {hsmhistory: queryExtras.hsmhistory});
             }
             if (!modules.includes('extras') && modules.includes('extras.inappropriatewords')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "inappropriatewords" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
+                // if (clean === true) {
+                //     await laraigoQuery('DELETE FROM "inappropriatewords" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+                // }
                 queryResult.extras.inappropriatewords = await migrationExecute(corpidBind, {inappropriatewords: queryExtras.inappropriatewords});
             }
             if (!modules.includes('extras') && modules.includes('extras.label')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "label" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
+                // if (clean === true) {
+                //     await laraigoQuery('DELETE FROM "label" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+                // }
                 queryResult.extras.label = await migrationExecute(corpidBind, {label: queryExtras.label});
             }
             if (!modules.includes('extras') && modules.includes('extras.location')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "location" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
+                // if (clean === true) {
+                //     await laraigoQuery('DELETE FROM "location" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+                // }
                 queryResult.extras.location = await migrationExecute(corpidBind, {location: queryExtras.location});
             }
             if (!modules.includes('extras') && modules.includes('extras.reporttemplate')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "reporttemplate" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
+                // if (clean === true) {
+                //     await laraigoQuery('DELETE FROM "reporttemplate" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+                // }
                 queryResult.extras.reporttemplate = await migrationExecute(corpidBind, {reporttemplate: queryExtras.reporttemplate});
             }
             if (!modules.includes('extras') && modules.includes('extras.sla')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "sla" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
+                // if (clean === true) {
+                //     await laraigoQuery('DELETE FROM "sla" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+                // }
                 queryResult.extras.sla = await migrationExecute(corpidBind, {sla: queryExtras.sla});
             }
             if (!modules.includes('extras') && modules.includes('extras.whitelist')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "whitelist" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
+                // if (clean === true) {
+                //     await laraigoQuery('DELETE FROM "whitelist" WHERE zyxmecorpid = $corpid', bind = corpidBind);
+                // }
                 queryResult.extras.whitelist = await migrationExecute(corpidBind, {whitelist: queryExtras.whitelist});
             }
             await laraigoQuery(`
                 SELECT ufn_columntemplate_ins(corpid, orgid)
                 FROM org
-                WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid)
+                WHERE corpid = $corpid
+                AND orgid = $orgid
             `, bind = corpidBind);
             await laraigoQuery(`
                 SELECT ufn_intelligentmodelsorgtemplate_ins(corpid, orgid)
                 FROM org
-                WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid)
+                WHERE corpid = $corpid
+                AND orgid = $orgid
             `, bind = corpidBind);
-            await zyxmeQuery(`UPDATE migration SET run = $run, result = $result, enddate = NOW() WHERE corpid = $corpid`, bind = {
+            await zyxmeQuery(`UPDATE migration SET run = $run, result = $result, enddate = NOW() WHERE corpid = $corpid and orgid = $orgid`, bind = {
                 corpid: corpid,
+                orgid: orgid,
                 run: false,
                 result: queryResult
             });
