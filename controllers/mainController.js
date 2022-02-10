@@ -187,6 +187,7 @@ exports.validateConversationWhatsapp = async (req, res) => {
                 conversationid: item.conversationid,
                 corpid: item.corpid,
                 orgid: item.orgid,
+                type: item.interactiontext.substring(0, 9) === "Campaña: " && item.interactiontext.includes(" - Fecha: ") ? "HSM" : "NINGUNO",
                 initiatedby: item.userid ? "BUSINESS" : "CLIENT",
                 phonenumber: item.personcommunicationchannelowner,
                 startconversation: item.createdate,
