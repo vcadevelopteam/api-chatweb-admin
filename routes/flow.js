@@ -4,7 +4,6 @@ const flowController = require("../controllers/flowController");
 const auth = require('../middleware/auth');
 
 router.post("/location",
-    auth,
     flowController.Location
 )
 
