@@ -1970,4 +1970,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_TIMEZONE_SEL: {
+        query: "SELECT * FROM ufn_timezone_sel()",
+        module: "",
+        protected: "SELECT"
+    },
 }
