@@ -5,9 +5,6 @@ const { QueryTypes } = require('sequelize');
 const axios = require('axios');
 const bcryptjs = require("bcryptjs");
 
-const logdna = require('@logdna/logger');
-const logger = logdna.createLogger('b7c813e09fbbaceff7e34d4488b90db6', { app: 'laraigoApi', level: 'trace', meta: { module: 'migratorController' } });
-
 /* Índice de tablas
 
 Propios del sistema
@@ -146,12 +143,10 @@ const recryptPwd = async (table, data) => {
                             data[i].pwd = await bcryptjs.hash(response.data.find(r => r.userid === data[i].zyxmeuserid).pwd, salt);
                         }
                         catch (error) {
-                            logger.error(error, { meta: { function: 'recryptPwd-hash' }} );
                             console.log(error);
                         }
                     }
                 } catch (error) {
-                    logger.error(error, { meta: { function: 'recryptPwd' }} );
                     console.log(error);
                 }
             }
@@ -189,6 +184,7 @@ const reconfigWebhook = async (table, data, move = false) => {
                                     ...zyxmeData,
                                     twitterLink: false,
                                 }
+                                break;
                             default:
                                 break;
                         }
@@ -205,16 +201,12 @@ const reconfigWebhook = async (table, data, move = false) => {
                                     break;
                             }
                         }
-                        else {
-                            logger.error({data: zyxmeData, response: response.data}, { meta: { function: 'reconfigWebhook' }} );
-                        }
                     } catch (error) {
-                        logger.error(error, { meta: { function: 'reconfigWebhook' }} );
                         console.log(error);
                     }
                 }
             }
-        break;
+            break;
     }
     return data;
 }
@@ -247,19 +239,16 @@ const reconfigWebhookPart2 = async (table, data, move) => {
                                 if (response.data && response.data.success) {
                                     console.log(response.data)
                                 }
-                                else {
-                                    logger.error({data: zyxmeData, response: response.data}, { meta: { function: 'reconfigWebhookPart2' }} );
-                                }
+                                break;
                             default:
                                 break;
                         }
                     } catch (error) {
-                        logger.error(error, { meta: { function: 'reconfigWebhookPart2' }} );
                         console.log(error);
                     }
                 }
             }
-        break;
+            break;
     }
 }
 
@@ -442,7 +431,7 @@ const restructureVariable = (table, data) => {
                 }
                 return d
             });
-        break;
+            break;
     }
     return data;
 }
@@ -480,7 +469,6 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 let selectResult = await zyxmeQuery(q.select.replace('\n',' '), {...corpidBind, offset: counter * limit, limit});
                 let selectElapsedSeconds = parseHrtimeToSeconds(process.hrtime(selectStartTime));
                 if (selectResult instanceof Array) {
-                    logger.trace(selectResult[0], { meta: { function: 'selectResult', table: k, seconds: selectElapsedSeconds }} );
                     if (selectResult.length === 0) {
                         break;
                     }
@@ -504,17 +492,14 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                 let preprocessResult = await laraigoQuery(q.preprocess.replace('\n',' '), { datatable: JSON.stringify(chunk) });
                                 let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
                                 if (preprocessResult instanceof Array) {
-                                    logger.trace(preprocessResult, { meta: { function: 'preprocessResult', table: k, seconds: elapsedSeconds }} );
                                 }
                                 else {
-                                    logger.error(preprocessResult, { meta: { function: 'preprocessResult', table: k, seconds: elapsedSeconds }} );
                                     console.log(preprocessResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({script: preprocessResult});
                                 }
                             } catch (error) {
                                 let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                                logger.error(error, { meta: { function: 'preprocessResult', table: k, seconds: elapsedSeconds }} );
                                 console.log(error);
                                 executeResult[k].errors.push({script: error});
                             }
@@ -525,17 +510,14 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                 let insertResult = await laraigoQuery(q.insert.replace('\n',' '), { datatable: JSON.stringify(chunk) });
                                 let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
                                 if (insertResult instanceof Array) {
-                                    logger.trace(insertResult, { meta: { function: 'insertResult', table: k, seconds: elapsedSeconds }} );
                                 }
                                 else {
-                                    logger.error(insertResult, { meta: { function: 'insertResult', table: k, seconds: elapsedSeconds }} );
                                     console.log(insertResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({script: insertResult});
                                 }
                             } catch (error) {
                                 let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                                logger.error(error, { meta: { function: 'insertResult', table: k, seconds: elapsedSeconds }} );
                                 console.log(error);
                                 executeResult[k].errors.push({script: error});
                             }
@@ -546,17 +528,14 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                 let postprocessResult = await laraigoQuery(q.postprocess.replace('\n',' '), { datatable: JSON.stringify(chunk) });
                                 let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
                                 if (postprocessResult instanceof Array) {
-                                    logger.trace(postprocessResult, { meta: { function: 'postprocessResult', table: k, seconds: elapsedSeconds }} );
                                 }
                                 else {
-                                    logger.error(postprocessResult, { meta: { function: 'postprocessResult', table: k, seconds: elapsedSeconds }} );
                                     console.log(postprocessResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({script: postprocessResult});
                                 }
                             } catch (error) {
                                 let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                                logger.error(error, { meta: { function: 'postprocessResult', table: k, seconds: elapsedSeconds }} );
                                 console.log(error);
                                 executeResult[k].errors.push({script: error});
                             }
@@ -566,7 +545,6 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     counter += 1;
                 }
                 else {
-                    logger.error(selectResult, { meta: { function: 'selectResult', table: k, seconds: selectElapsedSeconds }} );
                     console.log(selectResult);
                     executeResult[k].success = false;
                     executeResult[k].errors.push({script: selectResult});
@@ -586,17 +564,14 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     let updateResult = await laraigoQuery(q.update.replace('\n',' '), corpidBind);
                     let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
                     if (updateResult instanceof Array) {
-                        logger.trace(updateResult, { meta: { function: 'updateResult', table: k, seconds: elapsedSeconds }} );
                     }
                     else {
-                        logger.error(updateResult, { meta: { function: 'updateResult', table: k, seconds: elapsedSeconds }} );
                         console.log(updateResult);
                         executeResult[k].success = false;
                         executeResult[k].errors.push({script: updateResult});
                     }
                 } catch (error) {
                     let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                    logger.error(error, { meta: { function: 'updateResult', table: k, seconds: elapsedSeconds }} );
                     console.log(error);
                     executeResult[k].errors.push({script: error});
                 }
@@ -617,7 +592,6 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 }
             }
         } catch (error) {
-            logger.error(error, { meta: { function: 'migrationExecute', table: k }} );
             console.log(error);
             executeResult[k].success = false;
             executeResult[k].errors.push({script: error});
@@ -3371,11 +3345,9 @@ exports.executeMigration = async (req, res) => {
                 run: false,
                 result: queryResult
             });
-            logger.debug(queryResult, { meta: { function: 'executeMigration' }} );
             return res.status(200).json({ error: false, success: true, data: queryResult });
         }
         catch (error) {
-            logger.error(error, { meta: { function: 'executeMigration' }} );
             return res.status(500).json({ error: true, success: false, data: queryResult, msg: error.message });
         }
     }
