@@ -5,6 +5,7 @@ module.exports = async function (req, res, next) {
     console.log('ips:', req.ips)
     console.log('x-forwarded-for:', req.headers['x-forwarded-for'])
     console.log('remoteAddress:', req.connection.remoteAddress)
+    console.log('headers', req.headers)
 
     try {
         if (!!origin) {
