@@ -23,7 +23,7 @@ const app = express();
 
 app.use(cors({
     origin: function (origin, callback) {
-        console.log(origin);
+        console.log(`request from ${origin}`);
         // if (!origin) return callback(null, true);
         if (allowedOrigins.indexOf(origin) === -1) {
             var msg = 'The CORS policy for this site does not ' +
