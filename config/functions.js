@@ -856,7 +856,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CREATEZYXMEACCOUNT_INS: {
-        query: "SELECT * FROM ufn_createzyxmeaccount_ins($firstname, $lastname, $username, $password, $email, $doctype, $docnumber, $phone, $facebookid, $googleid, $join_reason, $rolecompany, $companysize, $organizationname, $paymentplanid, $currency, $country, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice)",
+        query: "SELECT * FROM ufn_createzyxmeaccount_ins($firstname, $lastname, $username, $password, $email, $doctype, $docnumber, $phone, $facebookid, $googleid, $join_reason, $rolecompany, $companysize, $organizationname, $paymentplanid, $currency, $country, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $timezoneoffset, $timezone)",
         module: "",
         protected: "INSERT"
     },
@@ -1503,7 +1503,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_BILLINGPERIOD_UPD: {
-        query: "SELECT * FROM ufn_billingperiod_upd($corpid, $orgid, $year, $month, $billingplan, $supportplan, $basicfee, $userfreequantity, $useradditionalfee, $channelfreequantity, $channelwhatsappfee, $channelotherfee, $clientfreequantity, $clientadditionalfee, $supportbasicfee, $unitpricepersms, $vcacomissionpersms, $unitepricepermail, $vcacomissionpermail, $additionalservicename1, $additionalservicefee1, $additionalservicename2, $additionalservicefee2, $additionalservicename3, $additionalservicefee3, $freewhatsappchannel, $freewhatsappconversations, $usercreateoverride, $force)",
+        query: "SELECT * FROM ufn_billingperiod_upd($corpid, $orgid, $year, $month, $billingplan, $supportplan, $basicfee, $userfreequantity, $useradditionalfee, $channelfreequantity, $channelwhatsappfee, $channelotherfee, $clientfreequantity, $clientadditionalfee, $supportbasicfee, $unitpricepersms, $vcacomissionpersms, $unitepricepermail, $vcacomissionpermail, $additionalservicename1, $additionalservicefee1, $additionalservicename2, $additionalservicefee2, $additionalservicename3, $additionalservicefee3, $freewhatsappchannel, $freewhatsappconversations, $usercreateoverride, $vcacomissionperconversation, $force)",
         module: "",
         protected: "INSERT"
     },
@@ -1967,6 +1967,11 @@ module.exports = {
     },
     UFN_MIGRATION_CONVERSATIONWHATSAPP_INS: {
         query: "SELECT * FROM ufn_migration_conversationwhatsapp_ins($corpid, $orgid, $table)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_TIMEZONE_SEL: {
+        query: "SELECT * FROM ufn_timezone_sel()",
         module: "",
         protected: "SELECT"
     },
