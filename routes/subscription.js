@@ -1,4 +1,5 @@
 const auth = require('../middleware/auth');
+const ip = require('../middleware/ip');
 const router = require("express").Router();
 const subscriptionController = require("../controllers/subscriptionController");
 
@@ -28,10 +29,12 @@ router.post("/validateusername",
 )
 
 router.get("/currencylist",
+    ip,
     subscriptionController.currencyList
 )
 
 router.get("/countrylist",
+    ip,
     subscriptionController.countryList
 )
 
