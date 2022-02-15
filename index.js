@@ -6,7 +6,6 @@ const allowedOrigins = process.env.ADDRESSES_ALLOWED?.split(",") || [];
 
 const app = express();
 
-app.set('trust proxy', true)
 app.use(cors({
     origin: function (origin, callback) {
         const dateRequest = new Date().toISOString();
