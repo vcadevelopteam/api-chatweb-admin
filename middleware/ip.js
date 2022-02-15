@@ -8,6 +8,7 @@ module.exports = async function (req, res, next) {
             next();
         }
         else {
+            console.log(req.ip)
             if (ipsAllowed.includes(req.ip)) {
                 next();
             }
