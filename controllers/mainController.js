@@ -56,7 +56,6 @@ exports.GetMultiDomainsValue = async (req, res) => {
     }
 }
 
-
 exports.executeTransaction = async (req, res) => {
     const { header, detail: detailtmp } = req.body;
 
