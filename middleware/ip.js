@@ -2,7 +2,9 @@ const ipsAllowed = (process.env.IPS_ALLOWED || '').split(',');
 
 module.exports = async function (req, res, next) {
     let origin = req.headers['origin'];
-    console.log(req.ips)
+    console.log('ips:', req.ips)
+    console.log('x-forwarded-for:', req.headers['x-forwarded-for'])
+    console.log('remoteAddress:', req.connection.remoteAddress)
 
     try {
         if (!!origin) {
