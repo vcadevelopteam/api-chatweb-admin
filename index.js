@@ -3,8 +3,8 @@ const express = require('express');
 const cors = require('cors');
 
 const allowedOrigins = [
-    'http://localhost:3000',
-    'https://localhost:3000',
+    // 'http://localhost:3000',
+    // 'https://localhost:3000',
     'http://52.116.128.51:5040',
     'https://test-laraigo.s3-web.us-south.cloud-object-storage.appdomain.cloud', //laraigo dev
     'https://scanvirus-cos-static-web-hosting-w26.s3-web.us-south.cloud-object-storage.appdomain.cloud', //laraigo test
