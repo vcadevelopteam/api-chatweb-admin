@@ -1,6 +1,7 @@
 const ipsAllowed = (process.env.IPS_ALLOWED || '').split(',');
 
 module.exports = async function (req, res, next) {
+    return next();
     let origin = req.headers['origin'];
     try {
         if (!!origin) {

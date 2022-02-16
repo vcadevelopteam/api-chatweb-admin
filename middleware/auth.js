@@ -1,4 +1,3 @@
-require('dotenv').config({ path: 'variables.env' });
 const jwt = require("jsonwebtoken");
 const tf = require('../config/triggerfunctions');;
 
