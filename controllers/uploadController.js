@@ -12,7 +12,7 @@ const COS_BUCKET_NAME = "staticfileszyxme"
 
 exports.upload = async (req, res) => {
     try {
-        if (req.file.size > 99999999) {
+        if (req.file.size > 999999999) {
             return res.status(500).json({ success: false, msg: 'Archivo demasiado grande.' });
         }
         const params = {
