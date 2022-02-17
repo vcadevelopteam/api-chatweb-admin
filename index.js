@@ -7,18 +7,18 @@ const allowedOrigins = process.env.ADDRESSES_ALLOWED?.split(",") || [];
 const app = express();
 
 app.use(cors({
-    // origin: function (origin, callback) {
-    //     const dateRequest = new Date().toISOString();
-    //     console.log(`${dateRequest}: request from ${origin}`);
-    //     if (!origin) return callback(null, true);
-    //     if (allowedOrigins.indexOf(origin) === -1) {
-    //         console.log(`${dateRequest}: not allowed from ${origin}`)
-    //         var msg = 'The CORS policy for this site does not ' +
-    //             'allow access from the specified Origin.';
-    //         return callback(new Error(msg), false);
-    //     }
-    //     return callback(null, true);
-    // }
+    origin: function (origin, callback) {
+        const dateRequest = new Date().toISOString();
+        console.log(`${dateRequest}: request from ${origin}`);
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            console.log(`${dateRequest}: not allowed from ${origin}`)
+            var msg = 'The CORS policy for this site does not ' +
+                'allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    }
 }));
 
 app.use(express.json({ limit: '100mb' }));//to accept json
