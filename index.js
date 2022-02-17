@@ -40,6 +40,7 @@ app.use('/api/check', require('./routes/check'));
 app.use('/api/migrator', require('./routes/migrator'));
 app.use('/api/payment', require('./routes/payment'));
 app.use('/api/billing', require('./routes/billing'));
+app.use('/api/gmaps', require('./routes/gmaps'));
 
 // Definir la pagina principal
 app.get('/', (req, res) => {

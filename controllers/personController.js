@@ -9,15 +9,6 @@ exports.getLeads = async (req, res) => {
     setSessionParameters(parameters, req.user);
 
     try {
-        // const resBridge = await axios.post(
-        //     `${process.env.BRIDGE}processzyxme/getleadbypersonid`,
-        //     { personId: parameters.personid }
-        // );
-        // if (resBridge.data && resBridge.data.success) {
-        //     return res.json({ error: false, success: true, data: JSON.parse(resBridge.data.leadData) });
-        // }
-        // return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
-
         const result = await executesimpletransaction("UFN_LEADBYPERSONCOMMUNICATIONCHANNEL_SEL", parameters);
 
         if (result instanceof Array)
