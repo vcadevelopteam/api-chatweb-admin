@@ -4,7 +4,7 @@ const { errors, getErrorCode } = require('../config/helpers');
 exports.geocode = async (req, res) => {
     const { lat, lng } = req.query;
     
-    const APIKEY = process.env.APIKEY_GMAPS || "AIzaSyCBij6DbsB8SQC_RRKm3-X07RLmvQEnP9w";
+    const APIKEY = process.env.APIKEY_GMAPS;
 
     try {
         const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${APIKEY}`;
