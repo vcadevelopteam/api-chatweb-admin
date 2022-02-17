@@ -1,4 +1,5 @@
 var ibm = require('ibm-cos-sdk');
+const { v4: uuidv4 } = require('uuid');
 
 var config = {
     endpoint: 's3.us-east.cloud-object-storage.appdomain.cloud',
@@ -15,9 +16,10 @@ exports.upload = async (req, res) => {
         if (req.file.size > 999999999) {
             return res.status(500).json({ success: false, msg: 'Archivo demasiado grande.' });
         }
+        
         const params = {
             ACL: 'public-read',
-            Key: `${req.user?.orgdesc || "anonymous"}/${req.file.originalname}`,
+            Key: `${req.user?.orgdesc || "anonymous"}/${uuidv4()}/${req.file.originalname}`,
             Body: req.file.buffer,
             Bucket: COS_BUCKET_NAME,
             ContentType: req.file.mimetype,
