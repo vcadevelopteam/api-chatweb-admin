@@ -556,7 +556,7 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
                             res(getErrorCode(errors.COS_UNEXPECTED, err));
                         } else {
                             console.timeEnd(`uploadcos`);
-                            res({ url: data.Location })
+                            res({ url: (data.Location || "").replace("http.", "https.") })
                         }
                     });
                 });
