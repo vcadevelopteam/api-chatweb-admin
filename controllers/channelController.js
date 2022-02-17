@@ -17,12 +17,9 @@ const whatsAppEndpoint = process.env.WHATSAPPAPI;
 
 exports.checkPaymentPlan = async (request, result) => {
     try {
-        var method = 'UFN_COMMUNICATIONCHANNEL_PAYMENTPLAN_CHECK';
-        var parameters = {};
+        var { method, parameters } = request.body;
 
         setSessionParameters(parameters, request.user);
-
-        parameters.corpid = request.user.corpid;
 
         const transactionCheckPaymentPlan = await triggerfunctions.executesimpletransaction(method, parameters);
 
