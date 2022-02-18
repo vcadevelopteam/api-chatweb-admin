@@ -116,6 +116,7 @@ exports.createSubscription = async (request, result) => {
 
         var channelData = '';
         var channelTotal = '';
+        var linkError = '';
 
         if (channellist instanceof Array) {
             for (const channel of channellist) {
@@ -141,6 +142,8 @@ exports.createSubscription = async (request, result) => {
                     channelParameters.status = 'PENDIENTE';
                     channelParameters.updintegration = null;
                     channelParameters.phone = null;
+
+                    linkError = channel.type;
 
                     switch (channel.type) {
                         case 'CHATWEB':
@@ -242,6 +245,7 @@ exports.createSubscription = async (request, result) => {
                                     else {
                                         return result.status(400).json({
                                             msg: 'Could not create plugin',
+                                            channeltype: linkError,
                                             success: false,
                                             error: true
                                         });
@@ -250,6 +254,7 @@ exports.createSubscription = async (request, result) => {
                                 else {
                                     return result.status(400).json({
                                         msg: 'Could not create webhook',
+                                        channeltype: linkError,
                                         success: false,
                                         error: true
                                     });
@@ -258,6 +263,7 @@ exports.createSubscription = async (request, result) => {
                             else {
                                 return result.status(400).json({
                                     msg: 'Could not create integration',
+                                    channeltype: linkError,
                                     success: false,
                                     error: true
                                 });
@@ -327,6 +333,7 @@ exports.createSubscription = async (request, result) => {
                                     else {
                                         return result.status(400).json({
                                             msg: 'No Instagram account',
+                                            channeltype: linkError,
                                             success: false,
                                             error: true
                                         });
@@ -368,6 +375,7 @@ exports.createSubscription = async (request, result) => {
                                 else {
                                     return result.status(400).json({
                                         msg: requestCreateFacebook.data.operationMessage,
+                                        channeltype: linkError,
                                         success: false,
                                         error: true
                                     });
@@ -376,6 +384,7 @@ exports.createSubscription = async (request, result) => {
                             else {
                                 return result.status(400).json({
                                     msg: requestGetLongToken.data.operationMessage,
+                                    channeltype: linkError,
                                     success: false,
                                     error: true
                                 });
@@ -415,6 +424,7 @@ exports.createSubscription = async (request, result) => {
                                 else {
                                     return result.status(400).json({
                                         msg: requestCreateSmooch.data.operationMessage,
+                                        channeltype: linkError,
                                         success: false,
                                         error: true
                                     });
@@ -449,6 +459,7 @@ exports.createSubscription = async (request, result) => {
                             else {
                                 return result.status(400).json({
                                     msg: requestCreateTelegram.data.operationMessage,
+                                    channeltype: linkError,
                                     success: false,
                                     error: true
                                 });
@@ -517,6 +528,7 @@ exports.createSubscription = async (request, result) => {
                                     if (!requestCreateTwitter.data.success) {
                                         return result.status(400).json({
                                             msg: requestCreateTwitter.data.operationMessage,
+                                            channeltype: linkError,
                                             success: false,
                                             error: true
                                         });
@@ -532,6 +544,7 @@ exports.createSubscription = async (request, result) => {
                                     if (!(transactionDeleteTwitter instanceof Array)) {
                                         return result.status(400).json({
                                             msg: transactionDeleteTwitter.code,
+                                            channeltype: linkError,
                                             success: false,
                                             error: true
                                         });
@@ -553,6 +566,7 @@ exports.createSubscription = async (request, result) => {
                                 else {
                                     return result.status(400).json({
                                         msg: transactionCreateTwitter.code,
+                                        channeltype: linkError,
                                         success: false,
                                         error: true
                                     });
@@ -561,6 +575,7 @@ exports.createSubscription = async (request, result) => {
                             else {
                                 return result.status(400).json({
                                     msg: requestPageTwitter.data.operationMessage,
+                                    channeltype: linkError,
                                     success: false,
                                     error: true
                                 });
@@ -596,6 +611,7 @@ exports.createSubscription = async (request, result) => {
                             else {
                                 return result.status(400).json({
                                     msg: requestCreateWhatsApp.data.operationMessage,
+                                    channeltype: linkError,
                                     success: false,
                                     error: true
                                 });
@@ -616,6 +632,8 @@ exports.createSubscription = async (request, result) => {
                 }
             }
         }
+
+        linkError = '';
 
         parameters.password = await bcryptjs.hash(parameters.password, await bcryptjs.genSalt(10));
         
