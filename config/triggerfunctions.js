@@ -302,7 +302,7 @@ const DATES = ["timestamp without time zone", "date"];
     { function: 'median' },
     { function: 'mode' },
 */
-exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries) => {
+exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fromExport = false) => {
     try {
         const TABLENAME = columns[0].tablename;
         const ALLCOLUMNS = [...columns, ...filters];
@@ -318,6 +318,8 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries) => 
                 selcol = `date_trunc('seconds', ${item.columnname})::text`;
             } else if (item.type === "variable") {
                 selcol = `(conversation.variablecontext::jsonb)->'${item.columnname}'->>'Value'`;
+            } else if (DATES.includes(item.type) && fromExport) {
+                selcol = `to_char(${item.columnname} + $offset * interval '1hour', 'YYYY-MM-YY HH24:MI:SS')`;
             }
 
             return acc + (index === 0 ? "" : ",") + `${selcol} as "${item.columnname.replace(".", "")}"`
