@@ -101,7 +101,7 @@ exports.createSubscription = async (request, result) => {
         if (typeof whitelist !== 'undefined' && whitelist) {
             if (!whitelist.includes(request.ip)) {
                 return result.status(400).json({
-                    msg: 'Unauthorized',
+                    message: 'Unauthorized',
                     success: false,
                     error: true
                 });
@@ -244,8 +244,8 @@ exports.createSubscription = async (request, result) => {
                                     }
                                     else {
                                         return result.status(400).json({
-                                            msg: 'Could not create plugin',
-                                            channeltype: linkError,
+                                            message: 'Could not create plugin',
+                                            code: linkError,
                                             success: false,
                                             error: true
                                         });
@@ -253,8 +253,8 @@ exports.createSubscription = async (request, result) => {
                                 }
                                 else {
                                     return result.status(400).json({
-                                        msg: 'Could not create webhook',
-                                        channeltype: linkError,
+                                        message: 'Could not create webhook',
+                                        code: linkError,
                                         success: false,
                                         error: true
                                     });
@@ -262,8 +262,8 @@ exports.createSubscription = async (request, result) => {
                             }
                             else {
                                 return result.status(400).json({
-                                    msg: 'Could not create integration',
-                                    channeltype: linkError,
+                                    message: 'Could not create integration',
+                                    code: linkError,
                                     success: false,
                                     error: true
                                 });
@@ -332,8 +332,8 @@ exports.createSubscription = async (request, result) => {
                                     }
                                     else {
                                         return result.status(400).json({
-                                            msg: 'No Instagram account',
-                                            channeltype: linkError,
+                                            message: 'No Instagram account',
+                                            code: linkError,
                                             success: false,
                                             error: true
                                         });
@@ -374,8 +374,8 @@ exports.createSubscription = async (request, result) => {
                                 }
                                 else {
                                     return result.status(400).json({
-                                        msg: requestCreateFacebook.data.operationMessage,
-                                        channeltype: linkError,
+                                        message: requestCreateFacebook.data.operationMessage,
+                                        code: linkError,
                                         success: false,
                                         error: true
                                     });
@@ -383,8 +383,8 @@ exports.createSubscription = async (request, result) => {
                             }
                             else {
                                 return result.status(400).json({
-                                    msg: requestGetLongToken.data.operationMessage,
-                                    channeltype: linkError,
+                                    message: requestGetLongToken.data.operationMessage,
+                                    code: linkError,
                                     success: false,
                                     error: true
                                 });
@@ -423,8 +423,8 @@ exports.createSubscription = async (request, result) => {
                                 }
                                 else {
                                     return result.status(400).json({
-                                        msg: requestCreateSmooch.data.operationMessage,
-                                        channeltype: linkError,
+                                        message: requestCreateSmooch.data.operationMessage,
+                                        code: linkError,
                                         success: false,
                                         error: true
                                     });
@@ -458,8 +458,8 @@ exports.createSubscription = async (request, result) => {
                             }
                             else {
                                 return result.status(400).json({
-                                    msg: requestCreateTelegram.data.operationMessage,
-                                    channeltype: linkError,
+                                    message: requestCreateTelegram.data.operationMessage,
+                                    code: linkError,
                                     success: false,
                                     error: true
                                 });
@@ -527,8 +527,8 @@ exports.createSubscription = async (request, result) => {
 
                                     if (!requestCreateTwitter.data.success) {
                                         return result.status(400).json({
-                                            msg: requestCreateTwitter.data.operationMessage,
-                                            channeltype: linkError,
+                                            message: requestCreateTwitter.data.operationMessage,
+                                            code: linkError,
                                             success: false,
                                             error: true
                                         });
@@ -543,8 +543,8 @@ exports.createSubscription = async (request, result) => {
 
                                     if (!(transactionDeleteTwitter instanceof Array)) {
                                         return result.status(400).json({
-                                            msg: transactionDeleteTwitter.code,
-                                            channeltype: linkError,
+                                            message: transactionDeleteTwitter.code,
+                                            code: linkError,
                                             success: false,
                                             error: true
                                         });
@@ -565,8 +565,8 @@ exports.createSubscription = async (request, result) => {
                                 }
                                 else {
                                     return result.status(400).json({
-                                        msg: transactionCreateTwitter.code,
-                                        channeltype: linkError,
+                                        message: transactionCreateTwitter.code,
+                                        code: linkError,
                                         success: false,
                                         error: true
                                     });
@@ -574,8 +574,8 @@ exports.createSubscription = async (request, result) => {
                             }
                             else {
                                 return result.status(400).json({
-                                    msg: requestPageTwitter.data.operationMessage,
-                                    channeltype: linkError,
+                                    message: requestPageTwitter.data.operationMessage,
+                                    code: linkError,
                                     success: false,
                                     error: true
                                 });
@@ -610,8 +610,8 @@ exports.createSubscription = async (request, result) => {
                             }
                             else {
                                 return result.status(400).json({
-                                    msg: requestCreateWhatsApp.data.operationMessage,
-                                    channeltype: linkError,
+                                    message: requestCreateWhatsApp.data.operationMessage,
+                                    code: linkError,
                                     success: false,
                                     error: true
                                 });
@@ -689,7 +689,7 @@ exports.createSubscription = async (request, result) => {
                         }
                         else {
                             return result.status(400).json({
-                                msg: transactionCreateGeneric.code,
+                                message: transactionCreateGeneric.code,
                                 success: false,
                                 error: true
                             });
@@ -776,7 +776,7 @@ exports.createSubscription = async (request, result) => {
                             
                                                         if (!requestSendMail.data.success) {
                                                             return result.status(400).json({
-                                                                msg: requestSendMail.data.operationMessage,
+                                                                message: requestSendMail.data.operationMessage,
                                                                 success: false,
                                                                 error: true
                                                             });
@@ -785,7 +785,7 @@ exports.createSubscription = async (request, result) => {
                                                 }
                                                 else {
                                                     return result.status(400).json({
-                                                        msg: transactionGetBody.code,
+                                                        message: transactionGetBody.code,
                                                         success: false,
                                                         error: true
                                                     });
@@ -794,7 +794,7 @@ exports.createSubscription = async (request, result) => {
                                         }
                                         else {
                                             return result.status(400).json({
-                                                msg: transactionGetSubject.code,
+                                                message: transactionGetSubject.code,
                                                 success: false,
                                                 error: true
                                             });
@@ -803,7 +803,7 @@ exports.createSubscription = async (request, result) => {
                                 }
                                 else {
                                     return result.status(400).json({
-                                        msg: transactionGetRecipient.code,
+                                        message: transactionGetRecipient.code,
                                         success: false,
                                         error: true
                                     });
@@ -828,7 +828,7 @@ exports.createSubscription = async (request, result) => {
 
                     if (!transactionUpdateUser instanceof Array) {
                         return result.status(400).json({
-                            msg: transactionUpdateUser.code,
+                            message: transactionUpdateUser.code,
                             success: false,
                             error: true
                         });
@@ -837,7 +837,7 @@ exports.createSubscription = async (request, result) => {
             }
             else {
                 return result.status(400).json({
-                    msg: 'Not found',
+                    message: 'Not found',
                     success: false,
                     error: true
                 });
@@ -845,7 +845,7 @@ exports.createSubscription = async (request, result) => {
         }
         else {
             return result.status(400).json({
-                msg: transactionCreateSubscription.code,
+                message: transactionCreateSubscription.code,
                 success: false,
                 error: true
             });
@@ -941,7 +941,7 @@ exports.createSubscription = async (request, result) => {
                             }
                             else {
                                 return result.status(400).json({
-                                    msg: requestSendMail.data.operationMessage,
+                                    message: requestSendMail.data.operationMessage,
                                     success: false,
                                     error: true
                                 });
@@ -950,7 +950,7 @@ exports.createSubscription = async (request, result) => {
                     }
                     else {
                         return result.status(400).json({
-                            msg: transactionGetBody.code,
+                            message: transactionGetBody.code,
                             success: false,
                             error: true
                         });
@@ -959,7 +959,7 @@ exports.createSubscription = async (request, result) => {
             }
             else {
                 return result.status(400).json({
-                    msg: transactionGetSubject.code,
+                    message: transactionGetSubject.code,
                     success: false,
                     error: true
                 });
@@ -973,7 +973,7 @@ exports.createSubscription = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            msg: exception.message,
+            message: exception.message,
             success: false,
             error: true
         });
