@@ -306,18 +306,22 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
     try {
         const TABLENAME = columns[0].tablename;
         const ALLCOLUMNS = [...columns, ...filters];
-        const JOINNERS = Array.from(new Set(ALLCOLUMNS.filter(x => !!x.join_alias).map(x => x.join_alias))).reduce((acc, join_alias) => {
+        let JOINNERS = Array.from(new Set(ALLCOLUMNS.filter(x => !!x.join_alias).map(x => x.join_alias))).reduce((acc, join_alias) => {
             const { join_table, join_on } = ALLCOLUMNS.find(x => x.join_alias === join_alias);
             return acc + `\nLEFT JOIN ${join_table} ${join_alias} ${join_on}`;
         }, "");
 
+        if (ALLCOLUMNS.some(x => x.type === "variable")) {
+            JOINNERS += `\nCROSS JOIN CAST(conversation.variablecontext as jsonb) as jo`
+        }
+        
         const COLUMNESSELECT = columns.reduce((acc, item, index) => {
             let selcol = item.columnname;
 
             if (item.type === "interval") {
                 selcol = `date_trunc('seconds', ${item.columnname})::text`;
             } else if (item.type === "variable") {
-                selcol = `(conversation.variablecontext::jsonb)->'${item.columnname}'->>'Value'`;
+                selcol = `jo->'${item.columnname}'->>'Value'`;
             } else if (DATES.includes(item.type) && fromExport) {
                 selcol = `to_char(${item.columnname} + $offset * interval '1hour', 'YYYY-MM-YY HH24:MI:SS')`;
             }
@@ -354,7 +358,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             ${TABLENAME}.corpid = $corpid and ${TABLENAME}.orgid = $orgid
             ${FILTERS}
         `;
-
+        console.log(query)
         const resultbd = await executeQuery(query, parameters);
         
         if (summaries.length > 0 && resultbd.length > 0) {
