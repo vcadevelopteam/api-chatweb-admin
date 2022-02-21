@@ -323,7 +323,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             } else if (item.type === "variable") {
                 selcol = `jo->'${item.columnname}'->>'Value'`;
             } else if (DATES.includes(item.type) && fromExport) {
-                selcol = `to_char(${item.columnname} + $offset * interval '1hour', 'YYYY-MM-YY HH24:MI:SS')`;
+                selcol = `to_char(${item.columnname} + $offset * interval '1hour', 'YYYY-MM-DD HH24:MI:SS')`;
             }
 
             return acc + (index === 0 ? "" : ",") + `${selcol} as "${item.columnname.replace(".", "")}"`
