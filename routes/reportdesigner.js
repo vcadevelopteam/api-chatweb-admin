@@ -13,6 +13,10 @@ router.post("/export",
     reportDesignerController.exportReport
 )
 
+router.post("/exporttask",
+    reportDesignerController.exportReportTask
+)
+
 router.post("/dashboard",
     auth,
     reportDesignerController.dashboardDesigner

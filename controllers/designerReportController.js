@@ -29,6 +29,25 @@ exports.exportReport = async (req, res) => {
     }
 }
 
+exports.exportReportTask = async (req, res) => {
+    const { columns, filters, summaries, parameters = {}, user = {} } = req.body;
+
+    parameters.corpid = user.corpid;
+    parameters.orgid = user.orgid;
+    parameters.username = user.usr;
+    parameters.userid = user.userid;
+
+    const resultBD = await buildQueryDynamic2(columns, filters, parameters, summaries, true);
+
+    const result = await exportData(resultBD, parameters.reportName, parameters.formatToExport, parameters.headerClient);
+
+    if (!result.error) {
+        return res.json(result);
+    } else {
+        return res.status(result.rescode).json(result);
+    }
+}
+
 exports.dashboardDesigner = async (req, res) => {
     const { parameters } = req.body;
     //dashboardtemplateid, startdate, enddate
