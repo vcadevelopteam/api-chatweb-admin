@@ -30,6 +30,11 @@ const properties = [
         type: 'communicationchannelid',
         subtype: 'int'
     },
+    {
+        propertyname: "OCULTARLOGCONVERSACION",
+        key: "hide_log_conversation",
+        type: 'bool',
+    },
 ];
 
 const cleanPropertyValue = (listproperty, { type, subtype }) => {
