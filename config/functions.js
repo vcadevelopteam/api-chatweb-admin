@@ -1157,6 +1157,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DASHBOARD_PUSH_APPLICATION_SEL: {
+        query: "SELECT * FROM ufn_dashboard_push_application_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_USER_SUPERVISORBYORGID_LST: {
         query: "SELECT * FROM ufn_user_supervisorbyorgid_lst($corpid,$orgid)",
         module: "",
