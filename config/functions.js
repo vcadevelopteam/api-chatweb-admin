@@ -1167,6 +1167,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DASHBOARD_GERENCIAL_CHANNEL_SEL: {
+        query: "SELECT * FROM ufn_dashboard_gerencial_channel_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$userid,$offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_DASHBOARD_GERENCIAL_TAG_SEL: {
         query: "SELECT * FROM ufn_dashboard_gerencial_tag_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$userid,$offset)",
         module: "",
