@@ -1204,3 +1204,236 @@ exports.countryList = async (request, result) => {
         });
     }
 }
+
+exports.recoverPassword = async (request, result) => {
+    try {
+        if (typeof whitelist !== 'undefined' && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(400).json({
+                    msg: 'Unauthorized',
+                    success: false,
+                    error: true
+                });
+            }
+        }
+
+        var userMethod = 'UFN_USERBYUSER';
+        var userParameters = {
+            username: request.body.username,
+        };
+
+        const transactionSelectUser = await triggerfunctions.executesimpletransaction(userMethod, userParameters);
+
+        if (transactionSelectUser instanceof Array) {
+            if (transactionSelectUser.length > 0) {
+                var validMail = false;
+
+                if (typeof transactionSelectUser[0].email !== 'undefined' && transactionSelectUser[0].email) {
+                    if (validateEmail(transactionSelectUser[0].email) !== null) {
+                        validMail = true;
+                    }
+                }
+
+                if (validMail) {
+                    var domainMethod = 'UFN_DOMAIN_VALUES_SEL';
+                    var domainParameters = {
+                        all: false,
+                        corpid: 1,
+                        domainname: 'RECOVERPASSSUBJECT',
+                        orgid: 0,
+                        username: 'admin'
+                    };
+
+                    const transactionGetSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                    domainParameters.domainname = 'RECOVERPASSBODY';
+
+                    const transactionGetBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                    var validMail = false;
+
+                    if (transactionGetSubject instanceof Array && transactionGetBody instanceof Array) {
+                        if (transactionGetSubject.length > 0 && transactionGetBody.length > 0) {
+                            validMail = true;
+                        }
+                    }
+
+                    if (validMail) {
+                        var linkCode = cryptojs.AES.encrypt(JSON.stringify({
+                            userid: transactionSelectUser[0].userid,
+                            date: new Date().getTime(),
+                        }), userSecret).toString();
+
+                        linkCode = linkCode.split("=").join("_EQUAL_");
+                        linkCode = linkCode.split("/").join("_SLASH_");
+                        linkCode = linkCode.split("+").join("_PLUS_");
+
+                        var mailBody = transactionGetBody[0].domainvalue;
+                        var mailSubject = transactionGetSubject[0].domainvalue;
+
+                        mailBody = mailBody.split("{{docnum}}").join(transactionSelectUser[0].docnum);
+                        mailBody = mailBody.split("{{doctype}}").join(transactionSelectUser[0].doctype);
+                        mailBody = mailBody.split("{{email}}").join(transactionSelectUser[0].email);
+                        mailBody = mailBody.split("{{firstname}}").join(transactionSelectUser[0].firstname);
+                        mailBody = mailBody.split("{{lastname}}").join(transactionSelectUser[0].lastname);
+                        mailBody = mailBody.split("{{link}}").join(`${laraigoEndpoint}recoverpassword/${encodeURIComponent(linkCode)}`);
+                        mailBody = mailBody.split("{{userid}}").join(transactionSelectUser[0].userid);
+                        mailBody = mailBody.split("{{usr}}").join(transactionSelectUser[0].usr);
+                      
+                        mailSubject = mailSubject.split("{{docnum}}").join(transactionSelectUser[0].docnum);
+                        mailSubject = mailSubject.split("{{doctype}}").join(transactionSelectUser[0].doctype);
+                        mailSubject = mailSubject.split("{{email}}").join(transactionSelectUser[0].email);
+                        mailSubject = mailSubject.split("{{firstname}}").join(transactionSelectUser[0].firstname);
+                        mailSubject = mailSubject.split("{{lastname}}").join(transactionSelectUser[0].lastname);
+                        mailSubject = mailSubject.split("{{link}}").join(`${laraigoEndpoint}recoverpassword/${encodeURIComponent(linkCode)}`);
+                        mailSubject = mailSubject.split("{{userid}}").join(transactionSelectUser[0].userid);
+                        mailSubject = mailSubject.split("{{usr}}").join(transactionSelectUser[0].usr);
+                     
+                        const requestSendMail = await axios({
+                            data: {
+                                mailAddress: transactionSelectUser[0].email,
+                                mailBody: mailBody,
+                                mailTitle: mailSubject
+                            },
+                            method: 'post',
+                            url: `${bridgeEndpoint}processscheduler/sendmail`
+                        });
+
+                        if (requestSendMail.data.success) {
+                            return result.json({
+                                error: false,
+                                msg: 'recoverpassword_recoversent',
+                                success: true,
+                            });
+                        }
+                        else {
+                            return result.json({
+                                error: true,
+                                msg: '',
+                                success: false,
+                            });
+                        }
+                    }
+                    else {
+                        return result.json({
+                            error: true,
+                            msg: '',
+                            success: false,
+                        });
+                    }
+                }
+                else {
+                    return result.json({
+                        error: true,
+                        msg: 'recoverpassword_usernotmail',
+                        success: false,
+                    });
+                }
+            }
+            else {
+                return result.json({
+                    error: true,
+                    msg: 'recoverpassword_usernotfound',
+                    success: false,
+                });
+            }
+        }
+        else {
+            return result.status(400).json({
+                error: true,
+                msg: transactionSelectUser.code,
+                success: false,
+            });
+        }
+    }
+    catch (exception) {
+        return result.status(500).json({
+            error: true,
+            msg: exception.message,
+            success: false,
+        });
+    }
+}
+
+exports.changePassword = async (request, result) => {
+    try {
+        if (typeof whitelist !== 'undefined' && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(400).json({
+                    msg: 'Unauthorized',
+                    success: false,
+                    error: true
+                });
+            }
+        }
+
+        var userToken = request.body.token;
+
+        userToken = userToken.split("_EQUAL_").join("=");
+        userToken = userToken.split("_SLASH_").join("/");
+        userToken = userToken.split("_PLUS_").join("+");
+
+        var userData = JSON.parse(cryptojs.AES.decrypt(userToken, userSecret).toString(cryptojs.enc.Utf8));
+
+        if (userData) {
+            if (userData.userid) {
+                var currentDate = new Date(userData.date);
+
+                var dateDifference = Math.abs(new Date().getTime() - currentDate.getTime()) / 3600000;
+
+                if (dateDifference <= 24) {
+                    var passwordMethod = 'UFN_USERPASSWORD_UPDATE';
+                    var passwordParameters = {
+                        password: await bcryptjs.hash(request.body.password, await bcryptjs.genSalt(10)),
+                        userid: userData.userid
+                    };
+
+                    const transactionUpdatePassword = await triggerfunctions.executesimpletransaction(passwordMethod, passwordParameters);
+
+                    if (transactionUpdatePassword instanceof Array) {
+                        return result.json({
+                            error: false,
+                            msg: 'recoverpassword_success',
+                            success: true,
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            error: true,
+                            msg: transactionUpdatePassword.code,
+                            success: false,
+                        });
+                    }
+                }
+                else {
+                    return result.json({
+                        error: true,
+                        msg: 'recoverpassword_expired',
+                        success: false,
+                    });
+                }
+            }
+        }
+
+        return result.json({
+            error: true,
+            msg: '',
+            success: false,
+        });
+    }
+    catch (exception) {
+        return result.status(500).json({
+            error: true,
+            msg: exception.message,
+            success: false,
+        });
+    }
+}
+
+const validateEmail = (email) => {
+    return String(email)
+      .toLowerCase()
+      .match(
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      );
+  };

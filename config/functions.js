@@ -1980,4 +1980,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_USERBYUSER: {
+        query: "SELECT * FROM ufn_userbyuser($username)",
+        module: "",
+        protected: "SELECT"
+    },
 }

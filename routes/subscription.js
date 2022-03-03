@@ -38,4 +38,12 @@ router.get("/countrylist",
     subscriptionController.countryList
 )
 
+router.post("/recoverpassword",
+    subscriptionController.recoverPassword
+)
+
+router.post("/changepassword",
+    subscriptionController.changePassword
+)
+
 module.exports = router;
