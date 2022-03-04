@@ -314,9 +314,14 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
         if (ALLCOLUMNS.some(x => x.type === "variable")) {
             JOINNERS += `\nCROSS JOIN CAST(conversation.variablecontext as jsonb) as jo`
         }
+
+        const columnValueUnique = filters.find(x => x.type_filter === "unique_value")?.columnname;
+        console.log("columnValueUnique", columnValueUnique)
         
         const COLUMNESSELECT = columns.reduce((acc, item, index) => {
             let selcol = item.columnname;
+
+            console.log("selcol", selcol);
 
             if (item.type === "interval") {
                 selcol = `date_trunc('seconds', ${item.columnname})::text`;
@@ -326,22 +331,33 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 selcol = `to_char(${item.columnname} + $offset * interval '1hour', 'YYYY-MM-DD HH24:MI:SS')`;
             }
 
-            return acc + (index === 0 ? "" : ",") + `${selcol} as "${item.columnname.replace(".", "")}"`
+            if (item.columnname === columnValueUnique) {
+                return ` distinct on (${selcol}) ${selcol} as "${item.columnname.replace(".", "")}"` + (acc ? ", " : "") + acc;
+            } else {
+                return acc + (index === 0 ? "" : ",") + `${selcol} as "${item.columnname.replace(".", "")}"`
+            }
         }, "")
 
         const FILTERS = filters.reduce((acc, { type, columnname, start, end, value }) => {
             if (DATES.includes(type)) {
                 return `${acc}\nand ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
             } else if (!!value) {
+
+                const filter_array = `ANY(string_to_array('${value}',',')::${type}[])`
+
                 if (NUMBERS.includes(type)) {
-                    return `${acc}\nand ${columnname} = ${value}`
+                    return `${acc}\nand ${columnname} = ${value.includes(",") ? filter_array : value}`
                 } else if (type === "variable") {
-                    return `${acc}\nand (conversation.variablecontext::jsonb)->'${columnname}'->>'Value' ilike '${value}'`
+                    return `${acc}\nand (conversation.variablecontext::jsonb)->'${columnname}'->>'Value' ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
                 } else {
                     if (columnname === "conversation.tags") {
-                        return `${acc}\nand '${value}'  = any(string_to_array(${columnname}, ','))`
+                        if (value.includes(",")) {
+                            return `${acc}\nand ${filter_array}  && string_to_array(${columnname}, ',')`
+                        } else {
+                            return `${acc}\nand '${value}'  = any(string_to_array(${columnname}, ','))`
+                        }
                     } else {
-                        return `${acc}\nand ${columnname} ilike '${value}'`
+                        return `${acc}\nand ${columnname} ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
                     }
                 }
             } else {
