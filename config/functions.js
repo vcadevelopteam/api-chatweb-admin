@@ -1262,6 +1262,16 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_REPORTSCHEDULER_SEL: {
+        query: "select * from ufn_reportscheduler_sel($corpid, $orgid, $id, $username, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORTSCHEDULER_INS: {
+        query: "select * from ufn_reportscheduler_ins($orgid,$id,$title,$description,$status,$type,$origin,$origintype,$reportid,$reportname,$filterjson,$frecuency,$schedule,$datarange,$mailto,$mailcc,$mailsubject,$mailbody,$username,$operation)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_LEADNOTES_SEL: {
         query: "select * from ufn_leadnotes_sel($corpid,$orgid, $leadid, $leadnotesid, $all)",
         module: "",
