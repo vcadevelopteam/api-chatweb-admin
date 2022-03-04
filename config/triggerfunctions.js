@@ -418,6 +418,76 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
     }
 }
 
+exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, interval, dataorigin) => {
+    try {
+        const TABLENAME = columns[0].tablename;
+        const ALLCOLUMNS = [...columns, ...filters];
+        let GROUP_BY = "";
+        let JOINNERS = Array.from(new Set(ALLCOLUMNS.filter(x => !!x.join_alias).map(x => x.join_alias))).reduce((acc, join_alias) => {
+            const { join_table, join_on } = ALLCOLUMNS.find(x => x.join_alias === join_alias);
+            return acc + `\nLEFT JOIN ${join_table} ${join_alias} ${join_on}`;
+        }, "");
+
+        if (ALLCOLUMNS.some(x => x.type === "variable")) {
+            JOINNERS += `\nCROSS JOIN CAST(conversation.variablecontext as jsonb) as jo`
+        }
+        
+        const COLUMNESSELECT = columns.reduce((acc, item, index) => {
+            let selcol = item.columnname;
+
+            if (item.type === "interval") {
+                selcol = `date_trunc('seconds', ${item.columnname})::text`;
+            } else if (item.type === "variable") {
+                selcol = `jo->'${item.columnname}'->>'Value'`;
+            } else if (DATES.includes(item.type)) {
+                selcol = `to_char(${item.columnname} + $offset * interval '1hour', 'YYYY-MM-DD HH24:MI:SS')`;
+            }
+            GROUP_BY = `coalesce(${selcol}, '')`;
+            return acc + `, coalesce(${selcol}, '') as "${item.columnname.replace(".", "")}", count(coalesce(${selcol}, '')) total`
+
+        }, `date_part('${interval}', ${dataorigin}.createdate + $offset * INTERVAL '1hour') "interval"`)
+
+        const FILTERS = filters.reduce((acc, { type, columnname, start, end, value }) => {
+            if (DATES.includes(type)) {
+                return `${acc}\nand ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
+            } else if (!!value) {
+                if (NUMBERS.includes(type)) {
+                    return `${acc}\nand ${columnname} = ${value}`
+                } else if (type === "variable") {
+                    return `${acc}\nand (conversation.variablecontext::jsonb)->'${columnname}'->>'Value' ilike '${value}'`
+                } else {
+                    if (columnname === "conversation.tags") {
+                        return `${acc}\nand '${value}'  = any(string_to_array(${columnname}, ','))`
+                    } else {
+                        return `${acc}\nand ${columnname} ilike '${value}'`
+                    }
+                }
+            } else {
+                return acc;
+            }
+        }, "")
+
+        let query = `
+        select
+            ${COLUMNESSELECT}
+        from ${TABLENAME}
+        ${JOINNERS}
+        WHERE 
+            ${TABLENAME}.corpid = $corpid and ${TABLENAME}.orgid = $orgid
+            ${FILTERS}
+        GROUP BY 1, ${GROUP_BY}
+        ORDER BY 1 desc
+        `;
+        console.log(query)
+        const resultbd = await executeQuery(query, parameters);
+        
+        return resultbd;
+    } catch (error) {
+        console.log(error)
+        return getErrorCode(errors.UNEXPECTED_ERROR, error);
+    }
+}
+
 exports.buildQueryDynamic = async (columns, filters, parameters) => {
     try {
         let whereQuery = "";
