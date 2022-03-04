@@ -116,8 +116,6 @@ exports.dashboardDesigner = async (req, res) => {
 
             const result = await Promise.all(triggerIndicators);
 
-            console.log("dataaxx", result)
-
             const cleanDatat = result.map((resIndicator, index) => {
                 const { column, contentType, grouping, interval } = indicatorList[index];
 
@@ -169,6 +167,7 @@ exports.dashboardDesigner = async (req, res) => {
                             data: sortedData,
                             reportname,
                             dataorigin,
+                            interval,
                             columns: contentType === "report" ? JSON.parse(columnjson).map(x => ({ ...x, disabled: undefined, descriptionT: undefined })) : undefined,
                             error,
                             errorcode
