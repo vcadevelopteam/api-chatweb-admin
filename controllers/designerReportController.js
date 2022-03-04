@@ -124,13 +124,16 @@ exports.dashboardDesigner = async (req, res) => {
                         return resIndicator;
                     } else {
                         if (interval) {
+                            const total = resIndicator.reduce((acc, item) => acc + item.total, 0)
+                            resultReports[index][0].total = total;
+
                             return resIndicator.reduce((acc, item) => ({
                                 ...acc,
                                 [interval + item.interval]: acc[interval + item.interval] ? {
                                     ...acc[interval + item.interval],
-                                    [item[column.replace(".", "")]]: item.total
+                                    [item[column.replace(".", "")]]: grouping === "percentage" ? (item.total / total) * total : item.total
                                 } : {
-                                    [item[column.replace(".", "")]]: item.total
+                                    [item[column.replace(".", "")]]: grouping === "percentage" ? (item.total / total) * total : item.total
                                 }
                             }), {})
                         } else {
@@ -138,7 +141,7 @@ exports.dashboardDesigner = async (req, res) => {
                                 ...acc,
                                 [item[column.replace(".", "")] || ""]: (acc[item[column.replace(".", "")] || ""] || 0) + 1
                             }), {});
-    
+                            resultReports[index][0].total = resIndicator.length;
                             if (grouping === "percentage") {
                                 Object.keys(res).forEach(key => {
                                     res[key] = Number(((res[key] / resIndicator.length) * 100).toFixed(2));
@@ -157,7 +160,7 @@ exports.dashboardDesigner = async (req, res) => {
                 const { contentType, error, errorcode, interval } = indicatorList[index];
 
                 if (resultReports[index][0]) {
-                    const { description: reportname, columnjson, dataorigin } = resultReports[index][0];
+                    const { description: reportname, columnjson, dataorigin, total } = resultReports[index][0];
                     
                     const sortedData = interval ? data : (contentType === "report" ? Object.fromEntries(Object.entries(data).sort(([, a], [, b]) => b - a)) : data);
                     return {
@@ -166,6 +169,7 @@ exports.dashboardDesigner = async (req, res) => {
                             contentType,
                             data: sortedData,
                             reportname,
+                            total,
                             dataorigin,
                             interval,
                             columns: contentType === "report" ? JSON.parse(columnjson).map(x => ({ ...x, disabled: undefined, descriptionT: undefined })) : undefined,
