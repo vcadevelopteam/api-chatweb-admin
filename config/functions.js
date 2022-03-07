@@ -1268,7 +1268,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORTSCHEDULER_INS: {
-        query: "select * from ufn_reportscheduler_ins($orgid,$id,$title,$description,$status,$type,$origin,$origintype,$reportid,$reportname,$filterjson,$frecuency,$schedule,$datarange,$mailto,$mailcc,$mailsubject,$mailbody, $mailbodyobject,$username,$operation)",
+        query: "select * from ufn_reportscheduler_ins($corpid,$orgid,$id,$title,$description,$status,$type,$origin,$origintype,$reportid,$reportname,$filterjson,$frecuency,$schedule,$datarange,$mailto,$mailcc,$mailsubject,$mailbody, $mailbodyobject,$username,$operation)",
         module: "",
         protected: "SELECT"
     },
