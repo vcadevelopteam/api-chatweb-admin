@@ -1,4 +1,4 @@
-const { buildQueryDynamic, buildQueryDynamic2, exportData, executesimpletransaction } = require('../config/triggerfunctions');
+const { buildQueryDynamic, buildQueryDynamicGroupInterval, buildQueryDynamic2, exportData, executesimpletransaction } = require('../config/triggerfunctions');
 const { setSessionParameters, errors, getErrorCode } = require('../config/helpers');
 
 exports.drawReport = async (req, res) => {
@@ -55,6 +55,7 @@ exports.dashboardDesigner = async (req, res) => {
     try {
         const template = await executesimpletransaction("QUERY_GET_DASHBOARDTEMPLATE", parameters);
         if (template instanceof Array && template.length > 0) {
+            
             const templateDashboard = JSON.parse(template[0].detailjson);
             const keysIndicators = Object.keys(templateDashboard);
             const indicatorList = Object.values(templateDashboard);
@@ -92,8 +93,15 @@ exports.dashboardDesigner = async (req, res) => {
                         }]
 
                         const columnstmp = JSON.parse(report.columnjson).filter(x => x.columnname === indicator.column);
-                        if (columnstmp.length > 0)
-                            return buildQueryDynamic2(columnstmp, filterHard, parameters, []);
+                        if (columnstmp.length > 0) {
+                            if (indicator.interval) {
+                                console.log("interval")
+                                return buildQueryDynamicGroupInterval(columnstmp, filterHard, parameters, indicator.interval, report.dataorigin);
+                            } else {
+                                console.log("normal")
+                                return buildQueryDynamic2(columnstmp, filterHard, parameters, []);
+                            }
+                        }
                         else {
                             indicatorList[index].error = true;
                             indicatorList[index].errorcode = "COLUMN_NOT_FOUND";
@@ -109,23 +117,38 @@ exports.dashboardDesigner = async (req, res) => {
             const result = await Promise.all(triggerIndicators);
 
             const cleanDatat = result.map((resIndicator, index) => {
-                const { column, contentType, grouping } = indicatorList[index];
+                const { column, contentType, grouping, interval } = indicatorList[index];
 
                 if (resIndicator) {
                     if (contentType === "kpi") {
                         return resIndicator;
                     } else {
-                        const res = resIndicator.reduce((acc, item) => ({
-                            ...acc,
-                            [item[column.replace(".", "")] || ""]: (acc[item[column.replace(".", "")] || ""] || 0) + 1
-                        }), {});
+                        if (interval) {
+                            const total = resIndicator.reduce((acc, item) => acc + item.total, 0)
+                            resultReports[index][0].total = total;
 
-                        if (grouping === "percentage") {
-                            Object.keys(res).forEach(key => {
-                                res[key] = Number(((res[key] / resIndicator.length) * 100).toFixed(2));
-                            })
+                            return resIndicator.reduce((acc, item) => ({
+                                ...acc,
+                                [interval + item.interval]: acc[interval + item.interval] ? {
+                                    ...acc[interval + item.interval],
+                                    [item[column.replace(".", "")]]: grouping === "percentage" ? (item.total / total) * total : item.total
+                                } : {
+                                    [item[column.replace(".", "")]]: grouping === "percentage" ? (item.total / total) * total : item.total
+                                }
+                            }), {})
+                        } else {
+                            const res = resIndicator.reduce((acc, item) => ({
+                                ...acc,
+                                [item[column.replace(".", "")] || ""]: (acc[item[column.replace(".", "")] || ""] || 0) + 1
+                            }), {});
+                            resultReports[index][0].total = resIndicator.length;
+                            if (grouping === "percentage") {
+                                Object.keys(res).forEach(key => {
+                                    res[key] = Number(((res[key] / resIndicator.length) * 100).toFixed(2));
+                                })
+                            }
+                            return res;
                         }
-                        return res;
                     }
                 } else {
                     return {
@@ -133,21 +156,22 @@ exports.dashboardDesigner = async (req, res) => {
                     }
                 }
             });
-
             const gg = cleanDatat.reduce((acc, data, index) => {
-                const { contentType, error, errorcode } = indicatorList[index];
+                const { contentType, error, errorcode, interval } = indicatorList[index];
 
                 if (resultReports[index][0]) {
-                    const { description: reportname, columnjson, dataorigin } = resultReports[index][0];
-
-                    const sortedData = contentType === "report" ? Object.fromEntries(Object.entries(data).sort(([, a], [, b]) => b - a)) : data;
+                    const { description: reportname, columnjson, dataorigin, total } = resultReports[index][0];
+                    
+                    const sortedData = interval ? data : (contentType === "report" ? Object.fromEntries(Object.entries(data).sort(([, a], [, b]) => b - a)) : data);
                     return {
                         ...acc,
                         [keysIndicators[index]]: {
                             contentType,
                             data: sortedData,
                             reportname,
+                            total,
                             dataorigin,
+                            interval,
                             columns: contentType === "report" ? JSON.parse(columnjson).map(x => ({ ...x, disabled: undefined, descriptionT: undefined })) : undefined,
                             error,
                             errorcode
