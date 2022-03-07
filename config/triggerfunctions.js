@@ -436,7 +436,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
     }
 }
 
-exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, interval, dataorigin) => {
+exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, interval, dataorigin, summarizationfunction) => {
     try {
         const TABLENAME = columns[0].tablename;
         const ALLCOLUMNS = [...columns, ...filters];
@@ -460,8 +460,23 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
             } else if (DATES.includes(item.type)) {
                 selcol = `to_char(${item.columnname} + $offset * interval '1hour', 'YYYY-MM-DD HH24:MI:SS')`;
             }
-            GROUP_BY = `coalesce(${selcol}, '')`;
-            return acc + `, coalesce(${selcol}, '') as "${item.columnname.replace(".", "")}", count(coalesce(${selcol}, '')) total`
+            
+            if (!summarizationfunction) {
+                GROUP_BY = `coalesce(${selcol}, '')`;
+                return acc + `, coalesce(${selcol}, '') as "${item.columnname.replace(".", "")}", count(coalesce(${selcol}, '')) total`
+            } else if (summarizationfunction === "total") {
+                return acc + `, sum(coalesce(${selcol}, '')) total`
+            } else if (summarizationfunction === "count") {
+                return acc + `, count(coalesce(${selcol}, '')) total`
+            } else if (summarizationfunction === "average") {
+                return acc + `, avg(coalesce(${selcol}, '')) total`
+            } else if (summarizationfunction === "minimum") {
+                return acc + `, min(coalesce(${selcol}, '')) total`
+            } else if (summarizationfunction === "maximum") {
+                return acc + `, max(coalesce(${selcol}, '')) total`
+            } else if (summarizationfunction === "count_unique") {
+                return acc + `, count(distinct(coalesce(${selcol}, ''))) total`
+            }
 
         }, `date_part('${interval}', ${dataorigin}.createdate + $offset * INTERVAL '1hour') "interval"`)
 
@@ -493,7 +508,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
         WHERE 
             ${TABLENAME}.corpid = $corpid and ${TABLENAME}.orgid = $orgid
             ${FILTERS}
-        GROUP BY 1, ${GROUP_BY}
+        GROUP BY 1${!!GROUP_BY ? "," : ""} ${GROUP_BY}
         ORDER BY 1 desc
         `;
         console.log(query)

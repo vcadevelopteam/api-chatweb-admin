@@ -67,8 +67,11 @@ exports.dashboardDesigner = async (req, res) => {
             //     "kpiid": 11,
             //     "grouping": "quantity",
             //     "graph": "pie",
-            //     "column": "person.name"
+            //     "column": "person.name",
+            //     "interval": "day|week|month"
+            //     "summarizationfunction": "total|count|count_unique|average|minimum|maximum"
             // }
+
             const queryIndicator = indicatorList.map((r) => r.contentType === "kpi" ? executesimpletransaction("QUERY_GET_KPI", { ...parameters, kpiid: r.kpiid }) : executesimpletransaction("QUERY_GET_REPORTTEMPLATE", { ...parameters, reporttemplateid: r.reporttemplateid }))
 
             const resultReports = await Promise.all(queryIndicator);
@@ -96,7 +99,7 @@ exports.dashboardDesigner = async (req, res) => {
                         if (columnstmp.length > 0) {
                             if (indicator.interval) {
                                 console.log("interval")
-                                return buildQueryDynamicGroupInterval(columnstmp, filterHard, parameters, indicator.interval, report.dataorigin);
+                                return buildQueryDynamicGroupInterval(columnstmp, filterHard, parameters, indicator.interval, report.dataorigin, indicator.summarizationfunction);
                             } else {
                                 console.log("normal")
                                 return buildQueryDynamic2(columnstmp, filterHard, parameters, []);
@@ -117,7 +120,7 @@ exports.dashboardDesigner = async (req, res) => {
             const result = await Promise.all(triggerIndicators);
 
             const cleanDatat = result.map((resIndicator, index) => {
-                const { column, contentType, grouping, interval } = indicatorList[index];
+                const { column, contentType, grouping, interval, summarizationfunction } = indicatorList[index];
 
                 if (resIndicator) {
                     if (contentType === "kpi") {
@@ -126,16 +129,22 @@ exports.dashboardDesigner = async (req, res) => {
                         if (interval) {
                             const total = resIndicator.reduce((acc, item) => acc + item.total, 0)
                             resultReports[index][0].total = total;
-
-                            return resIndicator.reduce((acc, item) => ({
-                                ...acc,
-                                [interval + item.interval]: acc[interval + item.interval] ? {
-                                    ...acc[interval + item.interval],
-                                    [item[column.replace(".", "")]]: grouping === "percentage" ? (item.total / total) * total : item.total
-                                } : {
-                                    [item[column.replace(".", "")]]: grouping === "percentage" ? (item.total / total) * total : item.total
-                                }
-                            }), {})
+                            if (!!summarizationfunction) {
+                                return resIndicator.reduce((acc, item) => ({
+                                    ...acc,
+                                    [interval + item.interval]: item.total
+                                }), {})
+                            } else {
+                                return resIndicator.reduce((acc, item) => ({
+                                    ...acc,
+                                    [interval + item.interval]: acc[interval + item.interval] ? {
+                                        ...acc[interval + item.interval],
+                                        [item[column.replace(".", "")]]: grouping === "percentage" ? (item.total / total) * total : item.total
+                                    } : {
+                                        [item[column.replace(".", "")]]: grouping === "percentage" ? (item.total / total) * total : item.total
+                                    }
+                                }), {})
+                            }
                         } else {
                             const res = resIndicator.reduce((acc, item) => ({
                                 ...acc,
@@ -157,7 +166,7 @@ exports.dashboardDesigner = async (req, res) => {
                 }
             });
             const gg = cleanDatat.reduce((acc, data, index) => {
-                const { contentType, error, errorcode, interval } = indicatorList[index];
+                const { contentType, error, errorcode, interval, summarizationfunction } = indicatorList[index];
 
                 if (resultReports[index][0]) {
                     const { description: reportname, columnjson, dataorigin, total } = resultReports[index][0];
@@ -171,7 +180,7 @@ exports.dashboardDesigner = async (req, res) => {
                             reportname,
                             total,
                             dataorigin,
-                            interval,
+                            interval: !!summarizationfunction ? "" : interval,
                             columns: contentType === "report" ? JSON.parse(columnjson).map(x => ({ ...x, disabled: undefined, descriptionT: undefined })) : undefined,
                             error,
                             errorcode
