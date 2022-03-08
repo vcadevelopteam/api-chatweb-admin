@@ -2020,4 +2020,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_REPORTSCHEDULER_FILTER_SEL: {
+        query: "SELECT * FROM ufn_reportscheduler_filter_sel()",
+        module: "",
+        protected: "SELECT"
+    },
 }
