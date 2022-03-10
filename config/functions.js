@@ -2015,4 +2015,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_REPORTSCHEDULER_REPORTSEL: {
+        query: "SELECT * FROM ufn_reportscheduler_reportsel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORTSCHEDULER_FILTER_SEL: {
+        query: "SELECT * FROM ufn_reportscheduler_filter_sel()",
+        module: "",
+        protected: "SELECT"
+    },
 }
