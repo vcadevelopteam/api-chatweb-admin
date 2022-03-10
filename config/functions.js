@@ -2025,4 +2025,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PRODUCTCATALOG_INS: {
+        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $id, $code, $description, $category, $status, $type, $imagereference, $notes, $unitprice, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_PRODUCTCATALOG_SEL: {
+        query: "SELECT * FROM ufn_productcatalog_sel($corpid, $orgid, $id, $username, $all)",
+        module: "",
+        protected: "SELECT"
+    },
 }
