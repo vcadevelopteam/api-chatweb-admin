@@ -25,6 +25,10 @@ router.post("/send/hsm",
     ticketController.sendHSM
 )
 
+router.post("/send/hsm/allow",
+    ticketController.sendHSM
+)
+
 router.post("/massiveclose",
     auth,
     ticketController.massiveClose
