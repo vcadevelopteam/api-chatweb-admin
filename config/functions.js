@@ -2031,7 +2031,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_PRODUCTCATALOG_SEL: {
-        query: "SELECT * FROM ufn_productcatalog_sel($corpid, $orgid, $id, $username, $all)",
+        query: "SELECT * FROM ufn_productcatalog_sel($corpid, $orgid, $id, $category, $username, $all)",
         module: "",
         protected: "SELECT"
     },
