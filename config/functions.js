@@ -2035,4 +2035,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PRODUCTCATALOG_LST: {
+        query: "SELECT * FROM ufn_productcatalog_lst($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
