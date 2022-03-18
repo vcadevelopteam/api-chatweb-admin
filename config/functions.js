@@ -644,16 +644,6 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_COMMUNICATIONCHANNELHOOK_INS: {
-        query: "SELECT * FROM ufn_communicationchannelhook_ins($type, $servicedata, $site, $operation)",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_COMMUNICATIONCHANNELHOOK_SEL: {
-        query: "SELECT * FROM ufn_communicationchannelhook_sel($type, $site)",
-        module: "",
-        protected: "INSERT"
-    },
     UFN_CHATFLOW_BLOCK_LST: {
         query: "SELECT * FROM ufn_chatflow_block_lst($corpid, $orgid, $userid)",
         module: "",
@@ -2037,6 +2027,16 @@ module.exports = {
     },
     UFN_PRODUCTCATALOG_LST: {
         query: "SELECT * FROM ufn_productcatalog_lst($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PAYMENTCARD_INS: {
+        query: "SELECT * FROM ufn_paymentcard_ins($corpid, $orgid, $id, $cardnumber, $cardcode, $firstname, $lastname, $mail, $favorite, $description, $status, $type, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_PAYMENTCARD_LST: {
+        query: "SELECT * FROM ufn_paymentcard_lst($corpid, $orgid, $id)",
         module: "",
         protected: "SELECT"
     },
