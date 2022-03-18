@@ -2040,4 +2040,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_LEADAUTOMATIZATIONRULES_SEL: {
+        query: "SELECT * FROM ufn_leadautomatizationrules_sel($corpid, $orgid, $id, $username, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEADAUTOMATIZATIONRULES_INS: {
+        query: "SELECT * FROM ufn_leadautomatizationrules_ins($corpid, $orgid, $id, $description, $status, $type, $columnid, $conditional, $communicationchannelid, $messagetemplateid, $messagetemplateparameters, $shippingtype, $xdays, $schedule, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
 }
