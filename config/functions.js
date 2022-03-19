@@ -2031,7 +2031,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PAYMENTCARD_INS: {
-        query: "SELECT * FROM ufn_paymentcard_ins($corpid, $orgid, $id, $cardnumber, $cardcode, $firstname, $lastname, $mail, $favorite, $description, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_paymentcard_ins($corpid, $orgid, $id, $cardnumber, $cardcode, $firstname, $lastname, $mail, $favorite, $clientcode, $status, $type, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
