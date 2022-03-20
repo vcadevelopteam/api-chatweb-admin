@@ -11,6 +11,10 @@ router.post("/get/contract",
     subscriptionController.getContract
 )
 
+router.post("/validatechannels",
+    subscriptionController.validateChannels
+)
+
 router.post("/createsubscription",
     subscriptionController.createSubscription
 )
