@@ -7,20 +7,38 @@ router.post("/activateuser",
     subscriptionController.activateUser
 )
 
-router.post("/get/contract",
-    subscriptionController.getContract
+router.post("/changepassword",
+    subscriptionController.changePassword
 )
 
-router.post("/validatechannels",
-    subscriptionController.validateChannels
+router.get("/countrylist",
+    ip,
+    subscriptionController.countryList
 )
 
 router.post("/createsubscription",
     subscriptionController.createSubscription
 )
 
+router.get("/currencylist",
+    ip,
+    subscriptionController.currencyList
+)
+
+router.post("/get/contract",
+    subscriptionController.getContract
+)
+
 router.post("/getpagelist",
     subscriptionController.getPageList
+)
+
+router.post("/recoverpassword",
+    subscriptionController.recoverPassword
+)
+
+router.post("/validatechannels",
+    subscriptionController.validateChannels
 )
 
 router.post("/validateuserid",
@@ -30,24 +48,6 @@ router.post("/validateuserid",
 
 router.post("/validateusername",
     subscriptionController.validateUsername
-)
-
-router.get("/currencylist",
-    ip,
-    subscriptionController.currencyList
-)
-
-router.get("/countrylist",
-    ip,
-    subscriptionController.countryList
-)
-
-router.post("/recoverpassword",
-    subscriptionController.recoverPassword
-)
-
-router.post("/changepassword",
-    subscriptionController.changePassword
 )
 
 module.exports = router;
