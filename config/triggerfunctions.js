@@ -465,8 +465,8 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
             }
             
             if (!summarizationfunction) {
-                GROUP_BY = `coalesce(${selcol}, '')`;
-                return acc + `, coalesce(${selcol}, '') as "${item.columnname.replace(".", "")}", count(coalesce(${selcol}, '')) total`
+                GROUP_BY = `coalesce(${selcol}::text, '')`;
+                return acc + `, coalesce(${selcol}::text, '') as "${item.columnname.replace(".", "")}", count(coalesce(${selcol}::text, '')) total`
             } else if (summarizationfunction === "total") {
                 return acc + `, sum(coalesce(${sel0l}, ${coalescedefault})) total`
             } else if (summarizationfunction === "count") {
