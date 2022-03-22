@@ -454,7 +454,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
             let selcol = item.columnname;
 
             if (item.type === "interval") {
-                selcol = `date_trunc('seconds', ${item.columnname})::text`;
+                selcol = `date_trunc('seconds', ${item.columnname})`;
             } else if (item.type === "variable") {
                 selcol = `jo->'${item.columnname}'->>'Value'`;
             } else if (DATES.includes(item.type)) {
@@ -465,15 +465,15 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
                 GROUP_BY = `coalesce(${selcol}, '')`;
                 return acc + `, coalesce(${selcol}, '') as "${item.columnname.replace(".", "")}", count(coalesce(${selcol}, '')) total`
             } else if (summarizationfunction === "total") {
-                return acc + `, sum(coalesce(${selcol}, '')) total`
+                return acc + `, sum(coalesce(${sel0l}, 0)) total`
             } else if (summarizationfunction === "count") {
-                return acc + `, count(coalesce(${selcol}, '')) total`
+                return acc + `, count(coalesce(${selcol}, 0)) total`
             } else if (summarizationfunction === "average") {
-                return acc + `, avg(coalesce(${selcol}, '')) total`
+                return acc + `, avg(coalesce(${selcol}, 0)) total`
             } else if (summarizationfunction === "minimum") {
-                return acc + `, min(coalesce(${selcol}, '')) total`
+                return acc + `, min(coalesce(${selcol}, 0)) total`
             } else if (summarizationfunction === "maximum") {
-                return acc + `, max(coalesce(${selcol}, '')) total`
+                return acc + `, max(coalesce(${selcol}, 0)) total`
             } else if (summarizationfunction === "count_unique") {
                 return acc + `, count(distinct(coalesce(${selcol}, ''))) total`
             }
