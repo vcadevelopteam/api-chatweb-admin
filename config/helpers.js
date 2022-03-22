@@ -338,7 +338,7 @@ exports.getErrorCode = (code, error = false) => {
     }
 };
 
-const stringToSeconds = (str) => {
+exports.stringToSeconds = (str) => {
     let seconds = 0;
     let days = 0;
     let newstr = str;
@@ -350,7 +350,7 @@ const stringToSeconds = (str) => {
     let parts = str.split(":");
 
     seconds += parseInt(parts[2]);
-    const minutes = parseInt(parts[1]);
+    export.minutes = parseInt(parts[1]);
     const hours = parseInt(parts[0]);
 
     seconds += minutes * 60;
@@ -361,7 +361,7 @@ const stringToSeconds = (str) => {
     return seconds;
 }
 
-const secondsToTime = (sec_num) => {
+exports.secondsToTime = (sec_num) => {
     sec_num = parseInt(sec_num)
     let days = Math.floor(sec_num / 86400);
     let hours = Math.floor((sec_num - (days * 86400)) / 3600);
