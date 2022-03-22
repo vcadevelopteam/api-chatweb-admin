@@ -453,7 +453,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
         const COLUMNESSELECT = columns.reduce((acc, item, index) => {
             let selcol = item.columnname;
             
-            const coalescedefault = 0;
+            let coalescedefault = 0;
 
             if (item.type === "interval") {
                 coalescedefault = "00:00:00"
