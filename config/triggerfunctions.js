@@ -457,7 +457,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
 
             if (item.type === "interval") {
                 coalescedefault = "'00:00:00'"
-                selcol = `date_trunc('seconds', ${item.columnname})`;
+                // selcol = `date_trunc('seconds', ${item.columnname})`;
             } else if (item.type === "variable") {
                 selcol = `jo->'${item.columnname}'->>'Value'`;
             } else if (DATES.includes(item.type)) {
