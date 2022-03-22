@@ -350,7 +350,7 @@ exports.stringToSeconds = (str) => {
     let parts = str.split(":");
 
     seconds += parseInt(parts[2]);
-    export.minutes = parseInt(parts[1]);
+    const minutes = parseInt(parts[1]);
     const hours = parseInt(parts[0]);
 
     seconds += minutes * 60;
