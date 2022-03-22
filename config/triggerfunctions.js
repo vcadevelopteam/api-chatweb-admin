@@ -453,7 +453,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
         const COLUMNESSELECT = columns.reduce((acc, item, index) => {
             let selcol = item.columnname;
             
-            let coalescedefault = 0;
+            let coalescedefault = '0';
 
             if (item.type === "interval") {
                 coalescedefault = "'00:00:00'"
@@ -478,7 +478,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
             } else if (summarizationfunction === "maximum") {
                 return acc + `, max(coalesce(${selcol}, ${coalescedefault})) total`
             } else if (summarizationfunction === "count_unique") {
-                return acc + `, count(distinct(coalesce(${selcol}, ''))) total`
+                return acc + `, count(distinct(coalesce(${selcol}::text, ''))) total`
             }
 
         }, `date_part('${interval}', ${dataorigin}.createdate + $offset * INTERVAL '1hour') "interval"`)
