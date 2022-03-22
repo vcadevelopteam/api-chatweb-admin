@@ -1,7 +1,7 @@
 const sequelize = require('./database');
 const functionsbd = require('./functions');
 const XLSX = require('xlsx');
-const { generatefilter, generateSort, errors, getErrorSeq, getErrorCode } = require('./helpers');
+const { generatefilter, generateSort, errors, getErrorSeq, getErrorCode, stringToSeconds, secondsToTime } = require('./helpers');
 
 const { QueryTypes } = require('sequelize');
 require('pg').defaults.parseInt8 = true;
@@ -17,44 +17,6 @@ var config = {
 const COS_BUCKET_NAME = "staticfileszyxme"
 const REPLACEFILTERS = "###FILTERS###";
 const REPLACESEL = "###REPLACESEL###";
-
-const stringToSeconds = (str) => {
-    let seconds = 0;
-    let days = 0;
-    let newstr = str;
-    if (str.includes("day")) {
-        days = parseInt(str.split(" day")[0]);
-        newstr = str.split(" day")[1];
-    }
-
-    let parts = str.split(":");
-
-    seconds += parseInt(parts[2]);
-    const minutes = parseInt(parts[1]);
-    const hours = parseInt(parts[0]);
-
-    seconds += minutes * 60;
-    seconds += hours * 60 * 60;
-    seconds += days * 24 * 60 * 60;
-
-
-    return seconds;
-}
-
-const secondsToTime = (sec_num) => {
-    sec_num = parseInt(sec_num)
-    let days = Math.floor(sec_num / 86400);
-    let hours = Math.floor((sec_num - (days * 86400)) / 3600);
-    let minutes = Math.floor((sec_num - (days * 86400) - (hours * 3600)) / 60);
-    let seconds = sec_num - (days * 86400) - (hours * 3600) - (minutes * 60);
-
-    if (hours < 10) { hours = "0" + hours; }
-    if (minutes < 10) { minutes = "0" + minutes; }
-    if (seconds < 10) { seconds = "0" + seconds; }
-
-    const stringdays = days === 0 ? days + " day " : (days > 1 ? days + " days " : days + " day ");
-    return stringdays + hours + ':' + minutes + ':' + seconds;
-}
 
 const executeQuery = async (query, bind = {}) => {
     return await sequelize.query(query, {
@@ -468,17 +430,26 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
                 GROUP_BY = `coalesce(${selcol}::text, '')`;
                 return acc + `, coalesce(${selcol}::text, '') as "${item.columnname.replace(".", "")}", count(coalesce(${selcol}::text, '')) total`
             } else if (summarizationfunction === "total") {
+                if (coalescedefault === "'00:00:00'") {
+                    return acc + `, date_trunc('seconds', sum(coalesce(${selcol}, ${coalescedefault})))::text total`
+                }
                 return acc + `, sum(coalesce(${sel0l}, ${coalescedefault})) total`
             } else if (summarizationfunction === "count") {
                 return acc + `, count(coalesce(${selcol}::text, ''})) total`
             } else if (summarizationfunction === "average") {
-                // if (coalescedefault === "'00:00:00'") {
-                //     return acc + `, date_trunc('seconds', avg(coalesce(${selcol}, ${coalescedefault})))::text total`
-                // }
+                if (coalescedefault === "'00:00:00'") {
+                    return acc + `, date_trunc('seconds', avg(coalesce(${selcol}, ${coalescedefault})))::text total`
+                }
                 return acc + `, avg(coalesce(${selcol}, ${coalescedefault})) total`
             } else if (summarizationfunction === "minimum") {
+                if (coalescedefault === "'00:00:00'") {
+                    return acc + `, date_trunc('seconds', min(coalesce(${selcol}, ${coalescedefault})))::text total`
+                }
                 return acc + `, min(coalesce(${selcol}, ${coalescedefault})) total`
             } else if (summarizationfunction === "maximum") {
+                if (coalescedefault === "'00:00:00'") {
+                    return acc + `, date_trunc('seconds', max(coalesce(${selcol}, ${coalescedefault})))::text total`
+                }
                 return acc + `, max(coalesce(${selcol}, ${coalescedefault})) total`
             } else if (summarizationfunction === "count_unique") {
                 return acc + `, count(distinct(coalesce(${selcol}::text, ''))) total`
