@@ -2060,6 +2060,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CALENDARYEVENT_LST: {
+        query: "SELECT * FROM ufn_calendarevent_lst($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CALENDARYBOOKING_INS: {
         query: "SELECT * FROM ufn_calendarbooking_ins($corpid, $orgid, $calendareventid, $id, $description, $type, $status, $monthdate, $hourstart, $notes, $conversationid, $personname, $personcontact, $persontimezone, $username, $operation)",
         module: "",
