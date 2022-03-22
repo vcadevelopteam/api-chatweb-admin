@@ -452,8 +452,11 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
         
         const COLUMNESSELECT = columns.reduce((acc, item, index) => {
             let selcol = item.columnname;
+            
+            const coalescedefault = 0;
 
             if (item.type === "interval") {
+                coalescedefault = "00:00:00"
                 selcol = `date_trunc('seconds', ${item.columnname})`;
             } else if (item.type === "variable") {
                 selcol = `jo->'${item.columnname}'->>'Value'`;
@@ -465,15 +468,15 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
                 GROUP_BY = `coalesce(${selcol}, '')`;
                 return acc + `, coalesce(${selcol}, '') as "${item.columnname.replace(".", "")}", count(coalesce(${selcol}, '')) total`
             } else if (summarizationfunction === "total") {
-                return acc + `, sum(coalesce(${sel0l}, 0)) total`
+                return acc + `, sum(coalesce(${sel0l}, ${coalescedefault})) total`
             } else if (summarizationfunction === "count") {
-                return acc + `, count(coalesce(${selcol}, 0)) total`
+                return acc + `, count(coalesce(${selcol}, ${coalescedefault})) total`
             } else if (summarizationfunction === "average") {
-                return acc + `, avg(coalesce(${selcol}, 0)) total`
+                return acc + `, avg(coalesce(${selcol}, ${coalescedefault})) total`
             } else if (summarizationfunction === "minimum") {
-                return acc + `, min(coalesce(${selcol}, 0)) total`
+                return acc + `, min(coalesce(${selcol}, ${coalescedefault})) total`
             } else if (summarizationfunction === "maximum") {
-                return acc + `, max(coalesce(${selcol}, 0)) total`
+                return acc + `, max(coalesce(${selcol}, ${coalescedefault})) total`
             } else if (summarizationfunction === "count_unique") {
                 return acc + `, count(distinct(coalesce(${selcol}, ''))) total`
             }
