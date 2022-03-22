@@ -470,9 +470,11 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
             } else if (summarizationfunction === "total") {
                 return acc + `, sum(coalesce(${sel0l}, ${coalescedefault})) total`
             } else if (summarizationfunction === "count") {
-                return acc + `, count(coalesce(${selcol}, ${coalescedefault})) total`
+                return acc + `, count(coalesce(${selcol}::text, ''})) total`
             } else if (summarizationfunction === "average") {
-                return acc + `, avg(coalesce(${selcol}, ${coalescedefault})) total`
+                if (coalescedefault === "'00:00:00'") {
+                    return acc + `, avg(coalesce(${selcol}, ${coalescedefault}))::text total`
+                }
             } else if (summarizationfunction === "minimum") {
                 return acc + `, min(coalesce(${selcol}, ${coalescedefault})) total`
             } else if (summarizationfunction === "maximum") {
