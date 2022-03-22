@@ -1,6 +1,6 @@
-const axios = require('axios');
+const axios = require("axios");
 const bcryptjs = require("bcryptjs");
-const triggerfunctions = require('../config/triggerfunctions');
+const triggerfunctions = require("../config/triggerfunctions");
 
 const cryptojs = require("crypto-js");
 
@@ -21,17 +21,17 @@ const whitelist = process.env.WHITELIST;
 
 exports.activateUser = async (request, result) => {
     try {
-        var requestCode = 'error_unexpected_error';
-        var requestMessage = 'error_unexpected_error';
+        var requestCode = "error_unexpected_error";
+        var requestMessage = "error_unexpected_error";
         var requestStatus = 400;
         var requestSuccess = false;
 
-        if (typeof whitelist !== 'undefined' && whitelist) {
+        if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
                 return result.status(requestStatus).json({
-                    code: 'error_auth_error',
+                    code: "error_auth_error",
                     error: !requestSuccess,
-                    msg: 'error_auth_error',
+                    msg: "error_auth_error",
                     success: requestSuccess,
                 });
             }
@@ -46,7 +46,7 @@ exports.activateUser = async (request, result) => {
 
             var userData = JSON.parse(cryptojs.AES.decrypt(userCode, userSecret).toString(cryptojs.enc.Utf8));
 
-            var userMethod = 'UFN_USER_ACTIVATE';
+            var userMethod = "UFN_USER_ACTIVATE";
             var userParameters = {
                 corpid: userData.corpid,
                 userid: userData.userid,
@@ -55,8 +55,8 @@ exports.activateUser = async (request, result) => {
             const queryActivateUser = await triggerfunctions.executesimpletransaction(userMethod, userParameters);
 
             if (queryActivateUser instanceof Array) {
-                requestCode = '';
-                requestMessage = '';
+                requestCode = "";
+                requestMessage = "";
                 requestStatus = 200;
                 
                 if (queryActivateUser.length > 0) {
@@ -81,7 +81,7 @@ exports.activateUser = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            code: 'error_unexpected_error',
+            code: "error_unexpected_error",
             error: true,
             msg: exception.message,
             success: false,
@@ -91,17 +91,17 @@ exports.activateUser = async (request, result) => {
 
 exports.changePassword = async (request, result) => {
     try {
-        var requestCode = 'error_unexpected_error';
-        var requestMessage = 'error_unexpected_error';
+        var requestCode = "error_unexpected_error";
+        var requestMessage = "error_unexpected_error";
         var requestStatus = 400;
         var requestSuccess = false;
 
-        if (typeof whitelist !== 'undefined' && whitelist) {
+        if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
                 return result.status(requestStatus).json({
-                    code: 'error_auth_error',
+                    code: "error_auth_error",
                     error: !requestSuccess,
-                    msg: 'error_auth_error',
+                    msg: "error_auth_error",
                     success: requestSuccess,
                 });
             }
@@ -120,7 +120,7 @@ exports.changePassword = async (request, result) => {
                 var dateDifference = Math.abs(new Date().getTime() - new Date(userData.date).getTime()) / 3600000;
 
                 if (dateDifference <= 24) {
-                    var passwordMethod = 'UFN_USERPASSWORD_UPDATE';
+                    var passwordMethod = "UFN_USERPASSWORD_UPDATE";
                     var passwordParameters = {
                         password: await bcryptjs.hash(request.body.password, await bcryptjs.genSalt(10)),
                         userid: userData.userid,
@@ -129,8 +129,8 @@ exports.changePassword = async (request, result) => {
                     const queryUpdatePassword = await triggerfunctions.executesimpletransaction(passwordMethod, passwordParameters);
 
                     if (queryUpdatePassword instanceof Array) {
-                        requestCode = '';
-                        requestMessage = '';
+                        requestCode = "";
+                        requestMessage = "";
                         requestStatus = 200;
                         requestSuccess = true;
                     }
@@ -139,7 +139,7 @@ exports.changePassword = async (request, result) => {
                     }
                 }
                 else {
-                    requestMessage = 'recoverpassword_expired';
+                    requestMessage = "recoverpassword_expired";
                 }
             }
         }
@@ -153,7 +153,7 @@ exports.changePassword = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            code: 'error_unexpected_error',
+            code: "error_unexpected_error",
             error: true,
             msg: exception.message,
             success: false,
@@ -164,28 +164,28 @@ exports.changePassword = async (request, result) => {
 exports.countryList = async (request, result) => {
     try {
         var requestData = null;
-        var requestCode = 'error_unexpected_error';
-        var requestMessage = 'error_unexpected_error';
+        var requestCode = "error_unexpected_error";
+        var requestMessage = "error_unexpected_error";
         var requestStatus = 400;
         var requestSuccess = false;
 
-        if (typeof whitelist !== 'undefined' && whitelist) {
+        if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
                 return result.status(requestStatus).json({
-                    code: 'error_auth_error',
+                    code: "error_auth_error",
                     error: !requestSuccess,
-                    msg: 'error_auth_error',
+                    msg: "error_auth_error",
                     success: requestSuccess,
                 });
             }
         }
 
-        const queryCountryGet = await triggerfunctions.executesimpletransaction('UFN_COUNTRY_SEL', {});
+        const queryCountryGet = await triggerfunctions.executesimpletransaction("UFN_COUNTRY_SEL", {});
 
         if (queryCountryGet instanceof Array) {
             requestData = queryCountryGet;
-            requestCode = '';
-            requestMessage = '';
+            requestCode = "";
+            requestMessage = "";
             requestStatus = 200;
             requestSuccess = true;
         }
@@ -203,7 +203,7 @@ exports.countryList = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            code: 'error_unexpected_error',
+            code: "error_unexpected_error",
             error: true,
             msg: exception.message,
             success: false,
@@ -213,38 +213,112 @@ exports.countryList = async (request, result) => {
 
 exports.createSubscription = async (request, result) => {
     try {
-        var requestCode = 'error_unexpected_error';
-        var requestMessage = 'error_unexpected_error';
+        var requestCode = "error_unexpected_error";
+        var requestMessage = "error_unexpected_error";
         var requestStatus = 400;
         var requestSuccess = false;
 
-        if (typeof whitelist !== 'undefined' && whitelist) {
+        if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
                 return result.status(requestStatus).json({
-                    code: 'error_auth_error',
+                    code: "error_auth_error",
                     error: !requestSuccess,
-                    msg: 'error_auth_error',
+                    msg: "error_auth_error",
                     success: requestSuccess,
                 });
             }
         }
 
         if (request.body) {
-            var { channellist = [], method, parameters = {} } = request.body;
+            var { card = {}, channellist = [], method, parameters = {} } = request.body;
         
             var channelMethodArray = [];
             var channelParametersArray = [];
             var channelServiceArray = [];
-    
-            var channelData = '';
-            var channelTotal = '';
+
+            var channelData = "";
+            var channelTotal = "";
+
+            var cardData = null;
+            var cardError = false;
+
+            if (card) {
+                const appsetting = await getAppSetting();
+
+                if (appsetting) {
+                    const requestCulqiClient = await axios({
+                        data: {
+                            address: parameters.fiscaladdress,
+                            addressCity: parameters.timezone,
+                            bearer: appsetting.privatekey,
+                            countryCode: parameters.country,
+                            email: card.mail,
+                            firstName: card.firstname,
+                            lastName: card.lastname,
+                            operation: "CREATE",
+                            phoneNumber: parameters.phone.split("+").join(""),
+                            url: appsetting.culqiurlclient,
+                        },
+                        method: "post",
+                        url: `${bridgeEndpoint}processculqi/handleclient`,
+                    });
+
+                    if (requestCulqiClient.data.success) {
+                        const requestCulqiCard = await axios({
+                            data: {
+                                bearer: appsetting.privatekey,
+                                cardNumber: card.cardnumber,
+                                customerId: requestCulqiClient.data.id,
+                                cvv: card.securitycode,
+                                email: card.mail,
+                                expirationMonth: card.expirationmonth,
+                                expirationYear: card.expirationyear,
+                                operation: "CREATE",
+                                url: appsetting.culqiurlcardcreate,
+                                urlToken: appsetting.culqiurltoken,
+                            },
+                            method: "post",
+                            url: `${bridgeEndpoint}processculqi/handlecard`,
+                        });
+
+                        if (requestCulqiCard.data.success) {
+                            cardData = requestCulqiCard.data.result;
+                        }
+                        else {
+                            channelError = true;
+                            requestMessage = "error_card_card";
+                        }
+                    }
+                    else {
+                        channelError = true;
+                        requestMessage = "error_card_client";
+                    }
+                }
+                else {
+                    cardError = true;
+                    requestMessage = "error_card_configuration";
+                }
+            }
+            else {
+                cardError = true;
+                requestMessage = "error_card_missing";
+            }
+
+            if (cardError) {
+                return result.status(requestStatus).json({
+                    code: requestCode,
+                    error: !requestSuccess,
+                    msg: requestMessage,
+                    success: requestSuccess,
+                });
+            }
 
             if (channellist instanceof Array) {
                 var channelError = false;
 
                 for (const channel of channellist) {
                     if (channel && !channelError) {
-                        var channelMethod = channel.method ? channel.method : 'UFN_COMMUNICATIONCHANNEL_INS';
+                        var channelMethod = channel.method ? channel.method : "UFN_COMMUNICATIONCHANNEL_INS";
                         var channelParameters = channel.parameters;
                         var channelService = channel.service;
 
@@ -254,41 +328,41 @@ exports.createSubscription = async (request, result) => {
                         channelParameters.channelparameters = null;
                         channelParameters.chatflowenabled = true;
                         channelParameters.coloricon = channelParameters.coloricon || null;
-                        channelParameters.communicationchannelcontact = '';
+                        channelParameters.communicationchannelcontact = "";
                         channelParameters.communicationchanneltoken = null;
                         channelParameters.country = null;
                         channelParameters.customicon = null;
-                        channelParameters.motive = 'SUBSCRIPTION';
-                        channelParameters.operation = 'INSERT';
+                        channelParameters.motive = "SUBSCRIPTION";
+                        channelParameters.operation = "INSERT";
                         channelParameters.phone = null;
                         channelParameters.resolvelithium = null;
                         channelParameters.schedule = null;
-                        channelParameters.status = 'PENDIENTE';
+                        channelParameters.status = "PENDIENTE";
                         channelParameters.updintegration = null;
     
                         requestCode = channel.type;
 
                         switch (channel.type) {
-                            case 'CHATWEB':
+                            case "CHATWEB":
                                 const webChatData = {
                                     applicationId: webChatApplication,
                                     metadata: {
                                         color: {
-                                            chatBackgroundColor: channelService.color ? channelService.color.background : '',
-                                            chatBorderColor: channelService.color ? channelService.color.border : '',
-                                            chatHeaderColor: channelService.color ? channelService.color.header : '',
-                                            messageBotColor: channelService.color ? channelService.color.bot : '',
-                                            messageClientColor: channelService.color ? channelService.color.client : '',
+                                            chatBackgroundColor: channelService.color ? channelService.color.background : "",
+                                            chatBorderColor: channelService.color ? channelService.color.border : "",
+                                            chatHeaderColor: channelService.color ? channelService.color.header : "",
+                                            messageBotColor: channelService.color ? channelService.color.bot : "",
+                                            messageClientColor: channelService.color ? channelService.color.client : "",
                                         },
                                         extra: {
                                             abandonendpoint: `${webChatScriptEndpoint}smooch`,
-                                            cssbody: '',
+                                            cssbody: "",
                                             enableabandon: channelService.extra ? channelService.extra.abandonevent : false,
                                             enableformhistory: channelService.extra ? channelService.extra.formhistory : false,
                                             enableidlemessage: channelService.bubble ? channelService.bubble.active : false,
-                                            headermessage: channelService.extra ? channelService.extra.botnametext : '',
+                                            headermessage: channelService.extra ? channelService.extra.botnametext : "",
                                             inputalwaysactive: channelService.extra ? channelService.extra.persistentinput : false,
-                                            jsscript: channelService.extra ? channelService.extra.customjs : '',
+                                            jsscript: channelService.extra ? channelService.extra.customjs : "",
                                             playalertsound: channelService.extra ? channelService.extra.alertsound : false,
                                             sendmetadata: channelService.extra ? channelService.extra.enablemetadata : false,
                                             showchatrestart: channelService.extra ? channelService.extra.reloadchat : false,
@@ -303,57 +377,57 @@ exports.createSubscription = async (request, result) => {
                                         },
                                         form: channelService.form ? channelService.form : null,
                                         icons: {
-                                            chatBotImage: channelService.interface ? channelService.interface.iconbot : '',
-                                            chatHeaderImage: channelService.interface ? channelService.interface.iconheader : '',
-                                            chatIdleImage: channelService.bubble ? channelService.bubble.iconbubble : '',
-                                            chatOpenImage: channelService.interface ? channelService.interface.iconbutton : '',
+                                            chatBotImage: channelService.interface ? channelService.interface.iconbot : "",
+                                            chatHeaderImage: channelService.interface ? channelService.interface.iconheader : "",
+                                            chatIdleImage: channelService.bubble ? channelService.bubble.iconbubble : "",
+                                            chatOpenImage: channelService.interface ? channelService.interface.iconbutton : "",
                                         },
                                         personalization: {
-                                            headerMessage: channelService.extra ? channelService.extra.botnametext : '',
-                                            headerSubTitle: channelService.interface ? channelService.interface.chatsubtitle : '',
-                                            headerTitle: channelService.interface ? channelService.interface.chattitle : '',
-                                            idleMessage: channelService.bubble ? channelService.bubble.messagebubble : '',
+                                            headerMessage: channelService.extra ? channelService.extra.botnametext : "",
+                                            headerSubTitle: channelService.interface ? channelService.interface.chatsubtitle : "",
+                                            headerTitle: channelService.interface ? channelService.interface.chattitle : "",
+                                            idleMessage: channelService.bubble ? channelService.bubble.messagebubble : "",
                                         }
                                     },
                                     name: channelParameters.description,
-                                    status: 'ACTIVO',
-                                    type: 'CHAZ',
+                                    status: "ACTIVO",
+                                    type: "CHAZ",
                                 }
 
                                 const requestChatwebIntegration = await axios({
                                     data: webChatData,
-                                    method: 'post',
+                                    method: "post",
                                     url: `${brokerEndpoint}integrations/save`,
                                 });
 
                                 if (requestChatwebIntegration.data) {
-                                    if (typeof requestChatwebIntegration.data.id !== 'undefined' && requestChatwebIntegration.data.id) {
+                                    if (typeof requestChatwebIntegration.data.id !== "undefined" && requestChatwebIntegration.data.id) {
                                         const requestChatwebWebhook = await axios({
                                             data: {
                                                 description: channelParameters.description,
                                                 integration: requestChatwebIntegration.data.id,
                                                 name: channelParameters.description,
-                                                status: 'ACTIVO',
+                                                status: "ACTIVO",
                                                 webUrl: `${hookEndpoint}chatweb/webhookasync`,
                                             },
-                                            method: 'post',
+                                            method: "post",
                                             url: `${brokerEndpoint}webhooks/save`,
                                         });
 
                                         if (requestChatwebWebhook.data) {
-                                            if (typeof requestChatwebWebhook.data.id !== 'undefined' && requestChatwebWebhook.data.id) {
+                                            if (typeof requestChatwebWebhook.data.id !== "undefined" && requestChatwebWebhook.data.id) {
                                                 const requestChatwebPlugin = await axios({
                                                     data: {
                                                         integration: requestChatwebIntegration.data.id,
                                                         name: channelParameters.description,
-                                                        status: 'ACTIVO',
+                                                        status: "ACTIVO",
                                                     },
-                                                    method: 'post',
+                                                    method: "post",
                                                     url: `${brokerEndpoint}plugins/save`,
                                                 });
 
                                                 if (requestChatwebPlugin.data) {
-                                                    if (typeof requestChatwebPlugin.data.id !== 'undefined' && requestChatwebPlugin.data.id) {
+                                                    if (typeof requestChatwebPlugin.data.id !== "undefined" && requestChatwebPlugin.data.id) {
                                                         channelParameters.apikey = requestChatwebPlugin.data.apiKey;
                                                         channelParameters.appintegrationid = webChatApplication;
                                                         channelParameters.channelparameters = JSON.stringify(webChatData);
@@ -362,7 +436,7 @@ exports.createSubscription = async (request, result) => {
                                                         channelParameters.communicationchannelsite = requestChatwebIntegration.data.id;
                                                         channelParameters.integrationid = requestChatwebIntegration.data.id;
                                                         channelParameters.servicecredentials = JSON.stringify(channelService);
-                                                        channelParameters.type = 'CHAZ';
+                                                        channelParameters.type = "CHAZ";
                 
                                                         channelMethodArray.push(channelMethod);
                                                         channelParametersArray.push(channelParameters);
@@ -370,45 +444,45 @@ exports.createSubscription = async (request, result) => {
                                                     }
                                                     else {
                                                         channelError = true;
-                                                        requestMessage = 'subscription_chatweb_plugin_error';
+                                                        requestMessage = "subscription_chatweb_plugin_error";
                                                         break;
                                                     }
                                                 }
                                                 else {
                                                     channelError = true;
-                                                    requestMessage = 'subscription_chatweb_plugin_error';
+                                                    requestMessage = "subscription_chatweb_plugin_error";
                                                     break;
                                                 }
                                             }
                                             else {
                                                 channelError = true;
-                                                requestMessage = 'subscription_chatweb_webhook_error';
+                                                requestMessage = "subscription_chatweb_webhook_error";
                                                 break;
                                             }
                                         }
                                         else {
                                             channelError = true;
-                                            requestMessage = 'subscription_chatweb_webhook_error';
+                                            requestMessage = "subscription_chatweb_webhook_error";
                                             break;
                                         }
                                     }
                                     else {
                                         channelError = true;
-                                        requestMessage = 'subscription_chatweb_integration_error';
+                                        requestMessage = "subscription_chatweb_integration_error";
                                         break;
                                     }
                                 }
                                 else {
                                     channelError = true;
-                                    requestMessage = 'subscription_chatweb_integration_error';
+                                    requestMessage = "subscription_chatweb_integration_error";
                                     break;
                                 }
                                 break;
 
-                            case 'FACEBOOK':
-                            case 'INSTAGRAM':
-                            case 'INSTAMESSENGER':
-                            case 'MESSENGER':
+                            case "FACEBOOK":
+                            case "INSTAGRAM":
+                            case "INSTAMESSENGER":
+                            case "MESSENGER":
                                 if (channelService.accesstoken) {
                                     var businessId = null;
                                     var channelLinkService = null;
@@ -416,39 +490,39 @@ exports.createSubscription = async (request, result) => {
                                     var serviceType = null;
     
                                     switch (channel.type) {
-                                        case 'FACEBOOK':
-                                            channelLinkService = 'WALLADD';
-                                            channelType = 'FBWA';
-                                            serviceType = 'WALL';
+                                        case "FACEBOOK":
+                                            channelLinkService = "WALLADD";
+                                            channelType = "FBWA";
+                                            serviceType = "WALL";
                                             break;
     
-                                        case 'INSTAGRAM':
-                                            channelLinkService = 'INSTAGRAMADD';
-                                            channelType = 'INST';
-                                            serviceType = 'INSTAGRAM';
+                                        case "INSTAGRAM":
+                                            channelLinkService = "INSTAGRAMADD";
+                                            channelType = "INST";
+                                            serviceType = "INSTAGRAM";
                                             break;
     
-                                        case 'INSTAMESSENGER':
-                                            channelLinkService = 'INSTAGRAMADD';
-                                            channelType = 'INDM';
-                                            serviceType = 'INSTAGRAM';
+                                        case "INSTAMESSENGER":
+                                            channelLinkService = "INSTAGRAMADD";
+                                            channelType = "INDM";
+                                            serviceType = "INSTAGRAM";
                                             break;
     
-                                        case 'MESSENGER':
-                                            channelLinkService = 'MESSENGERADD';
-                                            channelType = 'FBDM';
-                                            serviceType = 'MESSENGER';
+                                        case "MESSENGER":
+                                            channelLinkService = "MESSENGERADD";
+                                            channelType = "FBDM";
+                                            serviceType = "MESSENGER";
                                             break;
                                     }
     
-                                    if (channel.type === 'INSTAGRAM' || channel.type === 'INSTAMESSENGER') {
+                                    if (channel.type === "INSTAGRAM" || channel.type === "INSTAMESSENGER") {
                                         const requestInstagramBusiness = await axios({
                                             data: {
                                                 accessToken: channelService.accesstoken,
-                                                linkType: 'GETBUSINESS',
+                                                linkType: "GETBUSINESS",
                                                 siteId: channelService.siteid,
                                             },
-                                            method: 'post',
+                                            method: "post",
                                             url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
                                         });
                                         
@@ -457,7 +531,7 @@ exports.createSubscription = async (request, result) => {
                                         }
                                         else {
                                             channelError = true;
-                                            requestMessage = 'subscription_facebook_business_error';
+                                            requestMessage = "subscription_facebook_business_error";
                                             break;
                                         }
                                     }
@@ -468,7 +542,7 @@ exports.createSubscription = async (request, result) => {
                                             linkType: channelLinkService,
                                             siteId: channelService.siteid,
                                         },
-                                        method: 'post',
+                                        method: "post",
                                         url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
                                     });
     
@@ -480,7 +554,7 @@ exports.createSubscription = async (request, result) => {
                                             siteId: channelService.siteid,
                                         };
     
-                                        if (typeof businessId !== 'undefined' && businessId) {
+                                        if (typeof businessId !== "undefined" && businessId) {
                                             channelParameters.communicationchannelowner = channelService.siteid;
                                             channelParameters.communicationchannelsite = businessId;
     
@@ -496,25 +570,25 @@ exports.createSubscription = async (request, result) => {
                                     }
                                     else {
                                         channelError = true;
-                                        requestMessage = 'subscription_facebook_link_error';
+                                        requestMessage = "subscription_facebook_link_error";
                                         break;
                                     }
                                 }
                                 else {
                                     channelError = true;
-                                    requestMessage = 'subscription_facebook_token_error';
+                                    requestMessage = "subscription_facebook_token_error";
                                     break;
                                 }
                                 break;
 
-                            case 'SMOOCHANDROID':
-                            case 'SMOOCHIOS':
+                            case "SMOOCHANDROID":
+                            case "SMOOCHIOS":
                                 const requestSmoochLink = await axios({
                                     data: {
-                                        linkType: channel.type === 'SMOOCHANDROID' ? 'ANDROIDADD' : 'IOSADD',
+                                        linkType: channel.type === "SMOOCHANDROID" ? "ANDROIDADD" : "IOSADD",
                                         name: channelParameters.description,
                                     },
-                                    method: 'post',
+                                    method: "post",
                                     url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
                                 });
 
@@ -531,7 +605,7 @@ exports.createSubscription = async (request, result) => {
                                     channelParameters.communicationchannelsite = requestSmoochLink.data.applicationId;
                                     channelParameters.integrationid = requestSmoochLink.data.integrationId;
                                     channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
-                                    channelParameters.type = (request.body.type === 'SMOOCHANDROID' ? 'ANDR' : 'APPL');
+                                    channelParameters.type = (request.body.type === "SMOOCHANDROID" ? "ANDR" : "APPL");
                 
                                     channelMethodArray.push(channelMethod);
                                     channelParametersArray.push(channelParameters);
@@ -539,18 +613,18 @@ exports.createSubscription = async (request, result) => {
                                 }
                                 else {
                                     channelError = true;
-                                    requestMessage = 'subscription_smooch_link_error';
+                                    requestMessage = "subscription_smooch_link_error";
                                     break;
                                 }
                                 break;
 
-                            case 'TELEGRAM':
+                            case "TELEGRAM":
                                 const requestTelegramLink = await axios({
                                     data: {
                                         accessToken: channelService.accesstoken,
-                                        linkType: 'TELEGRAMADD',
+                                        linkType: "TELEGRAMADD",
                                     },
-                                    method: 'post',
+                                    method: "post",
                                     url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`,
                                 });
 
@@ -563,7 +637,7 @@ exports.createSubscription = async (request, result) => {
 
                                     channelParameters.communicationchannelsite = requestTelegramLink.data.botName;
                                     channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
-                                    channelParameters.type = 'TELE';
+                                    channelParameters.type = "TELE";
 
                                     channelMethodArray.push(channelMethod);
                                     channelParametersArray.push(channelParameters);
@@ -571,13 +645,13 @@ exports.createSubscription = async (request, result) => {
                                 }
                                 else {
                                     channelError = true;
-                                    requestMessage = 'subscription_telegram_link_error';
+                                    requestMessage = "subscription_telegram_link_error";
                                     break;
                                 }
                                 break;
 
-                            case 'TWITTER':
-                            case 'TWITTERDM':
+                            case "TWITTER":
+                            case "TWITTERDM":
                                 const requestTwitterBusiness = await axios({
                                     data: {
                                         accessSecret: channelService.accesssecret,
@@ -585,9 +659,9 @@ exports.createSubscription = async (request, result) => {
                                         consumerKey: channelService.consumerkey,
                                         consumerSecret: channelService.consumersecret,
                                         developmentEnvironment: channelService.devenvironment,
-                                        linkType: 'GETPAGEID',
+                                        linkType: "GETPAGEID",
                                     },
-                                    method: 'post',
+                                    method: "post",
                                     url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
                                 });
 
@@ -604,19 +678,19 @@ exports.createSubscription = async (request, result) => {
                                     channelParameters.communicationchannelsite = requestTwitterBusiness.data.pageId;
                                     channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
 
-                                    if (channel.type === 'TWITTER') {
-                                        channelParameters.type = 'TWIT';
+                                    if (channel.type === "TWITTER") {
+                                        channelParameters.type = "TWIT";
                                     }
                                     else {
-                                        channelParameters.type = 'TWMS';
+                                        channelParameters.type = "TWMS";
                                     }
 
                                     var channelParametersDummy = channelParameters;
 
                                     channelParametersDummy.corpid = 1;
                                     channelParametersDummy.orgid = 1;
-                                    channelParametersDummy.status = 'ACTIVO';
-                                    channelParametersDummy.username = 'API';
+                                    channelParametersDummy.status = "ACTIVO";
+                                    channelParametersDummy.username = "API";
 
                                     const queryTwitterInsert = await triggerfunctions.executesimpletransaction(channelMethod, channelParametersDummy);
 
@@ -628,31 +702,31 @@ exports.createSubscription = async (request, result) => {
                                                 consumerKey: channelService.consumerkey,
                                                 consumerSecret: channelService.consumersecret,
                                                 developmentEnvironment: channelService.devenvironment,
-                                                linkType: 'TWITTERADD',
+                                                linkType: "TWITTERADD",
                                                 pageId: requestTwitterBusiness.data.pageId,
                                             },
-                                            method: 'post',
+                                            method: "post",
                                             url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
                                         });
 
                                         if (!requestTwitterLink.data.success) {
                                             channelError = true;
-                                            requestMessage = 'subscription_twitter_link_error';
+                                            requestMessage = "subscription_twitter_link_error";
                                             break;
                                         }
 
                                         channelParametersDummy.id = queryTwitterInsert[0].ufn_communicationchannel_ins;
-                                        channelParametersDummy.operation = 'UPDATE';
-                                        channelParametersDummy.status = 'ELIMINADO';
+                                        channelParametersDummy.operation = "UPDATE";
+                                        channelParametersDummy.status = "ELIMINADO";
 
                                         const queryTwitterDelete = await triggerfunctions.executesimpletransaction(channelMethod, channelParametersDummy);
 
                                         if (queryTwitterDelete instanceof Array) {
                                             channelParameters.corpid = null;
                                             channelParameters.id = null;
-                                            channelParameters.operation = 'INSERT';
+                                            channelParameters.operation = "INSERT";
                                             channelParameters.orgid = null;
-                                            channelParameters.status = 'PENDIENTE';
+                                            channelParameters.status = "PENDIENTE";
                                             channelParameters.username = null;
 
                                             channelMethodArray.push(channelMethod);
@@ -661,28 +735,28 @@ exports.createSubscription = async (request, result) => {
                                         }
                                         else {
                                             channelError = true;
-                                            requestMessage = 'subscription_twitter_dummy_error';
+                                            requestMessage = "subscription_twitter_dummy_error";
                                             break;
                                         }
                                     }
                                     else {
                                         channelError = true;
-                                        requestMessage = 'subscription_twitter_dummy_error';
+                                        requestMessage = "subscription_twitter_dummy_error";
                                         break;
                                     }
                                 }
                                 else {
                                     channelError = true;
-                                    requestMessage = 'subscription_twitter_business_error';
+                                    requestMessage = "subscription_twitter_business_error";
                                     break;
                                 }
                                 break;
 
-                            case 'WHATSAPPSMOOCH':
-                                channelParameters.communicationchannelowner = '';
-                                channelParameters.communicationchannelsite = '';
+                            case "WHATSAPPSMOOCH":
+                                channelParameters.communicationchannelowner = "";
+                                channelParameters.communicationchannelsite = "";
                                 channelParameters.servicecredentials = JSON.stringify(channelService);
-                                channelParameters.type = 'WHAT';
+                                channelParameters.type = "WHAT";
 
                                 channelMethodArray.push(channelMethod);
                                 channelParametersArray.push(channelParameters);
@@ -702,13 +776,13 @@ exports.createSubscription = async (request, result) => {
                 }
             }
 
-            requestCode = '';
+            requestCode = "";
 
-            if (typeof parameters.country === 'undefined' || !parameters.country) {
+            if (typeof parameters.country === "undefined" || !parameters.country) {
                 parameters.country = null;
             }
     
-            if (typeof parameters.currency === 'undefined' || !parameters.currency) {
+            if (typeof parameters.currency === "undefined" || !parameters.currency) {
                 parameters.currency = null;
             }
 
@@ -721,7 +795,40 @@ exports.createSubscription = async (request, result) => {
                 var orgId = queryCreateSubscription[0].orgid;
                 var userId = queryCreateSubscription[0].userid;
 
-                if (typeof channelMethodArray !== 'undefined' && channelMethodArray) {
+                if (cardData) {
+                    var cardMethod = "UFN_PAYMENTCARD_INS";
+                    var cardParameters = {
+                        corpid: corpId,
+                        orgid: orgId,
+                        id: 0,
+                        cardnumber: cardData.source.cardNumber,
+                        cardcode: cardData.id,
+                        firstname: card.firstname,
+                        lastname: card.lastname,
+                        mail: card.mail,
+                        favorite: true,
+                        clientcode: cardData.customerId,
+                        status: "ACTIVO",
+                        type: "",
+                        username: parameters.username,
+                        operation: "CREATE",
+                    };
+
+                    const queryCardCreate = await triggerfunctions.executesimpletransaction(cardMethod, cardParameters);
+
+                    if (!queryCardCreate instanceof Array) {
+                        requestMessage = "error_card_create";
+
+                        return result.status(requestStatus).json({
+                            code: requestCode,
+                            error: !requestSuccess,
+                            msg: requestMessage,
+                            success: requestSuccess,
+                        });
+                    }
+                }
+
+                if (typeof channelMethodArray !== "undefined" && channelMethodArray) {
                     var index = 0;
 
                     for (const channelMethod of channelMethodArray) {
@@ -733,10 +840,10 @@ exports.createSubscription = async (request, result) => {
 
                         if (queryChannelCreate instanceof Array) {
                             channelData = `<b>${channelParametersArray[index].description}</b>;${channelData}`;
-                            channelTotal = (channelTotal === '' ? `${queryChannelCreate[0].ufn_communicationchannel_ins}` : `${channelTotal},${queryChannelCreate[0].ufn_communicationchannel_ins}`);
+                            channelTotal = (channelTotal === "" ? `${queryChannelCreate[0].ufn_communicationchannel_ins}` : `${channelTotal},${queryChannelCreate[0].ufn_communicationchannel_ins}`);
                         }
                         else {
-                            requestMessage = 'error_subscription_channel_create';
+                            requestMessage = "error_subscription_channel_create";
 
                             return result.status(requestStatus).json({
                                 code: requestCode,
@@ -746,24 +853,24 @@ exports.createSubscription = async (request, result) => {
                             });
                         }
 
-                        if (channelParametersArray[index].type === 'WHAT' || channelParametersArray[index].type === 'WHAD') {
-                            if (typeof channelServiceArray[index] !== 'undefined' && channelServiceArray[index]) {
-                                var domainMethod = 'UFN_DOMAIN_VALUES_SEL';
+                        if (channelParametersArray[index].type === "WHAT" || channelParametersArray[index].type === "WHAD") {
+                            if (typeof channelServiceArray[index] !== "undefined" && channelServiceArray[index]) {
+                                var domainMethod = "UFN_DOMAIN_VALUES_SEL";
                                 var domainParameters = {
                                     all: false,
                                     corpid: 1,
-                                    domainname: 'WHATSAPPBODY',
+                                    domainname: "WHATSAPPBODY",
                                     orgid: 0,
                                     username: parameters.username,
                                 };
 
                                 const queryDomainAlertBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
 
-                                domainParameters.domainname = 'WHATSAPPRECIPIENT';
+                                domainParameters.domainname = "WHATSAPPRECIPIENT";
 
                                 const queryDomainAlertRecipient = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
 
-                                domainParameters.domainname = 'WHATSAPPSUBJECT';
+                                domainParameters.domainname = "WHATSAPPSUBJECT";
 
                                 const queryDomainAlertSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
 
@@ -805,12 +912,12 @@ exports.createSubscription = async (request, result) => {
                                                 mailBody: alertBody,
                                                 mailTitle: alertSubject
                                             },
-                                            method: 'post',
+                                            method: "post",
                                             url: `${bridgeEndpoint}processscheduler/sendmail`,
                                         });
             
                                         if (!requestMailSend.data.success) {
-                                            requestMessage = 'error_subscription_alert_failure';
+                                            requestMessage = "error_subscription_alert_failure";
 
                                             return result.status(requestStatus).json({
                                                 code: requestCode,
@@ -821,7 +928,7 @@ exports.createSubscription = async (request, result) => {
                                         }
                                     }
                                     else {
-                                        requestMessage = 'error_subscription_alert_error';
+                                        requestMessage = "error_subscription_alert_error";
 
                                         return result.status(requestStatus).json({
                                             code: requestCode,
@@ -832,7 +939,7 @@ exports.createSubscription = async (request, result) => {
                                     }
                                 }
                                 else {
-                                    requestMessage = 'error_subscription_alert_error';
+                                    requestMessage = "error_subscription_alert_error";
 
                                     return result.status(requestStatus).json({
                                         code: requestCode,
@@ -848,8 +955,8 @@ exports.createSubscription = async (request, result) => {
                     }
                 }
 
-                if (channelTotal !== '') {
-                    var updateMethod = 'UFN_ORGUSER_CHANNELS_UPDATE';
+                if (channelTotal !== "") {
+                    var updateMethod = "UFN_ORGUSER_CHANNELS_UPDATE";
                     var updateParameters = {
                         channels: channelTotal,
                         corpid: corpId,
@@ -860,7 +967,7 @@ exports.createSubscription = async (request, result) => {
                     const queryOrgUserUpdate = await triggerfunctions.executesimpletransaction(updateMethod, updateParameters);
 
                     if (!queryOrgUserUpdate instanceof Array) {
-                        requestMessage = 'error_subscription_orguser_update';
+                        requestMessage = "error_subscription_orguser_update";
 
                         return result.status(requestStatus).json({
                             code: requestCode,
@@ -871,8 +978,8 @@ exports.createSubscription = async (request, result) => {
                     }
                 }
 
-                if ((typeof parameters.facebookid !== 'undefined' && parameters.facebookid) || (typeof parameters.googleid !== 'undefined' && parameters.googleid)) {
-                    var userMethod = 'UFN_USER_ACTIVATE';
+                if ((typeof parameters.facebookid !== "undefined" && parameters.facebookid) || (typeof parameters.googleid !== "undefined" && parameters.googleid)) {
+                    var userMethod = "UFN_USER_ACTIVATE";
                     var userParameters = {
                         corpid: corpId,
                         userid: userId,
@@ -881,21 +988,21 @@ exports.createSubscription = async (request, result) => {
                     const queryActivateUser = await triggerfunctions.executesimpletransaction(userMethod, userParameters);
 
                     if (queryActivateUser instanceof Array) {
-                        requestCode = '';
-                        requestMessage = '';
+                        requestCode = "";
+                        requestMessage = "";
                         requestStatus = 200;
                         requestSuccess = true;
                     }
                     else {
-                        requestMessage = 'subscription_user_activate_error';
+                        requestMessage = "subscription_user_activate_error";
                     }
                 }
                 else {
-                    var domainMethod = 'UFN_DOMAIN_VALUES_SEL';
+                    var domainMethod = "UFN_DOMAIN_VALUES_SEL";
                     var domainParameters = {
                         all: false,
                         corpid: 1,
-                        domainname: 'ACTIVATEBODY',
+                        domainname: "ACTIVATEBODY",
                         orgid: 0,
                         username: parameters.username,
                     };
@@ -948,31 +1055,31 @@ exports.createSubscription = async (request, result) => {
                                     mailBody: alertBody,
                                     mailTitle: alertSubject,
                                 },
-                                method: 'post',
+                                method: "post",
                                 url: `${bridgeEndpoint}processscheduler/sendmail`,
                             });
 
                             if (requestMailSend.data.success) {
-                                requestCode = '';
-                                requestMessage = '';
+                                requestCode = "";
+                                requestMessage = "";
                                 requestStatus = 200;
                                 requestSuccess = true;
                             }
                             else {
-                                requestMessage = 'error_subscription_activation_failure';
+                                requestMessage = "error_subscription_activation_failure";
                             }
                         }
                         else {
-                            requestMessage = 'error_subscription_activation_error';
+                            requestMessage = "error_subscription_activation_error";
                         }
                     }
                     else {
-                        requestMessage = 'error_subscription_activation_error';
+                        requestMessage = "error_subscription_activation_error";
                     }
                 }
             }
             else {
-                requestMessage = 'subscription_user_create_error';
+                requestMessage = "subscription_user_create_error";
             }
         }
 
@@ -985,7 +1092,7 @@ exports.createSubscription = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            code: 'error_unexpected_error',
+            code: "error_unexpected_error",
             error: true,
             msg: exception.message,
             success: false,
@@ -1010,17 +1117,17 @@ exports.getContract = async (req, res) => {
 
 exports.validateChannels = async (request, result) => {
     try {
-        var requestCode = 'error_unexpected_error';
-        var requestMessage = 'error_unexpected_error';
+        var requestCode = "error_unexpected_error";
+        var requestMessage = "error_unexpected_error";
         var requestStatus = 400;
         var requestSuccess = false;
 
-        if (typeof whitelist !== 'undefined' && whitelist) {
+        if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
                 return result.status(requestStatus).json({
-                    code: 'error_auth_error',
+                    code: "error_auth_error",
                     error: !requestSuccess,
-                    msg: 'error_auth_error',
+                    msg: "error_auth_error",
                     success: requestSuccess,
                 });
             }
@@ -1038,7 +1145,7 @@ exports.validateChannels = async (request, result) => {
 
                 for (const channel of channellist) {
                     if (channel && !channelError) {
-                        var channelMethod = channel.method ? channel.method : 'UFN_COMMUNICATIONCHANNEL_INS';
+                        var channelMethod = channel.method ? channel.method : "UFN_COMMUNICATIONCHANNEL_INS";
                         var channelParameters = channel.parameters;
                         var channelService = channel.service;
 
@@ -1048,25 +1155,25 @@ exports.validateChannels = async (request, result) => {
                         channelParameters.channelparameters = null;
                         channelParameters.chatflowenabled = true;
                         channelParameters.coloricon = channelParameters.coloricon || null;
-                        channelParameters.communicationchannelcontact = '';
+                        channelParameters.communicationchannelcontact = "";
                         channelParameters.communicationchanneltoken = null;
                         channelParameters.country = null;
                         channelParameters.customicon = null;
-                        channelParameters.motive = 'SUBSCRIPTION';
-                        channelParameters.operation = 'INSERT';
+                        channelParameters.motive = "SUBSCRIPTION";
+                        channelParameters.operation = "INSERT";
                         channelParameters.phone = null;
                         channelParameters.resolvelithium = null;
                         channelParameters.schedule = null;
-                        channelParameters.status = 'PENDIENTE';
+                        channelParameters.status = "PENDIENTE";
                         channelParameters.updintegration = null;
     
                         requestCode = channel.type;
 
                         switch (channel.type) {
-                            case 'FACEBOOK':
-                            case 'INSTAGRAM':
-                            case 'INSTAMESSENGER':
-                            case 'MESSENGER':
+                            case "FACEBOOK":
+                            case "INSTAGRAM":
+                            case "INSTAMESSENGER":
+                            case "MESSENGER":
                                 if (channelService.accesstoken) {
                                     var businessId = null;
                                     var channelLinkService = null;
@@ -1074,39 +1181,39 @@ exports.validateChannels = async (request, result) => {
                                     var serviceType = null;
     
                                     switch (channel.type) {
-                                        case 'FACEBOOK':
-                                            channelLinkService = 'WALLADD';
-                                            channelType = 'FBWA';
-                                            serviceType = 'WALL';
+                                        case "FACEBOOK":
+                                            channelLinkService = "WALLADD";
+                                            channelType = "FBWA";
+                                            serviceType = "WALL";
                                             break;
     
-                                        case 'INSTAGRAM':
-                                            channelLinkService = 'INSTAGRAMADD';
-                                            channelType = 'INST';
-                                            serviceType = 'INSTAGRAM';
+                                        case "INSTAGRAM":
+                                            channelLinkService = "INSTAGRAMADD";
+                                            channelType = "INST";
+                                            serviceType = "INSTAGRAM";
                                             break;
     
-                                        case 'INSTAMESSENGER':
-                                            channelLinkService = 'INSTAGRAMADD';
-                                            channelType = 'INDM';
-                                            serviceType = 'INSTAGRAM';
+                                        case "INSTAMESSENGER":
+                                            channelLinkService = "INSTAGRAMADD";
+                                            channelType = "INDM";
+                                            serviceType = "INSTAGRAM";
                                             break;
     
-                                        case 'MESSENGER':
-                                            channelLinkService = 'MESSENGERADD';
-                                            channelType = 'FBDM';
-                                            serviceType = 'MESSENGER';
+                                        case "MESSENGER":
+                                            channelLinkService = "MESSENGERADD";
+                                            channelType = "FBDM";
+                                            serviceType = "MESSENGER";
                                             break;
                                     }
     
-                                    if (channel.type === 'INSTAGRAM' || channel.type === 'INSTAMESSENGER') {
+                                    if (channel.type === "INSTAGRAM" || channel.type === "INSTAMESSENGER") {
                                         const requestInstagramBusiness = await axios({
                                             data: {
                                                 accessToken: channelService.accesstoken,
-                                                linkType: 'GETBUSINESS',
+                                                linkType: "GETBUSINESS",
                                                 siteId: channelService.siteid,
                                             },
-                                            method: 'post',
+                                            method: "post",
                                             url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
                                         });
                                         
@@ -1115,7 +1222,7 @@ exports.validateChannels = async (request, result) => {
                                         }
                                         else {
                                             channelError = true;
-                                            requestMessage = 'subscription_facebook_business_error';
+                                            requestMessage = "subscription_facebook_business_error";
                                             break;
                                         }
                                     }
@@ -1126,7 +1233,7 @@ exports.validateChannels = async (request, result) => {
                                             linkType: channelLinkService,
                                             siteId: channelService.siteid,
                                         },
-                                        method: 'post',
+                                        method: "post",
                                         url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
                                     });
     
@@ -1138,7 +1245,7 @@ exports.validateChannels = async (request, result) => {
                                             siteId: channelService.siteid,
                                         };
     
-                                        if (typeof businessId !== 'undefined' && businessId) {
+                                        if (typeof businessId !== "undefined" && businessId) {
                                             channelParameters.communicationchannelowner = channelService.siteid;
                                             channelParameters.communicationchannelsite = businessId;
     
@@ -1154,24 +1261,24 @@ exports.validateChannels = async (request, result) => {
                                     }
                                     else {
                                         channelError = true;
-                                        requestMessage = 'subscription_facebook_link_error';
+                                        requestMessage = "subscription_facebook_link_error";
                                         break;
                                     }
                                 }
                                 else {
                                     channelError = true;
-                                    requestMessage = 'subscription_facebook_token_error';
+                                    requestMessage = "subscription_facebook_token_error";
                                     break;
                                 }
                                 break;
 
-                            case 'TELEGRAM':
+                            case "TELEGRAM":
                                 const requestTelegramLink = await axios({
                                     data: {
                                         accessToken: channelService.accesstoken,
-                                        linkType: 'TELEGRAMADD',
+                                        linkType: "TELEGRAMADD",
                                     },
-                                    method: 'post',
+                                    method: "post",
                                     url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`,
                                 });
 
@@ -1184,7 +1291,7 @@ exports.validateChannels = async (request, result) => {
 
                                     channelParameters.communicationchannelsite = requestTelegramLink.data.botName;
                                     channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
-                                    channelParameters.type = 'TELE';
+                                    channelParameters.type = "TELE";
 
                                     channelMethodArray.push(channelMethod);
                                     channelParametersArray.push(channelParameters);
@@ -1192,13 +1299,13 @@ exports.validateChannels = async (request, result) => {
                                 }
                                 else {
                                     channelError = true;
-                                    requestMessage = 'subscription_telegram_link_error';
+                                    requestMessage = "subscription_telegram_link_error";
                                     break;
                                 }
                                 break;
 
-                            case 'TWITTER':
-                            case 'TWITTERDM':
+                            case "TWITTER":
+                            case "TWITTERDM":
                                 const requestTwitterBusiness = await axios({
                                     data: {
                                         accessSecret: channelService.accesssecret,
@@ -1206,9 +1313,9 @@ exports.validateChannels = async (request, result) => {
                                         consumerKey: channelService.consumerkey,
                                         consumerSecret: channelService.consumersecret,
                                         developmentEnvironment: channelService.devenvironment,
-                                        linkType: 'GETPAGEID',
+                                        linkType: "GETPAGEID",
                                     },
-                                    method: 'post',
+                                    method: "post",
                                     url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
                                 });
 
@@ -1225,19 +1332,19 @@ exports.validateChannels = async (request, result) => {
                                     channelParameters.communicationchannelsite = requestTwitterBusiness.data.pageId;
                                     channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
 
-                                    if (channel.type === 'TWITTER') {
-                                        channelParameters.type = 'TWIT';
+                                    if (channel.type === "TWITTER") {
+                                        channelParameters.type = "TWIT";
                                     }
                                     else {
-                                        channelParameters.type = 'TWMS';
+                                        channelParameters.type = "TWMS";
                                     }
 
                                     var channelParametersDummy = channelParameters;
 
                                     channelParametersDummy.corpid = 1;
                                     channelParametersDummy.orgid = 1;
-                                    channelParametersDummy.status = 'ACTIVO';
-                                    channelParametersDummy.username = 'API';
+                                    channelParametersDummy.status = "ACTIVO";
+                                    channelParametersDummy.username = "API";
 
                                     const queryTwitterInsert = await triggerfunctions.executesimpletransaction(channelMethod, channelParametersDummy);
 
@@ -1249,31 +1356,31 @@ exports.validateChannels = async (request, result) => {
                                                 consumerKey: channelService.consumerkey,
                                                 consumerSecret: channelService.consumersecret,
                                                 developmentEnvironment: channelService.devenvironment,
-                                                linkType: 'TWITTERADD',
+                                                linkType: "TWITTERADD",
                                                 pageId: requestTwitterBusiness.data.pageId,
                                             },
-                                            method: 'post',
+                                            method: "post",
                                             url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
                                         });
 
                                         if (!requestTwitterLink.data.success) {
                                             channelError = true;
-                                            requestMessage = 'subscription_twitter_link_error';
+                                            requestMessage = "subscription_twitter_link_error";
                                             break;
                                         }
 
                                         channelParametersDummy.id = queryTwitterInsert[0].ufn_communicationchannel_ins;
-                                        channelParametersDummy.operation = 'UPDATE';
-                                        channelParametersDummy.status = 'ELIMINADO';
+                                        channelParametersDummy.operation = "UPDATE";
+                                        channelParametersDummy.status = "ELIMINADO";
 
                                         const queryTwitterDelete = await triggerfunctions.executesimpletransaction(channelMethod, channelParametersDummy);
 
                                         if (queryTwitterDelete instanceof Array) {
                                             channelParameters.corpid = null;
                                             channelParameters.id = null;
-                                            channelParameters.operation = 'INSERT';
+                                            channelParameters.operation = "INSERT";
                                             channelParameters.orgid = null;
-                                            channelParameters.status = 'PENDIENTE';
+                                            channelParameters.status = "PENDIENTE";
                                             channelParameters.username = null;
 
                                             channelMethodArray.push(channelMethod);
@@ -1282,19 +1389,19 @@ exports.validateChannels = async (request, result) => {
                                         }
                                         else {
                                             channelError = true;
-                                            requestMessage = 'subscription_twitter_dummy_error';
+                                            requestMessage = "subscription_twitter_dummy_error";
                                             break;
                                         }
                                     }
                                     else {
                                         channelError = true;
-                                        requestMessage = 'subscription_twitter_dummy_error';
+                                        requestMessage = "subscription_twitter_dummy_error";
                                         break;
                                     }
                                 }
                                 else {
                                     channelError = true;
-                                    requestMessage = 'subscription_twitter_business_error';
+                                    requestMessage = "subscription_twitter_business_error";
                                     break;
                                 }
                                 break;
@@ -1312,8 +1419,8 @@ exports.validateChannels = async (request, result) => {
                 }
             }
 
-            requestCode = '';
-            requestMessage = '';
+            requestCode = "";
+            requestMessage = "";
             requestStatus = 200;
             requestSuccess = true;
         }
@@ -1327,7 +1434,7 @@ exports.validateChannels = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            code: 'error_unexpected_error',
+            code: "error_unexpected_error",
             error: true,
             msg: exception.message,
             success: false,
@@ -1337,10 +1444,10 @@ exports.validateChannels = async (request, result) => {
 
 exports.getPageList = async (request, result) => {
     try {
-        if (typeof whitelist !== 'undefined' && whitelist) {
+        if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
                 return result.status(400).json({
-                    msg: 'Unauthorized',
+                    msg: "Unauthorized",
                     success: false,
                     error: true
                 });
@@ -1351,9 +1458,9 @@ exports.getPageList = async (request, result) => {
             data: {
                 accessToken: request.body.accessToken,
                 appId: request.body.appId,
-                linkType: 'GETPAGES'
+                linkType: "GETPAGES"
             },
-            method: 'post',
+            method: "post",
             url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
         });
 
@@ -1382,10 +1489,10 @@ exports.getPageList = async (request, result) => {
 
 exports.validateUserId = async (request, result) => {
     try {
-        if (typeof whitelist !== 'undefined' && whitelist) {
+        if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
                 return result.status(400).json({
-                    msg: 'Unauthorized',
+                    msg: "Unauthorized",
                     success: false,
                     error: true
                 });
@@ -1405,7 +1512,7 @@ exports.validateUserId = async (request, result) => {
             if (transactionSelectUser.length > 0) {
                 parameters.password = await bcryptjs.hash(parameters.newpassword, await bcryptjs.genSalt(10));
 
-                const transactionUpdateUser = await triggerfunctions.executesimpletransaction('UFN_USER_UPDATE', parameters);
+                const transactionUpdateUser = await triggerfunctions.executesimpletransaction("UFN_USER_UPDATE", parameters);
 
                 if (transactionSelectUser instanceof Array) {
                     return result.json({
@@ -1422,7 +1529,7 @@ exports.validateUserId = async (request, result) => {
             }
             else {
                 return result.status(400).json({
-                    msg: 'Password does not match',
+                    msg: "Password does not match",
                     success: false,
                     error: true
                 });
@@ -1447,10 +1554,10 @@ exports.validateUserId = async (request, result) => {
 
 exports.validateUsername = async (request, result) => {
     try {
-        if (typeof whitelist !== 'undefined' && whitelist) {
+        if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
                 return result.status(400).json({
-                    msg: 'Unauthorized',
+                    msg: "Unauthorized",
                     success: false,
                     error: true
                 });
@@ -1459,12 +1566,12 @@ exports.validateUsername = async (request, result) => {
 
         var { method, parameters = {} } = request.body;
 
-        if (typeof parameters.facebookid !== 'undefined' && parameters.facebookid) {
+        if (typeof parameters.facebookid !== "undefined" && parameters.facebookid) {
             parameters.googleid = null;
             parameters.usr = null;
         }
 
-        if (typeof parameters.googleid !== 'undefined' && parameters.googleid) {
+        if (typeof parameters.googleid !== "undefined" && parameters.googleid) {
             parameters.facebookid = null;
             parameters.usr = null;
         }
@@ -1504,17 +1611,17 @@ exports.validateUsername = async (request, result) => {
 
 exports.currencyList = async (request, result) => {
     try {
-        if (typeof whitelist !== 'undefined' && whitelist) {
+        if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
                 return result.status(400).json({
-                    msg: 'Unauthorized',
+                    msg: "Unauthorized",
                     success: false,
                     error: true
                 });
             }
         }
 
-        const queryResult = await triggerfunctions.executesimpletransaction('UFN_CURRENCY_SEL', {});
+        const queryResult = await triggerfunctions.executesimpletransaction("UFN_CURRENCY_SEL", {});
 
         if (queryResult instanceof Array) {
             return result.json({ error: false, success: true, data: queryResult });
@@ -1533,17 +1640,17 @@ exports.currencyList = async (request, result) => {
 
 exports.recoverPassword = async (request, result) => {
     try {
-        if (typeof whitelist !== 'undefined' && whitelist) {
+        if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
                 return result.status(400).json({
-                    msg: 'Unauthorized',
+                    msg: "Unauthorized",
                     success: false,
                     error: true
                 });
             }
         }
 
-        var userMethod = 'UFN_USERBYUSER';
+        var userMethod = "UFN_USERBYUSER";
         var userParameters = {
             username: request.body.username,
         };
@@ -1554,25 +1661,25 @@ exports.recoverPassword = async (request, result) => {
             if (transactionSelectUser.length > 0) {
                 var validMail = false;
 
-                if (typeof transactionSelectUser[0].email !== 'undefined' && transactionSelectUser[0].email) {
+                if (typeof transactionSelectUser[0].email !== "undefined" && transactionSelectUser[0].email) {
                     if (validateEmail(transactionSelectUser[0].email) !== null) {
                         validMail = true;
                     }
                 }
 
                 if (validMail) {
-                    var domainMethod = 'UFN_DOMAIN_VALUES_SEL';
+                    var domainMethod = "UFN_DOMAIN_VALUES_SEL";
                     var domainParameters = {
                         all: false,
                         corpid: 1,
-                        domainname: 'RECOVERPASSSUBJECT',
+                        domainname: "RECOVERPASSSUBJECT",
                         orgid: 0,
-                        username: 'admin'
+                        username: "admin"
                     };
 
                     const transactionGetSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
 
-                    domainParameters.domainname = 'RECOVERPASSBODY';
+                    domainParameters.domainname = "RECOVERPASSBODY";
 
                     const transactionGetBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
 
@@ -1621,21 +1728,21 @@ exports.recoverPassword = async (request, result) => {
                                 mailBody: mailBody,
                                 mailTitle: mailSubject
                             },
-                            method: 'post',
+                            method: "post",
                             url: `${bridgeEndpoint}processscheduler/sendmail`
                         });
 
                         if (requestSendMail.data.success) {
                             return result.json({
                                 error: false,
-                                msg: 'recoverpassword_recoversent',
+                                msg: "recoverpassword_recoversent",
                                 success: true,
                             });
                         }
                         else {
                             return result.json({
                                 error: true,
-                                msg: '',
+                                msg: "",
                                 success: false,
                             });
                         }
@@ -1643,7 +1750,7 @@ exports.recoverPassword = async (request, result) => {
                     else {
                         return result.json({
                             error: true,
-                            msg: '',
+                            msg: "",
                             success: false,
                         });
                     }
@@ -1651,7 +1758,7 @@ exports.recoverPassword = async (request, result) => {
                 else {
                     return result.json({
                         error: true,
-                        msg: 'recoverpassword_usernotmail',
+                        msg: "recoverpassword_usernotmail",
                         success: false,
                     });
                 }
@@ -1659,7 +1766,7 @@ exports.recoverPassword = async (request, result) => {
             else {
                 return result.json({
                     error: true,
-                    msg: 'recoverpassword_usernotfound',
+                    msg: "recoverpassword_usernotfound",
                     success: false,
                 });
             }
@@ -1688,3 +1795,17 @@ const validateEmail = (email) => {
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
       );
 };
+
+const getAppSetting = async () => {
+    const query = "UFN_APPSETTING_INVOICE_SEL";
+
+    const result = await triggerfunctions.executesimpletransaction(query);
+
+    if (result instanceof Array) {
+        if (result.length > 0) {
+            return result[0]
+        }
+    }
+
+    return null
+}
