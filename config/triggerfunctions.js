@@ -435,7 +435,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
                 }
                 return acc + `, sum(coalesce(${sel0l}, ${coalescedefault})) total`
             } else if (summarizationfunction === "count") {
-                return acc + `, count(coalesce(${selcol}::text, ''})) total`
+                return acc + `, count(coalesce(${selcol}::text, '')) total`
             } else if (summarizationfunction === "average") {
                 if (coalescedefault === "'00:00:00'") {
                     return acc + `, date_trunc('seconds', avg(coalesce(${selcol}, ${coalescedefault})))::text total`
