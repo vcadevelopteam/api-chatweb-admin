@@ -2040,4 +2040,49 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_LEADAUTOMATIZATIONRULES_SEL: {
+        query: "SELECT * FROM ufn_leadautomatizationrules_sel($corpid, $orgid, $id, $username, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEADAUTOMATIZATIONRULES_INS: {
+        query: "SELECT * FROM ufn_leadautomatizationrules_ins($corpid,$orgid,$id,$description,$status,$type,$columnid,$communicationchannelid,$messagetemplateid,$messagetemplateparameters,$shippingtype,$xdays,$schedule,$tags,$products,$username,$operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CALENDAREVENT_INS: {
+        query: "SELECT * FROM ufn_calendarevent_ins($corpid, $orgid, $id, $description, $type, $status, $code, $name, $locationtype, $location, $eventlink, $color, $notificationtype, $messagetemplateid, $daterange, $daysduration, $daystype, $startdate, $enddate, $timeduration, $timeunit, $availability, $timebeforeeventduration, $timebeforeeventunit, $timeaftereventduration, $timeaftereventunit, $increments, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CALENDAREVENT_SEL: {
+        query: "SELECT * FROM ufn_calendarevent_sel($corpid, $orgid, $id, $username, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CALENDAREVENT_LST: {
+        query: "SELECT * FROM ufn_calendarevent_lst($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CALENDARYBOOKING_INS: {
+        query: "SELECT * FROM ufn_calendarbooking_ins($corpid, $orgid, $calendareventid, $id, $description, $type, $status, $monthdate, $hourstart, $notes, $conversationid, $personname, $personcontact, $persontimezone, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CALENDARYBOOKING_UPD: {
+        query: "SELECT * FROM ufn_calendarbooking_upd($corpid, $orgid, $calendareventid, $uuid, $description, $type, $status, $monthdate, $hourstart, $notes, $personname, $personcontact, $persontimezone, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CALENDARYBOOKING_SEL_DATETIME: {
+        query: "SELECT * FROM ufn_calendarbooking_sel_datetime($corpid, $orgid, $calendareventid, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CALENDARYBOOKING_REPORT: {
+        query: "SELECT * FROM ufn_calendarbooking_report($corpid, $orgid, $period, $startdate, $enddate, $take, $skip, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
 }

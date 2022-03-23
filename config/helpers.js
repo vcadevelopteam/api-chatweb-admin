@@ -337,3 +337,41 @@ exports.getErrorCode = (code, error = false) => {
         code: code || errorstmp.UNEXPECTED_ERROR
     }
 };
+
+exports.stringToSeconds = (str) => {
+    let seconds = 0;
+    let days = 0;
+    let newstr = str;
+    if (str.includes("day")) {
+        days = parseInt(str.split(" day")[0]);
+        newstr = str.split(" day")[1];
+    }
+
+    let parts = str.split(":");
+
+    seconds += parseInt(parts[2]);
+    const minutes = parseInt(parts[1]);
+    const hours = parseInt(parts[0]);
+
+    seconds += minutes * 60;
+    seconds += hours * 60 * 60;
+    seconds += days * 24 * 60 * 60;
+
+
+    return seconds;
+}
+
+exports.secondsToTime = (sec_num) => {
+    sec_num = parseInt(sec_num)
+    let days = Math.floor(sec_num / 86400);
+    let hours = Math.floor((sec_num - (days * 86400)) / 3600);
+    let minutes = Math.floor((sec_num - (days * 86400) - (hours * 3600)) / 60);
+    let seconds = sec_num - (days * 86400) - (hours * 3600) - (minutes * 60);
+
+    if (hours < 10) { hours = "0" + hours; }
+    if (minutes < 10) { minutes = "0" + minutes; }
+    if (seconds < 10) { seconds = "0" + seconds; }
+
+    const stringdays = days === 0 ? days + " day " : (days > 1 ? days + " days " : days + " day ");
+    return stringdays + hours + ':' + minutes + ':' + seconds;
+}
