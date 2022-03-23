@@ -336,7 +336,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             ${TABLENAME}.corpid = $corpid and ${TABLENAME}.orgid = $orgid
             ${FILTERS}
         `;
-        // console.log(query)
+        console.log(query)
         const resultbd = await executeQuery(query, parameters);
         
         if (summaries.length > 0 && resultbd.length > 0) {
@@ -604,7 +604,7 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
             let keysHeaders;
             const keys = Object.keys(dataToExport[0]);
             keysHeaders = keys;
-            console.log(headerClient)
+            // console.log(headerClient)
             if (headerClient) {
                 keysHeaders = keys.reduce((acc, item) => {
                     const keyclientfound = headerClient.find(x => x.key === item);
