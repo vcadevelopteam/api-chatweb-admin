@@ -14,9 +14,7 @@ const smoochVersion = process.env.SMOOCHVERSION;
 const telegramEndpoint = process.env.TELEGRAMAPI;
 const userSecret = process.env.USERSECRET;
 const webChatApplication = process.env.CHATAPPLICATION;
-const webChatPlatformEndpoint = process.env.WEBCHATPLATFORM;
 const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
-const whatsAppEndpoint = process.env.WHATSAPPAPI;
 const whitelist = process.env.WHITELIST;
 
 exports.activateUser = async (request, result) => {
@@ -31,7 +29,7 @@ exports.activateUser = async (request, result) => {
                 return result.status(requestStatus).json({
                     code: "error_auth_error",
                     error: !requestSuccess,
-                    msg: "error_auth_error",
+                    message: "error_auth_error",
                     success: requestSuccess,
                 });
             }
@@ -75,7 +73,7 @@ exports.activateUser = async (request, result) => {
         return result.status(requestStatus).json({
             code: requestCode,
             error: !requestSuccess,
-            msg: requestMessage,
+            message: requestMessage,
             success: requestSuccess,
         });
     }
@@ -83,7 +81,7 @@ exports.activateUser = async (request, result) => {
         return result.status(500).json({
             code: "error_unexpected_error",
             error: true,
-            msg: exception.message,
+            message: exception.message,
             success: false,
         });
     }
@@ -101,7 +99,7 @@ exports.changePassword = async (request, result) => {
                 return result.status(requestStatus).json({
                     code: "error_auth_error",
                     error: !requestSuccess,
-                    msg: "error_auth_error",
+                    message: "error_auth_error",
                     success: requestSuccess,
                 });
             }
@@ -147,7 +145,7 @@ exports.changePassword = async (request, result) => {
         return result.status(requestStatus).json({
             code: requestCode,
             error: !requestSuccess,
-            msg: requestMessage,
+            message: requestMessage,
             success: requestSuccess,
         });
     }
@@ -155,7 +153,7 @@ exports.changePassword = async (request, result) => {
         return result.status(500).json({
             code: "error_unexpected_error",
             error: true,
-            msg: exception.message,
+            message: exception.message,
             success: false,
         });
     }
@@ -174,7 +172,7 @@ exports.countryList = async (request, result) => {
                 return result.status(requestStatus).json({
                     code: "error_auth_error",
                     error: !requestSuccess,
-                    msg: "error_auth_error",
+                    message: "error_auth_error",
                     success: requestSuccess,
                 });
             }
@@ -197,7 +195,7 @@ exports.countryList = async (request, result) => {
             code: requestCode,
             data: requestData,
             error: !requestSuccess,
-            msg: requestMessage,
+            message: requestMessage,
             success: requestSuccess,
         });
     }
@@ -205,7 +203,7 @@ exports.countryList = async (request, result) => {
         return result.status(500).json({
             code: "error_unexpected_error",
             error: true,
-            msg: exception.message,
+            message: exception.message,
             success: false,
         });
     }
@@ -223,7 +221,7 @@ exports.createSubscription = async (request, result) => {
                 return result.status(requestStatus).json({
                     code: "error_auth_error",
                     error: !requestSuccess,
-                    msg: "error_auth_error",
+                    message: "error_auth_error",
                     success: requestSuccess,
                 });
             }
@@ -268,7 +266,7 @@ exports.createSubscription = async (request, result) => {
                             data: {
                                 bearer: appsetting.privatekey,
                                 cardNumber: card.cardnumber,
-                                customerId: requestCulqiClient.data.id,
+                                customerId: requestCulqiClient.data.result.id,
                                 cvv: card.securitycode,
                                 email: card.mail,
                                 expirationMonth: card.expirationmonth,
@@ -285,12 +283,12 @@ exports.createSubscription = async (request, result) => {
                             cardData = requestCulqiCard.data.result;
                         }
                         else {
-                            channelError = true;
+                            cardError = true;
                             requestMessage = "error_card_card";
                         }
                     }
                     else {
-                        channelError = true;
+                        cardError = true;
                         requestMessage = "error_card_client";
                     }
                 }
@@ -308,7 +306,7 @@ exports.createSubscription = async (request, result) => {
                 return result.status(requestStatus).json({
                     code: requestCode,
                     error: !requestSuccess,
-                    msg: requestMessage,
+                    message: requestMessage,
                     success: requestSuccess,
                 });
             }
@@ -770,7 +768,7 @@ exports.createSubscription = async (request, result) => {
                     return result.status(requestStatus).json({
                         code: requestCode,
                         error: !requestSuccess,
-                        msg: requestMessage,
+                        message: requestMessage,
                         success: requestSuccess,
                     });
                 }
@@ -811,7 +809,7 @@ exports.createSubscription = async (request, result) => {
                         status: "ACTIVO",
                         type: "",
                         username: parameters.username,
-                        operation: "CREATE",
+                        operation: "INSERT",
                     };
 
                     const queryCardCreate = await triggerfunctions.executesimpletransaction(cardMethod, cardParameters);
@@ -822,7 +820,7 @@ exports.createSubscription = async (request, result) => {
                         return result.status(requestStatus).json({
                             code: requestCode,
                             error: !requestSuccess,
-                            msg: requestMessage,
+                            message: requestMessage,
                             success: requestSuccess,
                         });
                     }
@@ -848,7 +846,7 @@ exports.createSubscription = async (request, result) => {
                             return result.status(requestStatus).json({
                                 code: requestCode,
                                 error: !requestSuccess,
-                                msg: requestMessage,
+                                message: requestMessage,
                                 success: requestSuccess,
                             });
                         }
@@ -922,7 +920,7 @@ exports.createSubscription = async (request, result) => {
                                             return result.status(requestStatus).json({
                                                 code: requestCode,
                                                 error: !requestSuccess,
-                                                msg: requestMessage,
+                                                message: requestMessage,
                                                 success: requestSuccess,
                                             });
                                         }
@@ -933,7 +931,7 @@ exports.createSubscription = async (request, result) => {
                                         return result.status(requestStatus).json({
                                             code: requestCode,
                                             error: !requestSuccess,
-                                            msg: requestMessage,
+                                            message: requestMessage,
                                             success: requestSuccess,
                                         });
                                     }
@@ -944,7 +942,7 @@ exports.createSubscription = async (request, result) => {
                                     return result.status(requestStatus).json({
                                         code: requestCode,
                                         error: !requestSuccess,
-                                        msg: requestMessage,
+                                        message: requestMessage,
                                         success: requestSuccess,
                                     });
                                 }
@@ -972,7 +970,7 @@ exports.createSubscription = async (request, result) => {
                         return result.status(requestStatus).json({
                             code: requestCode,
                             error: !requestSuccess,
-                            msg: requestMessage,
+                            message: requestMessage,
                             success: requestSuccess,
                         });
                     }
@@ -1086,7 +1084,7 @@ exports.createSubscription = async (request, result) => {
         return result.status(requestStatus).json({
             code: requestCode,
             error: !requestSuccess,
-            msg: requestMessage,
+            message: requestMessage,
             success: requestSuccess,
         });
     }
@@ -1094,8 +1092,37 @@ exports.createSubscription = async (request, result) => {
         return result.status(500).json({
             code: "error_unexpected_error",
             error: true,
-            msg: exception.message,
+            message: exception.message,
             success: false,
+        });
+    }
+}
+
+exports.currencyList = async (request, result) => {
+    try {
+        if (typeof whitelist !== "undefined" && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(400).json({
+                    message: "Unauthorized",
+                    success: false,
+                    error: true
+                });
+            }
+        }
+
+        const queryResult = await triggerfunctions.executesimpletransaction("UFN_CURRENCY_SEL", {});
+
+        if (queryResult instanceof Array) {
+            return result.json({ error: false, success: true, data: queryResult });
+        }
+        else
+            return result.status(400).json({ error: true, success: false, data: queryResult });
+    }
+    catch (exception) {
+        return result.status(500).json({
+            message: exception.message,
+            success: false,
+            error: true
         });
     }
 }
@@ -1115,6 +1142,201 @@ exports.getContract = async (req, res) => {
         return res.status(result.rescode).json(result);
 }
 
+exports.getPageList = async (request, result) => {
+    try {
+        if (typeof whitelist !== "undefined" && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(400).json({
+                    message: "Unauthorized",
+                    success: false,
+                    error: true
+                });
+            }
+        }
+
+        const requestGetFacebook = await axios({
+            data: {
+                accessToken: request.body.accessToken,
+                appId: request.body.appId,
+                linkType: "GETPAGES"
+            },
+            method: "post",
+            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
+        });
+
+        if (requestGetFacebook.data.success) {
+            return result.json({
+                pageData: requestGetFacebook.data.pageData,
+                success: true
+            });
+        }
+        else {
+            return result.status(400).json({
+                message: requestGetFacebook.data.operationMessage,
+                success: false,
+                error: true
+            });
+        }
+    }
+    catch (exception) {
+        return result.status(500).json({
+            message: exception.message,
+            success: false,
+            error: true
+        });
+    }
+}
+
+exports.recoverPassword = async (request, result) => {
+    try {
+        if (typeof whitelist !== "undefined" && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(400).json({
+                    message: "Unauthorized",
+                    success: false,
+                    error: true
+                });
+            }
+        }
+
+        var userMethod = "UFN_USERBYUSER";
+        var userParameters = {
+            username: request.body.username,
+        };
+
+        const transactionSelectUser = await triggerfunctions.executesimpletransaction(userMethod, userParameters);
+
+        if (transactionSelectUser instanceof Array) {
+            if (transactionSelectUser.length > 0) {
+                var validMail = false;
+
+                if (typeof transactionSelectUser[0].email !== "undefined" && transactionSelectUser[0].email) {
+                    if (validateEmail(transactionSelectUser[0].email) !== null) {
+                        validMail = true;
+                    }
+                }
+
+                if (validMail) {
+                    var domainMethod = "UFN_DOMAIN_VALUES_SEL";
+                    var domainParameters = {
+                        all: false,
+                        corpid: 1,
+                        domainname: "RECOVERPASSSUBJECT",
+                        orgid: 0,
+                        username: "admin"
+                    };
+
+                    const transactionGetSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                    domainParameters.domainname = "RECOVERPASSBODY";
+
+                    const transactionGetBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                    var validMail = false;
+
+                    if (transactionGetSubject instanceof Array && transactionGetBody instanceof Array) {
+                        if (transactionGetSubject.length > 0 && transactionGetBody.length > 0) {
+                            validMail = true;
+                        }
+                    }
+
+                    if (validMail) {
+                        var linkCode = cryptojs.AES.encrypt(JSON.stringify({
+                            userid: transactionSelectUser[0].userid,
+                            date: new Date().getTime(),
+                        }), userSecret).toString();
+
+                        linkCode = linkCode.split("=").join("_EQUAL_");
+                        linkCode = linkCode.split("/").join("_SLASH_");
+                        linkCode = linkCode.split("+").join("_PLUS_");
+
+                        var mailBody = transactionGetBody[0].domainvalue;
+                        var mailSubject = transactionGetSubject[0].domainvalue;
+
+                        mailBody = mailBody.split("{{docnum}}").join(transactionSelectUser[0].docnum);
+                        mailBody = mailBody.split("{{doctype}}").join(transactionSelectUser[0].doctype);
+                        mailBody = mailBody.split("{{email}}").join(transactionSelectUser[0].email);
+                        mailBody = mailBody.split("{{firstname}}").join(transactionSelectUser[0].firstname);
+                        mailBody = mailBody.split("{{lastname}}").join(transactionSelectUser[0].lastname);
+                        mailBody = mailBody.split("{{link}}").join(`${laraigoEndpoint}recoverpassword/${encodeURIComponent(linkCode)}`);
+                        mailBody = mailBody.split("{{userid}}").join(transactionSelectUser[0].userid);
+                        mailBody = mailBody.split("{{usr}}").join(transactionSelectUser[0].usr);
+                      
+                        mailSubject = mailSubject.split("{{docnum}}").join(transactionSelectUser[0].docnum);
+                        mailSubject = mailSubject.split("{{doctype}}").join(transactionSelectUser[0].doctype);
+                        mailSubject = mailSubject.split("{{email}}").join(transactionSelectUser[0].email);
+                        mailSubject = mailSubject.split("{{firstname}}").join(transactionSelectUser[0].firstname);
+                        mailSubject = mailSubject.split("{{lastname}}").join(transactionSelectUser[0].lastname);
+                        mailSubject = mailSubject.split("{{link}}").join(`${laraigoEndpoint}recoverpassword/${encodeURIComponent(linkCode)}`);
+                        mailSubject = mailSubject.split("{{userid}}").join(transactionSelectUser[0].userid);
+                        mailSubject = mailSubject.split("{{usr}}").join(transactionSelectUser[0].usr);
+                     
+                        const requestSendMail = await axios({
+                            data: {
+                                mailAddress: transactionSelectUser[0].email,
+                                mailBody: mailBody,
+                                mailTitle: mailSubject
+                            },
+                            method: "post",
+                            url: `${bridgeEndpoint}processscheduler/sendmail`
+                        });
+
+                        if (requestSendMail.data.success) {
+                            return result.json({
+                                error: false,
+                                message: "recoverpassword_recoversent",
+                                success: true,
+                            });
+                        }
+                        else {
+                            return result.json({
+                                error: true,
+                                message: "",
+                                success: false,
+                            });
+                        }
+                    }
+                    else {
+                        return result.json({
+                            error: true,
+                            message: "",
+                            success: false,
+                        });
+                    }
+                }
+                else {
+                    return result.json({
+                        error: true,
+                        message: "recoverpassword_usernotmail",
+                        success: false,
+                    });
+                }
+            }
+            else {
+                return result.json({
+                    error: true,
+                    message: "recoverpassword_usernotfound",
+                    success: false,
+                });
+            }
+        }
+        else {
+            return result.status(400).json({
+                error: true,
+                message: transactionSelectUser.code,
+                success: false,
+            });
+        }
+    }
+    catch (exception) {
+        return result.status(500).json({
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+}
+
 exports.validateChannels = async (request, result) => {
     try {
         var requestCode = "error_unexpected_error";
@@ -1127,7 +1349,7 @@ exports.validateChannels = async (request, result) => {
                 return result.status(requestStatus).json({
                     code: "error_auth_error",
                     error: !requestSuccess,
-                    msg: "error_auth_error",
+                    message: "error_auth_error",
                     success: requestSuccess,
                 });
             }
@@ -1413,7 +1635,7 @@ exports.validateChannels = async (request, result) => {
                     return result.status(requestStatus).json({
                         code: requestCode,
                         error: !requestSuccess,
-                        msg: requestMessage,
+                        message: requestMessage,
                         success: requestSuccess,
                     });
                 }
@@ -1428,7 +1650,7 @@ exports.validateChannels = async (request, result) => {
         return result.status(requestStatus).json({
             code: requestCode,
             error: !requestSuccess,
-            msg: requestMessage,
+            message: requestMessage,
             success: requestSuccess,
         });
     }
@@ -1436,53 +1658,8 @@ exports.validateChannels = async (request, result) => {
         return result.status(500).json({
             code: "error_unexpected_error",
             error: true,
-            msg: exception.message,
+            message: exception.message,
             success: false,
-        });
-    }
-}
-
-exports.getPageList = async (request, result) => {
-    try {
-        if (typeof whitelist !== "undefined" && whitelist) {
-            if (!whitelist.includes(request.ip)) {
-                return result.status(400).json({
-                    msg: "Unauthorized",
-                    success: false,
-                    error: true
-                });
-            }
-        }
-
-        const requestGetFacebook = await axios({
-            data: {
-                accessToken: request.body.accessToken,
-                appId: request.body.appId,
-                linkType: "GETPAGES"
-            },
-            method: "post",
-            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
-        });
-
-        if (requestGetFacebook.data.success) {
-            return result.json({
-                pageData: requestGetFacebook.data.pageData,
-                success: true
-            });
-        }
-        else {
-            return result.status(400).json({
-                msg: requestGetFacebook.data.operationMessage,
-                success: false,
-                error: true
-            });
-        }
-    }
-    catch (exception) {
-        return result.status(500).json({
-            msg: exception.message,
-            success: false,
-            error: true
         });
     }
 }
@@ -1492,7 +1669,7 @@ exports.validateUserId = async (request, result) => {
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
                 return result.status(400).json({
-                    msg: "Unauthorized",
+                    message: "Unauthorized",
                     success: false,
                     error: true
                 });
@@ -1521,7 +1698,7 @@ exports.validateUserId = async (request, result) => {
                 }
                 else {
                     return result.status(400).json({
-                        msg: transactionUpdateUser.code,
+                        message: transactionUpdateUser.code,
                         success: false,
                         error: true
                     });
@@ -1529,7 +1706,7 @@ exports.validateUserId = async (request, result) => {
             }
             else {
                 return result.status(400).json({
-                    msg: "Password does not match",
+                    message: "Password does not match",
                     success: false,
                     error: true
                 });
@@ -1537,7 +1714,7 @@ exports.validateUserId = async (request, result) => {
         }
         else {
             return result.status(400).json({
-                msg: transactionSelectUser.code,
+                message: transactionSelectUser.code,
                 success: false,
                 error: true
             });
@@ -1545,7 +1722,7 @@ exports.validateUserId = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            msg: exception.message,
+            message: exception.message,
             success: false,
             error: true
         });
@@ -1557,7 +1734,7 @@ exports.validateUsername = async (request, result) => {
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
                 return result.status(400).json({
-                    msg: "Unauthorized",
+                    message: "Unauthorized",
                     success: false,
                     error: true
                 });
@@ -1594,7 +1771,7 @@ exports.validateUsername = async (request, result) => {
         }
         else {
             return result.status(400).json({
-                msg: transactionSelectUser.code,
+                message: transactionSelectUser.code,
                 success: false,
                 error: true
             });
@@ -1602,210 +1779,25 @@ exports.validateUsername = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            msg: exception.message,
+            message: exception.message,
             success: false,
             error: true
         });
     }
 }
 
-exports.currencyList = async (request, result) => {
-    try {
-        if (typeof whitelist !== "undefined" && whitelist) {
-            if (!whitelist.includes(request.ip)) {
-                return result.status(400).json({
-                    msg: "Unauthorized",
-                    success: false,
-                    error: true
-                });
-            }
-        }
+const getAppSetting = async () => {
+    const queryAppSettingGet = await triggerfunctions.executesimpletransaction("UFN_APPSETTING_INVOICE_SEL");
 
-        const queryResult = await triggerfunctions.executesimpletransaction("UFN_CURRENCY_SEL", {});
-
-        if (queryResult instanceof Array) {
-            return result.json({ error: false, success: true, data: queryResult });
-        }
-        else
-            return result.status(400).json({ error: true, success: false, data: queryResult });
-    }
-    catch (exception) {
-        return result.status(500).json({
-            msg: exception.message,
-            success: false,
-            error: true
-        });
-    }
-}
-
-exports.recoverPassword = async (request, result) => {
-    try {
-        if (typeof whitelist !== "undefined" && whitelist) {
-            if (!whitelist.includes(request.ip)) {
-                return result.status(400).json({
-                    msg: "Unauthorized",
-                    success: false,
-                    error: true
-                });
-            }
-        }
-
-        var userMethod = "UFN_USERBYUSER";
-        var userParameters = {
-            username: request.body.username,
-        };
-
-        const transactionSelectUser = await triggerfunctions.executesimpletransaction(userMethod, userParameters);
-
-        if (transactionSelectUser instanceof Array) {
-            if (transactionSelectUser.length > 0) {
-                var validMail = false;
-
-                if (typeof transactionSelectUser[0].email !== "undefined" && transactionSelectUser[0].email) {
-                    if (validateEmail(transactionSelectUser[0].email) !== null) {
-                        validMail = true;
-                    }
-                }
-
-                if (validMail) {
-                    var domainMethod = "UFN_DOMAIN_VALUES_SEL";
-                    var domainParameters = {
-                        all: false,
-                        corpid: 1,
-                        domainname: "RECOVERPASSSUBJECT",
-                        orgid: 0,
-                        username: "admin"
-                    };
-
-                    const transactionGetSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
-
-                    domainParameters.domainname = "RECOVERPASSBODY";
-
-                    const transactionGetBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
-
-                    var validMail = false;
-
-                    if (transactionGetSubject instanceof Array && transactionGetBody instanceof Array) {
-                        if (transactionGetSubject.length > 0 && transactionGetBody.length > 0) {
-                            validMail = true;
-                        }
-                    }
-
-                    if (validMail) {
-                        var linkCode = cryptojs.AES.encrypt(JSON.stringify({
-                            userid: transactionSelectUser[0].userid,
-                            date: new Date().getTime(),
-                        }), userSecret).toString();
-
-                        linkCode = linkCode.split("=").join("_EQUAL_");
-                        linkCode = linkCode.split("/").join("_SLASH_");
-                        linkCode = linkCode.split("+").join("_PLUS_");
-
-                        var mailBody = transactionGetBody[0].domainvalue;
-                        var mailSubject = transactionGetSubject[0].domainvalue;
-
-                        mailBody = mailBody.split("{{docnum}}").join(transactionSelectUser[0].docnum);
-                        mailBody = mailBody.split("{{doctype}}").join(transactionSelectUser[0].doctype);
-                        mailBody = mailBody.split("{{email}}").join(transactionSelectUser[0].email);
-                        mailBody = mailBody.split("{{firstname}}").join(transactionSelectUser[0].firstname);
-                        mailBody = mailBody.split("{{lastname}}").join(transactionSelectUser[0].lastname);
-                        mailBody = mailBody.split("{{link}}").join(`${laraigoEndpoint}recoverpassword/${encodeURIComponent(linkCode)}`);
-                        mailBody = mailBody.split("{{userid}}").join(transactionSelectUser[0].userid);
-                        mailBody = mailBody.split("{{usr}}").join(transactionSelectUser[0].usr);
-                      
-                        mailSubject = mailSubject.split("{{docnum}}").join(transactionSelectUser[0].docnum);
-                        mailSubject = mailSubject.split("{{doctype}}").join(transactionSelectUser[0].doctype);
-                        mailSubject = mailSubject.split("{{email}}").join(transactionSelectUser[0].email);
-                        mailSubject = mailSubject.split("{{firstname}}").join(transactionSelectUser[0].firstname);
-                        mailSubject = mailSubject.split("{{lastname}}").join(transactionSelectUser[0].lastname);
-                        mailSubject = mailSubject.split("{{link}}").join(`${laraigoEndpoint}recoverpassword/${encodeURIComponent(linkCode)}`);
-                        mailSubject = mailSubject.split("{{userid}}").join(transactionSelectUser[0].userid);
-                        mailSubject = mailSubject.split("{{usr}}").join(transactionSelectUser[0].usr);
-                     
-                        const requestSendMail = await axios({
-                            data: {
-                                mailAddress: transactionSelectUser[0].email,
-                                mailBody: mailBody,
-                                mailTitle: mailSubject
-                            },
-                            method: "post",
-                            url: `${bridgeEndpoint}processscheduler/sendmail`
-                        });
-
-                        if (requestSendMail.data.success) {
-                            return result.json({
-                                error: false,
-                                msg: "recoverpassword_recoversent",
-                                success: true,
-                            });
-                        }
-                        else {
-                            return result.json({
-                                error: true,
-                                msg: "",
-                                success: false,
-                            });
-                        }
-                    }
-                    else {
-                        return result.json({
-                            error: true,
-                            msg: "",
-                            success: false,
-                        });
-                    }
-                }
-                else {
-                    return result.json({
-                        error: true,
-                        msg: "recoverpassword_usernotmail",
-                        success: false,
-                    });
-                }
-            }
-            else {
-                return result.json({
-                    error: true,
-                    msg: "recoverpassword_usernotfound",
-                    success: false,
-                });
-            }
-        }
-        else {
-            return result.status(400).json({
-                error: true,
-                msg: transactionSelectUser.code,
-                success: false,
-            });
+    if (queryAppSettingGet instanceof Array) {
+        if (queryAppSettingGet.length > 0) {
+            return queryAppSettingGet[0];
         }
     }
-    catch (exception) {
-        return result.status(500).json({
-            error: true,
-            msg: exception.message,
-            success: false,
-        });
-    }
+
+    return null;
 }
 
 const validateEmail = (email) => {
-    return String(email)
-      .toLowerCase()
-      .match(
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      );
+    return String(email).toLowerCase().match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
 };
-
-const getAppSetting = async () => {
-    const query = "UFN_APPSETTING_INVOICE_SEL";
-
-    const result = await triggerfunctions.executesimpletransaction(query);
-
-    if (result instanceof Array) {
-        if (result.length > 0) {
-            return result[0]
-        }
-    }
-
-    return null
-}
