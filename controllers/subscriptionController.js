@@ -1100,236 +1100,308 @@ exports.createSubscription = async (request, result) => {
 
 exports.currencyList = async (request, result) => {
     try {
+        var requestCode = "error_unexpected_error";
+        var requestData = null;
+        var requestMessage = "error_unexpected_error";
+        var requestStatus = 400;
+        var requestSuccess = false;
+
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
-                return result.status(400).json({
-                    message: "Unauthorized",
-                    success: false,
-                    error: true
+                return result.status(requestStatus).json({
+                    code: "error_auth_error",
+                    data: requestData,
+                    error: !requestSuccess,
+                    message: "error_auth_error",
+                    success: requestSuccess,
                 });
             }
         }
 
-        const queryResult = await triggerfunctions.executesimpletransaction("UFN_CURRENCY_SEL", {});
+        const queryCurrencySel = await triggerfunctions.executesimpletransaction("UFN_CURRENCY_SEL", {});
 
-        if (queryResult instanceof Array) {
-            return result.json({ error: false, success: true, data: queryResult });
+        if (queryCurrencySel instanceof Array) {
+            requestCode = "";
+            requestData = queryCurrencySel;
+            requestMessage = "";
+            requestStatus = 200;
+            requestSuccess = true;
         }
-        else
-            return result.status(400).json({ error: true, success: false, data: queryResult });
+        else {
+            requestCode = queryCurrencySel.code;
+        }
+
+        return result.status(requestStatus).json({
+            code: requestCode,
+            data: requestData,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
     }
     catch (exception) {
         return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
             message: exception.message,
             success: false,
-            error: true
         });
     }
 }
 
-exports.getContract = async (req, res) => {
-    const { parameters = {} } = req.body;
-    const result = await triggerfunctions.executesimpletransaction("GET_CONTRACT", parameters);
-    
-    if (result instanceof Array) {
-        if (result.length > 0) {
-            return res.json({ error: false, success: true, data: result });
+exports.getContract = async (request, result) => {
+    try {
+        var requestCode = "error_unexpected_error";
+        var requestData = null;
+        var requestMessage = "error_unexpected_error";
+        var requestStatus = 400;
+        var requestSuccess = false;
+
+        if (typeof whitelist !== "undefined" && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(requestStatus).json({
+                    code: "error_auth_error",
+                    data: requestData,
+                    error: !requestSuccess,
+                    message: "error_auth_error",
+                    success: requestSuccess,
+                });
+            }
         }
-        return res.status(500).json({ error: true, success: false,
-        error: true });
+
+        if (request.body) {
+            const { parameters = {} } = request.body;
+
+            const queryContractGet = await triggerfunctions.executesimpletransaction("GET_CONTRACT", parameters);
+            
+            if (queryContractGet instanceof Array) {
+                if (queryContractGet.length > 0) {
+                    requestCode = "";
+                    requestData = queryContractGet;
+                    requestMessage = "";
+                    requestStatus = 200;
+                    requestSuccess = true;
+                }
+            }
+            else {
+                requestCode = queryContractGet.code;
+            }
+        }
+
+        return result.status(requestStatus).json({
+            code: requestCode,
+            data: requestData,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
     }
-    else
-        return res.status(result.rescode).json(result);
+    catch (exception) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
 }
 
 exports.getPageList = async (request, result) => {
     try {
+        var requestCode = "error_unexpected_error";
+        var requestData = null;
+        var requestMessage = "error_unexpected_error";
+        var requestStatus = 400;
+        var requestSuccess = false;
+
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
-                return result.status(400).json({
-                    message: "Unauthorized",
-                    success: false,
-                    error: true
+                return result.status(requestStatus).json({
+                    code: "error_auth_error",
+                    error: !requestSuccess,
+                    message: "error_auth_error",
+                    pageData: requestData,
+                    success: requestSuccess,
                 });
             }
         }
 
-        const requestGetFacebook = await axios({
-            data: {
-                accessToken: request.body.accessToken,
-                appId: request.body.appId,
-                linkType: "GETPAGES"
-            },
-            method: "post",
-            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
-        });
+        if (request.body) {
+            const requestFacebookPages = await axios({
+                data: {
+                    accessToken: request.body.accessToken,
+                    appId: request.body.appId,
+                    linkType: "GETPAGES",
+                },
+                method: "post",
+                url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
+            });
+    
+            if (requestFacebookPages.data.success) {
+                requestCode = "";
+                requestData = requestFacebookPages.data.pageData;
+                requestMessage = "";
+                requestStatus = 200;
+                requestSuccess = true;
+            }
+            else {
+                requestMessage = "error_facebook_pages";
+            }
+        }
 
-        if (requestGetFacebook.data.success) {
-            return result.json({
-                pageData: requestGetFacebook.data.pageData,
-                success: true
-            });
-        }
-        else {
-            return result.status(400).json({
-                message: requestGetFacebook.data.operationMessage,
-                success: false,
-                error: true
-            });
-        }
+        return result.status(requestStatus).json({
+            code: requestCode,
+            error: !requestSuccess,
+            message: requestMessage,
+            pageData: requestData,
+            success: requestSuccess,
+        });
     }
     catch (exception) {
         return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
             message: exception.message,
             success: false,
-            error: true
         });
     }
 }
 
 exports.recoverPassword = async (request, result) => {
     try {
+        var requestCode = "error_unexpected_error";
+        var requestMessage = "error_unexpected_error";
+        var requestStatus = 400;
+        var requestSuccess = false;
+
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
-                return result.status(400).json({
-                    message: "Unauthorized",
-                    success: false,
-                    error: true
+                return result.status(requestStatus).json({
+                    code: "error_auth_error",
+                    error: !requestSuccess,
+                    message: "error_auth_error",
+                    success: requestSuccess,
                 });
             }
         }
 
-        var userMethod = "UFN_USERBYUSER";
-        var userParameters = {
-            username: request.body.username,
-        };
+        if (request.body) {
+            var userMethod = "UFN_USERBYUSER";
+            var userParameters = {
+                username: request.body.username,
+            };
 
-        const transactionSelectUser = await triggerfunctions.executesimpletransaction(userMethod, userParameters);
+            const queryUserGet = await triggerfunctions.executesimpletransaction(userMethod, userParameters);
 
-        if (transactionSelectUser instanceof Array) {
-            if (transactionSelectUser.length > 0) {
-                var validMail = false;
-
-                if (typeof transactionSelectUser[0].email !== "undefined" && transactionSelectUser[0].email) {
-                    if (validateEmail(transactionSelectUser[0].email) !== null) {
-                        validMail = true;
-                    }
-                }
-
-                if (validMail) {
-                    var domainMethod = "UFN_DOMAIN_VALUES_SEL";
-                    var domainParameters = {
-                        all: false,
-                        corpid: 1,
-                        domainname: "RECOVERPASSSUBJECT",
-                        orgid: 0,
-                        username: "admin"
-                    };
-
-                    const transactionGetSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
-
-                    domainParameters.domainname = "RECOVERPASSBODY";
-
-                    const transactionGetBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
-
+            if (queryUserGet instanceof Array) {
+                if (queryUserGet.length > 0) {
                     var validMail = false;
 
-                    if (transactionGetSubject instanceof Array && transactionGetBody instanceof Array) {
-                        if (transactionGetSubject.length > 0 && transactionGetBody.length > 0) {
+                    if (typeof queryUserGet[0].email !== "undefined" && queryUserGet[0].email) {
+                        if (validateEmail(queryUserGet[0].email) !== null) {
                             validMail = true;
                         }
                     }
 
                     if (validMail) {
-                        var linkCode = cryptojs.AES.encrypt(JSON.stringify({
-                            userid: transactionSelectUser[0].userid,
-                            date: new Date().getTime(),
-                        }), userSecret).toString();
+                        var domainMethod = "UFN_DOMAIN_VALUES_SEL";
+                        var domainParameters = {
+                            all: false,
+                            corpid: 1,
+                            domainname: "RECOVERPASSBODY",
+                            orgid: 0,
+                            username: request.body.username,
+                        };
 
-                        linkCode = linkCode.split("=").join("_EQUAL_");
-                        linkCode = linkCode.split("/").join("_SLASH_");
-                        linkCode = linkCode.split("+").join("_PLUS_");
+                        const queryDomainBodySel = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
 
-                        var mailBody = transactionGetBody[0].domainvalue;
-                        var mailSubject = transactionGetSubject[0].domainvalue;
+                        domainParameters.domainname = "RECOVERPASSSUBJECT";
 
-                        mailBody = mailBody.split("{{docnum}}").join(transactionSelectUser[0].docnum);
-                        mailBody = mailBody.split("{{doctype}}").join(transactionSelectUser[0].doctype);
-                        mailBody = mailBody.split("{{email}}").join(transactionSelectUser[0].email);
-                        mailBody = mailBody.split("{{firstname}}").join(transactionSelectUser[0].firstname);
-                        mailBody = mailBody.split("{{lastname}}").join(transactionSelectUser[0].lastname);
-                        mailBody = mailBody.split("{{link}}").join(`${laraigoEndpoint}recoverpassword/${encodeURIComponent(linkCode)}`);
-                        mailBody = mailBody.split("{{userid}}").join(transactionSelectUser[0].userid);
-                        mailBody = mailBody.split("{{usr}}").join(transactionSelectUser[0].usr);
-                      
-                        mailSubject = mailSubject.split("{{docnum}}").join(transactionSelectUser[0].docnum);
-                        mailSubject = mailSubject.split("{{doctype}}").join(transactionSelectUser[0].doctype);
-                        mailSubject = mailSubject.split("{{email}}").join(transactionSelectUser[0].email);
-                        mailSubject = mailSubject.split("{{firstname}}").join(transactionSelectUser[0].firstname);
-                        mailSubject = mailSubject.split("{{lastname}}").join(transactionSelectUser[0].lastname);
-                        mailSubject = mailSubject.split("{{link}}").join(`${laraigoEndpoint}recoverpassword/${encodeURIComponent(linkCode)}`);
-                        mailSubject = mailSubject.split("{{userid}}").join(transactionSelectUser[0].userid);
-                        mailSubject = mailSubject.split("{{usr}}").join(transactionSelectUser[0].usr);
-                     
-                        const requestSendMail = await axios({
-                            data: {
-                                mailAddress: transactionSelectUser[0].email,
-                                mailBody: mailBody,
-                                mailTitle: mailSubject
-                            },
-                            method: "post",
-                            url: `${bridgeEndpoint}processscheduler/sendmail`
-                        });
+                        const queryDomainSubjectSel = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
 
-                        if (requestSendMail.data.success) {
-                            return result.json({
-                                error: false,
-                                message: "recoverpassword_recoversent",
-                                success: true,
-                            });
+                        if (queryDomainBodySel instanceof Array && queryDomainSubjectSel instanceof Array) {
+                            if (queryDomainBodySel.length > 0 && queryDomainSubjectSel.length > 0) {
+                                var alertBody = queryDomainBodySel[0].domainvalue;
+                                var alertSubject = queryDomainSubjectSel[0].domainvalue;
+
+                                var linkCode = cryptojs.AES.encrypt(JSON.stringify({
+                                    userid: queryUserGet[0].userid,
+                                    date: new Date().getTime(),
+                                }), userSecret).toString();
+
+                                linkCode = linkCode.split("=").join("_EQUAL_");
+                                linkCode = linkCode.split("+").join("_PLUS_");
+                                linkCode = linkCode.split("/").join("_SLASH_");
+
+                                alertBody = alertBody.split("{{docnum}}").join(queryUserGet[0].docnum);
+                                alertBody = alertBody.split("{{doctype}}").join(queryUserGet[0].doctype);
+                                alertBody = alertBody.split("{{email}}").join(queryUserGet[0].email);
+                                alertBody = alertBody.split("{{firstname}}").join(queryUserGet[0].firstname);
+                                alertBody = alertBody.split("{{lastname}}").join(queryUserGet[0].lastname);
+                                alertBody = alertBody.split("{{link}}").join(`${laraigoEndpoint}recoverpassword/${encodeURIComponent(linkCode)}`);
+                                alertBody = alertBody.split("{{userid}}").join(queryUserGet[0].userid);
+                                alertBody = alertBody.split("{{usr}}").join(queryUserGet[0].usr);
+                              
+                                alertSubject = alertSubject.split("{{docnum}}").join(queryUserGet[0].docnum);
+                                alertSubject = alertSubject.split("{{doctype}}").join(queryUserGet[0].doctype);
+                                alertSubject = alertSubject.split("{{email}}").join(queryUserGet[0].email);
+                                alertSubject = alertSubject.split("{{firstname}}").join(queryUserGet[0].firstname);
+                                alertSubject = alertSubject.split("{{lastname}}").join(queryUserGet[0].lastname);
+                                alertSubject = alertSubject.split("{{link}}").join(`${laraigoEndpoint}recoverpassword/${encodeURIComponent(linkCode)}`);
+                                alertSubject = alertSubject.split("{{userid}}").join(queryUserGet[0].userid);
+                                alertSubject = alertSubject.split("{{usr}}").join(queryUserGet[0].usr);
+
+                                const requestMailSend = await axios({
+                                    data: {
+                                        mailAddress: queryUserGet[0].email,
+                                        mailBody: alertBody,
+                                        mailTitle: alertSubject,
+                                    },
+                                    method: "post",
+                                    url: `${bridgeEndpoint}processscheduler/sendmail`,
+                                });
+
+                                if (requestMailSend.data.success) {
+                                    requestCode = "";
+                                    requestMessage = "";
+                                    requestStatus = 200;
+                                    requestSuccess = true;
+                                }
+                                else {
+                                    requestMessage = "recoverpassword_sendfailure";
+                                }
+                            }
+                            else {
+                                requestMessage = "recoverpassword_missingconfiguration";
+                            }
                         }
                         else {
-                            return result.json({
-                                error: true,
-                                message: "",
-                                success: false,
-                            });
+                            requestMessage = "recoverpassword_missingconfiguration";
                         }
                     }
                     else {
-                        return result.json({
-                            error: true,
-                            message: "",
-                            success: false,
-                        });
+                        requestMessage = "recoverpassword_usernotmail";
                     }
                 }
                 else {
-                    return result.json({
-                        error: true,
-                        message: "recoverpassword_usernotmail",
-                        success: false,
-                    });
+                    requestMessage = "recoverpassword_usernotfound";
                 }
             }
             else {
-                return result.json({
-                    error: true,
-                    message: "recoverpassword_usernotfound",
-                    success: false,
-                });
+                requestCode = queryUserGet.code;
             }
         }
-        else {
-            return result.status(400).json({
-                error: true,
-                message: transactionSelectUser.code,
-                success: false,
-            });
-        }
+
+        return result.status(requestStatus).json({
+            code: requestCode,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
     }
     catch (exception) {
         return result.status(500).json({
+            code: "error_unexpected_error",
             error: true,
             message: exception.message,
             success: false,
@@ -1666,122 +1738,141 @@ exports.validateChannels = async (request, result) => {
 
 exports.validateUserId = async (request, result) => {
     try {
+        var requestCode = "error_unexpected_error";
+        var requestMessage = "error_unexpected_error";
+        var requestStatus = 400;
+        var requestSuccess = false;
+
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
-                return result.status(400).json({
-                    message: "Unauthorized",
-                    success: false,
-                    error: true
+                return result.status(requestStatus).json({
+                    code: "error_auth_error",
+                    error: !requestSuccess,
+                    message: "error_auth_error",
+                    success: requestSuccess,
                 });
             }
         }
 
-        var { method, parameters = {} } = request.body;
+        if (request.body) {
+            var { method, parameters = {} } = request.body;
 
-        setSessionParameters(parameters, request.user);
+            setSessionParameters(parameters, request.user);
 
-        parameters.password = await bcryptjs.hash(parameters.password, await bcryptjs.genSalt(10));
-        parameters.userid = request.user.userid;
+            parameters.password = await bcryptjs.hash(parameters.password, await bcryptjs.genSalt(10));
+            parameters.userid = request.user.userid;
+            
+            const queryUserSel = await triggerfunctions.executesimpletransaction(method, parameters);
 
-        const transactionSelectUser = await triggerfunctions.executesimpletransaction(method, parameters);
+            if (queryUserSel instanceof Array) {
+                if (queryUserSel.length > 0) {
+                    parameters.password = await bcryptjs.hash(parameters.newpassword, await bcryptjs.genSalt(10));
 
-        if (transactionSelectUser instanceof Array) {
-            if (transactionSelectUser.length > 0) {
-                parameters.password = await bcryptjs.hash(parameters.newpassword, await bcryptjs.genSalt(10));
+                    const queryUserUpdate = await triggerfunctions.executesimpletransaction("UFN_USER_UPDATE", parameters);
 
-                const transactionUpdateUser = await triggerfunctions.executesimpletransaction("UFN_USER_UPDATE", parameters);
-
-                if (transactionSelectUser instanceof Array) {
-                    return result.json({
-                        success: true
-                    });
+                    if (queryUserUpdate instanceof Array) {
+                        requestCode = "";
+                        requestMessage = "";
+                        requestStatus = 200;
+                        requestSuccess = true;
+                    }
+                    else {
+                        requestCode = queryUserUpdate.code;
+                    }
                 }
                 else {
-                    return result.status(400).json({
-                        message: transactionUpdateUser.code,
-                        success: false,
-                        error: true
-                    });
+                    requestMessage = "validateuser_mismatch";
                 }
             }
             else {
-                return result.status(400).json({
-                    message: "Password does not match",
-                    success: false,
-                    error: true
-                });
+                requestCode = queryUserSel.code;
             }
         }
-        else {
-            return result.status(400).json({
-                message: transactionSelectUser.code,
-                success: false,
-                error: true
-            });
-        }
+
+        return result.status(requestStatus).json({
+            code: requestCode,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
     }
     catch (exception) {
         return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
             message: exception.message,
             success: false,
-            error: true
         });
     }
 }
 
 exports.validateUsername = async (request, result) => {
     try {
+        var requestCode = "error_unexpected_error";
+        var requestIsValid = false;
+        var requestMessage = "error_unexpected_error";
+        var requestStatus = 400;
+        var requestSuccess = false;
+
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
-                return result.status(400).json({
-                    message: "Unauthorized",
-                    success: false,
-                    error: true
+                return result.status(requestStatus).json({
+                    code: "error_auth_error",
+                    error: !requestSuccess,
+                    isvalid: requestIsValid,
+                    message: "error_auth_error",
+                    success: requestSuccess,
                 });
             }
         }
 
-        var { method, parameters = {} } = request.body;
+        if (request.body) {
+            var { method, parameters = {} } = request.body;
 
-        if (typeof parameters.facebookid !== "undefined" && parameters.facebookid) {
-            parameters.googleid = null;
-            parameters.usr = null;
-        }
+            if (typeof parameters.facebookid !== "undefined" && parameters.facebookid) {
+                parameters.googleid = null;
+                parameters.usr = null;
+            }
 
-        if (typeof parameters.googleid !== "undefined" && parameters.googleid) {
-            parameters.facebookid = null;
-            parameters.usr = null;
-        }
+            if (typeof parameters.googleid !== "undefined" && parameters.googleid) {
+                parameters.facebookid = null;
+                parameters.usr = null;
+            }
 
-        const transactionSelectUser = await triggerfunctions.executesimpletransaction(method, parameters);
+            const queryUserSel = await triggerfunctions.executesimpletransaction(method, parameters);
 
-        if (transactionSelectUser instanceof Array) {
-            if (transactionSelectUser.length > 0) {
-                return result.json({
-                    isvalid: false,
-                    success: true
-                });
+            if (queryUserSel instanceof Array) {
+                requestCode = "";
+                requestMessage = "";
+                requestStatus = 200;
+                requestSuccess = true;
+
+                if (queryUserSel.length > 0) {
+                    requestIsValid = true;
+                }
+                else {
+                    requestIsValid = false;
+                }
             }
             else {
-                return result.json({
-                    isvalid: true,
-                    success: true
-                });
+                requestCode = queryUserSel.code;
             }
         }
-        else {
-            return result.status(400).json({
-                message: transactionSelectUser.code,
-                success: false,
-                error: true
-            });
-        }
+
+        return result.status(requestStatus).json({
+            code: requestCode,
+            error: !requestSuccess,
+            isvalid: requestIsValid,
+            message: requestMessage,
+            success: requestSuccess,
+        });
     }
     catch (exception) {
         return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
             message: exception.message,
             success: false,
-            error: true
         });
     }
 }
