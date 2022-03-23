@@ -614,20 +614,11 @@ exports.getChannelService = async (request, result) => {
             };
         }
         else {
-            if (request.body.siteType === 'TWTR') {
-                method = 'UFN_COMMUNICATIONCHANNELHOOK_SEL';
-                parameters = {
-                    site: request.body.siteId,
-                    type: request.body.siteType
-                };
-            }
-            else {
-                method = 'UFN_COMMUNICATIONCHANNELSITE_SEL';
-                parameters = {
-                    communicationchannelsite: request.body.siteId,
-                    type: request.body.siteType,
-                };
-            }
+            method = 'UFN_COMMUNICATIONCHANNELSITE_SEL';
+            parameters = {
+                communicationchannelsite: request.body.siteId,
+                type: request.body.siteType,
+            };
         }
 
         const transactionSelectCredentials = await triggerfunctions.executesimpletransaction(method, parameters);

@@ -644,16 +644,6 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_COMMUNICATIONCHANNELHOOK_INS: {
-        query: "SELECT * FROM ufn_communicationchannelhook_ins($type, $servicedata, $site, $operation)",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_COMMUNICATIONCHANNELHOOK_SEL: {
-        query: "SELECT * FROM ufn_communicationchannelhook_sel($type, $site)",
-        module: "",
-        protected: "INSERT"
-    },
     UFN_CHATFLOW_BLOCK_LST: {
         query: "SELECT * FROM ufn_chatflow_block_lst($corpid, $orgid, $userid)",
         module: "",
@@ -1277,8 +1267,8 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_UPDATE_ACTIVE_USER_SEL: {
-        query: "select * from ufn_update_active_user_sel($usr, $firstname, $corpid)",
+    UFN_USER_ACTIVATE: {
+        query: "select * from ufn_user_activate($corpid, $userid)",
         module: "",
         protected: "SELECT"
     },
@@ -1503,7 +1493,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGCONFIGURATION_INS: {
-        query: "SELECT * FROM ufn_billingconfiguration_ins($year,$month,$plan,$id,$basicfee,$userfreequantity,$useradditionalfee,$channelfreequantity,$channelwhatsappfee,$channelotherfee,$clientfreequantity,$clientadditionalfee,$allowhsm,$hsmfee,$description,$status,$whatsappconversationfreequantity,$freewhatsappchannel,$usercreateoverride,$channelcreateoverride,$type,$username,$operation)",
+        query: "SELECT * FROM ufn_billingconfiguration_ins($year,$month,$plan,$id,$basicfee,$userfreequantity,$useradditionalfee,$channelfreequantity,$channelwhatsappfee,$channelotherfee,$clientfreequantity,$clientadditionalfee,$allowhsm,$hsmfee,$description,$status,$whatsappconversationfreequantity,$freewhatsappchannel,$usercreateoverride,$channelcreateoverride,$vcacomissionperhsm,$type,$username,$operation)",
         module: "",
         protected: "INSERT"
     },
@@ -1798,7 +1788,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_APPSETTING_INVOICE_UPDATE: {
-        query: "select * from public.ufn_appsetting_invoice_update($ruc, $businessname, $tradename, $fiscaladdress, $ubigeo, $country, $emittertype, $currency, $invoiceserie, $invoicecorrelative, $annexcode, $igv, $printingformat, $xmlversion, $ublversion, $returnpdf, $returnxmlsunat, $returnxml, $invoiceprovider, $sunaturl, $token, $sunatusername, $paymentprovider, $publickey, $privatekey, $ticketserie, $ticketcorrelative, $invoicecreditserie, $invoicecreditcorrelative, $ticketcreditserie, $ticketcreditcorrelative, $detraction, $detractioncode, $detractionaccount, $operationcodeperu, $operationcodeother, $culqiurl, $detractionminimum)",
+        query: "select * from public.ufn_appsetting_invoice_update($ruc, $businessname, $tradename, $fiscaladdress, $ubigeo, $country, $emittertype, $currency, $invoiceserie, $invoicecorrelative, $annexcode, $igv, $printingformat, $xmlversion, $ublversion, $returnpdf, $returnxmlsunat, $returnxml, $invoiceprovider, $sunaturl, $token, $sunatusername, $paymentprovider, $publickey, $privatekey, $ticketserie, $ticketcorrelative, $invoicecreditserie, $invoicecreditcorrelative, $ticketcreditserie, $ticketcreditcorrelative, $detraction, $detractioncode, $detractionaccount, $operationcodeperu, $operationcodeother, $culqiurl, $detractionminimum, $culqiurlcardcreate, $culqiurlclient, $culqiurltoken, $culqiurlcharge, $culqiurlcardget, $culqiurlcarddelete)",
         module: "",
         protected: "UPDATE"
     },
@@ -2037,6 +2027,16 @@ module.exports = {
     },
     UFN_PRODUCTCATALOG_LST: {
         query: "SELECT * FROM ufn_productcatalog_lst($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PAYMENTCARD_INS: {
+        query: "SELECT * FROM ufn_paymentcard_ins($corpid, $orgid, $id, $cardnumber, $cardcode, $firstname, $lastname, $mail, $favorite, $clientcode, $status, $type, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_PAYMENTCARD_LST: {
+        query: "SELECT * FROM ufn_paymentcard_lst($corpid, $orgid, $id)",
         module: "",
         protected: "SELECT"
     },
