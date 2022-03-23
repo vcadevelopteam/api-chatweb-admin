@@ -1,5 +1,5 @@
 const { buildQueryDynamic, buildQueryDynamicGroupInterval, buildQueryDynamic2, exportData, executesimpletransaction } = require('../config/triggerfunctions');
-const { setSessionParameters, errors, getErrorCode, stringToSeconds, secondsToTime } = require('../config/helpers');
+const { setSessionParameters, errors, getErrorCode, stringToMinutes, secondsToTime } = require('../config/helpers');
 
 exports.drawReport = async (req, res) => {
     const { columns, filters, summaries, parameters = {} } = req.body;
@@ -127,21 +127,22 @@ exports.dashboardDesigner = async (req, res) => {
                         return resIndicator;
                     } else {
                         if (interval) {
-                            const total = resIndicator.reduce((acc, item) => acc + (item.total instanceof String ? stringToSeconds(item.total || "00:00:00") : item.total), 0)
+                            const total = resIndicator.reduce((acc, item) => acc + (typeof item.total === "string" ? stringToMinutes(item.total || "00:00:00") : item.total), 0)
+                            console.log(total)
                             resultReports[index][0].total = total;
                             if (!!summarizationfunction) {
                                 return resIndicator.reduce((acc, item) => ({
                                     ...acc,
-                                    [interval + item.interval]: item.total
+                                    [interval + item.interval]:  typeof item.total === "string" ? stringToMinutes(item.total || "00:00:00") : item.total
                                 }), {})
                             } else {
                                 return resIndicator.reduce((acc, item) => ({
                                     ...acc,
                                     [interval + item.interval]: acc[interval + item.interval] ? {
                                         ...acc[interval + item.interval],
-                                        [item[column.replace(".", "")]]: grouping === "percentage" ? ((item.total instanceof String ? stringToSeconds(item.total || "00:00:00") : item.total) / total) * total : item.total
+                                        [item[column.replace(".", "")]]: grouping === "percentage" ? ((typeof item.total === "string" ? stringToMinutes(item.total || "00:00:00") : item.total) / total) * total : item.total
                                     } : {
-                                        [item[column.replace(".", "")]]: grouping === "percentage" ? ((item.total instanceof String ? stringToSeconds(item.total || "00:00:00") : item.total) / total) * total : item.total
+                                        [item[column.replace(".", "")]]: grouping === "percentage" ? ((typeof item.total === "string" ? stringToMinutes(item.total || "00:00:00") : item.total) / total) * total : item.total
                                     }
                                 }), {})
                             }

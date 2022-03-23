@@ -1,5 +1,5 @@
 
-PORT=6969
+PORT=6065
 SECRETA=palabrasecreta
 DBNAME=laraigotest
 DBUSER=admin

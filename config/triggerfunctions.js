@@ -278,12 +278,12 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
         }
 
         const columnValueUnique = filters.find(x => x.type_filter === "unique_value")?.columnname;
-        console.log("columnValueUnique", columnValueUnique)
+        // console.log("columnValueUnique", columnValueUnique)
         
         const COLUMNESSELECT = columns.reduce((acc, item, index) => {
             let selcol = item.columnname;
 
-            console.log("selcol", selcol);
+            // console.log("selcol", selcol);
 
             if (item.type === "interval") {
                 selcol = `date_trunc('seconds', ${item.columnname})::text`;
@@ -299,7 +299,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 return acc + (index === 0 ? "" : ",") + `${selcol} as "${item.columnname.replace(".", "")}"`
             }
         }, "")
-
+        console.log(filters)
         const FILTERS = filters.reduce((acc, { type, columnname, start, end, value }) => {
             if (DATES.includes(type)) {
                 return `${acc}\nand ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
@@ -336,7 +336,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             ${TABLENAME}.corpid = $corpid and ${TABLENAME}.orgid = $orgid
             ${FILTERS}
         `;
-        console.log(query)
+        // console.log(query)
         const resultbd = await executeQuery(query, parameters);
         
         if (summaries.length > 0 && resultbd.length > 0) {
