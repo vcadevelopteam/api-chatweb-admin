@@ -461,15 +461,21 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
             if (DATES.includes(type)) {
                 return `${acc}\nand ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
             } else if (!!value) {
+                const filter_array = `ANY(string_to_array('${value}',',')::${type}[])`
+
                 if (NUMBERS.includes(type)) {
-                    return `${acc}\nand ${columnname} = ${value}`
+                    return `${acc}\nand ${columnname} = ${value.includes(",") ? filter_array : value}`
                 } else if (type === "variable") {
-                    return `${acc}\nand (conversation.variablecontext::jsonb)->'${columnname}'->>'Value' ilike '${value}'`
+                    return `${acc}\nand (conversation.variablecontext::jsonb)->'${columnname}'->>'Value' ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
                 } else {
                     if (columnname === "conversation.tags") {
-                        return `${acc}\nand '${value}'  = any(string_to_array(${columnname}, ','))`
+                        if (value.includes(",")) {
+                            return `${acc}\nand ${filter_array}  && string_to_array(${columnname}, ',')`
+                        } else {
+                            return `${acc}\nand '${value}'  = any(string_to_array(${columnname}, ','))`
+                        }
                     } else {
-                        return `${acc}\nand ${columnname} ilike '${value}'`
+                        return `${acc}\nand ${columnname} ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
                     }
                 }
             } else {
