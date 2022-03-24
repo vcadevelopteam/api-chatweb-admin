@@ -254,7 +254,7 @@ exports.createSubscription = async (request, result) => {
                             firstName: card.firstname,
                             lastName: card.lastname,
                             operation: "CREATE",
-                            phoneNumber: parameters.phone.split("+").join(""),
+                            phoneNumber: parameters.phone.split("+").join("").split(" ").join("").split("(").join("").split(")").join(""),
                             url: appsetting.culqiurlclient,
                         },
                         method: "post",
