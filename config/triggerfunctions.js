@@ -455,7 +455,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
                 return acc + `, count(distinct(coalesce(${selcol}::text, ''))) total`
             }
 
-        }, `date_part('${interval}', ${dataorigin}.createdate + $offset * INTERVAL '1hour') "interval"`)
+        }, interval === "day" ? `to_char(${dataorigin}.createdate + -5 * INTERVAL '1hour', 'MM-DD')` : `date_part('${interval}', ${dataorigin}.createdate + $offset * INTERVAL '1hour') "interval"`)
 
         const FILTERS = filters.reduce((acc, { type, columnname, start, end, value }) => {
             if (DATES.includes(type)) {
