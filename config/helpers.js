@@ -361,6 +361,29 @@ exports.stringToSeconds = (str) => {
     return seconds;
 }
 
+exports.stringToMinutes = (str) => {
+    let seconds = 0;
+    let days = 0;
+    let newstr = str;
+    if (str.includes("day")) {
+        days = parseInt(str.split(" day")[0]);
+        newstr = str.split(" day")[1];
+    }
+
+    let parts = str.split(":");
+
+    seconds += parseInt(parts[2]);
+    const minutes = parseInt(parts[1]);
+    const hours = parseInt(parts[0]);
+
+    seconds += minutes * 60;
+    seconds += hours * 60 * 60;
+    seconds += days * 24 * 60 * 60;
+
+
+    return parseFloat((seconds / 60).toFixed(2));
+}
+
 exports.secondsToTime = (sec_num) => {
     sec_num = parseInt(sec_num)
     let days = Math.floor(sec_num / 86400);

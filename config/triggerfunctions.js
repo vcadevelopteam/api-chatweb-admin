@@ -278,12 +278,12 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
         }
 
         const columnValueUnique = filters.find(x => x.type_filter === "unique_value")?.columnname;
-        console.log("columnValueUnique", columnValueUnique)
+        // console.log("columnValueUnique", columnValueUnique)
         
         const COLUMNESSELECT = columns.reduce((acc, item, index) => {
             let selcol = item.columnname;
 
-            console.log("selcol", selcol);
+            // console.log("selcol", selcol);
 
             if (item.type === "interval") {
                 selcol = `date_trunc('seconds', ${item.columnname})::text`;
@@ -299,7 +299,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 return acc + (index === 0 ? "" : ",") + `${selcol} as "${item.columnname.replace(".", "")}"`
             }
         }, "")
-
+        console.log(filters)
         const FILTERS = filters.reduce((acc, { type, columnname, start, end, value }) => {
             if (DATES.includes(type)) {
                 return `${acc}\nand ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
@@ -435,7 +435,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
                 }
                 return acc + `, sum(coalesce(${sel0l}, ${coalescedefault})) total`
             } else if (summarizationfunction === "count") {
-                return acc + `, count(coalesce(${selcol}::text, ''})) total`
+                return acc + `, count(coalesce(${selcol}::text, '')) total`
             } else if (summarizationfunction === "average") {
                 if (coalescedefault === "'00:00:00'") {
                     return acc + `, date_trunc('seconds', avg(coalesce(${selcol}, ${coalescedefault})))::text total`
@@ -461,15 +461,21 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
             if (DATES.includes(type)) {
                 return `${acc}\nand ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
             } else if (!!value) {
+                const filter_array = `ANY(string_to_array('${value}',',')::${type}[])`
+
                 if (NUMBERS.includes(type)) {
-                    return `${acc}\nand ${columnname} = ${value}`
+                    return `${acc}\nand ${columnname} = ${value.includes(",") ? filter_array : value}`
                 } else if (type === "variable") {
-                    return `${acc}\nand (conversation.variablecontext::jsonb)->'${columnname}'->>'Value' ilike '${value}'`
+                    return `${acc}\nand (conversation.variablecontext::jsonb)->'${columnname}'->>'Value' ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
                 } else {
                     if (columnname === "conversation.tags") {
-                        return `${acc}\nand '${value}'  = any(string_to_array(${columnname}, ','))`
+                        if (value.includes(",")) {
+                            return `${acc}\nand ${filter_array}  && string_to_array(${columnname}, ',')`
+                        } else {
+                            return `${acc}\nand '${value}'  = any(string_to_array(${columnname}, ','))`
+                        }
                     } else {
-                        return `${acc}\nand ${columnname} ilike '${value}'`
+                        return `${acc}\nand ${columnname} ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
                     }
                 }
             } else {
@@ -604,7 +610,7 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
             let keysHeaders;
             const keys = Object.keys(dataToExport[0]);
             keysHeaders = keys;
-            console.log(headerClient)
+            // console.log(headerClient)
             if (headerClient) {
                 keysHeaders = keys.reduce((acc, item) => {
                     const keyclientfound = headerClient.find(x => x.key === item);
