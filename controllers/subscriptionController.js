@@ -1847,11 +1847,8 @@ exports.validateUsername = async (request, result) => {
                 requestStatus = 200;
                 requestSuccess = true;
 
-                if (queryUserSel.length > 0) {
+                if (queryUserSel.length <= 0) {
                     requestIsValid = true;
-                }
-                else {
-                    requestIsValid = false;
                 }
             }
             else {
