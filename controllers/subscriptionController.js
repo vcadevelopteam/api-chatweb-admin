@@ -244,6 +244,8 @@ exports.createSubscription = async (request, result) => {
                 const appsetting = await getAppSetting();
 
                 if (appsetting) {
+                    card.cardnumber = card.cardnumber.split(" ").join("");
+
                     const requestCulqiClient = await axios({
                         data: {
                             address: parameters.fiscaladdress,
