@@ -244,6 +244,8 @@ exports.createSubscription = async (request, result) => {
                 const appsetting = await getAppSetting();
 
                 if (appsetting) {
+                    card.cardnumber = card.cardnumber.split(" ").join("");
+
                     const requestCulqiClient = await axios({
                         data: {
                             address: parameters.fiscaladdress,
@@ -254,7 +256,7 @@ exports.createSubscription = async (request, result) => {
                             firstName: card.firstname,
                             lastName: card.lastname,
                             operation: "CREATE",
-                            phoneNumber: parameters.phone.split("+").join(""),
+                            phoneNumber: parameters.phone.split("+").join("").split(" ").join("").split("(").join("").split(")").join(""),
                             url: appsetting.culqiurlclient,
                         },
                         method: "post",
