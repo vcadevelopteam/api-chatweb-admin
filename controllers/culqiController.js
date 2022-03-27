@@ -1,13 +1,16 @@
 const axios = require('axios');
-const triggerfunctions = require('../config/triggerfunctions');
 const sequelize = require('../config/database');
-const { QueryTypes } = require('sequelize');
+const triggerfunctions = require('../config/triggerfunctions');
+
 const { getErrorSeq } = require('../config/helpers');
+
 const Culqi = require('culqi-node');
 
-const exchangeEndpoint = process.env.EXCHANGE;
+const { QueryTypes } = require('sequelize');
 
 const bridgeEndpoint = process.env.BRIDGE;
+const whitelist = process.env.WHITELIST;
+const exchangeEndpoint = process.env.EXCHANGE;
 
 const zeroPad = (num, places) => String(num).padStart(places, '0')
 
@@ -308,7 +311,7 @@ const getCharge = async (corpid, orgid, userid, id) => {
     return null
 }
 
-const createInvoice = async (corpid, orgid, invoiceid, description, status, type, issuerruc, issuerbusinessname, issuertradename, issuerfiscaladdress, issuerubigeo, emittertype, annexcode, printingformat, xmlversion, ublversion, receiverdoctype, receiverdocnum, receiverbusinessname, receiverfiscaladdress, receivercountry, receivermail, invoicetype, sunatopecode, serie, correlative, concept, invoicedate, expirationdate, subtotal, taxes, totalamount, currency, exchangerate, invoicestatus, filenumber, purchaseorder, executingunitcode, selectionprocessnumber, contractnumber, comments, credittype, creditnotetype, creditnotemotive, creditnotediscount, invoicereferencefile, invoicepaymentnote, username, referenceinvoiceid, netamount, paymentstatus, hasreport) => {
+const createInvoice = async (corpid, orgid, invoiceid, description, status, type, issuerruc, issuerbusinessname, issuertradename, issuerfiscaladdress, issuerubigeo, emittertype, annexcode, printingformat, xmlversion, ublversion, receiverdoctype, receiverdocnum, receiverbusinessname, receiverfiscaladdress, receivercountry, receivermail, invoicetype, sunatopecode, serie, correlative, concept, invoicedate, expirationdate, subtotal, taxes, totalamount, currency, exchangerate, invoicestatus, filenumber, purchaseorder, executingunitcode, selectionprocessnumber, contractnumber, comments, credittype, creditnotetype, creditnotemotive, creditnotediscount, invoicereferencefile, invoicepaymentnote, username, referenceinvoiceid, netamount, paymentstatus, hasreport, year, month) => {
     const query = "UFN_INVOICE_INS";
     const bind = {
         corpid: corpid,
@@ -362,7 +365,9 @@ const createInvoice = async (corpid, orgid, invoiceid, description, status, type
         referenceinvoiceid: referenceinvoiceid,
         netamount: netamount,
         paymentstatus: paymentstatus,
-        hasreport, hasreport
+        hasreport: hasreport,
+        year: year,
+        month: month,
     }
 
     const result = await triggerfunctions.executesimpletransaction(query, bind);
@@ -399,7 +404,7 @@ const createInvoiceDetail = async (corpid, orgid, invoiceid, description, status
         productnetprice: productnetprice,
         productnetworth: productnetworth,
         netamount: netamount,
-        username: username
+        username: username,
     }
     
     const result = await triggerfunctions.executesimpletransaction(query, bind);
@@ -883,9 +888,15 @@ exports.refund = async (req, res) => {
 
 exports.chargeInvoice = async (req, res) => {
     const { userid, usr } = req.user;
-    const { invoiceid, settings, token, metadata = {}, purchaseorder, comments, corpid, orgid, override } = req.body;
+    const { invoiceid, settings, token, metadata = {}, purchaseorder, comments, corpid, orgid, override, paymentcardid, paymentcardcode, iscard } = req.body;
 
     try {
+        if (iscard) {
+            if (!paymentcardid || !paymentcardcode) {
+                return res.status(403).json({ error: true, success: false, code: '', message: 'Payment card missing parameters' });
+            }
+        }
+
         const invoice = await getInvoice(corpid, orgid, userid, invoiceid);
 
         if (invoice) {
@@ -967,65 +978,136 @@ exports.chargeInvoice = async (req, res) => {
                                     metadata.emissiondate = (new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0] || '');
                                     metadata.user = removeAccent(usr || '');
                                     metadata.reference = removeAccent(invoice.description || '');
-        
-                                    const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
-        
-                                    if (charge.object === 'error') {
-                                        return res.status(400).json({
+                                    
+                                    var successPay = false;
+
+                                    if (iscard) {
+                                        const requestCulqiCharge = await axios({
                                             data: {
-                                                code: charge.code,
-                                                id: charge.charge_id,
-                                                message: charge.user_message,
-                                                object: charge.object
+                                                amount: settings.amount,
+                                                bearer: appsetting.privatekey,
+                                                description: (removeAccent('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                                currencyCode: settings.currency,
+                                                email: userprofile.email,
+                                                sourceId: paymentcardcode,
+                                                operation: "CREATE",
+                                                url: appsetting.culqiurlcharge,
                                             },
-                                            error: true,
-                                            success: false
+                                            method: "post",
+                                            url: `${bridgeEndpoint}processculqi/handlecharge`,
                                         });
+
+                                        if (requestCulqiCharge.data.success) {
+                                            const chargequery = "UFN_CHARGE_INS";
+                                            const chargebind = {
+                                                amount: settings.amount / 100,
+                                                capture: true,
+                                                chargejson: requestCulqiCharge.data.result,
+                                                chargetoken: requestCulqiCharge.data.result.id,
+                                                corpid: corpid,
+                                                currency: settings.currency,
+                                                description: settings.description,
+                                                email: userprofile.email,
+                                                id: null,
+                                                invoiceid: invoiceid,
+                                                orderid: null,
+                                                orderjson: null,
+                                                orgid: orgid,
+                                                operation: 'INSERT',
+                                                paidby: usr,
+                                                status: 'PAID',
+                                                tokenid: paymentcardid,
+                                                tokenjson: null,
+                                                type: "REGISTEREDCARD",
+                                            }
+        
+                                            const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
+
+                                            const invoicequery = "UFN_INVOICE_PAYMENT";
+                                            const invoicebind = {
+                                                capture: true,
+                                                chargeid: chargeresult[0].chargeid,
+                                                chargejson: requestCulqiCharge.data.result,
+                                                chargetoken: requestCulqiCharge.data.result.id,
+                                                corpid: corpid,
+                                                email: userprofile.email,
+                                                invoiceid: invoiceid,
+                                                orgid: orgid,
+                                                paidby: usr,
+                                                tokenid: paymentcardid,
+                                                tokenjson: null,
+                                                culqiamount: (settings.amount / 100)
+                                            }
+            
+                                            const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
+
+                                            successPay = true;
+                                        }
                                     }
                                     else {
-                                        const chargequery = "UFN_CHARGE_INS";
-                                        const chargebind = {
-                                            amount: settings.amount / 100,
-                                            capture: true,
-                                            chargejson: charge,
-                                            chargetoken: charge.id,
-                                            corpid: corpid,
-                                            currency: settings.currency,
-                                            description: settings.description,
-                                            email: token.email,
-                                            id: null,
-                                            invoiceid: invoiceid,
-                                            orderid: null,
-                                            orderjson: null,
-                                            orgid: orgid,
-                                            operation: 'INSERT',
-                                            paidby: usr,
-                                            status: 'PAID',
-                                            tokenid: token.id,
-                                            tokenjson: token,
-                                            type: charge.object
+                                        const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
+
+                                        if (charge.object === 'error') {
+                                            return res.status(400).json({
+                                                data: {
+                                                    code: charge.code,
+                                                    id: charge.charge_id,
+                                                    message: charge.user_message,
+                                                    object: charge.object
+                                                },
+                                                error: true,
+                                                success: false
+                                            });
                                         }
+                                        else {
+                                            const chargequery = "UFN_CHARGE_INS";
+                                            const chargebind = {
+                                                amount: settings.amount / 100,
+                                                capture: true,
+                                                chargejson: charge,
+                                                chargetoken: charge.id,
+                                                corpid: corpid,
+                                                currency: settings.currency,
+                                                description: settings.description,
+                                                email: token.email,
+                                                id: null,
+                                                invoiceid: invoiceid,
+                                                orderid: null,
+                                                orderjson: null,
+                                                orgid: orgid,
+                                                operation: 'INSERT',
+                                                paidby: usr,
+                                                status: 'PAID',
+                                                tokenid: token.id,
+                                                tokenjson: token,
+                                                type: charge.object
+                                            }
         
-                                        const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
-        
-                                        const invoicequery = "UFN_INVOICE_PAYMENT";
-                                        const invoicebind = {
-                                            capture: true,
-                                            chargeid: chargeresult[0].chargeid,
-                                            chargejson: charge,
-                                            chargetoken: charge.id,
-                                            corpid: corpid,
-                                            email: token.email,
-                                            invoiceid: invoiceid,
-                                            orgid: orgid,
-                                            paidby: usr,
-                                            tokenid: token.id,
-                                            tokenjson: token,
-                                            culqiamount: (settings.amount / 100)
-                                        }
+                                            const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
+
+                                            const invoicequery = "UFN_INVOICE_PAYMENT";
+                                            const invoicebind = {
+                                                capture: true,
+                                                chargeid: chargeresult[0].chargeid,
+                                                chargejson: charge,
+                                                chargetoken: charge.id,
+                                                corpid: corpid,
+                                                email: token.email,
+                                                invoiceid: invoiceid,
+                                                orgid: orgid,
+                                                paidby: usr,
+                                                tokenid: token.id,
+                                                tokenjson: token,
+                                                culqiamount: (settings.amount / 100)
+                                            }
             
-                                        const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
-        
+                                            const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
+
+                                            successPay = true;
+                                        }
+                                    }
+
+                                    if (successPay) {
                                         var invoicecorrelative = null;
                                         var documenttype = null;
         
@@ -1274,17 +1356,20 @@ exports.chargeInvoice = async (req, res) => {
                                         else {
                                             await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
                                         }
-        
+                                        
                                         return res.json({
-                                            code: charge.outcome.code,
+                                            code: '',
                                             data: {
-                                                id: charge.id,
-                                                object: charge.object
+                                                id: 0,
+                                                object: null 
                                             },
                                             error: false,
-                                            message: charge.outcome.user_message,
+                                            message: 'culqipaysuccess',
                                             success: true
                                         });
+                                    }
+                                    else {
+                                        return res.status(403).json({ error: true, success: false, code: '', message: 'Unsuccessful payment' });
                                     }
                                 }
                                 else {
@@ -1324,75 +1409,152 @@ exports.chargeInvoice = async (req, res) => {
                         metadata.emissiondate = (invoice.invoicedate || '');
                         metadata.user = removeAccent(usr || '');
                         metadata.reference = removeAccent(invoice.description || '');
-    
-                        const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
-    
-                        if (charge.object === 'error') {
-                            return res.status(400).json({
+
+                        if (iscard) {
+                            const requestCulqiCharge = await axios({
                                 data: {
-                                    code: charge.code,
-                                    id: charge.charge_id,
-                                    message: charge.user_message,
-                                    object: charge.object
+                                    amount: settings.amount,
+                                    bearer: appsetting.privatekey,
+                                    description: (removeAccent('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                    currencyCode: settings.currency,
+                                    email: userprofile.email,
+                                    sourceId: paymentcardcode,
+                                    operation: "CREATE",
+                                    url: appsetting.culqiurlcharge,
                                 },
-                                error: true,
-                                success: false
+                                method: "post",
+                                url: `${bridgeEndpoint}processculqi/handlecharge`,
                             });
+
+                            if (requestCulqiCharge.data.success) {
+                                const chargequery = "UFN_CHARGE_INS";
+                                const chargebind = {
+                                    amount: settings.amount / 100,
+                                    capture: true,
+                                    chargejson: requestCulqiCharge.data.result,
+                                    chargetoken: requestCulqiCharge.data.result.id,
+                                    corpid: corpid,
+                                    currency: settings.currency,
+                                    description: settings.description,
+                                    email: userprofile.email,
+                                    id: null,
+                                    invoiceid: invoiceid,
+                                    orderid: null,
+                                    orderjson: null,
+                                    orgid: orgid,
+                                    operation: 'INSERT',
+                                    paidby: usr,
+                                    status: 'PAID',
+                                    tokenid: paymentcardid,
+                                    tokenjson: null,
+                                    type: "REGISTEREDCARD",
+                                }
+
+                                const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
+
+                                const invoicequery = "UFN_INVOICE_PAYMENT";
+                                const invoicebind = {
+                                    capture: true,
+                                    chargeid: chargeresult[0].chargeid,
+                                    chargejson: requestCulqiCharge.data.result,
+                                    chargetoken: requestCulqiCharge.data.result.id,
+                                    corpid: corpid,
+                                    email: userprofile.email,
+                                    invoiceid: invoiceid,
+                                    orgid: orgid,
+                                    paidby: usr,
+                                    tokenid: paymentcardid,
+                                    tokenjson: null,
+                                    culqiamount: (settings.amount / 100)
+                                }
+
+                                const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
+
+                                return res.json({
+                                    code: '',
+                                    data: {
+                                        id: requestCulqiCharge.data.result.id,
+                                        object: requestCulqiCharge.data.result
+                                    },
+                                    error: false,
+                                    message: 'successful_transaction',
+                                    success: true
+                                });
+                            }
+                            else {
+                                return res.status(403).json({ error: true, success: false, code: '', message: 'Unsuccessful payment' });
+                            }
                         }
                         else {
-                            const chargequery = "UFN_CHARGE_INS";
-                            const chargebind = {
-                                amount: settings.amount / 100,
-                                capture: true,
-                                chargejson: charge,
-                                chargetoken: charge.id,
-                                corpid: corpid,
-                                currency: settings.currency,
-                                description: settings.description,
-                                email: token.email,
-                                id: null,
-                                invoiceid: invoiceid,
-                                orderid: null,
-                                orderjson: null,
-                                orgid: orgid,
-                                operation: 'INSERT',
-                                paidby: usr,
-                                status: 'PAID',
-                                tokenid: token.id,
-                                tokenjson: token,
-                                type: charge.object
+                            const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
+    
+                            if (charge.object === 'error') {
+                                return res.status(400).json({
+                                    data: {
+                                        code: charge.code,
+                                        id: charge.charge_id,
+                                        message: charge.user_message,
+                                        object: charge.object
+                                    },
+                                    error: true,
+                                    success: false
+                                });
                             }
-    
-                            const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
-    
-                            const invoicequery = "UFN_INVOICE_PAYMENT";
-                            const invoicebind = {
-                                capture: true,
-                                chargeid: chargeresult[0].chargeid,
-                                chargejson: charge,
-                                chargetoken: charge.id,
-                                corpid: corpid,
-                                email: token.email,
-                                invoiceid: invoiceid,
-                                orgid: orgid,
-                                paidby: usr,
-                                tokenid: token.id,
-                                tokenjson: token,
-                                culqiamount: (settings.amount / 100)
+                            else {
+                                const chargequery = "UFN_CHARGE_INS";
+                                const chargebind = {
+                                    amount: settings.amount / 100,
+                                    capture: true,
+                                    chargejson: charge,
+                                    chargetoken: charge.id,
+                                    corpid: corpid,
+                                    currency: settings.currency,
+                                    description: settings.description,
+                                    email: token.email,
+                                    id: null,
+                                    invoiceid: invoiceid,
+                                    orderid: null,
+                                    orderjson: null,
+                                    orgid: orgid,
+                                    operation: 'INSERT',
+                                    paidby: usr,
+                                    status: 'PAID',
+                                    tokenid: token.id,
+                                    tokenjson: token,
+                                    type: charge.object
+                                }
+        
+                                const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
+        
+                                const invoicequery = "UFN_INVOICE_PAYMENT";
+                                const invoicebind = {
+                                    capture: true,
+                                    chargeid: chargeresult[0].chargeid,
+                                    chargejson: charge,
+                                    chargetoken: charge.id,
+                                    corpid: corpid,
+                                    email: token.email,
+                                    invoiceid: invoiceid,
+                                    orgid: orgid,
+                                    paidby: usr,
+                                    tokenid: token.id,
+                                    tokenjson: token,
+                                    culqiamount: (settings.amount / 100)
+                                }
+                                
+                                const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
+        
+                                return res.json({
+                                    code: charge.outcome.code,
+                                    data: {
+                                        id: charge.id,
+                                        object: charge.object
+                                    },
+                                    error: false,
+                                    message: charge.outcome.user_message,
+                                    success: true
+                                });
                             }
-                            
-                            const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
-    
-                            return res.json({
-                                code: charge.outcome.code,
-                                data: {
-                                    id: charge.id,
-                                    object: charge.object
-                                },
-                                error: false,
-                                message: charge.outcome.user_message,
-                                success: true
-                            });
                         }
                     }
                     else {
@@ -1419,7 +1581,7 @@ exports.chargeInvoice = async (req, res) => {
 
 exports.createInvoice = async (request, response) => {
     const { userid, usr } = request.user;
-    const { corpid, orgid, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, clientcredittype, invoicecreatedate, invoiceduedate, invoicecurrency, invoicepurchaseorder, invoicecomments, autosendinvoice, productdetail, onlyinsert, invoiceid } = request.body;
+    const { corpid, orgid, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, clientcredittype, invoicecreatedate, invoiceduedate, invoicecurrency, invoicepurchaseorder, invoicecomments, autosendinvoice, productdetail, onlyinsert, invoiceid, year, month } = request.body;
     var { invoicetotalamount } = request.body;
 
     try {
@@ -1449,7 +1611,7 @@ exports.createInvoice = async (request, response) => {
                         invoicetotalcharge = invoicetotalamount;
                     }
 
-                    var invoiceResponse = await createInvoice(corpid, orgid, (invoiceid || 0), `GENERATED FOR ${clientdocnumber}`, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchange, (onlyinsert ? 'PENDING' : 'DRAFT'), null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, null, null, null, null, null, usr, null, invoicetotalamount, 'PENDING', false);
+                    var invoiceResponse = await createInvoice(corpid, orgid, (invoiceid || 0), `GENERATED FOR ${clientdocnumber}`, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchange, (onlyinsert ? 'PENDING' : 'DRAFT'), null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, null, null, null, null, null, usr, null, invoicetotalamount, 'PENDING', false, year, month);
 
                     if (invoiceResponse) {
                         if (invoiceid) {
@@ -1757,8 +1919,9 @@ exports.createCreditNote = async (request, response) => {
 
                 if (appsetting) {
                     const invoiceDate = new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0];
+                    const currentDate = new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60000);
 
-                    const invoiceResponse = await createInvoice(invoice.corpid, invoice.orgid, 0, `NOTA DE CREDITO: ${invoice.description}`, invoice.status, 'CREDITNOTE', appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, null, null, `NOTA DE CREDITO: ${invoice.concept}`, invoiceDate, invoiceDate, creditnotetype === '01' ? invoice.subtotal : parseFloat(creditnotediscount), invoice.taxes, creditnotetype === '01' ? invoice.totalamount : (parseFloat(creditnotediscount) * (appsetting.igv + 1)), invoice.currency, invoice.exchangerate, 'PENDING', null, invoice.purchaseorder, null, null, null, invoice.comments, invoice.credittype, creditnotetype, creditnotemotive, parseFloat(creditnotediscount), null, null, usr, invoice.invoiceid, invoice.netamount, 'NONE', false);
+                    const invoiceResponse = await createInvoice(invoice.corpid, invoice.orgid, 0, `NOTA DE CREDITO: ${invoice.description}`, invoice.status, 'CREDITNOTE', appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, null, null, `NOTA DE CREDITO: ${invoice.concept}`, invoiceDate, invoiceDate, creditnotetype === '01' ? invoice.subtotal : parseFloat(creditnotediscount), invoice.taxes, creditnotetype === '01' ? invoice.totalamount : (parseFloat(creditnotediscount) * (appsetting.igv + 1)), invoice.currency, invoice.exchangerate, 'PENDING', null, invoice.purchaseorder, null, null, null, invoice.comments, invoice.credittype, creditnotetype, creditnotemotive, parseFloat(creditnotediscount), null, null, usr, invoice.invoiceid, invoice.netamount, 'NONE', false, currentDate.getFullYear(), currentDate.getMonth());
 
                     if (invoiceResponse) {
                         var invoicecorrelative = null;
@@ -2119,7 +2282,9 @@ exports.createBalance = async (req, res) => {
                                     productnetworth = buyamount;
                                 }
 
-                                var invoiceResponse = await createInvoice(corpid, orgid, 0, reference, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, invoicesubtotal, invoicetaxes, invoicetotalcharge, 'USD', lastExchange, 'PENDING', null, purchaseorder, null, null, null, comments, 'typecredit_alcontado', null, null, null, null, null, usr, null, buyamount, 'PAID', false);
+                                const currentDate = new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60000);
+
+                                var invoiceResponse = await createInvoice(corpid, orgid, 0, reference, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, invoicesubtotal, invoicetaxes, invoicetotalcharge, 'USD', lastExchange, 'PENDING', null, purchaseorder, null, null, null, comments, 'typecredit_alcontado', null, null, null, null, null, usr, null, buyamount, 'PAID', false, currentDate.getFullYear(), currentDate.getMonth());
 
                                 if (invoiceResponse) {
                                     await changeBalanceInvoice(corpid, orgid, balanceResponse.balanceid, invoiceResponse.invoiceid, usr);
@@ -2792,5 +2957,310 @@ exports.emitInvoice = async (req, res) => {
         }
     } catch (error) {
         return res.status(500).json({ message: "There was a problem, please try again later" });
+    }
+}
+
+const insertPaymentCard = async (corpid, orgid, id, cardnumber, cardcode, firstname, lastname, mail, favorite, clientcode, status, type, username) => {
+    const queryMethod = "UFN_PAYMENTCARD_INS";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: orgid,
+        id: id,
+        cardnumber: cardnumber,
+        cardcode: cardcode,
+        firstname: firstname,
+        lastname: lastname,
+        mail: mail,
+        favorite: favorite,
+        clientcode: clientcode,
+        status: status,
+        type: type,
+        username: username,
+        operation: id ? "UPDATE" : "INSERT",
+    }
+
+    return await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+}
+
+const selUser = async (corpid, orgid, userid, username ) => {
+    const queryMethod = "UFN_USER_SEL";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: orgid,
+        id: userid,
+        username: username,
+        all: userid ? false : true,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult[0];
+        }
+    }
+
+    return null;
+}
+
+exports.cardCreate = async (request, result) => {
+    try {
+        var requestCode = "error_unexpected_error";
+        var requestMessage = "error_unexpected_error";
+        var requestStatus = 400;
+        var requestSuccess = false;
+
+        if (typeof whitelist !== "undefined" && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(requestStatus).json({
+                    code: "error_auth_error",
+                    error: !requestSuccess,
+                    message: "error_auth_error",
+                    success: requestSuccess,
+                });
+            }
+        }
+
+        if (request.body) {
+            const { address, addresscity, firstname, lastname, mail, cardnumber, securitycode, expirationmonth, expirationyear, favorite } = request.body;
+            const { corpid, orgid, userid, usr } = request.user;
+
+            const appsetting = await getAppSetting();
+
+            if (appsetting) {
+                const user = await selUser(corpid, orgid, userid, usr);
+
+                if (user) {
+                    var cleancardnumber = cardnumber.split(" ").join("");
+
+                    const requestCulqiClient = await axios({
+                        data: {
+                            address: address,
+                            addressCity: addresscity,
+                            bearer: appsetting.privatekey,
+                            countryCode: user.country,
+                            email: mail,
+                            firstName: firstname,
+                            lastName: lastname,
+                            operation: "CREATE",
+                            phoneNumber: (user.phone || "").split("+").join("").split(" ").join("").split("(").join("").split(")").join(""),
+                            url: appsetting.culqiurlclient,
+                        },
+                        method: "post",
+                        url: `${bridgeEndpoint}processculqi/handleclient`,
+                    });
+
+                    if (requestCulqiClient.data.success) {
+                        const requestCulqiCard = await axios({
+                            data: {
+                                bearer: appsetting.privatekey,
+                                cardNumber: cleancardnumber,
+                                customerId: requestCulqiClient.data.result.id,
+                                cvv: securitycode,
+                                email: mail,
+                                expirationMonth: expirationmonth,
+                                expirationYear: expirationyear,
+                                operation: "CREATE",
+                                url: appsetting.culqiurlcardcreate,
+                                urlToken: appsetting.culqiurltoken,
+                            },
+                            method: "post",
+                            url: `${bridgeEndpoint}processculqi/handlecard`,
+                        });
+
+                        if (requestCulqiCard.data.success) {
+                            cardData = requestCulqiCard.data.result;
+
+                            var queryPaymentCardInsert = await insertPaymentCard(corpid, orgid, 0, cardData.source.cardNumber, cardData.id, firstname, lastname, mail, favorite, cardData.customerId, "ACTIVO", "", usr);
+
+                            if (queryPaymentCardInsert instanceof Array) {
+                                requestCode = "";
+                                requestMessage = "";
+                                requestStatus = 200;
+                                requestSuccess = true;
+                            }
+                            else {
+                                requestCode = queryPaymentCardInsert.code;
+                                requestMessage = "error_card_insert";
+                            }
+                        }
+                        else {
+                            requestMessage = "error_card_card";
+                        }
+                    }
+                    else {
+                        requestMessage = "error_card_client";
+                    }
+                }
+                else {
+                    requestMessage = "error_card_usernotfound";
+                }
+            }
+            else {
+                requestMessage = "error_card_configuration";
+            }
+        }
+
+        return result.status(requestStatus).json({
+            code: requestCode,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
+    }
+    catch (exception) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+}
+
+exports.cardDelete = async (request, result) => {
+    try {
+        var requestCode = "error_unexpected_error";
+        var requestMessage = "error_unexpected_error";
+        var requestStatus = 400;
+        var requestSuccess = false;
+
+        if (typeof whitelist !== "undefined" && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(requestStatus).json({
+                    code: "error_auth_error",
+                    error: !requestSuccess,
+                    message: "error_auth_error",
+                    success: requestSuccess,
+                });
+            }
+        }
+
+        if (request.body) {
+            const { corpid, orgid, paymentcardid, cardnumber, cardcode, firstname, lastname, mail, favorite, clientcode, type } = request.body;
+            const { usr } = request.user;
+
+            const appsetting = await getAppSetting();
+
+            if (appsetting) {
+                const requestCulqiCard = await axios({
+                    data: {
+                        bearer: appsetting.privatekey,
+                        id: cardcode,
+                        operation: "DELETE",
+                        url: appsetting.culqiurlcarddelete,
+                    },
+                    method: "post",
+                    url: `${bridgeEndpoint}processculqi/handlecard`,
+                });
+
+                if (requestCulqiCard.data.success) {
+                    var queryPaymentCardUpdate = await insertPaymentCard(corpid, orgid, paymentcardid, cardnumber, cardcode, firstname, lastname, mail, favorite, clientcode, "ELIMINADO", type, usr);
+
+                    if (queryPaymentCardUpdate instanceof Array) {
+                        requestCode = "";
+                        requestMessage = "";
+                        requestStatus = 200;
+                        requestSuccess = true;
+                    }
+                    else {
+                        requestCode = queryPaymentCardUpdate.code;
+                        requestMessage = "error_card_update";
+                    }
+                }
+                else {
+                    requestMessage = "error_card_delete";
+                }
+            }
+            else {
+                requestMessage = "error_card_configuration";
+            }
+        }
+
+        return result.status(requestStatus).json({
+            code: requestCode,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
+    }
+    catch (exception) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+}
+
+exports.cardGet = async (request, result) => {
+    try {
+        var requestCode = "error_unexpected_error";
+        var requestData = null;
+        var requestMessage = "error_unexpected_error";
+        var requestStatus = 400;
+        var requestSuccess = false;
+
+        if (typeof whitelist !== "undefined" && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(requestStatus).json({
+                    code: "error_auth_error",
+                    data: requestData,
+                    error: !requestSuccess,
+                    message: "error_auth_error",
+                    success: requestSuccess,
+                });
+            }
+        }
+
+        if (request.body) {
+            const { cardcode } = request.body;
+
+            const appsetting = await getAppSetting();
+
+            if (appsetting) {
+                const requestCulqiCard = await axios({
+                    data: {
+                        bearer: appsetting.privatekey,
+                        id: cardcode,
+                        operation: "GET",
+                        url: appsetting.culqiurlcarddelete,
+                    },
+                    method: "post",
+                    url: `${bridgeEndpoint}processculqi/handlecard`,
+                });
+
+                if (requestCulqiCard.data.success) {
+                    requestCode = "";
+                    requestData = requestCulqiCard.data.result;
+                    requestMessage = "";
+                    requestStatus = 200;
+                    requestSuccess = true;
+                }
+                else {
+                    requestMessage = "error_card_get";
+                }
+            }
+            else {
+                requestMessage = "error_card_configuration";
+            }
+        }
+
+        return result.status(requestStatus).json({
+            code: requestCode,
+            data: requestData,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
+    }
+    catch (exception) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
     }
 }
