@@ -3127,7 +3127,7 @@ exports.cardCreate = async (request, result) => {
                                 address: address,
                                 addressCity: addresscity,
                                 bearer: appsetting.privatekey,
-                                countryCode: user.country,
+                                countryCode: user.country || 'PE',
                                 email: mail,
                                 firstName: firstname,
                                 lastName: lastname,
