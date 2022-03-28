@@ -982,13 +982,15 @@ exports.chargeInvoice = async (req, res) => {
                                     var successPay = false;
 
                                     if (iscard) {
+                                        const paymentcard = await getCard(corpid, paymentcardid);
+
                                         const requestCulqiCharge = await axios({
                                             data: {
                                                 amount: settings.amount,
                                                 bearer: appsetting.privatekey,
                                                 description: (removeAccent('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
                                                 currencyCode: settings.currency,
-                                                email: userprofile.email,
+                                                email: (paymentcard?.mail || userprofile.email),
                                                 sourceId: paymentcardcode,
                                                 operation: "CREATE",
                                                 url: appsetting.culqiurlcharge,
@@ -1008,7 +1010,7 @@ exports.chargeInvoice = async (req, res) => {
                                                 corpid: corpid,
                                                 currency: settings.currency,
                                                 description: settings.description,
-                                                email: userprofile.email,
+                                                email: (paymentcard?.mail || userprofile.email),
                                                 id: null,
                                                 invoiceid: invoiceid,
                                                 orderid: null,
@@ -1031,7 +1033,7 @@ exports.chargeInvoice = async (req, res) => {
                                                 chargejson: requestCulqiCharge.data.result,
                                                 chargetoken: requestCulqiCharge.data.result.id,
                                                 corpid: corpid,
-                                                email: userprofile.email,
+                                                email: (paymentcard?.mail || userprofile.email),
                                                 invoiceid: invoiceid,
                                                 orgid: orgid,
                                                 paidby: usr,
@@ -1412,13 +1414,15 @@ exports.chargeInvoice = async (req, res) => {
                         metadata.reference = removeAccent(invoice.description || '');
 
                         if (iscard) {
+                            const paymentcard = await getCard(corpid, paymentcardid);
+
                             const requestCulqiCharge = await axios({
                                 data: {
                                     amount: settings.amount,
                                     bearer: appsetting.privatekey,
                                     description: (removeAccent('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
                                     currencyCode: settings.currency,
-                                    email: userprofile.email,
+                                    email: (paymentcard?.mail || userprofile.email),
                                     sourceId: paymentcardcode,
                                     operation: "CREATE",
                                     url: appsetting.culqiurlcharge,
@@ -1438,7 +1442,7 @@ exports.chargeInvoice = async (req, res) => {
                                     corpid: corpid,
                                     currency: settings.currency,
                                     description: settings.description,
-                                    email: userprofile.email,
+                                    email: (paymentcard?.mail || userprofile.email),
                                     id: null,
                                     invoiceid: invoiceid,
                                     orderid: null,
@@ -1461,7 +1465,7 @@ exports.chargeInvoice = async (req, res) => {
                                     chargejson: requestCulqiCharge.data.result,
                                     chargetoken: requestCulqiCharge.data.result.id,
                                     corpid: corpid,
-                                    email: userprofile.email,
+                                    email: (paymentcard?.mail || userprofile.email),
                                     invoiceid: invoiceid,
                                     orgid: orgid,
                                     paidby: usr,
@@ -2231,15 +2235,18 @@ exports.createBalance = async (req, res) => {
                         var successPay = false;
                         var charge = null;
                         var chargeBridge = null;
+                        var paymentcard = null;
 
                         if (iscard) {
+                            paymentcard = await getCard(corpid, paymentcardid);
+
                             const requestCulqiCharge = await axios({
                                 data: {
                                     amount: settings.amount,
                                     bearer: appsetting.privatekey,
                                     description: (removeAccent('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
                                     currencyCode: settings.currency,
-                                    email: userprofile.email,
+                                    email: (paymentcard?.mail || userprofile.email),
                                     sourceId: paymentcardcode,
                                     operation: "CREATE",
                                     url: appsetting.culqiurlcharge,
@@ -2342,7 +2349,7 @@ exports.createBalance = async (req, res) => {
                                         corpid: corpid,
                                         currency: settings.currency,
                                         description: settings.description,
-                                        email: iscard ? userprofile.email : token.email,
+                                        email: iscard ? (paymentcard?.mail || userprofile.email) : token.email,
                                         id: null,
                                         invoiceid: invoiceResponse.invoiceid,
                                         orderid: null,
@@ -2365,7 +2372,7 @@ exports.createBalance = async (req, res) => {
                                         chargejson: iscard ? chargeBridge : charge,
                                         chargetoken: iscard ? chargeBridge.id : charge.id,
                                         corpid: corpid,
-                                        email: iscard ? userprofile.email : token.email,
+                                        email: iscard ? (paymentcard?.mail || userprofile.email) : token.email,
                                         invoiceid: invoiceResponse.invoiceid,
                                         orgid: orgid,
                                         paidby: usr,
@@ -3083,6 +3090,25 @@ const verifyFavoriteCard = async (corpid) => {
     }
 
     return false;
+}
+
+const getCard = async (corpid, id) => {
+    const queryMethod = "UFN_PAYMENTCARD_LST";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: 0,
+        id: id,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult[0];
+        }
+    }
+
+    return null;
 }
 
 exports.cardCreate = async (request, result) => {
