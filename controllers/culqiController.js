@@ -3062,6 +3062,29 @@ const selUser = async (corpid, orgid, userid, username ) => {
     return null;
 }
 
+const verifyFavoriteCard = async (corpid) => {
+    const queryMethod = "UFN_PAYMENTCARD_LST";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: 0,
+        id: 0,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            var favoriteCard = queryResult.find(card => card.favorite === true);
+
+            if (favoriteCard) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 exports.cardCreate = async (request, result) => {
     try {
         var requestCode = "error_unexpected_error";
@@ -3090,65 +3113,76 @@ exports.cardCreate = async (request, result) => {
                 const user = await selUser(corpid, orgid, userid, usr);
 
                 if (user) {
-                    var cleancardnumber = cardnumber.split(" ").join("");
+                    var canRegister = true;
+                    
+                    if (!favorite) {
+                        canRegister = await verifyFavoriteCard(corpid);
+                    }
 
-                    const requestCulqiClient = await axios({
-                        data: {
-                            address: address,
-                            addressCity: addresscity,
-                            bearer: appsetting.privatekey,
-                            countryCode: user.country,
-                            email: mail,
-                            firstName: firstname,
-                            lastName: lastname,
-                            operation: "CREATE",
-                            phoneNumber: (user.phone || "").split("+").join("").split(" ").join("").split("(").join("").split(")").join(""),
-                            url: appsetting.culqiurlclient,
-                        },
-                        method: "post",
-                        url: `${bridgeEndpoint}processculqi/handleclient`,
-                    });
+                    if (canRegister) {
+                        var cleancardnumber = cardnumber.split(" ").join("");
 
-                    if (requestCulqiClient.data.success) {
-                        const requestCulqiCard = await axios({
+                        const requestCulqiClient = await axios({
                             data: {
+                                address: address,
+                                addressCity: addresscity,
                                 bearer: appsetting.privatekey,
-                                cardNumber: cleancardnumber,
-                                customerId: requestCulqiClient.data.result.id,
-                                cvv: securitycode,
+                                countryCode: user.country,
                                 email: mail,
-                                expirationMonth: expirationmonth,
-                                expirationYear: expirationyear,
+                                firstName: firstname,
+                                lastName: lastname,
                                 operation: "CREATE",
-                                url: appsetting.culqiurlcardcreate,
-                                urlToken: appsetting.culqiurltoken,
+                                phoneNumber: (user.phone || "").split("+").join("").split(" ").join("").split("(").join("").split(")").join(""),
+                                url: appsetting.culqiurlclient,
                             },
                             method: "post",
-                            url: `${bridgeEndpoint}processculqi/handlecard`,
+                            url: `${bridgeEndpoint}processculqi/handleclient`,
                         });
 
-                        if (requestCulqiCard.data.success) {
-                            cardData = requestCulqiCard.data.result;
-
-                            var queryPaymentCardInsert = await insertPaymentCard(corpid, orgid, 0, cardData.source.cardNumber, cardData.id, firstname, lastname, mail, favorite, cardData.customerId, "ACTIVO", "", usr);
-
-                            if (queryPaymentCardInsert instanceof Array) {
-                                requestCode = "";
-                                requestMessage = "";
-                                requestStatus = 200;
-                                requestSuccess = true;
+                        if (requestCulqiClient.data.success) {
+                            const requestCulqiCard = await axios({
+                                data: {
+                                    bearer: appsetting.privatekey,
+                                    cardNumber: cleancardnumber,
+                                    customerId: requestCulqiClient.data.result.id,
+                                    cvv: securitycode,
+                                    email: mail,
+                                    expirationMonth: expirationmonth,
+                                    expirationYear: expirationyear,
+                                    operation: "CREATE",
+                                    url: appsetting.culqiurlcardcreate,
+                                    urlToken: appsetting.culqiurltoken,
+                                },
+                                method: "post",
+                                url: `${bridgeEndpoint}processculqi/handlecard`,
+                            });
+    
+                            if (requestCulqiCard.data.success) {
+                                cardData = requestCulqiCard.data.result;
+    
+                                var queryPaymentCardInsert = await insertPaymentCard(corpid, orgid, 0, cardData.source.cardNumber, cardData.id, firstname, lastname, mail, favorite, cardData.customerId, "ACTIVO", "", usr);
+    
+                                if (queryPaymentCardInsert instanceof Array) {
+                                    requestCode = "";
+                                    requestMessage = "";
+                                    requestStatus = 200;
+                                    requestSuccess = true;
+                                }
+                                else {
+                                    requestCode = queryPaymentCardInsert.code;
+                                    requestMessage = "error_card_insert";
+                                }
                             }
                             else {
-                                requestCode = queryPaymentCardInsert.code;
-                                requestMessage = "error_card_insert";
+                                requestMessage = "error_card_card";
                             }
                         }
                         else {
-                            requestMessage = "error_card_card";
+                            requestMessage = "error_card_client";
                         }
                     }
                     else {
-                        requestMessage = "error_card_client";
+                        requestMessage = "error_card_nofavorite";
                     }
                 }
                 else {
