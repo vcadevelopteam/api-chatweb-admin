@@ -2134,10 +2134,16 @@ exports.getExchangeRate = async (request, response) => {
 
 exports.createBalance = async (req, res) => {
     const { userid, usr } = req.user;
-    const { invoiceid, settings, token, metadata = {}, corpid, orgid, reference,  comments, purchaseorder  } = req.body;
+    const { invoiceid, settings, token, metadata = {}, corpid, orgid, reference,  comments, purchaseorder, paymentcardid, paymentcardcode, iscard } = req.body;
     var { buyamount, totalamount, totalpay } = req.body;
 
     try {
+        if (iscard) {
+            if (!paymentcardid || !paymentcardcode) {
+                return res.status(403).json({ error: true, success: false, code: '', message: 'Payment card missing parameters' });
+            }
+        }
+
         buyamount = Math.round((parseFloat(buyamount) + Number.EPSILON) * 100) / 100;
         totalamount = Math.round((parseFloat(totalamount) + Number.EPSILON) * 100) / 100;
         totalpay = Math.round((parseFloat(totalpay) + Number.EPSILON) * 100) / 100;
@@ -2220,21 +2226,54 @@ exports.createBalance = async (req, res) => {
                         metadata.user = removeAccent(usr || '');
                         metadata.reference = removeAccent(reference || '');
     
-                        const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
+                        var successPay = false;
+                        var charge = null;
+                        var chargeBridge = null;
 
-                        if (charge.object === 'error') {
-                            return res.status(400).json({
+                        if (iscard) {
+                            const requestCulqiCharge = await axios({
                                 data: {
-                                    code: charge.code,
-                                    id: charge.charge_id,
-                                    message: charge.user_message,
-                                    object: charge.object
+                                    amount: settings.amount,
+                                    bearer: appsetting.privatekey,
+                                    description: (removeAccent('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                    currencyCode: settings.currency,
+                                    email: userprofile.email,
+                                    sourceId: paymentcardcode,
+                                    operation: "CREATE",
+                                    url: appsetting.culqiurlcharge,
                                 },
-                                error: true,
-                                success: false
+                                method: "post",
+                                url: `${bridgeEndpoint}processculqi/handlecharge`,
                             });
+
+                            if (requestCulqiCharge.data.success) {
+                                chargeBridge = requestCulqiCharge.data.result;
+
+                                successPay = true;
+                            }
                         }
                         else {
+                            charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
+
+                            if (charge.object === 'error') {
+                                return res.status(400).json({
+                                    data: {
+                                        code: charge.code,
+                                        id: charge.charge_id,
+                                        message: charge.user_message,
+                                        object: charge.object
+                                    },
+                                    error: true,
+                                    success: false
+                                });
+                            }
+                            else {
+                                successPay = true;
+                            }
+                        }
+                        
+
+                        if (successPay) {
                             var balanceResponse = await createBalanceData(corpid, orgid, 0, reference, 'ACTIVO', 'GENERAL', null, null, (totalamount || buyamount), ((org?.balance || 0) + (totalamount || buyamount)), billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, 'PAID', new Date().toISOString().split('T')[0], usr, usr);
 
                             if (balanceResponse) {
@@ -2295,12 +2334,12 @@ exports.createBalance = async (req, res) => {
                                     const chargebind = {
                                         amount: settings.amount / 100,
                                         capture: true,
-                                        chargejson: charge,
-                                        chargetoken: charge.id,
+                                        chargejson: iscard ? chargeBridge : charge,
+                                        chargetoken: iscard ? chargeBridge.id : charge.id,
                                         corpid: corpid,
                                         currency: settings.currency,
                                         description: settings.description,
-                                        email: token.email,
+                                        email: iscard ? userprofile.email : token.email,
                                         id: null,
                                         invoiceid: invoiceResponse.invoiceid,
                                         orderid: null,
@@ -2309,9 +2348,9 @@ exports.createBalance = async (req, res) => {
                                         operation: 'INSERT',
                                         paidby: usr,
                                         status: 'PAID',
-                                        tokenid: token.id,
-                                        tokenjson: token,
-                                        type: charge.object
+                                        tokenid: iscard ? paymentcardid : token.id,
+                                        tokenjson: iscard ? null : token,
+                                        type: iscard ? "REGISTEREDCARD" : charge.object,
                                     }
 
                                     const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
@@ -2320,15 +2359,15 @@ exports.createBalance = async (req, res) => {
                                     const invoicebind = {
                                         capture: true,
                                         chargeid: chargeresult[0].chargeid,
-                                        chargejson: charge,
-                                        chargetoken: charge.id,
+                                        chargejson: iscard ? chargeBridge : charge,
+                                        chargetoken: iscard ? chargeBridge.id : charge.id,
                                         corpid: corpid,
-                                        email: token.email,
+                                        email: iscard ? userprofile.email : token.email,
                                         invoiceid: invoiceResponse.invoiceid,
                                         orgid: orgid,
                                         paidby: usr,
-                                        tokenid: token.id,
-                                        tokenjson: token,
+                                        tokenid: iscard ? paymentcardid : token.id,
+                                        tokenjson: iscard ? null : token,
                                         culqiamount: (settings.amount / 100)
                                     }
                                 
@@ -2557,16 +2596,30 @@ exports.createBalance = async (req, res) => {
                                         await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, billbyorg ? org.businessname : corp.businessname, billbyorg ? org.fiscaladdress : corp.fiscaladdress, billbyorg ? org.sunatcountry : corp.sunatcountry, billbyorg ? org.contactemail : corp.contactemail, documenttype, null, null, purchaseorder, comments, 'typecredit_alcontado', null, null, null, null);
                                     }
 
-                                    return res.json({
-                                        code: charge.outcome.code,
-                                        data: {
-                                            id: charge.id,
-                                            object: charge.object
-                                        },
-                                        error: false,
-                                        message: charge.outcome.user_message,
-                                        success: true
-                                    });
+                                    if (iscard) {
+                                        return res.json({
+                                            code: '',
+                                            data: {
+                                                id: 0,
+                                                object: null 
+                                            },
+                                            error: false,
+                                            message: 'culqipaysuccess',
+                                            success: true
+                                        });
+                                    }
+                                    else {
+                                        return res.json({
+                                            code: charge.outcome.code,
+                                            data: {
+                                                id: charge.id,
+                                                object: charge.object
+                                            },
+                                            error: false,
+                                            message: charge.outcome.user_message,
+                                            success: true
+                                        });
+                                    }
                                 }
                                 else {
                                     return res.status(403).json({ error: true, success: false, code: '', message: 'errorcreatinginvoice' });
@@ -2575,6 +2628,9 @@ exports.createBalance = async (req, res) => {
                             else {
                                 return res.status(403).json({ error: true, success: false, code: '', message: 'Error creating balance' });
                             }
+                        }
+                        else {
+                            return res.status(403).json({ error: true, success: false, code: '', message: 'Unsuccessful payment' });
                         }
                     }
                     else {
