@@ -1528,7 +1528,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_BILLINGPERIOD_UPD: {
-        query: "SELECT * FROM ufn_billingperiod_upd($corpid, $orgid, $year, $month, $billingplan, $supportplan, $basicfee, $userfreequantity, $useradditionalfee, $channelfreequantity, $channelwhatsappfee, $channelotherfee, $clientfreequantity, $clientadditionalfee, $supportbasicfee, $unitpricepersms, $vcacomissionpersms, $unitepricepermail, $vcacomissionpermail, $additionalservicename1, $additionalservicefee1, $additionalservicename2, $additionalservicefee2, $additionalservicename3, $additionalservicefee3, $freewhatsappchannel, $freewhatsappconversations, $usercreateoverride, $channelcreateoverride, $vcacomissionperconversation, $force)",
+        query: "SELECT * FROM ufn_billingperiod_upd($corpid, $orgid, $year, $month, $billingplan, $supportplan, $basicfee, $userfreequantity, $useradditionalfee, $channelfreequantity, $channelwhatsappfee, $channelotherfee, $clientfreequantity, $clientadditionalfee, $supportbasicfee, $unitpricepersms, $vcacomissionpersms, $unitepricepermail, $vcacomissionpermail, $additionalservicename1, $additionalservicefee1, $additionalservicename2, $additionalservicefee2, $additionalservicename3, $additionalservicefee3, $freewhatsappchannel, $freewhatsappconversations, $usercreateoverride, $channelcreateoverride, $vcacomissionperconversation, $vcacomissionperhsm, $force)",
         module: "",
         protected: "INSERT"
     },
@@ -1658,7 +1658,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVOICE_CORP: {
-        query: "SELECT * FROM ufn_invoice_corp($corpid,$year,$month,$exchangerate)",
+        query: "SELECT * FROM ufn_invoice_corp($corpid, $year, $month, $exchangerate)",
         module: "",
         protected: "INSERT"
     },
@@ -1688,7 +1688,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INVOICE_INS: {
-        query: "SELECT * FROM ufn_invoice_ins($corpid, $orgid, $invoiceid, $description, $status, $type, $issuerruc, $issuerbusinessname, $issuertradename, $issuerfiscaladdress, $issuerubigeo, $emittertype, $annexcode, $printingformat, $xmlversion, $ublversion, $receiverdoctype, $receiverdocnum, $receiverbusinessname, $receiverfiscaladdress, $receivercountry, $receivermail, $invoicetype, $sunatopecode, $serie, $correlative, $concept, $invoicedate, $expirationdate, $subtotal, $taxes, $totalamount, $currency, $exchangerate, $invoicestatus, $filenumber, $purchaseorder, $executingunitcode, $selectionprocessnumber, $contractnumber, $comments, $credittype, $creditnotetype, $creditnotemotive, $creditnotediscount, $invoicereferencefile, $invoicepaymentnote, $username, $referenceinvoiceid, $netamount, $paymentstatus, $hasreport)",
+        query: "SELECT * FROM ufn_invoice_ins($corpid, $orgid, $invoiceid, $description, $status, $type, $issuerruc, $issuerbusinessname, $issuertradename, $issuerfiscaladdress, $issuerubigeo, $emittertype, $annexcode, $printingformat, $xmlversion, $ublversion, $receiverdoctype, $receiverdocnum, $receiverbusinessname, $receiverfiscaladdress, $receivercountry, $receivermail, $invoicetype, $sunatopecode, $serie, $correlative, $concept, $invoicedate, $expirationdate, $subtotal, $taxes, $totalamount, $currency, $exchangerate, $invoicestatus, $filenumber, $purchaseorder, $executingunitcode, $selectionprocessnumber, $contractnumber, $comments, $credittype, $creditnotetype, $creditnotemotive, $creditnotediscount, $invoicereferencefile, $invoicepaymentnote, $username, $referenceinvoiceid, $netamount, $paymentstatus, $hasreport, $year, $month)",
         module: "",
         protected: "INSERT"
     },
@@ -1870,8 +1870,8 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_INVOICE_REFRESHTEST: {
-        query: "select * from ufn_invoice_refreshtest((SELECT EXTRACT (YEAR from (select now() at time zone 'utc'))::bigint), (SELECT EXTRACT (MONTH from (select now() at time zone 'utc'))::bigint), $corpid)",
+    UFN_INVOICE_REFRESH: {
+        query: "select * from ufn_invoice_refresh($corpid, $orgid, $invoiceid, $year, $month)",
         module: "",
         protected: "SELECT"
     },
@@ -2082,6 +2082,11 @@ module.exports = {
     },
     UFN_CALENDARYBOOKING_REPORT: {
         query: "SELECT * FROM ufn_calendarbooking_report($corpid, $orgid, $period, $startdate, $enddate, $take, $skip, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVOICE_IMPORT: {
+        query: "SELECT * FROM ufn_invoice_import(corpid, orgid, year, month, description, status, receiverdoctype, receiverdocnum, receiverbusinessname, receiverfiscaladdress, receivercountry, receivermail, invoicetype, serie, correlative, invoicedate, expirationdate, invoicestatus, paymentstatus, paymentdate, paidby, paymenttype, totalamount, exchangerate, currency, urlcdr, urlpdf, urlxml, purchaseorder, comments, credittype, usr)",
         module: "",
         protected: "SELECT"
     },

@@ -27,4 +27,10 @@ router.post('/createbalance', auth, culqiController.createBalance)
 
 router.post('/emitinvoice', auth, culqiController.emitInvoice)
 
+router.post('/cardcreate', auth, culqiController.cardCreate)
+
+router.post('/carddelete', auth, culqiController.cardDelete)
+
+router.post('/cardget', auth, culqiController.cardGet)
+
 module.exports = router;
