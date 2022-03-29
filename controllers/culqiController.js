@@ -3152,8 +3152,8 @@ exports.cardCreate = async (request, result) => {
 
                         const requestCulqiClient = await axios({
                             data: {
-                                address: (org ? org.fiscaladdress : corp.fiscaladdress) || "NO INFO",
-                                addressCity: (org ? org.timezone : "NO INFO") || "NO INFO",
+                                address: ((org ? org.fiscaladdress : corp.fiscaladdress) || "NO INFO").substring(0, 100),
+                                addressCity: ((org ? org.timezone : "NO INFO") || "NO INFO").substring(0, 30),
                                 bearer: appsetting.privatekey,
                                 countryCode: user.country || 'PE',
                                 email: mail,
