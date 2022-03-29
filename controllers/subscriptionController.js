@@ -248,8 +248,8 @@ exports.createSubscription = async (request, result) => {
 
                     const requestCulqiClient = await axios({
                         data: {
-                            address: parameters.fiscaladdress,
-                            addressCity: parameters.timezone,
+                            address: (parameters.fiscaladdress || '').substring(0, 100),
+                            addressCity: (parameters.timezone || '').substring(0, 30),
                             bearer: appsetting.privatekey,
                             countryCode: parameters.country,
                             email: card.mail,

@@ -982,16 +982,19 @@ exports.chargeInvoice = async (req, res) => {
                                     var successPay = false;
 
                                     if (iscard) {
+                                        const paymentcard = await getCard(corpid, paymentcardid);
+
                                         const requestCulqiCharge = await axios({
                                             data: {
                                                 amount: settings.amount,
                                                 bearer: appsetting.privatekey,
                                                 description: (removeAccent('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
                                                 currencyCode: settings.currency,
-                                                email: userprofile.email,
+                                                email: (paymentcard?.mail || userprofile.email),
                                                 sourceId: paymentcardcode,
                                                 operation: "CREATE",
                                                 url: appsetting.culqiurlcharge,
+                                                metadata: metadata,
                                             },
                                             method: "post",
                                             url: `${bridgeEndpoint}processculqi/handlecharge`,
@@ -1007,7 +1010,7 @@ exports.chargeInvoice = async (req, res) => {
                                                 corpid: corpid,
                                                 currency: settings.currency,
                                                 description: settings.description,
-                                                email: userprofile.email,
+                                                email: (paymentcard?.mail || userprofile.email),
                                                 id: null,
                                                 invoiceid: invoiceid,
                                                 orderid: null,
@@ -1030,7 +1033,7 @@ exports.chargeInvoice = async (req, res) => {
                                                 chargejson: requestCulqiCharge.data.result,
                                                 chargetoken: requestCulqiCharge.data.result.id,
                                                 corpid: corpid,
-                                                email: userprofile.email,
+                                                email: (paymentcard?.mail || userprofile.email),
                                                 invoiceid: invoiceid,
                                                 orgid: orgid,
                                                 paidby: usr,
@@ -1411,16 +1414,19 @@ exports.chargeInvoice = async (req, res) => {
                         metadata.reference = removeAccent(invoice.description || '');
 
                         if (iscard) {
+                            const paymentcard = await getCard(corpid, paymentcardid);
+
                             const requestCulqiCharge = await axios({
                                 data: {
                                     amount: settings.amount,
                                     bearer: appsetting.privatekey,
                                     description: (removeAccent('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
                                     currencyCode: settings.currency,
-                                    email: userprofile.email,
+                                    email: (paymentcard?.mail || userprofile.email),
                                     sourceId: paymentcardcode,
                                     operation: "CREATE",
                                     url: appsetting.culqiurlcharge,
+                                    metadata: metadata,
                                 },
                                 method: "post",
                                 url: `${bridgeEndpoint}processculqi/handlecharge`,
@@ -1436,7 +1442,7 @@ exports.chargeInvoice = async (req, res) => {
                                     corpid: corpid,
                                     currency: settings.currency,
                                     description: settings.description,
-                                    email: userprofile.email,
+                                    email: (paymentcard?.mail || userprofile.email),
                                     id: null,
                                     invoiceid: invoiceid,
                                     orderid: null,
@@ -1459,7 +1465,7 @@ exports.chargeInvoice = async (req, res) => {
                                     chargejson: requestCulqiCharge.data.result,
                                     chargetoken: requestCulqiCharge.data.result.id,
                                     corpid: corpid,
-                                    email: userprofile.email,
+                                    email: (paymentcard?.mail || userprofile.email),
                                     invoiceid: invoiceid,
                                     orgid: orgid,
                                     paidby: usr,
@@ -2229,18 +2235,22 @@ exports.createBalance = async (req, res) => {
                         var successPay = false;
                         var charge = null;
                         var chargeBridge = null;
+                        var paymentcard = null;
 
                         if (iscard) {
+                            paymentcard = await getCard(corpid, paymentcardid);
+
                             const requestCulqiCharge = await axios({
                                 data: {
                                     amount: settings.amount,
                                     bearer: appsetting.privatekey,
                                     description: (removeAccent('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
                                     currencyCode: settings.currency,
-                                    email: userprofile.email,
+                                    email: (paymentcard?.mail || userprofile.email),
                                     sourceId: paymentcardcode,
                                     operation: "CREATE",
                                     url: appsetting.culqiurlcharge,
+                                    metadata: metadata,
                                 },
                                 method: "post",
                                 url: `${bridgeEndpoint}processculqi/handlecharge`,
@@ -2339,7 +2349,7 @@ exports.createBalance = async (req, res) => {
                                         corpid: corpid,
                                         currency: settings.currency,
                                         description: settings.description,
-                                        email: iscard ? userprofile.email : token.email,
+                                        email: iscard ? (paymentcard?.mail || userprofile.email) : token.email,
                                         id: null,
                                         invoiceid: invoiceResponse.invoiceid,
                                         orderid: null,
@@ -2362,7 +2372,7 @@ exports.createBalance = async (req, res) => {
                                         chargejson: iscard ? chargeBridge : charge,
                                         chargetoken: iscard ? chargeBridge.id : charge.id,
                                         corpid: corpid,
-                                        email: iscard ? userprofile.email : token.email,
+                                        email: iscard ? (paymentcard?.mail || userprofile.email) : token.email,
                                         invoiceid: invoiceResponse.invoiceid,
                                         orgid: orgid,
                                         paidby: usr,
@@ -3059,6 +3069,48 @@ const selUser = async (corpid, orgid, userid, username ) => {
     return null;
 }
 
+const verifyFavoriteCard = async (corpid) => {
+    const queryMethod = "UFN_PAYMENTCARD_LST";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: 0,
+        id: 0,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            var favoriteCard = queryResult.find(card => card.favorite === true);
+
+            if (favoriteCard) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+const getCard = async (corpid, id) => {
+    const queryMethod = "UFN_PAYMENTCARD_LST";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: 0,
+        id: id,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult[0];
+        }
+    }
+
+    return null;
+}
+
 exports.cardCreate = async (request, result) => {
     try {
         var requestCode = "error_unexpected_error";
@@ -3078,74 +3130,87 @@ exports.cardCreate = async (request, result) => {
         }
 
         if (request.body) {
-            const { address, addresscity, firstname, lastname, mail, cardnumber, securitycode, expirationmonth, expirationyear, favorite } = request.body;
+            const { firstname, lastname, mail, cardnumber, securitycode, expirationmonth, expirationyear, favorite } = request.body;
             const { corpid, orgid, userid, usr } = request.user;
 
             const appsetting = await getAppSetting();
 
             if (appsetting) {
+                const corp = await getCorporation(corpid);
+                const org = await getOrganization(corpid, orgid);
                 const user = await selUser(corpid, orgid, userid, usr);
 
-                if (user) {
-                    var cleancardnumber = cardnumber.split(" ").join("");
+                if (user && (corp || org)) {
+                    var canRegister = true;
+                    
+                    if (!favorite) {
+                        canRegister = await verifyFavoriteCard(corpid);
+                    }
 
-                    const requestCulqiClient = await axios({
-                        data: {
-                            address: address,
-                            addressCity: addresscity,
-                            bearer: appsetting.privatekey,
-                            countryCode: user.country,
-                            email: mail,
-                            firstName: firstname,
-                            lastName: lastname,
-                            operation: "CREATE",
-                            phoneNumber: (user.phone || "").split("+").join("").split(" ").join("").split("(").join("").split(")").join(""),
-                            url: appsetting.culqiurlclient,
-                        },
-                        method: "post",
-                        url: `${bridgeEndpoint}processculqi/handleclient`,
-                    });
+                    if (canRegister) {
+                        var cleancardnumber = cardnumber.split(" ").join("");
 
-                    if (requestCulqiClient.data.success) {
-                        const requestCulqiCard = await axios({
+                        const requestCulqiClient = await axios({
                             data: {
+                                address: ((org ? org.fiscaladdress : corp.fiscaladdress) || "NO INFO").substring(0, 100),
+                                addressCity: ((org ? org.timezone : "NO INFO") || "NO INFO").substring(0, 30),
                                 bearer: appsetting.privatekey,
-                                cardNumber: cleancardnumber,
-                                customerId: requestCulqiClient.data.result.id,
-                                cvv: securitycode,
+                                countryCode: user.country || 'PE',
                                 email: mail,
-                                expirationMonth: expirationmonth,
-                                expirationYear: expirationyear,
+                                firstName: firstname,
+                                lastName: lastname,
                                 operation: "CREATE",
-                                url: appsetting.culqiurlcardcreate,
-                                urlToken: appsetting.culqiurltoken,
+                                phoneNumber: (user.phone || "").split("+").join("").split(" ").join("").split("(").join("").split(")").join(""),
+                                url: appsetting.culqiurlclient,
                             },
                             method: "post",
-                            url: `${bridgeEndpoint}processculqi/handlecard`,
+                            url: `${bridgeEndpoint}processculqi/handleclient`,
                         });
 
-                        if (requestCulqiCard.data.success) {
-                            cardData = requestCulqiCard.data.result;
-
-                            var queryPaymentCardInsert = await insertPaymentCard(corpid, orgid, 0, cardData.source.cardNumber, cardData.id, firstname, lastname, mail, favorite, cardData.customerId, "ACTIVO", "", usr);
-
-                            if (queryPaymentCardInsert instanceof Array) {
-                                requestCode = "";
-                                requestMessage = "";
-                                requestStatus = 200;
-                                requestSuccess = true;
+                        if (requestCulqiClient.data.success) {
+                            const requestCulqiCard = await axios({
+                                data: {
+                                    bearer: appsetting.privatekey,
+                                    cardNumber: cleancardnumber,
+                                    customerId: requestCulqiClient.data.result.id,
+                                    cvv: securitycode,
+                                    email: mail,
+                                    expirationMonth: expirationmonth,
+                                    expirationYear: expirationyear,
+                                    operation: "CREATE",
+                                    url: appsetting.culqiurlcardcreate,
+                                    urlToken: appsetting.culqiurltoken,
+                                },
+                                method: "post",
+                                url: `${bridgeEndpoint}processculqi/handlecard`,
+                            });
+    
+                            if (requestCulqiCard.data.success) {
+                                cardData = requestCulqiCard.data.result;
+    
+                                var queryPaymentCardInsert = await insertPaymentCard(corpid, orgid, 0, cardData.source.cardNumber, cardData.id, firstname, lastname, mail, favorite, cardData.customerId, "ACTIVO", "", usr);
+    
+                                if (queryPaymentCardInsert instanceof Array) {
+                                    requestCode = "";
+                                    requestMessage = "";
+                                    requestStatus = 200;
+                                    requestSuccess = true;
+                                }
+                                else {
+                                    requestCode = queryPaymentCardInsert.code;
+                                    requestMessage = "error_card_insert";
+                                }
                             }
                             else {
-                                requestCode = queryPaymentCardInsert.code;
-                                requestMessage = "error_card_insert";
+                                requestMessage = "error_card_card";
                             }
                         }
                         else {
-                            requestMessage = "error_card_card";
+                            requestMessage = "error_card_client";
                         }
                     }
                     else {
-                        requestMessage = "error_card_client";
+                        requestMessage = "error_card_nofavorite";
                     }
                 }
                 else {
