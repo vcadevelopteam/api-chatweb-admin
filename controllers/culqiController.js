@@ -3130,15 +3130,17 @@ exports.cardCreate = async (request, result) => {
         }
 
         if (request.body) {
-            const { address, addresscity, firstname, lastname, mail, cardnumber, securitycode, expirationmonth, expirationyear, favorite } = request.body;
+            const { firstname, lastname, mail, cardnumber, securitycode, expirationmonth, expirationyear, favorite } = request.body;
             const { corpid, orgid, userid, usr } = request.user;
 
             const appsetting = await getAppSetting();
 
             if (appsetting) {
+                const corp = await getCorporation(corpid);
+                const org = await getOrganization(corpid, orgid);
                 const user = await selUser(corpid, orgid, userid, usr);
 
-                if (user) {
+                if (user && (corp || org)) {
                     var canRegister = true;
                     
                     if (!favorite) {
@@ -3150,8 +3152,8 @@ exports.cardCreate = async (request, result) => {
 
                         const requestCulqiClient = await axios({
                             data: {
-                                address: address,
-                                addressCity: addresscity,
+                                address: (org ? org.fiscaladdress : corp.fiscaladdress) || "NO INFO",
+                                addressCity: (org ? org.timezone : "NO INFO") || "NO INFO",
                                 bearer: appsetting.privatekey,
                                 countryCode: user.country || 'PE',
                                 email: mail,
