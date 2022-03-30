@@ -3143,7 +3143,7 @@ exports.cardCreate = async (request, result) => {
             if (appsetting) {
                 const corp = await getCorporation(corpid);
                 const org = await getOrganization(corpid, orgid);
-                const user = await selUser(corpid, orgid, userid, usr);
+                const user = await getUserProfile(userid);
 
                 if (user && (corp || org)) {
                     var canRegister = true;
