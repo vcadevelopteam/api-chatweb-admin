@@ -411,6 +411,12 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
         if (ALLCOLUMNS.some(x => x.type === "variable")) {
             JOINNERS += `\nCROSS JOIN CAST(conversation.variablecontext as jsonb) as jo`
         }
+
+        const firstSelect = interval === "day" ? 
+            `to_char(${dataorigin}.createdate + $offset * INTERVAL '1hour', 'MM-DD') "interval"` : (interval === "month" ?
+                `to_char(${dataorigin}.createdate + $offset * INTERVAL '1hour', 'YYYY-MM') "interval"` :
+                `date_part('${interval}', ${dataorigin}.createdate + $offset * INTERVAL '1hour') "interval"`
+            )
         
         const COLUMNESSELECT = columns.reduce((acc, item, index) => {
             let selcol = item.columnname;
@@ -455,7 +461,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
                 return acc + `, count(distinct(coalesce(${selcol}::text, ''))) total`
             }
 
-        }, interval === "day" ? `to_char(${dataorigin}.createdate + -5 * INTERVAL '1hour', 'MM-DD') "interval"` : `date_part('${interval}', ${dataorigin}.createdate + $offset * INTERVAL '1hour') "interval"`)
+        }, firstSelect)
 
         const FILTERS = filters.reduce((acc, { type, columnname, start, end, value }) => {
             if (DATES.includes(type)) {
