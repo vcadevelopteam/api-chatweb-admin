@@ -3488,7 +3488,7 @@ exports.automaticPayment = async (request, result) => {
                                         var culqiamount = invoice.totalamount;
                                         var detractionamount = 0;
                                         var doctype = (org ? org.doctype : corp.doctype);
-                                        var exchangerate = getLastExchange();
+                                        var exchangerate = await getLastExchange();
 
                                         if (country && doctype) {
                                             if (country === 'PE' && doctype === '6') {
