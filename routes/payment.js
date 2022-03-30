@@ -9,6 +9,8 @@ router.post('/createorder', culqiController.createOrder)
 
 router.post('/deleteorder', culqiController.deleteOrder)
 
+router.post('/automaticpayment', culqiController.automaticPayment)
+
 router.post('/chargeinvoice', auth, culqiController.chargeInvoice)
 
 router.post('/charge', auth, culqiController.charge)
