@@ -3143,7 +3143,7 @@ exports.cardCreate = async (request, result) => {
             if (appsetting) {
                 const corp = await getCorporation(corpid);
                 const org = await getOrganization(corpid, orgid);
-                const user = await selUser(corpid, orgid, userid, usr);
+                const user = await getUserProfile(userid);
 
                 if (user && (corp || org)) {
                     var canRegister = true;
@@ -3424,6 +3424,38 @@ exports.automaticPayment = async (request, result) => {
                 const org = (orgid === 0 ? null : await getOrganization(corpid, orgid));
 
                 if (org || orgid === 0) {
+                    var paymentdisabled = false;
+
+                    if (org) {
+                        if (!org.automaticpayment) {
+                            paymentdisabled = true;
+                        }
+                    }
+                    else {
+                        if (!corp.automaticpayment) {
+                            paymentdisabled = true;
+                        }
+                    }
+
+                    if (paymentdisabled) {
+                        requestCode = "";
+                        requestId = 200;
+                        requestMessage = "success_automaticpayment_paymentdisabled";
+                        requestStatus = 200;
+                        requestSuccess = true;
+
+                        return result.status(requestStatus).json({
+                            code: requestCode,
+                            data: {
+                                id: requestId,
+                                object: requestObject,
+                            },
+                            error: !requestSuccess,
+                            message: requestMessage,
+                            success: requestSuccess,
+                        });
+                    }
+
                     const appsetting = await getAppSetting();
 
                     if (appsetting) {
@@ -3438,6 +3470,8 @@ exports.automaticPayment = async (request, result) => {
                                     var favoritecard = paymentcard.find((card) => card.favorite === true);
 
                                     if (favoritecard) {
+                                        var metadata = {};
+
                                         metadata.businessname = removeAccent((org ? org.businessname : corp.businessname) || '');
                                         metadata.corpid = (corpid || '');
                                         metadata.corporation = removeAccent(corp.description || '');
@@ -3519,7 +3553,7 @@ exports.automaticPayment = async (request, result) => {
                                                     orgid: orgid,
                                                     paidby: 'SCHEDULER',
                                                     status: 'PAID',
-                                                    tokenid: paymentcardid,
+                                                    tokenid: favoritecard.paymentcardid,
                                                     tokenjson: null,
                                                     type: "REGISTEREDCARD",
                                                 }
@@ -3538,7 +3572,7 @@ exports.automaticPayment = async (request, result) => {
                                                     invoiceid: invoiceid,
                                                     orgid: orgid,
                                                     paidby: 'SCHEDULER',
-                                                    tokenid: paymentcardid,
+                                                    tokenid: favoritecard.paymentcardid,
                                                     tokenjson: null,
                                                 }
 
@@ -3551,7 +3585,7 @@ exports.automaticPayment = async (request, result) => {
                                                         corpid: 1,
                                                         domainname: "PAYMENTALERTBODY",
                                                         orgid: 0,
-                                                        username: parameters.username,
+                                                        username: 'SCHEDULER',
                                                     };
 
                                                     const queryDomainAlertBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
@@ -3564,7 +3598,35 @@ exports.automaticPayment = async (request, result) => {
                                                         var alertBody = queryDomainAlertBody[0].domainvalue;
                                                         var alertSubject = queryDomainAlertSubject[0].domainvalue;
 
-                                                        alertBody = alertBody.split("{{corp}}").join(parameters.fiscaladdress);
+                                                        alertBody = alertBody.split("{{amountdetraction}}").join(detractionamount);
+                                                        alertBody = alertBody.split("{{amountpaid}}").join(culqiamount);
+                                                        alertBody = alertBody.split("{{amounttotal}}").join(invoice.totalamount);
+                                                        alertBody = alertBody.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
+                                                        alertBody = alertBody.split("{{concept}}").join(invoice.description);
+                                                        alertBody = alertBody.split("{{contact}}").join(org ? org.contact : corp.contact);
+                                                        alertBody = alertBody.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
+                                                        alertBody = alertBody.split("{{corporg}}").join(org ? org.description : corp.description);
+                                                        alertBody = alertBody.split("{{currency}}").join(invoice.currency);
+                                                        alertBody = alertBody.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
+                                                        alertBody = alertBody.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
+                                                        alertBody = alertBody.split("{{month}}").join(invoice.month);
+                                                        alertBody = alertBody.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
+                                                        alertBody = alertBody.split("{{year}}").join(invoice.year);
+
+                                                        alertSubject = alertSubject.split("{{amountdetraction}}").join(detractionamount);
+                                                        alertSubject = alertSubject.split("{{amountpaid}}").join(culqiamount);
+                                                        alertSubject = alertSubject.split("{{amounttotal}}").join(invoice.totalamount);
+                                                        alertSubject = alertSubject.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
+                                                        alertSubject = alertSubject.split("{{concept}}").join(invoice.description);
+                                                        alertSubject = alertSubject.split("{{contact}}").join(org ? org.contact : corp.contact);
+                                                        alertSubject = alertSubject.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
+                                                        alertSubject = alertSubject.split("{{corporg}}").join(org ? org.description : corp.description);
+                                                        alertSubject = alertSubject.split("{{currency}}").join(invoice.currency);
+                                                        alertSubject = alertSubject.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
+                                                        alertSubject = alertSubject.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
+                                                        alertSubject = alertSubject.split("{{month}}").join(invoice.month);
+                                                        alertSubject = alertSubject.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
+                                                        alertSubject = alertSubject.split("{{year}}").join(invoice.year);
 
                                                         const requestMailSend = await axios({
                                                             data: {
@@ -3580,11 +3642,81 @@ exports.automaticPayment = async (request, result) => {
                                                             requestCode = requestMailSend.data.operationMessage;
                                                         }
                                                     }
+                                                    else {
+                                                        requestCode = "alert_automaticpayment_noalertdomain";
+                                                    }
+                                                }
+                                                else {
+                                                    requestCode = "alert_automaticpayment_invoiceupdate";
                                                 }
                                             }
                                             else {
+                                                var domainMethod = "UFN_DOMAIN_VALUES_SEL";
+                                                var domainParameters = {
+                                                    all: false,
+                                                    corpid: 1,
+                                                    domainname: "PAYMENTALERTERRORBODY",
+                                                    orgid: 0,
+                                                    username: 'SCHEDULER',
+                                                };
+
+                                                const queryDomainAlertBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                                                domainParameters.domainname = "PAYMENTALERTERRORSUBJECT";
+
+                                                const queryDomainAlertSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                                                if (queryDomainAlertBody instanceof Array && queryDomainAlertSubject instanceof Array) {
+                                                    var alertBody = queryDomainAlertBody[0].domainvalue;
+                                                    var alertSubject = queryDomainAlertSubject[0].domainvalue;
+
+                                                    alertBody = alertBody.split("{{amountdetraction}}").join(detractionamount);
+                                                    alertBody = alertBody.split("{{amountpaid}}").join(culqiamount);
+                                                    alertBody = alertBody.split("{{amounttotal}}").join(invoice.totalamount);
+                                                    alertBody = alertBody.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
+                                                    alertBody = alertBody.split("{{concept}}").join(invoice.description);
+                                                    alertBody = alertBody.split("{{contact}}").join(org ? org.contact : corp.contact);
+                                                    alertBody = alertBody.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
+                                                    alertBody = alertBody.split("{{corporg}}").join(org ? org.description : corp.description);
+                                                    alertBody = alertBody.split("{{currency}}").join(invoice.currency);
+                                                    alertBody = alertBody.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
+                                                    alertBody = alertBody.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
+                                                    alertBody = alertBody.split("{{month}}").join(invoice.month);
+                                                    alertBody = alertBody.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
+                                                    alertBody = alertBody.split("{{year}}").join(invoice.year);
+
+                                                    alertSubject = alertSubject.split("{{amountdetraction}}").join(detractionamount);
+                                                    alertSubject = alertSubject.split("{{amountpaid}}").join(culqiamount);
+                                                    alertSubject = alertSubject.split("{{amounttotal}}").join(invoice.totalamount);
+                                                    alertSubject = alertSubject.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
+                                                    alertSubject = alertSubject.split("{{concept}}").join(invoice.description);
+                                                    alertSubject = alertSubject.split("{{contact}}").join(org ? org.contact : corp.contact);
+                                                    alertSubject = alertSubject.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
+                                                    alertSubject = alertSubject.split("{{corporg}}").join(org ? org.description : corp.description);
+                                                    alertSubject = alertSubject.split("{{currency}}").join(invoice.currency);
+                                                    alertSubject = alertSubject.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
+                                                    alertSubject = alertSubject.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
+                                                    alertSubject = alertSubject.split("{{month}}").join(invoice.month);
+                                                    alertSubject = alertSubject.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
+                                                    alertSubject = alertSubject.split("{{year}}").join(invoice.year);
+
+                                                    const requestMailSend = await axios({
+                                                        data: {
+                                                            mailAddress: (org ? org.contactemail : corp.contactemail),
+                                                            mailBody: alertBody,
+                                                            mailTitle: alertSubject,
+                                                        },
+                                                        method: "post",
+                                                        url: `${bridgeEndpoint}processscheduler/sendmail`,
+                                                    });
+
+                                                    if (!requestMailSend.data.success) {
+                                                        requestCode = requestMailSend.data.operationMessage;
+                                                    }
+                                                }
+
                                                 requestCode = requestCulqiCharge.data.operationMessage;
-                                                requestMessage = "error_automaticpayment_nocountry_nodoctype";
+                                                requestMessage = "error_automaticpayment_paymenterror";
                                             }
                                         }
                                         else {
@@ -3601,11 +3733,316 @@ exports.automaticPayment = async (request, result) => {
 
                                 if (invoice.invoicestatus !== 'INVOICED' && paymentsuccess) {
                                     const invoicedetail = await getInvoiceDetail(corpid, orgid, 0, invoiceid);
+                                    var invoicesuccess = false;
 
                                     if (invoicedetail) {
+                                        var documenttype = null;
+                                        var invoicecorrelative = null;
+
+                                        if (org) {
+                                            if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
+                                                invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICE');
+                                                documenttype = '01';
+                                            }
+
+                                            if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
+                                                invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKET');
+                                                documenttype = '03'
+                                            }
+                                        }
+                                        else {
+                                            if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
+                                                invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICE');
+                                                documenttype = '01';
+                                            }
+                    
+                                            if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
+                                                invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKET');
+                                                documenttype = '03'
+                                            }
+                                        }
+
+                                        if (invoicecorrelative) {
+                                            try {
+                                                var invoicedata = {
+                                                    CodigoAnexoEmisor: appsetting.annexcode,
+                                                    CodigoFormatoImpresion: appsetting.printingformat,
+                                                    CodigoMoneda: invoice.currency,
+                                                    CodigoRucReceptor: org ? org.doctype : corp.doctype,
+                                                    CodigoUbigeoEmisor: appsetting.ubigeo,
+                                                    CorrelativoDocumento: zeroPad(invoicecorrelative.p_correlative, 8),
+                                                    DataList: [],
+                                                    DireccionFiscalEmisor: appsetting.fiscaladdress,
+                                                    DireccionFiscalReceptor: org ? org.fiscaladdress : corp.fiscaladdress,
+                                                    Endpoint: appsetting.sunaturl,
+                                                    EnviarSunat: org ? org.autosendinvoice : corp.autosendinvoice,
+                                                    FechaEmision: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
+                                                    FechaVencimiento: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
+                                                    MailEnvio: org ? org.contactemail : corp.contactemail,
+                                                    MontoTotal: Math.round((invoice.totalamount + Number.EPSILON) * 100) / 100,
+                                                    NombreComercialEmisor: appsetting.tradename,
+                                                    NumeroDocumentoReceptor: org ? org.docnum : corp.docnum,
+                                                    NumeroSerieDocumento: documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie,
+                                                    PaisRecepcion: org ? org.sunatcountry : corp.sunatcountry,
+                                                    ProductList: [],
+                                                    RazonSocialEmisor: appsetting.businessname,
+                                                    RazonSocialReceptor: org ? org.businessname : corp.businessname,
+                                                    RetornaPdf: appsetting.returnpdf,
+                                                    RetornaXml: appsetting.returnxml,
+                                                    RetornaXmlSunat: appsetting.returnxmlsunat,
+                                                    RucEmisor: appsetting.ruc,
+                                                    TipoCambio: invoice.currency === 'USD' ? invoice.exchangerate : '1.000',
+                                                    TipoDocumento: documenttype,
+                                                    TipoRucEmisor: appsetting.emittertype,
+                                                    Token: appsetting.token,
+                                                    Username: appsetting.sunatusername,
+                                                    VersionXml: appsetting.xmlversion,
+                                                    VersionUbl: appsetting.ublversion,
+                                                }
+
+                                                if (org) {
+                                                    invoicedata.CodigoOperacionSunat = org.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                                    invoicedata.MontoTotalGravado = org.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
+                                                    invoicedata.MontoTotalIgv = org.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
+                                                    invoicedata.MontoTotalInafecto = org.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
+                                                }
+                                                else {
+                                                    invoicedata.CodigoOperacionSunat = corp.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                                    invoicedata.MontoTotalGravado = corp.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
+                                                    invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
+                                                    invoicedata.MontoTotalInafecto = corp.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
+                                                }
+
+                                                var calcdetraction = false;
+        
+                                                if (org) {
+                                                    if (org.sunatcountry === 'PE') {
+                                                        calcdetraction = true;
+                                                    }
+                                                }
+                                                else {
+                                                    if (corp.sunatcountry === 'PE') {
+                                                        calcdetraction = true;
+                                                    }
+                                                }
+
+                                                var adicional01 = {
+                                                    CodigoDatoAdicional: '05',
+                                                    DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
+                                                }
+            
+                                                invoicedata.DataList.push(adicional01);
+
+                                                if (calcdetraction) {
+                                                    if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
+                                                        var compareamount = 0;
+            
+                                                        if (appsetting.detractionminimum) {
+                                                            if (invoice.currency === 'USD') {
+                                                                var exchangerate = await getLastExchange();
+            
+                                                                compareamount = invoice.totalamount * exchangerate;
+                                                            }
+                                                            else {
+                                                                compareamount = invoice.totalamount;
+                                                            }
+                                                        }
+                                                        
+                                                        if (compareamount > appsetting.detractionminimum) {
+                                                            invoicedata.CodigoDetraccion = appsetting.detractioncode;
+                                                            invoicedata.MontoTotalDetraccion = Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100;
+                                                            invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
+                                                            invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
+                                                                        
+                                                            var adicional02 = {
+                                                                CodigoDatoAdicional: '06',
+                                                                DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount,
+                                                            }
+                    
+                                                            invoicedata.DataList.push(adicional02);
+                                                        }
+                                                    }
+                                                }
+
+                                                invoicedetail.forEach(async data => {
+                                                    var invoicedetaildata = {
+                                                        CantidadProducto: data.quantity,
+                                                        CodigoProducto: data.productcode,
+                                                        DescripcionProducto: data.productdescription,
+                                                        IgvTotal: Math.round((data.totaligv + Number.EPSILON) * 100) / 100,
+                                                        MontoTotal: Math.round((data.totalamount + Number.EPSILON) * 100) / 100,
+                                                        PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
+                                                        PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
+                                                        TasaIgv: data.igvrate * 100,
+                                                        TipoVenta: data.saletype,
+                                                        UnidadMedida: data.measureunit,
+                                                        ValorNetoProducto: Math.round(((data.quantity * data.productnetprice) + Number.EPSILON) * 100) / 100,
+                                                    };
+        
+                                                    if (org) {
+                                                        invoicedetaildata.AfectadoIgv = org.sunatcountry === 'PE' ? '10' : '40';
+                                                        invoicedetaildata.TributoIgv = org.sunatcountry === 'PE' ? '1000' : '9998';
+                                                    }
+                                                    else {
+                                                        invoicedetaildata.AfectadoIgv = corp.sunatcountry === 'PE' ? '10' : '40';
+                                                        invoicedetaildata.TributoIgv = corp.sunatcountry === 'PE' ? '1000' : '9998';
+                                                    }
+                
+                                                    invoicedata.ProductList.push(invoicedetaildata);
+                                                });
+
+                                                var adicional05 = {
+                                                    CodigoDatoAdicional: '01',
+                                                    DescripcionDatoAdicional: 'AL CONTADO',
+                                                }
+        
+                                                invoicedata.DataList.push(adicional05);
+
+                                                const requestSendToSunat = await axios({
+                                                    data: invoicedata,
+                                                    method: 'post',
+                                                    url: `${bridgeEndpoint}processmifact/sendinvoice`
+                                                });
+
+                                                if (requestSendToSunat.data.result) {
+                                                    invoicesuccess = true;
+
+                                                    await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, null, null, 'typecredit_alcontado' || null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
+
+                                                    const requestSendMail = await axios({
+                                                        data: invoicedata,
+                                                        method: 'post',
+                                                        url: `${bridgeEndpoint}processmifact/sendmailinvoice`
+                                                    });
+
+                                                    if (!requestSendMail.data.result) {
+                                                        requestCode = "alert_automaticinvoice_mailalert";
+                                                    }
+                                                }
+                                                else {
+                                                    requestCode = "error_automaticinvoice_invoiceerror";
+
+                                                    await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, null, null, 'typecredit_alcontado'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
+
+                                                    if (org) {
+                                                        if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
+                                                            await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
+                                                        }
+                                
+                                                        if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
+                                                            await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
+                                                        }
+                                                    }
+                                                    else {
+                                                        if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
+                                                            await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
+                                                        }
+                                
+                                                        if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
+                                                            await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            catch (exception) {
+                                                requestCode = "error_automaticinvoice_exception";
+
+                                                await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', exception.message, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, (org ? org.doctype : corp.doctype) || null, (org ? org.docnum : corp.docnum) || null, (org ? org.businessname : corp.businessname) || null, (org ? org.fiscaladdress : corp.fiscaladdress) || null, (org ? org.sunatcountry : corp.sunatcountry) || null, (org ? org.contactemail : corp.contactemail) || null, null, null, null, null, null, null, null, null, null, null);
+
+                                                if (org) {
+                                                    if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
+                                                        await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
+                                                    }
+                            
+                                                    if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
+                                                        await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
+                                                    }
+                                                }
+                                                else {
+                                                    if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
+                                                        await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
+                                                    }
+                            
+                                                    if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
+                                                        await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        else {
+                                            requestCode = "error_automaticinvoice_nocorrelative";
+
+                                            await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, (org ? org.doctype : corp.doctype) || null, (org ? org.docnum : corp.docnum) || null, (org ? org.businessname : corp.businessname) || null, (org ? org.fiscaladdress : corp.fiscaladdress) || null, (org ? org.sunatcountry : corp.sunatcountry) || null, (org ? org.contactemail : corp.contactemail) || null, null, null, null, null, null, null, null, null, null, null);
+                                        }
                                     }
                                     else {
-                                        requestMessage = "error_automaticpayment_noinvoicedetail";
+                                        requestCode = "error_automaticinvoice_noinvoicedetail";
+                                    }
+
+                                    if (!invoicesuccess) {
+                                        var domainMethod = "UFN_DOMAIN_VALUES_SEL";
+                                        var domainParameters = {
+                                            all: false,
+                                            corpid: 1,
+                                            domainname: "INVOICEALERTERRORBODY",
+                                            orgid: 0,
+                                            username: 'SCHEDULER',
+                                        };
+
+                                        const queryDomainAlertBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                                        domainParameters.domainname = "INVOICEALERTERRORSUBJECT";
+
+                                        const queryDomainAlertSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                                        if (queryDomainAlertBody instanceof Array && queryDomainAlertSubject instanceof Array) {
+                                            var alertBody = queryDomainAlertBody[0].domainvalue;
+                                            var alertSubject = queryDomainAlertSubject[0].domainvalue;
+
+                                            alertBody = alertBody.split("{{amountdetraction}}").join(detractionamount);
+                                            alertBody = alertBody.split("{{amountpaid}}").join(culqiamount);
+                                            alertBody = alertBody.split("{{amounttotal}}").join(invoice.totalamount);
+                                            alertBody = alertBody.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
+                                            alertBody = alertBody.split("{{concept}}").join(invoice.description);
+                                            alertBody = alertBody.split("{{contact}}").join(org ? org.contact : corp.contact);
+                                            alertBody = alertBody.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
+                                            alertBody = alertBody.split("{{corporg}}").join(org ? org.description : corp.description);
+                                            alertBody = alertBody.split("{{currency}}").join(invoice.currency);
+                                            alertBody = alertBody.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
+                                            alertBody = alertBody.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
+                                            alertBody = alertBody.split("{{month}}").join(invoice.month);
+                                            alertBody = alertBody.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
+                                            alertBody = alertBody.split("{{year}}").join(invoice.year);
+
+                                            alertSubject = alertSubject.split("{{amountdetraction}}").join(detractionamount);
+                                            alertSubject = alertSubject.split("{{amountpaid}}").join(culqiamount);
+                                            alertSubject = alertSubject.split("{{amounttotal}}").join(invoice.totalamount);
+                                            alertSubject = alertSubject.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
+                                            alertSubject = alertSubject.split("{{concept}}").join(invoice.description);
+                                            alertSubject = alertSubject.split("{{contact}}").join(org ? org.contact : corp.contact);
+                                            alertSubject = alertSubject.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
+                                            alertSubject = alertSubject.split("{{corporg}}").join(org ? org.description : corp.description);
+                                            alertSubject = alertSubject.split("{{currency}}").join(invoice.currency);
+                                            alertSubject = alertSubject.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
+                                            alertSubject = alertSubject.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
+                                            alertSubject = alertSubject.split("{{month}}").join(invoice.month);
+                                            alertSubject = alertSubject.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
+                                            alertSubject = alertSubject.split("{{year}}").join(invoice.year);
+
+                                            const requestMailSend = await axios({
+                                                data: {
+                                                    mailAddress: (org ? org.contactemail : corp.contactemail),
+                                                    mailBody: alertBody,
+                                                    mailTitle: alertSubject,
+                                                },
+                                                method: "post",
+                                                url: `${bridgeEndpoint}processscheduler/sendmail`,
+                                            });
+
+                                            if (!requestMailSend.data.success) {
+                                                requestCode = requestMailSend.data.operationMessage;
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -3652,699 +4089,5 @@ exports.automaticPayment = async (request, result) => {
             message: exception.message,
             success: false,
         });
-    }
-
-    try {
-        if (iscard) {
-            if (!paymentcardid || !paymentcardcode) {
-                return result.status(403).json({ error: true, success: false, code: '', message: 'Payment card missing parameters' });
-            }
-        }
-
-        const invoice = await getInvoice(corpid, orgid, userid, invoiceid);
-
-        if (invoice) {
-            if (invoice.invoicestatus !== "INVOICED") {
-                const corp = await getCorporation(corpid);
-                const org = await getOrganization(corpid, orgid);
-
-                const tipocredito = '0';
-
-                var correctcorrelative = false;
-                var proceedpayment = false;
-
-                if (corp) {
-                    if (corp.billbyorg) {
-                        if (org) {
-                            if (org.docnum && org.doctype && org.businessname && org.fiscaladdress && org.sunatcountry) {
-                                if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
-                                    correctcorrelative = true;
-                                }
-        
-                                if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                    correctcorrelative = true;
-                                }
-        
-                                if (correctcorrelative) {
-                                    proceedpayment = true;
-                                }
-                                else {
-                                    return result.status(403).json({ error: true, success: false, code: '', message: 'Could not match correlative. Check organization configuration' });
-                                }
-                            }
-                            else {
-                                return result.status(403).json({ error: true, success: false, code: '', message: 'Organization missing parameters' });
-                            }
-                        }
-                        else {
-                            return result.status(403).json({ error: true, success: false, code: '', message: 'Organization not found' });
-                        }
-                    }
-                    else {
-                        if (corp.docnum && corp.doctype && corp.businessname && corp.fiscaladdress && corp.sunatcountry) {
-                            if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
-                                correctcorrelative = true;
-                            }
-                        
-                            if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                correctcorrelative = true;
-                            }
-        
-                            if (correctcorrelative) {
-                                proceedpayment = true;
-                            }
-                            else {
-                                return result.status(403).json({ error: true, success: false, code: '', message: 'Could not match correlative. Check corporation configuration' });
-                            }
-                        }
-                        else {
-                            return result.status(403).json({ error: true, success: false, code: '', message: 'Corporation missing parameters' });
-                        }
-                    }
-        
-                    if (proceedpayment) {
-                        const invoicedetail = await getInvoiceDetail(corpid, orgid, userid, invoiceid);
-        
-                        if (invoicedetail) {
-                            if (invoice.invoicestatus === 'DRAFT' && invoice.paymentstatus === 'PENDING' && invoice.currency === settings.currency && (((Math.round((invoice.totalamount * 100 + Number.EPSILON) * 100) / 100) === settings.amount) || override)) {
-                                const appsetting = await getAppSetting();
-                                const userprofile = await getUserProfile(userid);
-                                
-                                if (userprofile && appsetting) {
-                                    metadata.corpid = (corpid || '');
-                                    metadata.corporation = removeAccent(corp.description || '');
-                                    metadata.orgid = (orgid || '');
-                                    metadata.organization = removeAccent(invoice.orgdesc || '');
-                                    metadata.document = ((org ? org.docnum : corp.docnum) || '');
-                                    metadata.businessname = removeAccent((org ? org.businessname : corp.businessname) || '');
-                                    metadata.invoiceid = (invoiceid || '');
-                                    metadata.seriecode = '';
-                                    metadata.emissiondate = (new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0] || '');
-                                    metadata.user = removeAccent(usr || '');
-                                    metadata.reference = removeAccent(invoice.description || '');
-                                    
-                                    var successPay = false;
-
-                                    if (iscard) {
-                                        const paymentcard = await getCard(corpid, paymentcardid);
-
-                                        const requestCulqiCharge = await axios({
-                                            data: {
-                                                amount: settings.amount,
-                                                bearer: appsetting.privatekey,
-                                                description: (removeAccent('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
-                                                currencyCode: settings.currency,
-                                                email: (paymentcard?.mail || userprofile.email),
-                                                sourceId: paymentcardcode,
-                                                operation: "CREATE",
-                                                url: appsetting.culqiurlcharge,
-                                                metadata: metadata,
-                                            },
-                                            method: "post",
-                                            url: `${bridgeEndpoint}processculqi/handlecharge`,
-                                        });
-
-                                        if (requestCulqiCharge.data.success) {
-                                            const chargequery = "UFN_CHARGE_INS";
-                                            const chargebind = {
-                                                amount: settings.amount / 100,
-                                                capture: true,
-                                                chargejson: requestCulqiCharge.data.result,
-                                                chargetoken: requestCulqiCharge.data.result.id,
-                                                corpid: corpid,
-                                                currency: settings.currency,
-                                                description: settings.description,
-                                                email: (paymentcard?.mail || userprofile.email),
-                                                id: null,
-                                                invoiceid: invoiceid,
-                                                orderid: null,
-                                                orderjson: null,
-                                                orgid: orgid,
-                                                operation: 'INSERT',
-                                                paidby: usr,
-                                                status: 'PAID',
-                                                tokenid: paymentcardid,
-                                                tokenjson: null,
-                                                type: "REGISTEREDCARD",
-                                            }
-        
-                                            const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
-
-                                            const invoicequery = "UFN_INVOICE_PAYMENT";
-                                            const invoicebind = {
-                                                capture: true,
-                                                chargeid: chargeresult[0].chargeid,
-                                                chargejson: requestCulqiCharge.data.result,
-                                                chargetoken: requestCulqiCharge.data.result.id,
-                                                corpid: corpid,
-                                                email: (paymentcard?.mail || userprofile.email),
-                                                invoiceid: invoiceid,
-                                                orgid: orgid,
-                                                paidby: usr,
-                                                tokenid: paymentcardid,
-                                                tokenjson: null,
-                                                culqiamount: (settings.amount / 100)
-                                            }
-            
-                                            const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
-
-                                            successPay = true;
-                                        }
-                                    }
-                                    else {
-                                        const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
-
-                                        if (charge.object === 'error') {
-                                            return result.status(400).json({
-                                                data: {
-                                                    code: charge.code,
-                                                    id: charge.charge_id,
-                                                    message: charge.user_message,
-                                                    object: charge.object
-                                                },
-                                                error: true,
-                                                success: false
-                                            });
-                                        }
-                                        else {
-                                            const chargequery = "UFN_CHARGE_INS";
-                                            const chargebind = {
-                                                amount: settings.amount / 100,
-                                                capture: true,
-                                                chargejson: charge,
-                                                chargetoken: charge.id,
-                                                corpid: corpid,
-                                                currency: settings.currency,
-                                                description: settings.description,
-                                                email: token.email,
-                                                id: null,
-                                                invoiceid: invoiceid,
-                                                orderid: null,
-                                                orderjson: null,
-                                                orgid: orgid,
-                                                operation: 'INSERT',
-                                                paidby: usr,
-                                                status: 'PAID',
-                                                tokenid: token.id,
-                                                tokenjson: token,
-                                                type: charge.object
-                                            }
-        
-                                            const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
-
-                                            const invoicequery = "UFN_INVOICE_PAYMENT";
-                                            const invoicebind = {
-                                                capture: true,
-                                                chargeid: chargeresult[0].chargeid,
-                                                chargejson: charge,
-                                                chargetoken: charge.id,
-                                                corpid: corpid,
-                                                email: token.email,
-                                                invoiceid: invoiceid,
-                                                orgid: orgid,
-                                                paidby: usr,
-                                                tokenid: token.id,
-                                                tokenjson: token,
-                                                culqiamount: (settings.amount / 100)
-                                            }
-            
-                                            const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
-
-                                            successPay = true;
-                                        }
-                                    }
-
-                                    if (successPay) {
-                                        var invoicecorrelative = null;
-                                        var documenttype = null;
-        
-                                        if (corp.billbyorg) {
-                                            if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
-                                                invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICE');
-                                                documenttype = '01';
-                                            }
-                    
-                                            if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKET');
-                                                documenttype = '03'
-                                            }
-                                        }
-                                        else {
-                                            if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
-                                                invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICE');
-                                                documenttype = '01';
-                                            }
-                    
-                                            if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKET');
-                                                documenttype = '03'
-                                            }
-                                        }
-        
-                                        if (invoicecorrelative) {
-                                            try {
-                                                var invoicedata = {
-                                                    CodigoAnexoEmisor: appsetting.annexcode,
-                                                    CodigoFormatoImpresion: appsetting.printingformat,
-                                                    CodigoMoneda: invoice.currency,
-                                                    Username: appsetting.sunatusername,
-                                                    TipoDocumento: documenttype,
-                                                    TipoRucEmisor: appsetting.emittertype,
-                                                    CodigoRucReceptor: org ? org.doctype : corp.doctype,
-                                                    CodigoUbigeoEmisor: appsetting.ubigeo,
-                                                    EnviarSunat: org ? org.autosendinvoice : corp.autosendinvoice,
-                                                    FechaEmision: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
-                                                    MailEnvio: org ? org.contactemail : corp.contactemail,
-                                                    MontoTotal: Math.round((invoice.totalamount + Number.EPSILON) * 100) / 100,
-                                                    NombreComercialEmisor: appsetting.tradename,
-                                                    RazonSocialEmisor: appsetting.businessname,
-                                                    RazonSocialReceptor: org ? org.businessname : corp.businessname,
-                                                    CorrelativoDocumento: zeroPad(invoicecorrelative.p_correlative, 8),
-                                                    RucEmisor: appsetting.ruc,
-                                                    NumeroDocumentoReceptor: org ? org.docnum : corp.docnum,
-                                                    NumeroSerieDocumento: documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie,
-                                                    RetornaPdf: appsetting.returnpdf,
-                                                    RetornaXmlSunat: appsetting.returnxmlsunat,
-                                                    RetornaXml: appsetting.returnxml,
-                                                    TipoCambio: invoice.currency === 'USD' ? invoice.exchangerate : '1.000',
-                                                    Token: appsetting.token,
-                                                    DireccionFiscalEmisor: appsetting.fiscaladdress,
-                                                    DireccionFiscalReceptor: org ? org.fiscaladdress : corp.fiscaladdress,
-                                                    VersionXml: appsetting.xmlversion,
-                                                    VersionUbl: appsetting.ublversion,
-                                                    Endpoint: appsetting.sunaturl,
-                                                    PaisRecepcion: org ? org.sunatcountry : corp.sunatcountry,
-                                                    ProductList: [],
-                                                    DataList: []
-                                                }
-        
-                                                if (corp.billbyorg) {
-                                                    invoicedata.CodigoOperacionSunat = org.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                                    invoicedata.MontoTotalGravado = org.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
-                                                    invoicedata.MontoTotalInafecto = org.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
-                                                    invoicedata.MontoTotalIgv = org.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
-                                                }
-                                                else {
-                                                    invoicedata.CodigoOperacionSunat = corp.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                                    invoicedata.MontoTotalGravado = corp.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
-                                                    invoicedata.MontoTotalInafecto = corp.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
-                                                    invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
-                                                }
-            
-                                                var calcdetraction = false;
-        
-                                                if (corp.billbyorg) {
-                                                    if (org.sunatcountry === 'PE') {
-                                                        calcdetraction = true;
-                                                    }
-                                                }
-                                                else {
-                                                    if (corp.sunatcountry === 'PE') {
-                                                        calcdetraction = true;
-                                                    }
-                                                }
-        
-                                                if (calcdetraction) {
-                                                    if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
-                                                        var compareamount = 0;
-            
-                                                        if (appsetting.detractionminimum) {
-                                                            if (invoice.currency === 'USD') {
-                                                                var exchangerate = await getLastExchange();
-            
-                                                                compareamount = invoice.totalamount * exchangerate;
-                                                            }
-                                                            else {
-                                                                compareamount = invoice.totalamount;
-                                                            }
-                                                        }
-                                                        
-                                                        if (compareamount > appsetting.detractionminimum) {
-                                                            invoicedata.MontoTotalDetraccion = Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100;
-                                                            invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
-                                                            invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
-                                                            invoicedata.CodigoDetraccion = appsetting.detractioncode;
-            
-                                                            var adicional02 = {
-                                                                CodigoDatoAdicional: '06',
-                                                                DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
-                                                            }
-                    
-                                                            invoicedata.DataList.push(adicional02);
-                                                        }
-                                                    }
-                                                }
-                                                
-                                                if (tipocredito) {
-                                                    if (tipocredito === '0') {
-                                                        invoicedata.FechaVencimiento = invoicedata.FechaEmision;
-                                                    }
-                                                    else {
-                                                        invoicedata.FechaVencimiento = new Date(new Date().setDate(new Date(new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0]).getDate()+(Number.parseFloat(tipocredito)))).toISOString().substring(0, 10);
-                                                    }
-                                                }
-            
-                                                invoicedetail.forEach(async data => {
-                                                    var invoicedetaildata = {
-                                                        CantidadProducto: data.quantity,
-                                                        CodigoProducto: data.productcode,
-                                                        TipoVenta: data.saletype,
-                                                        UnidadMedida: data.measureunit,
-                                                        IgvTotal: Math.round((data.totaligv + Number.EPSILON) * 100) / 100,
-                                                        MontoTotal: Math.round((data.totalamount + Number.EPSILON) * 100) / 100,
-                                                        TasaIgv: data.igvrate * 100,
-                                                        PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
-                                                        DescripcionProducto: data.productdescription,
-                                                        PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
-                                                        ValorNetoProducto: Math.round(((data.quantity * data.productnetprice) + Number.EPSILON) * 100) / 100,
-                                                    };
-        
-                                                    if (corp.billbyorg) {
-                                                        invoicedetaildata.AfectadoIgv = org.sunatcountry === 'PE' ? '10' : '40';
-                                                        invoicedetaildata.TributoIgv = org.sunatcountry === 'PE' ? '1000' : '9998';
-                                                    }
-                                                    else {
-                                                        invoicedetaildata.AfectadoIgv = corp.sunatcountry === 'PE' ? '10' : '40';
-                                                        invoicedetaildata.TributoIgv = corp.sunatcountry === 'PE' ? '1000' : '9998';
-                                                    }
-                
-                                                    invoicedata.ProductList.push(invoicedetaildata);
-                                                });
-            
-                                                var adicional01 = {
-                                                    CodigoDatoAdicional: '05',
-                                                    DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
-                                                }
-            
-                                                invoicedata.DataList.push(adicional01);
-                                                
-                                                if (purchaseorder) {
-                                                    var adicional03 = {
-                                                        CodigoDatoAdicional: '15',
-                                                        DescripcionDatoAdicional: purchaseorder
-                                                    }
-            
-                                                    invoicedata.DataList.push(adicional03);
-                                                }
-            
-                                                if (comments) {
-                                                    var adicional04 = {
-                                                        CodigoDatoAdicional: '07',
-                                                        DescripcionDatoAdicional: comments
-                                                    }
-            
-                                                    invoicedata.DataList.push(adicional04);
-                                                }
-            
-                                                if (tipocredito) {
-                                                    var adicional05 = {
-                                                        CodigoDatoAdicional: '01',
-                                                        DescripcionDatoAdicional: tipocredito === '0' ? 'AL CONTADO' : `CREDITO A ${tipocredito} DIAS`
-                                                    }
-            
-                                                    invoicedata.DataList.push(adicional05);
-                                                }
-        
-                                                const requestSendToSunat = await axios({
-                                                    data: invoicedata,
-                                                    method: 'post',
-                                                    url: `${bridgeEndpoint}processmifact/sendinvoice`
-                                                });
-        
-                                                if (requestSendToSunat.data.result) {
-                                                    await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, purchaseorder || null, comments || null, 'typecredit_alcontado'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
-                                                }
-                                                else {
-                                                    await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, purchaseorder || null, comments || null, 'typecredit_alcontado'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
-            
-                                                    if (corp.billbyorg) {
-                                                        if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
-                                                            await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
-                                                        }
-                                
-                                                        if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                            await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
-                                                        }
-                                                    }
-                                                    else {
-                                                        if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
-                                                            await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
-                                                        }
-                                
-                                                        if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                            await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            catch (error) {
-                                                await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', error.message, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
-            
-                                                if (corp.billbyorg) {
-                                                    if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
-                                                        await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
-                                                    }
-                            
-                                                    if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                        await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
-                                                    }
-                                                }
-                                                else {
-                                                    if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
-                                                        await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
-                                                    }
-                            
-                                                    if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                        await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        else {
-                                            await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
-                                        }
-                                        
-                                        return result.json({
-                                            code: '',
-                                            data: {
-                                                id: 0,
-                                                object: null 
-                                            },
-                                            error: false,
-                                            message: 'culqipaysuccess',
-                                            success: true
-                                        });
-                                    }
-                                    else {
-                                        return result.status(403).json({ error: true, success: false, code: '', message: 'Unsuccessful payment' });
-                                    }
-                                }
-                                else {
-                                    return result.status(403).json({ error: true, success: false, code: '', message: 'Invalid user' });
-                                }
-                            }
-                            else {
-                                return result.status(403).json({ error: true, success: false, code: '', message: 'Invalid invoice data' });
-                            }
-                        }
-                        else {
-                            return result.status(403).json({ error: true, success: false, code: '', message: 'Invoice detail not found' });
-                        }
-                    }
-                    else {
-                        return result.status(403).json({ error: true, success: false, code: '', message: 'There are missing parameters' });
-                    }
-                }
-                else {
-                    return result.status(403).json({ error: true, success: false, code: '', message: 'Corporation not found' });
-                }
-            }
-            else {
-                if (((Math.round((invoice.totalamount * 100 + Number.EPSILON) * 100) / 100) === settings.amount) || override) {
-                    const appsetting = await getAppSetting();
-                    const userprofile = await getUserProfile(userid);
-
-                    if (userprofile && appsetting) {
-                        metadata.corpid = (corpid || '');
-                        metadata.corporation = removeAccent(invoice.corpdesc || '');
-                        metadata.orgid = (orgid || '');
-                        metadata.organization = removeAccent(invoice.orgdesc || '');
-                        metadata.document = (invoice.receiverdocnum || '');
-                        metadata.businessname = removeAccent(invoice.receiverbusinessname || '');
-                        metadata.invoiceid = (invoiceid || '');
-                        metadata.seriecode = (invoice.serie ? invoice.serie : 'X000') + '-' + (invoice.correlative ? invoice.correlative.toString().padStart(8, '0') : '00000000');
-                        metadata.emissiondate = (invoice.invoicedate || '');
-                        metadata.user = removeAccent(usr || '');
-                        metadata.reference = removeAccent(invoice.description || '');
-
-                        if (iscard) {
-                            const paymentcard = await getCard(corpid, paymentcardid);
-
-                            const requestCulqiCharge = await axios({
-                                data: {
-                                    amount: settings.amount,
-                                    bearer: appsetting.privatekey,
-                                    description: (removeAccent('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
-                                    currencyCode: settings.currency,
-                                    email: (paymentcard?.mail || userprofile.email),
-                                    sourceId: paymentcardcode,
-                                    operation: "CREATE",
-                                    url: appsetting.culqiurlcharge,
-                                    metadata: metadata,
-                                },
-                                method: "post",
-                                url: `${bridgeEndpoint}processculqi/handlecharge`,
-                            });
-
-                            if (requestCulqiCharge.data.success) {
-                                const chargequery = "UFN_CHARGE_INS";
-                                const chargebind = {
-                                    amount: settings.amount / 100,
-                                    capture: true,
-                                    chargejson: requestCulqiCharge.data.result,
-                                    chargetoken: requestCulqiCharge.data.result.id,
-                                    corpid: corpid,
-                                    currency: settings.currency,
-                                    description: settings.description,
-                                    email: (paymentcard?.mail || userprofile.email),
-                                    id: null,
-                                    invoiceid: invoiceid,
-                                    orderid: null,
-                                    orderjson: null,
-                                    orgid: orgid,
-                                    operation: 'INSERT',
-                                    paidby: usr,
-                                    status: 'PAID',
-                                    tokenid: paymentcardid,
-                                    tokenjson: null,
-                                    type: "REGISTEREDCARD",
-                                }
-
-                                const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
-
-                                const invoicequery = "UFN_INVOICE_PAYMENT";
-                                const invoicebind = {
-                                    capture: true,
-                                    chargeid: chargeresult[0].chargeid,
-                                    chargejson: requestCulqiCharge.data.result,
-                                    chargetoken: requestCulqiCharge.data.result.id,
-                                    corpid: corpid,
-                                    email: (paymentcard?.mail || userprofile.email),
-                                    invoiceid: invoiceid,
-                                    orgid: orgid,
-                                    paidby: usr,
-                                    tokenid: paymentcardid,
-                                    tokenjson: null,
-                                    culqiamount: (settings.amount / 100)
-                                }
-
-                                const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
-
-                                return result.json({
-                                    code: '',
-                                    data: {
-                                        id: requestCulqiCharge.data.result.id,
-                                        object: requestCulqiCharge.data.result
-                                    },
-                                    error: false,
-                                    message: 'successful_transaction',
-                                    success: true
-                                });
-                            }
-                            else {
-                                return result.status(403).json({ error: true, success: false, code: '', message: 'Unsuccessful payment' });
-                            }
-                        }
-                        else {
-                            const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
-    
-                            if (charge.object === 'error') {
-                                return result.status(400).json({
-                                    data: {
-                                        code: charge.code,
-                                        id: charge.charge_id,
-                                        message: charge.user_message,
-                                        object: charge.object
-                                    },
-                                    error: true,
-                                    success: false
-                                });
-                            }
-                            else {
-                                const chargequery = "UFN_CHARGE_INS";
-                                const chargebind = {
-                                    amount: settings.amount / 100,
-                                    capture: true,
-                                    chargejson: charge,
-                                    chargetoken: charge.id,
-                                    corpid: corpid,
-                                    currency: settings.currency,
-                                    description: settings.description,
-                                    email: token.email,
-                                    id: null,
-                                    invoiceid: invoiceid,
-                                    orderid: null,
-                                    orderjson: null,
-                                    orgid: orgid,
-                                    operation: 'INSERT',
-                                    paidby: usr,
-                                    status: 'PAID',
-                                    tokenid: token.id,
-                                    tokenjson: token,
-                                    type: charge.object
-                                }
-        
-                                const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
-        
-                                const invoicequery = "UFN_INVOICE_PAYMENT";
-                                const invoicebind = {
-                                    capture: true,
-                                    chargeid: chargeresult[0].chargeid,
-                                    chargejson: charge,
-                                    chargetoken: charge.id,
-                                    corpid: corpid,
-                                    email: token.email,
-                                    invoiceid: invoiceid,
-                                    orgid: orgid,
-                                    paidby: usr,
-                                    tokenid: token.id,
-                                    tokenjson: token,
-                                    culqiamount: (settings.amount / 100)
-                                }
-                                
-                                const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
-        
-                                return result.json({
-                                    code: charge.outcome.code,
-                                    data: {
-                                        id: charge.id,
-                                        object: charge.object
-                                    },
-                                    error: false,
-                                    message: charge.outcome.user_message,
-                                    success: true
-                                });
-                            }
-                        }
-                    }
-                    else {
-                        return result.status(403).json({ error: true, success: false, code: '', message: 'Invalid user' });
-                    }
-                }
-                else {
-                    return result.status(403).json({ error: true, success: false, code: '', message: 'Total amount does not match' });
-                }
-            }
-        }
-        else {
-            return result.status(403).json({ error: true, success: false, code: '', message: 'Invoice not found' });
-        }
-    } catch (error) {
-        if (error.charge_id) {
-            return result.status(500).json({ message: error.merchant_message });
-        }
-        else {
-            return result.status(500).json({ message: "There was a problem, please try again later" });
-        }
     }
 };
