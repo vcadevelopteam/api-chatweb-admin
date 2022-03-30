@@ -654,7 +654,7 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
                             res(getErrorCode(errors.COS_UNEXPECTED, err));
                         } else {
                             console.timeEnd(`uploadcos`);
-                            res({ url: (data.Location || "").replace("http:", "https.") })
+                            res({ url: (data.Location || "").replace("http:", "https:") })
                         }
                     });
                 });
@@ -687,7 +687,7 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
                             rej(getErrorCode(errors.COS_UNEXPECTED_ERROR, err));
                         }
                         console.timeEnd(`uploadcos`);
-                        res({ url: (data.Location || "").replace("http:", "https.") })
+                        res({ url: (data.Location || "").replace("http:", "https:") })
                     });
                 });
             }
