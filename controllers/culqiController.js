@@ -3104,7 +3104,12 @@ const getCard = async (corpid, id) => {
 
     if (queryResult instanceof Array) {
         if (queryResult.length > 0) {
-            return queryResult[0];
+            if (id === 0) {
+                return queryResult;
+            }
+            else {
+                return queryResult[0];
+            }
         }
     }
 
@@ -3390,7 +3395,6 @@ exports.automaticPayment = async (request, result) => {
     try {
         var requestCode = "error_unexpected_error";
         var requestId = null;
-        var requestIsValid = false;
         var requestMessage = "error_unexpected_error";
         var requestObject = null;
         var requestStatus = 400;
@@ -3405,7 +3409,6 @@ exports.automaticPayment = async (request, result) => {
                         object: requestObject,
                     },
                     error: !requestSuccess,
-                    isvalid: requestIsValid,
                     message: "error_auth_error",
                     success: requestSuccess,
                 });
@@ -3427,20 +3430,191 @@ exports.automaticPayment = async (request, result) => {
                         const invoice = await getInvoice(corpid, orgid, 0, invoiceid);
 
                         if (invoice) {
-                            const invoicedetail = await getInvoiceDetail(corpid, orgid, 0, invoiceid);
-
-                            if (invoicedetail) {
+                            if (invoice.paymentstatus === 'PENDING') {
                                 const paymentcard = await getCard(corpid, 0);
+                                var paymentsuccess = false;
 
                                 if (paymentcard) {
-                                    
+                                    var favoritecard = paymentcard.find((card) => card.favorite === true);
+
+                                    if (favoritecard) {
+                                        metadata.businessname = removeAccent((org ? org.businessname : corp.businessname) || '');
+                                        metadata.corpid = (corpid || '');
+                                        metadata.corporation = removeAccent(corp.description || '');
+                                        metadata.document = ((org ? org.docnum : corp.docnum) || '');
+                                        metadata.emissiondate = (new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0] || '');
+                                        metadata.invoiceid = (invoiceid || '');
+                                        metadata.organization = removeAccent(invoice.orgdesc || '');
+                                        metadata.orgid = (orgid || '');
+                                        metadata.reference = removeAccent(invoice.description || '');
+                                        metadata.seriecode = '';
+                                        metadata.user = 'SCHEDULER';
+
+                                        var country = (org ? org.sunatcountry : corp.sunatcountry);
+                                        var culqiamount = invoice.totalamount;
+                                        var detractionamount = 0;
+                                        var doctype = (org ? org.doctype : corp.doctype);
+                                        var exchangerate = getLastExchange();
+
+                                        if (country && doctype) {
+                                            if (country === 'PE' && doctype === '6') {
+                                                var compareamount = (culqiamount || 0);
+                                                
+                                                if (invoice.currency === 'USD') {
+                                                    compareamount = compareamount * (exchangerate || 0);
+                                                }
+
+                                                if (compareamount > appsetting.detractionminimum) {
+                                                    culqiamount = (Math.round(((culqiamount || 0) - ((culqiamount || 0) * (appsetting.detraction || 0)) + Number.EPSILON) * 100) / 100);
+                                                    detractionamount = (Math.round((((appsetting.detraction || 0) * 100) + Number.EPSILON) * 100) / 100);
+                                                }
+                                                else {
+                                                    culqiamount = (Math.round(((culqiamount || 0) + Number.EPSILON) * 100) / 100);
+                                                }
+                                            }
+                                            else {
+                                                culqiamount = (Math.round(((culqiamount || 0) + Number.EPSILON) * 100) / 100);
+                                            }
+
+                                            const requestCulqiCharge = await axios({
+                                                data: {
+                                                    amount: (Math.round(((culqiamount * 100) + Number.EPSILON) * 100) / 100),
+                                                    bearer: appsetting.privatekey,
+                                                    currencyCode: invoice.currency,
+                                                    description: (removeAccent('PAYMENT: ' + (invoice.description || ''))).slice(0, 80),
+                                                    email: favoritecard.mail,
+                                                    metadata: metadata,
+                                                    operation: "CREATE",
+                                                    sourceId: favoritecard.cardcode,
+                                                    url: appsetting.culqiurlcharge,
+                                                },
+                                                method: "post",
+                                                url: `${bridgeEndpoint}processculqi/handlecharge`,
+                                            });
+
+                                            if (requestCulqiCharge.data.success) {
+                                                paymentsuccess = true;
+
+                                                requestCode = "";
+                                                requestId = 200;
+                                                requestMessage = "success_automaticpayment_paymentsuccess";
+                                                requestStatus = 200;
+                                                requestSuccess = true;
+
+                                                const chargequery = "UFN_CHARGE_INS";
+                                                const chargebind = {
+                                                    amount: culqiamount,
+                                                    capture: true,
+                                                    chargejson: requestCulqiCharge.data.result,
+                                                    chargetoken: requestCulqiCharge.data.result.id,
+                                                    corpid: corpid,
+                                                    currency: invoice.currency,
+                                                    description: invoice.description,
+                                                    email: favoritecard.mail,
+                                                    id: null,
+                                                    invoiceid: invoiceid,
+                                                    operation: 'INSERT',
+                                                    orderid: null,
+                                                    orderjson: null,
+                                                    orgid: orgid,
+                                                    paidby: 'SCHEDULER',
+                                                    status: 'PAID',
+                                                    tokenid: paymentcardid,
+                                                    tokenjson: null,
+                                                    type: "REGISTEREDCARD",
+                                                }
+
+                                                const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
+
+                                                const invoicequery = "UFN_INVOICE_PAYMENT";
+                                                const invoicebind = {
+                                                    capture: true,
+                                                    chargeid: chargeresult[0].chargeid,
+                                                    chargejson: requestCulqiCharge.data.result,
+                                                    chargetoken: requestCulqiCharge.data.result.id,
+                                                    corpid: corpid,
+                                                    culqiamount: culqiamount,
+                                                    email: favoritecard.mail,
+                                                    invoiceid: invoiceid,
+                                                    orgid: orgid,
+                                                    paidby: 'SCHEDULER',
+                                                    tokenid: paymentcardid,
+                                                    tokenjson: null,
+                                                }
+
+                                                const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
+
+                                                if (invoiceresult) {
+                                                    var domainMethod = "UFN_DOMAIN_VALUES_SEL";
+                                                    var domainParameters = {
+                                                        all: false,
+                                                        corpid: 1,
+                                                        domainname: "PAYMENTALERTBODY",
+                                                        orgid: 0,
+                                                        username: parameters.username,
+                                                    };
+
+                                                    const queryDomainAlertBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                                                    domainParameters.domainname = "PAYMENTALERTSUBJECT";
+
+                                                    const queryDomainAlertSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                                                    if (queryDomainAlertBody instanceof Array && queryDomainAlertSubject instanceof Array) {
+                                                        var alertBody = queryDomainAlertBody[0].domainvalue;
+                                                        var alertSubject = queryDomainAlertSubject[0].domainvalue;
+
+                                                        alertBody = alertBody.split("{{corp}}").join(parameters.fiscaladdress);
+
+                                                        const requestMailSend = await axios({
+                                                            data: {
+                                                                mailAddress: (org ? org.contactemail : corp.contactemail),
+                                                                mailBody: alertBody,
+                                                                mailTitle: alertSubject,
+                                                            },
+                                                            method: "post",
+                                                            url: `${bridgeEndpoint}processscheduler/sendmail`,
+                                                        });
+
+                                                        if (!requestMailSend.data.success) {
+                                                            requestCode = requestMailSend.data.operationMessage;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            else {
+                                                requestCode = requestCulqiCharge.data.operationMessage;
+                                                requestMessage = "error_automaticpayment_nocountry_nodoctype";
+                                            }
+                                        }
+                                        else {
+                                            requestMessage = "error_automaticpayment_nocountry_nodoctype";
+                                        }
+                                    }
+                                    else {
+                                        requestMessage = "error_automaticpayment_nofavoritecard";
+                                    }
                                 }
                                 else {
                                     requestMessage = "error_automaticpayment_nopaymentcard";
                                 }
+
+                                if (invoice.invoicestatus !== 'INVOICED' && paymentsuccess) {
+                                    const invoicedetail = await getInvoiceDetail(corpid, orgid, 0, invoiceid);
+
+                                    if (invoicedetail) {
+                                    }
+                                    else {
+                                        requestMessage = "error_automaticpayment_noinvoicedetail";
+                                    }
+                                }
                             }
                             else {
-                                requestMessage = "error_automaticpayment_noinvoicedetail";
+                                requestCode = "";
+                                requestId = 200;
+                                requestMessage = "success_automaticpayment_alreadypaid";
+                                requestStatus = 200;
+                                requestSuccess = true;
                             }
                         }
                         else {
@@ -3467,7 +3641,6 @@ exports.automaticPayment = async (request, result) => {
                 object: requestObject,
             },
             error: !requestSuccess,
-            isvalid: requestIsValid,
             message: requestMessage,
             success: requestSuccess,
         });
