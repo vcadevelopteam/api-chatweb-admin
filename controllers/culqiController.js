@@ -1,13 +1,16 @@
 const axios = require('axios');
-const triggerfunctions = require('../config/triggerfunctions');
 const sequelize = require('../config/database');
-const { QueryTypes } = require('sequelize');
+const triggerfunctions = require('../config/triggerfunctions');
+
 const { getErrorSeq } = require('../config/helpers');
+
 const Culqi = require('culqi-node');
 
-const exchangeEndpoint = process.env.EXCHANGE;
+const { QueryTypes } = require('sequelize');
 
 const bridgeEndpoint = process.env.BRIDGE;
+const whitelist = process.env.WHITELIST;
+const exchangeEndpoint = process.env.EXCHANGE;
 
 const zeroPad = (num, places) => String(num).padStart(places, '0')
 
@@ -308,7 +311,7 @@ const getCharge = async (corpid, orgid, userid, id) => {
     return null
 }
 
-const createInvoice = async (corpid, orgid, invoiceid, description, status, type, issuerruc, issuerbusinessname, issuertradename, issuerfiscaladdress, issuerubigeo, emittertype, annexcode, printingformat, xmlversion, ublversion, receiverdoctype, receiverdocnum, receiverbusinessname, receiverfiscaladdress, receivercountry, receivermail, invoicetype, sunatopecode, serie, correlative, concept, invoicedate, expirationdate, subtotal, taxes, totalamount, currency, exchangerate, invoicestatus, filenumber, purchaseorder, executingunitcode, selectionprocessnumber, contractnumber, comments, credittype, creditnotetype, creditnotemotive, creditnotediscount, invoicereferencefile, invoicepaymentnote, username, referenceinvoiceid, netamount, paymentstatus, hasreport) => {
+const createInvoice = async (corpid, orgid, invoiceid, description, status, type, issuerruc, issuerbusinessname, issuertradename, issuerfiscaladdress, issuerubigeo, emittertype, annexcode, printingformat, xmlversion, ublversion, receiverdoctype, receiverdocnum, receiverbusinessname, receiverfiscaladdress, receivercountry, receivermail, invoicetype, sunatopecode, serie, correlative, concept, invoicedate, expirationdate, subtotal, taxes, totalamount, currency, exchangerate, invoicestatus, filenumber, purchaseorder, executingunitcode, selectionprocessnumber, contractnumber, comments, credittype, creditnotetype, creditnotemotive, creditnotediscount, invoicereferencefile, invoicepaymentnote, username, referenceinvoiceid, netamount, paymentstatus, hasreport, year, month) => {
     const query = "UFN_INVOICE_INS";
     const bind = {
         corpid: corpid,
@@ -362,7 +365,9 @@ const createInvoice = async (corpid, orgid, invoiceid, description, status, type
         referenceinvoiceid: referenceinvoiceid,
         netamount: netamount,
         paymentstatus: paymentstatus,
-        hasreport, hasreport
+        hasreport: hasreport,
+        year: year,
+        month: month,
     }
 
     const result = await triggerfunctions.executesimpletransaction(query, bind);
@@ -399,7 +404,7 @@ const createInvoiceDetail = async (corpid, orgid, invoiceid, description, status
         productnetprice: productnetprice,
         productnetworth: productnetworth,
         netamount: netamount,
-        username: username
+        username: username,
     }
     
     const result = await triggerfunctions.executesimpletransaction(query, bind);
@@ -883,9 +888,15 @@ exports.refund = async (req, res) => {
 
 exports.chargeInvoice = async (req, res) => {
     const { userid, usr } = req.user;
-    const { invoiceid, settings, token, metadata = {}, purchaseorder, comments, corpid, orgid, override } = req.body;
+    const { invoiceid, settings, token, metadata = {}, purchaseorder, comments, corpid, orgid, override, paymentcardid, paymentcardcode, iscard } = req.body;
 
     try {
+        if (iscard) {
+            if (!paymentcardid || !paymentcardcode) {
+                return res.status(403).json({ error: true, success: false, code: '', message: 'Payment card missing parameters' });
+            }
+        }
+
         const invoice = await getInvoice(corpid, orgid, userid, invoiceid);
 
         if (invoice) {
@@ -967,65 +978,139 @@ exports.chargeInvoice = async (req, res) => {
                                     metadata.emissiondate = (new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0] || '');
                                     metadata.user = removeAccent(usr || '');
                                     metadata.reference = removeAccent(invoice.description || '');
-        
-                                    const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
-        
-                                    if (charge.object === 'error') {
-                                        return res.status(400).json({
+                                    
+                                    var successPay = false;
+
+                                    if (iscard) {
+                                        const paymentcard = await getCard(corpid, paymentcardid);
+
+                                        const requestCulqiCharge = await axios({
                                             data: {
-                                                code: charge.code,
-                                                id: charge.charge_id,
-                                                message: charge.user_message,
-                                                object: charge.object
+                                                amount: settings.amount,
+                                                bearer: appsetting.privatekey,
+                                                description: (removeAccent('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                                currencyCode: settings.currency,
+                                                email: (paymentcard?.mail || userprofile.email),
+                                                sourceId: paymentcardcode,
+                                                operation: "CREATE",
+                                                url: appsetting.culqiurlcharge,
+                                                metadata: metadata,
                                             },
-                                            error: true,
-                                            success: false
+                                            method: "post",
+                                            url: `${bridgeEndpoint}processculqi/handlecharge`,
                                         });
+
+                                        if (requestCulqiCharge.data.success) {
+                                            const chargequery = "UFN_CHARGE_INS";
+                                            const chargebind = {
+                                                amount: settings.amount / 100,
+                                                capture: true,
+                                                chargejson: requestCulqiCharge.data.result,
+                                                chargetoken: requestCulqiCharge.data.result.id,
+                                                corpid: corpid,
+                                                currency: settings.currency,
+                                                description: settings.description,
+                                                email: (paymentcard?.mail || userprofile.email),
+                                                id: null,
+                                                invoiceid: invoiceid,
+                                                orderid: null,
+                                                orderjson: null,
+                                                orgid: orgid,
+                                                operation: 'INSERT',
+                                                paidby: usr,
+                                                status: 'PAID',
+                                                tokenid: paymentcardid,
+                                                tokenjson: null,
+                                                type: "REGISTEREDCARD",
+                                            }
+        
+                                            const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
+
+                                            const invoicequery = "UFN_INVOICE_PAYMENT";
+                                            const invoicebind = {
+                                                capture: true,
+                                                chargeid: chargeresult[0].chargeid,
+                                                chargejson: requestCulqiCharge.data.result,
+                                                chargetoken: requestCulqiCharge.data.result.id,
+                                                corpid: corpid,
+                                                email: (paymentcard?.mail || userprofile.email),
+                                                invoiceid: invoiceid,
+                                                orgid: orgid,
+                                                paidby: usr,
+                                                tokenid: paymentcardid,
+                                                tokenjson: null,
+                                                culqiamount: (settings.amount / 100)
+                                            }
+            
+                                            const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
+
+                                            successPay = true;
+                                        }
                                     }
                                     else {
-                                        const chargequery = "UFN_CHARGE_INS";
-                                        const chargebind = {
-                                            amount: settings.amount / 100,
-                                            capture: true,
-                                            chargejson: charge,
-                                            chargetoken: charge.id,
-                                            corpid: corpid,
-                                            currency: settings.currency,
-                                            description: settings.description,
-                                            email: token.email,
-                                            id: null,
-                                            invoiceid: invoiceid,
-                                            orderid: null,
-                                            orderjson: null,
-                                            orgid: orgid,
-                                            operation: 'INSERT',
-                                            paidby: usr,
-                                            status: 'PAID',
-                                            tokenid: token.id,
-                                            tokenjson: token,
-                                            type: charge.object
+                                        const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
+
+                                        if (charge.object === 'error') {
+                                            return res.status(400).json({
+                                                data: {
+                                                    code: charge.code,
+                                                    id: charge.charge_id,
+                                                    message: charge.user_message,
+                                                    object: charge.object
+                                                },
+                                                error: true,
+                                                success: false
+                                            });
                                         }
+                                        else {
+                                            const chargequery = "UFN_CHARGE_INS";
+                                            const chargebind = {
+                                                amount: settings.amount / 100,
+                                                capture: true,
+                                                chargejson: charge,
+                                                chargetoken: charge.id,
+                                                corpid: corpid,
+                                                currency: settings.currency,
+                                                description: settings.description,
+                                                email: token.email,
+                                                id: null,
+                                                invoiceid: invoiceid,
+                                                orderid: null,
+                                                orderjson: null,
+                                                orgid: orgid,
+                                                operation: 'INSERT',
+                                                paidby: usr,
+                                                status: 'PAID',
+                                                tokenid: token.id,
+                                                tokenjson: token,
+                                                type: charge.object
+                                            }
         
-                                        const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
-        
-                                        const invoicequery = "UFN_INVOICE_PAYMENT";
-                                        const invoicebind = {
-                                            capture: true,
-                                            chargeid: chargeresult[0].chargeid,
-                                            chargejson: charge,
-                                            chargetoken: charge.id,
-                                            corpid: corpid,
-                                            email: token.email,
-                                            invoiceid: invoiceid,
-                                            orgid: orgid,
-                                            paidby: usr,
-                                            tokenid: token.id,
-                                            tokenjson: token,
-                                            culqiamount: (settings.amount / 100)
-                                        }
+                                            const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
+
+                                            const invoicequery = "UFN_INVOICE_PAYMENT";
+                                            const invoicebind = {
+                                                capture: true,
+                                                chargeid: chargeresult[0].chargeid,
+                                                chargejson: charge,
+                                                chargetoken: charge.id,
+                                                corpid: corpid,
+                                                email: token.email,
+                                                invoiceid: invoiceid,
+                                                orgid: orgid,
+                                                paidby: usr,
+                                                tokenid: token.id,
+                                                tokenjson: token,
+                                                culqiamount: (settings.amount / 100)
+                                            }
             
-                                        const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
-        
+                                            const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
+
+                                            successPay = true;
+                                        }
+                                    }
+
+                                    if (successPay) {
                                         var invoicecorrelative = null;
                                         var documenttype = null;
         
@@ -1274,17 +1359,20 @@ exports.chargeInvoice = async (req, res) => {
                                         else {
                                             await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
                                         }
-        
+                                        
                                         return res.json({
-                                            code: charge.outcome.code,
+                                            code: '',
                                             data: {
-                                                id: charge.id,
-                                                object: charge.object
+                                                id: 0,
+                                                object: null 
                                             },
                                             error: false,
-                                            message: charge.outcome.user_message,
+                                            message: 'culqipaysuccess',
                                             success: true
                                         });
+                                    }
+                                    else {
+                                        return res.status(403).json({ error: true, success: false, code: '', message: 'Unsuccessful payment' });
                                     }
                                 }
                                 else {
@@ -1324,75 +1412,155 @@ exports.chargeInvoice = async (req, res) => {
                         metadata.emissiondate = (invoice.invoicedate || '');
                         metadata.user = removeAccent(usr || '');
                         metadata.reference = removeAccent(invoice.description || '');
-    
-                        const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
-    
-                        if (charge.object === 'error') {
-                            return res.status(400).json({
+
+                        if (iscard) {
+                            const paymentcard = await getCard(corpid, paymentcardid);
+
+                            const requestCulqiCharge = await axios({
                                 data: {
-                                    code: charge.code,
-                                    id: charge.charge_id,
-                                    message: charge.user_message,
-                                    object: charge.object
+                                    amount: settings.amount,
+                                    bearer: appsetting.privatekey,
+                                    description: (removeAccent('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                    currencyCode: settings.currency,
+                                    email: (paymentcard?.mail || userprofile.email),
+                                    sourceId: paymentcardcode,
+                                    operation: "CREATE",
+                                    url: appsetting.culqiurlcharge,
+                                    metadata: metadata,
                                 },
-                                error: true,
-                                success: false
+                                method: "post",
+                                url: `${bridgeEndpoint}processculqi/handlecharge`,
                             });
+
+                            if (requestCulqiCharge.data.success) {
+                                const chargequery = "UFN_CHARGE_INS";
+                                const chargebind = {
+                                    amount: settings.amount / 100,
+                                    capture: true,
+                                    chargejson: requestCulqiCharge.data.result,
+                                    chargetoken: requestCulqiCharge.data.result.id,
+                                    corpid: corpid,
+                                    currency: settings.currency,
+                                    description: settings.description,
+                                    email: (paymentcard?.mail || userprofile.email),
+                                    id: null,
+                                    invoiceid: invoiceid,
+                                    orderid: null,
+                                    orderjson: null,
+                                    orgid: orgid,
+                                    operation: 'INSERT',
+                                    paidby: usr,
+                                    status: 'PAID',
+                                    tokenid: paymentcardid,
+                                    tokenjson: null,
+                                    type: "REGISTEREDCARD",
+                                }
+
+                                const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
+
+                                const invoicequery = "UFN_INVOICE_PAYMENT";
+                                const invoicebind = {
+                                    capture: true,
+                                    chargeid: chargeresult[0].chargeid,
+                                    chargejson: requestCulqiCharge.data.result,
+                                    chargetoken: requestCulqiCharge.data.result.id,
+                                    corpid: corpid,
+                                    email: (paymentcard?.mail || userprofile.email),
+                                    invoiceid: invoiceid,
+                                    orgid: orgid,
+                                    paidby: usr,
+                                    tokenid: paymentcardid,
+                                    tokenjson: null,
+                                    culqiamount: (settings.amount / 100)
+                                }
+
+                                const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
+
+                                return res.json({
+                                    code: '',
+                                    data: {
+                                        id: requestCulqiCharge.data.result.id,
+                                        object: requestCulqiCharge.data.result
+                                    },
+                                    error: false,
+                                    message: 'successful_transaction',
+                                    success: true
+                                });
+                            }
+                            else {
+                                return res.status(403).json({ error: true, success: false, code: '', message: 'Unsuccessful payment' });
+                            }
                         }
                         else {
-                            const chargequery = "UFN_CHARGE_INS";
-                            const chargebind = {
-                                amount: settings.amount / 100,
-                                capture: true,
-                                chargejson: charge,
-                                chargetoken: charge.id,
-                                corpid: corpid,
-                                currency: settings.currency,
-                                description: settings.description,
-                                email: token.email,
-                                id: null,
-                                invoiceid: invoiceid,
-                                orderid: null,
-                                orderjson: null,
-                                orgid: orgid,
-                                operation: 'INSERT',
-                                paidby: usr,
-                                status: 'PAID',
-                                tokenid: token.id,
-                                tokenjson: token,
-                                type: charge.object
+                            const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
+    
+                            if (charge.object === 'error') {
+                                return res.status(400).json({
+                                    data: {
+                                        code: charge.code,
+                                        id: charge.charge_id,
+                                        message: charge.user_message,
+                                        object: charge.object
+                                    },
+                                    error: true,
+                                    success: false
+                                });
                             }
-    
-                            const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
-    
-                            const invoicequery = "UFN_INVOICE_PAYMENT";
-                            const invoicebind = {
-                                capture: true,
-                                chargeid: chargeresult[0].chargeid,
-                                chargejson: charge,
-                                chargetoken: charge.id,
-                                corpid: corpid,
-                                email: token.email,
-                                invoiceid: invoiceid,
-                                orgid: orgid,
-                                paidby: usr,
-                                tokenid: token.id,
-                                tokenjson: token,
-                                culqiamount: (settings.amount / 100)
+                            else {
+                                const chargequery = "UFN_CHARGE_INS";
+                                const chargebind = {
+                                    amount: settings.amount / 100,
+                                    capture: true,
+                                    chargejson: charge,
+                                    chargetoken: charge.id,
+                                    corpid: corpid,
+                                    currency: settings.currency,
+                                    description: settings.description,
+                                    email: token.email,
+                                    id: null,
+                                    invoiceid: invoiceid,
+                                    orderid: null,
+                                    orderjson: null,
+                                    orgid: orgid,
+                                    operation: 'INSERT',
+                                    paidby: usr,
+                                    status: 'PAID',
+                                    tokenid: token.id,
+                                    tokenjson: token,
+                                    type: charge.object
+                                }
+        
+                                const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
+        
+                                const invoicequery = "UFN_INVOICE_PAYMENT";
+                                const invoicebind = {
+                                    capture: true,
+                                    chargeid: chargeresult[0].chargeid,
+                                    chargejson: charge,
+                                    chargetoken: charge.id,
+                                    corpid: corpid,
+                                    email: token.email,
+                                    invoiceid: invoiceid,
+                                    orgid: orgid,
+                                    paidby: usr,
+                                    tokenid: token.id,
+                                    tokenjson: token,
+                                    culqiamount: (settings.amount / 100)
+                                }
+                                
+                                const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
+        
+                                return res.json({
+                                    code: charge.outcome.code,
+                                    data: {
+                                        id: charge.id,
+                                        object: charge.object
+                                    },
+                                    error: false,
+                                    message: charge.outcome.user_message,
+                                    success: true
+                                });
                             }
-                            
-                            const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
-    
-                            return res.json({
-                                code: charge.outcome.code,
-                                data: {
-                                    id: charge.id,
-                                    object: charge.object
-                                },
-                                error: false,
-                                message: charge.outcome.user_message,
-                                success: true
-                            });
                         }
                     }
                     else {
@@ -1419,7 +1587,7 @@ exports.chargeInvoice = async (req, res) => {
 
 exports.createInvoice = async (request, response) => {
     const { userid, usr } = request.user;
-    const { corpid, orgid, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, clientcredittype, invoicecreatedate, invoiceduedate, invoicecurrency, invoicepurchaseorder, invoicecomments, autosendinvoice, productdetail, onlyinsert, invoiceid } = request.body;
+    const { corpid, orgid, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, clientcredittype, invoicecreatedate, invoiceduedate, invoicecurrency, invoicepurchaseorder, invoicecomments, autosendinvoice, productdetail, onlyinsert, invoiceid, year, month } = request.body;
     var { invoicetotalamount } = request.body;
 
     try {
@@ -1449,7 +1617,7 @@ exports.createInvoice = async (request, response) => {
                         invoicetotalcharge = invoicetotalamount;
                     }
 
-                    var invoiceResponse = await createInvoice(corpid, orgid, (invoiceid || 0), `GENERATED FOR ${clientdocnumber}`, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchange, (onlyinsert ? 'PENDING' : 'DRAFT'), null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, null, null, null, null, null, usr, null, invoicetotalamount, 'PENDING', false);
+                    var invoiceResponse = await createInvoice(corpid, orgid, (invoiceid || 0), `GENERATED FOR ${clientdocnumber}`, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchange, (onlyinsert ? 'PENDING' : 'DRAFT'), null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, null, null, null, null, null, usr, null, invoicetotalamount, 'PENDING', false, year, month);
 
                     if (invoiceResponse) {
                         if (invoiceid) {
@@ -1757,8 +1925,9 @@ exports.createCreditNote = async (request, response) => {
 
                 if (appsetting) {
                     const invoiceDate = new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0];
+                    const currentDate = new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60000);
 
-                    const invoiceResponse = await createInvoice(invoice.corpid, invoice.orgid, 0, `NOTA DE CREDITO: ${invoice.description}`, invoice.status, 'CREDITNOTE', appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, null, null, `NOTA DE CREDITO: ${invoice.concept}`, invoiceDate, invoiceDate, creditnotetype === '01' ? invoice.subtotal : parseFloat(creditnotediscount), invoice.taxes, creditnotetype === '01' ? invoice.totalamount : (parseFloat(creditnotediscount) * (appsetting.igv + 1)), invoice.currency, invoice.exchangerate, 'PENDING', null, invoice.purchaseorder, null, null, null, invoice.comments, invoice.credittype, creditnotetype, creditnotemotive, parseFloat(creditnotediscount), null, null, usr, invoice.invoiceid, invoice.netamount, 'NONE', false);
+                    const invoiceResponse = await createInvoice(invoice.corpid, invoice.orgid, 0, `NOTA DE CREDITO: ${invoice.description}`, invoice.status, 'CREDITNOTE', appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, null, null, `NOTA DE CREDITO: ${invoice.concept}`, invoiceDate, invoiceDate, creditnotetype === '01' ? invoice.subtotal : parseFloat(creditnotediscount), invoice.taxes, creditnotetype === '01' ? invoice.totalamount : (parseFloat(creditnotediscount) * (appsetting.igv + 1)), invoice.currency, invoice.exchangerate, 'PENDING', null, invoice.purchaseorder, null, null, null, invoice.comments, invoice.credittype, creditnotetype, creditnotemotive, parseFloat(creditnotediscount), null, null, usr, invoice.invoiceid, invoice.netamount, 'NONE', false, currentDate.getFullYear(), currentDate.getMonth());
 
                     if (invoiceResponse) {
                         var invoicecorrelative = null;
@@ -1971,10 +2140,16 @@ exports.getExchangeRate = async (request, response) => {
 
 exports.createBalance = async (req, res) => {
     const { userid, usr } = req.user;
-    const { invoiceid, settings, token, metadata = {}, corpid, orgid, reference,  comments, purchaseorder  } = req.body;
+    const { invoiceid, settings, token, metadata = {}, corpid, orgid, reference,  comments, purchaseorder, paymentcardid, paymentcardcode, iscard } = req.body;
     var { buyamount, totalamount, totalpay } = req.body;
 
     try {
+        if (iscard) {
+            if (!paymentcardid || !paymentcardcode) {
+                return res.status(403).json({ error: true, success: false, code: '', message: 'Payment card missing parameters' });
+            }
+        }
+
         buyamount = Math.round((parseFloat(buyamount) + Number.EPSILON) * 100) / 100;
         totalamount = Math.round((parseFloat(totalamount) + Number.EPSILON) * 100) / 100;
         totalpay = Math.round((parseFloat(totalpay) + Number.EPSILON) * 100) / 100;
@@ -2057,21 +2232,58 @@ exports.createBalance = async (req, res) => {
                         metadata.user = removeAccent(usr || '');
                         metadata.reference = removeAccent(reference || '');
     
-                        const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
+                        var successPay = false;
+                        var charge = null;
+                        var chargeBridge = null;
+                        var paymentcard = null;
 
-                        if (charge.object === 'error') {
-                            return res.status(400).json({
+                        if (iscard) {
+                            paymentcard = await getCard(corpid, paymentcardid);
+
+                            const requestCulqiCharge = await axios({
                                 data: {
-                                    code: charge.code,
-                                    id: charge.charge_id,
-                                    message: charge.user_message,
-                                    object: charge.object
+                                    amount: settings.amount,
+                                    bearer: appsetting.privatekey,
+                                    description: (removeAccent('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                    currencyCode: settings.currency,
+                                    email: (paymentcard?.mail || userprofile.email),
+                                    sourceId: paymentcardcode,
+                                    operation: "CREATE",
+                                    url: appsetting.culqiurlcharge,
+                                    metadata: metadata,
                                 },
-                                error: true,
-                                success: false
+                                method: "post",
+                                url: `${bridgeEndpoint}processculqi/handlecharge`,
                             });
+
+                            if (requestCulqiCharge.data.success) {
+                                chargeBridge = requestCulqiCharge.data.result;
+
+                                successPay = true;
+                            }
                         }
                         else {
+                            charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
+
+                            if (charge.object === 'error') {
+                                return res.status(400).json({
+                                    data: {
+                                        code: charge.code,
+                                        id: charge.charge_id,
+                                        message: charge.user_message,
+                                        object: charge.object
+                                    },
+                                    error: true,
+                                    success: false
+                                });
+                            }
+                            else {
+                                successPay = true;
+                            }
+                        }
+                        
+
+                        if (successPay) {
                             var balanceResponse = await createBalanceData(corpid, orgid, 0, reference, 'ACTIVO', 'GENERAL', null, null, (totalamount || buyamount), ((org?.balance || 0) + (totalamount || buyamount)), billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, 'PAID', new Date().toISOString().split('T')[0], usr, usr);
 
                             if (balanceResponse) {
@@ -2119,7 +2331,9 @@ exports.createBalance = async (req, res) => {
                                     productnetworth = buyamount;
                                 }
 
-                                var invoiceResponse = await createInvoice(corpid, orgid, 0, reference, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, invoicesubtotal, invoicetaxes, invoicetotalcharge, 'USD', lastExchange, 'PENDING', null, purchaseorder, null, null, null, comments, 'typecredit_alcontado', null, null, null, null, null, usr, null, buyamount, 'PAID', false);
+                                const currentDate = new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60000);
+
+                                var invoiceResponse = await createInvoice(corpid, orgid, 0, reference, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, invoicesubtotal, invoicetaxes, invoicetotalcharge, 'USD', lastExchange, 'PENDING', null, purchaseorder, null, null, null, comments, 'typecredit_alcontado', null, null, null, null, null, usr, null, buyamount, 'PAID', false, currentDate.getFullYear(), currentDate.getMonth());
 
                                 if (invoiceResponse) {
                                     await changeBalanceInvoice(corpid, orgid, balanceResponse.balanceid, invoiceResponse.invoiceid, usr);
@@ -2130,12 +2344,12 @@ exports.createBalance = async (req, res) => {
                                     const chargebind = {
                                         amount: settings.amount / 100,
                                         capture: true,
-                                        chargejson: charge,
-                                        chargetoken: charge.id,
+                                        chargejson: iscard ? chargeBridge : charge,
+                                        chargetoken: iscard ? chargeBridge.id : charge.id,
                                         corpid: corpid,
                                         currency: settings.currency,
                                         description: settings.description,
-                                        email: token.email,
+                                        email: iscard ? (paymentcard?.mail || userprofile.email) : token.email,
                                         id: null,
                                         invoiceid: invoiceResponse.invoiceid,
                                         orderid: null,
@@ -2144,9 +2358,9 @@ exports.createBalance = async (req, res) => {
                                         operation: 'INSERT',
                                         paidby: usr,
                                         status: 'PAID',
-                                        tokenid: token.id,
-                                        tokenjson: token,
-                                        type: charge.object
+                                        tokenid: iscard ? paymentcardid : token.id,
+                                        tokenjson: iscard ? null : token,
+                                        type: iscard ? "REGISTEREDCARD" : charge.object,
                                     }
 
                                     const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
@@ -2155,15 +2369,15 @@ exports.createBalance = async (req, res) => {
                                     const invoicebind = {
                                         capture: true,
                                         chargeid: chargeresult[0].chargeid,
-                                        chargejson: charge,
-                                        chargetoken: charge.id,
+                                        chargejson: iscard ? chargeBridge : charge,
+                                        chargetoken: iscard ? chargeBridge.id : charge.id,
                                         corpid: corpid,
-                                        email: token.email,
+                                        email: iscard ? (paymentcard?.mail || userprofile.email) : token.email,
                                         invoiceid: invoiceResponse.invoiceid,
                                         orgid: orgid,
                                         paidby: usr,
-                                        tokenid: token.id,
-                                        tokenjson: token,
+                                        tokenid: iscard ? paymentcardid : token.id,
+                                        tokenjson: iscard ? null : token,
                                         culqiamount: (settings.amount / 100)
                                     }
                                 
@@ -2392,16 +2606,30 @@ exports.createBalance = async (req, res) => {
                                         await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, billbyorg ? org.businessname : corp.businessname, billbyorg ? org.fiscaladdress : corp.fiscaladdress, billbyorg ? org.sunatcountry : corp.sunatcountry, billbyorg ? org.contactemail : corp.contactemail, documenttype, null, null, purchaseorder, comments, 'typecredit_alcontado', null, null, null, null);
                                     }
 
-                                    return res.json({
-                                        code: charge.outcome.code,
-                                        data: {
-                                            id: charge.id,
-                                            object: charge.object
-                                        },
-                                        error: false,
-                                        message: charge.outcome.user_message,
-                                        success: true
-                                    });
+                                    if (iscard) {
+                                        return res.json({
+                                            code: '',
+                                            data: {
+                                                id: 0,
+                                                object: null 
+                                            },
+                                            error: false,
+                                            message: 'culqipaysuccess',
+                                            success: true
+                                        });
+                                    }
+                                    else {
+                                        return res.json({
+                                            code: charge.outcome.code,
+                                            data: {
+                                                id: charge.id,
+                                                object: charge.object
+                                            },
+                                            error: false,
+                                            message: charge.outcome.user_message,
+                                            success: true
+                                        });
+                                    }
                                 }
                                 else {
                                     return res.status(403).json({ error: true, success: false, code: '', message: 'errorcreatinginvoice' });
@@ -2410,6 +2638,9 @@ exports.createBalance = async (req, res) => {
                             else {
                                 return res.status(403).json({ error: true, success: false, code: '', message: 'Error creating balance' });
                             }
+                        }
+                        else {
+                            return res.status(403).json({ error: true, success: false, code: '', message: 'Unsuccessful payment' });
                         }
                     }
                     else {
@@ -2794,3 +3025,1069 @@ exports.emitInvoice = async (req, res) => {
         return res.status(500).json({ message: "There was a problem, please try again later" });
     }
 }
+
+const insertPaymentCard = async (corpid, orgid, id, cardnumber, cardcode, firstname, lastname, mail, favorite, clientcode, status, type, username) => {
+    const queryMethod = "UFN_PAYMENTCARD_INS";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: orgid,
+        id: id,
+        cardnumber: cardnumber,
+        cardcode: cardcode,
+        firstname: firstname,
+        lastname: lastname,
+        mail: mail,
+        favorite: favorite,
+        clientcode: clientcode,
+        status: status,
+        type: type,
+        username: username,
+        operation: id ? "UPDATE" : "INSERT",
+    }
+
+    return await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+}
+
+const selUser = async (corpid, orgid, userid, username ) => {
+    const queryMethod = "UFN_USER_SEL";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: orgid,
+        id: userid,
+        username: username,
+        all: userid ? false : true,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult[0];
+        }
+    }
+
+    return null;
+}
+
+const verifyFavoriteCard = async (corpid) => {
+    const queryMethod = "UFN_PAYMENTCARD_LST";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: 0,
+        id: 0,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            var favoriteCard = queryResult.find(card => card.favorite === true);
+
+            if (favoriteCard) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+const getCard = async (corpid, id) => {
+    const queryMethod = "UFN_PAYMENTCARD_LST";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: 0,
+        id: id,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            if (id === 0) {
+                return queryResult;
+            }
+            else {
+                return queryResult[0];
+            }
+        }
+    }
+
+    return null;
+}
+
+exports.cardCreate = async (request, result) => {
+    try {
+        var requestCode = "error_unexpected_error";
+        var requestMessage = "error_unexpected_error";
+        var requestStatus = 400;
+        var requestSuccess = false;
+
+        if (typeof whitelist !== "undefined" && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(requestStatus).json({
+                    code: "error_auth_error",
+                    error: !requestSuccess,
+                    message: "error_auth_error",
+                    success: requestSuccess,
+                });
+            }
+        }
+
+        if (request.body) {
+            const { firstname, lastname, mail, cardnumber, securitycode, expirationmonth, expirationyear, favorite } = request.body;
+            const { corpid, orgid, userid, usr } = request.user;
+
+            const appsetting = await getAppSetting();
+
+            if (appsetting) {
+                const corp = await getCorporation(corpid);
+                const org = await getOrganization(corpid, orgid);
+                const user = await getUserProfile(userid);
+
+                if (user && (corp || org)) {
+                    var canRegister = true;
+                    
+                    if (!favorite) {
+                        canRegister = await verifyFavoriteCard(corpid);
+                    }
+
+                    if (canRegister) {
+                        var cleancardnumber = cardnumber.split(" ").join("");
+
+                        const requestCulqiClient = await axios({
+                            data: {
+                                address: ((org ? org.fiscaladdress : corp.fiscaladdress) || "NO INFO").substring(0, 100),
+                                addressCity: ((org ? org.timezone : "NO INFO") || "NO INFO").substring(0, 30),
+                                bearer: appsetting.privatekey,
+                                countryCode: user.country || 'PE',
+                                email: mail,
+                                firstName: firstname,
+                                lastName: lastname,
+                                operation: "CREATE",
+                                phoneNumber: (user.phone || "").split("+").join("").split(" ").join("").split("(").join("").split(")").join(""),
+                                url: appsetting.culqiurlclient,
+                            },
+                            method: "post",
+                            url: `${bridgeEndpoint}processculqi/handleclient`,
+                        });
+
+                        if (requestCulqiClient.data.success) {
+                            const requestCulqiCard = await axios({
+                                data: {
+                                    bearer: appsetting.privatekey,
+                                    cardNumber: cleancardnumber,
+                                    customerId: requestCulqiClient.data.result.id,
+                                    cvv: securitycode,
+                                    email: mail,
+                                    expirationMonth: expirationmonth,
+                                    expirationYear: expirationyear,
+                                    operation: "CREATE",
+                                    url: appsetting.culqiurlcardcreate,
+                                    urlToken: appsetting.culqiurltoken,
+                                },
+                                method: "post",
+                                url: `${bridgeEndpoint}processculqi/handlecard`,
+                            });
+    
+                            if (requestCulqiCard.data.success) {
+                                cardData = requestCulqiCard.data.result;
+    
+                                var queryPaymentCardInsert = await insertPaymentCard(corpid, orgid, 0, cardData.source.cardNumber, cardData.id, firstname, lastname, mail, favorite, cardData.customerId, "ACTIVO", "", usr);
+    
+                                if (queryPaymentCardInsert instanceof Array) {
+                                    requestCode = "";
+                                    requestMessage = "";
+                                    requestStatus = 200;
+                                    requestSuccess = true;
+                                }
+                                else {
+                                    requestCode = queryPaymentCardInsert.code;
+                                    requestMessage = "error_card_insert";
+                                }
+                            }
+                            else {
+                                requestMessage = "error_card_card";
+                            }
+                        }
+                        else {
+                            requestMessage = "error_card_client";
+                        }
+                    }
+                    else {
+                        requestMessage = "error_card_nofavorite";
+                    }
+                }
+                else {
+                    requestMessage = "error_card_usernotfound";
+                }
+            }
+            else {
+                requestMessage = "error_card_configuration";
+            }
+        }
+
+        return result.status(requestStatus).json({
+            code: requestCode,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
+    }
+    catch (exception) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+}
+
+exports.cardDelete = async (request, result) => {
+    try {
+        var requestCode = "error_unexpected_error";
+        var requestMessage = "error_unexpected_error";
+        var requestStatus = 400;
+        var requestSuccess = false;
+
+        if (typeof whitelist !== "undefined" && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(requestStatus).json({
+                    code: "error_auth_error",
+                    error: !requestSuccess,
+                    message: "error_auth_error",
+                    success: requestSuccess,
+                });
+            }
+        }
+
+        if (request.body) {
+            const { corpid, orgid, paymentcardid, cardnumber, cardcode, firstname, lastname, mail, favorite, clientcode, type } = request.body;
+            const { usr } = request.user;
+
+            const appsetting = await getAppSetting();
+
+            if (appsetting) {
+                const requestCulqiCard = await axios({
+                    data: {
+                        bearer: appsetting.privatekey,
+                        id: cardcode,
+                        operation: "DELETE",
+                        url: appsetting.culqiurlcarddelete,
+                    },
+                    method: "post",
+                    url: `${bridgeEndpoint}processculqi/handlecard`,
+                });
+
+                if (requestCulqiCard.data.success) {
+                    var queryPaymentCardUpdate = await insertPaymentCard(corpid, orgid, paymentcardid, cardnumber, cardcode, firstname, lastname, mail, favorite, clientcode, "ELIMINADO", type, usr);
+
+                    if (queryPaymentCardUpdate instanceof Array) {
+                        requestCode = "";
+                        requestMessage = "";
+                        requestStatus = 200;
+                        requestSuccess = true;
+                    }
+                    else {
+                        requestCode = queryPaymentCardUpdate.code;
+                        requestMessage = "error_card_update";
+                    }
+                }
+                else {
+                    requestMessage = "error_card_delete";
+                }
+            }
+            else {
+                requestMessage = "error_card_configuration";
+            }
+        }
+
+        return result.status(requestStatus).json({
+            code: requestCode,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
+    }
+    catch (exception) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+}
+
+exports.cardGet = async (request, result) => {
+    try {
+        var requestCode = "error_unexpected_error";
+        var requestData = null;
+        var requestMessage = "error_unexpected_error";
+        var requestStatus = 400;
+        var requestSuccess = false;
+
+        if (typeof whitelist !== "undefined" && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(requestStatus).json({
+                    code: "error_auth_error",
+                    data: requestData,
+                    error: !requestSuccess,
+                    message: "error_auth_error",
+                    success: requestSuccess,
+                });
+            }
+        }
+
+        if (request.body) {
+            const { cardcode } = request.body;
+
+            const appsetting = await getAppSetting();
+
+            if (appsetting) {
+                const requestCulqiCard = await axios({
+                    data: {
+                        bearer: appsetting.privatekey,
+                        id: cardcode,
+                        operation: "GET",
+                        url: appsetting.culqiurlcarddelete,
+                    },
+                    method: "post",
+                    url: `${bridgeEndpoint}processculqi/handlecard`,
+                });
+
+                if (requestCulqiCard.data.success) {
+                    requestCode = "";
+                    requestData = requestCulqiCard.data.result;
+                    requestMessage = "";
+                    requestStatus = 200;
+                    requestSuccess = true;
+                }
+                else {
+                    requestMessage = "error_card_get";
+                }
+            }
+            else {
+                requestMessage = "error_card_configuration";
+            }
+        }
+
+        return result.status(requestStatus).json({
+            code: requestCode,
+            data: requestData,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
+    }
+    catch (exception) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+}
+
+exports.automaticPayment = async (request, result) => {
+    try {
+        var requestCode = "error_unexpected_error";
+        var requestId = null;
+        var requestMessage = "error_unexpected_error";
+        var requestObject = null;
+        var requestStatus = 400;
+        var requestSuccess = false;
+
+        if (typeof whitelist !== "undefined" && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return result.status(requestStatus).json({
+                    code: "error_auth_error",
+                    data: {
+                        id: requestId,
+                        object: requestObject,
+                    },
+                    error: !requestSuccess,
+                    message: "error_auth_error",
+                    success: requestSuccess,
+                });
+            }
+        }
+
+        if (request.body) {
+            const { corpid, orgid, invoiceid } = request.body;
+
+            const corp = await getCorporation(corpid);
+
+            if (corp) {
+                const org = (orgid === 0 ? null : await getOrganization(corpid, orgid));
+
+                if (org || orgid === 0) {
+                    var paymentdisabled = false;
+
+                    if (org) {
+                        if (!org.automaticpayment) {
+                            paymentdisabled = true;
+                        }
+                    }
+                    else {
+                        if (!corp.automaticpayment) {
+                            paymentdisabled = true;
+                        }
+                    }
+
+                    if (paymentdisabled) {
+                        requestCode = "";
+                        requestId = 200;
+                        requestMessage = "success_automaticpayment_paymentdisabled";
+                        requestStatus = 200;
+                        requestSuccess = true;
+
+                        return result.status(requestStatus).json({
+                            code: requestCode,
+                            data: {
+                                id: requestId,
+                                object: requestObject,
+                            },
+                            error: !requestSuccess,
+                            message: requestMessage,
+                            success: requestSuccess,
+                        });
+                    }
+
+                    const appsetting = await getAppSetting();
+
+                    if (appsetting) {
+                        const invoice = await getInvoice(corpid, orgid, 0, invoiceid);
+
+                        if (invoice) {
+                            if (invoice.paymentstatus === 'PENDING') {
+                                const paymentcard = await getCard(corpid, 0);
+                                var paymentsuccess = false;
+
+                                if (paymentcard) {
+                                    var favoritecard = paymentcard.find((card) => card.favorite === true);
+
+                                    if (favoritecard) {
+                                        var metadata = {};
+
+                                        metadata.businessname = removeAccent((org ? org.businessname : corp.businessname) || '');
+                                        metadata.corpid = (corpid || '');
+                                        metadata.corporation = removeAccent(corp.description || '');
+                                        metadata.document = ((org ? org.docnum : corp.docnum) || '');
+                                        metadata.emissiondate = (new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0] || '');
+                                        metadata.invoiceid = (invoiceid || '');
+                                        metadata.organization = removeAccent(invoice.orgdesc || '');
+                                        metadata.orgid = (orgid || '');
+                                        metadata.reference = removeAccent(invoice.description || '');
+                                        metadata.seriecode = '';
+                                        metadata.user = 'SCHEDULER';
+
+                                        var country = (org ? org.sunatcountry : corp.sunatcountry);
+                                        var culqiamount = invoice.totalamount;
+                                        var detractionamount = 0;
+                                        var doctype = (org ? org.doctype : corp.doctype);
+                                        var exchangerate = await getLastExchange();
+
+                                        if (country && doctype) {
+                                            if (country === 'PE' && doctype === '6') {
+                                                var compareamount = (culqiamount || 0);
+                                                
+                                                if (invoice.currency === 'USD') {
+                                                    compareamount = compareamount * (exchangerate || 0);
+                                                }
+
+                                                if (compareamount > appsetting.detractionminimum) {
+                                                    culqiamount = (Math.round(((culqiamount || 0) - ((culqiamount || 0) * (appsetting.detraction || 0)) + Number.EPSILON) * 100) / 100);
+                                                    detractionamount = (Math.round((((appsetting.detraction || 0) * 100) + Number.EPSILON) * 100) / 100);
+                                                }
+                                                else {
+                                                    culqiamount = (Math.round(((culqiamount || 0) + Number.EPSILON) * 100) / 100);
+                                                }
+                                            }
+                                            else {
+                                                culqiamount = (Math.round(((culqiamount || 0) + Number.EPSILON) * 100) / 100);
+                                            }
+
+                                            const requestCulqiCharge = await axios({
+                                                data: {
+                                                    amount: (Math.round(((culqiamount * 100) + Number.EPSILON) * 100) / 100),
+                                                    bearer: appsetting.privatekey,
+                                                    currencyCode: invoice.currency,
+                                                    description: (removeAccent('PAYMENT: ' + (invoice.description || ''))).slice(0, 80),
+                                                    email: favoritecard.mail,
+                                                    metadata: metadata,
+                                                    operation: "CREATE",
+                                                    sourceId: favoritecard.cardcode,
+                                                    url: appsetting.culqiurlcharge,
+                                                },
+                                                method: "post",
+                                                url: `${bridgeEndpoint}processculqi/handlecharge`,
+                                            });
+
+                                            if (requestCulqiCharge.data.success) {
+                                                paymentsuccess = true;
+
+                                                requestCode = "";
+                                                requestId = 200;
+                                                requestMessage = "success_automaticpayment_paymentsuccess";
+                                                requestStatus = 200;
+                                                requestSuccess = true;
+
+                                                const chargequery = "UFN_CHARGE_INS";
+                                                const chargebind = {
+                                                    amount: culqiamount,
+                                                    capture: true,
+                                                    chargejson: requestCulqiCharge.data.result,
+                                                    chargetoken: requestCulqiCharge.data.result.id,
+                                                    corpid: corpid,
+                                                    currency: invoice.currency,
+                                                    description: invoice.description,
+                                                    email: favoritecard.mail,
+                                                    id: null,
+                                                    invoiceid: invoiceid,
+                                                    operation: 'INSERT',
+                                                    orderid: null,
+                                                    orderjson: null,
+                                                    orgid: orgid,
+                                                    paidby: 'SCHEDULER',
+                                                    status: 'PAID',
+                                                    tokenid: favoritecard.paymentcardid,
+                                                    tokenjson: null,
+                                                    type: "REGISTEREDCARD",
+                                                }
+
+                                                const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
+
+                                                const invoicequery = "UFN_INVOICE_PAYMENT";
+                                                const invoicebind = {
+                                                    capture: true,
+                                                    chargeid: chargeresult[0].chargeid,
+                                                    chargejson: requestCulqiCharge.data.result,
+                                                    chargetoken: requestCulqiCharge.data.result.id,
+                                                    corpid: corpid,
+                                                    culqiamount: culqiamount,
+                                                    email: favoritecard.mail,
+                                                    invoiceid: invoiceid,
+                                                    orgid: orgid,
+                                                    paidby: 'SCHEDULER',
+                                                    tokenid: favoritecard.paymentcardid,
+                                                    tokenjson: null,
+                                                }
+
+                                                const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
+
+                                                if (invoiceresult) {
+                                                    var domainMethod = "UFN_DOMAIN_VALUES_SEL";
+                                                    var domainParameters = {
+                                                        all: false,
+                                                        corpid: 1,
+                                                        domainname: "PAYMENTALERTBODY",
+                                                        orgid: 0,
+                                                        username: 'SCHEDULER',
+                                                    };
+
+                                                    const queryDomainAlertBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                                                    domainParameters.domainname = "PAYMENTALERTSUBJECT";
+
+                                                    const queryDomainAlertSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                                                    if (queryDomainAlertBody instanceof Array && queryDomainAlertSubject instanceof Array) {
+                                                        var alertBody = queryDomainAlertBody[0].domainvalue;
+                                                        var alertSubject = queryDomainAlertSubject[0].domainvalue;
+
+                                                        alertBody = alertBody.split("{{amountdetraction}}").join(detractionamount);
+                                                        alertBody = alertBody.split("{{amountpaid}}").join(culqiamount);
+                                                        alertBody = alertBody.split("{{amounttotal}}").join(invoice.totalamount);
+                                                        alertBody = alertBody.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
+                                                        alertBody = alertBody.split("{{concept}}").join(invoice.description);
+                                                        alertBody = alertBody.split("{{contact}}").join(org ? org.contact : corp.contact);
+                                                        alertBody = alertBody.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
+                                                        alertBody = alertBody.split("{{corporg}}").join(org ? org.description : corp.description);
+                                                        alertBody = alertBody.split("{{currency}}").join(invoice.currency);
+                                                        alertBody = alertBody.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
+                                                        alertBody = alertBody.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
+                                                        alertBody = alertBody.split("{{month}}").join(invoice.month);
+                                                        alertBody = alertBody.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
+                                                        alertBody = alertBody.split("{{year}}").join(invoice.year);
+
+                                                        alertSubject = alertSubject.split("{{amountdetraction}}").join(detractionamount);
+                                                        alertSubject = alertSubject.split("{{amountpaid}}").join(culqiamount);
+                                                        alertSubject = alertSubject.split("{{amounttotal}}").join(invoice.totalamount);
+                                                        alertSubject = alertSubject.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
+                                                        alertSubject = alertSubject.split("{{concept}}").join(invoice.description);
+                                                        alertSubject = alertSubject.split("{{contact}}").join(org ? org.contact : corp.contact);
+                                                        alertSubject = alertSubject.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
+                                                        alertSubject = alertSubject.split("{{corporg}}").join(org ? org.description : corp.description);
+                                                        alertSubject = alertSubject.split("{{currency}}").join(invoice.currency);
+                                                        alertSubject = alertSubject.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
+                                                        alertSubject = alertSubject.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
+                                                        alertSubject = alertSubject.split("{{month}}").join(invoice.month);
+                                                        alertSubject = alertSubject.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
+                                                        alertSubject = alertSubject.split("{{year}}").join(invoice.year);
+
+                                                        const requestMailSend = await axios({
+                                                            data: {
+                                                                mailAddress: (org ? org.contactemail : corp.contactemail),
+                                                                mailBody: alertBody,
+                                                                mailTitle: alertSubject,
+                                                            },
+                                                            method: "post",
+                                                            url: `${bridgeEndpoint}processscheduler/sendmail`,
+                                                        });
+
+                                                        if (!requestMailSend.data.success) {
+                                                            requestCode = requestMailSend.data.operationMessage;
+                                                        }
+                                                    }
+                                                    else {
+                                                        requestCode = "alert_automaticpayment_noalertdomain";
+                                                    }
+                                                }
+                                                else {
+                                                    requestCode = "alert_automaticpayment_invoiceupdate";
+                                                }
+                                            }
+                                            else {
+                                                var domainMethod = "UFN_DOMAIN_VALUES_SEL";
+                                                var domainParameters = {
+                                                    all: false,
+                                                    corpid: 1,
+                                                    domainname: "PAYMENTALERTERRORBODY",
+                                                    orgid: 0,
+                                                    username: 'SCHEDULER',
+                                                };
+
+                                                const queryDomainAlertBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                                                domainParameters.domainname = "PAYMENTALERTERRORSUBJECT";
+
+                                                const queryDomainAlertSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                                                if (queryDomainAlertBody instanceof Array && queryDomainAlertSubject instanceof Array) {
+                                                    var alertBody = queryDomainAlertBody[0].domainvalue;
+                                                    var alertSubject = queryDomainAlertSubject[0].domainvalue;
+
+                                                    alertBody = alertBody.split("{{amountdetraction}}").join(detractionamount);
+                                                    alertBody = alertBody.split("{{amountpaid}}").join(culqiamount);
+                                                    alertBody = alertBody.split("{{amounttotal}}").join(invoice.totalamount);
+                                                    alertBody = alertBody.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
+                                                    alertBody = alertBody.split("{{concept}}").join(invoice.description);
+                                                    alertBody = alertBody.split("{{contact}}").join(org ? org.contact : corp.contact);
+                                                    alertBody = alertBody.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
+                                                    alertBody = alertBody.split("{{corporg}}").join(org ? org.description : corp.description);
+                                                    alertBody = alertBody.split("{{currency}}").join(invoice.currency);
+                                                    alertBody = alertBody.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
+                                                    alertBody = alertBody.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
+                                                    alertBody = alertBody.split("{{month}}").join(invoice.month);
+                                                    alertBody = alertBody.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
+                                                    alertBody = alertBody.split("{{year}}").join(invoice.year);
+
+                                                    alertSubject = alertSubject.split("{{amountdetraction}}").join(detractionamount);
+                                                    alertSubject = alertSubject.split("{{amountpaid}}").join(culqiamount);
+                                                    alertSubject = alertSubject.split("{{amounttotal}}").join(invoice.totalamount);
+                                                    alertSubject = alertSubject.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
+                                                    alertSubject = alertSubject.split("{{concept}}").join(invoice.description);
+                                                    alertSubject = alertSubject.split("{{contact}}").join(org ? org.contact : corp.contact);
+                                                    alertSubject = alertSubject.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
+                                                    alertSubject = alertSubject.split("{{corporg}}").join(org ? org.description : corp.description);
+                                                    alertSubject = alertSubject.split("{{currency}}").join(invoice.currency);
+                                                    alertSubject = alertSubject.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
+                                                    alertSubject = alertSubject.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
+                                                    alertSubject = alertSubject.split("{{month}}").join(invoice.month);
+                                                    alertSubject = alertSubject.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
+                                                    alertSubject = alertSubject.split("{{year}}").join(invoice.year);
+
+                                                    const requestMailSend = await axios({
+                                                        data: {
+                                                            mailAddress: (org ? org.contactemail : corp.contactemail),
+                                                            mailBody: alertBody,
+                                                            mailTitle: alertSubject,
+                                                        },
+                                                        method: "post",
+                                                        url: `${bridgeEndpoint}processscheduler/sendmail`,
+                                                    });
+
+                                                    if (!requestMailSend.data.success) {
+                                                        requestCode = requestMailSend.data.operationMessage;
+                                                    }
+                                                }
+
+                                                requestCode = requestCulqiCharge.data.operationMessage;
+                                                requestMessage = "error_automaticpayment_paymenterror";
+                                            }
+                                        }
+                                        else {
+                                            requestMessage = "error_automaticpayment_nocountry_nodoctype";
+                                        }
+                                    }
+                                    else {
+                                        requestMessage = "error_automaticpayment_nofavoritecard";
+                                    }
+                                }
+                                else {
+                                    requestMessage = "error_automaticpayment_nopaymentcard";
+                                }
+
+                                if (invoice.invoicestatus !== 'INVOICED' && paymentsuccess) {
+                                    const invoicedetail = await getInvoiceDetail(corpid, orgid, 0, invoiceid);
+                                    var invoicesuccess = false;
+
+                                    if (invoicedetail) {
+                                        var documenttype = null;
+                                        var invoicecorrelative = null;
+
+                                        if (org) {
+                                            if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
+                                                invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICE');
+                                                documenttype = '01';
+                                            }
+
+                                            if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
+                                                invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKET');
+                                                documenttype = '03'
+                                            }
+                                        }
+                                        else {
+                                            if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
+                                                invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICE');
+                                                documenttype = '01';
+                                            }
+                    
+                                            if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
+                                                invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKET');
+                                                documenttype = '03'
+                                            }
+                                        }
+
+                                        if (invoicecorrelative) {
+                                            try {
+                                                var invoicedata = {
+                                                    CodigoAnexoEmisor: appsetting.annexcode,
+                                                    CodigoFormatoImpresion: appsetting.printingformat,
+                                                    CodigoMoneda: invoice.currency,
+                                                    CodigoRucReceptor: org ? org.doctype : corp.doctype,
+                                                    CodigoUbigeoEmisor: appsetting.ubigeo,
+                                                    CorrelativoDocumento: zeroPad(invoicecorrelative.p_correlative, 8),
+                                                    DataList: [],
+                                                    DireccionFiscalEmisor: appsetting.fiscaladdress,
+                                                    DireccionFiscalReceptor: org ? org.fiscaladdress : corp.fiscaladdress,
+                                                    Endpoint: appsetting.sunaturl,
+                                                    EnviarSunat: org ? org.autosendinvoice : corp.autosendinvoice,
+                                                    FechaEmision: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
+                                                    FechaVencimiento: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
+                                                    MailEnvio: org ? org.contactemail : corp.contactemail,
+                                                    MontoTotal: Math.round((invoice.totalamount + Number.EPSILON) * 100) / 100,
+                                                    NombreComercialEmisor: appsetting.tradename,
+                                                    NumeroDocumentoReceptor: org ? org.docnum : corp.docnum,
+                                                    NumeroSerieDocumento: documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie,
+                                                    PaisRecepcion: org ? org.sunatcountry : corp.sunatcountry,
+                                                    ProductList: [],
+                                                    RazonSocialEmisor: appsetting.businessname,
+                                                    RazonSocialReceptor: org ? org.businessname : corp.businessname,
+                                                    RetornaPdf: appsetting.returnpdf,
+                                                    RetornaXml: appsetting.returnxml,
+                                                    RetornaXmlSunat: appsetting.returnxmlsunat,
+                                                    RucEmisor: appsetting.ruc,
+                                                    TipoCambio: invoice.currency === 'USD' ? invoice.exchangerate : '1.000',
+                                                    TipoDocumento: documenttype,
+                                                    TipoRucEmisor: appsetting.emittertype,
+                                                    Token: appsetting.token,
+                                                    Username: appsetting.sunatusername,
+                                                    VersionXml: appsetting.xmlversion,
+                                                    VersionUbl: appsetting.ublversion,
+                                                }
+
+                                                if (org) {
+                                                    invoicedata.CodigoOperacionSunat = org.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                                    invoicedata.MontoTotalGravado = org.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
+                                                    invoicedata.MontoTotalIgv = org.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
+                                                    invoicedata.MontoTotalInafecto = org.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
+                                                }
+                                                else {
+                                                    invoicedata.CodigoOperacionSunat = corp.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                                    invoicedata.MontoTotalGravado = corp.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
+                                                    invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
+                                                    invoicedata.MontoTotalInafecto = corp.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
+                                                }
+
+                                                var calcdetraction = false;
+        
+                                                if (org) {
+                                                    if (org.sunatcountry === 'PE') {
+                                                        calcdetraction = true;
+                                                    }
+                                                }
+                                                else {
+                                                    if (corp.sunatcountry === 'PE') {
+                                                        calcdetraction = true;
+                                                    }
+                                                }
+
+                                                var adicional01 = {
+                                                    CodigoDatoAdicional: '05',
+                                                    DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
+                                                }
+            
+                                                invoicedata.DataList.push(adicional01);
+
+                                                if (calcdetraction) {
+                                                    if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
+                                                        var compareamount = 0;
+            
+                                                        if (appsetting.detractionminimum) {
+                                                            if (invoice.currency === 'USD') {
+                                                                var exchangerate = await getLastExchange();
+            
+                                                                compareamount = invoice.totalamount * exchangerate;
+                                                            }
+                                                            else {
+                                                                compareamount = invoice.totalamount;
+                                                            }
+                                                        }
+                                                        
+                                                        if (compareamount > appsetting.detractionminimum) {
+                                                            invoicedata.CodigoDetraccion = appsetting.detractioncode;
+                                                            invoicedata.MontoTotalDetraccion = Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100;
+                                                            invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
+                                                            invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
+                                                                        
+                                                            var adicional02 = {
+                                                                CodigoDatoAdicional: '06',
+                                                                DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount,
+                                                            }
+                    
+                                                            invoicedata.DataList.push(adicional02);
+                                                        }
+                                                    }
+                                                }
+
+                                                invoicedetail.forEach(async data => {
+                                                    var invoicedetaildata = {
+                                                        CantidadProducto: data.quantity,
+                                                        CodigoProducto: data.productcode,
+                                                        DescripcionProducto: data.productdescription,
+                                                        IgvTotal: Math.round((data.totaligv + Number.EPSILON) * 100) / 100,
+                                                        MontoTotal: Math.round((data.totalamount + Number.EPSILON) * 100) / 100,
+                                                        PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
+                                                        PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
+                                                        TasaIgv: data.igvrate * 100,
+                                                        TipoVenta: data.saletype,
+                                                        UnidadMedida: data.measureunit,
+                                                        ValorNetoProducto: Math.round(((data.quantity * data.productnetprice) + Number.EPSILON) * 100) / 100,
+                                                    };
+        
+                                                    if (org) {
+                                                        invoicedetaildata.AfectadoIgv = org.sunatcountry === 'PE' ? '10' : '40';
+                                                        invoicedetaildata.TributoIgv = org.sunatcountry === 'PE' ? '1000' : '9998';
+                                                    }
+                                                    else {
+                                                        invoicedetaildata.AfectadoIgv = corp.sunatcountry === 'PE' ? '10' : '40';
+                                                        invoicedetaildata.TributoIgv = corp.sunatcountry === 'PE' ? '1000' : '9998';
+                                                    }
+                
+                                                    invoicedata.ProductList.push(invoicedetaildata);
+                                                });
+
+                                                var adicional05 = {
+                                                    CodigoDatoAdicional: '01',
+                                                    DescripcionDatoAdicional: 'AL CONTADO',
+                                                }
+        
+                                                invoicedata.DataList.push(adicional05);
+
+                                                const requestSendToSunat = await axios({
+                                                    data: invoicedata,
+                                                    method: 'post',
+                                                    url: `${bridgeEndpoint}processmifact/sendinvoice`
+                                                });
+
+                                                if (requestSendToSunat.data.result) {
+                                                    invoicesuccess = true;
+
+                                                    await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, null, null, 'typecredit_alcontado' || null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
+
+                                                    const requestSendMail = await axios({
+                                                        data: invoicedata,
+                                                        method: 'post',
+                                                        url: `${bridgeEndpoint}processmifact/sendmailinvoice`
+                                                    });
+
+                                                    if (!requestSendMail.data.result) {
+                                                        requestCode = "alert_automaticinvoice_mailalert";
+                                                    }
+                                                }
+                                                else {
+                                                    requestCode = "error_automaticinvoice_invoiceerror";
+
+                                                    await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, null, null, 'typecredit_alcontado'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
+
+                                                    if (org) {
+                                                        if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
+                                                            await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
+                                                        }
+                                
+                                                        if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
+                                                            await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
+                                                        }
+                                                    }
+                                                    else {
+                                                        if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
+                                                            await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
+                                                        }
+                                
+                                                        if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
+                                                            await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            catch (exception) {
+                                                requestCode = "error_automaticinvoice_exception";
+
+                                                await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', exception.message, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, (org ? org.doctype : corp.doctype) || null, (org ? org.docnum : corp.docnum) || null, (org ? org.businessname : corp.businessname) || null, (org ? org.fiscaladdress : corp.fiscaladdress) || null, (org ? org.sunatcountry : corp.sunatcountry) || null, (org ? org.contactemail : corp.contactemail) || null, null, null, null, null, null, null, null, null, null, null);
+
+                                                if (org) {
+                                                    if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
+                                                        await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
+                                                    }
+                            
+                                                    if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
+                                                        await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
+                                                    }
+                                                }
+                                                else {
+                                                    if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
+                                                        await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
+                                                    }
+                            
+                                                    if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
+                                                        await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        else {
+                                            requestCode = "error_automaticinvoice_nocorrelative";
+
+                                            await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, (org ? org.doctype : corp.doctype) || null, (org ? org.docnum : corp.docnum) || null, (org ? org.businessname : corp.businessname) || null, (org ? org.fiscaladdress : corp.fiscaladdress) || null, (org ? org.sunatcountry : corp.sunatcountry) || null, (org ? org.contactemail : corp.contactemail) || null, null, null, null, null, null, null, null, null, null, null);
+                                        }
+                                    }
+                                    else {
+                                        requestCode = "error_automaticinvoice_noinvoicedetail";
+                                    }
+
+                                    if (!invoicesuccess) {
+                                        var domainMethod = "UFN_DOMAIN_VALUES_SEL";
+                                        var domainParameters = {
+                                            all: false,
+                                            corpid: 1,
+                                            domainname: "INVOICEALERTERRORBODY",
+                                            orgid: 0,
+                                            username: 'SCHEDULER',
+                                        };
+
+                                        const queryDomainAlertBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                                        domainParameters.domainname = "INVOICEALERTERRORSUBJECT";
+
+                                        const queryDomainAlertSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+
+                                        if (queryDomainAlertBody instanceof Array && queryDomainAlertSubject instanceof Array) {
+                                            var alertBody = queryDomainAlertBody[0].domainvalue;
+                                            var alertSubject = queryDomainAlertSubject[0].domainvalue;
+
+                                            alertBody = alertBody.split("{{amountdetraction}}").join(detractionamount);
+                                            alertBody = alertBody.split("{{amountpaid}}").join(culqiamount);
+                                            alertBody = alertBody.split("{{amounttotal}}").join(invoice.totalamount);
+                                            alertBody = alertBody.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
+                                            alertBody = alertBody.split("{{concept}}").join(invoice.description);
+                                            alertBody = alertBody.split("{{contact}}").join(org ? org.contact : corp.contact);
+                                            alertBody = alertBody.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
+                                            alertBody = alertBody.split("{{corporg}}").join(org ? org.description : corp.description);
+                                            alertBody = alertBody.split("{{currency}}").join(invoice.currency);
+                                            alertBody = alertBody.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
+                                            alertBody = alertBody.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
+                                            alertBody = alertBody.split("{{month}}").join(invoice.month);
+                                            alertBody = alertBody.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
+                                            alertBody = alertBody.split("{{year}}").join(invoice.year);
+
+                                            alertSubject = alertSubject.split("{{amountdetraction}}").join(detractionamount);
+                                            alertSubject = alertSubject.split("{{amountpaid}}").join(culqiamount);
+                                            alertSubject = alertSubject.split("{{amounttotal}}").join(invoice.totalamount);
+                                            alertSubject = alertSubject.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
+                                            alertSubject = alertSubject.split("{{concept}}").join(invoice.description);
+                                            alertSubject = alertSubject.split("{{contact}}").join(org ? org.contact : corp.contact);
+                                            alertSubject = alertSubject.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
+                                            alertSubject = alertSubject.split("{{corporg}}").join(org ? org.description : corp.description);
+                                            alertSubject = alertSubject.split("{{currency}}").join(invoice.currency);
+                                            alertSubject = alertSubject.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
+                                            alertSubject = alertSubject.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
+                                            alertSubject = alertSubject.split("{{month}}").join(invoice.month);
+                                            alertSubject = alertSubject.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
+                                            alertSubject = alertSubject.split("{{year}}").join(invoice.year);
+
+                                            const requestMailSend = await axios({
+                                                data: {
+                                                    mailAddress: (org ? org.contactemail : corp.contactemail),
+                                                    mailBody: alertBody,
+                                                    mailTitle: alertSubject,
+                                                },
+                                                method: "post",
+                                                url: `${bridgeEndpoint}processscheduler/sendmail`,
+                                            });
+
+                                            if (!requestMailSend.data.success) {
+                                                requestCode = requestMailSend.data.operationMessage;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else {
+                                requestCode = "";
+                                requestId = 200;
+                                requestMessage = "success_automaticpayment_alreadypaid";
+                                requestStatus = 200;
+                                requestSuccess = true;
+                            }
+                        }
+                        else {
+                            requestMessage = "error_automaticpayment_noinvoice";
+                        }
+                    }
+                    else {
+                        requestMessage = "error_automaticpayment_noappsetting";
+                    }
+                }
+                else {
+                    requestMessage = "error_automaticpayment_noorg";
+                }
+            }
+            else {
+                requestMessage = "error_automaticpayment_nocorp";
+            }
+        }
+
+        return result.status(requestStatus).json({
+            code: requestCode,
+            data: {
+                id: requestId,
+                object: requestObject,
+            },
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
+    }
+    catch (exception) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+};
