@@ -35,6 +35,7 @@ app.use('/api/load', require('./routes/load'));
 app.use('/api/flow', require('./routes/flow'));
 app.use('/api/subscription', require('./routes/subscription'));
 app.use('/api/reportdesigner', require('./routes/reportdesigner'));
+app.use('/api/event-booking', require('./routes/eventbooking'));
 app.use('/api/user', require('./routes/user'));
 app.use('/api/check', require('./routes/check'));
 app.use('/api/migrator', require('./routes/migrator'));

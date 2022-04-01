@@ -2065,6 +2065,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_EVENT_BY_CODE: {
+        query: "SELECT ce.corpid, ce.orgid, ce.calendareventid, ce.description, ce.status, ce.type, ce.name, ce.locationtype, ce.location, ce.eventlink, ce.color, ce.notificationtype, ce.messagetemplateid, ce.daterange, ce.daysduration, ce.daystype, ce.startdate, ce.enddate, ce.timeduration, ce.timeunit, ce.timezone, ce.availability, ce.timebeforeeventduration, ce.timebeforeeventunit, ce.timeaftereventduration, ce.timeaftereventunit, ce.increments FROM calendarevent ce WHERE ce.orgid = $orgid and ce.code = $code",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CALENDARYBOOKING_INS: {
         query: "SELECT * FROM ufn_calendarbooking_ins($corpid, $orgid, $calendareventid, $id, $description, $type, $status, $monthdate, $hourstart, $notes, $conversationid, $personname, $personcontact, $persontimezone, $username, $operation)",
         module: "",
