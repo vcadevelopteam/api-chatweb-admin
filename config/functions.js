@@ -445,7 +445,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CORP_INS: {
-        query: "SELECT * FROM ufn_corp_ins($id, $description, $status, $type, $username, $operation, $logo, $logotype, $companysize, $paymentplanid, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $billbyorg, $credittype, $paymentmethod)",
+        query: "SELECT * FROM ufn_corp_ins($id, $description, $status, $type, $username, $operation, $logo, $logotype, $companysize, $paymentplanid, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $billbyorg, $credittype, $paymentmethod, $automaticpayment)",
         module: "/corporations",
         protected: "INSERT"
     },
@@ -460,7 +460,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORG_INS: {
-        query: "SELECT * FROM ufn_org_ins($corpid,$id,$description,$status,$type,$username,$operation,$email,$password,$port,$host,$default_credentials,$ssl, $private_mail, $currency,$country, $timezoneoffset, $timezone, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $iconbot, $iconadvisor, $iconclient, $credittype)",
+        query: "SELECT * FROM ufn_org_ins($corpid,$id,$description,$status,$type,$username,$operation,$email,$password,$port,$host,$default_credentials,$ssl, $private_mail, $currency,$country, $timezoneoffset, $timezone, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $iconbot, $iconadvisor, $iconclient, $credittype, $automaticpayment)",
         module: "",
         protected: "INSERT"
     },
@@ -643,16 +643,6 @@ module.exports = {
         query: "SELECT * FROM ufn_communicationchannelsite_smooch_sel($communicationchannelsite)",
         module: "",
         protected: "SELECT"
-    },
-    UFN_COMMUNICATIONCHANNELHOOK_INS: {
-        query: "SELECT * FROM ufn_communicationchannelhook_ins($type, $servicedata, $site, $operation)",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_COMMUNICATIONCHANNELHOOK_SEL: {
-        query: "SELECT * FROM ufn_communicationchannelhook_sel($type, $site)",
-        module: "",
-        protected: "INSERT"
     },
     UFN_CHATFLOW_BLOCK_LST: {
         query: "SELECT * FROM ufn_chatflow_block_lst($corpid, $orgid, $userid)",
@@ -1277,8 +1267,8 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_UPDATE_ACTIVE_USER_SEL: {
-        query: "select * from ufn_update_active_user_sel($usr, $firstname, $corpid)",
+    UFN_USER_ACTIVATE: {
+        query: "select * from ufn_user_activate($corpid, $userid)",
         module: "",
         protected: "SELECT"
     },
@@ -1503,7 +1493,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGCONFIGURATION_INS: {
-        query: "SELECT * FROM ufn_billingconfiguration_ins($year,$month,$plan,$id,$basicfee,$userfreequantity,$useradditionalfee,$channelfreequantity,$channelwhatsappfee,$channelotherfee,$clientfreequantity,$clientadditionalfee,$allowhsm,$hsmfee,$description,$status,$whatsappconversationfreequantity,$freewhatsappchannel,$usercreateoverride,$channelcreateoverride,$type,$username,$operation)",
+        query: "SELECT * FROM ufn_billingconfiguration_ins($year,$month,$plan,$id,$basicfee,$userfreequantity,$useradditionalfee,$channelfreequantity,$channelwhatsappfee,$channelotherfee,$clientfreequantity,$clientadditionalfee,$allowhsm,$hsmfee,$description,$status,$whatsappconversationfreequantity,$freewhatsappchannel,$usercreateoverride,$channelcreateoverride,$vcacomissionperhsm,$type,$username,$operation)",
         module: "",
         protected: "INSERT"
     },
@@ -1538,7 +1528,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_BILLINGPERIOD_UPD: {
-        query: "SELECT * FROM ufn_billingperiod_upd($corpid, $orgid, $year, $month, $billingplan, $supportplan, $basicfee, $userfreequantity, $useradditionalfee, $channelfreequantity, $channelwhatsappfee, $channelotherfee, $clientfreequantity, $clientadditionalfee, $supportbasicfee, $unitpricepersms, $vcacomissionpersms, $unitepricepermail, $vcacomissionpermail, $additionalservicename1, $additionalservicefee1, $additionalservicename2, $additionalservicefee2, $additionalservicename3, $additionalservicefee3, $freewhatsappchannel, $freewhatsappconversations, $usercreateoverride, $channelcreateoverride, $vcacomissionperconversation, $force)",
+        query: "SELECT * FROM ufn_billingperiod_upd($corpid, $orgid, $year, $month, $billingplan, $supportplan, $basicfee, $userfreequantity, $useradditionalfee, $channelfreequantity, $channelwhatsappfee, $channelotherfee, $clientfreequantity, $clientadditionalfee, $supportbasicfee, $unitpricepersms, $vcacomissionpersms, $unitepricepermail, $vcacomissionpermail, $additionalservicename1, $additionalservicefee1, $additionalservicename2, $additionalservicefee2, $additionalservicename3, $additionalservicefee3, $freewhatsappchannel, $freewhatsappconversations, $usercreateoverride, $channelcreateoverride, $vcacomissionperconversation, $vcacomissionperhsm, $force)",
         module: "",
         protected: "INSERT"
     },
@@ -1658,7 +1648,7 @@ module.exports = {
         protected: "INSERT"
     },
     QUERY_GET_REPORTTEMPLATE: {
-        query: "select columnjson, description, dataorigin from reporttemplate where corpid = $corpid and orgid = $orgid and reporttemplateid = $reporttemplateid and status = 'ACTIVO'",
+        query: "select columnjson, filterjson, description, dataorigin from reporttemplate where corpid = $corpid and orgid = $orgid and reporttemplateid = $reporttemplateid and status = 'ACTIVO'",
         module: "",
         protected: "INSERT"
     },
@@ -1668,7 +1658,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVOICE_CORP: {
-        query: "SELECT * FROM ufn_invoice_corp($corpid,$year,$month,$exchangerate)",
+        query: "SELECT * FROM ufn_invoice_corp($corpid, $year, $month, $exchangerate)",
         module: "",
         protected: "INSERT"
     },
@@ -1698,7 +1688,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INVOICE_INS: {
-        query: "SELECT * FROM ufn_invoice_ins($corpid, $orgid, $invoiceid, $description, $status, $type, $issuerruc, $issuerbusinessname, $issuertradename, $issuerfiscaladdress, $issuerubigeo, $emittertype, $annexcode, $printingformat, $xmlversion, $ublversion, $receiverdoctype, $receiverdocnum, $receiverbusinessname, $receiverfiscaladdress, $receivercountry, $receivermail, $invoicetype, $sunatopecode, $serie, $correlative, $concept, $invoicedate, $expirationdate, $subtotal, $taxes, $totalamount, $currency, $exchangerate, $invoicestatus, $filenumber, $purchaseorder, $executingunitcode, $selectionprocessnumber, $contractnumber, $comments, $credittype, $creditnotetype, $creditnotemotive, $creditnotediscount, $invoicereferencefile, $invoicepaymentnote, $username, $referenceinvoiceid, $netamount, $paymentstatus, $hasreport)",
+        query: "SELECT * FROM ufn_invoice_ins($corpid, $orgid, $invoiceid, $description, $status, $type, $issuerruc, $issuerbusinessname, $issuertradename, $issuerfiscaladdress, $issuerubigeo, $emittertype, $annexcode, $printingformat, $xmlversion, $ublversion, $receiverdoctype, $receiverdocnum, $receiverbusinessname, $receiverfiscaladdress, $receivercountry, $receivermail, $invoicetype, $sunatopecode, $serie, $correlative, $concept, $invoicedate, $expirationdate, $subtotal, $taxes, $totalamount, $currency, $exchangerate, $invoicestatus, $filenumber, $purchaseorder, $executingunitcode, $selectionprocessnumber, $contractnumber, $comments, $credittype, $creditnotetype, $creditnotemotive, $creditnotediscount, $invoicereferencefile, $invoicepaymentnote, $username, $referenceinvoiceid, $netamount, $paymentstatus, $hasreport, $year, $month)",
         module: "",
         protected: "INSERT"
     },
@@ -1798,7 +1788,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_APPSETTING_INVOICE_UPDATE: {
-        query: "select * from public.ufn_appsetting_invoice_update($ruc, $businessname, $tradename, $fiscaladdress, $ubigeo, $country, $emittertype, $currency, $invoiceserie, $invoicecorrelative, $annexcode, $igv, $printingformat, $xmlversion, $ublversion, $returnpdf, $returnxmlsunat, $returnxml, $invoiceprovider, $sunaturl, $token, $sunatusername, $paymentprovider, $publickey, $privatekey, $ticketserie, $ticketcorrelative, $invoicecreditserie, $invoicecreditcorrelative, $ticketcreditserie, $ticketcreditcorrelative, $detraction, $detractioncode, $detractionaccount, $operationcodeperu, $operationcodeother, $culqiurl, $detractionminimum)",
+        query: "select * from public.ufn_appsetting_invoice_update($ruc, $businessname, $tradename, $fiscaladdress, $ubigeo, $country, $emittertype, $currency, $invoiceserie, $invoicecorrelative, $annexcode, $igv, $printingformat, $xmlversion, $ublversion, $returnpdf, $returnxmlsunat, $returnxml, $invoiceprovider, $sunaturl, $token, $sunatusername, $paymentprovider, $publickey, $privatekey, $ticketserie, $ticketcorrelative, $invoicecreditserie, $invoicecreditcorrelative, $ticketcreditserie, $ticketcreditcorrelative, $detraction, $detractioncode, $detractionaccount, $operationcodeperu, $operationcodeother, $culqiurl, $detractionminimum, $culqiurlcardcreate, $culqiurlclient, $culqiurltoken, $culqiurlcharge, $culqiurlcardget, $culqiurlcarddelete)",
         module: "",
         protected: "UPDATE"
     },
@@ -1880,8 +1870,8 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_INVOICE_REFRESHTEST: {
-        query: "select * from ufn_invoice_refreshtest((SELECT EXTRACT (YEAR from (select now() at time zone 'utc'))::bigint), (SELECT EXTRACT (MONTH from (select now() at time zone 'utc'))::bigint), $corpid)",
+    UFN_INVOICE_REFRESH: {
+        query: "select * from ufn_invoice_refresh($corpid, $orgid, $invoiceid, $year, $month)",
         module: "",
         protected: "SELECT"
     },
@@ -2040,6 +2030,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PAYMENTCARD_INS: {
+        query: "SELECT * FROM ufn_paymentcard_ins($corpid, $orgid, $id, $cardnumber, $cardcode, $firstname, $lastname, $mail, $favorite, $clientcode, $status, $type, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_PAYMENTCARD_LST: {
+        query: "SELECT * FROM ufn_paymentcard_lst($corpid, $orgid, $id)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_LEADAUTOMATIZATIONRULES_SEL: {
         query: "SELECT * FROM ufn_leadautomatizationrules_sel($corpid, $orgid, $id,$communicationchannelid, $username, $all)",
         module: "",
@@ -2049,5 +2049,50 @@ module.exports = {
         query: "SELECT * FROM ufn_leadautomatizationrules_ins($corpid,$orgid,$id,$description,$status,$type,$columnid,$communicationchannelid,$messagetemplateid,$messagetemplateparameters,$shippingtype,$xdays,$schedule,$tags,$products,$username,$operation)",
         module: "",
         protected: "INSERT"
+    },
+    UFN_CALENDAREVENT_INS: {
+        query: "SELECT * FROM ufn_calendarevent_ins($corpid, $orgid, $id, $description, $type, $status, $code, $name, $locationtype, $location, $eventlink, $color, $notificationtype, $messagetemplateid, $daterange, $daysduration, $daystype, $startdate, $enddate, $timeduration, $timeunit, $availability, $timebeforeeventduration, $timebeforeeventunit, $timeaftereventduration, $timeaftereventunit, $increments, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CALENDAREVENT_SEL: {
+        query: "SELECT * FROM ufn_calendarevent_sel($corpid, $orgid, $id, $username, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CALENDAREVENT_LST: {
+        query: "SELECT * FROM ufn_calendarevent_lst($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_EVENT_BY_CODE: {
+        query: "SELECT ce.corpid, ce.orgid, ce.calendareventid, ce.description, ce.status, ce.type, ce.name, ce.locationtype, ce.location, ce.eventlink, ce.color, ce.notificationtype, ce.messagetemplateid, ce.daterange, ce.daysduration, ce.daystype, ce.startdate, ce.enddate, ce.timeduration, ce.timeunit, ce.timezone, ce.availability, ce.timebeforeeventduration, ce.timebeforeeventunit, ce.timeaftereventduration, ce.timeaftereventunit, ce.increments FROM calendarevent ce WHERE ce.orgid = $orgid and ce.code = $code",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CALENDARYBOOKING_INS: {
+        query: "SELECT * FROM ufn_calendarbooking_ins($corpid, $orgid, $calendareventid, $id, $description, $type, $status, $monthdate, $hourstart, $notes, $conversationid, $personname, $personcontact, $persontimezone, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CALENDARYBOOKING_UPD: {
+        query: "SELECT * FROM ufn_calendarbooking_upd($corpid, $orgid, $calendareventid, $uuid, $description, $type, $status, $monthdate, $hourstart, $notes, $personname, $personcontact, $persontimezone, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CALENDARYBOOKING_SEL_DATETIME: {
+        query: "SELECT * FROM ufn_calendarbooking_sel_datetime($corpid, $orgid, $calendareventid, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CALENDARYBOOKING_REPORT: {
+        query: "SELECT * FROM ufn_calendarbooking_report($corpid, $orgid, $period, $startdate, $enddate, $take, $skip, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVOICE_IMPORT: {
+        query: "SELECT * FROM ufn_invoice_import($corpid, $orgid, $year, $month, $description, $status, $receiverdoctype, $receiverdocnum, $receiverbusinessname, $receiverfiscaladdress, $receivercountry, $receivermail, $invoicetype, $serie, $correlative, $invoicedate, $expirationdate, $invoicestatus, $paymentstatus, $paymentdate, $paidby, $paymenttype, $totalamount, $exchangerate, $currency, $urlcdr, $urlpdf, $urlxml, $purchaseorder, $comments, $credittype, $username)",
+        module: "",
+        protected: "SELECT"
     },
 }

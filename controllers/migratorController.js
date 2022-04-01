@@ -81,7 +81,6 @@ Extras
 Nuevas
 "appointmentbyhsm"
 "column"
-"communicationchannelhook"
 "integrationmanager"
 "lead"
 "leadactivity"

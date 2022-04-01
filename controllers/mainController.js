@@ -74,11 +74,11 @@ exports.executeTransaction = async (req, res) => {
     })
 
     const result = await executeTransaction(header, detail, req.user.menu || {});
-
+    console.log(result)
     if (!result.error)
         return res.json(result);
     else
-        return res.status(result.rescode).json({ ...result, key: header.key });
+        return res.status(result.rescode).json({ ...result, key: header?.key || '' });
 }
 
 exports.getCollectionPagination = async (req, res) => {
@@ -113,6 +113,7 @@ exports.export = async (req, res) => {
     setSessionParameters(parameters, req.user);
 
     const resultBD = !parameters.isNotPaginated ? await buildQueryWithFilterAndSort(method, parameters) : await executesimpletransaction(method, parameters);
+    
     const result = await exportData(resultBD, parameters.reportName, parameters.formatToExport, parameters.headerClient);
 
     if (!result.error) {
