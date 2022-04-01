@@ -2041,7 +2041,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEADAUTOMATIZATIONRULES_SEL: {
-        query: "SELECT * FROM ufn_leadautomatizationrules_sel($corpid, $orgid, $id, $username, $all)",
+        query: "SELECT * FROM ufn_leadautomatizationrules_sel($corpid, $orgid, $id,$communicationchannelid, $username, $all)",
         module: "",
         protected: "SELECT"
     },
