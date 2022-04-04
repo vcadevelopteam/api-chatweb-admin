@@ -267,6 +267,7 @@ exports.createSubscription = async (request, result) => {
                         const requestCulqiCard = await axios({
                             data: {
                                 bearer: appsetting.privatekey,
+                                bearerToken: appsetting.publickey,
                                 cardNumber: card.cardnumber,
                                 customerId: requestCulqiClient.data.result.id,
                                 cvv: card.securitycode,
