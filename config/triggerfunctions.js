@@ -277,13 +277,19 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             JOINNERS += `\nCROSS JOIN CAST(conversation.variablecontext as jsonb) as jo`
         }
 
-        const columnValueUnique = filters.find(x => x.type_filter === "unique_value")?.columnname;
-        // console.log("columnValueUnique", columnValueUnique)
+        const columnValueUnique = filters.find(x => x.type_filter === "unique_value");
         
-        const COLUMNESSELECT = columns.reduce((acc, item, index) => {
-            let selcol = item.columnname;
+        let columnToAdd = [];
+        
+        if (columnValueUnique) {
+            const columnFound = columns.find(x => x.columnname === columnValueUnique.columnname)
+            if (!columnFound) {
+                columnToAdd = [columnValueUnique]
+            }
+        }
 
-            // console.log("selcol", selcol);
+        const COLUMNESSELECT = [...columns, ...columnToAdd].reduce((acc, item, index) => {
+            let selcol = item.columnname;
 
             if (item.type === "interval") {
                 selcol = `date_trunc('seconds', ${item.columnname})::text`;
@@ -293,7 +299,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 selcol = `to_char(${item.columnname} + $offset * interval '1hour', 'YYYY-MM-DD HH24:MI:SS')`;
             }
 
-            if (item.columnname === columnValueUnique) {
+            if (item.columnname === columnValueUnique.columnname) {
                 return ` distinct on (${selcol}) ${selcol} as "${item.columnname.replace(".", "")}"` + (acc ? ", " : "") + acc;
             } else {
                 return acc + (index === 0 ? "" : ",") + `${selcol} as "${item.columnname.replace(".", "")}"`
@@ -338,7 +344,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
         `;
         console.log(query)
         const resultbd = await executeQuery(query, parameters);
-        
+
         if (summaries.length > 0 && resultbd.length > 0) {
             const firstColumn = columns.reduce((acc, item) => ({
                 ...acc,
@@ -412,15 +418,15 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
             JOINNERS += `\nCROSS JOIN CAST(conversation.variablecontext as jsonb) as jo`
         }
 
-        const firstSelect = interval === "day" ? 
+        const firstSelect = interval === "day" ?
             `to_char(${dataorigin}.createdate + $offset * INTERVAL '1hour', 'MM-DD') "interval"` : (interval === "month" ?
                 `to_char(${dataorigin}.createdate + $offset * INTERVAL '1hour', 'YYYY-MM') "interval"` :
                 `date_part('${interval}', ${dataorigin}.createdate + $offset * INTERVAL '1hour') "interval"`
             )
-        
+
         const COLUMNESSELECT = columns.reduce((acc, item, index) => {
             let selcol = item.columnname;
-            
+
             let coalescedefault = '0';
 
             if (item.type === "interval") {
@@ -431,7 +437,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
             } else if (DATES.includes(item.type)) {
                 selcol = `to_char(${item.columnname} + $offset * interval '1hour', 'YYYY-MM-DD HH24:MI:SS')`;
             }
-            
+
             if (!summarizationfunction) {
                 GROUP_BY = `coalesce(${selcol}::text, '')`;
                 return acc + `, coalesce(${selcol}::text, '') as "${item.columnname.replace(".", "")}", count(coalesce(${selcol}::text, '')) total`
@@ -502,7 +508,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
         `;
         console.log(query)
         const resultbd = await executeQuery(query, parameters);
-        
+
         return resultbd;
     } catch (error) {
         console.log(error)

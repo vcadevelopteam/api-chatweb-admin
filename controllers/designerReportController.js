@@ -84,20 +84,20 @@ exports.dashboardDesigner = async (req, res) => {
                         return resIndicator[0];
                     } else {
                         const report = resIndicator[0];
-                        console.log("report.filters", report.filterjson)
                         const filterHard = [
-                            ...JSON.parse(report.filterjson).filter(x => !!x.filter).map(x => ({ ...x, value: x.filter})),
+                            ...JSON.parse(report.filterjson).filter(x => !!x.filter || x.type_filter === 'unique_value').map(x => ({ ...x, value: x.filter})),
                             {
-                            columnname: `${report.dataorigin}.createdate`,
-                            type: "timestamp without time zone",
-                            description: "",
+                                columnname: `${report.dataorigin}.createdate`,
+                                type: "timestamp without time zone",
+                                description: "",
                             join_alias: "",
                             join_on: "",
                             join_table: "",
                             start: parameters.startdate,
                             end: parameters.enddate
                         }]
-
+                        
+                        console.log("report.filters", report.filterjson)
                         const columnstmp = JSON.parse(report.columnjson).filter(x => x.columnname === indicator.column);
                         if (columnstmp.length > 0) {
                             if (indicator.interval) {
