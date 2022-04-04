@@ -299,7 +299,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 selcol = `to_char(${item.columnname} + $offset * interval '1hour', 'YYYY-MM-DD HH24:MI:SS')`;
             }
 
-            if (item.columnname === columnValueUnique.columnname) {
+            if (item.columnname === columnValueUnique?.columnname) {
                 return ` distinct on (${selcol}) ${selcol} as "${item.columnname.replace(".", "")}"` + (acc ? ", " : "") + acc;
             } else {
                 return acc + (index === 0 ? "" : ",") + `${selcol} as "${item.columnname.replace(".", "")}"`
