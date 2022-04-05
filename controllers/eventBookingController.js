@@ -14,5 +14,5 @@ exports.Collection = async (req, res) => {
     if (result instanceof Array)
         return res.json({ error: false, success: true, data: result, key });
     else
-        return res.status(result.rescode).json(result);
+        return res.status(result.rescode).json(({ ...result, key }));
 }
