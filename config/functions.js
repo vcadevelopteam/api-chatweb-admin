@@ -644,6 +644,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CHATFLOW_BLOCK_LST_BYTYPE: {
+        query: "SELECT * FROM ufn_chatflow_block_lst_bytype($corpid, $orgid, $userid, $type)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CHATFLOW_BLOCK_LST: {
         query: "SELECT * FROM ufn_chatflow_block_lst($corpid, $orgid, $userid)",
         module: "",
