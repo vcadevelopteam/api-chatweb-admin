@@ -219,11 +219,13 @@ exports.sendHSM = async (req, res) => {
         if (!data.userid)
             data.userid = req.user.userid;
 
-        await tf.executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", undefined, false, {
-            personids: data.listmembers.map(x => x.personid),
-            corpid: data.corpid,
-            orgid: data.orgid,
-        })
+        if (data.listmembers.every(x => !!x.personid)) {
+            await tf.executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", undefined, false, {
+                personids: data.listmembers.map(x => x.personid),
+                corpid: data.corpid,
+                orgid: data.orgid,
+            })
+        }
 
         if (data.type === "MAIL") {
             let jsonconfigmail = "";

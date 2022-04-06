@@ -1,7 +1,136 @@
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { getErrorCode, errors } = require('../config/helpers');
+const { sendHSM } = require('./ticketController');
 
 const method_allowed = ["QUERY_EVENT_BY_CODE", "UFN_CALENDARYBOOKING_INS", "UFN_CALENDARYBOOKING_SEL_DATETIME"]
+
+const send = async (data) => {
+    try {
+        if (data.listmembers.every(x => !!x.personid)) {
+            await executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", undefined, false, {
+                personids: data.listmembers.map(x => x.personid),
+                corpid: data.corpid,
+                orgid: data.orgid,
+            })
+        }
+
+        if (data.type === "MAIL") {
+            let jsonconfigmail = "";
+            const resBD = await Promise.all([
+                executesimpletransaction("QUERY_GET_CONFIG_MAIL", data),
+                executesimpletransaction("QUERY_GET_MESSAGETEMPLATE", data)
+            ]);
+            const configmail = resBD[0];
+            const mailtemplate = resBD[1][0];
+
+            if (configmail instanceof Array && configmail.length > 0) {
+                jsonconfigmail = JSON.stringify({
+                    username: configmail[0].email,
+                    password: configmail[0].pass,
+                    port: configmail[0].port,
+                    host: configmail[0].host,
+                    enableSsl: configmail[0].ssl,
+                    default_credentials: configmail[0].default_credentials,
+                })
+            }
+
+            data.listmembers.forEach(async x => {
+                const resCheck = await executesimpletransaction("UFN_BALANCE_CHECK", { ...data, receiver: x.email, communicationchannelid: 0 })
+
+                let send = false;
+                if (resCheck instanceof Array && resCheck.length > 0) {
+                    data.fee = resCheck[0].fee;
+                    const balanceid = resCheck[0].balanceid;
+
+                    if (balanceid == 0) {
+                        send = true;
+                    } else {
+                        const resValidate = await executesimpletransaction("UFN_BALANCE_OUTPUT", { ...data, receiver: x.email, communicationchannelid: 0 })
+                        if (resValidate instanceof Array) {
+                            send = true;
+                        }
+                    }
+                }
+
+                if (send) {
+                    executesimpletransaction("QUERY_INSERT_TASK_SCHEDULER", {
+                        corpid: data.corpid,
+                        orgid: data.orgid,
+                        tasktype: "sendmail",
+                        taskbody: JSON.stringify({
+                            messagetype: "OWNERBODY",
+                            receiver: x.email,
+                            subject: mailtemplate.header,
+                            priority: mailtemplate.priority,
+                            body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), mailtemplate.body),
+                            blindreceiver: "",
+                            copyreceiver: "",
+                            credentials: jsonconfigmail,
+                            config: {
+                                CommunicationChannelSite: "",
+                                FirstName: x.firstname,
+                                LastName: x.lastname,
+                                HsmTo: x.email,
+                                Origin: "EXTERNAL",
+                                MessageTemplateId: data.hsmtemplateid,
+                                ShippingReason: data.shippingreason,
+                                HsmId: data.hsmtemplatename,
+                                Body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), mailtemplate.body)
+                            },
+                            attachments: mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
+                                type: 'FILE',
+                                x: x.value
+                            })) : []
+                        }),
+                        repeatflag: false,
+                        repeatmode: 0,
+                        repeatinterval: 0,
+                        completed: false,
+                    })
+                } else {
+                    executesimpletransaction("QUERY_INSER_HSM_HISTORY", {
+                        ...data,
+                        status: 'FINALIZADO',
+                        success: false,
+                        message: 'no credit',
+                        messatemplateid: data.hsmtemplateid,
+                        config: JSON.stringify({
+                            CommunicationChannelSite: "zyxme@vcaperu.com",
+                            FirstName: x.firstname,
+                            LastName: x.lastname,
+                            HsmTo: x.email,
+                            Origin: "EXTERNAL",
+                            MessageTemplateId: data.hsmtemplateid,
+                            ShippingReason: data.shippingreason,
+                            HsmId: data.hsmtemplatename,
+                            Body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), mailtemplate.body)
+                        }),
+                    })
+                }
+            })
+        } else {
+            if (data.type === "SMS") {
+                const smschannel = await executesimpletransaction("QUERY_GET_SMS_DEFAULT_BY_ORG", data);
+                console.log(smschannel)
+                if (smschannel[0] && smschannel) {
+                    data.communicationchannelid = smschannel[0].communicationchannelid;
+                    data.communicationchanneltype = smschannel[0].type;
+                    data.platformtype = smschannel[0].type;
+                }
+            }
+
+            const responseservices = await axios.post(
+                `${process.env.SERVICES}handler/external/sendhsm`, data);
+            console.log(responseservices.data)
+            if (!responseservices.data || !responseservices.data instanceof Object) {
+                return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+            }
+        }
+    }
+    catch (ee) {
+        console.log(ee)
+    }
+}
 
 exports.Collection = async (req, res) => {
     const { parameters = {}, method, key } = req.body;
@@ -11,8 +140,37 @@ exports.Collection = async (req, res) => {
     }
     const result = await executesimpletransaction(method, parameters);
 
-    if (result instanceof Array)
+    if (result instanceof Array) {
+        if (method === "UFN_CALENDARYBOOKING_INS") {
+            const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
+            console.log(resultCalendar)
+            const { communicationchannelid, messagetemplateid, notificationtype, messagetemplatename, communicationchanneltype } = resultCalendar[0]
+            const sendmessage = {
+                corpid: parameters.corpid,
+                orgid: parameters.orgid,
+                username: parameters.username,
+                communicationchannelid: communicationchannelid,
+                hsmtemplateid: messagetemplateid,
+                type: notificationtype === "EMAIL" ? "MAIL" : "HSM",
+                shippingreason: "BOOKING",
+                hsmtemplatename: messagetemplatename,
+                communicationchanneltype: communicationchanneltype,
+                platformtype: communicationchanneltype,
+                userid: 0,
+                listmembers: [{
+                    phone: parameters.phone,
+                    firstname: parameters.name,
+                    email: parameters.email,
+                    lastname: "",
+                    parameters: parameters.parameters
+                }]
+            }
+            console.log(sendmessage)
+            await send(sendmessage)
+            // sendHSM
+        }
         return res.json({ error: false, success: true, data: result, key });
+    }
     else
         return res.status(result.rescode).json(({ ...result, key }));
 }

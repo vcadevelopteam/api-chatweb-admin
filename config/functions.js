@@ -2070,6 +2070,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_EVENT_BY_CALENDAR_EVENT_ID: {
+        query: `SELECT mt.name messagetemplatename, cc.type communicationchanneltype, ce.messagetemplateid, ce.communicationchannelid, ce.notificationtype from calendarevent ce 
+        left join communicationchannel cc on cc.corpid = ce.corpid and cc.orgid = ce.orgid and cc.communicationchannelid = ce.communicationchannelid 
+        inner join messagetemplate mt on mt.corpid = ce.corpid and mt.orgid = ce.orgid and mt.messagetemplateid = ce.messagetemplateid 
+        where ce.corpid = $corpid and ce.orgid = $orgid and ce.calendareventid = $calendareventid`,
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CALENDARYBOOKING_INS: {
         query: "SELECT * FROM ufn_calendarbooking_ins($corpid, $orgid, $calendareventid, $id, $description, $type, $status, $monthdate, $hourstart, $notes, $conversationid, $personname, $personcontact, $persontimezone, $username, $operation)",
         module: "",
