@@ -1,6 +1,5 @@
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { getErrorCode, errors } = require('../config/helpers');
-const { sendHSM } = require('./ticketController');
 
 const method_allowed = ["QUERY_EVENT_BY_CODE", "UFN_CALENDARYBOOKING_INS", "UFN_CALENDARYBOOKING_SEL_DATETIME"]
 
@@ -143,7 +142,7 @@ exports.Collection = async (req, res) => {
     if (result instanceof Array) {
         if (method === "UFN_CALENDARYBOOKING_INS") {
             const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
-            console.log(resultCalendar)
+            
             const { communicationchannelid, messagetemplateid, notificationtype, messagetemplatename, communicationchanneltype } = resultCalendar[0]
             const sendmessage = {
                 corpid: parameters.corpid,
@@ -165,9 +164,7 @@ exports.Collection = async (req, res) => {
                     parameters: parameters.parameters
                 }]
             }
-            console.log(sendmessage)
             await send(sendmessage)
-            // sendHSM
         }
         return res.json({ error: false, success: true, data: result, key });
     }
