@@ -2075,6 +2075,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_GET_PERSON_FROM_BOOKING: {
+        query: "select p.name, p.phone, p.email from person p where p.corpid = $corpid and p.orgid = $orgid and p.personid = $personid",
+        module: "",
+        protected: "SELECT"
+    },
     QUERY_EVENT_BY_CALENDAR_EVENT_ID: {
         query: `SELECT mt.name messagetemplatename, cc.type communicationchanneltype, ce.messagetemplateid, ce.communicationchannelid, ce.notificationtype from calendarevent ce 
         left join communicationchannel cc on cc.corpid = ce.corpid and cc.orgid = ce.orgid and cc.communicationchannelid = ce.communicationchannelid 

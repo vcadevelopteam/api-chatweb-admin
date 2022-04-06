@@ -1,7 +1,7 @@
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { getErrorCode, errors } = require('../config/helpers');
 
-const method_allowed = ["QUERY_EVENT_BY_CODE", "UFN_CALENDARYBOOKING_INS", "UFN_CALENDARYBOOKING_SEL_DATETIME"]
+const method_allowed = ["QUERY_GET_PERSON_FROM_BOOKING", "QUERY_EVENT_BY_CODE", "UFN_CALENDARYBOOKING_INS", "UFN_CALENDARYBOOKING_SEL_DATETIME"]
 
 const send = async (data) => {
     try {
