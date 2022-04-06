@@ -2071,7 +2071,7 @@ module.exports = {
         protected: "SELECT"
     },
     QUERY_EVENT_BY_CODE: {
-        query: "SELECT ce.corpid, ce.orgid, ce.calendareventid, ce.description, ce.status, ce.type, ce.name, ce.locationtype, ce.location, ce.eventlink, ce.color, ce.notificationtype, ce.messagetemplateid, ce.daterange, ce.daysduration, ce.daystype, ce.startdate, ce.enddate, ce.timeduration, ce.timeunit, ce.timezone, ce.availability, ce.timebeforeeventduration, ce.timebeforeeventunit, ce.timeaftereventduration, ce.timeaftereventunit, ce.increments, p.personname, p.phone, p.email FROM calendarevent ce left JOIN person p on p.corpid = ce.corpid and p.orgid = ce.orgid and p.personid = $personid WHERE ce.orgid = $orgid and ce.code = $code",
+        query: "SELECT ce.corpid, ce.orgid, ce.calendareventid, ce.description, ce.status, ce.type, ce.name, ce.locationtype, ce.location, ce.eventlink, ce.color, ce.notificationtype, ce.messagetemplateid, ce.daterange, ce.daysduration, ce.daystype, ce.startdate, ce.enddate, ce.timeduration, ce.timeunit, ce.timezone, ce.availability, ce.timebeforeeventduration, ce.timebeforeeventunit, ce.timeaftereventduration, ce.timeaftereventunit, ce.increments, p.name personname, p.phone, p.email FROM calendarevent ce left JOIN person p on p.corpid = ce.corpid and p.orgid = ce.orgid and p.personid = $personid WHERE ce.orgid = $orgid and ce.code = $code",
         module: "",
         protected: "SELECT"
     },
