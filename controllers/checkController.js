@@ -2,6 +2,15 @@ const sequelize = require('../config/database');
 const { getErrorSeq } = require('../config/helpers');
 const { QueryTypes } = require('sequelize');
 
+exports.auth = async (req, res) => {
+    try {
+        return res.json({ error: false, success: true, data: [] });
+    }
+    catch (err) {
+        return res.json({ error: true, success: false, data: [] });
+    }
+}
+
 exports.load = async (req, res) => {
     const query = 'SELECT * FROM corp limit 1'
 
