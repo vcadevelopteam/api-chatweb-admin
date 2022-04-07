@@ -1,7 +1,13 @@
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { getErrorCode, errors } = require('../config/helpers');
-
+const axios = require('axios')
 const method_allowed = ["QUERY_GET_PERSON_FROM_BOOKING", "QUERY_EVENT_BY_CODE", "UFN_CALENDARYBOOKING_INS", "UFN_CALENDARYBOOKING_SEL_DATETIME"]
+
+// var https = require('https');
+
+// const agent = new https.Agent({
+//     rejectUnauthorized: false
+// });
 
 const send = async (data) => {
     try {
@@ -139,10 +145,10 @@ exports.Collection = async (req, res) => {
     }
     const result = await executesimpletransaction(method, parameters);
 
-    if (result instanceof Array) {
+    if (true) {
         if (method === "UFN_CALENDARYBOOKING_INS") {
             const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
-            
+
             const { communicationchannelid, messagetemplateid, notificationtype, messagetemplatename, communicationchanneltype } = resultCalendar[0]
             const sendmessage = {
                 corpid: parameters.corpid,
@@ -164,7 +170,18 @@ exports.Collection = async (req, res) => {
                     parameters: parameters.parameters
                 }]
             }
-            await send(sendmessage)
+            await send(sendmessage);
+
+            if (!!parameters.conversationid && !!parameters.personid) {
+                const dataServices = {
+                    corpid: parameters.corpid,
+                    orgid: parameters.orgid,
+                    conversationid: parameters.conversationid,
+                    personid: parameters.personid,
+                    ...(parameters.parameters.reduce((acc, item) => ({ ...acc, [item.name]: item.text }), {}))
+                }
+                await axios.post(`${process.env.SERVICES}handler/sendbooking`, dataServices);
+            }
         }
         return res.json({ error: false, success: true, data: result, key });
     }
