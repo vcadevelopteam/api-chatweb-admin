@@ -2104,7 +2104,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CALENDARYBOOKING_REPORT: {
-        query: "SELECT * FROM ufn_calendarbooking_report($corpid, $orgid, $period, $startdate, $enddate, $take, $skip, $offset)",
+        query: "SELECT * FROM ufn_calendarbooking_report($corpid, $orgid, $startdate, $enddate, $offset)",
         module: "",
         protected: "SELECT"
     },
