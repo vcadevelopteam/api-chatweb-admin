@@ -2098,6 +2098,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_CALENDARYBOOKING_COMMENT: {
+        query: "SELECT * FROM ufn_calendarbooking_comment($corpid, $orgid, $calendareventid, $id, $comment, $username)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_CALENDARYBOOKING_SEL_DATETIME: {
         query: "SELECT * FROM ufn_calendarbooking_sel_datetime($corpid, $orgid, $calendareventid, $startdate, $enddate, $offset)",
         module: "",
