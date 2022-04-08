@@ -75,13 +75,16 @@ exports.dashboardDesigner = async (req, res) => {
             const queryIndicator = indicatorList.map((r) => r.contentType === "kpi" ? executesimpletransaction("QUERY_GET_KPI", { ...parameters, kpiid: r.kpiid }) : executesimpletransaction("QUERY_GET_REPORTTEMPLATE", { ...parameters, reporttemplateid: r.reporttemplateid }))
 
             const resultReports = await Promise.all(queryIndicator);
-
-            const triggerIndicators = resultReports.map((resIndicator, index) => {
+            const result = []
+            for (let index = 0; index < resultReports.length; index++) {
+                console.log(index)
+                const resIndicator = resultReports[index];
                 if (resIndicator instanceof Array && resIndicator[0]) {
                     const indicator = indicatorList[index];
 
                     if (indicator.contentType === "kpi") {
-                        return resIndicator[0];
+                        result.push(resIndicator[0]); //** SINCRONO */
+                        continue;
                     } else {
                         const report = resIndicator[0];
                         const filterHard = [
@@ -96,29 +99,38 @@ exports.dashboardDesigner = async (req, res) => {
                             start: parameters.startdate,
                             end: parameters.enddate
                         }]
+                        
+                        console.log("report.filters", report.filterjson)
                         const columnstmp = JSON.parse(report.columnjson).filter(x => x.columnname === indicator.column);
                         if (columnstmp.length > 0) {
                             if (indicator.interval) {
                                 console.log("interval")
-                                return buildQueryDynamicGroupInterval(columnstmp, filterHard, parameters, indicator.interval, report.dataorigin, indicator.summarizationfunction);
+                                const restmp = await buildQueryDynamicGroupInterval(columnstmp, filterHard, parameters, indicator.interval, report.dataorigin, indicator.summarizationfunction);
+                                result.push(restmp); //** SINCRONO */
+                                continue;
                             } else {
                                 console.log("normal")
-                                return buildQueryDynamic2(columnstmp, filterHard, parameters, []);
+                                const restmp = await buildQueryDynamic2(columnstmp, filterHard, parameters, []);
+                                result.push(restmp); //** SINCRONO */
+                                continue;
                             }
                         }
                         else {
                             indicatorList[index].error = true;
                             indicatorList[index].errorcode = "COLUMN_NOT_FOUND";
-                            return []
+                            result.push([]) //** SINCRONO */
+                            continue;
                         }
                     }
                 }
                 indicatorList[index].error = true;
                 indicatorList[index].errorcode = "REPORT_NOT_FOUND";
-                return undefined;
-            });
-
-            const result = await Promise.all(triggerIndicators);
+                result.push(undefined); //** SINCRONO */
+                continue;
+            }
+            console.log(indicatorList)
+            
+            // const result = await Promise.all(triggerIndicators);
 
             const cleanDatat = result.map((resIndicator, index) => {
                 const { column, contentType, grouping, interval, summarizationfunction } = indicatorList[index];
