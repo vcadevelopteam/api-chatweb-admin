@@ -311,7 +311,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 return `${acc}\nand ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
             } else if (!!value) {
 
-                const filter_array = `ANY(string_to_array('${value}',',')::${type}[])`
+                const filter_array = `ANY(string_to_array('${value}',',')::${type === "variable" ? "text" : type}[])`
 
                 if (NUMBERS.includes(type)) {
                     return `${acc}\nand ${columnname} = ${value.includes(",") ? filter_array : value}`
@@ -473,7 +473,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
             if (DATES.includes(type)) {
                 return `${acc}\nand ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
             } else if (!!value) {
-                const filter_array = `ANY(string_to_array('${value}',',')::${type}[])`
+                const filter_array = `ANY(string_to_array('${value}',',')::${type === "variable" ? "text" : type}[])`
 
                 if (NUMBERS.includes(type)) {
                     return `${acc}\nand ${columnname} = ${value.includes(",") ? filter_array : value}`
