@@ -3176,6 +3176,7 @@ exports.cardCreate = async (request, result) => {
                             const requestCulqiCard = await axios({
                                 data: {
                                     bearer: appsetting.privatekey,
+                                    bearerToken: appsetting.publickey,
                                     cardNumber: cleancardnumber,
                                     customerId: requestCulqiClient.data.result.id,
                                     cvv: securitycode,
