@@ -402,9 +402,6 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             }, firstColumn)
 
             resultbd.unshift(datawith);
-        } else {
-            console.log("error!!", query)
-            console.log("error!!", resultbd)
         }
         return resultbd;
     } catch (error) {

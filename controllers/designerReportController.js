@@ -97,7 +97,7 @@ exports.dashboardDesigner = async (req, res) => {
                             end: parameters.enddate
                         }]
                         
-                        console.log("report.filters", report.filterjson)
+                        
                         const columnstmp = JSON.parse(report.columnjson).filter(x => x.columnname === indicator.column);
                         if (columnstmp.length > 0) {
                             if (indicator.interval) {
@@ -131,7 +131,7 @@ exports.dashboardDesigner = async (req, res) => {
                     } else {
                         if (interval) {
                             const total = resIndicator.reduce((acc, item) => acc + (typeof item.total === "string" ? stringToMinutes(item.total || "00:00:00") : item.total), 0)
-                            console.log(total)
+                            
                             resultReports[index][0].total = total;
                             if (!!summarizationfunction) {
                                 return resIndicator.reduce((acc, item) => ({
