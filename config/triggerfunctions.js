@@ -22,7 +22,10 @@ const executeQuery = async (query, bind = {}) => {
     return await sequelize.query(query, {
         type: QueryTypes.SELECT,
         bind
-    }).catch(err => getErrorSeq(err));
+    }).catch(err => {
+        console.log(err)
+        return getErrorSeq(err)
+    });
 }
 //no se puede usar bind y replace en el mismo query 
 exports.executesimpletransaction = async (method, data, permissions = false, replacements = undefined) => {
@@ -305,7 +308,8 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 return acc + (index === 0 ? "" : ",") + `${selcol} as "${item.columnname.replace(".", "")}"`
             }
         }, "")
-        console.log(filters)
+        console.log('aa')
+        // console.log(filters)
         const FILTERS = filters.reduce((acc, { type, columnname, start, end, value }) => {
             if (DATES.includes(type)) {
                 return `${acc}\nand ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
@@ -317,6 +321,8 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                     return `${acc}\nand ${columnname} = ${value.includes(",") ? filter_array : value}`
                 } else if (type === "variable") {
                     return `${acc}\nand (conversation.variablecontext::jsonb)->'${columnname}'->>'Value' ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
+                } else if (type === "boolean") {
+                    return `${acc}\nand ${columnname} = ${value}`
                 } else {
                     if (columnname === "conversation.tags") {
                         if (value.includes(",")) {
@@ -332,7 +338,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 return acc;
             }
         }, "")
-
+        
         let query = `
         select
             ${COLUMNESSELECT}
@@ -342,7 +348,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             ${TABLENAME}.corpid = $corpid and ${TABLENAME}.orgid = $orgid
             ${FILTERS}
         `;
-        console.log(query)
+        // console.log(query)
         const resultbd = await executeQuery(query, parameters);
 
         if (summaries.length > 0 && resultbd.length > 0) {
@@ -396,6 +402,9 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             }, firstColumn)
 
             resultbd.unshift(datawith);
+        } else {
+            console.log("error!!", query)
+            console.log("error!!", resultbd)
         }
         return resultbd;
     } catch (error) {
@@ -445,7 +454,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
                 if (coalescedefault === "'00:00:00'") {
                     return acc + `, date_trunc('seconds', sum(coalesce(${selcol}, ${coalescedefault})))::text total`
                 }
-                return acc + `, sum(coalesce(${sel0l}, ${coalescedefault})) total`
+                return acc + `, sum(coalesce(${selcol}, ${coalescedefault})) total`
             } else if (summarizationfunction === "count") {
                 return acc + `, count(coalesce(${selcol}::text, '')) total`
             } else if (summarizationfunction === "average") {
@@ -479,6 +488,8 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
                     return `${acc}\nand ${columnname} = ${value.includes(",") ? filter_array : value}`
                 } else if (type === "variable") {
                     return `${acc}\nand (conversation.variablecontext::jsonb)->'${columnname}'->>'Value' ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
+                } else if (type === "boolean") {
+                    return `${acc}\nand ${columnname} = ${value}`
                 } else {
                     if (columnname === "conversation.tags") {
                         if (value.includes(",")) {
@@ -506,7 +517,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
         GROUP BY 1${!!GROUP_BY ? "," : ""} ${GROUP_BY}
         ORDER BY 1 desc
         `;
-        console.log(query)
+        // console.log(query)
         const resultbd = await executeQuery(query, parameters);
 
         return resultbd;
