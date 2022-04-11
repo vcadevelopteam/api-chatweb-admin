@@ -129,7 +129,6 @@ exports.dashboardDesigner = async (req, res) => {
                         return resIndicator;
                     } else {
                         if (interval) {
-                            console.log("resIndicator", resIndicator)
                             const total = resIndicator.reduce((acc, item) => acc + ((typeof item.total === "string" && item.total.includes(":")) ? stringToMinutes(item.total || "00:00:00") : item.total), 0)
                             
                             resultReports[index][0].total = total;
