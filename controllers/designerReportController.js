@@ -97,7 +97,6 @@ exports.dashboardDesigner = async (req, res) => {
                             end: parameters.enddate
                         }]
                         
-                        
                         const columnstmp = JSON.parse(report.columnjson).filter(x => x.columnname === indicator.column);
                         if (columnstmp.length > 0) {
                             if (indicator.interval) {
@@ -130,22 +129,22 @@ exports.dashboardDesigner = async (req, res) => {
                         return resIndicator;
                     } else {
                         if (interval) {
-                            const total = resIndicator.reduce((acc, item) => acc + (typeof item.total === "string" ? stringToMinutes(item.total || "00:00:00") : item.total), 0)
+                            const total = resIndicator.reduce((acc, item) => acc + ((typeof item.total === "string" && item.total.includes(":")) ? stringToMinutes(item.total || "00:00:00") : item.total), 0)
                             
                             resultReports[index][0].total = total;
                             if (!!summarizationfunction) {
                                 return resIndicator.reduce((acc, item) => ({
                                     ...acc,
-                                    [interval + item.interval]:  typeof item.total === "string" ? stringToMinutes(item.total || "00:00:00") : item.total
+                                    [interval + item.interval]:  (typeof item.total === "string" && item.total.includes(":")) ? stringToMinutes(item.total || "00:00:00") : item.total
                                 }), {})
                             } else {
                                 return resIndicator.reduce((acc, item) => ({
                                     ...acc,
                                     [interval + item.interval]: acc[interval + item.interval] ? {
                                         ...acc[interval + item.interval],
-                                        [item[column.replace(".", "")]]: grouping === "percentage" ? ((typeof item.total === "string" ? stringToMinutes(item.total || "00:00:00") : item.total) / total) * total : item.total
+                                        [item[column.replace(".", "")]]: grouping === "percentage" ? (((typeof item.total === "string" && item.total.includes(":")) ? stringToMinutes(item.total || "00:00:00") : item.total) / total) * total : item.total
                                     } : {
-                                        [item[column.replace(".", "")]]: grouping === "percentage" ? ((typeof item.total === "string" ? stringToMinutes(item.total || "00:00:00") : item.total) / total) * total : item.total
+                                        [item[column.replace(".", "")]]: grouping === "percentage" ? (((typeof item.total === "string" && item.total.includes(":")) ? stringToMinutes(item.total || "00:00:00") : item.total) / total) * total : item.total
                                     }
                                 }), {})
                             }
