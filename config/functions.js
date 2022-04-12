@@ -2056,7 +2056,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CALENDAREVENT_INS: {
-        query: "SELECT * FROM ufn_calendarevent_ins($corpid, $orgid, $id, $description, $type, $status, $code, $name, $locationtype, $location, $eventlink, $color, $notificationtype, $communicationchannelid, $messagetemplateid, $daterange, $daysduration, $daystype, $startdate, $enddate, $timeduration, $timeunit, $availability, $timebeforeeventduration, $timebeforeeventunit, $timeaftereventduration, $timeaftereventunit, $increments, $username, $operation)",
+        query: "SELECT * FROM ufn_calendarevent_ins($corpid, $orgid, $id, $description, $descriptionobject, $type, $status, $code, $name, $locationtype, $location, $eventlink, $color, $notificationtype, $communicationchannelid, $messagetemplateid, $daterange, $daysduration, $daystype, $startdate, $enddate, $timeduration, $timeunit, $availability, $timebeforeeventduration, $timebeforeeventunit, $timeaftereventduration, $timeaftereventunit, $increments, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
