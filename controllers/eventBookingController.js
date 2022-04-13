@@ -145,7 +145,7 @@ exports.Collection = async (req, res) => {
     }
     const result = await executesimpletransaction(method, parameters);
 
-    if (true) {
+    if (!result.error) {
         if (method === "UFN_CALENDARYBOOKING_INS") {
             const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
 
