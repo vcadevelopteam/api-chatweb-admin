@@ -2118,4 +2118,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_REPORT_INVOICE_SUMMARY_SEL: {
+        query: "SELECT * FROM ufn_report_invoice_summary_sel($year)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_INVOICE_DETAIL_SEL: {
+        query: "SELECT * FROM ufn_report_invoice_detail_sel($corpid, $year, $month)",
+        module: "",
+        protected: "SELECT"
+    },
 }
