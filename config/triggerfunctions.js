@@ -22,7 +22,10 @@ const executeQuery = async (query, bind = {}) => {
     return await sequelize.query(query, {
         type: QueryTypes.SELECT,
         bind
-    }).catch(err => getErrorSeq(err));
+    }).catch(err => {
+        console.log(err)
+        return getErrorSeq(err)
+    });
 }
 //no se puede usar bind y replace en el mismo query 
 exports.executesimpletransaction = async (method, data, permissions = false, replacements = undefined) => {
@@ -273,9 +276,9 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             return acc + `\nLEFT JOIN ${join_table} ${join_alias} ${join_on}`;
         }, "");
 
-        if (ALLCOLUMNS.some(x => x.type === "variable")) {
-            JOINNERS += `\nCROSS JOIN CAST(conversation.variablecontext as jsonb) as jo`
-        }
+        // if (ALLCOLUMNS.some(x => x.type === "variable")) {
+        //     JOINNERS += `\nCROSS JOIN CAST conversation.variablecontextjsonb as jo`
+        // }
 
         const columnValueUnique = filters.find(x => x.type_filter === "unique_value");
         
@@ -294,7 +297,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             if (item.type === "interval") {
                 selcol = `date_trunc('seconds', ${item.columnname})::text`;
             } else if (item.type === "variable") {
-                selcol = `jo->'${item.columnname}'->>'Value'`;
+                selcol = `conversation.variablecontextjsonb->'${item.columnname}'->>'Value'`;
             } else if (DATES.includes(item.type) && fromExport) {
                 selcol = `to_char(${item.columnname} + $offset * interval '1hour', 'YYYY-MM-DD HH24:MI:SS')`;
             }
@@ -305,7 +308,8 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 return acc + (index === 0 ? "" : ",") + `${selcol} as "${item.columnname.replace(".", "")}"`
             }
         }, "")
-        console.log(filters)
+        console.log('aa')
+        // console.log(filters)
         const FILTERS = filters.reduce((acc, { type, columnname, start, end, value }) => {
             if (DATES.includes(type)) {
                 return `${acc}\nand ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
@@ -316,7 +320,9 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 if (NUMBERS.includes(type)) {
                     return `${acc}\nand ${columnname} = ${value.includes(",") ? filter_array : value}`
                 } else if (type === "variable") {
-                    return `${acc}\nand (conversation.variablecontext::jsonb)->'${columnname}'->>'Value' ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
+                    return `${acc}\nand conversation.variablecontextjsonb->'${columnname}'->>'Value' ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
+                } else if (type === "boolean") {
+                    return `${acc}\nand ${columnname} = ${value}`
                 } else {
                     if (columnname === "conversation.tags") {
                         if (value.includes(",")) {
@@ -332,7 +338,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 return acc;
             }
         }, "")
-
+        
         let query = `
         select
             ${COLUMNESSELECT}
@@ -342,7 +348,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             ${TABLENAME}.corpid = $corpid and ${TABLENAME}.orgid = $orgid
             ${FILTERS}
         `;
-        console.log(query)
+        // console.log(query)
         const resultbd = await executeQuery(query, parameters);
 
         if (summaries.length > 0 && resultbd.length > 0) {
@@ -414,9 +420,9 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
             return acc + `\nLEFT JOIN ${join_table} ${join_alias} ${join_on}`;
         }, "");
 
-        if (ALLCOLUMNS.some(x => x.type === "variable")) {
-            JOINNERS += `\nCROSS JOIN CAST(conversation.variablecontext as jsonb) as jo`
-        }
+        // if (ALLCOLUMNS.some(x => x.type === "variable")) {
+        //     JOINNERS += `\nCROSS JOIN CASTconversation.variablecontextjsonb as jo`
+        // }
 
         const firstSelect = interval === "day" ?
             `to_char(${dataorigin}.createdate + $offset * INTERVAL '1hour', 'MM-DD') "interval"` : (interval === "month" ?
@@ -433,7 +439,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
                 coalescedefault = "'00:00:00'"
                 // selcol = `date_trunc('seconds', ${item.columnname})`;
             } else if (item.type === "variable") {
-                selcol = `jo->'${item.columnname}'->>'Value'`;
+                selcol = `conversation.variablecontextjsonb->'${item.columnname}'->>'Value'`;
             } else if (DATES.includes(item.type)) {
                 selcol = `to_char(${item.columnname} + $offset * interval '1hour', 'YYYY-MM-DD HH24:MI:SS')`;
             }
@@ -445,7 +451,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
                 if (coalescedefault === "'00:00:00'") {
                     return acc + `, date_trunc('seconds', sum(coalesce(${selcol}, ${coalescedefault})))::text total`
                 }
-                return acc + `, sum(coalesce(${sel0l}, ${coalescedefault})) total`
+                return acc + `, sum(coalesce(${selcol}, ${coalescedefault})) total`
             } else if (summarizationfunction === "count") {
                 return acc + `, count(coalesce(${selcol}::text, '')) total`
             } else if (summarizationfunction === "average") {
@@ -478,7 +484,9 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
                 if (NUMBERS.includes(type)) {
                     return `${acc}\nand ${columnname} = ${value.includes(",") ? filter_array : value}`
                 } else if (type === "variable") {
-                    return `${acc}\nand (conversation.variablecontext::jsonb)->'${columnname}'->>'Value' ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
+                    return `${acc}\nand conversation.variablecontextjsonb->'${columnname}'->>'Value' ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
+                } else if (type === "boolean") {
+                    return `${acc}\nand ${columnname} = ${value}`
                 } else {
                     if (columnname === "conversation.tags") {
                         if (value.includes(",")) {
@@ -506,7 +514,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
         GROUP BY 1${!!GROUP_BY ? "," : ""} ${GROUP_BY}
         ORDER BY 1 desc
         `;
-        console.log(query)
+        // console.log(query)
         const resultbd = await executeQuery(query, parameters);
 
         return resultbd;
@@ -526,8 +534,8 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
             ${REPLACESEL}
         from conversation co
         WHERE 
-            json_typeof(co.variablecontext::json) = 'object' 
-            and co.corpid = $corpid 
+            
+            co.corpid = $corpid 
             and co.orgid = $orgid
             ${REPLACEFILTERS}
         `;
@@ -593,12 +601,12 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
                         const filterCleaned = item.filter.trim();
                         if (filterCleaned.includes(",")) {
                             const listFilters = filterCleaned.split(",").map(x => `'${x.trim()}'`);
-                            whereQuery += ` and (co.variablecontext::jsonb)->'${item.key}'->>'Value' in (${listFilters}) `;
+                            whereQuery += ` and co.variablecontextjsonb->'${item.key}'->>'Value' in (${listFilters}) `;
                         }
                         else
-                            whereQuery += ` and (co.variablecontext::jsonb)->'${item.key}'->>'Value' = '${filterCleaned}'`;
+                            whereQuery += ` and co.variablecontextjsonb->'${item.key}'->>'Value' = '${filterCleaned}'`;
                     }
-                    return `${acc}, (co.variablecontext::jsonb)->'${item.key}'->>'Value' as "${item.key}"`
+                    return `${acc}, co.variablecontextjsonb->'${item.key}'->>'Value' as "${item.key}"`
                 }
 
             }, "");
