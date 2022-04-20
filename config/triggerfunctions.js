@@ -276,9 +276,9 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             return acc + `\nLEFT JOIN ${join_table} ${join_alias} ${join_on}`;
         }, "");
 
-        if (ALLCOLUMNS.some(x => x.type === "variable")) {
-            JOINNERS += `\nCROSS JOIN CAST(conversation.variablecontext as jsonb) as jo`
-        }
+        // if (ALLCOLUMNS.some(x => x.type === "variable")) {
+        //     JOINNERS += `\nCROSS JOIN CAST conversation.variablecontextjsonb as jo`
+        // }
 
         const columnValueUnique = filters.find(x => x.type_filter === "unique_value");
         
@@ -297,7 +297,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             if (item.type === "interval") {
                 selcol = `date_trunc('seconds', ${item.columnname})::text`;
             } else if (item.type === "variable") {
-                selcol = `jo->'${item.columnname}'->>'Value'`;
+                selcol = `conversation.variablecontextjsonb->'${item.columnname}'->>'Value'`;
             } else if (DATES.includes(item.type) && fromExport) {
                 selcol = `to_char(${item.columnname} + $offset * interval '1hour', 'YYYY-MM-DD HH24:MI:SS')`;
             }
@@ -320,7 +320,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 if (NUMBERS.includes(type)) {
                     return `${acc}\nand ${columnname} = ${value.includes(",") ? filter_array : value}`
                 } else if (type === "variable") {
-                    return `${acc}\nand (conversation.variablecontext::jsonb)->'${columnname}'->>'Value' ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
+                    return `${acc}\nand conversation.variablecontextjsonb->'${columnname}'->>'Value' ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
                 } else if (type === "boolean") {
                     return `${acc}\nand ${columnname} = ${value}`
                 } else {
@@ -420,9 +420,9 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
             return acc + `\nLEFT JOIN ${join_table} ${join_alias} ${join_on}`;
         }, "");
 
-        if (ALLCOLUMNS.some(x => x.type === "variable")) {
-            JOINNERS += `\nCROSS JOIN CAST(conversation.variablecontext as jsonb) as jo`
-        }
+        // if (ALLCOLUMNS.some(x => x.type === "variable")) {
+        //     JOINNERS += `\nCROSS JOIN CASTconversation.variablecontextjsonb as jo`
+        // }
 
         const firstSelect = interval === "day" ?
             `to_char(${dataorigin}.createdate + $offset * INTERVAL '1hour', 'MM-DD') "interval"` : (interval === "month" ?
@@ -439,7 +439,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
                 coalescedefault = "'00:00:00'"
                 // selcol = `date_trunc('seconds', ${item.columnname})`;
             } else if (item.type === "variable") {
-                selcol = `jo->'${item.columnname}'->>'Value'`;
+                selcol = `conversation.variablecontextjsonb->'${item.columnname}'->>'Value'`;
             } else if (DATES.includes(item.type)) {
                 selcol = `to_char(${item.columnname} + $offset * interval '1hour', 'YYYY-MM-DD HH24:MI:SS')`;
             }
@@ -484,7 +484,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
                 if (NUMBERS.includes(type)) {
                     return `${acc}\nand ${columnname} = ${value.includes(",") ? filter_array : value}`
                 } else if (type === "variable") {
-                    return `${acc}\nand (conversation.variablecontext::jsonb)->'${columnname}'->>'Value' ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
+                    return `${acc}\nand conversation.variablecontextjsonb->'${columnname}'->>'Value' ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
                 } else if (type === "boolean") {
                     return `${acc}\nand ${columnname} = ${value}`
                 } else {
@@ -534,8 +534,8 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
             ${REPLACESEL}
         from conversation co
         WHERE 
-            json_typeof(co.variablecontext::json) = 'object' 
-            and co.corpid = $corpid 
+            
+            co.corpid = $corpid 
             and co.orgid = $orgid
             ${REPLACEFILTERS}
         `;
@@ -601,12 +601,12 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
                         const filterCleaned = item.filter.trim();
                         if (filterCleaned.includes(",")) {
                             const listFilters = filterCleaned.split(",").map(x => `'${x.trim()}'`);
-                            whereQuery += ` and (co.variablecontext::jsonb)->'${item.key}'->>'Value' in (${listFilters}) `;
+                            whereQuery += ` and co.variablecontextjsonb->'${item.key}'->>'Value' in (${listFilters}) `;
                         }
                         else
-                            whereQuery += ` and (co.variablecontext::jsonb)->'${item.key}'->>'Value' = '${filterCleaned}'`;
+                            whereQuery += ` and co.variablecontextjsonb->'${item.key}'->>'Value' = '${filterCleaned}'`;
                     }
-                    return `${acc}, (co.variablecontext::jsonb)->'${item.key}'->>'Value' as "${item.key}"`
+                    return `${acc}, co.variablecontextjsonb->'${item.key}'->>'Value' as "${item.key}"`
                 }
 
             }, "");
