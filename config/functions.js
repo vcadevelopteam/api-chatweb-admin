@@ -2119,12 +2119,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_INVOICE_SUMMARY_SEL: {
-        query: "SELECT * FROM ufn_report_invoice_summary_sel($year)",
+        query: "SELECT * FROM ufn_report_invoice_summary_sel($year, $currency)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_INVOICE_DETAIL_SEL: {
-        query: "SELECT * FROM ufn_report_invoice_detail_sel($corpid, $year, $month)",
+        query: "SELECT * FROM ufn_report_invoice_detail_sel($corpid, $year, $month, $currency)",
         module: "",
         protected: "SELECT"
     },
