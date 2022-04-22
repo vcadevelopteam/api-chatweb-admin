@@ -589,6 +589,11 @@ module.exports = {
         module: "", //supervisor and inbox
         protected: "INSERT"
     },
+    UFN_CONVERSATIONCLASSIFICATION_SEL2: {
+        query: "SELECT * FROM ufn_conversationclassification_sel2($corpid, $orgid, $conversationid)",
+        module: "", //supervisor and inbox
+        protected: "SELECT"
+    },
     UFN_CONVERSATION_REASSIGNTICKET: {
         query: "SELECT * FROM ufn_conversation_reassignticket($conversationid, $newuserid, $userid, $username, $usergroup, $comment, $isanswered)",
         module: "", //supervisor and inbox
