@@ -150,27 +150,31 @@ exports.Collection = async (req, res) => {
             const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
 
             const { communicationchannelid, messagetemplateid, notificationtype, messagetemplatename, communicationchanneltype } = resultCalendar[0]
-            const sendmessage = {
-                corpid: parameters.corpid,
-                orgid: parameters.orgid,
-                username: parameters.username,
-                communicationchannelid: communicationchannelid,
-                hsmtemplateid: messagetemplateid,
-                type: notificationtype === "EMAIL" ? "MAIL" : "HSM",
-                shippingreason: "BOOKING",
-                hsmtemplatename: messagetemplatename,
-                communicationchanneltype: communicationchanneltype,
-                platformtype: communicationchanneltype,
-                userid: 0,
-                listmembers: [{
-                    phone: parameters.phone,
-                    firstname: parameters.name,
-                    email: parameters.email,
-                    lastname: "",
-                    parameters: parameters.parameters
-                }]
+            
+            if (notificationtype === "EMAIL") {
+                const sendmessage = {
+                    corpid: parameters.corpid,
+                    orgid: parameters.orgid,
+                    username: parameters.username,
+                    communicationchannelid: communicationchannelid,
+                    hsmtemplateid: messagetemplateid,
+                    type: "EMAIL",
+                    shippingreason: "BOOKING",
+                    hsmtemplatename: messagetemplatename,
+                    communicationchanneltype: communicationchanneltype,
+                    platformtype: communicationchanneltype,
+                    userid: 0,
+                    listmembers: [{
+                        phone: parameters.phone,
+                        firstname: parameters.name,
+                        email: parameters.email,
+                        lastname: "",
+                        parameters: parameters.parameters
+                    }]
+                }
+                await send(sendmessage);
             }
-            await send(sendmessage);
+
 
             if (!!parameters.conversationid && !!parameters.personid) {
                 const dataServices = {
