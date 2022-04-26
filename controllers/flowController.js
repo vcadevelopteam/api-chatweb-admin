@@ -63,7 +63,7 @@ exports.TestRequest = async (req, res) => {
     }
     catch (err) {
         if (!!err.response) {
-            return res.json({status: err.response.status, data: err.response.data}); 
+            return res.json(err.response); 
         }
         else {
             return res.json({error: err.message}); 
