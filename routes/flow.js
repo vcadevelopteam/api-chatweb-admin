@@ -7,4 +7,9 @@ router.post("/location",
     flowController.Location
 )
 
+router.post("/testrequest",
+    auth,
+    flowController.TestRequest
+)
+
 module.exports = router;
