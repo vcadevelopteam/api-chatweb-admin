@@ -1068,6 +1068,42 @@ exports.insertChannel = async (request, result) => {
                     });
                 }
 
+            case 'INFOBIPEMAIL':
+            case 'INFOBIPSMS':
+                if (service) {
+                    var serviceCredentials = {
+                        apiKey: service.apikey,
+                        callbackEndpoint: `${hookEndpoint}infobip/${request.body.type === "INFOBIPEMAIL" ? "mail" : ""}webhookasync`,
+                        callbackType: "application/json",
+                        endpoint: service.url,
+                        number: service.emittername,
+                    };
+
+                    if (request.body.type === "INFOBIPEMAIL") {
+                        serviceCredentials.validateMail = false;
+                    }
+
+                    parameters.communicationchannelowner = service.emittername;
+                    parameters.communicationchannelsite = service.emittername;
+                    parameters.integrationid = service.emittername;
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.type = (request.body.type === 'INFOBIPEMAIL' ? 'MAII' : 'SMSI');
+
+                    const transactionCreateInfobip = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateInfobip instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionCreateInfobip.code,
+                            success: false
+                        });
+                    }
+                }
+
             case 'TELEGRAM':
                 const requestCreateTelegram = await axios({
                     data: {
