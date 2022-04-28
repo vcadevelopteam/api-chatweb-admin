@@ -763,6 +763,33 @@ exports.createSubscription = async (request, result) => {
                                 channelParametersArray.push(channelParameters);
                                 channelServiceArray.push(channelService);
                                 break;
+
+                            case 'INFOBIPEMAIL':
+                            case 'INFOBIPSMS':
+                                if (channelService) {
+                                    var serviceCredentials = {
+                                        apiKey: channelService.apikey,
+                                        callbackEndpoint: `${hookEndpoint}infobip/${channel.type === "INFOBIPEMAIL" ? "mail" : ""}webhookasync`,
+                                        callbackType: "application/json",
+                                        endpoint: channelService.url,
+                                        number: channelService.emittername,
+                                    };
+                
+                                    if (channel.type === "INFOBIPEMAIL") {
+                                        serviceCredentials.validateMail = false;
+                                    }
+
+                                    channelParameters.communicationchannelowner = channelService.emittername;
+                                    channelParameters.communicationchannelsite = channelService.emittername;
+                                    channelParameters.integrationid = channelService.emittername;
+                                    channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
+                                    channelParameters.type = (channel.type === 'INFOBIPEMAIL' ? 'MAII' : 'SMSI');
+
+                                    channelMethodArray.push(channelMethod);
+                                    channelParametersArray.push(channelParameters);
+                                    channelServiceArray.push(channelService);
+                                }
+                                break;
                         }
                     }
                 }
