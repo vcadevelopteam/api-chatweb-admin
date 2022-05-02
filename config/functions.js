@@ -9,7 +9,7 @@ module.exports = {
         INNER JOIN corp corp ON corp.corpid = ous.corpid 
         LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid 
         INNER JOIN role role ON role.roleid = ous.roleid 
-        LEFT JOIN communicationchannel cc ON cc.corpid = ous.corpid AND cc.orgid = ous.orgid AND cc.type = 'VOXI' AND status = 'ACTIVO'
+        LEFT JOIN communicationchannel cc ON cc.corpid = ous.corpid AND cc.orgid = ous.orgid AND cc.type = 'VOXI' AND cc.status = 'ACTIVO'
         WHERE us.usr = $usr AND ous.bydefault 
         AND ous.status <> 'ELIMINADO' 
         limit 1`,
