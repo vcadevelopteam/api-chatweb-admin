@@ -1493,6 +1493,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    QUERY_GET_VOXIMPLANT_VALIDATION: {
+        query: "SELECT cc.corpid, cc.orgid, cc.communicationchannelsite, cc.communicationchannelowner FROM communicationchannel cc JOIN org ON org.corpid = cc.corpid AND org.orgid = cc.orgid WHERE cc.communicationchannelid = ANY(string_to_array($channels,',')::BIGINT[]) AND cc.type = 'VOXI';",
+        module: "",
+        protected: "SELECT"
+    },
     QUERY_GET_SMS_DEFAULT_BY_ORG: {
         query: "SELECT type, communicationchannelid FROM communicationchannel where corpid = $corpid and orgid = $orgid and description = 'SMSINTERNAL' and type = 'SMSI';",
         module: "",

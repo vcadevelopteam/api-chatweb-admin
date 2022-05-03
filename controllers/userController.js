@@ -4,6 +4,7 @@ require('dotenv').config();
 const bcryptjs = require("bcryptjs");
 const { setSessionParameters } = require('../config/helpers');
 const { errors, getErrorCode } = require('../config/helpers');
+const voximplant = require("../config/voximplantfunctions");
 
 exports.updateInformation = async (req, res) => {
     const { data: parameters } = req.body;
@@ -81,6 +82,47 @@ exports.sendMailPassword = async (req, res) => {
     })
 
     const result = await executeTransaction(header, detail, req.user.menu || {});
+
+    // VOXIMPLANT //
+    const APPLICATION_ID = 10451952;
+    const VOXI_PASSWORD = 'Laraigo2022$CDFD';
+    for (let i = 0; i < detail.length; i++) {
+        let bind = true;
+        let voxiuser = undefined;
+        const voxidata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_VALIDATION", {channels: detail[i].parameters.channels});
+        if (voxidata instanceof Array && voxidata.length > 0) {
+            voxiuser = await voximplant.addUser({
+                applicationid: APPLICATION_ID,
+                username: `user${header.parameters.userid}.${detail[i].parameters.orgid}`,
+                displayname: header.parameters.usr,
+                password: VOXI_PASSWORD
+            })
+        }
+        else {
+            bind = false;
+        }
+        if (!voxiuser) {
+            voxiuser = await voximplant.getUser({
+                applicationid: APPLICATION_ID,
+                username: `user${header.parameters.userid}.${detail[i].parameters.orgid}`
+            })
+        }
+        if (voxiuser) {
+            console.log(voxiuser.user_id);
+            let voxiqueues = await voximplant.getQueues({applicationid: APPLICATION_ID})
+            console.log(voxiqueues)
+            if (voxiqueues.count > 0) {
+                await voximplant.bindUserToQueue({
+                    applicationid: APPLICATION_ID,
+                    queuename: voxiqueues.result[0].acd_queue_name,
+                    userid: voxiuser.user_id,
+                    bind
+                })
+            }
+        }
+    }
+    // VOXIMPLANT //
+
 
     if (parameters.sendMailPassword && result.success === true) {
         parameters.namespace = parameters.language === "es" ? "TEMPLATESENDPASSWORD-SPANISH" : "TEMPLATESENDPASSWORD-ENGLISH";

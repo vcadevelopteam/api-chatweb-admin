@@ -42,6 +42,7 @@ app.use('/api/migrator', require('./routes/migrator'));
 app.use('/api/payment', require('./routes/payment'));
 app.use('/api/billing', require('./routes/billing'));
 app.use('/api/gmaps', require('./routes/gmaps'));
+app.use('/api/voximplant', require('./routes/voximplant'));
 
 // Definir la pagina principal
 app.get('/', (req, res) => {
