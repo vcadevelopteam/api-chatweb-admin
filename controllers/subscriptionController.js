@@ -56,12 +56,11 @@ exports.activateUser = async (request, result) => {
                 requestCode = "";
                 requestMessage = "";
                 requestStatus = 200;
-                
+
                 if (queryActivateUser.length > 0) {
                     requestSuccess = true;
                 }
-                else
-                {
+                else {
                     requestSuccess = false;
                 }
             }
@@ -229,7 +228,7 @@ exports.createSubscription = async (request, result) => {
 
         if (request.body) {
             var { card = {}, channellist = [], method, parameters = {} } = request.body;
-        
+
             var channelMethodArray = [];
             var channelParametersArray = [];
             var channelServiceArray = [];
@@ -340,7 +339,7 @@ exports.createSubscription = async (request, result) => {
                         channelParameters.schedule = null;
                         channelParameters.status = "PENDIENTE";
                         channelParameters.updintegration = null;
-    
+
                         requestCode = channel.type;
 
                         switch (channel.type) {
@@ -438,7 +437,7 @@ exports.createSubscription = async (request, result) => {
                                                         channelParameters.integrationid = requestChatwebIntegration.data.id;
                                                         channelParameters.servicecredentials = JSON.stringify(channelService);
                                                         channelParameters.type = "CHAZ";
-                
+
                                                         channelMethodArray.push(channelMethod);
                                                         channelParametersArray.push(channelParameters);
                                                         channelServiceArray.push(channelService);
@@ -489,33 +488,33 @@ exports.createSubscription = async (request, result) => {
                                     var channelLinkService = null;
                                     var channelType = null;
                                     var serviceType = null;
-    
+
                                     switch (channel.type) {
                                         case "FACEBOOK":
                                             channelLinkService = "WALLADD";
                                             channelType = "FBWA";
                                             serviceType = "WALL";
                                             break;
-    
+
                                         case "INSTAGRAM":
                                             channelLinkService = "INSTAGRAMADD";
                                             channelType = "INST";
                                             serviceType = "INSTAGRAM";
                                             break;
-    
+
                                         case "INSTAMESSENGER":
                                             channelLinkService = "INSTAGRAMADD";
                                             channelType = "INDM";
                                             serviceType = "INSTAGRAM";
                                             break;
-    
+
                                         case "MESSENGER":
                                             channelLinkService = "MESSENGERADD";
                                             channelType = "FBDM";
                                             serviceType = "MESSENGER";
                                             break;
                                     }
-    
+
                                     if (channel.type === "INSTAGRAM" || channel.type === "INSTAMESSENGER") {
                                         const requestInstagramBusiness = await axios({
                                             data: {
@@ -526,7 +525,7 @@ exports.createSubscription = async (request, result) => {
                                             method: "post",
                                             url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
                                         });
-                                        
+
                                         if (requestInstagramBusiness.data.success) {
                                             businessId = requestInstagramBusiness.data.businessId;
                                         }
@@ -536,7 +535,7 @@ exports.createSubscription = async (request, result) => {
                                             break;
                                         }
                                     }
-    
+
                                     const requestFacebookLink = await axios({
                                         data: {
                                             accessToken: channelService.accesstoken,
@@ -546,7 +545,7 @@ exports.createSubscription = async (request, result) => {
                                         method: "post",
                                         url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
                                     });
-    
+
                                     if (requestFacebookLink.data.success) {
                                         var serviceCredentials = {
                                             accessToken: channelService.accesstoken,
@@ -554,17 +553,17 @@ exports.createSubscription = async (request, result) => {
                                             serviceType: serviceType,
                                             siteId: channelService.siteid,
                                         };
-    
+
                                         if (typeof businessId !== "undefined" && businessId) {
                                             channelParameters.communicationchannelowner = channelService.siteid;
                                             channelParameters.communicationchannelsite = businessId;
-    
+
                                             serviceCredentials.siteId = businessId;
                                         }
-    
+
                                         channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
                                         channelParameters.type = channelType;
-    
+
                                         channelMethodArray.push(channelMethod);
                                         channelParametersArray.push(channelParameters);
                                         channelServiceArray.push(channelService);
@@ -607,7 +606,7 @@ exports.createSubscription = async (request, result) => {
                                     channelParameters.integrationid = requestSmoochLink.data.integrationId;
                                     channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
                                     channelParameters.type = (request.body.type === "SMOOCHANDROID" ? "ANDR" : "APPL");
-                
+
                                     channelMethodArray.push(channelMethod);
                                     channelParametersArray.push(channelParameters);
                                     channelServiceArray.push(channelService);
@@ -782,7 +781,7 @@ exports.createSubscription = async (request, result) => {
             if (typeof parameters.country === "undefined" || !parameters.country) {
                 parameters.country = null;
             }
-    
+
             if (typeof parameters.currency === "undefined" || !parameters.currency) {
                 parameters.currency = null;
             }
@@ -916,7 +915,7 @@ exports.createSubscription = async (request, result) => {
                                             method: "post",
                                             url: `${bridgeEndpoint}processscheduler/sendmail`,
                                         });
-            
+
                                         if (!requestMailSend.data.success) {
                                             requestMessage = "error_subscription_alert_failure";
 
@@ -1038,7 +1037,7 @@ exports.createSubscription = async (request, result) => {
                             alertBody = alertBody.split("{{organizationname}}").join(parameters.organizationname);
                             alertBody = alertBody.split("{{paymentplan}}").join(parameters.paymentplan);
                             alertBody = alertBody.split("{{username}}").join(parameters.username);
-                            
+
                             alertSubject = alertSubject.split("{{address}}").join(parameters.fiscaladdress);
                             alertSubject = alertSubject.split("{{channeldata}}").join(channelData);
                             alertSubject = alertSubject.split("{{country}}").join(parameters.country);
@@ -1176,7 +1175,7 @@ exports.getContract = async (request, result) => {
             const { parameters = {} } = request.body;
 
             const queryContractGet = await triggerfunctions.executesimpletransaction("GET_CONTRACT", parameters);
-            
+
             if (queryContractGet instanceof Array) {
                 if (queryContractGet.length > 0) {
                     requestCode = "";
@@ -1239,7 +1238,7 @@ exports.getPageList = async (request, result) => {
                 method: "post",
                 url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
             });
-    
+
             if (requestFacebookPages.data.success) {
                 requestCode = "";
                 requestData = requestFacebookPages.data.pageData;
@@ -1344,7 +1343,7 @@ exports.recoverPassword = async (request, result) => {
                                 alertBody = alertBody.split("{{link}}").join(`${laraigoEndpoint}recoverpassword/${encodeURIComponent(linkCode)}`);
                                 alertBody = alertBody.split("{{userid}}").join(queryUserGet[0].userid);
                                 alertBody = alertBody.split("{{usr}}").join(queryUserGet[0].usr);
-                              
+
                                 alertSubject = alertSubject.split("{{docnum}}").join(queryUserGet[0].docnum);
                                 alertSubject = alertSubject.split("{{doctype}}").join(queryUserGet[0].doctype);
                                 alertSubject = alertSubject.split("{{email}}").join(queryUserGet[0].email);
@@ -1432,7 +1431,7 @@ exports.validateChannels = async (request, result) => {
 
         if (request.body) {
             var { channellist = [] } = request.body;
-        
+
             var channelMethodArray = [];
             var channelParametersArray = [];
             var channelServiceArray = [];
@@ -1463,7 +1462,7 @@ exports.validateChannels = async (request, result) => {
                         channelParameters.schedule = null;
                         channelParameters.status = "PENDIENTE";
                         channelParameters.updintegration = null;
-    
+
                         requestCode = channel.type;
 
                         switch (channel.type) {
@@ -1476,33 +1475,33 @@ exports.validateChannels = async (request, result) => {
                                     var channelLinkService = null;
                                     var channelType = null;
                                     var serviceType = null;
-    
+
                                     switch (channel.type) {
                                         case "FACEBOOK":
                                             channelLinkService = "WALLADD";
                                             channelType = "FBWA";
                                             serviceType = "WALL";
                                             break;
-    
+
                                         case "INSTAGRAM":
                                             channelLinkService = "INSTAGRAMADD";
                                             channelType = "INST";
                                             serviceType = "INSTAGRAM";
                                             break;
-    
+
                                         case "INSTAMESSENGER":
                                             channelLinkService = "INSTAGRAMADD";
                                             channelType = "INDM";
                                             serviceType = "INSTAGRAM";
                                             break;
-    
+
                                         case "MESSENGER":
                                             channelLinkService = "MESSENGERADD";
                                             channelType = "FBDM";
                                             serviceType = "MESSENGER";
                                             break;
                                     }
-    
+
                                     if (channel.type === "INSTAGRAM" || channel.type === "INSTAMESSENGER") {
                                         const requestInstagramBusiness = await axios({
                                             data: {
@@ -1513,7 +1512,7 @@ exports.validateChannels = async (request, result) => {
                                             method: "post",
                                             url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
                                         });
-                                        
+
                                         if (requestInstagramBusiness.data.success) {
                                             businessId = requestInstagramBusiness.data.businessId;
                                         }
@@ -1523,7 +1522,7 @@ exports.validateChannels = async (request, result) => {
                                             break;
                                         }
                                     }
-    
+
                                     const requestFacebookLink = await axios({
                                         data: {
                                             accessToken: channelService.accesstoken,
@@ -1533,7 +1532,7 @@ exports.validateChannels = async (request, result) => {
                                         method: "post",
                                         url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
                                     });
-    
+
                                     if (requestFacebookLink.data.success) {
                                         var serviceCredentials = {
                                             accessToken: channelService.accesstoken,
@@ -1541,17 +1540,17 @@ exports.validateChannels = async (request, result) => {
                                             serviceType: serviceType,
                                             siteId: channelService.siteid,
                                         };
-    
+
                                         if (typeof businessId !== "undefined" && businessId) {
                                             channelParameters.communicationchannelowner = channelService.siteid;
                                             channelParameters.communicationchannelsite = businessId;
-    
+
                                             serviceCredentials.siteId = businessId;
                                         }
-    
+
                                         channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
                                         channelParameters.type = channelType;
-    
+
                                         channelMethodArray.push(channelMethod);
                                         channelParametersArray.push(channelParameters);
                                         channelServiceArray.push(channelService);
@@ -1764,7 +1763,7 @@ exports.validateUserId = async (request, result) => {
 
             parameters.password = await bcryptjs.hash(parameters.password, await bcryptjs.genSalt(10));
             parameters.userid = request.user.userid;
-            
+
             const queryUserSel = await triggerfunctions.executesimpletransaction(method, parameters);
 
             if (queryUserSel instanceof Array) {
