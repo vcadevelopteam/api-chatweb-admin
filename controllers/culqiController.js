@@ -2767,7 +2767,7 @@ exports.emitInvoice = async (req, res) => {
                             if (invoicecorrelative) {
                                 try {
                                     var expirationDate;
-                                    
+
                                     if (invoice.credittype) {
                                         var days = invoice.credittype.split("_")[1];
                                         if (days === "alcontado") {
