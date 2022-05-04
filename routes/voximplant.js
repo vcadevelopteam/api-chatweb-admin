@@ -18,6 +18,9 @@ router.post("/getUsers",
 router.post("/addUser",
     voximplantController.addUser
 )
+router.post("/delUser",
+    voximplantController.delUser
+)
 router.post("/getQueues",
     voximplantController.getQueues
 )

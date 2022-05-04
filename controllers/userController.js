@@ -109,14 +109,22 @@ exports.sendMailPassword = async (req, res) => {
         }
         if (voxiuser) {
             console.log(voxiuser.user_id);
-            let voxiqueues = await voximplant.getQueues({application_id: APPLICATION_ID})
-            console.log(voxiqueues)
-            if (voxiqueues.count > 0) {
-                await voximplant.bindUserToQueue({
+            if (bind) {
+                let voxiqueues = await voximplant.getQueues({application_id: APPLICATION_ID})
+                console.log(voxiqueues)
+                if (voxiqueues.count > 0) {
+                    await voximplant.bindUserToQueue({
+                        application_id: APPLICATION_ID,
+                        user_id: voxiuser.user_id,
+                        acd_queue_name: voxiqueues.result[0].acd_queue_name,
+                        bind
+                    })
+                }
+            }
+            else {
+                await voximplant.delUser({
                     application_id: APPLICATION_ID,
-                    user_id: voxiuser.user_id,
-                    acd_queue_name: voxiqueues.result[0].acd_queue_name,
-                    bind
+                    user_name: `user${header.parameters.userid}.${detail[i].parameters.orgid}`
                 })
             }
         }

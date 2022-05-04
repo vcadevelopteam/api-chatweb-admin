@@ -85,6 +85,23 @@ exports.addUser = async (request, result) => {
     }
 }
 
+exports.delUser = async (request, result) => {
+    try {
+        let requestResult = await voximplant.delUser(request.body)
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
+    }
+    catch (err) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: err.message,
+            success: false,
+        })
+    }
+}
+
 exports.getQueues = async (request, result) => {
     try {
         let requestResult = await voximplant.getQueues(request.body)

@@ -170,6 +170,28 @@ exports.addUser = async ({application_id, user_name, user_display_name, user_pas
     }
 }
 
+exports.delUser = async ({application_id, user_name}) => {
+    try {
+        const form = new FormData();
+        form.append('account_id', VOXIMPLANT_ACCOUNT_ID);
+        form.append('application_id', application_id);
+        form.append('user_name', user_name);
+        const result = await voximplantRequest('DelUser', form);
+        if (result.data.error) {
+            console.log(result.data.error);
+            return {error: result.data.error};
+        }
+        return result.data;
+        // {
+        //     "result": 1
+        // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
 exports.getQueues = async ({application_id}) => {
     try {
         const form = new FormData();
