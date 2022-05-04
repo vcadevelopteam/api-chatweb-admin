@@ -2767,7 +2767,7 @@ exports.emitInvoice = async (req, res) => {
                             if (invoicecorrelative) {
                                 try {
                                     var expirationDate;
-
+                                    
                                     if (invoice.credittype) {
                                         var days = invoice.credittype.split("_")[1];
                                         if (days === "alcontado") {
@@ -2825,6 +2825,8 @@ exports.emitInvoice = async (req, res) => {
                                         invoicedata.MontoTotalInafecto = corp.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
                                         invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
                                     }
+
+                                    var calcdetraction = false;
 
                                     if (corp.billbyorg) {
                                         if (org.sunatcountry === 'PE') {
