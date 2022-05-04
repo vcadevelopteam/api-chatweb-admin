@@ -21,7 +21,7 @@ const removeAccent = (text) => {
 const getUserProfile = async (userid) => {
     const query = "SELECT firstname, lastname, email, phone, country FROM usr WHERE userid = $userid";
 
-    const result = await sequelize.query(query, { type: QueryTypes.SELECT, bind: { userid }}).catch(err => getErrorSeq(err));
+    const result = await sequelize.query(query, { type: QueryTypes.SELECT, bind: { userid } }).catch(err => getErrorSeq(err));
 
     if (result instanceof Array) {
         if (result.length > 0) {
@@ -188,18 +188,18 @@ const getLastExchange = async () => {
                 method: 'get',
                 url: `${exchangeEndpoint}${currentDate.toISOString().split('T')[0]}`
             });
-    
+
             if (requestExchange.data.venta) {
                 exchangeRate = requestExchange.data.venta;
             }
             else {
-                currentDate = new Date(currentDate.setDate(currentDate.getDate()-1));
+                currentDate = new Date(currentDate.setDate(currentDate.getDate() - 1));
             }
         }
         catch {
-            currentDate = new Date(currentDate.setDate(currentDate.getDate()-1));
+            currentDate = new Date(currentDate.setDate(currentDate.getDate() - 1));
         }
-        
+
         maximumretry++;
     }
 
@@ -254,7 +254,7 @@ const invoiceSunat = async (corpid, orgid, invoiceid, status, error, qrcode, has
         detractionaccount: detractionaccount,
         invoicedate: invoicedate,
     }
-    
+
     const result = await triggerfunctions.executesimpletransaction(query, bind);
 
     if (result instanceof Array) {
@@ -287,7 +287,7 @@ const createCharge = async (userprofile, settings, token, metadata, privatekey) 
             phone_number: (userprofile.phone ? userprofile.phone.replace(/[^0-9]/g, '') : '51999999999').slice(0, 15),
         },
     }
-    
+
     return await culqi.charges.createCharge(culqiBody);
 }
 
@@ -406,7 +406,7 @@ const createInvoiceDetail = async (corpid, orgid, invoiceid, description, status
         netamount: netamount,
         username: username,
     }
-    
+
     const result = await triggerfunctions.executesimpletransaction(query, bind);
 
     if (result instanceof Array) {
@@ -436,7 +436,7 @@ const createBalanceData = async (corpid, orgid, communicationchannelid, descript
         transactionuser: transactionuser,
         username: username,
     }
-    
+
     const result = await triggerfunctions.executesimpletransaction(query, bind);
 
     if (result instanceof Array) {
@@ -455,7 +455,7 @@ const deleteInvoiceDetail = async (corpid, orgid, invoiceid) => {
         orgid: orgid,
         invoiceid: invoiceid
     }
-    
+
     const result = await triggerfunctions.executesimpletransaction(query, bind);
 
     if (result instanceof Array) {
@@ -477,7 +477,7 @@ const changePaymentInvoice = async (corpid, orgid, invoiceid, status, paymentnot
         paymentcommentary: paymentcommentary,
         username, username,
     }
-    
+
     const result = await triggerfunctions.executesimpletransaction(query, bind);
 
     if (result instanceof Array) {
@@ -496,7 +496,7 @@ const changeInvoiceStatus = async (corpid, orgid, invoiceid, status, username) =
         status: status,
         username, username,
     }
-    
+
     const result = await triggerfunctions.executesimpletransaction(query, bind);
 
     if (result instanceof Array) {
@@ -515,7 +515,7 @@ const changeBalanceInvoice = async (corpid, orgid, balanceid, invoiceid, usernam
         invoiceid: invoiceid,
         username, username,
     }
-    
+
     const result = await triggerfunctions.executesimpletransaction(query, bind);
 
     if (result instanceof Array) {
@@ -534,7 +534,7 @@ exports.getToken = async (req, res) => {
         });
 
         const tk = await culqi.tokens.getToken({
-            id: token.id, 
+            id: token.id,
         });
 
         return res.json({ error: false, success: true, data: tk });
@@ -568,7 +568,7 @@ exports.createOrder = async (req, res) => {
                     email: userprofile.email,
                     phone_number: userprofile.phone,
                 },
-                expiration_date: Math.trunc(new Date().setMonth(new Date().getMonth()+2)/1000)
+                expiration_date: Math.trunc(new Date().setMonth(new Date().getMonth() + 2) / 1000)
             });
 
             const query = "UFN_INVOICE_ORDER";
@@ -592,8 +592,7 @@ exports.createOrder = async (req, res) => {
                         }
                     });
                 }
-                else
-                {
+                else {
                     return result.json({
                         success: false,
                     });
@@ -645,8 +644,7 @@ exports.deleteOrder = async (req, res) => {
                         }
                     });
                 }
-                else
-                {
+                else {
                     return result.json({
                         success: false,
                     });
@@ -717,7 +715,7 @@ exports.charge = async (req, res) => {
                     error: false,
                     success: true,
                     code: charge.outcome.code,
-                    message: charge.outcome.user_message ,
+                    message: charge.outcome.user_message,
                     data: {
                         object: charge.object,
                         id: charge.id,
@@ -766,7 +764,7 @@ exports.refundInvoice = async (req, res) => {
                     amount: invoice.totalamount * 100,
                     charge_id: invoice.chargetoken,
                     reason: "solicitud_comprador",
-                    
+
                 });
 
                 if (refund.object === 'error') {
@@ -838,7 +836,7 @@ exports.refund = async (req, res) => {
                     charge_id: charge.chargetoken,
                     reason: "solicitud_comprador"
                 });
-                
+
                 if (refund.object === 'error') {
                     return res.status(400).json({
                         error: true,
@@ -916,11 +914,11 @@ exports.chargeInvoice = async (req, res) => {
                                 if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
                                     correctcorrelative = true;
                                 }
-        
+
                                 if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
                                     correctcorrelative = true;
                                 }
-        
+
                                 if (correctcorrelative) {
                                     proceedpayment = true;
                                 }
@@ -941,11 +939,11 @@ exports.chargeInvoice = async (req, res) => {
                             if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
                                 correctcorrelative = true;
                             }
-                        
+
                             if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
                                 correctcorrelative = true;
                             }
-        
+
                             if (correctcorrelative) {
                                 proceedpayment = true;
                             }
@@ -957,15 +955,15 @@ exports.chargeInvoice = async (req, res) => {
                             return res.status(403).json({ error: true, success: false, code: '', message: 'Corporation missing parameters' });
                         }
                     }
-        
+
                     if (proceedpayment) {
                         const invoicedetail = await getInvoiceDetail(corpid, orgid, userid, invoiceid);
-        
+
                         if (invoicedetail) {
                             if (invoice.invoicestatus === 'DRAFT' && invoice.paymentstatus === 'PENDING' && invoice.currency === settings.currency && (((Math.round((invoice.totalamount * 100 + Number.EPSILON) * 100) / 100) === settings.amount) || override)) {
                                 const appsetting = await getAppSetting();
                                 const userprofile = await getUserProfile(userid);
-                                
+
                                 if (userprofile && appsetting) {
                                     metadata.corpid = (corpid || '');
                                     metadata.corporation = removeAccent(corp.description || '');
@@ -978,7 +976,7 @@ exports.chargeInvoice = async (req, res) => {
                                     metadata.emissiondate = (new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0] || '');
                                     metadata.user = removeAccent(usr || '');
                                     metadata.reference = removeAccent(invoice.description || '');
-                                    
+
                                     var successPay = false;
 
                                     if (iscard) {
@@ -1023,7 +1021,7 @@ exports.chargeInvoice = async (req, res) => {
                                                 tokenjson: null,
                                                 type: "REGISTEREDCARD",
                                             }
-        
+
                                             const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
 
                                             const invoicequery = "UFN_INVOICE_PAYMENT";
@@ -1041,7 +1039,7 @@ exports.chargeInvoice = async (req, res) => {
                                                 tokenjson: null,
                                                 culqiamount: (settings.amount / 100)
                                             }
-            
+
                                             const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
 
                                             successPay = true;
@@ -1085,7 +1083,7 @@ exports.chargeInvoice = async (req, res) => {
                                                 tokenjson: token,
                                                 type: charge.object
                                             }
-        
+
                                             const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
 
                                             const invoicequery = "UFN_INVOICE_PAYMENT";
@@ -1103,7 +1101,7 @@ exports.chargeInvoice = async (req, res) => {
                                                 tokenjson: token,
                                                 culqiamount: (settings.amount / 100)
                                             }
-            
+
                                             const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
 
                                             successPay = true;
@@ -1113,13 +1111,13 @@ exports.chargeInvoice = async (req, res) => {
                                     if (successPay) {
                                         var invoicecorrelative = null;
                                         var documenttype = null;
-        
+
                                         if (corp.billbyorg) {
                                             if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
                                                 invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICE');
                                                 documenttype = '01';
                                             }
-                    
+
                                             if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
                                                 invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKET');
                                                 documenttype = '03'
@@ -1130,13 +1128,13 @@ exports.chargeInvoice = async (req, res) => {
                                                 invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICE');
                                                 documenttype = '01';
                                             }
-                    
+
                                             if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
                                                 invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKET');
                                                 documenttype = '03'
                                             }
                                         }
-        
+
                                         if (invoicecorrelative) {
                                             try {
                                                 var invoicedata = {
@@ -1173,7 +1171,7 @@ exports.chargeInvoice = async (req, res) => {
                                                     ProductList: [],
                                                     DataList: []
                                                 }
-        
+
                                                 if (corp.billbyorg) {
                                                     invoicedata.CodigoOperacionSunat = org.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
                                                     invoicedata.MontoTotalGravado = org.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
@@ -1186,9 +1184,9 @@ exports.chargeInvoice = async (req, res) => {
                                                     invoicedata.MontoTotalInafecto = corp.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
                                                     invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
                                                 }
-            
+
                                                 var calcdetraction = false;
-        
+
                                                 if (corp.billbyorg) {
                                                     if (org.sunatcountry === 'PE') {
                                                         calcdetraction = true;
@@ -1199,47 +1197,47 @@ exports.chargeInvoice = async (req, res) => {
                                                         calcdetraction = true;
                                                     }
                                                 }
-        
+
                                                 if (calcdetraction) {
                                                     if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
                                                         var compareamount = 0;
-            
+
                                                         if (appsetting.detractionminimum) {
                                                             if (invoice.currency === 'USD') {
                                                                 var exchangerate = await getLastExchange();
-            
+
                                                                 compareamount = invoice.totalamount * exchangerate;
                                                             }
                                                             else {
                                                                 compareamount = invoice.totalamount;
                                                             }
                                                         }
-                                                        
+
                                                         if (compareamount > appsetting.detractionminimum) {
                                                             invoicedata.MontoTotalDetraccion = Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100;
                                                             invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
                                                             invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
                                                             invoicedata.CodigoDetraccion = appsetting.detractioncode;
-            
+
                                                             var adicional02 = {
                                                                 CodigoDatoAdicional: '06',
                                                                 DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
                                                             }
-                    
+
                                                             invoicedata.DataList.push(adicional02);
                                                         }
                                                     }
                                                 }
-                                                
+
                                                 if (tipocredito) {
                                                     if (tipocredito === '0') {
                                                         invoicedata.FechaVencimiento = invoicedata.FechaEmision;
                                                     }
                                                     else {
-                                                        invoicedata.FechaVencimiento = new Date(new Date().setDate(new Date(new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0]).getDate()+(Number.parseFloat(tipocredito)))).toISOString().substring(0, 10);
+                                                        invoicedata.FechaVencimiento = new Date(new Date().setDate(new Date(new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0]).getDate() + (Number.parseFloat(tipocredito)))).toISOString().substring(0, 10);
                                                     }
                                                 }
-            
+
                                                 invoicedetail.forEach(async data => {
                                                     var invoicedetaildata = {
                                                         CantidadProducto: data.quantity,
@@ -1254,7 +1252,7 @@ exports.chargeInvoice = async (req, res) => {
                                                         PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
                                                         ValorNetoProducto: Math.round(((data.quantity * data.productnetprice) + Number.EPSILON) * 100) / 100,
                                                     };
-        
+
                                                     if (corp.billbyorg) {
                                                         invoicedetaildata.AfectadoIgv = org.sunatcountry === 'PE' ? '10' : '40';
                                                         invoicedetaildata.TributoIgv = org.sunatcountry === 'PE' ? '1000' : '9998';
@@ -1263,61 +1261,61 @@ exports.chargeInvoice = async (req, res) => {
                                                         invoicedetaildata.AfectadoIgv = corp.sunatcountry === 'PE' ? '10' : '40';
                                                         invoicedetaildata.TributoIgv = corp.sunatcountry === 'PE' ? '1000' : '9998';
                                                     }
-                
+
                                                     invoicedata.ProductList.push(invoicedetaildata);
                                                 });
-            
+
                                                 var adicional01 = {
                                                     CodigoDatoAdicional: '05',
                                                     DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
                                                 }
-            
+
                                                 invoicedata.DataList.push(adicional01);
-                                                
+
                                                 if (purchaseorder) {
                                                     var adicional03 = {
                                                         CodigoDatoAdicional: '15',
                                                         DescripcionDatoAdicional: purchaseorder
                                                     }
-            
+
                                                     invoicedata.DataList.push(adicional03);
                                                 }
-            
+
                                                 if (comments) {
                                                     var adicional04 = {
                                                         CodigoDatoAdicional: '07',
                                                         DescripcionDatoAdicional: comments
                                                     }
-            
+
                                                     invoicedata.DataList.push(adicional04);
                                                 }
-            
+
                                                 if (tipocredito) {
                                                     var adicional05 = {
                                                         CodigoDatoAdicional: '01',
                                                         DescripcionDatoAdicional: tipocredito === '0' ? 'AL CONTADO' : `CREDITO A ${tipocredito} DIAS`
                                                     }
-            
+
                                                     invoicedata.DataList.push(adicional05);
                                                 }
-        
+
                                                 const requestSendToSunat = await axios({
                                                     data: invoicedata,
                                                     method: 'post',
                                                     url: `${bridgeEndpoint}processmifact/sendinvoice`
                                                 });
-        
+
                                                 if (requestSendToSunat.data.result) {
-                                                    await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, purchaseorder || null, comments || null, 'typecredit_alcontado'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
+                                                    await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
                                                 }
                                                 else {
-                                                    await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, purchaseorder || null, comments || null, 'typecredit_alcontado'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
-            
+                                                    await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
+
                                                     if (corp.billbyorg) {
                                                         if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
                                                             await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
                                                         }
-                                
+
                                                         if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
                                                             await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
                                                         }
@@ -1326,7 +1324,7 @@ exports.chargeInvoice = async (req, res) => {
                                                         if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
                                                             await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
                                                         }
-                                
+
                                                         if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
                                                             await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
                                                         }
@@ -1335,12 +1333,12 @@ exports.chargeInvoice = async (req, res) => {
                                             }
                                             catch (error) {
                                                 await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', error.message, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
-            
+
                                                 if (corp.billbyorg) {
                                                     if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
                                                         await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
                                                     }
-                            
+
                                                     if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
                                                         await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
                                                     }
@@ -1349,7 +1347,7 @@ exports.chargeInvoice = async (req, res) => {
                                                     if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
                                                         await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
                                                     }
-                            
+
                                                     if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
                                                         await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
                                                     }
@@ -1359,12 +1357,12 @@ exports.chargeInvoice = async (req, res) => {
                                         else {
                                             await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
                                         }
-                                        
+
                                         return res.json({
                                             code: '',
                                             data: {
                                                 id: 0,
-                                                object: null 
+                                                object: null
                                             },
                                             error: false,
                                             message: 'culqipaysuccess',
@@ -1493,7 +1491,7 @@ exports.chargeInvoice = async (req, res) => {
                         }
                         else {
                             const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
-    
+
                             if (charge.object === 'error') {
                                 return res.status(400).json({
                                     data: {
@@ -1529,9 +1527,9 @@ exports.chargeInvoice = async (req, res) => {
                                     tokenjson: token,
                                     type: charge.object
                                 }
-        
+
                                 const chargeresult = await triggerfunctions.executesimpletransaction(chargequery, chargebind);
-        
+
                                 const invoicequery = "UFN_INVOICE_PAYMENT";
                                 const invoicebind = {
                                     capture: true,
@@ -1547,9 +1545,9 @@ exports.chargeInvoice = async (req, res) => {
                                     tokenjson: token,
                                     culqiamount: (settings.amount / 100)
                                 }
-                                
+
                                 const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
-        
+
                                 return res.json({
                                     code: charge.outcome.code,
                                     data: {
@@ -1623,7 +1621,7 @@ exports.createInvoice = async (request, response) => {
                         if (invoiceid) {
                             await deleteInvoiceDetail(corpid, orgid, invoiceid);
                         }
-                        
+
                         await Promise.all(productdetail.map(async (element) => {
                             var elementproductsubtotal = Math.round((parseFloat(element.productsubtotal) + Number.EPSILON) * 100) / 100;
                             var elementproductquantity = Math.round((parseFloat(element.productquantity) + Number.EPSILON) * 100) / 100;
@@ -1757,7 +1755,7 @@ exports.createInvoice = async (request, response) => {
                                                 compareamount = invoicetotalcharge;
                                             }
                                         }
-                                        
+
                                         if (compareamount > appsetting.detractionminimum) {
                                             invoicedata.MontoTotalDetraccion = Math.round(((invoicetotalcharge * appsetting.detraction) + Number.EPSILON) * 100) / 100;
                                             invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
@@ -1768,7 +1766,7 @@ exports.createInvoice = async (request, response) => {
                                                 CodigoDatoAdicional: '06',
                                                 DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
                                             }
-    
+
                                             invoicedata.DataList.push(adicional02);
                                         }
                                     }
@@ -1853,7 +1851,7 @@ exports.createInvoice = async (request, response) => {
                                 });
 
                                 if (requestSendToSunat.data.result) {
-                                    await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, autosendinvoice, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat|| null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
+                                    await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat || null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
 
                                     return response.json({
                                         code: '',
@@ -1864,12 +1862,12 @@ exports.createInvoice = async (request, response) => {
                                     });
                                 }
                                 else {
-                                    await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, autosendinvoice, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat|| null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
+                                    await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat || null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
 
                                     if ((clientcountry === 'PE' && clientdoctype === '6') || (clientcountry !== 'PE' && clientdoctype === '0')) {
                                         await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR');
                                     }
-            
+
                                     if ((clientcountry === 'PE') && (clientdoctype === '1' || clientdoctype === '4' || clientdoctype === '7')) {
                                         await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR');
                                     }
@@ -1878,13 +1876,13 @@ exports.createInvoice = async (request, response) => {
                                 }
                             }
                             catch (error) {
-                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', error.message, null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, autosendinvoice, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, null, null, null, null);
+                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', error.message, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, null, null, null, null);
 
                                 return response.status(403).json({ error: true, success: false, code: '', message: 'createdbutnotinvoiced' });
                             }
                         }
                         else {
-                            await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, autosendinvoice, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, null, null, null, null);
+                            await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, null, null, null, null);
 
                             return response.status(403).json({ error: true, success: false, code: '', message: 'correlativenotfound' });
                         }
@@ -2004,7 +2002,7 @@ exports.createCreditNote = async (request, response) => {
                                             AfectadoIgv: invoice.receivercountry === 'PE' ? '10' : '40',
                                             TributoIgv: invoice.receivercountry === 'PE' ? '1000' : '9998',
                                         };
-    
+
                                         invoicedata.ProductList.push(invoicedetaildata);
                                     });
                                 }
@@ -2140,7 +2138,7 @@ exports.getExchangeRate = async (request, response) => {
 
 exports.createBalance = async (req, res) => {
     const { userid, usr } = req.user;
-    const { invoiceid, settings, token, metadata = {}, corpid, orgid, reference,  comments, purchaseorder, paymentcardid, paymentcardcode, iscard } = req.body;
+    const { invoiceid, settings, token, metadata = {}, corpid, orgid, reference, comments, purchaseorder, paymentcardid, paymentcardcode, iscard } = req.body;
     var { buyamount, totalamount, totalpay } = req.body;
 
     try {
@@ -2197,7 +2195,7 @@ exports.createBalance = async (req, res) => {
                     if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
                         correctcorrelative = true;
                     }
-                
+
                     if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
                         correctcorrelative = true;
                     }
@@ -2231,7 +2229,7 @@ exports.createBalance = async (req, res) => {
                         metadata.emissiondate = new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0];
                         metadata.user = removeAccent(usr || '');
                         metadata.reference = removeAccent(reference || '');
-    
+
                         var successPay = false;
                         var charge = null;
                         var chargeBridge = null;
@@ -2281,7 +2279,7 @@ exports.createBalance = async (req, res) => {
                                 successPay = true;
                             }
                         }
-                        
+
 
                         if (successPay) {
                             var balanceResponse = await createBalanceData(corpid, orgid, 0, reference, 'ACTIVO', 'GENERAL', null, null, (totalamount || buyamount), ((org?.balance || 0) + (totalamount || buyamount)), billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, 'PAID', new Date().toISOString().split('T')[0], usr, usr);
@@ -2380,7 +2378,7 @@ exports.createBalance = async (req, res) => {
                                         tokenjson: iscard ? null : token,
                                         culqiamount: (settings.amount / 100)
                                     }
-                                
+
                                     const invoiceresult = await triggerfunctions.executesimpletransaction(invoicequery, invoicebind);
 
                                     var invoicecorrelative = null;
@@ -2391,7 +2389,7 @@ exports.createBalance = async (req, res) => {
                                             invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'INVOICE');
                                             documenttype = '01';
                                         }
-                                    
+
                                         if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
                                             invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'TICKET');
                                             documenttype = '03'
@@ -2402,7 +2400,7 @@ exports.createBalance = async (req, res) => {
                                             invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'INVOICE');
                                             documenttype = '01';
                                         }
-                                    
+
                                         if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
                                             invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'TICKET');
                                             documenttype = '03'
@@ -2476,7 +2474,7 @@ exports.createBalance = async (req, res) => {
                                             if (calcdetraction) {
                                                 if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
                                                     var compareamount = 0;
-                                                
+
                                                     if (appsetting.detractionminimum) {
                                                         compareamount = invoicetotalcharge * lastExchange;
                                                     }
@@ -2486,12 +2484,12 @@ exports.createBalance = async (req, res) => {
                                                         invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
                                                         invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
                                                         invoicedata.CodigoDetraccion = appsetting.detractioncode;
-                                                    
+
                                                         var adicional02 = {
                                                             CodigoDatoAdicional: '06',
                                                             DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
                                                         }
-                                                    
+
                                                         invoicedata.DataList.push(adicional02);
                                                     }
                                                 }
@@ -2501,7 +2499,7 @@ exports.createBalance = async (req, res) => {
                                                 CodigoDatoAdicional: '05',
                                                 DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
                                             }
-                                        
+
                                             invoicedata.DataList.push(adicional01);
 
                                             if (purchaseorder) {
@@ -2509,16 +2507,16 @@ exports.createBalance = async (req, res) => {
                                                     CodigoDatoAdicional: '15',
                                                     DescripcionDatoAdicional: purchaseorder
                                                 }
-                                            
+
                                                 invoicedata.DataList.push(adicional03);
                                             }
-                                        
+
                                             if (comments) {
                                                 var adicional04 = {
                                                     CodigoDatoAdicional: '07',
                                                     DescripcionDatoAdicional: comments
                                                 }
-                                            
+
                                                 invoicedata.DataList.push(adicional04);
                                             }
 
@@ -2544,7 +2542,7 @@ exports.createBalance = async (req, res) => {
                                                 AfectadoIgv: producthasigv,
                                                 TributoIgv: productigvtribute,
                                             };
-                                        
+
                                             invoicedata.ProductList.push(invoicedetaildata);
 
                                             const requestSendToSunat = await axios({
@@ -2554,16 +2552,16 @@ exports.createBalance = async (req, res) => {
                                             });
 
                                             if (requestSendToSunat.data.result) {
-                                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
+                                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
                                             }
                                             else {
-                                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
-                                            
+                                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
+
                                                 if (corp.billbyorg) {
                                                     if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
                                                         await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR');
                                                     }
-                                                
+
                                                     if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
                                                         await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR');
                                                     }
@@ -2572,7 +2570,7 @@ exports.createBalance = async (req, res) => {
                                                     if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
                                                         await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR');
                                                     }
-                                                
+
                                                     if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
                                                         await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR');
                                                     }
@@ -2581,12 +2579,12 @@ exports.createBalance = async (req, res) => {
                                         }
                                         catch (error) {
                                             await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', error.message, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, billbyorg ? org.businessname : corp.businessname, billbyorg ? org.fiscaladdress : corp.fiscaladdress, billbyorg ? org.sunatcountry : corp.sunatcountry, billbyorg ? org.contactemail : corp.contactemail, documenttype, null, null, purchaseorder, comments, 'typecredit_alcontado', null, null, null, null);
-                                        
+
                                             if (corp.billbyorg) {
                                                 if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
                                                     await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR');
                                                 }
-                                            
+
                                                 if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
                                                     await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR');
                                                 }
@@ -2595,7 +2593,7 @@ exports.createBalance = async (req, res) => {
                                                 if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
                                                     await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR');
                                                 }
-                                            
+
                                                 if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
                                                     await getCorrelativeNumber(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR');
                                                 }
@@ -2611,7 +2609,7 @@ exports.createBalance = async (req, res) => {
                                             code: '',
                                             data: {
                                                 id: 0,
-                                                object: null 
+                                                object: null
                                             },
                                             error: false,
                                             message: 'culqipaysuccess',
@@ -2693,11 +2691,11 @@ exports.emitInvoice = async (req, res) => {
                                 if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
                                     correctcorrelative = true;
                                 }
-        
+
                                 if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
                                     correctcorrelative = true;
                                 }
-        
+
                                 if (correctcorrelative) {
                                     proceedpayment = true;
                                 }
@@ -2718,11 +2716,11 @@ exports.emitInvoice = async (req, res) => {
                             if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
                                 correctcorrelative = true;
                             }
-                        
+
                             if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
                                 correctcorrelative = true;
                             }
-        
+
                             if (correctcorrelative) {
                                 proceedpayment = true;
                             }
@@ -2776,9 +2774,9 @@ exports.emitInvoice = async (req, res) => {
                                             days = "0";
                                         }
 
-                                        expirationDate = new Date(new Date().setDate(new Date(new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0]).getDate()+(Number.parseFloat(days)))).toISOString().substring(0, 10);
+                                        expirationDate = new Date(new Date().setDate(new Date(new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0]).getDate() + (Number.parseFloat(days)))).toISOString().substring(0, 10);
                                     }
-                                    
+
                                     var invoicedata = {
                                         CodigoAnexoEmisor: appsetting.annexcode,
                                         CodigoFormatoImpresion: appsetting.printingformat,
@@ -2855,7 +2853,7 @@ exports.emitInvoice = async (req, res) => {
                                                     compareamount = invoice.totalamount;
                                                 }
                                             }
-                                            
+
                                             if (compareamount > appsetting.detractionminimum) {
                                                 invoicedata.MontoTotalDetraccion = Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100;
                                                 invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
@@ -2866,7 +2864,7 @@ exports.emitInvoice = async (req, res) => {
                                                     CodigoDatoAdicional: '06',
                                                     DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
                                                 }
-        
+
                                                 invoicedata.DataList.push(adicional02);
                                             }
                                         }
@@ -2895,7 +2893,7 @@ exports.emitInvoice = async (req, res) => {
                                             invoicedetaildata.AfectadoIgv = corp.sunatcountry === 'PE' ? '10' : '40';
                                             invoicedetaildata.TributoIgv = corp.sunatcountry === 'PE' ? '1000' : '9998';
                                         }
-    
+
                                         invoicedata.ProductList.push(invoicedetaildata);
                                     });
 
@@ -2922,7 +2920,7 @@ exports.emitInvoice = async (req, res) => {
                                         if (days === "alcontado") {
                                             days = "0";
                                         }
-                                        
+
                                         var adicional05 = {
                                             CodigoDatoAdicional: '01',
                                             DescripcionDatoAdicional: days === '0' ? 'AL CONTADO' : `CREDITO A ${days} DIAS`
@@ -2938,7 +2936,7 @@ exports.emitInvoice = async (req, res) => {
                                     });
 
                                     if (requestSendToSunat.data.result) {
-                                        await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
+                                        await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
 
                                         return res.json({
                                             code: '',
@@ -2949,13 +2947,13 @@ exports.emitInvoice = async (req, res) => {
                                         });
                                     }
                                     else {
-                                        await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
+                                        await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
 
                                         if (corp.billbyorg) {
                                             if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
                                                 await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
                                             }
-                    
+
                                             if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
                                                 await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
                                             }
@@ -2964,7 +2962,7 @@ exports.emitInvoice = async (req, res) => {
                                             if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
                                                 await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
                                             }
-                    
+
                                             if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
                                                 await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
                                             }
@@ -2980,7 +2978,7 @@ exports.emitInvoice = async (req, res) => {
                                         if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
                                             await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
                                         }
-                
+
                                         if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
                                             await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
                                         }
@@ -2989,7 +2987,7 @@ exports.emitInvoice = async (req, res) => {
                                         if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
                                             await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
                                         }
-                
+
                                         if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
                                             await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
                                         }
@@ -3050,7 +3048,7 @@ const insertPaymentCard = async (corpid, orgid, id, cardnumber, cardcode, firstn
     return await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
 }
 
-const selUser = async (corpid, orgid, userid, username ) => {
+const selUser = async (corpid, orgid, userid, username) => {
     const queryMethod = "UFN_USER_SEL";
     const queryParameters = {
         corpid: corpid,
@@ -3149,7 +3147,7 @@ exports.cardCreate = async (request, result) => {
 
                 if (user && (corp || org)) {
                     var canRegister = true;
-                    
+
                     if (!favorite) {
                         canRegister = await verifyFavoriteCard(corpid);
                     }
@@ -3192,12 +3190,12 @@ exports.cardCreate = async (request, result) => {
                                 method: "post",
                                 url: `${bridgeEndpoint}processculqi/handlecard`,
                             });
-    
+
                             if (requestCulqiCard.data.success) {
                                 cardData = requestCulqiCard.data.result;
-    
+
                                 var queryPaymentCardInsert = await insertPaymentCard(corpid, orgid, 0, cardData.source.cardNumber, cardData.id, firstname, lastname, mail, favorite, cardData.customerId, "ACTIVO", "", usr);
-    
+
                                 if (queryPaymentCardInsert instanceof Array) {
                                     requestCode = "";
                                     requestMessage = "";
@@ -3496,7 +3494,7 @@ exports.automaticPayment = async (request, result) => {
                                         if (country && doctype) {
                                             if (country === 'PE' && doctype === '6') {
                                                 var compareamount = (culqiamount || 0);
-                                                
+
                                                 if (invoice.currency === 'USD') {
                                                     compareamount = compareamount * (exchangerate || 0);
                                                 }
@@ -3758,7 +3756,7 @@ exports.automaticPayment = async (request, result) => {
                                                 invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICE');
                                                 documenttype = '01';
                                             }
-                    
+
                                             if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
                                                 invoicecorrelative = await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKET');
                                                 documenttype = '03'
@@ -3817,7 +3815,7 @@ exports.automaticPayment = async (request, result) => {
                                                 }
 
                                                 var calcdetraction = false;
-        
+
                                                 if (org) {
                                                     if (org.sunatcountry === 'PE') {
                                                         calcdetraction = true;
@@ -3833,35 +3831,35 @@ exports.automaticPayment = async (request, result) => {
                                                     CodigoDatoAdicional: '05',
                                                     DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
                                                 }
-            
+
                                                 invoicedata.DataList.push(adicional01);
 
                                                 if (calcdetraction) {
                                                     if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
                                                         var compareamount = 0;
-            
+
                                                         if (appsetting.detractionminimum) {
                                                             if (invoice.currency === 'USD') {
                                                                 var exchangerate = await getLastExchange();
-            
+
                                                                 compareamount = invoice.totalamount * exchangerate;
                                                             }
                                                             else {
                                                                 compareamount = invoice.totalamount;
                                                             }
                                                         }
-                                                        
+
                                                         if (compareamount > appsetting.detractionminimum) {
                                                             invoicedata.CodigoDetraccion = appsetting.detractioncode;
                                                             invoicedata.MontoTotalDetraccion = Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100;
                                                             invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
                                                             invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
-                                                                        
+
                                                             var adicional02 = {
                                                                 CodigoDatoAdicional: '06',
                                                                 DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount,
                                                             }
-                    
+
                                                             invoicedata.DataList.push(adicional02);
                                                         }
                                                     }
@@ -3881,7 +3879,7 @@ exports.automaticPayment = async (request, result) => {
                                                         UnidadMedida: data.measureunit,
                                                         ValorNetoProducto: Math.round(((data.quantity * data.productnetprice) + Number.EPSILON) * 100) / 100,
                                                     };
-        
+
                                                     if (org) {
                                                         invoicedetaildata.AfectadoIgv = org.sunatcountry === 'PE' ? '10' : '40';
                                                         invoicedetaildata.TributoIgv = org.sunatcountry === 'PE' ? '1000' : '9998';
@@ -3890,7 +3888,7 @@ exports.automaticPayment = async (request, result) => {
                                                         invoicedetaildata.AfectadoIgv = corp.sunatcountry === 'PE' ? '10' : '40';
                                                         invoicedetaildata.TributoIgv = corp.sunatcountry === 'PE' ? '1000' : '9998';
                                                     }
-                
+
                                                     invoicedata.ProductList.push(invoicedetaildata);
                                                 });
 
@@ -3898,7 +3896,7 @@ exports.automaticPayment = async (request, result) => {
                                                     CodigoDatoAdicional: '01',
                                                     DescripcionDatoAdicional: 'AL CONTADO',
                                                 }
-        
+
                                                 invoicedata.DataList.push(adicional05);
 
                                                 const requestSendToSunat = await axios({
@@ -3910,7 +3908,7 @@ exports.automaticPayment = async (request, result) => {
                                                 if (requestSendToSunat.data.result) {
                                                     invoicesuccess = true;
 
-                                                    await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, null, null, 'typecredit_alcontado' || null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
+                                                    await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
 
                                                     const requestSendMail = await axios({
                                                         data: invoicedata,
@@ -3925,13 +3923,13 @@ exports.automaticPayment = async (request, result) => {
                                                 else {
                                                     requestCode = "error_automaticinvoice_invoiceerror";
 
-                                                    await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc|| null, appsetting?.businessname|| null, appsetting?.tradename|| null, appsetting?.fiscaladdress|| null, appsetting?.ubigeo|| null, appsetting?.emittertype|| null, appsetting?.annexcode|| null, appsetting?.printingformat|| null, invoicedata?.EnviarSunat|| null, appsetting?.returnpdf|| null, appsetting?.returnxmlsunat|| null, appsetting?.returnxml|| null, appsetting?.token|| null, appsetting?.sunaturl|| null, appsetting?.sunatusername|| null, appsetting?.xmlversion|| null, appsetting?.ublversion|| null, invoicedata?.CodigoRucReceptor|| null, invoicedata?.NumeroDocumentoReceptor|| null, invoicedata?.RazonSocialReceptor|| null, invoicedata?.DireccionFiscalReceptor|| null, invoicedata?.PaisRecepcion|| null, invoicedata?.MailEnvio|| null, documenttype|| null, invoicedata?.CodigoOperacionSunat|| null, invoicedata?.FechaVencimiento|| null, null, null, 'typecredit_alcontado'|| null, appsetting?.detractioncode|| null, appsetting?.detraction|| null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
+                                                    await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision);
 
                                                     if (org) {
                                                         if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
                                                             await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
                                                         }
-                                
+
                                                         if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
                                                             await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
                                                         }
@@ -3940,7 +3938,7 @@ exports.automaticPayment = async (request, result) => {
                                                         if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
                                                             await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
                                                         }
-                                
+
                                                         if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
                                                             await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
                                                         }
@@ -3956,7 +3954,7 @@ exports.automaticPayment = async (request, result) => {
                                                     if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
                                                         await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
                                                     }
-                            
+
                                                     if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
                                                         await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
                                                     }
@@ -3965,7 +3963,7 @@ exports.automaticPayment = async (request, result) => {
                                                     if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
                                                         await getCorrelativeNumber(corpid, orgid, invoiceid, 'INVOICEERROR');
                                                     }
-                            
+
                                                     if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
                                                         await getCorrelativeNumber(corpid, orgid, invoiceid, 'TICKETERROR');
                                                     }
