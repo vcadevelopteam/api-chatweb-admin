@@ -150,10 +150,8 @@ exports.addUser = async ({application_id, user_name, user_display_name, user_pas
         const form = new FormData();
         form.append('account_id', VOXIMPLANT_ACCOUNT_ID);
         form.append('application_id', application_id);
-        // `user${userid}.${orgid}`
         form.append('user_name', user_name);
         form.append('user_display_name', user_display_name);
-        // Laraigo2022$CDFD
         form.append('user_password', user_password);
         const result = await voximplantRequest('AddUser', form);
         if (result.data.error) {
