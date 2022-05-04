@@ -92,10 +92,10 @@ exports.sendMailPassword = async (req, res) => {
         const voxidata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_VALIDATION", {channels: detail[i].parameters.channels});
         if (voxidata instanceof Array && voxidata.length > 0) {
             voxiuser = await voximplant.addUser({
-                applicationid: APPLICATION_ID,
-                username: `user${header.parameters.userid}.${detail[i].parameters.orgid}`,
-                displayname: header.parameters.usr,
-                password: VOXI_PASSWORD
+                application_id: APPLICATION_ID,
+                user_name: `user${header.parameters.userid}.${detail[i].parameters.orgid}`,
+                user_display_name: header.parameters.usr,
+                user_password: VOXI_PASSWORD
             })
         }
         else {
@@ -103,19 +103,19 @@ exports.sendMailPassword = async (req, res) => {
         }
         if (!voxiuser) {
             voxiuser = await voximplant.getUser({
-                applicationid: APPLICATION_ID,
-                username: `user${header.parameters.userid}.${detail[i].parameters.orgid}`
+                application_id: APPLICATION_ID,
+                user_name: `user${header.parameters.userid}.${detail[i].parameters.orgid}`
             })
         }
         if (voxiuser) {
             console.log(voxiuser.user_id);
-            let voxiqueues = await voximplant.getQueues({applicationid: APPLICATION_ID})
+            let voxiqueues = await voximplant.getQueues({application_id: APPLICATION_ID})
             console.log(voxiqueues)
             if (voxiqueues.count > 0) {
                 await voximplant.bindUserToQueue({
-                    applicationid: APPLICATION_ID,
-                    queuename: voxiqueues.result[0].acd_queue_name,
-                    userid: voxiuser.user_id,
+                    application_id: APPLICATION_ID,
+                    user_id: voxiuser.user_id,
+                    acd_queue_name: voxiqueues.result[0].acd_queue_name,
                     bind
                 })
             }

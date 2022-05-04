@@ -3,7 +3,9 @@ const voximplant = require("../config/voximplantfunctions");
 exports.getChildrenAccounts = async (request, result) => {
     try {
         let requestResult = await voximplant.getChildrenAccounts(request.body)
-        return result.json(requestResult);
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
     }
     catch (err) {
         return result.status(500).json({
@@ -18,7 +20,9 @@ exports.getChildrenAccounts = async (request, result) => {
 exports.addAccount = async (request, result) => {
     try {
         let requestResult = await voximplant.addAccount(request.body)
-        return result.json(requestResult);
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
     }
     catch (err) {
         return result.status(500).json({
@@ -33,7 +37,9 @@ exports.addAccount = async (request, result) => {
 exports.getApplications = async (request, result) => {
     try {
         let requestResult = await voximplant.getApplications(request.body)
-        return result.json(requestResult);
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
     }
     catch (err) {
         return result.status(500).json({
@@ -48,7 +54,9 @@ exports.getApplications = async (request, result) => {
 exports.getUsers = async (request, result) => {
     try {
         let requestResult = await voximplant.getUsers(request.body)
-        return result.json(requestResult);
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
     }
     catch (err) {
         return result.status(500).json({
@@ -63,7 +71,9 @@ exports.getUsers = async (request, result) => {
 exports.addUser = async (request, result) => {
     try {
         let requestResult = await voximplant.addUser(request.body)
-        return result.json(requestResult);
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
     }
     catch (err) {
         return result.status(500).json({
@@ -78,7 +88,9 @@ exports.addUser = async (request, result) => {
 exports.getQueues = async (request, result) => {
     try {
         let requestResult = await voximplant.getQueues(request.body)
-        return result.json(requestResult);
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
     }
     catch (err) {
         return result.status(500).json({
@@ -93,7 +105,9 @@ exports.getQueues = async (request, result) => {
 exports.bindUserToQueue = async (request, result) => {
     try {
         let requestResult = await voximplant.bindUserToQueue(request.body)
-        return result.json(requestResult);
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
     }
     catch (err) {
         return result.status(500).json({
@@ -108,7 +122,9 @@ exports.bindUserToQueue = async (request, result) => {
 exports.getPhoneNumberCategories = async (request, result) => {
     try {
         let requestResult = await voximplant.getPhoneNumberCategories(request.body)
-        return result.json(requestResult);
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
     }
     catch (err) {
         return result.status(500).json({
@@ -123,7 +139,9 @@ exports.getPhoneNumberCategories = async (request, result) => {
 exports.getPhoneNumberCountryStates = async (request, result) => {
     try {
         let requestResult = await voximplant.getPhoneNumberCountryStates(request.body)
-        return result.json(requestResult);
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
     }
     catch (err) {
         return result.status(500).json({
@@ -138,7 +156,26 @@ exports.getPhoneNumberCountryStates = async (request, result) => {
 exports.getPhoneNumberRegions = async (request, result) => {
     try {
         let requestResult = await voximplant.getPhoneNumberRegions(request.body)
-        return result.json(requestResult);
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
+    }
+    catch (err) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: err.message,
+            success: false,
+        })
+    }
+}
+
+exports.attachPhoneNumber = async (request, result) => {
+    try {
+        let requestResult = await voximplant.attachPhoneNumber(request.body)
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
     }
     catch (err) {
         return result.status(500).json({
@@ -153,7 +190,9 @@ exports.getPhoneNumberRegions = async (request, result) => {
 exports.getPhoneNumbers = async (request, result) => {
     try {
         let requestResult = await voximplant.getPhoneNumbers(request.body)
-        return result.json(requestResult);
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
     }
     catch (err) {
         return result.status(500).json({
@@ -168,7 +207,9 @@ exports.getPhoneNumbers = async (request, result) => {
 exports.bindPhoneNumberToApplication = async (request, result) => {
     try {
         let requestResult = await voximplant.bindPhoneNumberToApplication(request.body)
-        return result.json(requestResult);
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
     }
     catch (err) {
         return result.status(500).json({

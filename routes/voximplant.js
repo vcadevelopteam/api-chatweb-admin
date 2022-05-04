@@ -4,31 +4,31 @@ const voximplantController = require("../controllers/voximplantController");
 const auth = require('../middleware/auth');
 
 router.post("/addAccount",
-    auth,
+    // auth,
     voximplantController.addAccount
 )
 router.post("/getChildrenAccounts",
-    auth,
+    // auth,
     voximplantController.getChildrenAccounts
 )
 router.post("/getApplications",
-    auth,    
+    // auth,    
     voximplantController.getApplications
 )
 router.post("/getUsers",
-    auth,    
+    // auth,    
     voximplantController.getUsers
 )
 router.post("/addUser",
-    auth,    
+    // auth,    
     voximplantController.addUser
 )
 router.post("/getQueues",
-    auth,
+    // auth,
     voximplantController.getQueues
 )
 router.post("/bindUserToQueue",
-    auth,    
+    // auth,    
     voximplantController.bindUserToQueue
 )
 router.post("/getPhoneNumberCategories",
@@ -42,6 +42,10 @@ router.post("/getPhoneNumberCountryStates",
 router.post("/getPhoneNumberRegions",
     // auth,    
     voximplantController.getPhoneNumberRegions
+)
+router.post("/attachPhoneNumber",
+    // auth,    
+    voximplantController.attachPhoneNumber
 )
 router.post("/getPhoneNumbers",
     // auth,    
