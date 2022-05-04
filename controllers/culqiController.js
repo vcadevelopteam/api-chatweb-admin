@@ -2828,6 +2828,8 @@ exports.emitInvoice = async (req, res) => {
                                         invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
                                     }
 
+                                    var calcdetraction = false;
+
                                     if (corp.billbyorg) {
                                         if (org.sunatcountry === 'PE') {
                                             calcdetraction = true;
