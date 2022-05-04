@@ -2,11 +2,12 @@ const fs = require("fs");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
 const FormData = require("form-data");
+require('dotenv').config();
 
-const VOXIMPLANT_CREDENTIALS='./voximplant_credentials.json'
-const VOXIMPLANT_ACCOUNT_ID = 4494102
-const VOXIMPLANT_APIRUL = 'https://api.voximplant.com/platform_api/'
-const VOXIMPLANT_APIKEY = '99f0e67a-80a0-4f18-b98b-1c025a4545da'
+const VOXIMPLANT_CREDENTIALS = process.env.VOXIMPLANT_CREDENTIALS
+const VOXIMPLANT_ACCOUNT_ID = process.env.VOXIMPLANT_ACCOUNT_ID
+const VOXIMPLANT_APIRUL = process.env.VOXIMPLANT_APIRUL
+const VOXIMPLANT_APIKEY = process.env.VOXIMPLANT_APIKEY
 
 const getJWT = async () => {
     try {
@@ -197,6 +198,110 @@ exports.bindUserToQueue = async ({applicationid, userid, queuename, bind = true}
             console.log(result.data.error);
             return undefined;
         }
+        return result.data
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.getPhoneNumberCategories = async ({countrycode = ''}) => {
+    try {
+        const form = new FormData();
+        form.append('account_id', VOXIMPLANT_ACCOUNT_ID);
+        form.append('country_code', countrycode);
+        const token = await getJWT();
+        const result = await await axios({
+            method: "post",
+            url: `${VOXIMPLANT_APIRUL}GetPhoneNumberCategories`,
+            data: form,
+            headers: Object.assign({}, form.getHeaders(), { 'Authorization': 'Bearer ' + token }),
+        });
+        return result.data
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.getPhoneNumberCountryStates = async ({countrycode, phonecategory}) => {
+    try {
+        const form = new FormData();
+        form.append('account_id', VOXIMPLANT_ACCOUNT_ID);
+        form.append('country_code', countrycode);
+        form.append('phone_category_name', phonecategory);
+        const token = await getJWT();
+        const result = await await axios({
+            method: "post",
+            url: `${VOXIMPLANT_APIRUL}GetPhoneNumberCountryStates`,
+            data: form,
+            headers: Object.assign({}, form.getHeaders(), { 'Authorization': 'Bearer ' + token }),
+        });
+        return result.data
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.getPhoneNumberRegions = async ({countrycode, phonecategory}) => {
+    try {
+        const form = new FormData();
+        form.append('account_id', VOXIMPLANT_ACCOUNT_ID);
+        form.append('country_code', countrycode);
+        form.append('phone_category_name', phonecategory);
+        const token = await getJWT();
+        const result = await await axios({
+            method: "post",
+            url: `${VOXIMPLANT_APIRUL}GetPhoneNumberRegions`,
+            data: form,
+            headers: Object.assign({}, form.getHeaders(), { 'Authorization': 'Bearer ' + token }),
+        });
+        return result.data
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.getPhoneNumbers = async ({applicationid = null}) => {
+    try {
+        const form = new FormData();
+        form.append('account_id', VOXIMPLANT_ACCOUNT_ID);
+        if (applicationid)
+            form.append('application_id', applicationid);
+        const token = await getJWT();
+        const result = await await axios({
+            method: "post",
+            url: `${VOXIMPLANT_APIRUL}GetPhoneNumbers`,
+            data: form,
+            headers: Object.assign({}, form.getHeaders(), { 'Authorization': 'Bearer ' + token }),
+        });
+        return result.data
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.bindPhoneNumberToApplication = async ({applicationid, phonenumber}) => {
+    try {
+        const form = new FormData();
+        form.append('account_id', VOXIMPLANT_ACCOUNT_ID);
+        form.append('application_id', applicationid);
+        form.append('phone_number', phonenumber);
+        const token = await getJWT();
+        const result = await await axios({
+            method: "post",
+            url: `${VOXIMPLANT_APIRUL}BindPhoneNumberToApplication`,
+            data: form,
+            headers: Object.assign({}, form.getHeaders(), { 'Authorization': 'Bearer ' + token }),
+        });
         return result.data
     }
     catch (err) {

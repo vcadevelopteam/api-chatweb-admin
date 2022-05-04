@@ -31,5 +31,25 @@ router.post("/bindUserToQueue",
     auth,    
     voximplantController.bindUserToQueue
 )
+router.post("/getPhoneNumberCategories",
+    // auth,    
+    voximplantController.getPhoneNumberCategories
+)
+router.post("/getPhoneNumberCountryStates",
+    // auth,    
+    voximplantController.getPhoneNumberCountryStates
+)
+router.post("/getPhoneNumberRegions",
+    // auth,    
+    voximplantController.getPhoneNumberRegions
+)
+router.post("/getPhoneNumbers",
+    // auth,    
+    voximplantController.getPhoneNumbers
+)
+router.post("/bindPhoneNumberToApplication",
+    // auth,    
+    voximplantController.bindPhoneNumberToApplication
+)
 
 module.exports = router;

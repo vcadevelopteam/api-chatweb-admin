@@ -104,3 +104,78 @@ exports.bindUserToQueue = async (request, result) => {
         })
     }
 }
+
+exports.getPhoneNumberCategories = async (request, result) => {
+    try {
+        let requestResult = await voximplant.getPhoneNumberCategories(request.body)
+        return result.json(requestResult);
+    }
+    catch (err) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: err.message,
+            success: false,
+        })
+    }
+}
+
+exports.getPhoneNumberCountryStates = async (request, result) => {
+    try {
+        let requestResult = await voximplant.getPhoneNumberCountryStates(request.body)
+        return result.json(requestResult);
+    }
+    catch (err) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: err.message,
+            success: false,
+        })
+    }
+}
+
+exports.getPhoneNumberRegions = async (request, result) => {
+    try {
+        let requestResult = await voximplant.getPhoneNumberRegions(request.body)
+        return result.json(requestResult);
+    }
+    catch (err) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: err.message,
+            success: false,
+        })
+    }
+}
+
+exports.getPhoneNumbers = async (request, result) => {
+    try {
+        let requestResult = await voximplant.getPhoneNumbers(request.body)
+        return result.json(requestResult);
+    }
+    catch (err) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: err.message,
+            success: false,
+        })
+    }
+}
+
+exports.bindPhoneNumberToApplication = async (request, result) => {
+    try {
+        let requestResult = await voximplant.bindPhoneNumberToApplication(request.body)
+        return result.json(requestResult);
+    }
+    catch (err) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: err.message,
+            success: false,
+        })
+    }
+}
