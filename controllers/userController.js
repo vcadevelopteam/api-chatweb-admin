@@ -93,7 +93,7 @@ exports.sendMailPassword = async (req, res) => {
         if (voxidata instanceof Array && voxidata.length > 0) {
             voxiuser = await voximplant.addUser({
                 application_id: APPLICATION_ID,
-                user_name: `user${header.parameters.userid}.${detail[i].parameters.orgid}`,
+                user_name: `user${header.parameters.id}.${detail[i].parameters.orgid}`,
                 user_display_name: header.parameters.usr,
                 user_password: VOXI_PASSWORD
             })
@@ -104,12 +104,12 @@ exports.sendMailPassword = async (req, res) => {
         if (!voxiuser) {
             voxiuser = await voximplant.getUser({
                 application_id: APPLICATION_ID,
-                user_name: `user${header.parameters.userid}.${detail[i].parameters.orgid}`
+                user_name: `user${header.parameters.id}.${detail[i].parameters.orgid}`
             })
         }
         if (voxiuser) {
             console.log(voxiuser.user_id);
-            if (bind) {
+            if (bind && detail[i].parameters.operation !== 'DELETE') {
                 let voxiqueues = await voximplant.getQueues({application_id: APPLICATION_ID})
                 console.log(voxiqueues)
                 if (voxiqueues.count > 0) {
@@ -124,7 +124,7 @@ exports.sendMailPassword = async (req, res) => {
             else {
                 await voximplant.delUser({
                     application_id: APPLICATION_ID,
-                    user_name: `user${header.parameters.userid}.${detail[i].parameters.orgid}`
+                    user_name: `user${header.parameters.id}.${detail[i].parameters.orgid}`
                 })
             }
         }
@@ -185,6 +185,50 @@ exports.sendMailPassword = async (req, res) => {
             completed: false,
         });
     }
+
+    if (!result.error)
+        return res.json(result);
+    else
+        return res.status(result.rescode).json({ ...result, key: header.key });
+}
+
+exports.delete = async (req, res) => {
+    const { header, detail: detailtmp } = req.body;
+
+    if (header && header.parameters.password) {
+        const salt = await bcryptjs.genSalt(10);
+        header.parameters.password = await bcryptjs.hash(header.parameters.password, salt);
+    }
+
+    if (header) {
+        setSessionParameters(header.parameters, req.user);
+    }
+
+    const detail = detailtmp.map(x => {
+        setSessionParameters(x.parameters, req.user);
+        return x;
+    })
+
+    const result = await executeTransaction(header, detail, req.user.menu || {});
+
+    // VOXIMPLANT //
+    const APPLICATION_ID = 10451952;
+    const VOXI_PASSWORD = 'Laraigo2022$CDFD';
+    const orgs = await executesimpletransaction("UFN_ORGUSER_SEL", {all: true, corpid: 0, orgid: 0, userid: detail[0].parameters.id, username: ''})
+    for (let i = 0; i < orgs.length; i++) {
+        let voxiuser = await voximplant.getUser({
+            application_id: APPLICATION_ID,
+            user_name: `user${detail[0].parameters.id}.${orgs[i].orgid}`
+        })
+        if (voxiuser) {
+            console.log(voxiuser.user_id);
+            await voximplant.delUser({
+                application_id: APPLICATION_ID,
+                user_name: `user${detail[0].parameters.id}.${orgs[i].orgid}`
+            })
+        }
+    }
+    // VOXIMPLANT //
 
     if (!result.error)
         return res.json(result);

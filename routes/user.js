@@ -11,5 +11,9 @@ router.post("/sendmail/password",
     auth,
     userController.sendMailPassword
 )
+router.post("/delete",
+    auth,
+    userController.delete
+)
 
 module.exports = router;
