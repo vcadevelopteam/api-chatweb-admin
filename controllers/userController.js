@@ -86,15 +86,15 @@ exports.sendMailPassword = async (req, res) => {
     // VOXIMPLANT //
     const APPLICATION_ID = 10451952;
     const VOXI_PASSWORD = 'Laraigo2022$CDFD';
-    for (let i = 0; i < detail.length; i++) {
-        if (detail[i].parameters.type === 'ASESOR') {
+    for (let di = 0; di < detail.length; di++) {
+        if (detail[di].parameters.type === 'ASESOR') {
             let bind = true;
             let voxiuser = undefined;
-            const voxidata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_VALIDATION", {channels: detail[i].parameters.channels});
+            const voxidata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_VALIDATION", {channels: detail[di].parameters.channels});
             if (voxidata instanceof Array && voxidata.length > 0) {
                 voxiuser = await voximplant.addUser({
                     application_id: APPLICATION_ID,
-                    user_name: `user${header.parameters.id}.${detail[i].parameters.orgid}`,
+                    user_name: `user${header.parameters.id}.${detail[di].parameters.orgid}`,
                     user_display_name: header.parameters.usr,
                     user_password: VOXI_PASSWORD
                 })
@@ -105,19 +105,35 @@ exports.sendMailPassword = async (req, res) => {
             if (!voxiuser) {
                 voxiuser = await voximplant.getUser({
                     application_id: APPLICATION_ID,
-                    user_name: `user${header.parameters.id}.${detail[i].parameters.orgid}`
-                })
+                    user_name: `user${header.parameters.id}.${detail[di].parameters.orgid}`
+                });
             }
             if (voxiuser) {
                 console.log(voxiuser.user_id);
-                if (bind && detail[i].parameters.operation !== 'DELETE') {
-                    let voxiqueues = await voximplant.getQueues({application_id: APPLICATION_ID})
-                    console.log(voxiqueues)
-                    if (voxiqueues.count > 0) {
+                if (bind && detail[di].parameters.operation !== 'DELETE') {
+                    let voxiqueues = await voximplant.getQueues({application_id: APPLICATION_ID});
+                    console.log(voxiqueues);
+                    let voxiqueues_names = voxiqueues.result.map(vq => vq.acd_queue_name);
+                    let groups = detail[di].parameters.groups?.split(',')
+                    // Bind to {site}.laraigo
+                    await voximplant.bindUserToQueue({
+                        application_id: APPLICATION_ID,
+                        user_id: voxiuser.user_id,
+                        acd_queue_name: `${voxidata.communicationchannelsite}.laraigo`,
+                        bind
+                    })
+                    // Bind to {site}.{group}
+                    for (let gi = 0; gi < groups.length; qi++) {
+                        if (!voxiqueues_names.includes(groups[i])) {
+                            await voximplant.addQueue({
+                                application_id: APPLICATION_ID,
+                                acd_queue_name: `${voxidata.communicationchannelsite}.${groups[gi]}`
+                            })
+                        }
                         await voximplant.bindUserToQueue({
                             application_id: APPLICATION_ID,
                             user_id: voxiuser.user_id,
-                            acd_queue_name: voxiqueues.result[0].acd_queue_name,
+                            acd_queue_name: `${voxidata.communicationchannelsite}.${groups[gi]}`,
                             bind
                         })
                     }
@@ -125,7 +141,7 @@ exports.sendMailPassword = async (req, res) => {
                 else {
                     await voximplant.delUser({
                         application_id: APPLICATION_ID,
-                        user_name: `user${header.parameters.id}.${detail[i].parameters.orgid}`
+                        user_name: `user${header.parameters.id}.${detail[di].parameters.orgid}`
                     })
                 }
             }

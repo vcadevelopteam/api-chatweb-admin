@@ -192,6 +192,26 @@ exports.delUser = async ({application_id, user_name}) => {
     }
 }
 
+exports.addQueue = async ({application_id, acd_queue_name}) => {
+    try {
+        const form = new FormData();
+        form.append('account_id', VOXIMPLANT_ACCOUNT_ID);
+        form.append('application_id', application_id);
+        form.append('acd_queue_name', acd_queue_name);
+        form.append('auto_binding', `${false}`);
+        const result = await voximplantRequest('AddQueue', form);
+        return result.data;
+        // {
+        //     "result": 1,
+        //     "acd_queue_id": 1
+        // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
 exports.getQueues = async ({application_id}) => {
     try {
         const form = new FormData();
