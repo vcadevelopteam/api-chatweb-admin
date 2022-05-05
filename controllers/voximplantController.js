@@ -68,9 +68,9 @@ exports.getApplications = async (request, result) => {
     }
 }
 
-exports.getUsers = async (request, result) => {
+exports.getApplication = async (request, result) => {
     try {
-        let requestResult = await voximplant.getUsers(request.body)
+        let requestResult = await voximplant.getApplication(request.body)
         if (requestResult)
             return result.json(requestResult);
         return result.status(400).json(requestResult)
@@ -88,6 +88,40 @@ exports.getUsers = async (request, result) => {
 exports.addUser = async (request, result) => {
     try {
         let requestResult = await voximplant.addUser(request.body)
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
+    }
+    catch (err) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: err.message,
+            success: false,
+        })
+    }
+}
+
+exports.getUsers = async (request, result) => {
+    try {
+        let requestResult = await voximplant.getUsers(request.body)
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
+    }
+    catch (err) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: err.message,
+            success: false,
+        })
+    }
+}
+
+exports.getUser = async (request, result) => {
+    try {
+        let requestResult = await voximplant.getUser(request.body)
         if (requestResult)
             return result.json(requestResult);
         return result.status(400).json(requestResult)

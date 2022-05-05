@@ -115,6 +115,53 @@ exports.getApplications = async ({account_id}) => {
     }
 }
 
+exports.getApplication = async ({account_id, application_name}) => {
+    try {
+        const form = new FormData();
+        if (account_id)
+            form.append('account_id', account_id);
+        form.append('application_name', application_name);
+        const result = await voximplantRequest('GetApplications', form);
+        return result.data?.result?.[0];
+        // {
+        //     "application_name": "demo.nanoxxi93.voximplant.com",
+        //     "created": "2022-05-04 15:42:32",
+        //     "modified": "2022-05-04 15:42:32",
+        //     "secure_record_storage": true,
+        //     "application_id": 10454252,
+        //     "extended_application_name": "demo.nanoxxi93.n2.voximplant.com"
+        // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.addUser = async ({application_id, user_name, user_display_name, user_password}) => {
+    try {
+        const form = new FormData();
+        form.append('application_id', application_id);
+        form.append('user_name', user_name);
+        form.append('user_display_name', user_display_name);
+        form.append('user_password', user_password);
+        const result = await voximplantRequest('AddUser', form);
+        if (result.data.error) {
+            console.log(result.data.error);
+            return {error: result.data.error};
+        }
+        return result.data;
+        // {
+        //     "result": 1,
+        //     "user_id": 3883041
+        // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
 exports.getUsers = async ({application_id}) => {
     try {
         const form = new FormData();
@@ -170,30 +217,6 @@ exports.getUser = async ({application_id, user_name}) => {
         //     "modified": "2022-05-04 18:38:49",
         //     "user_display_name": "demo1@demo.com",
         //     "parent_accounting": true
-        // }
-    }
-    catch (err) {
-        console.log(err);
-        return undefined;
-    }
-}
-
-exports.addUser = async ({application_id, user_name, user_display_name, user_password}) => {
-    try {
-        const form = new FormData();
-        form.append('application_id', application_id);
-        form.append('user_name', user_name);
-        form.append('user_display_name', user_display_name);
-        form.append('user_password', user_password);
-        const result = await voximplantRequest('AddUser', form);
-        if (result.data.error) {
-            console.log(result.data.error);
-            return {error: result.data.error};
-        }
-        return result.data;
-        // {
-        //     "result": 1,
-        //     "user_id": 3883041
         // }
     }
     catch (err) {

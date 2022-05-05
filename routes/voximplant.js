@@ -15,11 +15,17 @@ router.post("/addApplication",
 router.post("/getApplications",
     voximplantController.getApplications
 )
-router.post("/getUsers",
-    voximplantController.getUsers
+router.post("/getApplication",
+    voximplantController.getApplication
 )
 router.post("/addUser",
     voximplantController.addUser
+)
+router.post("/getUsers",
+    voximplantController.getUsers
+)
+router.post("/getUser",
+    voximplantController.getUser
 )
 router.post("/delUser",
     voximplantController.delUser
