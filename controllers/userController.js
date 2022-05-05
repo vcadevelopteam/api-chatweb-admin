@@ -87,45 +87,47 @@ exports.sendMailPassword = async (req, res) => {
     const APPLICATION_ID = 10451952;
     const VOXI_PASSWORD = 'Laraigo2022$CDFD';
     for (let i = 0; i < detail.length; i++) {
-        let bind = true;
-        let voxiuser = undefined;
-        const voxidata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_VALIDATION", {channels: detail[i].parameters.channels});
-        if (voxidata instanceof Array && voxidata.length > 0) {
-            voxiuser = await voximplant.addUser({
-                application_id: APPLICATION_ID,
-                user_name: `user${header.parameters.id}.${detail[i].parameters.orgid}`,
-                user_display_name: header.parameters.usr,
-                user_password: VOXI_PASSWORD
-            })
-        }
-        else {
-            bind = false;
-        }
-        if (!voxiuser) {
-            voxiuser = await voximplant.getUser({
-                application_id: APPLICATION_ID,
-                user_name: `user${header.parameters.id}.${detail[i].parameters.orgid}`
-            })
-        }
-        if (voxiuser) {
-            console.log(voxiuser.user_id);
-            if (bind && detail[i].parameters.operation !== 'DELETE') {
-                let voxiqueues = await voximplant.getQueues({application_id: APPLICATION_ID})
-                console.log(voxiqueues)
-                if (voxiqueues.count > 0) {
-                    await voximplant.bindUserToQueue({
-                        application_id: APPLICATION_ID,
-                        user_id: voxiuser.user_id,
-                        acd_queue_name: voxiqueues.result[0].acd_queue_name,
-                        bind
-                    })
-                }
+        if (detail[i].parameters.type === 'ASESOR') {
+            let bind = true;
+            let voxiuser = undefined;
+            const voxidata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_VALIDATION", {channels: detail[i].parameters.channels});
+            if (voxidata instanceof Array && voxidata.length > 0) {
+                voxiuser = await voximplant.addUser({
+                    application_id: APPLICATION_ID,
+                    user_name: `user${header.parameters.id}.${detail[i].parameters.orgid}`,
+                    user_display_name: header.parameters.usr,
+                    user_password: VOXI_PASSWORD
+                })
             }
             else {
-                await voximplant.delUser({
+                bind = false;
+            }
+            if (!voxiuser) {
+                voxiuser = await voximplant.getUser({
                     application_id: APPLICATION_ID,
                     user_name: `user${header.parameters.id}.${detail[i].parameters.orgid}`
                 })
+            }
+            if (voxiuser) {
+                console.log(voxiuser.user_id);
+                if (bind && detail[i].parameters.operation !== 'DELETE') {
+                    let voxiqueues = await voximplant.getQueues({application_id: APPLICATION_ID})
+                    console.log(voxiqueues)
+                    if (voxiqueues.count > 0) {
+                        await voximplant.bindUserToQueue({
+                            application_id: APPLICATION_ID,
+                            user_id: voxiuser.user_id,
+                            acd_queue_name: voxiqueues.result[0].acd_queue_name,
+                            bind
+                        })
+                    }
+                }
+                else {
+                    await voximplant.delUser({
+                        application_id: APPLICATION_ID,
+                        user_name: `user${header.parameters.id}.${detail[i].parameters.orgid}`
+                    })
+                }
             }
         }
     }
@@ -216,16 +218,18 @@ exports.delete = async (req, res) => {
     const VOXI_PASSWORD = 'Laraigo2022$CDFD';
     const orgs = await executesimpletransaction("UFN_ORGUSER_SEL", {all: true, corpid: 0, orgid: 0, userid: detail[0].parameters.id, username: ''})
     for (let i = 0; i < orgs.length; i++) {
-        let voxiuser = await voximplant.getUser({
-            application_id: APPLICATION_ID,
-            user_name: `user${detail[0].parameters.id}.${orgs[i].orgid}`
-        })
-        if (voxiuser) {
-            console.log(voxiuser.user_id);
-            await voximplant.delUser({
+        if (orgs[i].type === 'ASESOR') {
+            let voxiuser = await voximplant.getUser({
                 application_id: APPLICATION_ID,
                 user_name: `user${detail[0].parameters.id}.${orgs[i].orgid}`
             })
+            if (voxiuser) {
+                console.log(voxiuser.user_id);
+                await voximplant.delUser({
+                    application_id: APPLICATION_ID,
+                    user_name: `user${detail[0].parameters.id}.${orgs[i].orgid}`
+                })
+            }
         }
     }
     // VOXIMPLANT //
