@@ -113,8 +113,10 @@ exports.sendMailPassword = async (req, res) => {
                 if (bind && detail[di].parameters.operation !== 'DELETE') {
                     let voxiqueues = await voximplant.getQueues({application_id: APPLICATION_ID});
                     console.log(voxiqueues);
-                    let voxiqueues_names = voxiqueues.result.map(vq => vq.acd_queue_name);
-                    let groups = detail[di].parameters.groups?.split(',')
+                    let voxiqueues_names = voxiqueues.result.map(vq => vq.acd_queue_name.split('.')[1]);
+                    let groups = detail[di].parameters.groups?.split(',');
+                    let groups_to_unbind = voxiqueues_names.filter(vq => !(groups.includes(vq) || vq === 'laraigo'))
+
                     // Bind to {site}.laraigo
                     await voximplant.bindUserToQueue({
                         application_id: APPLICATION_ID,
@@ -122,6 +124,7 @@ exports.sendMailPassword = async (req, res) => {
                         acd_queue_name: `${voxidata.communicationchannelsite}.laraigo`,
                         bind
                     })
+                    
                     // Bind to {site}.{group}
                     for (let gi = 0; gi < groups.length; qi++) {
                         if (!voxiqueues_names.includes(groups[i])) {
@@ -135,6 +138,16 @@ exports.sendMailPassword = async (req, res) => {
                             user_id: voxiuser.user_id,
                             acd_queue_name: `${voxidata.communicationchannelsite}.${groups[gi]}`,
                             bind
+                        })
+                    }
+
+                    // Unbind to {site}.{group}
+                    for (let gi = 0; gi < groups_to_unbind.length; qi++) {
+                        await voximplant.bindUserToQueue({
+                            application_id: APPLICATION_ID,
+                            user_id: voxiuser.user_id,
+                            acd_queue_name: `${voxidata.communicationchannelsite}.${groups_to_unbind[gi]}`,
+                            bind: false
                         })
                     }
                 }
