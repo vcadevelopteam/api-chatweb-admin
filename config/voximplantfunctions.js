@@ -58,7 +58,7 @@ exports.addAccount = async ({account_name, account_email, account_password}) => 
         const result = await voximplantRequest('AddAccount', form);
         if (result.data.error) {
             console.log(result.data.error);
-            return undefined;
+            return {error: result.data.error};
         }
         return result.data;
     }
@@ -200,6 +200,10 @@ exports.addQueue = async ({application_id, acd_queue_name}) => {
         form.append('acd_queue_name', acd_queue_name);
         form.append('auto_binding', `${false}`);
         const result = await voximplantRequest('AddQueue', form);
+        if (result.data.error) {
+            console.log(result.data.error);
+            return {error: result.data.error};
+        }
         return result.data;
         // {
         //     "result": 1,
