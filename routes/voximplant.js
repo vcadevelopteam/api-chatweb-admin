@@ -9,6 +9,9 @@ router.post("/addAccount",
 router.post("/getChildrenAccounts",
     voximplantController.getChildrenAccounts
 )
+router.post("/addApplication",
+    voximplantController.addApplication
+)
 router.post("/getApplications",
     voximplantController.getApplications
 )
@@ -20,6 +23,9 @@ router.post("/addUser",
 )
 router.post("/delUser",
     voximplantController.delUser
+)
+router.post("/addQueue",
+    voximplantController.addQueue
 )
 router.post("/getQueues",
     voximplantController.getQueues
