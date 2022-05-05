@@ -37,7 +37,6 @@ const voximplantRequest = async (path, form) => {
 exports.getChildrenAccounts = async () => {
     try {
         const form = new FormData();
-        form.append('account_id', VOXIMPLANT_ACCOUNT_ID);
         const result = await voximplantRequest('GetChildrenAccounts', form);
         return result.data;
     }
@@ -68,10 +67,11 @@ exports.addAccount = async ({account_name, account_email, account_password}) => 
     }
 }
 
-exports.addApplication = async ({account_id = VOXIMPLANT_ACCOUNT_ID, application_name}) => {
+exports.addApplication = async ({account_id, application_name}) => {
     try {
         const form = new FormData();
-        form.append('account_id', account_id);
+        if (account_id)
+            form.append('account_id', account_id);
         form.append('application_name', application_name);
         form.append('secure_record_storage', `${true}`);
         const result = await voximplantRequest('AddApplication', form);
@@ -87,7 +87,7 @@ exports.addApplication = async ({account_id = VOXIMPLANT_ACCOUNT_ID, application
     }
 }
 
-exports.getApplications = async ({account_id = null}) => {
+exports.getApplications = async ({account_id}) => {
     try {
         const form = new FormData();
         if (account_id)
@@ -156,6 +156,21 @@ exports.getUser = async ({application_id, user_name}) => {
         form.append('user_name', user_name);
         const result = await voximplantRequest('GetUsers', form);
         return result.data?.result?.[0];
+        // {
+        //     "fixed_balance": 0,
+        //     "user_name": "demo1",
+        //     "created": "2022-05-04 18:38:49",
+        //     "frozen": false,
+        //     "two_factor_auth_required": false,
+        //     "acd_status": "OFFLINE",
+        //     "user_active": true,
+        //     "balance": 0,
+        //     "user_id": 3883041,
+        //     "live_balance": 0,
+        //     "modified": "2022-05-04 18:38:49",
+        //     "user_display_name": "demo1@demo.com",
+        //     "parent_accounting": true
+        // }
     }
     catch (err) {
         console.log(err);
