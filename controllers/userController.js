@@ -86,21 +86,28 @@ exports.sendMailPassword = async (req, res) => {
     // VOXIMPLANT //
     const APPLICATION_ID = 10451952;
     const VOXI_PASSWORD = 'Laraigo2022$CDFD';
+    // Loop for every ORGUSER_INS
     for (let di = 0; di < detail.length; di++) {
         if (detail[di].parameters.type === 'ASESOR') {
             let bind = true;
             let voxiuser = undefined;
+            let application_id = await voximplant.getApplication({application_name: `apl-${detail[di].parameters.corpid}-${detail[di].parameters.orgid}`});
+            application_id = application_id || APPLICATION_ID;
             // Validar si existe algún canal VOXI en el ORGUSER
-            const voxidata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_VALIDATION", {channels: detail[di].parameters.channels});
+            const voxidata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_VALIDATION", {
+                corpid: detail[di].parameters.corpid,
+                orgid: detail[di].parameters.orgid,
+                channels: detail[di].parameters.channels
+            });
             if (voxidata instanceof Array && voxidata.length > 0) {
                 voxiuser = await voximplant.getUser({
-                    application_id: APPLICATION_ID,
+                    application_id: application_id,
                     user_name: `user${header.parameters.id}.${detail[di].parameters.orgid}`
                 });
                 if (!voxiuser?.user_id) {
                     // Create user in voximplant
                     voxiuser = await voximplant.addUser({
-                        application_id: APPLICATION_ID,
+                        application_id: application_id,
                         user_name: `user${header.parameters.id}.${detail[di].parameters.orgid}`,
                         user_display_name: header.parameters.usr,
                         user_password: VOXI_PASSWORD
@@ -113,30 +120,31 @@ exports.sendMailPassword = async (req, res) => {
             if (voxiuser?.user_id) {
                 if (bind && detail[di].parameters.operation !== 'DELETE') {
                     // Get queues from voximplant application
-                    let voxiqueues = await voximplant.getQueues({application_id: APPLICATION_ID});
+                    let voxiqueues = await voximplant.getQueues({application_id: application_id});
                     let voxiqueues_names = voxiqueues.result.map(vq => vq.acd_queue_name.split('.')[1]);
                     let groups = ['laraigo', ...(detail[di].parameters.groups || '').split(',')];
                     let groups_to_unbind = voxiqueues_names.filter(vq => !groups.includes(vq))
+                    // Loop for every VOXI channel
                     for (let vi = 0; vi < voxidata.length; vi++) {
-                        // Create queues if not exists
+                        // Create queues if not exists {site}.{group}
                         for (let gi = 0; gi < groups.length; gi++) {
                             if (!voxiqueues_names.includes(groups[gi])) {
                                 await voximplant.addQueue({
-                                    application_id: APPLICATION_ID,
+                                    application_id: application_id,
                                     acd_queue_name: `${voxidata[vi].communicationchannelsite}.${groups[gi]}`
                                 })
                             }
                         }
                         // Bind to {site}.{group}
                         await voximplant.bindUserToQueue({
-                            application_id: APPLICATION_ID,
+                            application_id: application_id,
                             user_id: voxiuser.user_id,
                             acd_queue_name: groups.map(g => `${voxidata[vi].communicationchannelsite}.${g}`).join(';'),
                             bind
                         })
                         // Unbind to {site}.{group}
                         await voximplant.bindUserToQueue({
-                            application_id: APPLICATION_ID,
+                            application_id: application_id,
                             user_id: voxiuser.user_id,
                             acd_queue_name: groups_to_unbind.map(g => `${voxidata[vi].communicationchannelsite}.${g}`).join(';'),
                             bind: false
@@ -145,7 +153,7 @@ exports.sendMailPassword = async (req, res) => {
                 }
                 else {
                     await voximplant.delUser({
-                        application_id: APPLICATION_ID,
+                        application_id: application_id,
                         user_name: `user${header.parameters.id}.${detail[di].parameters.orgid}`
                     })
                 }
@@ -236,17 +244,19 @@ exports.delete = async (req, res) => {
 
     // VOXIMPLANT //
     const APPLICATION_ID = 10451952;
-    const VOXI_PASSWORD = 'Laraigo2022$CDFD';
     const orgs = await executesimpletransaction("UFN_ORGUSER_SEL", {all: true, corpid: 0, orgid: 0, userid: detail[0].parameters.id, username: ''})
+    // Loop for every ORGUSER_SEL
     for (let i = 0; i < orgs.length; i++) {
         if (orgs[i].type === 'ASESOR') {
+            let application_id = await voximplant.getApplication({application_name: `apl-${orgs[i].corpid}-${orgs[i].orgid}`});
+            application_id = application_id || APPLICATION_ID;
             let voxiuser = await voximplant.getUser({
-                application_id: APPLICATION_ID,
+                application_id: application_id,
                 user_name: `user${detail[0].parameters.id}.${orgs[i].orgid}`
             })
             if (voxiuser) {
                 await voximplant.delUser({
-                    application_id: APPLICATION_ID,
+                    application_id: application_id,
                     user_name: `user${detail[0].parameters.id}.${orgs[i].orgid}`
                 })
             }
