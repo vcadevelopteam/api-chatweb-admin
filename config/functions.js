@@ -2169,4 +2169,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CONVERSATION_SEL_VOXI: {
+        query: "SELECT * FROM ufn_conversation_sel_voxi($corpid, $orgid, $userid, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
 }
