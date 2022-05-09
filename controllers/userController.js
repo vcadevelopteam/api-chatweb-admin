@@ -6,6 +6,8 @@ const { setSessionParameters } = require('../config/helpers');
 const { errors, getErrorCode } = require('../config/helpers');
 const voximplant = require("../config/voximplantfunctions");
 
+const VOXIMPLANT_APPLICATION_ID = process.env.VOXIMPLANT_APPLICATION_ID
+
 exports.updateInformation = async (req, res) => {
     const { data: parameters } = req.body;
 
@@ -84,78 +86,102 @@ exports.sendMailPassword = async (req, res) => {
     const result = await executeTransaction(header, detail, req.user.menu || {});
 
     // VOXIMPLANT //
-    const APPLICATION_ID = 10451952;
     const VOXI_PASSWORD = 'Laraigo2022$CDFD';
     // Loop for every ORGUSER_INS
     for (let di = 0; di < detail.length; di++) {
         if (detail[di].parameters.type === 'ASESOR') {
             let bind = true;
             let voxiuser = undefined;
-            let application_id = await voximplant.getApplication({application_name: `apl-${detail[di].parameters.corpid}-${detail[di].parameters.orgid}`});
-            application_id = application_id || APPLICATION_ID;
-            // Validar si existe algún canal VOXI en el ORGUSER
-            const voxidata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_VALIDATION", {
-                corpid: detail[di].parameters.corpid,
-                orgid: detail[di].parameters.orgid,
-                channels: detail[di].parameters.channels
+            let voxiapplication = undefined;
+            let account_id = await voximplant.getChildrenAccount({
+                child_account_name: `usr-${detail[di].parameters.orgid}-${detail[di].parameters.corpid}`
+            })?.account_id;
+            voxiapplication = await voximplant.getApplication({
+                account_id: account_id,
+                application_name: `apl-${detail[di].parameters.orgid}-${detail[di].parameters.corpid}.`
             });
-            if (voxidata instanceof Array && voxidata.length > 0) {
-                voxiuser = await voximplant.getUser({
-                    application_id: application_id,
-                    user_name: `user${header.parameters.id}.${detail[di].parameters.orgid}`
+            // if (!voxiapplication) {
+            //     voxiapplication = await voximplant.addApplication({
+            //         account_id: account_id,
+            //         application_name: `apl-${detail[di].parameters.orgid}-${detail[di].parameters.corpid}`
+            //     });
+            // }
+            let application_id = voxiapplication?.application_id;
+
+            if (application_id) {
+                // Validar si existe algún canal VOXI en el ORGUSER
+                const voxidata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_VALIDATION", {
+                    corpid: detail[di].parameters.corpid,
+                    orgid: detail[di].parameters.orgid,
+                    channels: detail[di].parameters.channels
                 });
-                if (!voxiuser?.user_id) {
-                    // Create user in voximplant
-                    voxiuser = await voximplant.addUser({
+                if (voxidata instanceof Array && voxidata.length > 0) {
+                    voxiuser = await voximplant.getUser({
+                        account_id: account_id,
                         application_id: application_id,
-                        user_name: `user${header.parameters.id}.${detail[di].parameters.orgid}`,
-                        user_display_name: header.parameters.usr,
-                        user_password: VOXI_PASSWORD
-                    })
-                }
-            }
-            else {
-                bind = false;
-            }
-            if (voxiuser?.user_id) {
-                if (bind && detail[di].parameters.operation !== 'DELETE') {
-                    // Get queues from voximplant application
-                    let voxiqueues = await voximplant.getQueues({application_id: application_id});
-                    let voxiqueues_names = voxiqueues.result.map(vq => vq.acd_queue_name.split('.')[1]);
-                    let groups = ['laraigo', ...(detail[di].parameters.groups || '').split(',')];
-                    let groups_to_unbind = voxiqueues_names.filter(vq => !groups.includes(vq))
-                    // Loop for every VOXI channel
-                    for (let vi = 0; vi < voxidata.length; vi++) {
-                        // Create queues if not exists {site}.{group}
-                        for (let gi = 0; gi < groups.length; gi++) {
-                            if (!voxiqueues_names.includes(groups[gi])) {
-                                await voximplant.addQueue({
-                                    application_id: application_id,
-                                    acd_queue_name: `${voxidata[vi].communicationchannelsite}.${groups[gi]}`
-                                })
-                            }
-                        }
-                        // Bind to {site}.{group}
-                        await voximplant.bindUserToQueue({
+                        user_name: `user${header.parameters.id}.${detail[di].parameters.orgid}`
+                    });
+                    if (!voxiuser?.user_id) {
+                        // Create user in voximplant
+                        voxiuser = await voximplant.addUser({
+                            account_id: account_id,
                             application_id: application_id,
-                            user_id: voxiuser.user_id,
-                            acd_queue_name: groups.map(g => `${voxidata[vi].communicationchannelsite}.${g}`).join(';'),
-                            bind
-                        })
-                        // Unbind to {site}.{group}
-                        await voximplant.bindUserToQueue({
-                            application_id: application_id,
-                            user_id: voxiuser.user_id,
-                            acd_queue_name: groups_to_unbind.map(g => `${voxidata[vi].communicationchannelsite}.${g}`).join(';'),
-                            bind: false
+                            user_name: `user${header.parameters.id}.${detail[di].parameters.orgid}`,
+                            user_display_name: header.parameters.usr,
+                            user_password: VOXI_PASSWORD
                         })
                     }
                 }
                 else {
-                    await voximplant.delUser({
-                        application_id: application_id,
-                        user_name: `user${header.parameters.id}.${detail[di].parameters.orgid}`
-                    })
+                    bind = false;
+                }
+                if (voxiuser?.user_id) {
+                    if (bind && detail[di].parameters.operation !== 'DELETE') {
+                        // Get queues from voximplant application
+                        let voxiqueues = await voximplant.getQueues({
+                            account_id: account_id,
+                            application_id: application_id
+                        });
+                        let voxiqueues_names = voxiqueues.result.map(vq => vq.acd_queue_name.split('.')[1]);
+                        let groups = ['laraigo', ...(detail[di].parameters.groups || '').split(',')];
+                        let groups_to_unbind = voxiqueues_names.filter(vq => !groups.includes(vq))
+                        // Loop for every VOXI channel
+                        for (let vi = 0; vi < voxidata.length; vi++) {
+                            // Create queues if not exists {site}.{group}
+                            for (let gi = 0; gi < groups.length; gi++) {
+                                if (!voxiqueues_names.includes(groups[gi])) {
+                                    await voximplant.addQueue({
+                                        account_id: account_id,
+                                        application_id: application_id,
+                                        acd_queue_name: `${voxidata[vi].communicationchannelsite}.${groups[gi]}`
+                                    })
+                                }
+                            }
+                            // Bind to {site}.{group}
+                            await voximplant.bindUserToQueue({
+                                account_id: account_id,
+                                application_id: application_id,
+                                user_id: voxiuser.user_id,
+                                acd_queue_name: groups.map(g => `${voxidata[vi].communicationchannelsite}.${g}`).join(';'),
+                                bind
+                            })
+                            // Unbind to {site}.{group}
+                            await voximplant.bindUserToQueue({
+                                account_id: account_id,
+                                application_id: application_id,
+                                user_id: voxiuser.user_id,
+                                acd_queue_name: groups_to_unbind.map(g => `${voxidata[vi].communicationchannelsite}.${g}`).join(';'),
+                                bind: false
+                            })
+                        }
+                    }
+                    else {
+                        await voximplant.delUser({
+                            account_id: account_id,
+                            application_id: application_id,
+                            user_name: `user${header.parameters.id}.${detail[di].parameters.orgid}`
+                        })
+                    }
                 }
             }
         }
@@ -243,22 +269,30 @@ exports.delete = async (req, res) => {
     const result = await executeTransaction(header, detail, req.user.menu || {});
 
     // VOXIMPLANT //
-    const APPLICATION_ID = 10451952;
     const orgs = await executesimpletransaction("UFN_ORGUSER_SEL", {all: true, corpid: 0, orgid: 0, userid: detail[0].parameters.id, username: ''})
     // Loop for every ORGUSER_SEL
     for (let i = 0; i < orgs.length; i++) {
         if (orgs[i].type === 'ASESOR') {
-            let application_id = await voximplant.getApplication({application_name: `apl-${orgs[i].corpid}-${orgs[i].orgid}`});
-            application_id = application_id || APPLICATION_ID;
-            let voxiuser = await voximplant.getUser({
-                application_id: application_id,
-                user_name: `user${detail[0].parameters.id}.${orgs[i].orgid}`
-            })
-            if (voxiuser) {
-                await voximplant.delUser({
+            let account_id = await voximplant.getChildrenAccount({
+                child_account_name: `usr-${orgs[i].orgid}-${orgs[i].corpid}`
+            })?.account_id;
+            let application_id = await voximplant.getApplication({
+                account_id: account_id,
+                application_name: `apl-${orgs[i].orgid}-${orgs[i].corpid}`
+            });
+            if (application_id) {
+                let voxiuser = await voximplant.getUser({
+                    account_id: account_id,
                     application_id: application_id,
                     user_name: `user${detail[0].parameters.id}.${orgs[i].orgid}`
                 })
+                if (voxiuser) {
+                    await voximplant.delUser({
+                        account_id: account_id,
+                        application_id: application_id,
+                        user_name: `user${detail[0].parameters.id}.${orgs[i].orgid}`
+                    })
+                }
             }
         }
     }

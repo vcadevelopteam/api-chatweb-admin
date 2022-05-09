@@ -51,6 +51,22 @@ exports.getChildrenAccounts = async ({child_account_id, child_account_name}) => 
     }
 }
 
+exports.getChildrenAccount = async ({child_account_id, child_account_name}) => {
+    try {
+        const form = new FormData();
+        if (child_account_id)
+            form.append('child_account_id', child_account_id);
+        else if (child_account_name)
+            form.append('child_account_name', child_account_name);
+        const result = await voximplantParentRequest('GetChildrenAccounts', form);
+        return result.data?.result?.[0];
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
 exports.addAccount = async ({account_name, account_email, account_password}) => {
     try {
         const form = new FormData();
@@ -103,8 +119,8 @@ const setChildData = ({data, account_id, account_name}) => {
 }
 
 const getApiKey = async ({child_account_id, child_account_name}) => {
-    const result = await this.getChildrenAccounts({child_account_id, child_account_name})
-    return result?.result?.[0]?.api_key;
+    const result = await this.getChildrenAccount({child_account_id, child_account_name})
+    return result?.api_key;
 }
 
 const voximplantRequest = async (path, data) => {
@@ -140,6 +156,12 @@ exports.addApplication = async ({account_id, account_name, application_name}) =>
             return {error: result.data.error};
         }
         return result.data;
+        // {
+        //     "result": 1,
+        //     "application_name": "myapp1.test.voximplant.com",
+        //     "application_id": 1,
+        //     "secure_record_storage": false
+        // }
     }
     catch (err) {
         console.log(err);
@@ -147,10 +169,12 @@ exports.addApplication = async ({account_id, account_name, application_name}) =>
     }
 }
 
-exports.getApplications = async ({account_id, account_name}) => {
+exports.getApplications = async ({account_id, account_name, application_name}) => {
     try {
         const data = {};
         setChildData({data, account_id, account_name});
+        if (application_name)
+            data['application_name'] = application_name;
         const result = await voximplantRequest('GetApplications', data);
         return result.data;
         // {
