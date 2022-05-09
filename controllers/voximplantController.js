@@ -34,6 +34,23 @@ exports.addAccount = async (request, result) => {
     }
 }
 
+exports.setChildAccountInfo = async (request, result) => {
+    try {
+        let requestResult = await voximplant.setChildAccountInfo(request.body)
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
+    }
+    catch (err) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: err.message,
+            success: false,
+        })
+    }
+}
+
 exports.addApplication = async (request, result) => {
     try {
         let requestResult = await voximplant.addApplication(request.body)

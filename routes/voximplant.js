@@ -3,12 +3,17 @@ const router = express.Router();
 const voximplantController = require("../controllers/voximplantController");
 const auth = require('../middleware/auth');
 
+// Parent //
 router.post("/addAccount",
     voximplantController.addAccount
 )
 router.post("/getChildrenAccounts",
     voximplantController.getChildrenAccounts
 )
+router.post("/setChildAccountInfo",
+    voximplantController.setChildAccountInfo
+)
+// Child //
 router.post("/addApplication",
     voximplantController.addApplication
 )

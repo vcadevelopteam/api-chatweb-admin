@@ -9,6 +9,7 @@ const VOXIMPLANT_ACCOUNT_ID = process.env.VOXIMPLANT_ACCOUNT_ID
 const VOXIMPLANT_APIRUL = process.env.VOXIMPLANT_APIRUL
 const VOXIMPLANT_APIKEY = process.env.VOXIMPLANT_APIKEY
 
+// Parent //
 const getJWT = async () => {
     try {
         const data = await fs.promises.readFile(VOXIMPLANT_CREDENTIALS, 'utf8')
@@ -24,7 +25,7 @@ const getJWT = async () => {
     }
 }
 
-const voximplantRequest = async (path, form) => {
+const voximplantParentRequest = async (path, form) => {
     const token = await getJWT();
     return await axios({
         method: "post",
@@ -34,10 +35,14 @@ const voximplantRequest = async (path, form) => {
     });
 }
 
-exports.getChildrenAccounts = async () => {
+exports.getChildrenAccounts = async ({child_account_id, child_account_name}) => {
     try {
         const form = new FormData();
-        const result = await voximplantRequest('GetChildrenAccounts', form);
+        if (child_account_id)
+            form.append('child_account_id', child_account_id);
+        else if (child_account_name)
+            form.append('child_account_name', child_account_name);
+        const result = await voximplantParentRequest('GetChildrenAccounts', form);
         return result.data;
     }
     catch (err) {
@@ -54,7 +59,8 @@ exports.addAccount = async ({account_name, account_email, account_password}) => 
         form.append('account_name', account_name);
         form.append('account_email', account_email);
         form.append('account_password', account_password);
-        const result = await voximplantRequest('AddAccount', form);
+        form.append('active', `${true}`);
+        const result = await voximplantParentRequest('AddAccount', form);
         if (result.data.error) {
             console.log(result.data.error);
             return {error: result.data.error};
@@ -67,13 +73,67 @@ exports.addAccount = async ({account_name, account_email, account_password}) => 
     }
 }
 
-exports.addApplication = async ({account_id, application_name}) => {
+exports.setChildAccountInfo = async ({child_account_id, child_account_name, active}) => {
     try {
         const form = new FormData();
-        if (account_id)
-            form.append('account_id', account_id);
-        form.append('application_name', application_name);
-        form.append('secure_record_storage', `${true}`);
+        if (child_account_id)
+            form.append('child_account_id', child_account_id);
+        else if (child_account_name)
+            form.append('child_account_name', child_account_name);
+        form.append('active', `${active}`);
+        const result = await voximplantParentRequest('SetChildAccountInfo', form);
+        if (result.data.error) {
+            console.log(result.data.error);
+            return {error: result.data.error};
+        }
+        return result.data;
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+// Childs //
+const setChildData = ({data, account_id, account_name}) => {
+    if (account_id)
+        data['account_id'] = account_id;
+    else if (account_name)
+        data['account_name'] = account_name;
+}
+
+const getApiKey = async ({child_account_id, child_account_name}) => {
+    const result = await this.getChildrenAccounts({child_account_id, child_account_name})
+    return result?.result?.[0]?.api_key;
+}
+
+const voximplantRequest = async (path, data) => {
+    const form = new FormData();
+    Object.keys(data).forEach(k => form.append(k, data[k]));
+    if (data['account_id'] || data['account_name']) {
+        const api_key = await getApiKey({
+            child_account_id: data['account_id'],
+            child_account_name: data['account_name']
+        });
+        form.append('api_key', api_key);
+        return await axios({
+            method: "post",
+            url: `${VOXIMPLANT_APIRUL}${path}`,
+            data: form,
+            headers: Object.assign({}, form.getHeaders()),
+        });
+    }
+    else {
+        return await voximplantParentRequest(path, form);
+    }
+}
+
+exports.addApplication = async ({account_id, account_name, application_name}) => {
+    try {
+        const data = {};
+        setChildData({data, account_id, account_name});
+        data['application_name'] = application_name;
+        data['secure_record_storage'] = `${true}`;
         const result = await voximplantRequest('AddApplication', form);
         if (result.data.error) {
             console.log(result.data.error);
@@ -87,12 +147,11 @@ exports.addApplication = async ({account_id, application_name}) => {
     }
 }
 
-exports.getApplications = async ({account_id}) => {
+exports.getApplications = async ({account_id, account_name}) => {
     try {
-        const form = new FormData();
-        if (account_id)
-            form.append('account_id', account_id);
-        const result = await voximplantRequest('GetApplications', form);
+        const data = {};
+        setChildData({data, account_id, account_name});
+        const result = await voximplantRequest('GetApplications', data);
         return result.data;
         // {
         //     "result": [
@@ -115,13 +174,12 @@ exports.getApplications = async ({account_id}) => {
     }
 }
 
-exports.getApplication = async ({account_id, application_name}) => {
+exports.getApplication = async ({account_id, account_name, application_name}) => {
     try {
-        const form = new FormData();
-        if (account_id)
-            form.append('account_id', account_id);
-        form.append('application_name', application_name);
-        const result = await voximplantRequest('GetApplications', form);
+        const data = {};
+        setChildData({data, account_id, account_name});
+        data['application_name'] = application_name;
+        const result = await voximplantRequest('GetApplications', data);
         return result.data?.result?.[0];
         // {
         //     "application_name": "demo.nanoxxi93.voximplant.com",
@@ -138,14 +196,15 @@ exports.getApplication = async ({account_id, application_name}) => {
     }
 }
 
-exports.addUser = async ({application_id, user_name, user_display_name, user_password}) => {
+exports.addUser = async ({account_id, account_name, application_id, user_name, user_display_name, user_password}) => {
     try {
-        const form = new FormData();
-        form.append('application_id', application_id);
-        form.append('user_name', user_name);
-        form.append('user_display_name', user_display_name);
-        form.append('user_password', user_password);
-        const result = await voximplantRequest('AddUser', form);
+        const data = {};
+        setChildData({data, account_id, account_name});
+        data['application_id'] = application_id;
+        data['user_name'] = user_name;
+        data['user_display_name'] = user_display_name;
+        data['user_password'] = user_password;
+        const result = await voximplantRequest('AddUser', data);
         if (result.data.error) {
             console.log(result.data.error);
             return {error: result.data.error};
@@ -162,11 +221,12 @@ exports.addUser = async ({application_id, user_name, user_display_name, user_pas
     }
 }
 
-exports.getUsers = async ({application_id}) => {
+exports.getUsers = async ({account_id, account_name, application_id}) => {
     try {
-        const form = new FormData();
-        form.append('application_id', application_id);
-        const result = await voximplantRequest('GetUsers', form);
+        const data = {};
+        setChildData({data, account_id, account_name});
+        data['application_id'] = application_id;
+        const result = await voximplantRequest('GetUsers', data);
         return result.data;
         // {
         //     "result": [
@@ -196,12 +256,13 @@ exports.getUsers = async ({application_id}) => {
     }
 }
 
-exports.getUser = async ({application_id, user_name}) => {
+exports.getUser = async ({account_id, account_name, application_id, user_name}) => {
     try {
-        const form = new FormData();
-        form.append('application_id', application_id);
-        form.append('user_name', user_name);
-        const result = await voximplantRequest('GetUsers', form);
+        const data = {};
+        setChildData({data, account_id, account_name});
+        data['application_id'] = application_id;
+        data['user_name'] = user_name;
+        const result = await voximplantRequest('GetUsers', data);
         return result.data?.result?.[0];
         // {
         //     "fixed_balance": 0,
@@ -225,12 +286,13 @@ exports.getUser = async ({application_id, user_name}) => {
     }
 }
 
-exports.delUser = async ({application_id, user_name}) => {
+exports.delUser = async ({account_id, account_name, application_id, user_name}) => {
     try {
-        const form = new FormData();
-        form.append('application_id', application_id);
-        form.append('user_name', user_name);
-        const result = await voximplantRequest('DelUser', form);
+        const data = {};
+        setChildData({data, account_id, account_name});
+        data['application_id'] = application_id;
+        data['user_name'] = user_name;
+        const result = await voximplantRequest('DelUser', data);
         if (result.data.error) {
             console.log(result.data.error);
             return {error: result.data.error};
@@ -246,13 +308,14 @@ exports.delUser = async ({application_id, user_name}) => {
     }
 }
 
-exports.addQueue = async ({application_id, acd_queue_name}) => {
+exports.addQueue = async ({account_id, account_name, application_id, acd_queue_name}) => {
     try {
-        const form = new FormData();
-        form.append('application_id', application_id);
-        form.append('acd_queue_name', acd_queue_name);
-        form.append('auto_binding', `${false}`);
-        const result = await voximplantRequest('AddQueue', form);
+        const data = {};
+        setChildData({data, account_id, account_name});
+        data['application_id'] = application_id;
+        data['acd_queue_name'] = acd_queue_name;
+        data['auto_binding'] = `${false}`;
+        const result = await voximplantRequest('AddQueue', data);
         if (result.data.error) {
             console.log(result.data.error);
             return {error: result.data.error};
@@ -269,12 +332,13 @@ exports.addQueue = async ({application_id, acd_queue_name}) => {
     }
 }
 
-exports.getQueues = async ({application_id}) => {
+exports.getQueues = async ({account_id, account_name, application_id}) => {
     try {
-        const form = new FormData();
+        const data = {};
+        setChildData({data, account_id, account_name});
         if (application_id)
-            form.append('application_id', application_id);
-        const result = await voximplantRequest('GetQueues', form);
+            data['application_id'] = application_id;
+        const result = await voximplantRequest('GetQueues', data);
         return result.data;
         // {
         //     "result": [
@@ -299,14 +363,15 @@ exports.getQueues = async ({application_id}) => {
     }
 }
 
-exports.bindUserToQueue = async ({application_id, user_id, acd_queue_name, bind = true}) => {
+exports.bindUserToQueue = async ({account_id, account_name, application_id, user_id, acd_queue_name, bind = true}) => {
     try {
-        const form = new FormData();
-        form.append('application_id', application_id);
-        form.append('user_id', user_id);
-        form.append('acd_queue_name', acd_queue_name);
-        form.append('bind', `${bind}`);
-        const result = await voximplantRequest('BindUserToQueue', form);
+        const data = {};
+        setChildData({data, account_id, account_name});
+        data['application_id'] = application_id;
+        data['user_id'] = user_id;
+        data['acd_queue_name'] = acd_queue_name;
+        data['bind'] = `${bind}`;
+        const result = await voximplantRequest('BindUserToQueue', data);
         if (result.data.error) {
             console.log(result.data.error);
             return undefined;
@@ -322,12 +387,13 @@ exports.bindUserToQueue = async ({application_id, user_id, acd_queue_name, bind 
     }
 }
 
-exports.getPhoneNumberCategories = async ({country_code = '', sandbox = false}) => {
+exports.getPhoneNumberCategories = async ({account_id, account_name, country_code = '', sandbox = false}) => {
     try {
-        const form = new FormData();
-        form.append('country_code', country_code);
-        form.append('sandbox', `${sandbox}`);
-        const result = await voximplantRequest('GetPhoneNumberCategories', form);
+        const data = {};
+        setChildData({data, account_id, account_name});
+        data['country_code'] = country_code;
+        data['sandbox'] = `${sandbox}`;
+        const result = await voximplantRequest('GetPhoneNumberCategories', data);
         return result.data;
         // {
         //     "result": [
@@ -359,12 +425,13 @@ exports.getPhoneNumberCategories = async ({country_code = '', sandbox = false}) 
     }
 }
 
-exports.getPhoneNumberCountryStates = async ({country_code, phone_category_name}) => {
+exports.getPhoneNumberCountryStates = async ({account_id, account_name, country_code, phone_category_name}) => {
     try {
-        const form = new FormData();
-        form.append('country_code', country_code);
-        form.append('phone_category_name', phone_category_name);
-        const result = await voximplantRequest('GetPhoneNumberCountryStates', form);
+        const data = {};
+        setChildData({data, account_id, account_name});
+        data['country_code'] = country_code;
+        data['phone_category_name'] = phone_category_name;
+        const result = await voximplantRequest('GetPhoneNumberCountryStates', data);
         return result.data;
         // {
         //     "result": [
@@ -383,14 +450,15 @@ exports.getPhoneNumberCountryStates = async ({country_code, phone_category_name}
     }
 }
 
-exports.getPhoneNumberRegions = async ({country_code, country_state = '', phone_category_name}) => {
+exports.getPhoneNumberRegions = async ({account_id, account_name, country_code, country_state = '', phone_category_name}) => {
     try {
-        const form = new FormData();
-        form.append('country_code', country_code);
+        const data = {};
+        setChildData({data, account_id, account_name});
+        data['country_code'] = country_code;
         if (country_state)
-            form.append('country_state', country_state);
-        form.append('phone_category_name', phone_category_name);
-        const result = await voximplantRequest('GetPhoneNumberRegions', form);
+            data['country_state'] = country_state;
+        data['phone_category_name'] = phone_category_name;
+        const result = await voximplantRequest('GetPhoneNumberRegions', data);
         return result.data;
         // {
         //     "result": [
@@ -420,16 +488,17 @@ exports.getPhoneNumberRegions = async ({country_code, country_state = '', phone_
     }
 }
 
-exports.attachPhoneNumber = async ({country_code, country_state = null, phone_category_name, phone_region_id, phone_count}) => {
+exports.attachPhoneNumber = async ({account_id, account_name, country_code, country_state = null, phone_category_name, phone_region_id, phone_count}) => {
     try {
-        const form = new FormData();
-        form.append('country_code', country_code);
+        const data = {};
+        setChildData({data, account_id, account_name});
+        data['country_code'] = country_code;
         if (country_state)
-            form.append('country_state', country_state);
-        form.append('phone_category_name', phone_category_name);
-        form.append('phone_region_id', phone_region_id);
-        form.append('phone_count', phone_count);
-        const result = await voximplantRequest('AttachPhoneNumber', form);
+            data['country_state'] = country_state;
+        data['phone_category_name'] = phone_category_name;
+        data['phone_region_id'] = phone_region_id;
+        data['phone_count'] = phone_count;
+        const result = await voximplantRequest('AttachPhoneNumber', data);
         return result.data;
         // {
         //     "result": 1,
@@ -449,13 +518,14 @@ exports.attachPhoneNumber = async ({country_code, country_state = null, phone_ca
     }
 }
 
-exports.getPhoneNumbers = async ({application_id = null, sandbox = false}) => {
+exports.getPhoneNumbers = async ({account_id, account_name, application_id = null, sandbox = false}) => {
     try {
-        const form = new FormData();
-        form.append('sandbox', `${sandbox}`);
+        const data = {};
+        setChildData({data, account_id, account_name});
+        data['sandbox'] = `${sandbox}`;
         if (application_id)
-            form.append('application_id', application_id);
-        const result = await voximplantRequest('GetPhoneNumbers', form);
+            data['application_id'] = application_id;
+        const result = await voximplantRequest('GetPhoneNumbers', data);
         return result.data;
         // {
         //     "result": [
@@ -492,12 +562,13 @@ exports.getPhoneNumbers = async ({application_id = null, sandbox = false}) => {
     }
 }
 
-exports.bindPhoneNumberToApplication = async ({application_id, phone_number}) => {
+exports.bindPhoneNumberToApplication = async ({account_id, account_name, application_id, phone_number}) => {
     try {
-        const form = new FormData();
-        form.append('application_id', application_id);
-        form.append('phone_number', phone_number);
-        const result = await voximplantRequest('BindPhoneNumberToApplication', form);
+        const data = {};
+        setChildData({data, account_id, account_name});
+        data['application_id'] = application_id;
+        data['phone_number'] = phone_number;
+        const result = await voximplantRequest('BindPhoneNumberToApplication', data);
         return result.data;
         // {
         //     "result": 1
