@@ -134,7 +134,7 @@ exports.addApplication = async ({account_id, account_name, application_name}) =>
         setChildData({data, account_id, account_name});
         data['application_name'] = application_name;
         data['secure_record_storage'] = `${true}`;
-        const result = await voximplantRequest('AddApplication', form);
+        const result = await voximplantRequest('AddApplication', data);
         if (result.data.error) {
             console.log(result.data.error);
             return {error: result.data.error};
