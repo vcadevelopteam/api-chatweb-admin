@@ -1613,6 +1613,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_CONVERSATION_OUTBOUND_INS: {
+        query: `select * from ufn_conversation_outbound_ins($personid, $personcommunicationchannel, $communicationchannelid, $corpid, $orgid, $userid, $closetype, $status, $finishdate, $handoff, $usergroup, $extradata, $lastreplydate, $personlastreplydate, $origin, $firstname, $lastname, $communicationchanneltype, $personcommunicationchannelowner)`,
+        module: "",
+        protected: "INSERT"
+    },
     UFN_BILLINGPERIOD_SUMMARYORG: {
         query: "SELECT * FROM ufn_billingperiod_summaryorg($corpid, $orgid, $year, $month, $userid)",
         module: "",
