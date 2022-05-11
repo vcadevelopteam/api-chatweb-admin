@@ -1,5 +1,6 @@
 const axios = require('axios');
 const triggerfunctions = require('../config/triggerfunctions');
+const voximplant = require("../config/voximplantfunctions");
 
 const { setSessionParameters } = require('../config/helpers');
 
@@ -14,6 +15,9 @@ const webChatApplication = process.env.CHATAPPLICATION;
 const webChatPlatformEndpoint = process.env.WEBCHATPLATFORM;
 const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
 const whatsAppEndpoint = process.env.WHATSAPPAPI;
+const voximplantAccountEnvironment = process.env.VOXIMPLANT_ENVIRONMENT;
+const voximplantPassword = process.env.VOXIMPLANT_PASSWORD;
+const voximplantRulePattern = process.env.VOXIMPLANT_RULEPATTERN;
 
 exports.checkPaymentPlan = async (request, result) => {
     try {
@@ -195,9 +199,9 @@ exports.deleteChannel = async (request, result) => {
                             communicationchannelsite: serviceCredentials.siteId,
                             type: (parameters.type === 'INST' ? 'INDM' : 'INST')
                         };
-    
+
                         const transactionValidateInstagram = await triggerfunctions.executesimpletransaction(validateMethod, validateParameters);
-    
+
                         if (transactionValidateInstagram instanceof Array) {
                             if (transactionValidateInstagram.length > 0) {
                                 DeleteIntegration = false;
@@ -231,7 +235,7 @@ exports.deleteChannel = async (request, result) => {
                     }
 
                     const transactionDeleteFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
-    
+
                     if (transactionDeleteFacebook instanceof Array) {
                         return result.json({
                             success: true
@@ -263,7 +267,7 @@ exports.deleteChannel = async (request, result) => {
             case 'INMS':
                 if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
                     var serviceCredentials = JSON.parse(parameters.servicecredentials);
-    
+
                     const requestDeleteInstagramSmooch = await axios({
                         data: {
                             linkType: 'WEBHOOKREMOVE',
@@ -275,10 +279,10 @@ exports.deleteChannel = async (request, result) => {
                         method: 'post',
                         url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
                     });
-    
+
                     if (requestDeleteInstagramSmooch.data.success) {
                         const transactionDeleteInstagramSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
-    
+
                         if (transactionDeleteInstagramSmooch instanceof Array) {
                             return result.json({
                                 success: true
@@ -300,7 +304,7 @@ exports.deleteChannel = async (request, result) => {
                 }
                 else {
                     const transactionDeleteInstagramSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
-    
+
                     if (transactionDeleteInstagramSmooch instanceof Array) {
                         return result.json({
                             success: true
@@ -523,10 +527,10 @@ exports.deleteChannel = async (request, result) => {
                             method: 'post',
                             url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
                         });
-            
+
                         if (requestDeleteWhatsAppSmooch.data.success) {
                             const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
-            
+
                             if (transactionDeleteWhatsAppSmooch instanceof Array) {
                                 return result.json({
                                     success: true
@@ -548,7 +552,7 @@ exports.deleteChannel = async (request, result) => {
                     }
                     else {
                         const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
-        
+
                         if (transactionDeleteWhatsAppSmooch instanceof Array) {
                             return result.json({
                                 success: true
@@ -564,7 +568,7 @@ exports.deleteChannel = async (request, result) => {
                 }
                 else {
                     const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
-        
+
                     if (transactionDeleteWhatsAppSmooch instanceof Array) {
                         return result.json({
                             success: true
@@ -752,7 +756,7 @@ exports.insertChannel = async (request, result) => {
         parameters.updintegration = null;
         parameters.username = request.user.usr;
         parameters.phone = null;
-       
+
         switch (request.body.type) {
             case 'CHATWEB':
                 const webChatData = {
@@ -951,7 +955,7 @@ exports.insertChannel = async (request, result) => {
                             method: 'post',
                             url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
                         });
-            
+
                         if (requestGetBusiness.data.success) {
                             businessId = requestGetBusiness.data.businessId;
                         }
@@ -1170,7 +1174,7 @@ exports.insertChannel = async (request, result) => {
                         devEnvironment: service.devenvironment,
                         twitterPageId: requestPageTwitter.data.pageId
                     };
-                
+
                     parameters.communicationchannelsite = requestPageTwitter.data.pageId;
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
 
@@ -1203,8 +1207,7 @@ exports.insertChannel = async (request, result) => {
                                 success: true
                             });
                         }
-                        else
-                        {
+                        else {
                             parameters.id = transactionCreateTwitter[0].ufn_communicationchannel_ins;
                             parameters.motive = 'Delete from API';
                             parameters.operation = 'DELETE';
@@ -1301,7 +1304,7 @@ exports.insertChannel = async (request, result) => {
                             orgid: 0,
                             username: request.user.usr
                         };
-                            
+
                         const transactionGetRecipient = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
 
                         if (transactionGetRecipient instanceof Array) {
@@ -1369,7 +1372,7 @@ exports.insertChannel = async (request, result) => {
                                                     method: 'post',
                                                     url: `${bridgeEndpoint}processscheduler/sendmail`
                                                 });
-                            
+
                                                 if (!requestSendMail.data.success) {
                                                     return result.status(400).json({
                                                         msg: requestSendMail.data.operationMessage,
@@ -1464,6 +1467,93 @@ exports.insertChannel = async (request, result) => {
                     });
                 }
 
+            case 'VOXIMPLANTPHONE':
+                var voximplantEnvironment = await voximplantHandleEnvironment(request.user.corpid, request.user.orgid);
+
+                if (voximplantEnvironment) {
+                    if (voximplantEnvironment.accountid && voximplantEnvironment.apikey && voximplantEnvironment.applicationid) {
+                        var voximplantScenario = await voximplantHandleScenario(request.user.corpid, request.user.orgid, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid);
+
+                        if (voximplantScenario) {
+                            if (voximplantScenario.ruleid && voximplantScenario.scenarioid) {
+                                var voximplantPhoneNumber = await voximplantHandlePhoneNumber(voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, service.country, service.category, service.state, service.region);
+
+                                if (voximplantPhoneNumber) {
+                                    if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.phonenumber && voximplantPhoneNumber.queueid) {
+                                        var serviceCredentials = {
+                                            phoneid: voximplantPhoneNumber.phoneid,
+                                            phonenumber: voximplantPhoneNumber.phonenumber,
+                                            queueid: voximplantPhoneNumber.queueid,
+                                            ruleid: voximplantScenario.ruleid,
+                                            scenarioid: voximplantScenario.scenarioid,
+                                            accountid: voximplantEnvironment.accountid,
+                                            apikey: voximplantEnvironment.apikey,
+                                            applicationid: voximplantEnvironment.applicationid,
+                                            applicationname: voximplantEnvironment.applicationname,
+                                        };
+                    
+                                        parameters.communicationchannelsite = voximplantPhoneNumber.phonenumber;
+                                        parameters.communicationchannelowner = voximplantEnvironment.applicationname;
+                                        parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                                        parameters.phone = voximplantPhoneNumber.phonenumber;
+                                        parameters.type = 'VOXI';
+                    
+                                        const transactionCreateVoximplant = await triggerfunctions.executesimpletransaction(method, parameters);
+                    
+                                        if (transactionCreateVoximplant instanceof Array) {
+                                            return result.json({
+                                                success: true
+                                            });
+                                        }
+                                        else {
+                                            return result.status(400).json({
+                                                msg: transactionCreateVoximplant.code,
+                                                success: false
+                                            });
+                                        }
+                                    }
+                                    else {
+                                        return result.status(400).json({
+                                            msg: 'voximplant_phonenumberqueue_error',
+                                            success: false
+                                        });
+                                    }
+                                }
+                                else {
+                                    return result.status(400).json({
+                                        msg: 'voximplant_phonenumberqueue_error',
+                                        success: false
+                                    });
+                                }
+                            }
+                            else {
+                                return result.status(400).json({
+                                    msg: 'voximplant_scenariorule_error',
+                                    success: false
+                                });
+                            }
+                        }
+                        else {
+                            return result.status(400).json({
+                                msg: 'voximplant_scenariorule_error',
+                                success: false
+                            });
+                        }
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: 'voximplant_accountapplication_error',
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    return result.status(400).json({
+                        msg: 'voximplant_accountapplication_error',
+                        success: false
+                    });
+                }
+
             default:
                 return result.status(400).json({
                     msg: 'Channel not supported',
@@ -1551,7 +1641,7 @@ exports.updateChannel = async (request, result) => {
             parameters.servicecredentials = JSON.stringify(service);
 
             const transactionCreateWebChat = await triggerfunctions.executesimpletransaction(method, parameters);
-            
+
             if (transactionCreateWebChat instanceof Array) {
                 try {
                     if (typeof webChatPlatformEndpoint !== 'undefined' && webChatPlatformEndpoint) {
@@ -1686,9 +1776,9 @@ exports.activateChannel = async (request, result) => {
                 });
                 parameters.phone = requestMigrateWhatsApp.data.phoneNumber;
                 parameters.type = 'WHAT';
-    
+
                 const transactionActivateWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
-                
+
                 if (transactionActivateWhatsApp instanceof Array) {
                     return result.json({
                         success: true
@@ -1715,4 +1805,251 @@ exports.activateChannel = async (request, result) => {
             success: false
         });
     }
+}
+
+const voximplantManageOrg = async (corpid, orgid, operation, voximplantuser = null, voximplantmail = null, voximplantpassword = null, voximplantaccountid = null, voximplantapikey = null, voximplantapplicationid = null, voximplantruleid = null, voximplantscenarioid = null) => {
+    const queryMethod = "UFN_ORG_VOXIMPLANT_UPD";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: orgid,
+        operation: operation,
+        voximplantuser: voximplantuser,
+        voximplantmail: voximplantmail,
+        voximplantpassword: voximplantpassword,
+        voximplantaccountid: voximplantaccountid,
+        voximplantapikey: voximplantapikey,
+        voximplantapplicationid: voximplantapplicationid,
+        voximplantruleid: voximplantruleid,
+        voximplantscenarioid: voximplantscenarioid,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult[0];
+        }
+    }
+
+    return null;
+}
+
+const getAppSetting = async () => {
+    const queryResult = await triggerfunctions.executesimpletransaction("UFN_APPSETTING_VOXIMPLANT_SEL");
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult[0];
+        }
+    }
+
+    return null
+}
+
+const voximplantHandleEnvironment = async (corpid, orgid) => {
+    var voximplantEnvironment = {
+        accountid: null,
+        apikey: null,
+        applicationid: null,
+        applicationname: null,
+    };
+
+    try {
+        const orgData = await voximplantManageOrg(corpid, orgid, 'SELECT');
+
+        if (orgData) {
+            var createApplication = false;
+
+            if (!orgData.voximplantuser && !orgData.voximplantmail && !orgData.voximplantpassword && !orgData.voximplantaccountid && !orgData.voximplantapikey) {
+                createApplication = true;
+
+                var childUserBody = {
+                    account_name: `${voximplantAccountEnvironment}aco-${orgid}-${corpid}`,
+                    account_email: `${voximplantAccountEnvironment}aco-${orgid}-${corpid}@vcaperu.com`,
+                    account_password: voximplantPassword,
+                    active: true,
+                };
+
+                let childUserResult = await voximplant.addAccount(childUserBody);
+
+                if (childUserResult) {
+                    if (childUserResult.result) {
+                        await voximplantManageOrg(corpid, orgid, 'ACCOUNT', childUserBody.account_name, childUserBody.account_email, childUserBody.account_password, childUserResult.account_id, childUserResult.api_key);
+
+                        voximplantEnvironment.accountid = childUserResult.account_id;
+                        voximplantEnvironment.apikey = childUserResult.api_key;
+                    }
+                }
+            }
+            else {
+                voximplantEnvironment.accountid = orgData.voximplantaccountid;
+                voximplantEnvironment.apikey = orgData.voximplantapikey;
+
+                if (!orgData.voximplantapplicationid) {
+                    createApplication = true;
+                }
+                else {
+                    voximplantEnvironment.applicationid = orgData.voximplantapplicationid;
+                }
+            }
+
+            if (createApplication) {
+                var applicationBody = {
+                    account_id: voximplantEnvironment.accountid,
+                    application_name: `${voximplantAccountEnvironment}apl-${orgid}-${corpid}`,
+                    child_apikey: voximplantEnvironment.apikey,
+                };
+
+                let applicationResult = await voximplant.addApplication(applicationBody);
+
+                if (applicationResult) {
+                    if (applicationResult.result) {
+                        await voximplantManageOrg(corpid, orgid, 'APPLICATION', null, null, null, null, null, applicationResult.application_id, null, null);
+
+                        voximplantEnvironment.applicationid = applicationResult.application_id;
+                        voximplantEnvironment.applicationname = applicationBody.application_name;
+                    }
+                }
+            }
+        }
+    }
+    catch (exception) {
+        voximplantEnvironment.accountid = null;
+        voximplantEnvironment.apikey = null;
+        voximplantEnvironment.applicationid = null;
+        voximplantEnvironment.applicationname = null;
+    }
+
+    return voximplantEnvironment;
+}
+
+const voximplantHandleScenario = async (corpid, orgid, accountid, apikey, applicationid) => {
+    var voximplantScenario = {
+        ruleid: null,
+        scenarioid: null,
+    };
+
+    try {
+        const orgData = await voximplantManageOrg(corpid, orgid, 'SELECT');
+
+        if (orgData) {
+            var createRule = false;
+
+            if (!orgData.voximplantscenarioid) {
+                const appsetting = await getAppSetting();
+
+                if (appsetting) {
+                    createRule = true;
+
+                    var scenarioBody = {
+                        account_id: accountid,
+                        scenario_name: `${voximplantAccountEnvironment}sce-${orgid}-${corpid}`,
+                        scenario_script: appsetting.scenarioscript,
+                        child_apikey: apikey,
+                    };
+
+                    let scenarioResult = await voximplant.addScenario(scenarioBody);
+
+                    if (scenarioResult) {
+                        if (scenarioResult.result) {
+                            await voximplantManageOrg(corpid, orgid, 'SCENARIO', null, null, null, null, null, null, null, scenarioResult.scenario_id);
+
+                            voximplantScenario.scenarioid = scenarioResult.scenario_id;
+                        }
+                    }
+                }
+            }
+            else {
+                voximplantScenario.scenarioid = orgData.voximplantscenarioid;
+
+                if (!orgData.voximplantruleid) {
+                    createRule = true;
+                }
+                else {
+                    voximplantScenario.ruleid = orgData.voximplantruleid;
+                }
+            }
+
+            if (createRule) {
+                var ruleBody = {
+                    account_id: accountid,
+                    application_id: applicationid,
+                    rule_name: `${voximplantAccountEnvironment}rul-${orgid}-${corpid}`,
+                    rule_pattern: voximplantRulePattern,
+                    scenario_id: voximplantScenario.scenarioid,
+                    child_apikey: apikey,
+                };
+
+                let ruleResult = await voximplant.addRule(ruleBody);
+
+                if (ruleResult) {
+                    if (ruleResult.result) {
+                        await voximplantManageOrg(corpid, orgid, 'RULE', null, null, null, null, null, null, ruleResult.rule_id);
+
+                        voximplantScenario.ruleid = ruleResult.rule_id;
+                    }
+                }
+            }
+        }
+    }
+    catch (exception) {
+        voximplantScenario.ruleid = null;
+        voximplantScenario.scenarioid = null;
+    }
+
+    return voximplantScenario;
+}
+
+const voximplantHandlePhoneNumber = async (accountid, apikey, applicationid, country, category, state, region) => {
+    var voximplantPhoneNumber = {
+        phoneid: null,
+        phonenumber: null,
+        queueid: null,
+    };
+
+    try {
+        var phoneNumberBody = {
+            account_id: accountid,
+            phone_count: 1,
+            country_code: country,
+            phone_category_name: category,
+            country_state: state,
+            phone_region_id: region,
+            child_apikey: apikey,
+        };
+
+        let phoneNumberResult = await voximplant.attachPhoneNumber(phoneNumberBody);
+
+        if (phoneNumberResult) {
+            if (phoneNumberResult.result) {
+                if (phoneNumberResult.phone_numbers[0]) {
+                    voximplantPhoneNumber.phoneid = phoneNumberResult.phone_numbers[0].phone_id;
+                    voximplantPhoneNumber.phonenumber = phoneNumberResult.phone_numbers[0].phone_number;
+                }
+            }
+        }
+
+        if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.phonenumber) {
+            var queueBody = {
+                account_id: accountid,
+                application_id: applicationid,
+                acd_queue_name: `${voximplantPhoneNumber.phonenumber}.laraigo`,
+                child_apikey: apikey,
+            };
+
+            let queueResult = await voximplant.addQueue(queueBody);
+
+            if (queueResult) {
+                if (queueResult.result) {
+                    voximplantPhoneNumber.queueid = queueResult.acd_queue_id;
+                }
+            }
+        }
+    }
+    catch (exception) {
+        voximplantPhoneNumber.phoneid = null;
+        voximplantPhoneNumber.phonenumber = null;
+    }
+
+    return voximplantScenario;
 }

@@ -35,7 +35,7 @@ const voximplantParentRequest = async (path, form) => {
     });
 }
 
-exports.getChildrenAccounts = async ({child_account_id, child_account_name}) => {
+exports.getChildrenAccounts = async ({ child_account_id, child_account_name }) => {
     try {
         const form = new FormData();
         if (child_account_id)
@@ -51,7 +51,20 @@ exports.getChildrenAccounts = async ({child_account_id, child_account_name}) => 
     }
 }
 
-exports.getChildrenAccount = async ({child_account_id, child_account_name}) => {
+exports.getAccountInvoices = async () => {
+    try {
+        const form = new FormData();
+        form.append('account_id', VOXIMPLANT_ACCOUNT_ID);
+        const result = await voximplantParentRequest('GetAccountInvoices', form);
+        return result.data;
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.getChildrenAccount = async ({ child_account_id, child_account_name }) => {
     try {
         const form = new FormData();
         if (child_account_id)
@@ -67,7 +80,7 @@ exports.getChildrenAccount = async ({child_account_id, child_account_name}) => {
     }
 }
 
-exports.addAccount = async ({account_name, account_email, account_password}) => {
+exports.addAccount = async ({ account_name, account_email, account_password }) => {
     try {
         const form = new FormData();
         form.append('parent_account_id', VOXIMPLANT_ACCOUNT_ID);
@@ -79,7 +92,7 @@ exports.addAccount = async ({account_name, account_email, account_password}) => 
         const result = await voximplantParentRequest('AddAccount', form);
         if (result.data.error) {
             console.log(result.data.error);
-            return {error: result.data.error};
+            return { error: result.data.error };
         }
         return result.data;
     }
@@ -89,7 +102,7 @@ exports.addAccount = async ({account_name, account_email, account_password}) => 
     }
 }
 
-exports.setChildAccountInfo = async ({child_account_id, child_account_name, active}) => {
+exports.setChildAccountInfo = async ({ child_account_id, child_account_name, active }) => {
     try {
         const form = new FormData();
         if (child_account_id)
@@ -100,7 +113,7 @@ exports.setChildAccountInfo = async ({child_account_id, child_account_name, acti
         const result = await voximplantParentRequest('SetChildAccountInfo', form);
         if (result.data.error) {
             console.log(result.data.error);
-            return {error: result.data.error};
+            return { error: result.data.error };
         }
         return result.data;
     }
@@ -111,16 +124,21 @@ exports.setChildAccountInfo = async ({child_account_id, child_account_name, acti
 }
 
 // Childs //
-const setChildData = ({data, account_id, account_name}) => {
+const setChildData = ({ data, account_id, account_name }) => {
     if (account_id)
         data['account_id'] = account_id;
     else if (account_name)
         data['account_name'] = account_name;
 }
 
-const getApiKey = async ({child_account_id, child_account_name}) => {
-    const result = await this.getChildrenAccount({child_account_id, child_account_name})
-    return result?.api_key;
+const getApiKey = async ({ child_account_id, child_account_name, child_apikey = null }) => {
+    if (child_apikey) {
+        return child_apikey;
+    }
+    else {
+        const result = await this.getChildrenAccount({ child_account_id, child_account_name })
+        return result?.api_key;
+    }
 }
 
 const voximplantRequest = async (path, data) => {
@@ -129,7 +147,8 @@ const voximplantRequest = async (path, data) => {
     if (data['account_id'] || data['account_name']) {
         const api_key = await getApiKey({
             child_account_id: data['account_id'],
-            child_account_name: data['account_name']
+            child_account_name: data['account_name'],
+            child_apikey: data['child_apikey'],
         });
         form.append('api_key', api_key);
         return await axios({
@@ -144,16 +163,19 @@ const voximplantRequest = async (path, data) => {
     }
 }
 
-exports.addApplication = async ({account_id, account_name, application_name}) => {
+exports.addApplication = async ({ account_id, account_name, application_name, child_apikey = null }) => {
     try {
         const data = {};
-        setChildData({data, account_id, account_name});
+        setChildData({ data, account_id, account_name });
         data['application_name'] = application_name;
         data['secure_record_storage'] = `${true}`;
+        if (child_apikey) {
+            data['child_apikey'] = child_apikey;
+        }
         const result = await voximplantRequest('AddApplication', data);
         if (result.data.error) {
             console.log(result.data.error);
-            return {error: result.data.error};
+            return { error: result.data.error };
         }
         return result.data;
         // {
@@ -169,10 +191,68 @@ exports.addApplication = async ({account_id, account_name, application_name}) =>
     }
 }
 
-exports.getApplications = async ({account_id, account_name, application_name}) => {
+exports.addScenario = async ({ account_id, account_name, scenario_name, scenario_script, child_apikey = null }) => {
     try {
         const data = {};
-        setChildData({data, account_id, account_name});
+        setChildData({ data, account_id, account_name });
+        data['scenario_name'] = scenario_name;
+        data['scenario_script'] = scenario_script;
+        if (child_apikey) {
+            data['child_apikey'] = child_apikey;
+        }
+        const result = await voximplantRequest('AddScenario', data);
+        if (result.data.error) {
+            console.log(result.data.error);
+            return { error: result.data.error };
+        }
+        return result.data;
+        // {
+        //     "result": 1,
+        //     "rule_name": "myapp1.test.voximplant.com",
+        //     "application_id": 1,
+        //     "secure_record_storage": false
+        // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.addRule = async ({ account_id, account_name, application_id, rule_name, rule_pattern, scenario_id, child_apikey = null }) => {
+    try {
+        const data = {};
+        setChildData({ data, account_id, account_name });
+        data['application_id'] = application_id;
+        data['rule_name'] = rule_name;
+        data['rule_pattern'] = rule_pattern;
+        data['scenario_id'] = scenario_id;
+        if (child_apikey) {
+            data['child_apikey'] = child_apikey;
+        }
+        const result = await voximplantRequest('AddRule', data);
+        if (result.data.error) {
+            console.log(result.data.error);
+            return { error: result.data.error };
+        }
+        return result.data;
+        // {
+        //     "result": 1,
+        //     "rule_name": "myapp1.test.voximplant.com",
+        //     "application_id": 1,
+        //     "secure_record_storage": false
+        // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.getApplications = async ({ account_id, account_name, application_name }) => {
+    try {
+        const data = {};
+        setChildData({ data, account_id, account_name });
         if (application_name)
             data['application_name'] = application_name;
         const result = await voximplantRequest('GetApplications', data);
@@ -198,10 +278,10 @@ exports.getApplications = async ({account_id, account_name, application_name}) =
     }
 }
 
-exports.getApplication = async ({account_id, account_name, application_name}) => {
+exports.getApplication = async ({ account_id, account_name, application_name }) => {
     try {
         const data = {};
-        setChildData({data, account_id, account_name});
+        setChildData({ data, account_id, account_name });
         data['application_name'] = application_name;
         const result = await voximplantRequest('GetApplications', data);
         return result.data?.result?.[0];
@@ -220,10 +300,10 @@ exports.getApplication = async ({account_id, account_name, application_name}) =>
     }
 }
 
-exports.addUser = async ({account_id, account_name, application_id, user_name, user_display_name, user_password}) => {
+exports.addUser = async ({ account_id, account_name, application_id, user_name, user_display_name, user_password }) => {
     try {
         const data = {};
-        setChildData({data, account_id, account_name});
+        setChildData({ data, account_id, account_name });
         data['application_id'] = application_id;
         data['user_name'] = user_name;
         data['user_display_name'] = user_display_name;
@@ -231,7 +311,7 @@ exports.addUser = async ({account_id, account_name, application_id, user_name, u
         const result = await voximplantRequest('AddUser', data);
         if (result.data.error) {
             console.log(result.data.error);
-            return {error: result.data.error};
+            return { error: result.data.error };
         }
         return result.data;
         // {
@@ -245,10 +325,10 @@ exports.addUser = async ({account_id, account_name, application_id, user_name, u
     }
 }
 
-exports.getUsers = async ({account_id, account_name, application_id}) => {
+exports.getUsers = async ({ account_id, account_name, application_id }) => {
     try {
         const data = {};
-        setChildData({data, account_id, account_name});
+        setChildData({ data, account_id, account_name });
         data['application_id'] = application_id;
         const result = await voximplantRequest('GetUsers', data);
         return result.data;
@@ -280,10 +360,10 @@ exports.getUsers = async ({account_id, account_name, application_id}) => {
     }
 }
 
-exports.getUser = async ({account_id, account_name, application_id, user_name}) => {
+exports.getUser = async ({ account_id, account_name, application_id, user_name }) => {
     try {
         const data = {};
-        setChildData({data, account_id, account_name});
+        setChildData({ data, account_id, account_name });
         data['application_id'] = application_id;
         data['user_name'] = user_name;
         const result = await voximplantRequest('GetUsers', data);
@@ -310,16 +390,16 @@ exports.getUser = async ({account_id, account_name, application_id, user_name}) 
     }
 }
 
-exports.delUser = async ({account_id, account_name, application_id, user_name}) => {
+exports.delUser = async ({ account_id, account_name, application_id, user_name }) => {
     try {
         const data = {};
-        setChildData({data, account_id, account_name});
+        setChildData({ data, account_id, account_name });
         data['application_id'] = application_id;
         data['user_name'] = user_name;
         const result = await voximplantRequest('DelUser', data);
         if (result.data.error) {
             console.log(result.data.error);
-            return {error: result.data.error};
+            return { error: result.data.error };
         }
         return result.data;
         // {
@@ -332,17 +412,20 @@ exports.delUser = async ({account_id, account_name, application_id, user_name}) 
     }
 }
 
-exports.addQueue = async ({account_id, account_name, application_id, acd_queue_name}) => {
+exports.addQueue = async ({ account_id, account_name, application_id, acd_queue_name, child_apikey = null }) => {
     try {
         const data = {};
-        setChildData({data, account_id, account_name});
+        setChildData({ data, account_id, account_name });
         data['application_id'] = application_id;
         data['acd_queue_name'] = acd_queue_name;
         data['auto_binding'] = `${false}`;
+        if (child_apikey) {
+            data['child_apikey'] = child_apikey;
+        }
         const result = await voximplantRequest('AddQueue', data);
         if (result.data.error) {
             console.log(result.data.error);
-            return {error: result.data.error};
+            return { error: result.data.error };
         }
         return result.data;
         // {
@@ -356,10 +439,10 @@ exports.addQueue = async ({account_id, account_name, application_id, acd_queue_n
     }
 }
 
-exports.getQueues = async ({account_id, account_name, application_id}) => {
+exports.getQueues = async ({ account_id, account_name, application_id }) => {
     try {
         const data = {};
-        setChildData({data, account_id, account_name});
+        setChildData({ data, account_id, account_name });
         if (application_id)
             data['application_id'] = application_id;
         const result = await voximplantRequest('GetQueues', data);
@@ -387,10 +470,10 @@ exports.getQueues = async ({account_id, account_name, application_id}) => {
     }
 }
 
-exports.bindUserToQueue = async ({account_id, account_name, application_id, user_id, acd_queue_name, bind = true}) => {
+exports.bindUserToQueue = async ({ account_id, account_name, application_id, user_id, acd_queue_name, bind = true }) => {
     try {
         const data = {};
-        setChildData({data, account_id, account_name});
+        setChildData({ data, account_id, account_name });
         data['application_id'] = application_id;
         data['user_id'] = user_id;
         data['acd_queue_name'] = acd_queue_name;
@@ -411,10 +494,10 @@ exports.bindUserToQueue = async ({account_id, account_name, application_id, user
     }
 }
 
-exports.getPhoneNumberCategories = async ({account_id, account_name, country_code = '', sandbox = false}) => {
+exports.getPhoneNumberCategories = async ({ account_id, account_name, country_code = '', sandbox = false }) => {
     try {
         const data = {};
-        setChildData({data, account_id, account_name});
+        setChildData({ data, account_id, account_name });
         data['country_code'] = country_code;
         data['sandbox'] = `${sandbox}`;
         const result = await voximplantRequest('GetPhoneNumberCategories', data);
@@ -449,10 +532,10 @@ exports.getPhoneNumberCategories = async ({account_id, account_name, country_cod
     }
 }
 
-exports.getPhoneNumberCountryStates = async ({account_id, account_name, country_code, phone_category_name}) => {
+exports.getPhoneNumberCountryStates = async ({ account_id, account_name, country_code, phone_category_name }) => {
     try {
         const data = {};
-        setChildData({data, account_id, account_name});
+        setChildData({ data, account_id, account_name });
         data['country_code'] = country_code;
         data['phone_category_name'] = phone_category_name;
         const result = await voximplantRequest('GetPhoneNumberCountryStates', data);
@@ -474,10 +557,10 @@ exports.getPhoneNumberCountryStates = async ({account_id, account_name, country_
     }
 }
 
-exports.getPhoneNumberRegions = async ({account_id, account_name, country_code, country_state = '', phone_category_name}) => {
+exports.getPhoneNumberRegions = async ({ account_id, account_name, country_code, country_state = '', phone_category_name }) => {
     try {
         const data = {};
-        setChildData({data, account_id, account_name});
+        setChildData({ data, account_id, account_name });
         data['country_code'] = country_code;
         if (country_state)
             data['country_state'] = country_state;
@@ -512,16 +595,19 @@ exports.getPhoneNumberRegions = async ({account_id, account_name, country_code, 
     }
 }
 
-exports.attachPhoneNumber = async ({account_id, account_name, country_code, country_state = null, phone_category_name, phone_region_id, phone_count}) => {
+exports.attachPhoneNumber = async ({ account_id, account_name, country_code, country_state = null, phone_category_name, phone_region_id, phone_count, child_apikey = null }) => {
     try {
         const data = {};
-        setChildData({data, account_id, account_name});
+        setChildData({ data, account_id, account_name });
         data['country_code'] = country_code;
         if (country_state)
             data['country_state'] = country_state;
         data['phone_category_name'] = phone_category_name;
         data['phone_region_id'] = phone_region_id;
         data['phone_count'] = phone_count;
+        if (child_apikey) {
+            data['child_apikey'] = child_apikey;
+        }
         const result = await voximplantRequest('AttachPhoneNumber', data);
         return result.data;
         // {
@@ -542,10 +628,10 @@ exports.attachPhoneNumber = async ({account_id, account_name, country_code, coun
     }
 }
 
-exports.getPhoneNumbers = async ({account_id, account_name, application_id = null, sandbox = false}) => {
+exports.getPhoneNumbers = async ({ account_id, account_name, application_id = null, sandbox = false }) => {
     try {
         const data = {};
-        setChildData({data, account_id, account_name});
+        setChildData({ data, account_id, account_name });
         data['sandbox'] = `${sandbox}`;
         if (application_id)
             data['application_id'] = application_id;
@@ -586,10 +672,10 @@ exports.getPhoneNumbers = async ({account_id, account_name, application_id = nul
     }
 }
 
-exports.bindPhoneNumberToApplication = async ({account_id, account_name, application_id, phone_number}) => {
+exports.bindPhoneNumberToApplication = async ({ account_id, account_name, application_id, phone_number }) => {
     try {
         const data = {};
-        setChildData({data, account_id, account_name});
+        setChildData({ data, account_id, account_name });
         data['application_id'] = application_id;
         data['phone_number'] = phone_number;
         const result = await voximplantRequest('BindPhoneNumberToApplication', data);

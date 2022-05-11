@@ -2174,4 +2174,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_APPSETTING_VOXIMPLANT_SEL: {
+        query: "SELECT * FROM ufn_appsetting_voximplant_sel();",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ORG_VOXIMPLANT_UPD: {
+        query: "SELECT * FROM ufn_org_voximplant_upd($corpid, $orgid, $operation, $voximplantuser, $voximplantmail, $voximplantpassword, $voximplantaccountid, $voximplantapikey, $voximplantapplicationid, $voximplantruleid, $voximplantscenarioid);",
+        module: "",
+        protected: "UPDATE"
+    },
 }
