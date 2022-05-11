@@ -1491,15 +1491,15 @@ exports.insertChannel = async (request, result) => {
                                             applicationid: voximplantEnvironment.applicationid,
                                             applicationname: voximplantEnvironment.applicationname,
                                         };
-                    
+
                                         parameters.communicationchannelsite = voximplantPhoneNumber.phonenumber;
                                         parameters.communicationchannelowner = voximplantEnvironment.applicationname;
                                         parameters.servicecredentials = JSON.stringify(serviceCredentials);
                                         parameters.phone = voximplantPhoneNumber.phonenumber;
                                         parameters.type = 'VOXI';
-                    
+
                                         const transactionCreateVoximplant = await triggerfunctions.executesimpletransaction(method, parameters);
-                    
+
                                         if (transactionCreateVoximplant instanceof Array) {
                                             return result.json({
                                                 success: true
