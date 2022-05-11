@@ -103,3 +103,6 @@ dist
 # TernJS port file
 
 .tern-port
+
+# Voximplant credential file
+voximplant_credentials.json
