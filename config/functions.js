@@ -1493,6 +1493,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    QUERY_GET_VOXIMPLANT_ORG: {
+        query: "SELECT org.corpid, org.orgid, org.voximplantaccountid, org.voximplantapikey, org.voximplantapplicationid FROM org WHERE org.corpid = $corpid AND org.orgid = $orgid;",
+        module: "",
+        protected: "SELECT"
+    },
     QUERY_GET_VOXIMPLANT_VALIDATION: {
         query: "SELECT cc.corpid, cc.orgid, cc.communicationchannelsite, cc.communicationchannelowner FROM communicationchannel cc JOIN org ON org.corpid = cc.corpid AND org.orgid = cc.orgid WHERE cc.corpid = $corpid AND cc.orgid = $orgid AND cc.communicationchannelid = ANY(string_to_array($channels,',')::BIGINT[]) AND cc.type = 'VOXI';",
         module: "",

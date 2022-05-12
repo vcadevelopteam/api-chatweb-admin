@@ -6,7 +6,7 @@ const { setSessionParameters } = require('../config/helpers');
 const { errors, getErrorCode } = require('../config/helpers');
 const voximplant = require("../config/voximplantfunctions");
 
-const VOXIMPLANT_APPLICATION_ID = process.env.VOXIMPLANT_APPLICATION_ID
+const VOXIMPLANT_ENVIRONMENT = process.env.VOXIMPLANT_ENVIRONMENT;
 
 exports.updateInformation = async (req, res) => {
     const { data: parameters } = req.body;
@@ -92,30 +92,42 @@ exports.sendMailPassword = async (req, res) => {
         if (detail[di].parameters.type === 'ASESOR') {
             let bind = true;
             let voxiuser = undefined;
-            let voxiapplication = undefined;
-            let account_id = await voximplant.getChildrenAccount({
-                child_account_name: `usr-${detail[di].parameters.orgid}-${detail[di].parameters.corpid}`
-            })?.account_id;
-            voxiapplication = await voximplant.getApplication({
-                account_id: account_id,
-                application_name: `apl-${detail[di].parameters.orgid}-${detail[di].parameters.corpid}.`
+            let account_id = undefined;
+            let api_key = undefined;
+            let application_id = undefined;
+
+            // Try to get information of VOXI in org table
+            const voxiorgdata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_ORG", {
+                corpid: detail[di].parameters.corpid,
+                orgid: detail[di].parameters.orgid,
             });
-            // if (!voxiapplication) {
-            //     voxiapplication = await voximplant.addApplication({
-            //         account_id: account_id,
-            //         application_name: `apl-${detail[di].parameters.orgid}-${detail[di].parameters.corpid}`
-            //     });
-            // }
-            let application_id = voxiapplication?.application_id;
+
+            // If exists info of VOXI in org
+            if (voxiorgdata instanceof Array && voxiorgdata.length > 0) {
+                account_id = voxiorgdata[0].voximplantaccountid;
+                api_key = voxiorgdata[0].voximplantapikey;
+                application_id = voxiorgdata[0].voximplantapplicationid;
+            }
+
+            // If not exists info of VOXI in org, try to get from VOXI directly
+            if (!account_id) {
+                account_id = (await voximplant.getChildrenAccount({
+                    child_account_name: `${VOXIMPLANT_ENVIRONMENT}aco-${detail[di].parameters.orgid}-${detail[di].parameters.corpid}`
+                }))?.account_id;
+                application_id = (await voximplant.getApplication({
+                    account_id: account_id,
+                    application_name: `${VOXIMPLANT_ENVIRONMENT}apl-${detail[di].parameters.orgid}-${detail[di].parameters.corpid}.`
+                }))?.application_id;
+            }
 
             if (application_id) {
                 // Validar si existe algún canal VOXI en el ORGUSER
-                const voxidata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_VALIDATION", {
+                const voxichanneldata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_VALIDATION", {
                     corpid: detail[di].parameters.corpid,
                     orgid: detail[di].parameters.orgid,
                     channels: detail[di].parameters.channels
                 });
-                if (voxidata instanceof Array && voxidata.length > 0) {
+                if (voxichanneldata instanceof Array && voxichanneldata.length > 0) {
                     voxiuser = await voximplant.getUser({
                         account_id: account_id,
                         application_id: application_id,
@@ -129,7 +141,7 @@ exports.sendMailPassword = async (req, res) => {
                             user_name: `user${header.parameters.id}.${detail[di].parameters.orgid}`,
                             user_display_name: header.parameters.usr,
                             user_password: VOXI_PASSWORD
-                        })
+                        });
                     }
                 }
                 else {
@@ -142,19 +154,21 @@ exports.sendMailPassword = async (req, res) => {
                             account_id: account_id,
                             application_id: application_id
                         });
-                        let voxiqueues_names = voxiqueues.result.map(vq => vq.acd_queue_name.split('.')[1]);
+                        // let voxiqueues_names = voxiqueues.result.map(vq => vq.acd_queue_name.split('.')[1]);
+                        let voxiqueues_names = voxiqueues.result.map(vq => vq.acd_queue_name);
                         let groups = ['laraigo', ...(detail[di].parameters.groups || '').split(',')];
-                        let groups_to_unbind = voxiqueues_names.filter(vq => !groups.includes(vq))
                         // Loop for every VOXI channel
-                        for (let vi = 0; vi < voxidata.length; vi++) {
+                        for (let vi = 0; vi < voxichanneldata.length; vi++) {
+                            let channel_group = groups.map(cg => `${voxichanneldata[vi].communicationchannelsite}.${cg}`);
+                            let groups_to_unbind = voxiqueues_names.filter(vq => !channel_group.includes(vq));
                             // Create queues if not exists {site}.{group}
                             for (let gi = 0; gi < groups.length; gi++) {
-                                if (!voxiqueues_names.includes(groups[gi])) {
+                                if (!voxiqueues_names.includes(channel_group[gi])) {
                                     await voximplant.addQueue({
                                         account_id: account_id,
                                         application_id: application_id,
-                                        acd_queue_name: `${voxidata[vi].communicationchannelsite}.${groups[gi]}`
-                                    })
+                                        acd_queue_name: channel_group[gi]
+                                    });
                                 }
                             }
                             // Bind to {site}.{group}
@@ -162,17 +176,17 @@ exports.sendMailPassword = async (req, res) => {
                                 account_id: account_id,
                                 application_id: application_id,
                                 user_id: voxiuser.user_id,
-                                acd_queue_name: groups.map(g => `${voxidata[vi].communicationchannelsite}.${g}`).join(';'),
+                                acd_queue_name: channel_group.join(';'),
                                 bind
-                            })
+                            });
                             // Unbind to {site}.{group}
                             await voximplant.bindUserToQueue({
                                 account_id: account_id,
                                 application_id: application_id,
                                 user_id: voxiuser.user_id,
-                                acd_queue_name: groups_to_unbind.map(g => `${voxidata[vi].communicationchannelsite}.${g}`).join(';'),
+                                acd_queue_name: groups_to_unbind.join(';'),
                                 bind: false
-                            })
+                            });
                         }
                     }
                     else {
@@ -180,7 +194,7 @@ exports.sendMailPassword = async (req, res) => {
                             account_id: account_id,
                             application_id: application_id,
                             user_name: `user${header.parameters.id}.${detail[di].parameters.orgid}`
-                        })
+                        });
                     }
                 }
             }
@@ -269,29 +283,50 @@ exports.delete = async (req, res) => {
     const result = await executeTransaction(header, detail, req.user.menu || {});
 
     // VOXIMPLANT //
-    const orgs = await executesimpletransaction("UFN_ORGUSER_SEL", {all: true, corpid: 0, orgid: 0, userid: detail[0].parameters.id, username: ''})
+    const orgs = await executesimpletransaction("UFN_ORGUSER_SEL", { all: true, corpid: 0, orgid: 0, userid: detail[0].parameters.id, username: '' })
     // Loop for every ORGUSER_SEL
     for (let i = 0; i < orgs.length; i++) {
         if (orgs[i].type === 'ASESOR') {
-            let account_id = await voximplant.getChildrenAccount({
-                child_account_name: `usr-${orgs[i].orgid}-${orgs[i].corpid}`
-            })?.account_id;
-            let application_id = await voximplant.getApplication({
-                account_id: account_id,
-                application_name: `apl-${orgs[i].orgid}-${orgs[i].corpid}`
+            let account_id = undefined;
+            let api_key = undefined;
+            let application_id = undefined;
+
+            // Try to get information of VOXI in org table
+            const voxiorgdata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_ORG", {
+                corpid: orgs[i].corpid,
+                orgid: orgs[i].orgid,
             });
+
+            // If exists info of VOXI in org
+            if (voxiorgdata instanceof Array && voxiorgdata.length > 0) {
+                account_id = voxiorgdata[0].voximplantaccountid;
+                api_key = voxiorgdata[0].voximplantapikey;
+                application_id = voxiorgdata[0].voximplantapplicationid;
+            }
+
+            // If not exists info of VOXI in org, try to get from VOXI directly
+            if (!account_id) {
+                account_id = (await voximplant.getChildrenAccount({
+                    child_account_name: `${VOXIMPLANT_ENVIRONMENT}aco-${orgs[i].orgid}-${orgs[i].corpid}`
+                }))?.account_id;
+                application_id = (await voximplant.getApplication({
+                    account_id: account_id,
+                    application_name: `${VOXIMPLANT_ENVIRONMENT}apl-${orgs[i].orgid}-${orgs[i].corpid}`
+                }))?.application_id;
+            }
+
             if (application_id) {
                 let voxiuser = await voximplant.getUser({
                     account_id: account_id,
                     application_id: application_id,
                     user_name: `user${detail[0].parameters.id}.${orgs[i].orgid}`
-                })
+                });
                 if (voxiuser) {
                     await voximplant.delUser({
                         account_id: account_id,
                         application_id: application_id,
                         user_name: `user${detail[0].parameters.id}.${orgs[i].orgid}`
-                    })
+                    });
                 }
             }
         }
