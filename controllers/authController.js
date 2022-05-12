@@ -31,6 +31,12 @@ const properties = [
         subtype: 'int'
     },
     {
+        propertyname: "TIEMPOBALANCEOLLAMADA",
+        key: "auto_close",
+        type: 'time_reassign_call',
+        subtype: 'int'
+    },
+    {
         propertyname: "OCULTARLOGCONVERSACION",
         key: "hide_log_conversation",
         type: 'bool',
