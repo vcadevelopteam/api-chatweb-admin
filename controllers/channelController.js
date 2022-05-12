@@ -1471,12 +1471,12 @@ exports.insertChannel = async (request, result) => {
                 var voximplantEnvironment = await voximplantHandleEnvironment(request.user.corpid, request.user.orgid);
 
                 if (voximplantEnvironment) {
-                    if (voximplantEnvironment.accountid && voximplantEnvironment.apikey && voximplantEnvironment.applicationid) {
+                    if (voximplantEnvironment.accountid && voximplantEnvironment.apikey && voximplantEnvironment.applicationid && voximplantEnvironment.userid) {
                         var voximplantScenario = await voximplantHandleScenario(request.user.corpid, request.user.orgid, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid);
 
                         if (voximplantScenario) {
                             if (voximplantScenario.ruleid && voximplantScenario.scenarioid) {
-                                var voximplantPhoneNumber = await voximplantHandlePhoneNumber(voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, service.country, service.category, service.state, service.region);
+                                var voximplantPhoneNumber = await voximplantHandlePhoneNumber(voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, voximplantScenario.ruleid, service.country, service.category, service.state, (service.region || 0).toString(), service.cost);
 
                                 if (voximplantPhoneNumber) {
                                     if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.phonenumber && voximplantPhoneNumber.queueid) {
@@ -1807,7 +1807,7 @@ exports.activateChannel = async (request, result) => {
     }
 }
 
-const voximplantManageOrg = async (corpid, orgid, operation, voximplantuser = null, voximplantmail = null, voximplantpassword = null, voximplantaccountid = null, voximplantapikey = null, voximplantapplicationid = null, voximplantruleid = null, voximplantscenarioid = null) => {
+const voximplantManageOrg = async (corpid, orgid, operation, voximplantuser = null, voximplantmail = null, voximplantpassword = null, voximplantaccountid = null, voximplantapikey = null, voximplantapplicationid = null, voximplantruleid = null, voximplantscenarioid = null, voximplantuserid = null, voximplantapplicationname = null) => {
     const queryMethod = "UFN_ORG_VOXIMPLANT_UPD";
     const queryParameters = {
         corpid: corpid,
@@ -1821,6 +1821,8 @@ const voximplantManageOrg = async (corpid, orgid, operation, voximplantuser = nu
         voximplantapplicationid: voximplantapplicationid,
         voximplantruleid: voximplantruleid,
         voximplantscenarioid: voximplantscenarioid,
+        voximplantuserid: voximplantuserid,
+        voximplantapplicationname: voximplantapplicationname,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
@@ -1852,6 +1854,7 @@ const voximplantHandleEnvironment = async (corpid, orgid) => {
         apikey: null,
         applicationid: null,
         applicationname: null,
+        userid: null,
     };
 
     try {
@@ -1859,6 +1862,7 @@ const voximplantHandleEnvironment = async (corpid, orgid) => {
 
         if (orgData) {
             var createApplication = false;
+            var createUser = false;
 
             if (!orgData.voximplantuser && !orgData.voximplantmail && !orgData.voximplantpassword && !orgData.voximplantaccountid && !orgData.voximplantapikey) {
                 createApplication = true;
@@ -1890,6 +1894,7 @@ const voximplantHandleEnvironment = async (corpid, orgid) => {
                 }
                 else {
                     voximplantEnvironment.applicationid = orgData.voximplantapplicationid;
+                    voximplantEnvironment.applicationname = orgData.voximplantapplicationname;
                 }
             }
 
@@ -1904,10 +1909,40 @@ const voximplantHandleEnvironment = async (corpid, orgid) => {
 
                 if (applicationResult) {
                     if (applicationResult.result) {
-                        await voximplantManageOrg(corpid, orgid, 'APPLICATION', null, null, null, null, null, applicationResult.application_id, null, null);
+                        await voximplantManageOrg(corpid, orgid, 'APPLICATION', null, null, null, null, null, applicationResult.application_id, null, null, null, applicationBody.application_name);
 
                         voximplantEnvironment.applicationid = applicationResult.application_id;
                         voximplantEnvironment.applicationname = applicationBody.application_name;
+                    }
+                }
+            }
+
+            if (!orgData.voximplantuserid) {
+                createUser = true;
+            }
+            else {
+                voximplantEnvironment.userid = orgData.voximplantuserid;
+            }
+
+            if (createUser) {
+                var userBody = {
+                    account_id: voximplantEnvironment.accountid,
+                    user_name: `${voximplantAccountEnvironment}use-${orgid}-${corpid}`,
+                    user_display_name: `${voximplantAccountEnvironment}use-${orgid}-${corpid}`,
+                    user_password: voximplantPassword,
+                    application_id: voximplantEnvironment.applicationid,
+                    parent_accounting: 'false',
+                    user_active: 'true',
+                    child_apikey: voximplantEnvironment.apikey,
+                };
+
+                let userResult = await voximplant.addUser(userBody);
+
+                if (userResult) {
+                    if (userResult.result) {
+                        await voximplantManageOrg(corpid, orgid, 'USER', null, null, null, null, null, null, null, null, userResult.user_id);
+
+                        voximplantEnvironment.userid = userResult.user_id;
                     }
                 }
             }
@@ -1918,6 +1953,7 @@ const voximplantHandleEnvironment = async (corpid, orgid) => {
         voximplantEnvironment.apikey = null;
         voximplantEnvironment.applicationid = null;
         voximplantEnvironment.applicationname = null;
+        voximplantEnvironment.userid = null;
     }
 
     return voximplantEnvironment;
@@ -2000,7 +2036,7 @@ const voximplantHandleScenario = async (corpid, orgid, accountid, apikey, applic
     return voximplantScenario;
 }
 
-const voximplantHandlePhoneNumber = async (accountid, apikey, applicationid, country, category, state, region) => {
+const voximplantHandlePhoneNumber = async (accountid, apikey, applicationid, ruleid, country, category, state, region, cost) => {
     var voximplantPhoneNumber = {
         phoneid: null,
         phonenumber: null,
@@ -2008,40 +2044,83 @@ const voximplantHandlePhoneNumber = async (accountid, apikey, applicationid, cou
     };
 
     try {
-        var phoneNumberBody = {
-            account_id: accountid,
-            phone_count: 1,
-            country_code: country,
-            phone_category_name: category,
-            country_state: state,
-            phone_region_id: region,
-            child_apikey: apikey,
-        };
+        var hasMoney = false;
 
-        let phoneNumberResult = await voximplant.attachPhoneNumber(phoneNumberBody);
+        if (cost) {
+            transferBody = {
+                child_account_id: accountid,
+                amount: cost,
+                currency: "USD",
+            }
 
-        if (phoneNumberResult) {
-            if (phoneNumberResult.result) {
-                if (phoneNumberResult.phone_numbers[0]) {
-                    voximplantPhoneNumber.phoneid = phoneNumberResult.phone_numbers[0].phone_id;
-                    voximplantPhoneNumber.phonenumber = phoneNumberResult.phone_numbers[0].phone_number;
-                }
+            let transferResult = await voximplant.transferMoneyToUser(transferBody);
+
+            if (transferResult.result) {
+                hasMoney = true;
             }
         }
 
-        if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.phonenumber) {
-            var queueBody = {
+        if (hasMoney) {
+            var phoneNumberBody = {
                 account_id: accountid,
-                application_id: applicationid,
-                acd_queue_name: `${voximplantPhoneNumber.phonenumber}.laraigo`,
+                phone_count: '1',
+                country_code: country,
+                phone_category_name: category,
+                country_state: state,
+                phone_region_id: region,
                 child_apikey: apikey,
             };
 
-            let queueResult = await voximplant.addQueue(queueBody);
+            let phoneNumberResult = await voximplant.attachPhoneNumber(phoneNumberBody);
 
-            if (queueResult) {
-                if (queueResult.result) {
-                    voximplantPhoneNumber.queueid = queueResult.acd_queue_id;
+            if (phoneNumberResult) {
+                if (phoneNumberResult.result) {
+                    if (phoneNumberResult.phone_numbers[0]) {
+                        voximplantPhoneNumber.phoneid = phoneNumberResult.phone_numbers[0].phone_id;
+                        voximplantPhoneNumber.phonenumber = phoneNumberResult.phone_numbers[0].phone_number;
+                    }
+                }
+            }
+
+            if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.phonenumber) {
+                var queueBody = {
+                    account_id: accountid,
+                    application_id: applicationid,
+                    acd_queue_name: `${voximplantPhoneNumber.phonenumber}.laraigo`,
+                    child_apikey: apikey,
+                };
+
+                let queueResult = await voximplant.addQueue(queueBody);
+
+                if (queueResult) {
+                    if (queueResult.result) {
+                        voximplantPhoneNumber.queueid = queueResult.acd_queue_id;
+                    }
+                }
+
+                var bindBody = {
+                    account_id: accountid,
+                    phone_id: voximplantPhoneNumber.phoneid,
+                    application_id: applicationid,
+                    rule_id: ruleid,
+                    child_apikey: apikey,
+                };
+
+                let bindResult = await voximplant.bindPhoneNumberToApplication(bindBody);
+
+                console.log(JSON.stringify(bindResult));
+            }
+            else {
+                transferBody = {
+                    child_account_id: accountid,
+                    amount: cost * -1,
+                    currency: "USD",
+                }
+
+                let transferResult = await voximplant.transferMoneyToUser(transferBody);
+
+                if (transferResult.result) {
+                    console.log(JSON.stringify(transferResult));
                 }
             }
         }
@@ -2051,5 +2130,5 @@ const voximplantHandlePhoneNumber = async (accountid, apikey, applicationid, cou
         voximplantPhoneNumber.phonenumber = null;
     }
 
-    return voximplantScenario;
+    return voximplantPhoneNumber;
 }
