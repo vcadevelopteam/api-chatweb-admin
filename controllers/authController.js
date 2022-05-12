@@ -32,7 +32,7 @@ const properties = [
     },
     {
         propertyname: "TIEMPOBALANCEOLLAMADA",
-        key: "auto_close",
+        key: "time_reassign_call",
         type: 'int'
     },
     {
