@@ -187,7 +187,7 @@ module.exports = {
     },
     UFN_PERSON_SEL: {
         query: "SELECT  * FROM ufn_person_sel($corpid, $orgid, $username, $where, $order, $take, $skip, $startdate, $enddate, $offset, $userids, $channeltypes)",
-        module: "/extras/person",
+        module: "",
         protected: "SELECT"
     },
     UFN_PERSON_EXPORT: {
