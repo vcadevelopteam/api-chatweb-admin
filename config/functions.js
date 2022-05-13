@@ -2179,4 +2179,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PERSONCOMMUNICATIONCHANNEL_SEL_VOXI: {
+        query: "SELECT * FROM ufn_personcommunicationchannel_sel_voxi($corpid,$orgid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
