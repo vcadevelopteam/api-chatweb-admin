@@ -98,7 +98,7 @@ exports.sendMailPassword = async (req, res) => {
                 let application_id = undefined;
                 let v_corpid = detail[di].parameters.corpid;
                 let v_orgid = detail[di].parameters.orgid;
-                let v_userid = [null, undefined, 0].includes(header.parameters.id) ? result.resultHeader.p_userid : header.parameters.id;
+                let v_userid = [null, undefined, 0].includes(header.parameters.id) ? result?.resultHeader?.p_userid : header.parameters.id;
 
                 // Try to get information of VOXI in org table
                 const voxiorgdata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_ORG", {
