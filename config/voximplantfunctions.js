@@ -164,7 +164,11 @@ const getApiKey = async ({ child_account_id, child_account_name, child_apikey = 
 
 const voximplantRequest = async (path, data) => {
     const form = new FormData();
-    Object.keys(data).forEach(k => form.append(k, data[k]));
+    Object.keys(data).forEach(k => {
+        if (![undefined, null].includes(data[k])) {
+            form.append(k, data[k])
+        }
+    });
     if (data['account_id'] || data['account_name']) {
         const api_key = await getApiKey({
             child_account_id: data['account_id'],
@@ -321,7 +325,7 @@ exports.getApplication = async ({ account_id, account_name, application_name }) 
     }
 }
 
-exports.addUser = async ({ account_id, account_name, application_id, user_name, user_display_name, parent_accounting, user_password, child_apikey = null }) => {
+exports.addUser = async ({ account_id, account_name, application_id, user_name, user_display_name, parent_accounting = false, user_password, child_apikey = null }) => {
     try {
         const data = {};
         setChildData({ data, account_id, account_name });
@@ -329,7 +333,7 @@ exports.addUser = async ({ account_id, account_name, application_id, user_name, 
         data['user_name'] = user_name;
         data['user_display_name'] = user_display_name;
         data['user_password'] = user_password;
-        data['parent_accounting'] = parent_accounting;
+        data['parent_accounting'] = `${parent_accounting}`;
         if (child_apikey) {
             data['child_apikey'] = child_apikey;
         }
