@@ -1502,6 +1502,7 @@ exports.insertChannel = async (request, result) => {
 
                                         if (transactionCreateVoximplant instanceof Array) {
                                             return result.json({
+                                                phonenumber: voximplantPhoneNumber.phonenumber,
                                                 success: true
                                             });
                                         }
