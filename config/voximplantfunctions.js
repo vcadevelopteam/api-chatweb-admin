@@ -164,7 +164,11 @@ const getApiKey = async ({ child_account_id, child_account_name, child_apikey = 
 
 const voximplantRequest = async (path, data) => {
     const form = new FormData();
-    Object.keys(data).forEach(k => form.append(k, data[k]));
+    Object.keys(data).forEach(k => {
+        if (data[k]) {
+            form.append(k, data[k])
+        }
+    });
     if (data['account_id'] || data['account_name']) {
         const api_key = await getApiKey({
             child_account_id: data['account_id'],
