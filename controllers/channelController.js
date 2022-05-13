@@ -1490,6 +1490,16 @@ exports.insertChannel = async (request, result) => {
                                             apikey: voximplantEnvironment.apikey,
                                             applicationid: voximplantEnvironment.applicationid,
                                             applicationname: voximplantEnvironment.applicationname,
+                                            country: service.country,
+                                            countryname: service.countryname,
+                                            category: service.category,
+                                            categoryname: service.categoryname,
+                                            state: service.state,
+                                            statename: service.statename,
+                                            region: service.region,
+                                            regionname: service.regionname,
+                                            cost: service.cost,
+                                            costvca: service.costvca,
                                         };
 
                                         parameters.communicationchannelsite = voximplantPhoneNumber.phonenumber;
@@ -1502,6 +1512,7 @@ exports.insertChannel = async (request, result) => {
 
                                         if (transactionCreateVoximplant instanceof Array) {
                                             return result.json({
+                                                integrationId: voximplantPhoneNumber.phonenumber,
                                                 success: true
                                             });
                                         }
@@ -1909,10 +1920,10 @@ const voximplantHandleEnvironment = async (corpid, orgid) => {
 
                 if (applicationResult) {
                     if (applicationResult.result) {
-                        await voximplantManageOrg(corpid, orgid, 'APPLICATION', null, null, null, null, null, applicationResult.application_id, null, null, null, applicationBody.application_name);
+                        await voximplantManageOrg(corpid, orgid, 'APPLICATION', null, null, null, null, null, applicationResult.application_id, null, null, null, applicationResult.application_name);
 
                         voximplantEnvironment.applicationid = applicationResult.application_id;
-                        voximplantEnvironment.applicationname = applicationBody.application_name;
+                        voximplantEnvironment.applicationname = applicationResult.application_name;
                     }
                 }
             }
