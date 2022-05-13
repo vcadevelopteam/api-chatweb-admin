@@ -1,5 +1,6 @@
 const axios = require("axios");
 const bcryptjs = require("bcryptjs");
+const channelfunctions = require("../config/channelfunctions");
 const triggerfunctions = require("../config/triggerfunctions");
 
 const cryptojs = require("crypto-js");
@@ -232,6 +233,7 @@ exports.createSubscription = async (request, result) => {
             var channelMethodArray = [];
             var channelParametersArray = [];
             var channelServiceArray = [];
+            var channelTypeArray = [];
 
             var channelData = "";
             var channelTotal = "";
@@ -441,6 +443,7 @@ exports.createSubscription = async (request, result) => {
                                                         channelMethodArray.push(channelMethod);
                                                         channelParametersArray.push(channelParameters);
                                                         channelServiceArray.push(channelService);
+                                                        channelTypeArray.push(channel.type);
                                                     }
                                                     else {
                                                         channelError = true;
@@ -567,6 +570,7 @@ exports.createSubscription = async (request, result) => {
                                         channelMethodArray.push(channelMethod);
                                         channelParametersArray.push(channelParameters);
                                         channelServiceArray.push(channelService);
+                                        channelTypeArray.push(channel.type);
                                     }
                                     else {
                                         channelError = true;
@@ -610,6 +614,7 @@ exports.createSubscription = async (request, result) => {
                                     channelMethodArray.push(channelMethod);
                                     channelParametersArray.push(channelParameters);
                                     channelServiceArray.push(channelService);
+                                    channelTypeArray.push(channel.type);
                                 }
                                 else {
                                     channelError = true;
@@ -642,6 +647,7 @@ exports.createSubscription = async (request, result) => {
                                     channelMethodArray.push(channelMethod);
                                     channelParametersArray.push(channelParameters);
                                     channelServiceArray.push(channelService);
+                                    channelTypeArray.push(channel.type);
                                 }
                                 else {
                                     channelError = true;
@@ -732,6 +738,7 @@ exports.createSubscription = async (request, result) => {
                                             channelMethodArray.push(channelMethod);
                                             channelParametersArray.push(channelParameters);
                                             channelServiceArray.push(channelService);
+                                            channelTypeArray.push(channel.type);
                                         }
                                         else {
                                             channelError = true;
@@ -761,6 +768,19 @@ exports.createSubscription = async (request, result) => {
                                 channelMethodArray.push(channelMethod);
                                 channelParametersArray.push(channelParameters);
                                 channelServiceArray.push(channelService);
+                                channelTypeArray.push(channel.type);
+                                break;
+
+                            case "VOXIMPLANTPHONE":
+                                channelParameters.communicationchannelowner = "";
+                                channelParameters.communicationchannelsite = "";
+                                channelParameters.servicecredentials = JSON.stringify(channelService);
+                                channelParameters.type = "VOXI";
+
+                                channelMethodArray.push(channelMethod);
+                                channelParametersArray.push(channelParameters);
+                                channelServiceArray.push(channelService);
+                                channelTypeArray.push(channel.type);
                                 break;
 
                             case 'INFOBIPEMAIL':
@@ -787,6 +807,7 @@ exports.createSubscription = async (request, result) => {
                                     channelMethodArray.push(channelMethod);
                                     channelParametersArray.push(channelParameters);
                                     channelServiceArray.push(channelService);
+                                    channelTypeArray.push(channel.type);
                                 }
                                 break;
                         }
@@ -859,6 +880,53 @@ exports.createSubscription = async (request, result) => {
                     var index = 0;
 
                     for (const channelMethod of channelMethodArray) {
+                        if (channelTypeArray[index] === "VOXI") {
+                            var voximplantEnvironment = await channelfunctions.voximplantHandleEnvironment(corpId, orgId);
+
+                            if (voximplantEnvironment) {
+                                if (voximplantEnvironment.accountid && voximplantEnvironment.apikey && voximplantEnvironment.applicationid && voximplantEnvironment.userid) {
+                                    var voximplantScenario = await channelfunctions.voximplantHandleScenario(corpId, orgId, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid);
+
+                                    if (voximplantScenario) {
+                                        if (voximplantScenario.ruleid && voximplantScenario.scenarioid) {
+                                            var voximplantPhoneNumber = await channelfunctions.voximplantHandlePhoneNumber(voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, voximplantScenario.ruleid, channelServiceArray[index].country, channelServiceArray[index].category, channelServiceArray[index].state, (channelServiceArray[index].region || 0).toString(), channelServiceArray[index].cost);
+
+                                            if (voximplantPhoneNumber) {
+                                                if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.phonenumber && voximplantPhoneNumber.queueid) {
+                                                    var voximplantCredentials = {
+                                                        phoneid: voximplantPhoneNumber.phoneid,
+                                                        phonenumber: voximplantPhoneNumber.phonenumber,
+                                                        queueid: voximplantPhoneNumber.queueid,
+                                                        ruleid: voximplantScenario.ruleid,
+                                                        scenarioid: voximplantScenario.scenarioid,
+                                                        accountid: voximplantEnvironment.accountid,
+                                                        apikey: voximplantEnvironment.apikey,
+                                                        applicationid: voximplantEnvironment.applicationid,
+                                                        applicationname: voximplantEnvironment.applicationname,
+                                                        country: channelServiceArray[index].country,
+                                                        countryname: channelServiceArray[index].countryname,
+                                                        category: channelServiceArray[index].category,
+                                                        categoryname: channelServiceArray[index].categoryname,
+                                                        state: channelServiceArray[index].state,
+                                                        statename: channelServiceArray[index].statename,
+                                                        region: channelServiceArray[index].region,
+                                                        regionname: channelServiceArray[index].regionname,
+                                                        cost: channelServiceArray[index].cost,
+                                                        costvca: channelServiceArray[index].costvca,
+                                                    };
+
+                                                    channelParametersArray[index].communicationchannelsite = voximplantPhoneNumber.phonenumber;
+                                                    channelParametersArray[index].communicationchannelowner = voximplantEnvironment.applicationname;
+                                                    channelParametersArray[index].servicecredentials = JSON.stringify(voximplantCredentials);
+                                                    channelParametersArray[index].phone = voximplantPhoneNumber.phonenumber;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         channelParametersArray[index].corpid = corpId;
                         channelParametersArray[index].orgid = orgId;
                         channelParametersArray[index].username = parameters.username;
