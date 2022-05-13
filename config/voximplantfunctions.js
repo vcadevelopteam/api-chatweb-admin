@@ -653,6 +653,46 @@ exports.attachPhoneNumber = async ({ account_id, account_name, country_code, cou
     }
 }
 
+exports.deactivatePhoneNumber = async ({ account_id, account_name, phone_id, child_apikey = null }) => {
+    try {
+        const data = {};
+        setChildData({ data, account_id, account_name });
+        data['phone_id'] = phone_id;
+        if (child_apikey) {
+            data['child_apikey'] = child_apikey;
+        }
+        const result = await voximplantRequest('DeactivatePhoneNumber', data);
+        return result.data;
+        // {
+        //     "result": 1
+        // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.delQueue = async ({ account_id, account_name, acd_queue_id, child_apikey = null }) => {
+    try {
+        const data = {};
+        setChildData({ data, account_id, account_name });
+        data['acd_queue_id'] = acd_queue_id;
+        if (child_apikey) {
+            data['child_apikey'] = child_apikey;
+        }
+        const result = await voximplantRequest('DelQueue', data);
+        return result.data;
+        // {
+        //     "result": 1
+        // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
 exports.getPhoneNumbers = async ({ account_id, account_name, application_id = null, sandbox = false }) => {
     try {
         const data = {};

@@ -582,6 +582,39 @@ exports.deleteChannel = async (request, result) => {
                     }
                 }
 
+            case 'VOXI':
+                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+                    var serviceCredentials = JSON.parse(parameters.servicecredentials);
+
+                    var voximplantPhoneNumber = await voximplantDeletePhoneNumber(request.user.corpid, request.user.orgid, serviceCredentials.phoneid, serviceCredentials.queueid);
+
+                    if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.queueid) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+
+                    return result.status(400).json({
+                        msg: 'voximplant_phonenumberdelete_error',
+                        success: false
+                    });
+                }
+                else {
+                    const transactionDeleteVoximplant = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionDeleteVoximplant instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionDeleteVoximplant.code,
+                            success: false
+                        });
+                    }
+                }
+
             default:
                 const transactionDeleteGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
 
@@ -2139,6 +2172,55 @@ const voximplantHandlePhoneNumber = async (accountid, apikey, applicationid, rul
     catch (exception) {
         voximplantPhoneNumber.phoneid = null;
         voximplantPhoneNumber.phonenumber = null;
+    }
+
+    return voximplantPhoneNumber;
+}
+
+const voximplantDeletePhoneNumber = async (corpid, orgid, phoneid, queueid) => {
+    var voximplantPhoneNumber = {
+        phoneid: null,
+        queueid: null,
+    };
+
+    try {
+        const orgData = await voximplantManageOrg(corpid, orgid, 'SELECT');
+
+        if (orgData) {
+            if (orgData.voximplantaccountid && orgData.voximplantapikey) {
+                if (phoneid) {
+                    phoneBody = {
+                        account_id: orgData.voximplantaccountid,
+                        phone_id: phoneid,
+                        child_apikey: orgData.voximplantapikey,
+                    }
+
+                    let phoneResult = await voximplant.deactivatePhoneNumber(phoneBody);
+
+                    if (phoneResult.result) {
+                        voximplantPhoneNumber.phoneid = phoneid;
+                    }
+                }
+
+                if (queueid) {
+                    queueBody = {
+                        account_id: orgData.voximplantaccountid,
+                        acd_queue_id: queueid,
+                        child_apikey: orgData.voximplantapikey,
+                    }
+
+                    let queueResult = await voximplant.delQueue(queueBody);
+
+                    if (queueResult.result) {
+                        voximplantPhoneNumber.queueid = queueid;
+                    }
+                }
+            }
+        }
+    }
+    catch (exception) {
+        voximplantPhoneNumber.phoneid = null;
+        voximplantPhoneNumber.queueid = null;
     }
 
     return voximplantPhoneNumber;
