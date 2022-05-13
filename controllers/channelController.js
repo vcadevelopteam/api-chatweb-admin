@@ -1920,10 +1920,10 @@ const voximplantHandleEnvironment = async (corpid, orgid) => {
 
                 if (applicationResult) {
                     if (applicationResult.result) {
-                        await voximplantManageOrg(corpid, orgid, 'APPLICATION', null, null, null, null, null, applicationResult.application_id, null, null, null, applicationBody.application_name);
+                        await voximplantManageOrg(corpid, orgid, 'APPLICATION', null, null, null, null, null, applicationResult.application_id, null, null, null, applicationResult.application_name);
 
                         voximplantEnvironment.applicationid = applicationResult.application_id;
-                        voximplantEnvironment.applicationname = applicationBody.application_name;
+                        voximplantEnvironment.applicationname = applicationResult.application_name;
                     }
                 }
             }
