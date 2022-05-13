@@ -1490,6 +1490,16 @@ exports.insertChannel = async (request, result) => {
                                             apikey: voximplantEnvironment.apikey,
                                             applicationid: voximplantEnvironment.applicationid,
                                             applicationname: voximplantEnvironment.applicationname,
+                                            country: service.country,
+                                            countryname: service.countryname,
+                                            category: service.category,
+                                            categoryname: service.categoryname,
+                                            state: service.state,
+                                            statename: service.statename,
+                                            region: service.region,
+                                            regionname: service.regionname,
+                                            cost: service.cost,
+                                            costvca: service.costvca,
                                         };
 
                                         parameters.communicationchannelsite = voximplantPhoneNumber.phonenumber;
@@ -1502,7 +1512,7 @@ exports.insertChannel = async (request, result) => {
 
                                         if (transactionCreateVoximplant instanceof Array) {
                                             return result.json({
-                                                phonenumber: voximplantPhoneNumber.phonenumber,
+                                                integrationId: voximplantPhoneNumber.phonenumber,
                                                 success: true
                                             });
                                         }
