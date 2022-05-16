@@ -32,7 +32,11 @@ const setConfig = (auth, headers) => {
         defaults['Authorization'] = `Bearer ${token}`;
     }
     if (type === 'BASIC') {
-        defaults['Authorization'] = `Basic ${btoa(`${username}:${password}`)}`;
+        // defaults['Authorization'] = `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
+        defaults['auth'] = {
+            username: username,
+            password: password
+        }
     }
     return defaults;
 }
