@@ -2296,7 +2296,8 @@ module.exports = {
             usergroup, firstusergroup,
             personaveragereplytime, handoffdate,
             extradata, lastreplydate, personlastreplydate, enquiries, classification, origin,
-            tdatime
+            tdatime,
+            tags
         )
         SELECT
             $corpid, $orgid::bigint, pt.personid, pt.personcommunicationchannel, pt.communicationchannelid, pt.ticket,
@@ -2310,7 +2311,8 @@ module.exports = {
             '', '',
             '00:00:00.00', null,
             '', null, null, '', '', null,
-            '00:00:00.00'
+            '00:00:00.00',
+            'Carga inicial'
         FROM json_populate_recordset(null::udtt_ticket_import, $datatable) pt
         RETURNING conversation.conversationid, conversation.auxid as ticket
         `,
