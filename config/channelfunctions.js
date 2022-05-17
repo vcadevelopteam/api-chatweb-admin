@@ -345,7 +345,7 @@ exports.voximplantDeletePhoneNumber = async (corpid, orgid, phoneid, queueid) =>
                 if (phoneid) {
                     phoneBody = {
                         account_id: orgData.voximplantaccountid,
-                        phone_id: phoneid,
+                        phone_id: (phoneid || 0).toString(),
                         child_apikey: orgData.voximplantapikey,
                     }
 
@@ -359,7 +359,7 @@ exports.voximplantDeletePhoneNumber = async (corpid, orgid, phoneid, queueid) =>
                 if (queueid) {
                     queueBody = {
                         account_id: orgData.voximplantaccountid,
-                        acd_queue_id: queueid,
+                        acd_queue_id: (queueid || 0).toString(),
                         child_apikey: orgData.voximplantapikey,
                     }
 

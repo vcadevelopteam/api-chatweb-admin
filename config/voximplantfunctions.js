@@ -632,7 +632,9 @@ exports.attachPhoneNumber = async ({ account_id, account_name, country_code, cou
         if (country_state)
             data['country_state'] = country_state;
         data['phone_category_name'] = phone_category_name;
-        data['phone_region_id'] = phone_region_id;
+        if (phone_region_id) {
+            data['phone_region_id'] = phone_region_id;
+        }
         data['phone_count'] = phone_count;
         if (child_apikey) {
             data['child_apikey'] = child_apikey;
