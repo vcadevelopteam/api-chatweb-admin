@@ -2204,6 +2204,19 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_ORG_BOT_SEL: {
+        query: `
+        SELECT ous.userid, TRIM(CONCAT(usr.firstname, ' ', usr.lastname)) as fullname
+        FROM orguser ous
+		JOIN usr ON usr.userid = ous.userid
+        WHERE ous.corpid = $corpid
+        AND ous.orgid = $orgid
+        AND ous.type = 'BOT'
+        LIMIT 1
+        `,
+        module: "",
+        protected: false
+    },
     QUERY_TICKETIMPORT_CHANNELS_SEL: {
         query: `
         SELECT cc.communicationchannelid, cc.type as channeltype, cc.communicationchannelsite
@@ -2232,13 +2245,15 @@ module.exports = {
             corpid, orgid, auxpcc,
             status, type,
             createdate, createby, changedate, changeby,
-            firstname, lastname, name, phone
+            firstname, lastname, name, phone,
+            lastcommunicationchannelid
         )
         SELECT
             $corpid, $orgid, pt.personcommunicationchannel,
             'ACTIVO','NINGUNO',
-            NOW(), 'admin', NOW(), 'admin',
-            pt.personname, '', pt.personname, pt.personphone
+            NOW(), $botname, NOW(), 'admin',
+            pt.personname, '', pt.personname, pt.personphone,
+            pt.communicationchannelid
         FROM json_populate_recordset(null::udtt_ticket_import, $datatable) pt
         RETURNING person.personid, person.auxpcc as personcommunicationchannel
         `,
@@ -2280,20 +2295,22 @@ module.exports = {
             postexternalid, commentexternalid, replyexternalid,
             usergroup, firstusergroup,
             personaveragereplytime, handoffdate,
-            extradata, lastreplydate, personlastreplydate, enquiries, classification, origin
+            extradata, lastreplydate, personlastreplydate, enquiries, classification, origin,
+            tdatime
         )
         SELECT
             $corpid, $orgid::bigint, pt.personid, pt.personcommunicationchannel, pt.communicationchannelid, pt.ticket,
             'CERRADO', 'NINGUNO', NOW(), 'admin', NOW() + INTERVAL '1MINUTE', 'admin', false,
             (LPAD(nextval(concat('ticketnum',$orgid::text,'seq')::regclass)::text, 7, '0')),
             NOW(), NOW() + INTERVAL '1MINUTE', NOW(), NOW() + INTERVAL '1MINUTE',
-            2, 2,
+            $botid, $botid,
             '00:00:00.00', '00:00:00.00', '00:00:00.00', '00:00:00.00', '00:00:00.00', '00:00:00.00', '00:00:00.00',
             'Resuelto',
             null, null, null,
             '', '',
             '00:00:00.00', null,
-            '', null, null, '', '', null    
+            '', null, null, '', '', null,
+            '00:00:00.00'
         FROM json_populate_recordset(null::udtt_ticket_import, $datatable) pt
         RETURNING conversation.conversationid, conversation.auxid as ticket
         `,

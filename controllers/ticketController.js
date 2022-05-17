@@ -356,11 +356,19 @@ exports.sendHSM = async (req, res) => {
 exports.import = async (req, res) => {
     try {
         const { data } = req.body;
-        if (!data.corpid)
+        if (!data?.corpid)
             data.corpid = req.user?.corpid ? req.user.corpid : 1;
-        if (!data.orgid)
+        if (!data?.orgid)
             data.orgid = req.user?.orgid ? req.user.orgid : 1;
 
+        const bot_result = await executesimpletransaction("QUERY_ORG_BOT_SEL", {
+            corpid: data.corpid,
+            orgid: data.orgid,
+        });
+        
+        const botid = bot_result?.[0]?.userid || 2;
+        const botname = bot_result?.[0]?.fullname || 'BOT SYSTEM';
+        
         // Unique channels
         const channel_list = [...new Set(data.datatable.map(d => d.channel))];
 
@@ -429,6 +437,7 @@ exports.import = async (req, res) => {
         const person_result = await executesimpletransaction("QUERY_TICKETIMPORT_PERSON_INS", {
             corpid: data.corpid,
             orgid: data.orgid,
+            botname: botname,
             datatable: JSON.stringify(pcc_to_create)
         });
 
@@ -463,6 +472,7 @@ exports.import = async (req, res) => {
         const conversation_result = await executesimpletransaction("QUERY_TICKETIMPORT_CONVERSATION_INS", {
             corpid: data.corpid,
             orgid: data.orgid,
+            botid: botid,
             datatable: JSON.stringify(conversation_to_create)
         });
 
