@@ -16,6 +16,9 @@ router.post("/getChildrenAccounts",
 router.post("/setChildAccountInfo",
     voximplantController.setChildAccountInfo
 )
+router.post("/transferMoneyToChildAccount",
+    voximplantController.transferMoneyToChildAccount
+)
 // Child //
 router.post("/addApplication",
     voximplantController.addApplication
