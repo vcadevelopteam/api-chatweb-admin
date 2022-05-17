@@ -34,4 +34,9 @@ router.post("/massiveclose",
     ticketController.massiveClose
 )
 
+router.post("/import",
+    auth,    
+    ticketController.import
+)
+
 module.exports = router;

@@ -2204,4 +2204,122 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_TICKETIMPORT_CHANNELS_SEL: {
+        query: `
+        SELECT cc.communicationchannelid, cc.type as channeltype, cc.communicationchannelsite
+        FROM communicationchannel cc
+        WHERE cc.corpid = $corpid
+        AND cc.orgid = $orgid
+        AND cc.communicationchannelsite = ANY(string_to_array($channels,','))
+        AND cc.status = 'ACTIVO'
+        `,
+        module: "",
+        protected: false
+    },
+    QUERY_TICKETIMPORT_PCC_SEL: {
+        query: `
+        SELECT pcc.personid, pcc.personcommunicationchannel
+        FROM personcommunicationchannel pcc
+        WHERE pcc.corpid = $corpid
+        AND pcc.orgid = $orgid
+        `,
+        module: "",
+        protected: false
+    },
+    QUERY_TICKETIMPORT_PERSON_INS: {
+        query: `
+        INSERT INTO person (
+            corpid, orgid, auxpcc,
+            status, type,
+            createdate, createby, changedate, changeby,
+            firstname, lastname, name, phone
+        )
+        SELECT
+            $corpid, $orgid, pt.personcommunicationchannel,
+            'ACTIVO','NINGUNO',
+            NOW(), 'admin', NOW(), 'admin',
+            pt.personname, '', pt.personname, pt.personphone
+        FROM json_populate_recordset(null::udtt_ticket_import, $datatable) pt
+        RETURNING person.personid, person.auxpcc as personcommunicationchannel
+        `,
+        module: "",
+        protected: false
+    },
+    QUERY_TICKETIMPORT_PCC_INS: {
+        query: `
+        INSERT INTO personcommunicationchannel (
+            corpid, orgid,
+            personid, personcommunicationchannel,
+            status, type,
+            createdate, createby, changedate, changeby,
+            personcommunicationchannelowner,
+            displayname
+        )
+        SELECT
+            $corpid, $orgid,
+            pt.personid, pt.personcommunicationchannel,
+            'ACTIVO', pt.channeltype,
+            NOW(), 'admin', NOW(), 'admin',
+            pt.personphone,
+            pt.personname
+        FROM json_populate_recordset(null::udtt_ticket_import, $datatable) pt
+        `,
+        module: "",
+        protected: false
+    },
+    QUERY_TICKETIMPORT_CONVERSATION_INS: {
+        query: `
+        INSERT INTO conversation (
+            corpid, orgid, personid, personcommunicationchannel, communicationchannelid, auxid,
+            status, type, createdate, createby, changedate, changeby, edit,
+            ticketnum,
+            firstconversationdate, lastconversationdate, startdate, finishdate,
+            firstuserid, lastuserid,
+            firstreplytime, averagereplytime, userfirstreplytime, useraveragereplytime, totalduration, realduration, totalpauseduration,
+            closetype,     
+            postexternalid, commentexternalid, replyexternalid,
+            usergroup, firstusergroup,
+            personaveragereplytime, handoffdate,
+            extradata, lastreplydate, personlastreplydate, enquiries, classification, origin
+        )
+        SELECT
+            $corpid, $orgid::bigint, pt.personid, pt.personcommunicationchannel, pt.communicationchannelid, pt.ticket,
+            'CERRADO', 'NINGUNO', NOW(), 'admin', NOW() + INTERVAL '1MINUTE', 'admin', false,
+            (LPAD(nextval(concat('ticketnum',$orgid::text,'seq')::regclass)::text, 7, '0')),
+            NOW(), NOW() + INTERVAL '1MINUTE', NOW(), NOW() + INTERVAL '1MINUTE',
+            2, 2,
+            '00:00:00.00', '00:00:00.00', '00:00:00.00', '00:00:00.00', '00:00:00.00', '00:00:00.00', '00:00:00.00',
+            'Resuelto',
+            null, null, null,
+            '', '',
+            '00:00:00.00', null,
+            '', null, null, '', '', null    
+        FROM json_populate_recordset(null::udtt_ticket_import, $datatable) pt
+        RETURNING conversation.conversationid, conversation.auxid as ticket
+        `,
+        module: "",
+        protected: false
+    },
+    QUERY_TICKETIMPORT_INTERACTION_INS: {
+        query: `
+        INSERT INTO interaction (
+            corpid, orgid,
+            personid, personcommunicationchannel, communicationchannelid,
+            conversationid,
+            status, type,
+            createdate, createby, changedate, changeby,
+            interactiontext, userid, interactiontype
+        )
+        SELECT
+            $corpid, $orgid,
+            pt.personid, pt.personcommunicationchannel, pt.communicationchannelid,
+            pt.conversationid,
+            'ACTIVO', 'NINGUNO',
+            NOW(), 'admin', NOW(), 'admin',
+            pt.interactiontext, null, 'LOG'
+        FROM json_populate_recordset(null::udtt_ticket_import, $datatable) pt
+        `,
+        module: "",
+        protected: false
+    },
 }

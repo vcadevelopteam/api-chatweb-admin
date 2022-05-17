@@ -1,6 +1,7 @@
 const axios = require('axios')
 const tf = require('../config/triggerfunctions');
 const { generatefilter, generateSort, errors, getErrorCode } = require('../config/helpers');
+const { executesimpletransaction } = require('../config/triggerfunctions');
 // var https = require('https');
 
 // const agent = new https.Agent({
@@ -349,5 +350,143 @@ exports.sendHSM = async (req, res) => {
     catch (ee) {
         console.log(ee)
         return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR, ee));
+    }
+}
+
+exports.import = async (req, res) => {
+    try {
+        const { data } = req.body;
+        if (!data.corpid)
+            data.corpid = req.user?.corpid ? req.user.corpid : 1;
+        if (!data.orgid)
+            data.orgid = req.user?.orgid ? req.user.orgid : 1;
+
+        // Unique channels
+        const channel_list = [...new Set(data.datatable.map(d => d.channel))];
+
+        // Channels info
+        const channel_result = await executesimpletransaction("QUERY_TICKETIMPORT_CHANNELS_SEL", {
+            corpid: data.corpid,
+            orgid: data.orgid,
+            channels: channel_list.join(',')
+        });
+
+        const channel_dict = channel_result.reduce((ac, c) => ({
+            ...ac,
+            [c.communicationchannelsite]: c 
+        }), {});
+
+        // Add channel information to the data
+        data.datatable = data.datatable.map(d => ({
+            ...d,
+            communicationchannelid: channel_dict[d.channel]?.communicationchannelid,
+            channeltype: channel_dict[d.channel]?.channeltype,
+            personcommunicationchannel: `${d.personphone}_${channel_dict[d.channel]?.channeltype}`
+        }));
+
+        // Pcc info
+        const pcc_result = await executesimpletransaction("QUERY_TICKETIMPORT_PCC_SEL", {
+            corpid: data.corpid,
+            orgid: data.orgid
+        });
+
+        const pcc_dict = pcc_result.reduce((ac, c) => ({
+            ...ac,
+            [c.personcommunicationchannel]: c
+        }), {});
+
+        // Add pcc information to the data
+        data.datatable = data.datatable.map(d => ({
+            ...d,
+            personid: pcc_dict[d.personcommunicationchannel]?.personid
+        }));
+
+        // Get uniques personcommunicationchannel
+        let pcc_to_create = [...new Map(data.datatable.map(d => [d['personcommunicationchannel'], d])).values()];
+
+        // Filter the pcc that should be created
+        pcc_to_create = pcc_to_create.filter(d => !pcc_result.map(pcc => pcc.personcommunicationchannel).includes(d.personcommunicationchannel));
+
+        /*
+        CREATE TYPE udtt_ticket_import AS (
+            corpid bigint,
+            orgid bigint,
+            personid bigint,
+            personcommunicationchannel text,
+            communicationchannelid bigint,
+            channeltype text,
+            personname text,
+            personphone text,
+            ticket bigint,
+            conversationid bigint,
+            interactiontext text
+        );
+        ALTER TABLE person ADD COLUMN auxpcc TEXT;
+        ALTER TABLE conversation ADD COLUMN auxid BIGINT;
+        */
+
+        // Create persons
+        const person_result = await executesimpletransaction("QUERY_TICKETIMPORT_PERSON_INS", {
+            corpid: data.corpid,
+            orgid: data.orgid,
+            datatable: JSON.stringify(pcc_to_create)
+        });
+
+        const person_dict = person_result.reduce((ac, c) => ({
+            ...ac,
+            [c.personcommunicationchannel]: c
+        }), {});
+
+        // Add person information to pcc to create
+        pcc_to_create = pcc_to_create.map(p => ({
+            ...p,
+            personid: person_dict[p.personcommunicationchannel]?.personid
+        }));
+
+        // Create pccs
+        await executesimpletransaction("QUERY_TICKETIMPORT_PCC_INS", {
+            corpid: data.corpid,
+            orgid: data.orgid,
+            datatable: JSON.stringify(pcc_to_create)
+        });
+
+        // Add person information to the data
+        data.datatable = data.datatable.map(d => ({
+            ...d,
+            personid: !d.personid ? person_dict[d.personcommunicationchannel]?.personid : d.personid
+        }));
+
+        // Get uniques conversation
+        const conversation_to_create = [...new Map(data.datatable.map(d => [d['ticket'], d])).values()];
+
+        // Create conversations
+        const conversation_result = await executesimpletransaction("QUERY_TICKETIMPORT_CONVERSATION_INS", {
+            corpid: data.corpid,
+            orgid: data.orgid,
+            datatable: JSON.stringify(conversation_to_create)
+        });
+
+        const conversation_dict = conversation_result.reduce((ac, c) => ({
+            ...ac,
+            [c.ticket]: c
+        }), {});
+
+        // Add conversation information to the data
+        data.datatable = data.datatable.map(d => ({
+            ...d,
+            conversationid: conversation_dict[d.ticket]?.conversationid
+        }));
+
+        // Create interactions
+        await executesimpletransaction("QUERY_TICKETIMPORT_INTERACTION_INS", {
+            corpid: data.corpid,
+            orgid: data.orgid,
+            datatable: JSON.stringify(data.datatable)
+        });
+        
+        res.json({ success: true });
+    }
+    catch (ee) {
+        return res.status(400).json(ee);
     }
 }
