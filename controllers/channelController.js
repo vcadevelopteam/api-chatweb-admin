@@ -1,5 +1,6 @@
 const axios = require('axios');
 const triggerfunctions = require('../config/triggerfunctions');
+const channelfunctions = require("../config/channelfunctions");
 
 const { setSessionParameters } = require('../config/helpers');
 
@@ -195,9 +196,9 @@ exports.deleteChannel = async (request, result) => {
                             communicationchannelsite: serviceCredentials.siteId,
                             type: (parameters.type === 'INST' ? 'INDM' : 'INST')
                         };
-    
+
                         const transactionValidateInstagram = await triggerfunctions.executesimpletransaction(validateMethod, validateParameters);
-    
+
                         if (transactionValidateInstagram instanceof Array) {
                             if (transactionValidateInstagram.length > 0) {
                                 DeleteIntegration = false;
@@ -231,7 +232,7 @@ exports.deleteChannel = async (request, result) => {
                     }
 
                     const transactionDeleteFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
-    
+
                     if (transactionDeleteFacebook instanceof Array) {
                         return result.json({
                             success: true
@@ -263,7 +264,7 @@ exports.deleteChannel = async (request, result) => {
             case 'INMS':
                 if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
                     var serviceCredentials = JSON.parse(parameters.servicecredentials);
-    
+
                     const requestDeleteInstagramSmooch = await axios({
                         data: {
                             linkType: 'WEBHOOKREMOVE',
@@ -275,10 +276,10 @@ exports.deleteChannel = async (request, result) => {
                         method: 'post',
                         url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
                     });
-    
+
                     if (requestDeleteInstagramSmooch.data.success) {
                         const transactionDeleteInstagramSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
-    
+
                         if (transactionDeleteInstagramSmooch instanceof Array) {
                             return result.json({
                                 success: true
@@ -300,7 +301,7 @@ exports.deleteChannel = async (request, result) => {
                 }
                 else {
                     const transactionDeleteInstagramSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
-    
+
                     if (transactionDeleteInstagramSmooch instanceof Array) {
                         return result.json({
                             success: true
@@ -523,10 +524,10 @@ exports.deleteChannel = async (request, result) => {
                             method: 'post',
                             url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
                         });
-            
+
                         if (requestDeleteWhatsAppSmooch.data.success) {
                             const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
-            
+
                             if (transactionDeleteWhatsAppSmooch instanceof Array) {
                                 return result.json({
                                     success: true
@@ -548,7 +549,7 @@ exports.deleteChannel = async (request, result) => {
                     }
                     else {
                         const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
-        
+
                         if (transactionDeleteWhatsAppSmooch instanceof Array) {
                             return result.json({
                                 success: true
@@ -564,7 +565,7 @@ exports.deleteChannel = async (request, result) => {
                 }
                 else {
                     const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
-        
+
                     if (transactionDeleteWhatsAppSmooch instanceof Array) {
                         return result.json({
                             success: true
@@ -573,6 +574,39 @@ exports.deleteChannel = async (request, result) => {
                     else {
                         return result.status(400).json({
                             msg: transactionDeleteWhatsAppSmooch.code,
+                            success: false
+                        });
+                    }
+                }
+
+            case 'VOXI':
+                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+                    var serviceCredentials = JSON.parse(parameters.servicecredentials);
+
+                    var voximplantPhoneNumber = await channelfunctions.voximplantDeletePhoneNumber(request.user.corpid, request.user.orgid, serviceCredentials.phoneid, serviceCredentials.queueid);
+
+                    if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.queueid) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+
+                    return result.status(400).json({
+                        msg: 'voximplant_phonenumberdelete_error',
+                        success: false
+                    });
+                }
+                else {
+                    const transactionDeleteVoximplant = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionDeleteVoximplant instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionDeleteVoximplant.code,
                             success: false
                         });
                     }
@@ -752,7 +786,7 @@ exports.insertChannel = async (request, result) => {
         parameters.updintegration = null;
         parameters.username = request.user.usr;
         parameters.phone = null;
-       
+
         switch (request.body.type) {
             case 'CHATWEB':
                 const webChatData = {
@@ -951,7 +985,7 @@ exports.insertChannel = async (request, result) => {
                             method: 'post',
                             url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
                         });
-            
+
                         if (requestGetBusiness.data.success) {
                             businessId = requestGetBusiness.data.businessId;
                         }
@@ -1068,6 +1102,42 @@ exports.insertChannel = async (request, result) => {
                     });
                 }
 
+            case 'INFOBIPEMAIL':
+            case 'INFOBIPSMS':
+                if (service) {
+                    var serviceCredentials = {
+                        apiKey: service.apikey,
+                        callbackEndpoint: `${hookEndpoint}infobip/${request.body.type === "INFOBIPEMAIL" ? "mail" : ""}webhookasync`,
+                        callbackType: "application/json",
+                        endpoint: service.url,
+                        number: service.emittername,
+                    };
+
+                    if (request.body.type === "INFOBIPEMAIL") {
+                        serviceCredentials.validateMail = false;
+                    }
+
+                    parameters.communicationchannelowner = service.emittername;
+                    parameters.communicationchannelsite = service.emittername;
+                    parameters.integrationid = service.emittername;
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.type = (request.body.type === 'INFOBIPEMAIL' ? 'MAII' : 'SMSI');
+
+                    const transactionCreateInfobip = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateInfobip instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionCreateInfobip.code,
+                            success: false
+                        });
+                    }
+                }
+
             case 'TELEGRAM':
                 const requestCreateTelegram = await axios({
                     data: {
@@ -1134,7 +1204,7 @@ exports.insertChannel = async (request, result) => {
                         devEnvironment: service.devenvironment,
                         twitterPageId: requestPageTwitter.data.pageId
                     };
-                
+
                     parameters.communicationchannelsite = requestPageTwitter.data.pageId;
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
 
@@ -1167,8 +1237,7 @@ exports.insertChannel = async (request, result) => {
                                 success: true
                             });
                         }
-                        else
-                        {
+                        else {
                             parameters.id = transactionCreateTwitter[0].ufn_communicationchannel_ins;
                             parameters.motive = 'Delete from API';
                             parameters.operation = 'DELETE';
@@ -1265,7 +1334,7 @@ exports.insertChannel = async (request, result) => {
                             orgid: 0,
                             username: request.user.usr
                         };
-                            
+
                         const transactionGetRecipient = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
 
                         if (transactionGetRecipient instanceof Array) {
@@ -1333,7 +1402,7 @@ exports.insertChannel = async (request, result) => {
                                                     method: 'post',
                                                     url: `${bridgeEndpoint}processscheduler/sendmail`
                                                 });
-                            
+
                                                 if (!requestSendMail.data.success) {
                                                     return result.status(400).json({
                                                         msg: requestSendMail.data.operationMessage,
@@ -1428,6 +1497,104 @@ exports.insertChannel = async (request, result) => {
                     });
                 }
 
+            case 'VOXIMPLANTPHONE':
+                var voximplantEnvironment = await channelfunctions.voximplantHandleEnvironment(request.user.corpid, request.user.orgid);
+
+                if (voximplantEnvironment) {
+                    if (voximplantEnvironment.accountid && voximplantEnvironment.apikey && voximplantEnvironment.applicationid && voximplantEnvironment.userid) {
+                        var voximplantScenario = await channelfunctions.voximplantHandleScenario(request.user.corpid, request.user.orgid, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid);
+
+                        if (voximplantScenario) {
+                            if (voximplantScenario.ruleid && voximplantScenario.scenarioid) {
+                                var voximplantPhoneNumber = await channelfunctions.voximplantHandlePhoneNumber(voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, voximplantScenario.ruleid, service.country, service.category, service.state, (service.region || 0).toString(), service.cost);
+
+                                if (voximplantPhoneNumber) {
+                                    if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.phonenumber && voximplantPhoneNumber.queueid) {
+                                        var serviceCredentials = {
+                                            phoneid: voximplantPhoneNumber.phoneid,
+                                            phonenumber: voximplantPhoneNumber.phonenumber,
+                                            queueid: voximplantPhoneNumber.queueid,
+                                            ruleid: voximplantScenario.ruleid,
+                                            scenarioid: voximplantScenario.scenarioid,
+                                            accountid: voximplantEnvironment.accountid,
+                                            apikey: voximplantEnvironment.apikey,
+                                            applicationid: voximplantEnvironment.applicationid,
+                                            applicationname: voximplantEnvironment.applicationname,
+                                            country: service.country,
+                                            countryname: service.countryname,
+                                            category: service.category,
+                                            categoryname: service.categoryname,
+                                            state: service.state,
+                                            statename: service.statename,
+                                            region: service.region,
+                                            regionname: service.regionname,
+                                            cost: service.cost,
+                                            costvca: service.costvca,
+                                        };
+
+                                        parameters.communicationchannelsite = voximplantPhoneNumber.phonenumber;
+                                        parameters.communicationchannelowner = voximplantEnvironment.applicationname;
+                                        parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                                        parameters.phone = voximplantPhoneNumber.phonenumber;
+                                        parameters.type = 'VOXI';
+
+                                        const transactionCreateVoximplant = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                                        if (transactionCreateVoximplant instanceof Array) {
+                                            return result.json({
+                                                integrationId: voximplantPhoneNumber.phonenumber,
+                                                success: true
+                                            });
+                                        }
+                                        else {
+                                            return result.status(400).json({
+                                                msg: transactionCreateVoximplant.code,
+                                                success: false
+                                            });
+                                        }
+                                    }
+                                    else {
+                                        return result.status(400).json({
+                                            msg: 'voximplant_phonenumberqueue_error',
+                                            success: false
+                                        });
+                                    }
+                                }
+                                else {
+                                    return result.status(400).json({
+                                        msg: 'voximplant_phonenumberqueue_error',
+                                        success: false
+                                    });
+                                }
+                            }
+                            else {
+                                return result.status(400).json({
+                                    msg: 'voximplant_scenariorule_error',
+                                    success: false
+                                });
+                            }
+                        }
+                        else {
+                            return result.status(400).json({
+                                msg: 'voximplant_scenariorule_error',
+                                success: false
+                            });
+                        }
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: 'voximplant_accountapplication_error',
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    return result.status(400).json({
+                        msg: 'voximplant_accountapplication_error',
+                        success: false
+                    });
+                }
+
             default:
                 return result.status(400).json({
                     msg: 'Channel not supported',
@@ -1515,7 +1682,7 @@ exports.updateChannel = async (request, result) => {
             parameters.servicecredentials = JSON.stringify(service);
 
             const transactionCreateWebChat = await triggerfunctions.executesimpletransaction(method, parameters);
-            
+
             if (transactionCreateWebChat instanceof Array) {
                 try {
                     if (typeof webChatPlatformEndpoint !== 'undefined' && webChatPlatformEndpoint) {
@@ -1650,9 +1817,9 @@ exports.activateChannel = async (request, result) => {
                 });
                 parameters.phone = requestMigrateWhatsApp.data.phoneNumber;
                 parameters.type = 'WHAT';
-    
+
                 const transactionActivateWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
-                
+
                 if (transactionActivateWhatsApp instanceof Array) {
                     return result.json({
                         success: true

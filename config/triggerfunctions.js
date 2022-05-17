@@ -183,7 +183,7 @@ exports.GetMultiCollection = async (detail, permissions = false) => {
 exports.executeTransaction = async (header, detail, permissions = false) => {
     let detailtmp = detail;
     const transaction = await sequelize.transaction();
-
+    let resultHeader = null;
     let lasterror = null;
     if (header) {
         const { method, parameters } = header;
@@ -211,6 +211,7 @@ exports.executeTransaction = async (header, detail, permissions = false) => {
                 }
 
                 if (result.length > 0) {
+                    resultHeader = result[0];
                     const keysResult = Object.keys(result[0])
                     if (keysResult.length > 0) {
                         detailtmp = detailtmp.map(x => {
@@ -249,7 +250,8 @@ exports.executeTransaction = async (header, detail, permissions = false) => {
         await transaction.commit();
         return {
             success: true,
-            error: false
+            error: false,
+            resultHeader
         };
     } catch (e) {
         await transaction.rollback();

@@ -1,6 +1,18 @@
 module.exports = {
     QUERY_AUTHENTICATED: {
-        query: "select us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.redirect,pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod from usr us inner join orguser ous on ous.userid = us.userid inner join org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency inner join corp corp on corp.corpid = ous.corpid LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid inner join role role on role.roleid = ous.roleid where us.usr = $usr and ous.bydefault and ous.status <> 'ELIMINADO' limit 1",
+        query: `
+        SELECT us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.redirect,pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi
+        FROM usr us 
+        INNER JOIN orguser ous ON ous.userid = us.userid 
+        INNER JOIN org org ON org.orgid = ous.orgid 
+        LEFT JOIN currency cur ON cur.code = org.currency 
+        INNER JOIN corp corp ON corp.corpid = ous.corpid 
+        LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid 
+        INNER JOIN role role ON role.roleid = ous.roleid 
+        LEFT JOIN communicationchannel cc ON cc.corpid = ous.corpid AND cc.orgid = ous.orgid AND cc.type = 'VOXI' AND cc.status = 'ACTIVO'
+        WHERE us.usr = $usr AND ous.bydefault 
+        AND ous.status <> 'ELIMINADO' 
+        limit 1`,
         module: "",
         protected: false
     },
@@ -10,12 +22,36 @@ module.exports = {
         protected: false
     },
     QUERY_AUTHENTICATED_BY_FACEBOOKID: {
-        query: "select us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod from usr us inner join orguser ous on ous.userid = us.userid inner join org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency inner join corp corp on corp.corpid = ous.corpid LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid inner join role role on role.roleid = ous.roleid where us.facebookid = $facebookid and ous.bydefault and ous.status <> 'ELIMINADO'limit 1",
+        query: `
+        SELECT us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, c.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi
+        from usr us 
+        INNER JOIN orguser ous on ous.userid = us.userid 
+        INNER JOIN org org on org.orgid = ous.orgid 
+        LEFT JOIN currency cur on cur.code = org.currency 
+        INNER JOIN corp corp on corp.corpid = ous.corpid 
+        LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid 
+        INNER JOIN role role on role.roleid = ous.roleid 
+        LEFT JOIN communicationchannel cc ON cc.corpid = ous.corpid AND cc.orgid = ous.orgid AND cc.type = 'VOXI' AND status = 'ACTIVO'
+        WHERE us.facebookid = $facebookid 
+        AND ous.bydefault 
+        AND ous.status <> 'ELIMINADO'
+        LIMIT 1`,
         module: "",
         protected: false
     },
     QUERY_AUTHENTICATED_BY_GOOGLEID: {
-        query: "select us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod from usr us inner join orguser ous on ous.userid = us.userid inner join org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency inner join corp corp on corp.corpid = ous.corpid LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid inner join role role on role.roleid = ous.roleid where us.googleid = $googleid and ous.bydefault and ous.status <> 'ELIMINADO' limit 1",
+        query: `
+        SELECT us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, c.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi
+        from usr us 
+        INNER JOIN orguser ous on ous.userid = us.userid 
+        INNER JOIN org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency 
+        INNER JOIN corp corp on corp.corpid = ous.corpid LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid 
+        INNER JOIN role role on role.roleid = ous.roleid
+        LEFT JOIN communicationchannel cc ON cc.corpid = ous.corpid AND cc.orgid = ous.orgid AND cc.type = 'VOXI' AND status = 'ACTIVO'
+        WHERE us.googleid = $googleid 
+        AND ous.bydefault 
+        AND ous.status <> 'ELIMINADO' 
+        LIMIT 1`,
         module: "",
         protected: false
     },
@@ -151,7 +187,7 @@ module.exports = {
     },
     UFN_PERSON_SEL: {
         query: "SELECT  * FROM ufn_person_sel($corpid, $orgid, $username, $where, $order, $take, $skip, $startdate, $enddate, $offset, $userids, $channeltypes)",
-        module: "/extras/person",
+        module: "",
         protected: "SELECT"
     },
     UFN_PERSON_EXPORT: {
@@ -445,7 +481,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CORP_INS: {
-        query: "SELECT * FROM ufn_corp_ins($id, $description, $status, $type, $username, $operation, $logo, $logotype, $companysize, $paymentplanid, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $billbyorg, $credittype, $paymentmethod, $automaticpayment)",
+        query: "SELECT * FROM ufn_corp_ins($id, $description, $status, $type, $username, $operation, $logo, $logotype, $companysize, $paymentplanid, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $billbyorg, $credittype, $paymentmethod, $automaticpayment, $automaticperiod, $automaticinvoice)",
         module: "/corporations",
         protected: "INSERT"
     },
@@ -460,7 +496,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORG_INS: {
-        query: "SELECT * FROM ufn_org_ins($corpid,$id,$description,$status,$type,$username,$operation,$email,$password,$port,$host,$default_credentials,$ssl, $private_mail, $currency,$country, $timezoneoffset, $timezone, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $iconbot, $iconadvisor, $iconclient, $credittype, $automaticpayment)",
+        query: "SELECT * FROM ufn_org_ins($corpid,$id,$description,$status,$type,$username,$operation,$email,$password,$port,$host,$default_credentials,$ssl, $private_mail, $currency,$country, $timezoneoffset, $timezone, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $iconbot, $iconadvisor, $iconclient, $credittype, $automaticpayment, $automaticperiod, $automaticinvoice)",
         module: "",
         protected: "INSERT"
     },
@@ -1457,6 +1493,16 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    QUERY_GET_VOXIMPLANT_ORG: {
+        query: "SELECT org.corpid, org.orgid, org.voximplantaccountid, org.voximplantapikey, org.voximplantapplicationid FROM org WHERE org.corpid = $corpid AND org.orgid = $orgid;",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_GET_VOXIMPLANT_VALIDATION: {
+        query: "SELECT cc.corpid, cc.orgid, cc.communicationchannelsite, cc.communicationchannelowner FROM communicationchannel cc JOIN org ON org.corpid = cc.corpid AND org.orgid = cc.orgid WHERE cc.corpid = $corpid AND cc.orgid = $orgid AND cc.communicationchannelid = ANY(string_to_array($channels,',')::BIGINT[]) AND cc.type = 'VOXI';",
+        module: "",
+        protected: "SELECT"
+    },
     QUERY_GET_SMS_DEFAULT_BY_ORG: {
         query: "SELECT type, communicationchannelid FROM communicationchannel where corpid = $corpid and orgid = $orgid and description = 'SMSINTERNAL' and type = 'SMSI';",
         module: "",
@@ -1574,6 +1620,11 @@ module.exports = {
     },
     UFN_BILLINGPERIODHSM_CALC: {
         query: "SELECT * FROM ufn_billingperiodhsm_calc($corpid, $orgid, $year, $month, $force)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CONVERSATION_OUTBOUND_INS: {
+        query: `select * from ufn_conversation_outbound_ins($personid, $personcommunicationchannel, $communicationchannelid, $corpid, $orgid, $userid, $closetype, $status, $finishdate, $handoff, $usergroup, $extradata, $lastreplydate, $personlastreplydate, $origin, $firstname, $lastname, $communicationchanneltype, $personcommunicationchannelowner, $interactiontype, $interactiontext, $phone)`,
         module: "",
         protected: "INSERT"
     },
@@ -2088,7 +2139,7 @@ module.exports = {
     QUERY_EVENT_BY_CALENDAR_EVENT_ID: {
         query: `SELECT mt.name messagetemplatename, cc.type communicationchanneltype, ce.messagetemplateid, ce.communicationchannelid, ce.notificationtype from calendarevent ce 
         left join communicationchannel cc on cc.corpid = ce.corpid and cc.orgid = ce.orgid and cc.communicationchannelid = ce.communicationchannelid 
-        inner join messagetemplate mt on mt.corpid = ce.corpid and mt.orgid = ce.orgid and mt.messagetemplateid = ce.messagetemplateid 
+        left join messagetemplate mt on mt.corpid = ce.corpid and mt.orgid = ce.orgid and mt.messagetemplateid = ce.messagetemplateid 
         where ce.corpid = $corpid and ce.orgid = $orgid and ce.calendareventid = $calendareventid`,
         module: "",
         protected: "SELECT"
@@ -2130,6 +2181,26 @@ module.exports = {
     },
     UFN_REPORT_INVOICE_DETAIL_SEL: {
         query: "SELECT * FROM ufn_report_invoice_detail_sel($corpid, $year, $month, $currency)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_APPSETTING_VOXIMPLANT_SEL: {
+        query: "SELECT * FROM ufn_appsetting_voximplant_sel();",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ORG_VOXIMPLANT_UPD: {
+        query: "SELECT * FROM ufn_org_voximplant_upd($corpid, $orgid, $operation, $voximplantuser, $voximplantmail, $voximplantpassword, $voximplantaccountid, $voximplantapikey, $voximplantapplicationid, $voximplantruleid, $voximplantscenarioid, $voximplantuserid, $voximplantapplicationname);",
+        module: "",
+        protected: "UPDATE"
+    },
+    UFN_CONVERSATION_SEL_VOXI: {
+        query: "SELECT * FROM ufn_conversation_sel_voxi($corpid, $orgid, $userid, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PERSONCOMMUNICATIONCHANNEL_SEL_VOXI: {
+        query: "SELECT * FROM ufn_personcommunicationchannel_sel_voxi($corpid,$orgid)",
         module: "",
         protected: "SELECT"
     },
