@@ -12,6 +12,7 @@ module.exports = {
         LEFT JOIN communicationchannel cc ON cc.corpid = ous.corpid AND cc.orgid = ous.orgid AND cc.type = 'VOXI' AND cc.status = 'ACTIVO'
         WHERE us.usr = $usr AND ous.bydefault 
         AND ous.status <> 'ELIMINADO' 
+        AND cc.communicationchannelid = ANY(string_to_array(ous.channels,',')::BIGINT[])
         limit 1`,
         module: "",
         protected: false
