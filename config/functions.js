@@ -2300,7 +2300,7 @@ module.exports = {
             tags
         )
         SELECT
-            $corpid, $orgid::bigint, pt.personid, pt.personcommunicationchannel, pt.communicationchannelid, pt.ticket,
+            $corpid, $orgid::bigint, pt.personid, pt.personcommunicationchannel, pt.communicationchannelid, pt.auxid,
             'CERRADO', 'NINGUNO', NOW(), 'admin', NOW() + INTERVAL '1MINUTE', 'admin', false,
             (LPAD(nextval(concat('ticketnum',$orgid::text,'seq')::regclass)::text, 7, '0')),
             NOW(), NOW() + INTERVAL '1MINUTE', NOW(), NOW() + INTERVAL '1MINUTE',
@@ -2314,7 +2314,7 @@ module.exports = {
             '00:00:00.00',
             'Carga inicial'
         FROM json_populate_recordset(null::udtt_ticket_import, $datatable) pt
-        RETURNING conversation.conversationid, conversation.auxid as ticket
+        RETURNING conversation.conversationid, conversation.auxid as auxid
         `,
         module: "",
         protected: false
@@ -2335,7 +2335,7 @@ module.exports = {
             pt.conversationid,
             'ACTIVO', 'NINGUNO',
             NOW(), 'admin', NOW(), 'admin',
-            pt.interactiontext, null, 'LOG'
+            pt.interactiontext, pt.interactionuserid, 'LOG'
         FROM json_populate_recordset(null::udtt_ticket_import, $datatable) pt
         `,
         module: "",

@@ -369,6 +369,12 @@ exports.import = async (req, res) => {
         const botid = bot_result?.[0]?.userid || 2;
         const botname = bot_result?.[0]?.fullname || 'BOT SYSTEM';
         
+        // Add conversation unique identifier
+        data.datatable = data.datatable.map(d => ({
+            ...d,
+            auxid: d.personphone
+        }));
+
         // Unique channels
         const channel_list = [...new Set(data.datatable.map(d => d.channel))];
 
@@ -425,48 +431,51 @@ exports.import = async (req, res) => {
             channeltype text,
             personname text,
             personphone text,
-            ticket bigint,
+            auxid text,
             conversationid bigint,
-            interactiontext text
+            interactiontext text,
+            interactionuserid bigint
         );
         ALTER TABLE person ADD COLUMN auxpcc TEXT;
         ALTER TABLE conversation ADD COLUMN auxid BIGINT;
         */
 
         // Create persons
-        const person_result = await executesimpletransaction("QUERY_TICKETIMPORT_PERSON_INS", {
-            corpid: data.corpid,
-            orgid: data.orgid,
-            botname: botname,
-            datatable: JSON.stringify(pcc_to_create)
-        });
-
-        const person_dict = person_result.reduce((ac, c) => ({
-            ...ac,
-            [c.personcommunicationchannel]: c
-        }), {});
-
-        // Add person information to pcc to create
-        pcc_to_create = pcc_to_create.map(p => ({
-            ...p,
-            personid: person_dict[p.personcommunicationchannel]?.personid
-        }));
-
-        // Create pccs
-        await executesimpletransaction("QUERY_TICKETIMPORT_PCC_INS", {
-            corpid: data.corpid,
-            orgid: data.orgid,
-            datatable: JSON.stringify(pcc_to_create)
-        });
-
-        // Add person information to the data
-        data.datatable = data.datatable.map(d => ({
-            ...d,
-            personid: !d.personid ? person_dict[d.personcommunicationchannel]?.personid : d.personid
-        }));
+        if (pcc_to_create.length > 0) {
+            const person_result = await executesimpletransaction("QUERY_TICKETIMPORT_PERSON_INS", {
+                corpid: data.corpid,
+                orgid: data.orgid,
+                botname: botname,
+                datatable: JSON.stringify(pcc_to_create)
+            });
+    
+            const person_dict = person_result.reduce((ac, c) => ({
+                ...ac,
+                [c.personcommunicationchannel]: c
+            }), {});
+    
+            // Add person information to pcc to create
+            pcc_to_create = pcc_to_create.map(p => ({
+                ...p,
+                personid: person_dict[p.personcommunicationchannel]?.personid
+            }));
+    
+            // Create pccs
+            await executesimpletransaction("QUERY_TICKETIMPORT_PCC_INS", {
+                corpid: data.corpid,
+                orgid: data.orgid,
+                datatable: JSON.stringify(pcc_to_create)
+            });
+    
+            // Add person information to the data
+            data.datatable = data.datatable.map(d => ({
+                ...d,
+                personid: !d.personid ? person_dict[d.personcommunicationchannel]?.personid : d.personid
+            }));
+        }
 
         // Get uniques conversation
-        const conversation_to_create = [...new Map(data.datatable.map(d => [d['ticket'], d])).values()];
+        const conversation_to_create = [...new Map(data.datatable.map(d => [d['auxid'], d])).values()];
 
         // Create conversations
         const conversation_result = await executesimpletransaction("QUERY_TICKETIMPORT_CONVERSATION_INS", {
@@ -478,13 +487,14 @@ exports.import = async (req, res) => {
 
         const conversation_dict = conversation_result.reduce((ac, c) => ({
             ...ac,
-            [c.ticket]: c
+            [c.auxid]: c
         }), {});
 
         // Add conversation information to the data
         data.datatable = data.datatable.map(d => ({
             ...d,
-            conversationid: conversation_dict[d.ticket]?.conversationid
+            conversationid: conversation_dict[d.auxid]?.conversationid,
+            interactionuserid: d.interactionfrom === 'CLIENT' ? null : botid
         }));
 
         // Create interactions
