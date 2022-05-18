@@ -67,7 +67,7 @@ module.exports = {
     },
     UFN_USER_SEL: {
         query: "SELECT * FROM ufn_user_sel($corpid, $orgid, $id, $username, $all)",
-        module: "/extras/users",
+        module: "",
         protected: "SELECT"
     },
     UFN_APPLICATION_SEL: {
