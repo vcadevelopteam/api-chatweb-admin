@@ -325,7 +325,7 @@ exports.getApplication = async ({ account_id, account_name, application_name }) 
     }
 }
 
-exports.addUser = async ({ account_id, account_name, application_id, user_name, user_display_name, parent_accounting = false, user_password, child_apikey = null }) => {
+exports.addUser = async ({ account_id, account_name, application_id, user_name, user_display_name, parent_accounting = true, user_password, child_apikey = null }) => {
     try {
         const data = {};
         setChildData({ data, account_id, account_name });

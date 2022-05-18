@@ -129,7 +129,7 @@ exports.voximplantHandleEnvironment = async (corpid, orgid) => {
                     user_display_name: `${voximplantAccountEnvironment}use-${orgid}-${corpid}`,
                     user_password: voximplantPassword,
                     application_id: voximplantEnvironment.applicationid,
-                    parent_accounting: 'false',
+                    parent_accounting: 'true',
                     user_active: 'true',
                     child_apikey: voximplantEnvironment.apikey,
                 };
@@ -243,6 +243,7 @@ exports.voximplantHandlePhoneNumber = async (accountid, apikey, applicationid, r
 
     try {
         var hasMoney = false;
+        var transferBody = {};
 
         if (cost) {
             transferBody = {
@@ -307,6 +308,16 @@ exports.voximplantHandlePhoneNumber = async (accountid, apikey, applicationid, r
                 let bindResult = await voximplant.bindPhoneNumberToApplication(bindBody);
 
                 console.log(JSON.stringify(bindResult));
+
+                transferBody = {
+                    child_account_id: accountid,
+                    amount: '1',
+                    currency: "USD",
+                }
+    
+                let transferResult = await voximplant.transferMoneyToUser(transferBody);
+
+                console.log(JSON.stringify(transferResult));
             }
             else {
                 transferBody = {
