@@ -880,7 +880,7 @@ exports.createSubscription = async (request, result) => {
                     var index = 0;
 
                     for (const channelMethod of channelMethodArray) {
-                        if (channelTypeArray[index] === "VOXI") {
+                        if (channelTypeArray[index] === "VOXIMPLANTPHONE") {
                             var voximplantEnvironment = await channelfunctions.voximplantHandleEnvironment(corpId, orgId);
 
                             if (voximplantEnvironment) {
