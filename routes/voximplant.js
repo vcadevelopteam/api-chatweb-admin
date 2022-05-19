@@ -68,5 +68,14 @@ router.post("/getPhoneNumbers",
 router.post("/bindPhoneNumberToApplication",
     voximplantController.bindPhoneNumberToApplication
 )
+router.post("/addCustomRecordStorage",
+    voximplantController.addCustomRecordStorage
+)
+router.post("/getCustomRecordStorages",
+    voximplantController.getCustomRecordStorages
+)
+router.post("/setCustomRecordStorageInfo",
+    voximplantController.setCustomRecordStorageInfo
+)
 
 module.exports = router;

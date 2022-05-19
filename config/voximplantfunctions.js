@@ -764,3 +764,90 @@ exports.bindPhoneNumberToApplication = async ({ account_id, account_name, phone_
         return undefined;
     }
 }
+
+const VOXIMPLANT_COS_HOST = process.env.VOXIMPLANT_COS_HOST
+const VOXIMPLANT_COS_ACCESS_KEY_ID = process.env.VOXIMPLANT_COS_ACCESS_KEY_ID
+const VOXIMPLANT_COS_SECRET_ACCESS_KEY = process.env.VOXIMPLANT_COS_SECRET_ACCESS_KEY
+const VOXIMPLANT_COS_BUCKET = process.env.VOXIMPLANT_COS_BUCKET
+
+exports.addCustomRecordStorage = async ({ account_id, account_name, child_apikey, application_id }) => {
+    try {
+        const data = {};
+        setChildData({ data, account_id, account_name });
+        data['host'] = VOXIMPLANT_COS_HOST;
+        data['access_key_id'] = VOXIMPLANT_COS_ACCESS_KEY_ID;
+        data['secret_access_key'] = VOXIMPLANT_COS_SECRET_ACCESS_KEY;
+        data['bucket'] = VOXIMPLANT_COS_BUCKET;
+        if (application_id) {
+            data['attached_application_id'] = application_id
+        }
+        if (child_apikey) {
+            data['child_apikey'] = child_apikey;
+        }
+        const result = await voximplantRequest('AddCustomRecordStorage', data);
+        return result.data;
+        // {
+        //     "result": 1
+        // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.getCustomRecordStorages = async ({ account_id, account_name, child_apikey }) => {
+    try {
+        const data = {};
+        setChildData({ data, account_id, account_name });
+        data['with_applications_attached'] = `${true}`
+        if (child_apikey) {
+            data['child_apikey'] = child_apikey;
+        }
+        const result = await voximplantRequest('GetCustomRecordStorages', data);
+        return result.data;
+        // {
+        //     "result": [
+        //         {
+        //             "access_key_id": "3a7c56b66cb645e796fab8fc299b6080",
+        //             "bucket": "harima-voximplant",
+        //             "custom_record_storage_id": 20,
+        //             "attached_application_id": [
+        //                 10456002,
+        //                 10451952
+        //             ],
+        //             "host": "https://s3.us-south.cloud-object-storage.appdomain.cloud",
+        //             "last_test_status": "COMPLETED",
+        //             "bucket_is_domain": true
+        //         }
+        //     ]
+        // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.setCustomRecordStorageInfo = async ({ account_id, account_name, child_apikey, custom_record_storage_id, application_id = "none" }) => {
+    try {
+        const data = {};
+        setChildData({ data, account_id, account_name });
+        data['custom_record_storage_id'] = custom_record_storage_id
+        if (application_id) {
+            data['attached_application_id'] = application_id
+        }
+        if (child_apikey) {
+            data['child_apikey'] = child_apikey;
+        }
+        const result = await voximplantRequest('SetCustomRecordStorageInfo', data);
+        return result.data;
+        // {
+        //     "result": 1
+        // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
