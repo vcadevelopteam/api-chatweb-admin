@@ -162,12 +162,12 @@ exports.sendMailPassword = async (req, res) => {
                             let voxiqueues_names = voxiqueues.result.map(vq => vq.acd_queue_name);
                             let groups = ['laraigo', ...(detail[di].parameters.groups || '').split(',')];
                             // Loop for every VOXI channel
+                            let channel_group = []
                             for (let vi = 0; vi < voxichanneldata.length; vi++) {
-                                let channel_group = groups.map(cg => `${voxichanneldata[vi].communicationchannelsite}.${cg}`);
-                                let groups_to_unbind = voxiqueues_names.filter(vq => !channel_group.includes(vq));
+                                channel_group = [...channel_group, ...groups.map(cg => `${voxichanneldata[vi].communicationchannelsite}.${cg}`)];
                                 // Create queues if not exists {site}.{group}
                                 for (let gi = 0; gi < groups.length; gi++) {
-                                    if (!voxiqueues_names.includes(channel_group[gi])) {
+                                    if (!voxiqueues_names.includes(`${voxichanneldata[vi].communicationchannelsite}.${groups[gi]}`)) {
                                         await voximplant.addQueue({
                                             account_id: account_id,
                                             application_id: application_id,
@@ -175,23 +175,24 @@ exports.sendMailPassword = async (req, res) => {
                                         });
                                     }
                                 }
-                                // Bind to {site}.{group}
-                                await voximplant.bindUserToQueue({
-                                    account_id: account_id,
-                                    application_id: application_id,
-                                    user_id: voxiuser.user_id,
-                                    acd_queue_name: channel_group.join(';'),
-                                    bind
-                                });
-                                // Unbind to {site}.{group}
-                                await voximplant.bindUserToQueue({
-                                    account_id: account_id,
-                                    application_id: application_id,
-                                    user_id: voxiuser.user_id,
-                                    acd_queue_name: groups_to_unbind.join(';'),
-                                    bind: false
-                                });
                             }
+                            let groups_to_unbind = voxiqueues_names.filter(vq => !channel_group.includes(vq));
+                            // Bind to {site}.{group}
+                            await voximplant.bindUserToQueue({
+                                account_id: account_id,
+                                application_id: application_id,
+                                user_id: voxiuser.user_id,
+                                acd_queue_name: channel_group.join(';'),
+                                bind
+                            });
+                            // Unbind to {site}.{group}
+                            await voximplant.bindUserToQueue({
+                                account_id: account_id,
+                                application_id: application_id,
+                                user_id: voxiuser.user_id,
+                                acd_queue_name: groups_to_unbind.join(';'),
+                                bind: false
+                            });
                         }
                         else {
                             await voximplant.delUser({
@@ -206,8 +207,6 @@ exports.sendMailPassword = async (req, res) => {
         }
         // VOXIMPLANT //
     }
-
-
 
     if (parameters.sendMailPassword && result.success === true) {
         parameters.namespace = parameters.language === "es" ? "TEMPLATESENDPASSWORD-SPANISH" : "TEMPLATESENDPASSWORD-ENGLISH";
