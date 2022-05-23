@@ -11,7 +11,7 @@ exports.GetCollection = async (req, res) => {
     if (result instanceof Array)
         return res.json({ error: false, success: true, data: result, key });
     else
-        return res.status(result.rescode).json(result);
+        return res.status(result.rescode).json({ ...result, key });
 }
 
 exports.GetCollectionDomainValues = async (req, res) => {
@@ -113,7 +113,7 @@ exports.export = async (req, res) => {
     setSessionParameters(parameters, req.user);
 
     const resultBD = !parameters.isNotPaginated ? await buildQueryWithFilterAndSort(method, parameters) : await executesimpletransaction(method, parameters);
-    
+
     const result = await exportData(resultBD, parameters.reportName, parameters.formatToExport, parameters.headerClient);
 
     if (!result.error) {
