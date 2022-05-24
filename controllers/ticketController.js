@@ -485,6 +485,12 @@ exports.import = async (req, res) => {
             datatable: JSON.stringify(conversation_to_create)
         });
 
+        // Actualización de ticketnum<orgid>seq
+        await executesimpletransaction("UFN_TICKETNUM_FIX", {
+            corpid: data.corpid,
+            orgid: data.orgid,
+        });
+
         const conversation_dict = conversation_result.reduce((ac, c) => ({
             ...ac,
             [c.auxid]: c

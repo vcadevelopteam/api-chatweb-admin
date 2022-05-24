@@ -2319,6 +2319,11 @@ module.exports = {
         module: "",
         protected: false
     },
+    UFN_TICKETNUM_FIX: {
+        query: "SELECT * FROM ufn_ticketnum_fix($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
     QUERY_TICKETIMPORT_INTERACTION_INS: {
         query: `
         INSERT INTO interaction (
