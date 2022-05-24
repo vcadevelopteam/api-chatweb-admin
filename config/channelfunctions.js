@@ -111,6 +111,12 @@ exports.voximplantHandleEnvironment = async (corpid, orgid) => {
 
                         voximplantEnvironment.applicationid = applicationResult.application_id;
                         voximplantEnvironment.applicationname = applicationResult.application_name;
+
+                        await voximplant.addCustomRecordStorage({
+                            account_id: voximplantEnvironment.accountid,
+                            child_apikey: voximplantEnvironment.apikey,
+                            application_id: applicationResult.application_id
+                        })
                     }
                 }
             }
