@@ -116,7 +116,7 @@ exports.voximplantHandleEnvironment = async (corpid, orgid) => {
                             account_id: voximplantEnvironment.accountid,
                             child_apikey: voximplantEnvironment.apikey,
                             application_id: applicationResult.application_id
-                        })
+                        });
                     }
                 }
             }

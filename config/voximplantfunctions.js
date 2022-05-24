@@ -765,10 +765,10 @@ exports.bindPhoneNumberToApplication = async ({ account_id, account_name, phone_
     }
 }
 
-const VOXIMPLANT_COS_HOST = process.env.VOXIMPLANT_COS_HOST
-const VOXIMPLANT_COS_ACCESS_KEY_ID = process.env.VOXIMPLANT_COS_ACCESS_KEY_ID
-const VOXIMPLANT_COS_SECRET_ACCESS_KEY = process.env.VOXIMPLANT_COS_SECRET_ACCESS_KEY
-const VOXIMPLANT_COS_BUCKET = process.env.VOXIMPLANT_COS_BUCKET
+const VOXIMPLANT_COS_HOST = process.env.VOXIMPLANT_COS_HOST;
+const VOXIMPLANT_COS_ACCESS_KEY_ID = process.env.VOXIMPLANT_COS_ACCESS_KEY_ID;
+const VOXIMPLANT_COS_SECRET_ACCESS_KEY = process.env.VOXIMPLANT_COS_SECRET_ACCESS_KEY;
+const VOXIMPLANT_COS_BUCKET = process.env.VOXIMPLANT_COS_BUCKET;
 
 exports.addCustomRecordStorage = async ({ account_id, account_name, child_apikey, application_id }) => {
     try {
@@ -779,7 +779,7 @@ exports.addCustomRecordStorage = async ({ account_id, account_name, child_apikey
         data['secret_access_key'] = VOXIMPLANT_COS_SECRET_ACCESS_KEY;
         data['bucket'] = VOXIMPLANT_COS_BUCKET;
         if (application_id) {
-            data['attached_application_id'] = application_id
+            data['attached_application_id'] = application_id;
         }
         if (child_apikey) {
             data['child_apikey'] = child_apikey;
