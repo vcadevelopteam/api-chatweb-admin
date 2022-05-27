@@ -7,6 +7,9 @@ const auth = require('../middleware/auth');
 router.post("/addAccount",
     voximplantController.addAccount
 )
+router.post("/getAccountInfo",
+    voximplantController.getAccountInfo
+)
 router.post("/getAccountInvoices",
     voximplantController.getAccountInvoices
 )
@@ -28,6 +31,9 @@ router.post("/getApplications",
 )
 router.post("/getApplication",
     voximplantController.getApplication
+)
+router.post("/getCallHistory",
+    voximplantController.getCallHistory
 )
 router.post("/addUser",
     voximplantController.addUser

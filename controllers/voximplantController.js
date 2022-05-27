@@ -51,6 +51,23 @@ exports.addAccount = async (request, result) => {
     }
 }
 
+exports.getAccountInfo = async (request, result) => {
+    try {
+        let requestResult = await voximplant.getAccountInfo(request.body)
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
+    }
+    catch (err) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: err.message,
+            success: false,
+        })
+    }
+}
+
 exports.setChildAccountInfo = async (request, result) => {
     try {
         let requestResult = await voximplant.setChildAccountInfo(request.body)
@@ -122,6 +139,23 @@ exports.getApplications = async (request, result) => {
 exports.getApplication = async (request, result) => {
     try {
         let requestResult = await voximplant.getApplication(request.body)
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
+    }
+    catch (err) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: err.message,
+            success: false,
+        })
+    }
+}
+
+exports.getCallHistory = async (request, result) => {
+    try {
+        let requestResult = await voximplant.getCallHistory(request.body)
         if (requestResult)
             return result.json(requestResult);
         return result.status(400).json(requestResult)

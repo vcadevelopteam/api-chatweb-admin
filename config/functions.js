@@ -496,7 +496,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORG_INS: {
-        query: "SELECT * FROM ufn_org_ins($corpid,$id,$description,$status,$type,$username,$operation,$email,$password,$port,$host,$default_credentials,$ssl, $private_mail, $currency,$country, $timezoneoffset, $timezone, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $iconbot, $iconadvisor, $iconclient, $credittype, $automaticpayment, $automaticperiod, $automaticinvoice)",
+        query: "SELECT * FROM ufn_org_ins($corpid,$id,$description,$status,$type,$username,$operation,$email,$password,$port,$host,$default_credentials,$ssl, $private_mail, $currency,$country, $timezoneoffset, $timezone, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $iconbot, $iconadvisor, $iconclient, $credittype, $automaticpayment, $automaticperiod, $automaticinvoice, $voximplantautomaticrecharge, $voximplantrechargerange, $voximplantrechargepercentage, $voximplantrechargefixed, $voximplantadditionalperchannel)",
         module: "",
         protected: "INSERT"
     },
