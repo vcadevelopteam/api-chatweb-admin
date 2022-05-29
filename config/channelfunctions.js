@@ -46,6 +46,35 @@ const getAppSetting = async () => {
     return null
 }
 
+exports.voximplantManageOrg = async (corpid, orgid, operation, voximplantuser = null, voximplantmail = null, voximplantpassword = null, voximplantaccountid = null, voximplantapikey = null, voximplantapplicationid = null, voximplantruleid = null, voximplantscenarioid = null, voximplantuserid = null, voximplantapplicationname = null) => {
+    const queryMethod = "UFN_ORG_VOXIMPLANT_UPD";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: orgid,
+        operation: operation,
+        voximplantuser: voximplantuser,
+        voximplantmail: voximplantmail,
+        voximplantpassword: voximplantpassword,
+        voximplantaccountid: voximplantaccountid,
+        voximplantapikey: voximplantapikey,
+        voximplantapplicationid: voximplantapplicationid,
+        voximplantruleid: voximplantruleid,
+        voximplantscenarioid: voximplantscenarioid,
+        voximplantuserid: voximplantuserid,
+        voximplantapplicationname: voximplantapplicationname,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult[0];
+        }
+    }
+
+    return null;
+}
+
 exports.voximplantHandleEnvironment = async (corpid, orgid) => {
     var voximplantEnvironment = {
         accountid: null,
@@ -53,12 +82,15 @@ exports.voximplantHandleEnvironment = async (corpid, orgid) => {
         applicationid: null,
         applicationname: null,
         userid: null,
+        additionalperchannel: null,
     };
 
     try {
         const orgData = await voximplantManageOrg(corpid, orgid, 'SELECT');
 
         if (orgData) {
+            voximplantEnvironment.additionalperchannel = orgData.voximplantadditionalperchannel;
+
             var createApplication = false;
             var createUser = false;
 
@@ -158,6 +190,7 @@ exports.voximplantHandleEnvironment = async (corpid, orgid) => {
         voximplantEnvironment.applicationid = null;
         voximplantEnvironment.applicationname = null;
         voximplantEnvironment.userid = null;
+        voximplantEnvironment.additionalperchannel = null;
     }
 
     return voximplantEnvironment;
@@ -240,7 +273,7 @@ exports.voximplantHandleScenario = async (corpid, orgid, accountid, apikey, appl
     return voximplantScenario;
 }
 
-exports.voximplantHandlePhoneNumber = async (accountid, apikey, applicationid, ruleid, country, category, state, region, cost) => {
+exports.voximplantHandlePhoneNumber = async (accountid, apikey, applicationid, ruleid, country, category, state, region, cost, additionalperchannel) => {
     var voximplantPhoneNumber = {
         phoneid: null,
         phonenumber: null,
@@ -315,15 +348,17 @@ exports.voximplantHandlePhoneNumber = async (accountid, apikey, applicationid, r
 
                 console.log(JSON.stringify(bindResult));
 
-                transferBody = {
-                    child_account_id: accountid,
-                    amount: '1',
-                    currency: "USD",
-                }
-    
-                let transferResult = await voximplant.transferMoneyToUser(transferBody);
+                if (additionalperchannel) {
+                    transferBody = {
+                        child_account_id: accountid,
+                        amount: (additionalperchannel || 0).toString(),
+                        currency: "USD",
+                    }
 
-                console.log(JSON.stringify(transferResult));
+                    let transferResult = await voximplant.transferMoneyToUser(transferBody);
+
+                    console.log(JSON.stringify(transferResult));
+                }
             }
             else {
                 transferBody = {

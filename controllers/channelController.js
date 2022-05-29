@@ -1506,7 +1506,7 @@ exports.insertChannel = async (request, result) => {
 
                         if (voximplantScenario) {
                             if (voximplantScenario.ruleid && voximplantScenario.scenarioid) {
-                                var voximplantPhoneNumber = await channelfunctions.voximplantHandlePhoneNumber(voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, voximplantScenario.ruleid, service.country, service.category, service.state, (service.region || 0).toString(), service.cost);
+                                var voximplantPhoneNumber = await channelfunctions.voximplantHandlePhoneNumber(voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, voximplantScenario.ruleid, service.country, service.category, service.state, (service.region || 0).toString(), service.cost, voximplantEnvironment.additionalperchannel);
 
                                 if (voximplantPhoneNumber) {
                                     if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.phonenumber && voximplantPhoneNumber.queueid) {
@@ -1530,6 +1530,7 @@ exports.insertChannel = async (request, result) => {
                                             regionname: service.regionname,
                                             cost: service.cost,
                                             costvca: service.costvca,
+                                            additionalperchannel: voximplantEnvironment.additionalperchannel,
                                         };
 
                                         parameters.communicationchannelsite = voximplantPhoneNumber.phonenumber;

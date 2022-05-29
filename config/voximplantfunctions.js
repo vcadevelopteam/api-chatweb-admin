@@ -119,7 +119,7 @@ exports.getAccountInfo = async ({ account_id, account_name, account_apikey }) =>
             form.append('api_key', VOXIMPLANT_APIKEY);
             result = await voximplantParentRequest('GetAccountInfo', form);
         }
-        
+
         if (result.data.error) {
             console.log(result.data.error);
             return { error: result.data.error };
@@ -801,6 +801,25 @@ exports.getPhoneNumbers = async ({ account_id, account_name, application_id = nu
         //     "total_count": 1,
         //     "count": 1
         // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.getResourcePrice = async ({ account_id, account_name, resource_type = null, resource_param = null, price_group_name = null }) => {
+    try {
+        const data = {};
+        setChildData({ data, account_id, account_name });
+        if (resource_type)
+            data['resource_type'] = resource_type;
+        if (resource_param)
+            data['resource_param'] = resource_param;
+        if (price_group_name)
+            data['price_group_name'] = price_group_name;
+        const result = await voximplantRequest('GetResourcePrice', data);
+        return result.data;
     }
     catch (err) {
         console.log(err);

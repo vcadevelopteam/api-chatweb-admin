@@ -1,7 +1,8 @@
 const express = require("express");
+
+const auth = require('../middleware/auth');
 const router = express.Router();
 const voximplantController = require("../controllers/voximplantController");
-const auth = require('../middleware/auth');
 
 // Parent //
 router.post("/addAccount",
@@ -22,6 +23,7 @@ router.post("/setChildAccountInfo",
 router.post("/transferMoneyToChildAccount",
     voximplantController.transferMoneyToChildAccount
 )
+
 // Child //
 router.post("/addApplication",
     voximplantController.addApplication
@@ -82,6 +84,23 @@ router.post("/getCustomRecordStorages",
 )
 router.post("/setCustomRecordStorageInfo",
     voximplantController.setCustomRecordStorageInfo
+)
+router.post("/getResourcePrice",
+    voximplantController.getResourcePrice
+)
+
+// Organization //
+router.post("/getMaximumConsumption",
+    auth,
+    voximplantController.getMaximumConsumption
+)
+router.post("/transferAccountBalance",
+    auth,
+    voximplantController.transferAccountBalance
+)
+router.post("/getAccountBalance",
+    auth,
+    voximplantController.getAccountBalance
 )
 
 module.exports = router;
