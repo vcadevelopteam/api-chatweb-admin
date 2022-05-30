@@ -3,6 +3,8 @@ const bcryptjs = require("bcryptjs");
 const channelfunctions = require("../config/channelfunctions");
 const triggerfunctions = require("../config/triggerfunctions");
 
+const { setSessionParameters } = require('../config/helpers');
+
 const cryptojs = require("crypto-js");
 
 const bridgeEndpoint = process.env.BRIDGE;
@@ -889,7 +891,7 @@ exports.createSubscription = async (request, result) => {
 
                                     if (voximplantScenario) {
                                         if (voximplantScenario.ruleid && voximplantScenario.scenarioid) {
-                                            var voximplantPhoneNumber = await channelfunctions.voximplantHandlePhoneNumber(voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, voximplantScenario.ruleid, channelServiceArray[index].country, channelServiceArray[index].category, channelServiceArray[index].state, (channelServiceArray[index].region || 0).toString(), channelServiceArray[index].cost);
+                                            var voximplantPhoneNumber = await channelfunctions.voximplantHandlePhoneNumber(corpId, orgId, parameters.username, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, voximplantScenario.ruleid, channelServiceArray[index].country, channelServiceArray[index].category, channelServiceArray[index].state, (channelServiceArray[index].region || 0).toString(), channelServiceArray[index].cost, voximplantEnvironment.additionalperchannel);
 
                                             if (voximplantPhoneNumber) {
                                                 if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.phonenumber && voximplantPhoneNumber.queueid) {
@@ -913,6 +915,7 @@ exports.createSubscription = async (request, result) => {
                                                         regionname: channelServiceArray[index].regionname,
                                                         cost: channelServiceArray[index].cost,
                                                         costvca: channelServiceArray[index].costvca,
+                                                        additionalperchannel: voximplantEnvironment.additionalperchannel,
                                                     };
 
                                                     channelParametersArray[index].communicationchannelsite = voximplantPhoneNumber.phonenumber;

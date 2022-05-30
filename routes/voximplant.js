@@ -1,11 +1,15 @@
 const express = require("express");
+
+const auth = require('../middleware/auth');
 const router = express.Router();
 const voximplantController = require("../controllers/voximplantController");
-const auth = require('../middleware/auth');
 
 // Parent //
 router.post("/addAccount",
     voximplantController.addAccount
+)
+router.post("/getAccountInfo",
+    voximplantController.getAccountInfo
 )
 router.post("/getAccountInvoices",
     voximplantController.getAccountInvoices
@@ -19,6 +23,7 @@ router.post("/setChildAccountInfo",
 router.post("/transferMoneyToChildAccount",
     voximplantController.transferMoneyToChildAccount
 )
+
 // Child //
 router.post("/addApplication",
     voximplantController.addApplication
@@ -28,6 +33,9 @@ router.post("/getApplications",
 )
 router.post("/getApplication",
     voximplantController.getApplication
+)
+router.post("/getCallHistory",
+    voximplantController.getCallHistory
 )
 router.post("/addUser",
     voximplantController.addUser
@@ -76,6 +84,28 @@ router.post("/getCustomRecordStorages",
 )
 router.post("/setCustomRecordStorageInfo",
     voximplantController.setCustomRecordStorageInfo
+)
+router.post("/getResourcePrice",
+    voximplantController.getResourcePrice
+)
+
+// Organization //
+router.post("/getMaximumConsumption",
+    auth,
+    voximplantController.getMaximumConsumption
+)
+router.post("/transferAccountBalance",
+    auth,
+    voximplantController.transferAccountBalance
+)
+router.post("/getAccountBalance",
+    auth,
+    voximplantController.getAccountBalance
+)
+
+// Scheduler //
+router.post("/directTransferAccountBalance",
+    voximplantController.directTransferAccountBalance
 )
 
 module.exports = router;
