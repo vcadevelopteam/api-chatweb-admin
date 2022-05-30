@@ -2361,4 +2361,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CONVERSATION_CLOSE_UPD: {
+        query: "SELECT * FROM ufn_conversation_close_upd($corpid, $orgid, $communicationchannelid, $personid, $personcommunicationchannel, $conversationid, $motive, $obs );",
+        module: "",
+        protected: "SELECT"
+    },
 }
