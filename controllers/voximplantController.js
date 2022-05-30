@@ -845,6 +845,178 @@ exports.getAccountBalance = async (request, result) => {
     }
 }
 
+exports.directGetMaximumConsumption = async (request, result) => {
+    var requestCode = "error_unexpected_error";
+    var requestData = null;
+    var requestMessage = "error_unexpected_error";
+    var requestStatus = 400;
+    var requestSuccess = false;
+
+    try {
+        if (request.body) {
+            const { corpid, orgid, daterange, timezoneoffset } = request.body;
+
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT");
+
+            if (orgData) {
+                requestCode = "";
+                requestData = { maximumconsumption: 0.00, consumptiondate: null };
+                requestMessage = "";
+                requestStatus = 200;
+                requestSuccess = true;
+
+                if (orgData.voximplantaccountid && orgData.voximplantapplicationid && orgData.voximplantapikey) {
+                    var datestart = convertToUtc(new Date());
+                    var dateend = convertToUtc(new Date());
+                    var offset = 0;
+
+                    datestart.setHours(datestart.getHours() + (timezoneoffset || 0));
+                    datestart.setHours(0, 0, 0, 0);
+                    datestart.setHours(datestart.getHours() - (timezoneoffset || 0));
+
+                    dateend = new Date(datestart);
+
+                    dateend.setHours(dateend.getHours() - ((daterange || 0) * 24));
+
+                    var callHistoryResult = await voximplant.getCallHistory({
+                        from_date: getDateString(dateend),
+                        to_date: getDateString(datestart),
+                        account_id: orgData.voximplantaccountid,
+                        application_id: orgData.voximplantapplicationid,
+                        child_apikey: orgData.voximplantapikey,
+                        count: "1000",
+                        offset: offset.toString(),
+                    })
+
+                    if (callHistoryResult) {
+                        if (callHistoryResult.result) {
+                            var datalist = [];
+
+                            if (callHistoryResult.count) {
+                                datalist = datalist.concat(callHistoryResult.result);
+                            }
+
+                            while (callHistoryResult.count != callHistoryResult.total_count) {
+                                offset = offset + 1000;
+
+                                callHistoryResult = await voximplant.getCallHistory({
+                                    from_date: getDateString(dateend),
+                                    to_date: getDateString(datestart),
+                                    account_id: orgData.voximplantaccountid,
+                                    application_id: orgData.voximplantapplicationid,
+                                    child_apikey: orgData.voximplantapikey,
+                                    count: "1000",
+                                    offset: offset.toString(),
+                                })
+
+                                if (callHistoryResult) {
+                                    if (callHistoryResult.result) {
+                                        if (callHistoryResult.count) {
+                                            datalist = datalist.concat(callHistoryResult.result);
+                                        }
+                                        else {
+                                            break;
+                                        }
+                                    }
+                                    else {
+                                        break;
+                                    }
+                                }
+                                else {
+                                    break;
+                                }
+                            }
+
+                            if (datalist) {
+                                datalist.sort((a, b) => a.start_date - b.start_date);
+
+                                var maximumdate = null;
+                                var maximumprice = 0.00;
+
+                                var comparedate = null;
+                                var compareprice = 0.00;
+
+                                datalist.forEach(element => {
+                                    var dateelement = new Date(element.start_date);
+                                    var datestring = "";
+                                    var datevalue = 0;
+
+                                    dateelement.setHours(dateelement.getHours() + (timezoneoffset || 0));
+                                    datestring = getDateString(dateelement).split(" ")[0];
+
+                                    if (element.calls) {
+                                        element.calls.forEach(call => {
+                                            if (call.cost) {
+                                                datevalue = datevalue + call.cost;
+                                            }
+                                        });
+                                    }
+
+                                    if (!comparedate) {
+                                        comparedate = datestring;
+                                        compareprice = compareprice + datevalue;
+                                    }
+                                    else {
+                                        if (comparedate === datestring) {
+                                            compareprice = compareprice + datevalue;
+                                        }
+                                        else {
+                                            comparedate = datestring;
+                                            compareprice = datevalue;
+                                        }
+                                    }
+
+                                    if (maximumprice < compareprice) {
+                                        maximumprice = compareprice;
+                                        maximumdate = comparedate;
+                                    }
+                                });
+
+                                requestData.maximumconsumption = maximumprice;
+                                requestData.consumptiondate = maximumdate;
+                            }
+                        }
+                        else {
+                            requestCode = "error_voximplant_failedrequest";
+                            requestData = null;
+                            requestMessage = "error_voximplant_failedrequest";
+                            requestStatus = 400;
+                            requestSuccess = false;
+                        }
+                    }
+                    else {
+                        requestCode = "error_voximplant_failedrequest";
+                        requestData = null;
+                        requestMessage = "error_voximplant_failedrequest";
+                        requestStatus = 400;
+                        requestSuccess = false;
+                    }
+                }
+            }
+            else {
+                requestCode = "error_org_notfound";
+                requestMessage = "error_org_notfound";
+            }
+        }
+
+        return result.status(requestStatus).json({
+            code: requestCode,
+            data: requestData,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
+    }
+    catch (exception) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+}
+
 exports.directTransferAccountBalance = async (request, result) => {
     var requestCode = "error_unexpected_error";
     var requestMessage = "error_unexpected_error";
