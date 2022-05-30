@@ -2204,6 +2204,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_USER_CHANNEL_SEL: {
+        query: "SELECT * FROM ufn_user_channel_sel($corpid,$orgid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
     QUERY_ORG_BOT_SEL: {
         query: `
         SELECT ous.userid, TRIM(CONCAT(usr.firstname, ' ', usr.lastname)) as fullname
