@@ -807,14 +807,18 @@ exports.getAccountBalance = async (request, result) => {
                         }
                     }
                 }
-            }
 
-            var parentInfoResult = await voximplant.getAccountInfo({})
+                var parentInfoResult = await voximplant.getAccountInfo({})
 
-            if (parentInfoResult) {
-                if (parentInfoResult.result) {
-                    requestData.balanceparent = parentInfoResult.result.live_balance;
+                if (parentInfoResult) {
+                    if (parentInfoResult.result) {
+                        requestData.balanceparent = parentInfoResult.result.live_balance;
+                    }
                 }
+            }
+            else {
+                requestCode = "error_org_notfound";
+                requestMessage = "error_org_notfound";
             }
         }
 
