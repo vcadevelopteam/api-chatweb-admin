@@ -891,7 +891,7 @@ exports.createSubscription = async (request, result) => {
 
                                     if (voximplantScenario) {
                                         if (voximplantScenario.ruleid && voximplantScenario.scenarioid) {
-                                            var voximplantPhoneNumber = await channelfunctions.voximplantHandlePhoneNumber(voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, voximplantScenario.ruleid, channelServiceArray[index].country, channelServiceArray[index].category, channelServiceArray[index].state, (channelServiceArray[index].region || 0).toString(), channelServiceArray[index].cost, voximplantEnvironment.additionalperchannel);
+                                            var voximplantPhoneNumber = await channelfunctions.voximplantHandlePhoneNumber(corpId, orgId, parameters.username, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, voximplantScenario.ruleid, channelServiceArray[index].country, channelServiceArray[index].category, channelServiceArray[index].state, (channelServiceArray[index].region || 0).toString(), channelServiceArray[index].cost, voximplantEnvironment.additionalperchannel);
 
                                             if (voximplantPhoneNumber) {
                                                 if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.phonenumber && voximplantPhoneNumber.queueid) {

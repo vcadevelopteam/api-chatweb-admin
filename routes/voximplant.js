@@ -103,4 +103,9 @@ router.post("/getAccountBalance",
     voximplantController.getAccountBalance
 )
 
+// Scheduler //
+router.post("/directTransferAccountBalance",
+    voximplantController.directTransferAccountBalance
+)
+
 module.exports = router;

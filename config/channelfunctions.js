@@ -4,6 +4,8 @@ const voximplant = require("../config/voximplantfunctions");
 const voximplantAccountEnvironment = process.env.VOXIMPLANT_ENVIRONMENT;
 const voximplantPassword = process.env.VOXIMPLANT_PASSWORD;
 const voximplantRulePattern = process.env.VOXIMPLANT_RULEPATTERN;
+const voximplantParentAccountId = process.env.VOXIMPLANT_ACCOUNT_ID;
+const voximplantParentApiKey = process.env.VOXIMPLANT_APIKEY;
 
 const voximplantManageOrg = async (corpid, orgid, operation, voximplantuser = null, voximplantmail = null, voximplantpassword = null, voximplantaccountid = null, voximplantapikey = null, voximplantapplicationid = null, voximplantruleid = null, voximplantscenarioid = null, voximplantuserid = null, voximplantapplicationname = null) => {
     const queryMethod = "UFN_ORG_VOXIMPLANT_UPD";
@@ -28,6 +30,55 @@ const voximplantManageOrg = async (corpid, orgid, operation, voximplantuser = nu
     if (queryResult instanceof Array) {
         if (queryResult.length > 0) {
             return queryResult[0];
+        }
+    }
+
+    return null;
+}
+
+const voximplantTransferIns = async (corpid, orgid, description, status, type, parentaccountid, parentaccountapikey, childaccountid, transferamount, motive, username) => {
+    const queryMethod = "UFN_VOXITRANSFERHISTORY_INS";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: orgid,
+        description: description,
+        status: status,
+        type: type,
+        parentaccountid: parentaccountid,
+        parentaccountapikey: parentaccountapikey,
+        childaccountid: childaccountid,
+        transferamount: transferamount,
+        motive: motive,
+        username: username,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult;
+        }
+    }
+
+    return null;
+}
+
+const voximplantTransferSel = async (corpid, orgid, motive, startdate, enddate, offset) => {
+    const queryMethod = "UFN_VOXITRANSFERHISTORY_SEL";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: orgid,
+        motive: motive,
+        startdate: startdate,
+        enddate: enddate,
+        offset: offset,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult;
         }
     }
 
@@ -69,6 +120,55 @@ exports.voximplantManageOrg = async (corpid, orgid, operation, voximplantuser = 
     if (queryResult instanceof Array) {
         if (queryResult.length > 0) {
             return queryResult[0];
+        }
+    }
+
+    return null;
+}
+
+exports.voximplantTransferIns = async (corpid, orgid, description, status, type, parentaccountid, parentaccountapikey, childaccountid, transferamount, motive, username) => {
+    const queryMethod = "UFN_VOXITRANSFERHISTORY_INS";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: orgid,
+        description: description,
+        status: status,
+        type: type,
+        parentaccountid: parentaccountid,
+        parentaccountapikey: parentaccountapikey,
+        childaccountid: childaccountid,
+        transferamount: transferamount,
+        motive: motive,
+        username: username,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult;
+        }
+    }
+
+    return null;
+}
+
+exports.voximplantTransferSel = async (corpid, orgid, motive, startdate, enddate, offset) => {
+    const queryMethod = "UFN_VOXITRANSFERHISTORY_SEL";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: orgid,
+        motive: motive,
+        startdate: startdate,
+        enddate: enddate,
+        offset: offset,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult;
         }
     }
 
@@ -273,7 +373,7 @@ exports.voximplantHandleScenario = async (corpid, orgid, accountid, apikey, appl
     return voximplantScenario;
 }
 
-exports.voximplantHandlePhoneNumber = async (accountid, apikey, applicationid, ruleid, country, category, state, region, cost, additionalperchannel) => {
+exports.voximplantHandlePhoneNumber = async (corpid, orgid, usr, accountid, apikey, applicationid, ruleid, country, category, state, region, cost, additionalperchannel) => {
     var voximplantPhoneNumber = {
         phoneid: null,
         phonenumber: null,
@@ -294,6 +394,8 @@ exports.voximplantHandlePhoneNumber = async (accountid, apikey, applicationid, r
             let transferResult = await voximplant.transferMoneyToUser(transferBody);
 
             if (transferResult.result) {
+                await voximplantTransferIns(corpid, orgid, 'NUMBER ADD', 'ACTIVO', 'CHANNEL', voximplantParentAccountId, voximplantParentApiKey, accountid, cost, 'CHANNEL', usr);
+
                 hasMoney = true;
             }
         }
@@ -357,7 +459,9 @@ exports.voximplantHandlePhoneNumber = async (accountid, apikey, applicationid, r
 
                     let transferResult = await voximplant.transferMoneyToUser(transferBody);
 
-                    console.log(JSON.stringify(transferResult));
+                    if (transferResult.result) {
+                        await voximplantTransferIns(corpid, orgid, 'NUMBER EXTRA', 'ACTIVO', 'CHANNEL', voximplantParentAccountId, voximplantParentApiKey, accountid, (additionalperchannel || 0), 'CHANNELEXTRA', usr);
+                    }
                 }
             }
             else {
@@ -370,7 +474,7 @@ exports.voximplantHandlePhoneNumber = async (accountid, apikey, applicationid, r
                 let transferResult = await voximplant.transferMoneyToUser(transferBody);
 
                 if (transferResult.result) {
-                    console.log(JSON.stringify(transferResult));
+                    await voximplantTransferIns(corpid, orgid, 'NUMBER RETURN', 'ACTIVO', 'CHANNEL', voximplantParentAccountId, voximplantParentApiKey, accountid, (cost * -1), 'CHANNEL', usr);
                 }
             }
         }
@@ -403,7 +507,7 @@ exports.voximplantDeletePhoneNumber = async (corpid, orgid, phoneid, queueid) =>
 
                     let phoneResult = await voximplant.deactivatePhoneNumber(phoneBody);
 
-                    if (phoneResult.result) {
+                    if (phoneResult.account_info) {
                         voximplantPhoneNumber.phoneid = phoneid;
                     }
                 }

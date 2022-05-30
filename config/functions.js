@@ -2346,4 +2346,14 @@ module.exports = {
         module: "",
         protected: false
     },
+    UFN_VOXITRANSFERHISTORY_INS: {
+        query: "SELECT * FROM ufn_voxitransferhistory_ins($corpid, $orgid, $description, $status, $type, $parentaccountid, $parentaccountapikey, $childaccountid, $transferamount, $motive, $username);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_VOXITRANSFERHISTORY_SEL: {
+        query: "SELECT * FROM ufn_voxitransferhistory_sel($corpid, $orgid, $motive, $startdate, $enddate, $offset);",
+        module: "",
+        protected: "SELECT"
+    },
 }

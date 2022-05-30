@@ -1,6 +1,9 @@
 const channelfunctions = require("../config/channelfunctions");
 const voximplant = require("../config/voximplantfunctions");
 
+const voximplantParentAccountId = process.env.VOXIMPLANT_ACCOUNT_ID;
+const voximplantParentApiKey = process.env.VOXIMPLANT_APIKEY;
+
 exports.getChildrenAccounts = async (request, result) => {
     try {
         let requestResult = await voximplant.getChildrenAccounts(request.body)
@@ -705,7 +708,7 @@ exports.transferAccountBalance = async (request, result) => {
     try {
         if (request.body) {
             const { orgid, transferamount } = request.body;
-            const { corpid } = request.user;
+            const { corpid, usr } = request.user;
 
             const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT");
 
@@ -719,6 +722,8 @@ exports.transferAccountBalance = async (request, result) => {
 
                     if (transferResult) {
                         if (transferResult.result) {
+                            await channelfunctions.voximplantTransferIns(corpid, orgid, 'MANUAL', 'ACTIVO', 'MANUAL', voximplantParentAccountId, voximplantParentApiKey, orgData.voximplantaccountid, (transferamount || 0), 'MANUAL', usr)
+
                             requestCode = "";
                             requestMessage = "";
                             requestStatus = 200;
@@ -825,6 +830,85 @@ exports.getAccountBalance = async (request, result) => {
         return result.status(requestStatus).json({
             code: requestCode,
             data: requestData,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
+    }
+    catch (exception) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+}
+
+exports.directTransferAccountBalance = async (request, result) => {
+    var requestCode = "error_unexpected_error";
+    var requestMessage = "error_unexpected_error";
+    var requestStatus = 400;
+    var requestSuccess = false;
+
+    try {
+        if (request.body) {
+            const { corpid, orgid, usr, transferamount, description, type, motive } = request.body;
+
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT");
+
+            if (orgData) {
+                if (orgData.voximplantaccountid && orgData.voximplantapplicationid && orgData.voximplantapikey) {
+                    var transferResult = await voximplant.transferMoneyToUser({
+                        child_account_id: orgData.voximplantaccountid,
+                        amount: (transferamount || 0).toString(),
+                        currency: "USD"
+                    })
+
+                    if (transferResult) {
+                        if (transferResult.result) {
+                            await channelfunctions.voximplantTransferIns(corpid, orgid, description, 'ACTIVO', type, voximplantParentAccountId, voximplantParentApiKey, orgData.voximplantaccountid, (transferamount || 0), motive, usr)
+
+                            requestCode = "";
+                            requestMessage = "";
+                            requestStatus = 200;
+                            requestSuccess = true;
+                        }
+                        else {
+                            requestCode = "error_voximplant_failedrequest";
+                            requestMessage = "error_voximplant_failedrequest";
+
+                            if (transferResult.error) {
+                                if (transferResult.error.code === 127) {
+                                    requestCode = "error_voximplant_nofunds";
+                                    requestMessage = "error_voximplant_nofunds";
+                                }
+
+                                if (transferResult.error.code === 125) {
+                                    requestCode = "error_voximplant_invalidamount";
+                                    requestMessage = "error_voximplant_invalidamount";
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        requestCode = "error_voximplant_failedrequest";
+                        requestMessage = "error_voximplant_failedrequest";
+                    }
+                }
+                else {
+                    requestCode = "error_voximplant_notfound";
+                    requestMessage = "error_voximplant_notfound";
+                }
+            }
+            else {
+                requestCode = "error_org_notfound";
+                requestMessage = "error_org_notfound";
+            }
+        }
+
+        return result.status(requestStatus).json({
+            code: requestCode,
             error: !requestSuccess,
             message: requestMessage,
             success: requestSuccess,
