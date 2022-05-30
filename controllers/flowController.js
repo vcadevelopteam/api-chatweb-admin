@@ -11,7 +11,7 @@ exports.Location = async (req, res) => {
 
 exports.ShippingCar = async (req, res) => {
     const data = req.body;
-    data.list.forEach(x => {
+    data.list.forEach(async x => {
         const dd = {
             ...data,
             list: undefined,
@@ -20,7 +20,8 @@ exports.ShippingCar = async (req, res) => {
             DESCRIPCION: x.description
         }
         console.log(dd)
-        axios.post(`https://backend.laraigo.com/zyxme/bridge/api/processsolgas/sendrequest`, dd);
+        const rr = await axios.post(`https://backend.laraigo.com/zyxme/bridge/api/processsolgas/sendrequest`, dd);
+        console.log("rrcarrito", rr.data)
     })
 
     res.json({ success: true });
