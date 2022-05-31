@@ -586,9 +586,19 @@ exports.deleteChannel = async (request, result) => {
                     var voximplantPhoneNumber = await channelfunctions.voximplantDeletePhoneNumber(request.user.corpid, request.user.orgid, serviceCredentials.phoneid, serviceCredentials.queueid);
 
                     if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.queueid) {
-                        return result.json({
-                            success: true
-                        });
+                        const transactionDeleteVoximplant = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                        if (transactionDeleteVoximplant instanceof Array) {
+                            return result.json({
+                                success: true
+                            });
+                        }
+                        else {
+                            return result.status(400).json({
+                                msg: transactionDeleteVoximplant.code,
+                                success: false
+                            });
+                        }
                     }
 
                     return result.status(400).json({
@@ -1506,7 +1516,7 @@ exports.insertChannel = async (request, result) => {
 
                         if (voximplantScenario) {
                             if (voximplantScenario.ruleid && voximplantScenario.scenarioid) {
-                                var voximplantPhoneNumber = await channelfunctions.voximplantHandlePhoneNumber(voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, voximplantScenario.ruleid, service.country, service.category, service.state, (service.region || 0).toString(), service.cost);
+                                var voximplantPhoneNumber = await channelfunctions.voximplantHandlePhoneNumber(request.user.corpid, request.user.orgid, request.user.usr, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, voximplantScenario.ruleid, service.country, service.category, service.state, (service.region || 0).toString(), service.cost, voximplantEnvironment.additionalperchannel);
 
                                 if (voximplantPhoneNumber) {
                                     if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.phonenumber && voximplantPhoneNumber.queueid) {
@@ -1530,6 +1540,7 @@ exports.insertChannel = async (request, result) => {
                                             regionname: service.regionname,
                                             cost: service.cost,
                                             costvca: service.costvca,
+                                            additionalperchannel: voximplantEnvironment.additionalperchannel,
                                         };
 
                                         parameters.communicationchannelsite = voximplantPhoneNumber.phonenumber;

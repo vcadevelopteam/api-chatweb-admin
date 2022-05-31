@@ -496,7 +496,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORG_INS: {
-        query: "SELECT * FROM ufn_org_ins($corpid,$id,$description,$status,$type,$username,$operation,$email,$password,$port,$host,$default_credentials,$ssl, $private_mail, $currency,$country, $timezoneoffset, $timezone, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $iconbot, $iconadvisor, $iconclient, $credittype, $automaticpayment, $automaticperiod, $automaticinvoice)",
+        query: "SELECT * FROM ufn_org_ins($corpid,$id,$description,$status,$type,$username,$operation,$email,$password,$port,$host,$default_credentials,$ssl, $private_mail, $currency,$country, $timezoneoffset, $timezone, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $iconbot, $iconadvisor, $iconclient, $credittype, $automaticpayment, $automaticperiod, $automaticinvoice, $voximplantautomaticrecharge, $voximplantrechargerange, $voximplantrechargepercentage, $voximplantrechargefixed, $voximplantadditionalperchannel)",
         module: "",
         protected: "INSERT"
     },
@@ -2350,5 +2350,20 @@ module.exports = {
         `,
         module: "",
         protected: false
+    },
+    UFN_VOXITRANSFERHISTORY_INS: {
+        query: "SELECT * FROM ufn_voxitransferhistory_ins($corpid, $orgid, $description, $status, $type, $parentaccountid, $parentaccountapikey, $childaccountid, $transferamount, $motive, $username);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_VOXITRANSFERHISTORY_SEL: {
+        query: "SELECT * FROM ufn_voxitransferhistory_sel($corpid, $orgid, $motive, $startdate, $enddate, $offset);",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_CLOSE_UPD: {
+        query: "SELECT * FROM ufn_conversation_close_upd($corpid, $orgid, $communicationchannelid, $personid, $personcommunicationchannel, $conversationid, $motive, $obs );",
+        module: "",
+        protected: "SELECT"
     },
 }

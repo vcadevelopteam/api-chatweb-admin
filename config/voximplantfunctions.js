@@ -101,6 +101,37 @@ exports.transferMoneyToUser = async ({ child_account_id, amount, currency }) => 
     }
 }
 
+exports.getAccountInfo = async ({ account_id, account_name, account_apikey }) => {
+    try {
+        const form = new FormData();
+        var result = null;
+
+        if (account_id && account_apikey) {
+            const data = {};
+            setChildData({ data, account_id, account_name });
+            if (account_apikey) {
+                data['child_apikey'] = account_apikey;
+            }
+            result = await voximplantRequest('GetAccountInfo', data);
+        }
+        else {
+            form.append('account_id', VOXIMPLANT_ACCOUNT_ID);
+            form.append('api_key', VOXIMPLANT_APIKEY);
+            result = await voximplantParentRequest('GetAccountInfo', form);
+        }
+
+        if (result.data.error) {
+            console.log(result.data.error);
+            return { error: result.data.error };
+        }
+        return result.data;
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
 exports.addAccount = async ({ account_name, account_email, account_password }) => {
     try {
         const form = new FormData();
@@ -317,6 +348,40 @@ exports.getApplication = async ({ account_id, account_name, application_name }) 
         //     "secure_record_storage": true,
         //     "application_id": 10454252,
         //     "extended_application_name": "demo.nanoxxi93.n2.voximplant.com"
+        // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.getCallHistory = async ({ account_id, account_name, from_date, to_date, application_id, count, offset, child_apikey = null }) => {
+    try {
+        const data = {};
+        setChildData({ data, account_id, account_name });
+        if (child_apikey) {
+            data['child_apikey'] = child_apikey;
+        }
+        data['from_date'] = from_date;
+        data['to_date'] = to_date;
+        data['application_id'] = application_id;
+        data['count'] = count;
+        data['offset'] = offset;
+        data['timezone'] = 'UTC/GMT';
+        data['with_calls'] = 'true';
+        data['with_records'] = 'true';
+        data['with_other_resources'] = 'true';
+
+        const result = await voximplantRequest('GetCallHistory', data);
+        if (result.data.error) {
+            console.log(result.data.error);
+            return { error: result.data.error };
+        }
+        return result.data;
+        // {
+        //     "result": 1,
+        //     "user_id": 3883041
         // }
     }
     catch (err) {
@@ -736,6 +801,25 @@ exports.getPhoneNumbers = async ({ account_id, account_name, application_id = nu
         //     "total_count": 1,
         //     "count": 1
         // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.getResourcePrice = async ({ account_id, account_name, resource_type = null, resource_param = null, price_group_name = null }) => {
+    try {
+        const data = {};
+        setChildData({ data, account_id, account_name });
+        if (resource_type)
+            data['resource_type'] = resource_type;
+        if (resource_param)
+            data['resource_param'] = resource_param;
+        if (price_group_name)
+            data['price_group_name'] = price_group_name;
+        const result = await voximplantRequest('GetResourcePrice', data);
+        return result.data;
     }
     catch (err) {
         console.log(err);
