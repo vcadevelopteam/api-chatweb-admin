@@ -111,5 +111,8 @@ router.post("/directGetMaximumConsumption",
 router.post("/directTransferAccountBalance",
     voximplantController.directTransferAccountBalance
 )
+router.post("/directGetAccountBalance",
+    voximplantController.directGetAccountBalance
+)
 
 module.exports = router;
