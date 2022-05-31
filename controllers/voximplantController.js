@@ -1096,6 +1096,71 @@ exports.directTransferAccountBalance = async (request, result) => {
     }
 }
 
+exports.directGetAccountBalance = async (request, result) => {
+    var requestCode = "error_unexpected_error";
+    var requestData = null;
+    var requestMessage = "error_unexpected_error";
+    var requestStatus = 400;
+    var requestSuccess = false;
+
+    try {
+        if (request.body) {
+            const { corpid, orgid } = request.body;
+            
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT");
+
+            if (orgData) {
+                requestCode = "";
+                requestData = { balancechild: 0.00, balanceparent: 0.00, };
+                requestMessage = "";
+                requestStatus = 200;
+                requestSuccess = true;
+
+                if (orgData.voximplantaccountid && orgData.voximplantapplicationid && orgData.voximplantapikey) {
+                    var childInfoResult = await voximplant.getAccountInfo({
+                        account_id: orgData.voximplantaccountid,
+                        account_apikey: orgData.voximplantapikey,
+                    })
+
+                    if (childInfoResult) {
+                        if (childInfoResult.result) {
+                            requestData.balancechild = childInfoResult.result.live_balance;
+                        }
+                    }
+                }
+
+                var parentInfoResult = await voximplant.getAccountInfo({})
+
+                if (parentInfoResult) {
+                    if (parentInfoResult.result) {
+                        requestData.balanceparent = parentInfoResult.result.live_balance;
+                    }
+                }
+            }
+            else {
+                requestCode = "error_org_notfound";
+                requestMessage = "error_org_notfound";
+            }
+        }
+
+        return result.status(requestStatus).json({
+            code: requestCode,
+            data: requestData,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
+    }
+    catch (exception) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+}
+
 const convertToUtc = (date) => {
     return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds());
 }
