@@ -174,6 +174,41 @@ exports.getCallHistory = async (request, result) => {
     }
 }
 
+exports.getCallRecord = async (request, result) => {
+    let resultData = {
+        code: "error_unexpected_error",
+        error: true,
+        message: "",
+        success: false,
+    }
+    try {
+        let requestResult = await voximplant.getCallRecord(request.body)
+        if (requestResult) 
+        {
+            if (requestResult?.result.length > 0) {
+                return result.json({
+                    code: "",
+                    error: false,
+                    data: requestResult?.result[0]?.records?.[0]?.record_url,
+                    message: "",
+                    success: true
+                });
+            }
+        }
+        return result.status(400).json({
+            ...resultData,
+            code: "error_invalid_call",
+            message: "Invalid call"
+        })
+    }
+    catch (err) {
+        return result.status(500).json({
+            ...resultData,
+            message: err.message
+        })
+    }
+}
+
 exports.addUser = async (request, result) => {
     try {
         let requestResult = await voximplant.addUser(request.body)
