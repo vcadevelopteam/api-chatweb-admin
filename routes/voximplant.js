@@ -105,7 +105,6 @@ router.post("/getAccountBalance",
 
 // Scheduler //
 router.post("/directGetMaximumConsumption",
-    auth,
     voximplantController.directGetMaximumConsumption
 )
 router.post("/directTransferAccountBalance",
