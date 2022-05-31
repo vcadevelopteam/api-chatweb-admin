@@ -1,5 +1,7 @@
 const channelfunctions = require("../config/channelfunctions");
 const voximplant = require("../config/voximplantfunctions");
+const { executesimpletransaction } = require('../config/triggerfunctions');
+const { setSessionParameters } = require('../config/helpers');
 
 const voximplantParentAccountId = process.env.VOXIMPLANT_ACCOUNT_ID;
 const voximplantParentApiKey = process.env.VOXIMPLANT_APIKEY;
@@ -182,6 +184,29 @@ exports.getCallRecord = async (request, result) => {
         success: false,
     }
     try {
+        if (!request.body.call_session_history_id) {
+            return result.status(400).json({
+                ...resultData,
+                code: "error_invalid_call",
+                message: "Invalid call"
+            })
+        }
+        
+        setSessionParameters(request.body, request.user);
+        
+        // Try to get information of VOXI in org table
+        const voxiorgdata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_ORG", {
+            corpid: request.body.corpid,
+            orgid: request.body.orgid,
+        });
+
+        // If exists info of VOXI in org
+        if (voxiorgdata instanceof Array && voxiorgdata.length > 0) {
+            request.body['account_id'] = voxiorgdata[0].voximplantaccountid;
+            request.body['api_key'] = voxiorgdata[0].voximplantapikey;
+            request.body['application_id'] = voxiorgdata[0].voximplantapplicationid;
+        }
+        
         let requestResult = await voximplant.getCallRecord(request.body)
         if (requestResult) 
         {

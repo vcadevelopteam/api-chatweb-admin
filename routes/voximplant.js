@@ -38,6 +38,7 @@ router.post("/getCallHistory",
     voximplantController.getCallHistory
 )
 router.post("/getCallRecord",
+    auth,    
     voximplantController.getCallRecord
 )
 router.post("/addUser",
