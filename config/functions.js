@@ -821,6 +821,20 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_CAMPAIGN_SEL: {
+        query: `
+        SELECT ca.campaignid, ca.title, ca.description,
+        ca.status, ca.type, ca.message,
+        ca.communicationchannelid, cc.type as communicationchanneltype,
+        ca.usergroup
+        FROM campaign ca
+        LEFT JOIN communicationchannel cc ON cc.corpid = ca.corpid AND cc.orgid = ca.orgid AND cc.communicationchannelid = ca.communicationchannelid
+        WHERE ca.corpid = $corpid
+        AND ca.orgid = $orgid
+        AND ca.campaignid = $campaignid`,
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CAMPAIGN_INS: {
         query: "SELECT * FROM ufn_campaign_ins($corpid, $orgid, $id, $communicationchannelid, $usergroup, $type, $status, $title, $description, $subject, $message, $startdate, $enddate, $repeatable, $frecuency, $messagetemplateid, $messagetemplatename, $messagetemplatenamespace, $messagetemplateheader, $messagetemplatebuttons, $executiontype, $batchjson, $fields, $username, $operation)",
         module: "",
@@ -836,6 +850,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_CAMPAIGN_START: {
+        query: "UPDATE campaign SET status = 'EJECUTANDO', lastrundate = NOW(), taskid = $taskid WHERE corpid = $corpid AND orgid = $orgid AND campaignid = $campaignid AND status = 'ACTIVO'",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CAMPAIGN_STATUS: {
         query: "SELECT * FROM ufn_campaign_status($corpid, $orgid, $id)",
         module: "",
@@ -848,6 +867,21 @@ module.exports = {
     },
     UFN_CAMPAIGNMEMBER_SEL: {
         query: "SELECT * FROM ufn_campaignmember_sel($corpid, $orgid, $campaignid)",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_CAMPAIGNMEMBER_SEL: {
+        query: `
+        SELECT cm.campaignid, cm.campaignmemberid,
+        cm.personcommunicationchannelowner, cm.countrycode,
+        cm.field1, cm.field2, cm.field3, cm.field4, cm.field5,
+        cm.field6, cm.field7, cm.field8, cm.field9, cm.field10,
+        cm.field11, cm.field12, cm.field13, cm.field14, cm.field15
+        FROM campaignmember cm
+        WHERE cm.corpid = $corpid
+        AND cm.orgid = $orgid
+        AND cm.campaignid = $campaignid
+        AND cm.status = 'ACTIVO'`,
         module: "",
         protected: "SELECT"
     },
