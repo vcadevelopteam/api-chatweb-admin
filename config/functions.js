@@ -826,7 +826,7 @@ module.exports = {
         SELECT ca.campaignid, ca.title, ca.description,
         ca.status, ca.type, ca.message,
         ca.communicationchannelid, cc.type as communicationchanneltype,
-        ca.usergroup
+        ca.usergroup, ca.taskid
         FROM campaign ca
         LEFT JOIN communicationchannel cc ON cc.corpid = ca.corpid AND cc.orgid = ca.orgid AND cc.communicationchannelid = ca.communicationchannelid
         WHERE ca.corpid = $corpid
@@ -851,12 +851,22 @@ module.exports = {
         protected: "SELECT"
     },
     QUERY_CAMPAIGN_START: {
-        query: "UPDATE campaign SET status = 'EJECUTANDO', lastrundate = NOW(), taskid = $taskid WHERE corpid = $corpid AND orgid = $orgid AND campaignid = $campaignid AND status = 'ACTIVO'",
+        query: "UPDATE campaign SET status = 'EJECUTANDO', lastrundate = NOW(), taskid = $taskid WHERE corpid = $corpid AND orgid = $orgid AND campaignid = $campaignid AND status = 'ACTIVO' RETURNING campaignid",
         module: "",
         protected: "SELECT"
     },
     UFN_CAMPAIGN_STATUS: {
         query: "SELECT * FROM ufn_campaign_status($corpid, $orgid, $id)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CAMPAIGN_STOP: {
+        query: "SELECT * FROM ufn_campaign_stop($corpid, $orgid, $campaignid)",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_CAMPAIGN_STOP: {
+        query: "UPDATE campaign SET status = 'ACTIVO', taskid = null WHERE corpid = $corpid AND orgid = $orgid AND campaignid = $campaignid AND status = 'EJECUTANDO' RETURNING campaignid",
         module: "",
         protected: "SELECT"
     },

@@ -9,4 +9,9 @@ router.post("/start",
     campaignController.start
 )
 
+router.post("/stop",
+    auth,    
+    campaignController.stop
+)
+
 module.exports = router;
