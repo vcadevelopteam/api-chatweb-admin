@@ -37,6 +37,10 @@ router.post("/getApplication",
 router.post("/getCallHistory",
     voximplantController.getCallHistory
 )
+router.post("/getCallRecord",
+    auth,    
+    voximplantController.getCallRecord
+)
 router.post("/addUser",
     voximplantController.addUser
 )
@@ -105,11 +109,13 @@ router.post("/getAccountBalance",
 
 // Scheduler //
 router.post("/directGetMaximumConsumption",
-    auth,
     voximplantController.directGetMaximumConsumption
 )
 router.post("/directTransferAccountBalance",
     voximplantController.directTransferAccountBalance
+)
+router.post("/directGetAccountBalance",
+    voximplantController.directGetAccountBalance
 )
 
 module.exports = router;

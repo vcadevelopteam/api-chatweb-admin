@@ -1,5 +1,7 @@
 const channelfunctions = require("../config/channelfunctions");
 const voximplant = require("../config/voximplantfunctions");
+const { executesimpletransaction } = require('../config/triggerfunctions');
+const { setSessionParameters } = require('../config/helpers');
 
 const voximplantParentAccountId = process.env.VOXIMPLANT_ACCOUNT_ID;
 const voximplantParentApiKey = process.env.VOXIMPLANT_APIKEY;
@@ -170,6 +172,64 @@ exports.getCallHistory = async (request, result) => {
             error: true,
             message: err.message,
             success: false,
+        })
+    }
+}
+
+exports.getCallRecord = async (request, result) => {
+    let resultData = {
+        code: "error_unexpected_error",
+        error: true,
+        message: "",
+        success: false,
+    }
+    try {
+        if (!request.body.call_session_history_id) {
+            return result.status(400).json({
+                ...resultData,
+                code: "error_invalid_call",
+                message: "Invalid call"
+            })
+        }
+        
+        setSessionParameters(request.body, request.user);
+        
+        // Try to get information of VOXI in org table
+        const voxiorgdata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_ORG", {
+            corpid: request.body.corpid,
+            orgid: request.body.orgid,
+        });
+
+        // If exists info of VOXI in org
+        if (voxiorgdata instanceof Array && voxiorgdata.length > 0) {
+            request.body['account_id'] = voxiorgdata[0].voximplantaccountid;
+            request.body['api_key'] = voxiorgdata[0].voximplantapikey;
+            request.body['application_id'] = voxiorgdata[0].voximplantapplicationid;
+        }
+        
+        let requestResult = await voximplant.getCallRecord(request.body)
+        if (requestResult) 
+        {
+            if (requestResult?.result.length > 0) {
+                return result.json({
+                    code: "",
+                    error: false,
+                    data: requestResult?.result[0]?.records?.[0]?.record_url,
+                    message: "",
+                    success: true
+                });
+            }
+        }
+        return result.status(400).json({
+            ...resultData,
+            code: "error_invalid_call",
+            message: "Invalid call"
+        })
+    }
+    catch (err) {
+        return result.status(500).json({
+            ...resultData,
+            message: err.message
         })
     }
 }
@@ -1081,6 +1141,71 @@ exports.directTransferAccountBalance = async (request, result) => {
 
         return result.status(requestStatus).json({
             code: requestCode,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
+    }
+    catch (exception) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+}
+
+exports.directGetAccountBalance = async (request, result) => {
+    var requestCode = "error_unexpected_error";
+    var requestData = null;
+    var requestMessage = "error_unexpected_error";
+    var requestStatus = 400;
+    var requestSuccess = false;
+
+    try {
+        if (request.body) {
+            const { corpid, orgid } = request.body;
+            
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT");
+
+            if (orgData) {
+                requestCode = "";
+                requestData = { balancechild: 0.00, balanceparent: 0.00, };
+                requestMessage = "";
+                requestStatus = 200;
+                requestSuccess = true;
+
+                if (orgData.voximplantaccountid && orgData.voximplantapplicationid && orgData.voximplantapikey) {
+                    var childInfoResult = await voximplant.getAccountInfo({
+                        account_id: orgData.voximplantaccountid,
+                        account_apikey: orgData.voximplantapikey,
+                    })
+
+                    if (childInfoResult) {
+                        if (childInfoResult.result) {
+                            requestData.balancechild = childInfoResult.result.live_balance;
+                        }
+                    }
+                }
+
+                var parentInfoResult = await voximplant.getAccountInfo({})
+
+                if (parentInfoResult) {
+                    if (parentInfoResult.result) {
+                        requestData.balanceparent = parentInfoResult.result.live_balance;
+                    }
+                }
+            }
+            else {
+                requestCode = "error_org_notfound";
+                requestMessage = "error_org_notfound";
+            }
+        }
+
+        return result.status(requestStatus).json({
+            code: requestCode,
+            data: requestData,
             error: !requestSuccess,
             message: requestMessage,
             success: requestSuccess,

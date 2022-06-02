@@ -390,6 +390,30 @@ exports.getCallHistory = async ({ account_id, account_name, from_date, to_date, 
     }
 }
 
+exports.getCallRecord = async ({ account_id, account_name, call_session_history_id, child_apikey = null }) => {
+    try {
+        const data = {};
+        setChildData({ data, account_id, account_name });
+        if (child_apikey) {
+            data['child_apikey'] = child_apikey;
+        }
+        data['call_session_history_id'] = call_session_history_id;
+        data['with_calls'] = 'true';
+        data['with_records'] = 'true';
+        data['with_other_resources'] = 'true';
+        const result = await voximplantRequest('GetCallHistory', data);
+        if (result.data.error) {
+            console.log(result.data.error);
+            return { error: result.data.error };
+        }
+        return result.data;
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
 exports.addUser = async ({ account_id, account_name, application_id, user_name, user_display_name, parent_accounting = true, user_password, child_apikey = null }) => {
     try {
         const data = {};
