@@ -7,6 +7,10 @@ router.post("/location",
     flowController.Location
 )
 
+router.post("/shippingcar",
+    flowController.ShippingCar
+)
+
 router.post("/testrequest",
     auth,
     flowController.TestRequest
