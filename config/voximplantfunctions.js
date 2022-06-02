@@ -967,7 +967,7 @@ exports.createCallList = async ({ account_id, account_name, child_apikey, rule_i
         data['rule_id'] = rule_id
         data['priority'] = 0
         data['max_simultaneous'] = 10
-        data['num_attempts'] = 2
+        data['num_attempts'] = 1
         data['name'] = name
         data['file_content'] = file_content
         if (queue_id) {
