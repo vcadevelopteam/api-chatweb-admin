@@ -51,11 +51,29 @@ exports.getChildrenAccounts = async ({ child_account_id, child_account_name }) =
     }
 }
 
-exports.getAccountInvoices = async () => {
+exports.getAccountInvoices = async ({ account_id, account_name, account_apikey }) => {
     try {
         const form = new FormData();
-        form.append('account_id', VOXIMPLANT_ACCOUNT_ID);
-        const result = await voximplantParentRequest('GetAccountInvoices', form);
+        var result = null;
+
+        if (account_id && account_apikey) {
+            const data = {};
+            setChildData({ data, account_id, account_name });
+            if (account_apikey) {
+                data['child_apikey'] = account_apikey;
+            }
+            result = await voximplantRequest('GetAccountInvoices', data);
+        }
+        else {
+            form.append('account_id', VOXIMPLANT_ACCOUNT_ID);
+            form.append('api_key', VOXIMPLANT_APIKEY);
+            result = await voximplantParentRequest('GetAccountInvoices', form);
+        }
+
+        if (result.data.error) {
+            console.log(result.data.error);
+            return { error: result.data.error };
+        }
         return result.data;
     }
     catch (err) {
@@ -101,7 +119,7 @@ exports.transferMoneyToUser = async ({ child_account_id, amount, currency }) => 
     }
 }
 
-exports.getAccountInfo = async ({ account_id, account_name, account_apikey }) => {
+exports.getAccountInfo = async ({ account_id, account_name, }) => {
     try {
         const form = new FormData();
         var result = null;
@@ -383,6 +401,57 @@ exports.getCallHistory = async ({ account_id, account_name, from_date, to_date, 
         //     "result": 1,
         //     "user_id": 3883041
         // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.getTransactionHistory = async ({ account_id, account_name, account_apikey, from_date, to_date, count, offset, child_account_id }) => {
+    try {
+        const form = new FormData();
+        var result = null;
+
+        if (account_id && account_apikey) {
+            const data = {};
+            setChildData({ data, account_id, account_name });
+            if (account_apikey) {
+                data['child_apikey'] = account_apikey;
+            }
+            data['from_date'] = from_date;
+            data['to_date'] = to_date;
+            data['timezone'] = 'UTC/GMT';
+            data['count'] = count;
+            data['offset'] = offset;
+            data['desc_order'] = 'true';
+            data['transaction_type'] = 'resource_charge;money_distribution;subscription_charge;subscription_installation_charge;card_periodic_payment;card_overrun_payment;card_payment;rub_card_periodic_payment;rub_card_overrun_payment;rub_card_payment;robokassa_payment;gift;promo;adjustment;wire_transfer;us_wire_transfer;refund;discount;mgp_charge;mgp_startup;mgp_business;mgp_big_business;mgp_enterprise;mgp_large_enterprise;techsupport_charge;tax_charge;monthly_fee_charge;grace_credit_payment;grace_credit_provision;mau_charge;mau_overrun;im_charge;im_overrun;fmc_charge;sip_registration_charge;development_fee;money_transfer_to_child;money_transfer_to_parent;money_acceptance_from_child;money_acceptance_from_parent;phone_number_installation;phone_number_charge;toll_free_phone_number_installation;toll_free_phone_number_charge;services;user_money_transfer;paypal_payment;paypal_overrun_payment;paypal_periodic_payment';
+
+            result = await voximplantRequest('GetTransactionHistory', data);
+        }
+        else {
+            form.append('account_id', VOXIMPLANT_ACCOUNT_ID);
+            form.append('api_key', VOXIMPLANT_APIKEY);
+            form.append('from_date', from_date);
+            form.append('to_date', to_date);
+            form.append('timezone', 'UTC/GMT');
+            form.append('count', count);
+            form.append('offset', offset);
+            form.append('desc_order', 'true');
+            form.append('transaction_type', 'resource_charge;money_distribution;subscription_charge;subscription_installation_charge;card_periodic_payment;card_overrun_payment;card_payment;rub_card_periodic_payment;rub_card_overrun_payment;rub_card_payment;robokassa_payment;gift;promo;adjustment;wire_transfer;us_wire_transfer;refund;discount;mgp_charge;mgp_startup;mgp_business;mgp_big_business;mgp_enterprise;mgp_large_enterprise;techsupport_charge;tax_charge;monthly_fee_charge;grace_credit_payment;grace_credit_provision;mau_charge;mau_overrun;im_charge;im_overrun;fmc_charge;sip_registration_charge;development_fee;money_transfer_to_child;money_transfer_to_parent;money_acceptance_from_child;money_acceptance_from_parent;phone_number_installation;phone_number_charge;toll_free_phone_number_installation;toll_free_phone_number_charge;services;user_money_transfer;paypal_payment;paypal_overrun_payment;paypal_periodic_payment');
+            if (child_account_id) {
+                form.append('child_account_id', child_account_id);
+                form.append('children_transactions_only', 'true');
+            }
+
+            result = await voximplantParentRequest('GetTransactionHistory', form);
+        }
+
+        if (result.data.error) {
+            console.log(result.data.error);
+            return { error: result.data.error };
+        }
+        return result.data;
     }
     catch (err) {
         console.log(err);
