@@ -161,7 +161,7 @@ exports.sendMailPassword = async (req, res) => {
                             });
                             // let voxiqueues_names = voxiqueues.result.map(vq => vq.acd_queue_name.split('.')[1]);
                             let voxiqueues_names = voxiqueues.result.map(vq => vq.acd_queue_name);
-                            let groups = ['laraigo', ...(detail[di].parameters.groups || '').split(',')];
+                            let groups = ['laraigo', ...(detail[di].parameters.groups || '').split(',')].filter(g => g !== '');
                             // Loop for every VOXI channel
                             let channel_group = []
                             for (let vi = 0; vi < voxichanneldata.length; vi++) {
