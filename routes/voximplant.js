@@ -37,8 +37,11 @@ router.post("/getApplication",
 router.post("/getCallHistory",
     voximplantController.getCallHistory
 )
+router.post("/getTransactionHistory",
+    voximplantController.getTransactionHistory
+)
 router.post("/getCallRecord",
-    auth,    
+    auth,
     voximplantController.getCallRecord
 )
 router.post("/addUser",
@@ -116,6 +119,9 @@ router.post("/directTransferAccountBalance",
 )
 router.post("/directGetAccountBalance",
     voximplantController.directGetAccountBalance
+)
+router.post("/updateVoximplantPeriod",
+    voximplantController.updateVoximplantPeriod
 )
 
 module.exports = router;

@@ -97,6 +97,53 @@ const getAppSetting = async () => {
     return null
 }
 
+exports.voximplantChannelSel = async (corpid, orgid, year, month, timezoneoffset) => {
+    const queryMethod = "UFN_COMMUNICATIONCHANNEL_SEL_VOXIMPLANT";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: orgid,
+        year: year,
+        month: month,
+        timezoneoffset: timezoneoffset,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult;
+        }
+    }
+
+    return null;
+}
+
+exports.voximplantPeriodUpdate = async (corpid, orgid, year, month, voximplantcallphonecost, voximplantcallpubliccost, voximplantcallvoipcost, voximplantcallrecordingcost, voximplantcallothercost, force) => {
+    const queryMethod = "UFN_BILLINGPERIOD_UPD_VOXIMPLANT";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: orgid,
+        year: year,
+        month: month,
+        voximplantcallphonecost: voximplantcallphonecost,
+        voximplantcallpubliccost: voximplantcallpubliccost,
+        voximplantcallvoipcost: voximplantcallvoipcost,
+        voximplantcallrecordingcost: voximplantcallrecordingcost,
+        voximplantcallothercost: voximplantcallothercost,
+        force: force,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult;
+        }
+    }
+
+    return null;
+}
+
 exports.voximplantManageOrg = async (corpid, orgid, operation, voximplantuser = null, voximplantmail = null, voximplantpassword = null, voximplantaccountid = null, voximplantapikey = null, voximplantapplicationid = null, voximplantruleid = null, voximplantscenarioid = null, voximplantuserid = null, voximplantapplicationname = null) => {
     const queryMethod = "UFN_ORG_VOXIMPLANT_UPD";
     const queryParameters = {

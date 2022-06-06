@@ -1549,7 +1549,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGCONFIGURATION_INS: {
-        query: "SELECT * FROM ufn_billingconfiguration_ins($year,$month,$plan,$id,$basicfee,$userfreequantity,$useradditionalfee,$channelfreequantity,$channelwhatsappfee,$channelotherfee,$clientfreequantity,$clientadditionalfee,$allowhsm,$hsmfee,$description,$status,$whatsappconversationfreequantity,$freewhatsappchannel,$usercreateoverride,$channelcreateoverride,$vcacomissionperhsm,$type,$username,$operation)",
+        query: "SELECT * FROM ufn_billingconfiguration_ins($year,$month,$plan,$id,$basicfee,$userfreequantity,$useradditionalfee,$channelfreequantity,$channelwhatsappfee,$channelotherfee,$clientfreequantity,$clientadditionalfee,$allowhsm,$hsmfee,$description,$status,$whatsappconversationfreequantity,$freewhatsappchannel,$usercreateoverride,$channelcreateoverride,$vcacomissionperhsm,$vcacomissionpervoicechannel,$type,$username,$operation)",
         module: "",
         protected: "INSERT"
     },
@@ -1584,7 +1584,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_BILLINGPERIOD_UPD: {
-        query: "SELECT * FROM ufn_billingperiod_upd($corpid, $orgid, $year, $month, $billingplan, $supportplan, $basicfee, $userfreequantity, $useradditionalfee, $channelfreequantity, $channelwhatsappfee, $channelotherfee, $clientfreequantity, $clientadditionalfee, $supportbasicfee, $unitpricepersms, $vcacomissionpersms, $unitepricepermail, $vcacomissionpermail, $additionalservicename1, $additionalservicefee1, $additionalservicename2, $additionalservicefee2, $additionalservicename3, $additionalservicefee3, $freewhatsappchannel, $freewhatsappconversations, $usercreateoverride, $channelcreateoverride, $vcacomissionperconversation, $vcacomissionperhsm, $force)",
+        query: "SELECT * FROM ufn_billingperiod_upd($corpid, $orgid, $year, $month, $billingplan, $supportplan, $basicfee, $userfreequantity, $useradditionalfee, $channelfreequantity, $channelwhatsappfee, $channelotherfee, $clientfreequantity, $clientadditionalfee, $supportbasicfee, $unitpricepersms, $vcacomissionpersms, $unitepricepermail, $vcacomissionpermail, $additionalservicename1, $additionalservicefee1, $additionalservicename2, $additionalservicefee2, $additionalservicename3, $additionalservicefee3, $freewhatsappchannel, $freewhatsappconversations, $usercreateoverride, $channelcreateoverride, $vcacomissionperconversation, $vcacomissionperhsm, $minimumsmsquantity, $minimummailquantity, $vcacomissionpervoicechannel, $force)",
         module: "",
         protected: "INSERT"
     },
@@ -2363,6 +2363,16 @@ module.exports = {
     },
     UFN_CONVERSATION_CLOSE_UPD: {
         query: "SELECT * FROM ufn_conversation_close_upd($corpid, $orgid, $communicationchannelid, $personid, $personcommunicationchannel, $conversationid, $motive, $obs );",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIOD_UPD_VOXIMPLANT: {
+        query: "SELECT * FROM ufn_billingperiod_upd_voximplant($corpid, $orgid, $year, $month, $voximplantcallphonecost, $voximplantcallpubliccost, $voximplantcallvoipcost, $voximplantcallrecordingcost, $voximplantcallothercost, $force);",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_COMMUNICATIONCHANNEL_SEL_VOXIMPLANT: {
+        query: "SELECT * FROM ufn_communicationchannel_sel_voximplant($corpid, $orgid, $year, $month, $timezoneoffset);",
         module: "",
         protected: "SELECT"
     },

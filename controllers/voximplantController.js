@@ -176,6 +176,23 @@ exports.getCallHistory = async (request, result) => {
     }
 }
 
+exports.getTransactionHistory = async (request, result) => {
+    try {
+        let requestResult = await voximplant.getTransactionHistory(request.body)
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
+    }
+    catch (err) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: err.message,
+            success: false,
+        })
+    }
+}
+
 exports.getCallRecord = async (request, result) => {
     let resultData = {
         code: "error_unexpected_error",
@@ -191,9 +208,9 @@ exports.getCallRecord = async (request, result) => {
                 message: "Invalid call"
             })
         }
-        
+
         setSessionParameters(request.body, request.user);
-        
+
         // Try to get information of VOXI in org table
         const voxiorgdata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_ORG", {
             corpid: request.body.corpid,
@@ -206,10 +223,9 @@ exports.getCallRecord = async (request, result) => {
             request.body['api_key'] = voxiorgdata[0].voximplantapikey;
             request.body['application_id'] = voxiorgdata[0].voximplantapplicationid;
         }
-        
+
         let requestResult = await voximplant.getCallRecord(request.body)
-        if (requestResult) 
-        {
+        if (requestResult) {
             if (requestResult?.result.length > 0) {
                 return result.json({
                     code: "",
@@ -1166,7 +1182,7 @@ exports.directGetAccountBalance = async (request, result) => {
     try {
         if (request.body) {
             const { corpid, orgid } = request.body;
-            
+
             const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT");
 
             if (orgData) {
@@ -1206,6 +1222,194 @@ exports.directGetAccountBalance = async (request, result) => {
         return result.status(requestStatus).json({
             code: requestCode,
             data: requestData,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
+    }
+    catch (exception) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+}
+
+exports.updateVoximplantPeriod = async (request, result) => {
+    var requestCode = "error_unexpected_error";
+    var requestMessage = "error_unexpected_error";
+    var requestStatus = 400;
+    var requestSuccess = false;
+
+    try {
+        if (request.body) {
+            const { corpid, orgid, year, month } = request.body;
+
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT");
+
+            if (orgData) {
+                requestCode = "";
+                requestMessage = "";
+                requestStatus = 200;
+                requestSuccess = true;
+
+                if (orgData.voximplantaccountid && orgData.voximplantapplicationid && orgData.voximplantapikey) {
+                    var datestart = new Date(year, month, 1);
+                    var dateend = new Date(year, month + 1, 0, 23, 59, 59);
+                    var offset = 0;
+
+                    datestart.setHours(datestart.getHours() + (orgData.timezoneoffset || 0));
+                    dateend.setHours(datestart.getHours() + (orgData.timezoneoffset || 0));
+
+                    var transactionHistoryResult = await voximplant.getTransactionHistory({
+                        from_date: getDateString(datestart),
+                        to_date: getDateString(dateend),
+                        account_id: orgData.voximplantaccountid,
+                        account_apikey: orgData.voximplantapikey,
+                        count: "1000",
+                        offset: offset.toString(),
+                    })
+
+                    if (transactionHistoryResult) {
+                        if (transactionHistoryResult.result) {
+                            var datalist = [];
+
+                            if (transactionHistoryResult.count) {
+                                datalist = datalist.concat(transactionHistoryResult.result);
+                            }
+
+                            while (transactionHistoryResult.count != transactionHistoryResult.total_count) {
+                                offset = offset + 1000;
+
+                                transactionHistoryResult = await voximplant.getTransactionHistory({
+                                    from_date: getDateString(datestart),
+                                    to_date: getDateString(dateend),
+                                    account_id: orgData.voximplantaccountid,
+                                    account_apikey: orgData.voximplantapikey,
+                                    count: "1000",
+                                    offset: offset.toString(),
+                                })
+
+                                if (transactionHistoryResult) {
+                                    if (transactionHistoryResult.result) {
+                                        if (transactionHistoryResult.count) {
+                                            datalist = datalist.concat(transactionHistoryResult.result);
+                                        }
+                                        else {
+                                            break;
+                                        }
+                                    }
+                                    else {
+                                        break;
+                                    }
+                                }
+                                else {
+                                    break;
+                                }
+                            }
+
+                            if (datalist) {
+                                var phonecost = 0.00;
+                                var pstncost = 0.00;
+                                var voipcost = 0.00;
+                                var recordcost = 0.00;
+                                var othercost = 0.00;
+
+                                datalist.forEach(element => {
+                                    var datatype = 'OTHER';
+
+                                    if (element.resource_type) {
+                                        if (element.resource_type.includes("PSTN")) {
+                                            datatype = 'PSTN';
+                                        }
+                                        if (element.resource_type.includes("VOIP")) {
+                                            datatype = 'VOIP';
+                                        }
+                                        if (element.resource_type.includes("RECORD")) {
+                                            datatype = 'RECORD';
+                                        }
+                                        if (element.resource_type.includes("PHONE")) {
+                                            datatype = 'PHONE';
+                                        }
+                                    }
+                                    else {
+                                        datatype = null;
+
+                                        if (element.transaction_type) {
+                                            if (element.transaction_type.includes("phone_number")) {
+                                                datatype = 'PHONE';
+                                            }
+                                            else {
+                                                if (element.transaction_type !== 'money_distribution') {
+                                                    datatype = 'OTHER';
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (element.amount) {
+                                        if (element.amount < 0) {
+                                            switch (datatype) {
+                                                case "PSTN":
+                                                    pstncost = pstncost + parseFloat(element.amount);
+                                                    break;
+
+                                                case "VOIP":
+                                                    voipcost = voipcost + parseFloat(element.amount);
+                                                    break;
+
+                                                case "RECORD":
+                                                    recordcost = recordcost + parseFloat(element.amount);
+                                                    break;
+
+                                                case "PHONE":
+                                                    phonecost = phonecost + parseFloat(element.amount);
+                                                    break;
+
+                                                case "OTHER":
+                                                    othercost = othercost + parseFloat(element.amount);
+                                                    break;
+                                            }
+                                        }
+                                    }
+                                });
+
+                                phonecost = Math.abs(phonecost);
+                                pstncost = Math.abs(pstncost);
+                                voipcost = Math.abs(voipcost);
+                                recordcost = Math.abs(recordcost);
+                                othercost = Math.abs(othercost);
+
+                                const channellist = await channelfunctions.voximplantChannelSel(corpid, orgid, year, month, (orgData.timezoneoffset || 0));
+
+                                if (channellist) {
+                                    channellist.forEach(element => {
+                                        if (element.servicecredentials) {
+                                            var servicecredentials = JSON.parse(element.servicecredentials);
+
+                                            if (servicecredentials.cost) {
+                                                phonecost = phonecost + parseFloat(servicecredentials.cost);
+                                            }
+                                        }
+                                    });
+                                }
+
+                                await channelfunctions.voximplantPeriodUpdate(corpid, orgid, year, month, (phonecost || 0), (pstncost || 0), (voipcost || 0), (recordcost || 0), (othercost || 0), true);
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                requestCode = "error_org_notfound";
+                requestMessage = "error_org_notfound";
+            }
+        }
+
+        return result.status(requestStatus).json({
+            code: requestCode,
             error: !requestSuccess,
             message: requestMessage,
             success: requestSuccess,
