@@ -273,14 +273,11 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
     try {
         const TABLENAME = columns[0].tablename;
         const ALLCOLUMNS = [...columns, ...filters];
+        
         let JOINNERS = Array.from(new Set(ALLCOLUMNS.filter(x => !!x.join_alias).map(x => x.join_alias))).reduce((acc, join_alias) => {
             const { join_table, join_on } = ALLCOLUMNS.find(x => x.join_alias === join_alias);
             return acc + `\nLEFT JOIN ${join_table} ${join_alias} ${join_on}`;
         }, "");
-
-        // if (ALLCOLUMNS.some(x => x.type === "variable")) {
-        //     JOINNERS += `\nCROSS JOIN CAST conversation.variablecontextjsonb as jo`
-        // }
 
         const columnValueUnique = filters.find(x => x.type_filter === "unique_value");
         
@@ -310,8 +307,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 return acc + (index === 0 ? "" : ",") + `${selcol} as "${item.columnname.replace(".", "")}"`
             }
         }, "")
-        console.log('aa')
-        // console.log(filters)
+        
         const FILTERS = filters.reduce((acc, { type, columnname, start, end, value }) => {
             if (DATES.includes(type)) {
                 return `${acc}\nand ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
@@ -342,14 +338,14 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
         }, "")
         
         let query = `
-        select
-            ${COLUMNESSELECT}
-        from ${TABLENAME}
-        ${JOINNERS}
-        WHERE 
-            ${TABLENAME}.corpid = $corpid and ${TABLENAME}.orgid = $orgid
-            ${FILTERS}
-        `;
+            select
+                ${COLUMNESSELECT}
+            from ${TABLENAME}
+            ${JOINNERS}
+            WHERE 
+                ${TABLENAME}.corpid = $corpid and ${TABLENAME}.orgid = $orgid
+                ${FILTERS}
+            `;
         // console.log(query)
         const resultbd = await executeQuery(query, parameters);
 

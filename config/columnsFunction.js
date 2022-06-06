@@ -336,11 +336,11 @@ module.exports = {
             type: "time"
         },
         duraciontotal: {
-            column: "co.totalduration::text",
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (CASE WHEN co.status = 'CERRADO' THEN co.totalduration ELSE NOW() - co.startdate END))::text || ' seconds ')::interval, 'HH24:MI:SS'),'00:00:00')",
             type: "time"
         },
         duracionreal: {
-            column: "co.realduration::text",
+            column: "COALESCE(TO_CHAR(date_trunc('seconds', (EXTRACT(EPOCH FROM (CASE WHEN co.status = 'CERRADO' THEN co.realduration ELSE CASE WHEN cc.type IN ('VOXI') THEN NOW() - co.callanswereddate ELSE NOW() - co.startdate - co.totalpauseduration END END))::text || ' seconds ')::interval),'HH24:MI:SS'), '00:00:00')",
             type: "time"
         },
         duracionpausa: {
@@ -348,7 +348,7 @@ module.exports = {
             type: "time"
         },
         tmoasesor: {
-            column: "CASE WHEN co.status = 'CERRADO' THEN COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.totalduration - co.firstassignedtime - co.botduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') ELSE COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (NOW() - co.startdate) - co.firstassignedtime - co.botduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00') END",
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (CASE WHEN co.status = 'CERRADO' THEN co.totalduration - co.pausedurationafteruser - co.firstassignedtime - co.botduration ELSE NOW() - co.startdate - co.pausedurationafteruser - co.firstassignedtime - co.botduration END))::text || ' seconds ')::interval, 'HH24:MI:SS'), '00:00:00')",
             type: "time"
         },
         tiempoprimeraasignacion: {
