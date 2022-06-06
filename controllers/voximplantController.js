@@ -1253,19 +1253,23 @@ exports.createCallList = async (request, result) => {
         if (!request.body?.data?.length > 0) {
             return res.status(500).json({ success: false, msg: 'No members' });
         }
+        let unix_start_at = Math.trunc(new Date().getTime() / 1000);
         let data = request.body?.data.map(d => {
-            let message = request.body?.message
+            let message = request.body?.message;
             Object.keys(d).forEach(k => {
                 message = message.replace(`{{${k}}}`, d[k])
-            })
+            });
             return {
                 ...d,
-                message
+                message,
+                __start_execution_time: '00:00:00',
+                __end_execution_time: '23:59:59',
+                __start_at: unix_start_at
             }
         });
         let csv = buildcsv(data);
-        request.body['file_content'] = csv
-        let requestResult = await voximplant.createManualCallList(request.body)
+        request.body['file_content'] = csv;
+        let requestResult = await voximplant.createCallList(request.body);
         if (requestResult)
             return result.json(requestResult);
         return result.status(400).json(requestResult)
@@ -1288,16 +1292,23 @@ exports.createManualCallList = async (request, result) => {
         if (!request.body?.data?.length > 0) {
             return res.status(500).json({ success: false, msg: 'No members' });
         }
+        let unix_start_at = Math.trunc(new Date().getTime() / 1000);
         let data = request.body?.data.map(d => {
-            let message = request.body?.message
+            let message = request.body?.message;
             Object.keys(d).forEach(k => {
                 message = message.replace(`{{${k}}}`, d[k])
-            })
-            return {...d, message}
+            });
+            return {
+                ...d,
+                message,
+                __start_execution_time: '00:00:00',
+                __end_execution_time: '23:59:59',
+                __start_at: unix_start_at
+            }
         });
         let csv = buildcsv(data);
-        request.body['file_content'] = csv
-        let requestResult = await voximplant.createManualCallList(request.body)
+        request.body['file_content'] = csv;
+        let requestResult = await voximplant.createManualCallList(request.body);
         if (requestResult)
             return result.json(requestResult);
         return result.status(400).json(requestResult)

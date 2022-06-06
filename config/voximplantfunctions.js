@@ -960,7 +960,7 @@ exports.setCustomRecordStorageInfo = async ({ account_id, account_name, child_ap
     }
 }
 
-exports.createCallList = async ({ account_id, account_name, child_apikey, rule_id, name, file_content, queue_id }) => {
+exports.createCallList = async ({ account_id, account_name, child_apikey, rule_id, name = new Date().toISOString(), file_content, queue_id }) => {
     try {
         const data = {};
         setChildData({ data, account_id, account_name });
@@ -979,7 +979,9 @@ exports.createCallList = async ({ account_id, account_name, child_apikey, rule_i
         const result = await voximplantRequest('CreateCallList', data);
         return result.data;
         // {
-        //     "result": 1
+        //     "result": true,
+        //     "list_id": 250933,
+        //     "count": 1
         // }
     }
     catch (err) {

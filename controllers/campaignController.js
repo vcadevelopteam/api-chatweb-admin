@@ -14,7 +14,7 @@ exports.start = async (req, res) => {
             return res.status(400).json({
                 ...resultData,
                 message: 'Invalid campaign'
-            })
+            });
         }
         
         setSessionParameters(req.body, req.user);
@@ -29,7 +29,7 @@ exports.start = async (req, res) => {
             return res.status(400).json({
                 ...resultData,
                 message: 'Invalid campaign'
-            })
+            });
         }
 
         let result = undefined;
@@ -42,13 +42,27 @@ exports.start = async (req, res) => {
                         orgid: req.body.orgid,
                         campaignid: req.body.campaignid
                     });
-                    let data = campaignmemberData.map(d => {
+                    const batchjson = campaignData[0].batchjson.reduce((acd, cd) => ({
+                        ...acd,
+                        [cd.batchindex]: Math.trunc(new Date(new Date(`${cd.date} ${cd.time} UTC`) - req.body.offset * 60*60*1000).getTime() / 1000)
+                    }), {});
+
+                    // Crear ticket para cada miembro
+                    // Crear campaignhistory para cada miembro
+
+                    let data = campaignmemberData.map((d) => {
                         let message = campaignData[0].message;
                         Object.keys(d).forEach(k => {
                             message = message.replace(`{{${k}}}`, d[k])
-                        })
-                        return {...d, message}
-                    })
+                        });
+                        return {
+                            ...d,
+                            message,
+                            __start_execution_time: '00:00:00',
+                            __end_execution_time: '23:59:59',
+                            __start_at: campaignData[0].executiontype === 'SCHEDULED' ? batchjson[d.batchindex] : Math.trunc(new Date().getTime() / 1000)
+                        }
+                    });
                     let csv = buildcsv(data);
 
                     // Try to get information of VOXI in org table
@@ -68,20 +82,17 @@ exports.start = async (req, res) => {
                     req.body['name'] = `${req.body.corpid}-${req.body.orgid}-${req.body.campaignid}-${new Date().toISOString()}`;
                     req.body['file_content'] = csv;
                     
-                    let callListResult = await voximplant.createManualCallList(req.body)
+                    let callListResult = await voximplant.createCallList(req.body)
                     if (callListResult?.result) 
                     {
                         req.body['list_id'] = callListResult?.list_id;
-                        let callTaskResult = await voximplant.startNextCallTask(req.body)
-                        if (callTaskResult?.result) {
-                            await executesimpletransaction("QUERY_CAMPAIGN_START", {
-                                corpid: req.body.corpid,
-                                orgid: req.body.orgid,
-                                campaignid: req.body.campaignid,
-                                taskid: callTaskResult?.list_id
-                            });
-                            result = [callTaskResult?.list_id];
-                        }
+                        await executesimpletransaction("QUERY_CAMPAIGN_START", {
+                            corpid: req.body.corpid,
+                            orgid: req.body.orgid,
+                            campaignid: req.body.campaignid,
+                            taskid: callListResult?.list_id
+                        });
+                        result = [callListResult?.list_id];
                     }
                     break;
                 default:

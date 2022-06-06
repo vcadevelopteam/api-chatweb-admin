@@ -119,6 +119,9 @@ router.post("/directGetAccountBalance",
 )
 
 // Campaign //
+router.post("/createCallList",
+    voximplantController.createCallList
+)
 router.post("/createManualCallList",
     voximplantController.createManualCallList
 )

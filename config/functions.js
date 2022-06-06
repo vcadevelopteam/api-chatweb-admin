@@ -826,7 +826,7 @@ module.exports = {
         SELECT ca.campaignid, ca.title, ca.description,
         ca.status, ca.type, ca.message,
         ca.communicationchannelid, cc.type as communicationchanneltype,
-        ca.usergroup, ca.taskid
+        ca.usergroup, ca.executiontype, ca.batchjson, ca.taskid
         FROM campaign ca
         LEFT JOIN communicationchannel cc ON cc.corpid = ca.corpid AND cc.orgid = ca.orgid AND cc.communicationchannelid = ca.communicationchannelid
         WHERE ca.corpid = $corpid
@@ -886,7 +886,8 @@ module.exports = {
         cm.personcommunicationchannelowner, cm.countrycode,
         cm.field1, cm.field2, cm.field3, cm.field4, cm.field5,
         cm.field6, cm.field7, cm.field8, cm.field9, cm.field10,
-        cm.field11, cm.field12, cm.field13, cm.field14, cm.field15
+        cm.field11, cm.field12, cm.field13, cm.field14, cm.field15,
+        cm.batchindex
         FROM campaignmember cm
         WHERE cm.corpid = $corpid
         AND cm.orgid = $orgid
