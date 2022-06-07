@@ -119,7 +119,7 @@ exports.transferMoneyToUser = async ({ child_account_id, amount, currency }) => 
     }
 }
 
-exports.getAccountInfo = async ({ account_id, account_name, }) => {
+exports.getAccountInfo = async ({ account_id, account_name, account_apikey }) => {
     try {
         const form = new FormData();
         var result = null;
