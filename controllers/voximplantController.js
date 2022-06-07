@@ -1256,12 +1256,12 @@ exports.updateVoximplantPeriod = async (request, result) => {
                 requestSuccess = true;
 
                 if (orgData.voximplantaccountid && orgData.voximplantapplicationid && orgData.voximplantapikey) {
-                    var datestart = new Date(year, month, 1);
-                    var dateend = new Date(year, month + 1, 0, 23, 59, 59);
+                    var datestart = new Date(year, month - 1, 1);
+                    var dateend = new Date(year, month, 0, 23, 59, 59);
                     var offset = 0;
 
                     datestart.setHours(datestart.getHours() + (orgData.timezoneoffset || 0));
-                    dateend.setHours(datestart.getHours() + (orgData.timezoneoffset || 0));
+                    dateend.setHours(dateend.getHours() + (orgData.timezoneoffset || 0));
 
                     var transactionHistoryResult = await voximplant.getTransactionHistory({
                         from_date: getDateString(datestart),
