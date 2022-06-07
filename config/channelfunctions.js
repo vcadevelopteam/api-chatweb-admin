@@ -420,7 +420,7 @@ exports.voximplantHandleScenario = async (corpid, orgid, accountid, apikey, appl
     return voximplantScenario;
 }
 
-exports.voximplantHandlePhoneNumber = async (corpid, orgid, usr, accountid, apikey, applicationid, ruleid, country, category, state, region, cost, additionalperchannel) => {
+exports.voximplantHandlePhoneNumber = async (corpid, orgid, usr, accountid, apikey, applicationid, ruleid, country, category, state, region, cost, costinstallation, additionalperchannel) => {
     var voximplantPhoneNumber = {
         phoneid: null,
         phonenumber: null,
@@ -434,7 +434,7 @@ exports.voximplantHandlePhoneNumber = async (corpid, orgid, usr, accountid, apik
         if (cost) {
             transferBody = {
                 child_account_id: accountid,
-                amount: cost,
+                amount: (parseFloat(cost || 0) + parseFloat(costinstallation || 0)).toString(),
                 currency: "USD",
             }
 
@@ -514,7 +514,7 @@ exports.voximplantHandlePhoneNumber = async (corpid, orgid, usr, accountid, apik
             else {
                 transferBody = {
                     child_account_id: accountid,
-                    amount: cost * -1,
+                    amount: ((parseFloat(cost || 0) + parseFloat(costinstallation || 0)) * -1).toString(),
                     currency: "USD",
                 }
 
