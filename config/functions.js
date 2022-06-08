@@ -2376,4 +2376,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_BILLING_REPORT_HSMHISTORY: {
+        query: "SELECT * FROM ufn_billing_report_hsmhistory($corpid, $orgid, $year, $month, $type)",
+        module: "",
+        protected: "SELECT"
+    },
 }

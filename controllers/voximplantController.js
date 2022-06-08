@@ -1389,8 +1389,8 @@ exports.updateVoximplantPeriod = async (request, result) => {
                                         if (element.servicecredentials) {
                                             var servicecredentials = JSON.parse(element.servicecredentials);
 
-                                            if (servicecredentials.cost) {
-                                                phonecost = phonecost + parseFloat(servicecredentials.cost);
+                                            if (servicecredentials.costinstallation) {
+                                                phonecost = phonecost + parseFloat(servicecredentials.costinstallation);
                                             }
                                         }
                                     });
