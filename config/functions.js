@@ -2381,4 +2381,24 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_VOXIMPLANTLANDING_COUNTRY_SEL: {
+        query: "SELECT * FROM ufn_voximplantlanding_country_sel()",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_VOXIMPLANTLANDING_INBOUND_SEL: {
+        query: "SELECT * FROM ufn_voximplantlanding_inbound_sel($countrycode)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_VOXIMPLANTLANDING_NUMBER_SEL: {
+        query: "SELECT * FROM ufn_voximplantlanding_number_sel($countrycode)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_VOXIMPLANTLANDING_OUTBOUND_SEL: {
+        query: "SELECT * FROM ufn_voximplantlanding_outbound_sel($countrycode)",
+        module: "",
+        protected: "SELECT"
+    },
 }
