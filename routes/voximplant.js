@@ -124,4 +124,12 @@ router.post("/updateVoximplantPeriod",
     voximplantController.updateVoximplantPeriod
 )
 
+// Landing //
+router.post("/pricingCountryList",
+    voximplantController.pricingCountryList
+)
+router.post("/pricingCountryData",
+    voximplantController.pricingCountryData
+)
+
 module.exports = router;

@@ -1425,6 +1425,100 @@ exports.updateVoximplantPeriod = async (request, result) => {
     }
 }
 
+exports.pricingCountryList = async (request, result) => {
+    var requestCode = "error_unexpected_error";
+    var requestData = null;
+    var requestMessage = "error_unexpected_error";
+    var requestStatus = 400;
+    var requestSuccess = false;
+
+    try {
+        const countryTransaction = await executesimpletransaction("UFN_VOXIMPLANTLANDING_COUNTRY_SEL");
+
+        if (countryTransaction instanceof Array && countryTransaction.length > 0) {
+            requestCode = "";
+            requestData = countryTransaction;
+            requestMessage = "";
+            requestStatus = 200;
+            requestSuccess = true;
+        }
+
+        return result.status(requestStatus).json({
+            code: requestCode,
+            data: requestData,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
+    }
+    catch (exception) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+}
+
+exports.pricingCountryData = async (request, result) => {
+    var requestCode = "error_unexpected_error";
+    var requestData = null;
+    var requestMessage = "error_unexpected_error";
+    var requestStatus = 400;
+    var requestSuccess = false;
+
+    try {
+        if (request.body) {
+            const { countrycode } = request.body;
+
+            requestCode = "";
+            requestData = {
+                numberData: null,
+                inboundData: null,
+                outboundData: null,
+            };
+            requestMessage = "";
+            requestStatus = 200;
+            requestSuccess = true;
+
+            const numberTransaction = await executesimpletransaction("UFN_VOXIMPLANTLANDING_NUMBER_SEL", { countrycode: countrycode });
+
+            if (numberTransaction instanceof Array && numberTransaction.length > 0) {
+                requestData.numberData = numberTransaction;
+            }
+
+            const inboundTransaction = await executesimpletransaction("UFN_VOXIMPLANTLANDING_INBOUND_SEL", { countrycode: countrycode });
+
+            if (inboundTransaction instanceof Array && inboundTransaction.length > 0) {
+                requestData.inboundData = inboundTransaction;
+            }
+
+            const outboundTransaction = await executesimpletransaction("UFN_VOXIMPLANTLANDING_OUTBOUND_SEL", { countrycode: countrycode });
+
+            if (outboundTransaction instanceof Array && outboundTransaction.length > 0) {
+                requestData.outboundData = outboundTransaction;
+            }
+        }
+
+        return result.status(requestStatus).json({
+            code: requestCode,
+            data: requestData,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
+    }
+    catch (exception) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+}
+
 const convertToUtc = (date) => {
     return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds());
 }
