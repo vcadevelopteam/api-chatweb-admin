@@ -2401,4 +2401,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_BILLINGPERIOD_SEL_PHONETAX: {
+        query: "SELECT * FROM ufn_billingperiod_sel_phonetax($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
