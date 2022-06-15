@@ -591,7 +591,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CONVERSATION_SEL_TICKETSBYUSER: {
-        query: "SELECT * FROM ufn_conversation_sel_ticketsbyuser($corpid, $orgid, $userid, $supervisorid)",
+        query: "SELECT * FROM ufn_conversation_sel_ticketsbyuser($corpid, $orgid, $agentid, $userid)",
         module: "", //messag einbox y supervisor admitir arrays
         protected: "SELECT"
     },
