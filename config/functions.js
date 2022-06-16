@@ -2426,4 +2426,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PROPERTY_SEL_BY_INCLUDE_NAME: {
+        query: "SELECT * FROM ufn_property_sel_by_include_name($corpid, $orgid, $propertyname)",
+        module: "",
+        protected: "SELECT"
+    },
 }
