@@ -2426,6 +2426,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_USERBYSUPERVISOR_LST: {
+        query: "SELECT * FROM ufn_userbysupervisor_lst($corpid, $orgid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_PROPERTY_SEL_BY_INCLUDE_NAME: {
         query: "SELECT * FROM ufn_property_sel_by_include_name($corpid, $orgid, $propertyname)",
         module: "",
