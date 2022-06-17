@@ -18,9 +18,9 @@ exports.ShippingCar = async (req, res) => {
         PD_CANTIDAD: x.quantity,
         DESCRIPCION: x.description
     }))
+    console.log("listreq", listreq)
     const response = await axios.post(`https://backend.laraigo.com/zyxme/bridge/api/processsolgas/sendrequestlist`, listreq);
-    console.log("rrcarrito", response.data)
-
+    
     res.json({ success: true, result: response.data });
 }
 
