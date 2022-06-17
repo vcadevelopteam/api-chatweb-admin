@@ -11,17 +11,16 @@ exports.Location = async (req, res) => {
 
 exports.ShippingCar = async (req, res) => {
     const data = req.body;
-    const listreq = data.list.map(async x => ({
+    const listreq = data.list.map(x => ({
         ...data,
         list: undefined,
         PR_CODIGO: x.key,
         PD_CANTIDAD: x.quantity,
         DESCRIPCION: x.description
     }))
-    console.log("listreq", listreq)
     const response = await axios.post(`https://backend.laraigo.com/zyxme/bridge/api/processsolgas/sendrequestlist`, listreq);
     
-    res.json({ success: true, result: response.data });
+    res.json(response.data);
 }
 
 const getHttpAuthorization = (authorization) => {
