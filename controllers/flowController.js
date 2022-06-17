@@ -20,7 +20,7 @@ exports.ShippingCar = async (req, res) => {
     }))
     const response = await axios.post(`https://backend.laraigo.com/zyxme/bridge/api/processsolgas/sendrequestlist`, listreq);
     
-    res.json(response.data);
+    res.json(response.data?.[0] || { success: false });
 }
 
 const getHttpAuthorization = (authorization) => {
