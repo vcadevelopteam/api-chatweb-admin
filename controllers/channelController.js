@@ -1147,6 +1147,57 @@ exports.insertChannel = async (request, result) => {
                         });
                     }
                 }
+                break;
+
+            case 'BLOGGER':
+            case 'LINKEDIN':
+            case 'MICROSOFTTEAMS':
+            case 'TIKTOK':
+            case 'YOUTUBE':
+                if (service) {
+                    parameters.communicationchannelowner = service.account;
+                    parameters.communicationchannelsite = service.account;
+                    parameters.integrationid = service.account;
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.status = 'PENDIENTE';
+
+                    switch (request.body.type) {
+                        case 'BLOGGER':
+                            parameters.type = 'BLOG';
+                            break;
+
+                        case 'LINKEDIN':
+                            parameters.type = 'LNKD';
+                            break;
+
+                        case 'MICROSOFTTEAMS':
+                            parameters.type = 'TEAM';
+                            break;
+
+                        case 'TIKTOK':
+                            parameters.type = 'TITO';
+                            break;
+
+                        case 'YOUTUBE':
+                            parameters.type = 'YOUT';
+                            break;
+                    }
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
 
             case 'TELEGRAM':
                 const requestCreateTelegram = await axios({
