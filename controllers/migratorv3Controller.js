@@ -2162,6 +2162,7 @@ const querySubcoreConversation = {
         select_insert_where: `
         WHERE co.corpid = $corpid
         AND co.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND co.createdate >= $backupdate::TIMESTAMP
         ORDER BY co.conversationid
         LIMIT $limit
         OFFSET $offset
