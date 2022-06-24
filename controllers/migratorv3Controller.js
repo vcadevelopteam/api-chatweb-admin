@@ -516,6 +516,15 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                     console.log(insertResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({ script: insertResult });
+                                    for (const chunkelem of chunk) {
+                                        let eleminsertResult = await laraigoQuery(q.insert.replace('###DT###', q.dt).replace('\n', ' '), { datatable: JSON.stringify([chunkelem]) });
+                                        if (eleminsertResult instanceof Array) {
+                                        }
+                                        else {
+                                            break;
+                                        }
+                                    }
+                                    elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
                                 }
                             } catch (error) {
                                 let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
@@ -2162,6 +2171,7 @@ const querySubcoreConversation = {
         select_insert_where: `
         WHERE co.corpid = $corpid
         AND co.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND co.createdate >= $backupdate::TIMESTAMP
         ORDER BY co.conversationid
         LIMIT $limit
         OFFSET $offset
