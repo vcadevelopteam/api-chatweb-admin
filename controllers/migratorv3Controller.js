@@ -468,6 +468,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
             }
 
             while (true) {
+                // Último registro en laraigo
+                if (q.id) {
+                    let laraigoid = q.newid ? q.newid : q.id;
+                    max = await laraigoQuery(`SELECT MAX(${laraigoid}) FROM ${k}`);
+                    corpidBind['maxid'] = max?.[0]?.max || 0;
+                }
+                
                 // Revisión del estado de la migración
                 migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind) : migrationstatus;
                 running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
@@ -1787,6 +1794,7 @@ const querySubcorePerson = {
         AND pe.corpid = $corpid
         AND pcc.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND pe.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND pcc.createdate >= $backupdate::TIMESTAMP
         ORDER BY pcc.personid
         LIMIT $limit
         OFFSET $offset
@@ -3976,10 +3984,11 @@ const queryExtras = {
 const queryCorpSel = `SELECT corpid, description FROM corp WHERE status = 'ACTIVO'`;
 
 exports.executeMigration = async (req, res) => {
-    let { corpid, modules } = req.body;
+    let { corpid, modules, backupdate } = req.body;
     if (!!corpid && !!modules) {
         const corpidBind = {
             corpid: corpid,
+            backupdate: backupdate
         }
         try {
             idsResult = await laraigoQuery(`SELECT idsjson FROM migrationhelper`);
