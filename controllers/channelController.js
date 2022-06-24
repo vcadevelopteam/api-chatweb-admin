@@ -796,6 +796,7 @@ exports.insertChannel = async (request, result) => {
         parameters.updintegration = null;
         parameters.username = request.user.usr;
         parameters.phone = null;
+        parameters.apikey = null;
 
         switch (request.body.type) {
             case 'CHATWEB':
@@ -1813,6 +1814,7 @@ exports.activateChannel = async (request, result) => {
         parameters.updintegration = null;
         parameters.resolvelithium = null;
         parameters.phone = null;
+        parameters.apikey = null;
 
         if (request.body.type === 'WHATSAPP') {
             const requestCreateWhatsApp = await axios({
