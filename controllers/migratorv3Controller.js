@@ -450,7 +450,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
 
             lastloopid = 0;
             corpidBind['maxid'] = 0;
-            let limit = 100; // PRUEBAS 100
+            let limit = 10000; // PRUEBAS 100
             let counter = 0;
             const perChunk = 1000;
             // Último registro en laraigo
@@ -524,7 +524,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                         lastloopid = selectResult[0][`zyxme${q.id}`];
                     }
                     // PRUEBAS Break solo para pruebas de 1 loop
-                    break;
+                    // break;
                 }
                 else {
                     console.log(selectResult);
