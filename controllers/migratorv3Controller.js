@@ -3985,7 +3985,7 @@ const queryCorpSel = `SELECT corpid, description FROM corp WHERE status = 'ACTIV
 
 exports.executeMigration = async (req, res) => {
     let { corpid, modules, backupdate } = req.body;
-    if (!!corpid && !!modules) {
+    if (!!corpid && !!modules && !!backupdate) {
         const corpidBind = {
             corpid: corpid,
             backupdate: backupdate
