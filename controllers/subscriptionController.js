@@ -343,6 +343,7 @@ exports.createSubscription = async (request, result) => {
                         channelParameters.schedule = null;
                         channelParameters.status = "PENDIENTE";
                         channelParameters.updintegration = null;
+                        channelParameters.apikey = null;
 
                         requestCode = channel.type;
 
@@ -1602,6 +1603,7 @@ exports.validateChannels = async (request, result) => {
                         channelParameters.schedule = null;
                         channelParameters.status = "PENDIENTE";
                         channelParameters.updintegration = null;
+                        channelParameters.apikey = null;
 
                         requestCode = channel.type;
 
