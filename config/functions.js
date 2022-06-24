@@ -2077,7 +2077,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PRODUCTCATALOG_INS: {
-        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $id, $code, $description, $descriptiontext, $category, $status, $type, $imagereference, $notes, $unitprice, $username, $operation)",
+        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $id, $code, $description, $descriptiontext, $category, $status, $type, $imagereference, $notes, $title, $website, $currency, $condition, $contentid, $facebookcatalogid, $facebookproductid, $facebookcatalogname, $unitprice, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
