@@ -812,6 +812,47 @@ exports.createSubscription = async (request, result) => {
                                     channelTypeArray.push(channel.type);
                                 }
                                 break;
+
+                            case 'BLOGGER':
+                            case 'LINKEDIN':
+                            case 'MICROSOFTTEAMS':
+                            case 'TIKTOK':
+                            case 'YOUTUBE':
+                                if (channelService) {
+                                    channelParameters.communicationchannelowner = channelService.account;
+                                    channelParameters.communicationchannelsite = channelService.account;
+                                    channelParameters.integrationid = channelService.account;
+                                    channelParameters.servicecredentials = JSON.stringify(channelService);
+                                    channelParameters.status = 'PENDIENTE';
+
+                                    switch (channel.type) {
+                                        case 'BLOGGER':
+                                            channelParameters.type = 'BLOG';
+                                            break;
+                
+                                        case 'LINKEDIN':
+                                            channelParameters.type = 'LNKD';
+                                            break;
+                
+                                        case 'MICROSOFTTEAMS':
+                                            channelParameters.type = 'TEAM';
+                                            break;
+                
+                                        case 'TIKTOK':
+                                            channelParameters.type = 'TITO';
+                                            break;
+                
+                                        case 'YOUTUBE':
+                                            channelParameters.type = 'YOUT';
+                                            break;
+                                    }
+
+                                    channelMethodArray.push(channelMethod);
+                                    channelParametersArray.push(channelParameters);
+                                    channelServiceArray.push(channelService);
+                                    channelTypeArray.push(channel.type);
+                                }
+                                break;
                         }
                     }
                 }
