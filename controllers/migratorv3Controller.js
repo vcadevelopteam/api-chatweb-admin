@@ -470,20 +470,28 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
             // Select a la BD de ZyxMe para UPDATE
             if (q.update) {
                 try {
-                    let selectResult = await zyxmeQuery(`${q.select} ${q.select_update_where}`.replace('\n', ' '), { ...corpidBind, offset: counter * limit, limit });
-                    if (selectResult instanceof Array) {
-                        try {
+                    while (true) {
+                        let selectResult = await zyxmeQuery(`${q.select} ${q.select_update_where}`.replace('\n', ' '), { ...corpidBind, offset: counter * limit, limit });
+                        if (selectResult instanceof Array) {
+                            if (selectResult.length === 0) {
+                                break;
+                            }
                             selectResult = renameVariable(k, selectResult);
                             selectResult = restructureVariable(k, selectResult);
                             let updateResult = await laraigoQuery(q.update.replace('###DT###', q.dt).replace('\n', ' '), { datatable: JSON.stringify(selectResult) });
-                        } catch (error) {
-                            console.log(error);
+                            counter += 1;
+                        }
+                        else {
+                            console.log(selectResult);
+                            break;
                         }
                     }
                 } catch (error) {
                     console.log(error);
                 }
             }
+
+            counter = 0;
 
             while (true) {
                 // Último registro en laraigo
@@ -1202,7 +1210,7 @@ const queryCore = {
         docnum = dt.docnum,
         firstname = dt.firstname,
         lastname = dt.lastname,
-        email = dt.usr,
+        email = dt.username,
         pwdchangefirstlogin = dt.pwdchangefirstlogin,
         facebookid = dt.facebookid,
         googleid = dt.googleid,
@@ -1310,6 +1318,9 @@ const queryCore = {
         WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid) AND ous.userid = ut.userid)
         AND ut.usertokenid <= $maxid
         AND ut.changedate > $backupdate::TIMESTAMP
+        ORDER BY ut.usertokenid
+        LIMIT $limit
+        OFFSET $offset
         `,
         update: `
         UPDATE usertoken xupd
@@ -1380,6 +1391,9 @@ const queryCore = {
         WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid) AND ous.userid = us.userid)
         AND us.userstatusid <= $maxid
         AND us.changedate > $backupdate::TIMESTAMP
+        ORDER BY us.userstatusid
+        LIMIT $limit
+        OFFSET $offset
         `,
         update: `
         UPDATE userstatus xupd
@@ -1447,6 +1461,9 @@ const queryCore = {
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND userhistoryid <= $maxid
         AND changedate > $backupdate::TIMESTAMP
+        ORDER BY userhistoryid
+        LIMIT $limit
+        OFFSET $offset
         `,
         update: `
         UPDATE userhistory xupd
@@ -1825,6 +1842,9 @@ const querySubcorePerson = {
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND personid <= $maxid
         AND changedate > $backupdate::TIMESTAMP
+        ORDER BY personid
+        LIMIT $limit
+        OFFSET $offset
         `,
         update: `
         UPDATE person xupd
@@ -2269,6 +2289,9 @@ const querySubcoreConversation = {
         AND co.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND co.conversationid <= $maxid
         AND co.finishdate > $backupdate::TIMESTAMP
+        ORDER BY co.conversationid
+        LIMIT $limit
+        OFFSET $offset
         `,
         update: `
         UPDATE conversation xupd
@@ -2705,6 +2728,9 @@ const querySubcoreConversation = {
         AND co.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND co.conversationpauseid <= $maxid
         AND changedate > $backupdate::TIMESTAMP
+        ORDER BY co.conversationpauseid
+        LIMIT $limit
+        OFFSET $offset
         `,
         update: `
         UPDATE conversationpause xupd
