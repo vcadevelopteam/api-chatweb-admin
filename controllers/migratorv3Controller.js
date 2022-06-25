@@ -3537,7 +3537,7 @@ const querySubcoreOthers = {
         OFFSET $offset
         `,
         update: `
-        UPDATE blockversion xpud
+        UPDATE blockversion xupd
         SET
         communicationchannelid = dt.communicationchannelid,
         chatblockid = dt.chatblockid,
@@ -3653,7 +3653,7 @@ const querySubcoreOthers = {
         color = dt.color,
         icontype = dt.icontype,
         tag = dt.tag,
-        chatblockversionid = dt.chatblockversionid
+        chatblockversionid = dt.zyxmechatblockversionid
         ###DT###
         WHERE xupd.corpid = dt.zyxmecorpid
         AND xupd.chatblockid = dt.chatblockid
