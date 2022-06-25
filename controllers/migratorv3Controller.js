@@ -1194,6 +1194,9 @@ const queryCore = {
         WHERE usr.type <> 'SYSTEM'
         AND usr.userid <= $maxid
         AND usr.changedate > $backupdate::TIMESTAMP
+        ORDER BY usr.userid
+        LIMIT $limit
+        OFFSET $offset
         `,
         update: `
         UPDATE usr xupd
@@ -1604,6 +1607,9 @@ const queryCore = {
         AND ous.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND ous.createdate <= $backupdate::TIMESTAMP
         AND ous.changedate > $backupdate::TIMESTAMP
+        ORDER BY ous.corpid, ous.orgid, ous.userid
+        LIMIT $limit
+        OFFSET $offset
         `,
         update: `
         UPDATE orguser xupd
@@ -3526,13 +3532,9 @@ const querySubcoreOthers = {
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND chatblockversionid <= $maxid
         AND changedate > $backupdate::TIMESTAMP
-        `,
-        select_insert_where: `
-        WHERE corpid = $corpid
-        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
-        AND chatblockversionid > $maxid
         ORDER BY chatblockversionid
         LIMIT $limit
+        OFFSET $offset
         `,
         update: `
         UPDATE blockversion xpud
@@ -3561,6 +3563,13 @@ const querySubcoreOthers = {
         WHERE xupd.corpid = dt.zyxmecorpid
         AND xupd.orgid = dt.zyxmeorgid
         AND xupd.chatblockversionid = dt.zyxmechatblockversionid
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND chatblockversionid > $maxid
+        ORDER BY chatblockversionid
+        LIMIT $limit
         `,
         insert: `
         INSERT INTO blockversion (
@@ -3618,6 +3627,9 @@ const querySubcoreOthers = {
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND createdate <= $backupdate::TIMESTAMP
         AND changedate > $backupdate::TIMESTAMP
+        ORDER BY ctid
+        LIMIT $limit
+        OFFSET $offset
         `,
         update: `
         UPDATE block xupd
