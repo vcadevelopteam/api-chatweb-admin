@@ -959,6 +959,11 @@ exports.createSubscription = async (request, result) => {
                                                         costvca: channelServiceArray[index].costvca,
                                                         costinstallation: channelServiceArray[index].costinstallation,
                                                         additionalperchannel: voximplantEnvironment.additionalperchannel,
+                                                        recording: channelServiceArray[index].recording,
+                                                        sms: channelServiceArray[index].sms,
+                                                        outbound: channelServiceArray[index].outbound,
+                                                        recordingstorage: channelServiceArray[index].recordingstorage,
+                                                        recordingquality: channelServiceArray[index].recordingquality,
                                                     };
 
                                                     channelParametersArray[index].communicationchannelsite = voximplantPhoneNumber.phonenumber;

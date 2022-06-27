@@ -1593,6 +1593,11 @@ exports.insertChannel = async (request, result) => {
                                             cost: service.cost,
                                             costvca: service.costvca,
                                             costinstallation: service.costinstallation,
+                                            recording: service.recording,
+                                            sms: service.sms,
+                                            outbound: service.outbound,
+                                            recordingstorage: service.recordingstorage,
+                                            recordingquality: service.recordingquality,
                                             additionalperchannel: voximplantEnvironment.additionalperchannel,
                                         };
 
