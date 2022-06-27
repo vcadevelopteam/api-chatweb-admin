@@ -356,7 +356,7 @@ exports.getErrorSeq = (err, profiler, method) => {
 
 exports.getErrorCode = (code, error = false, origin = "", _requestid = "") => {
     if (error && !error?.notLog) {
-        logger.child({ error: { _requestid, detail: error.stack || error, message: error.toString() } }).error(origin || "anonymous");
+        logger.child({ _requestid, error: { detail: error.stack || error, message: error.toString() } }).error(origin || "anonymous");
     }
     return {
         success: false,

@@ -173,8 +173,8 @@ exports.authenticate = async (req, res) => {
         } else {
             return res.status(401).json({ code: errors.LOGIN_USER_INACTIVE })
         }
-    } catch (err) {
-        return res.status(500).json(getErrorCode(errors.UNEXPECTED_ERROR, err, "Request authenticate"));
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -183,6 +183,7 @@ exports.getUser = async (req, res) => {
     const prevdata = { _requestid: req._requestid }
 
     try {
+        aaaaee.toString();
         const resultBD = await Promise.all([
             executesimpletransaction("UFN_APPLICATION_SEL", { ...req.user, ...prevdata }),
             executesimpletransaction("UFN_ORGANIZATION_CHANGEORG_SEL", { userid: req.user.userid, ...prevdata }),
@@ -238,8 +239,8 @@ exports.getUser = async (req, res) => {
                 }
             });
         })
-    } catch (error) {
-        return res.status(500).json(getErrorCode(null, error, "Request getuser"));
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -247,7 +248,7 @@ exports.logout = async (req, res) => {
     try {
         executesimpletransaction("UFN_USERSTATUS_UPDATE", { _requestid: req._requestid, ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
     } catch (error) {
-        logger.child({ error: { detail: error.stack, message: error.toString() } }).error("Request logout");
+        logger.child({ error: { detail: error.stack, message: error.toString() } }).error(`Request to ${req.originalUrl}`);
     }
     return res.json({ data: null, error: false })
 }
@@ -265,7 +266,7 @@ exports.connect = async (req, res) => {
             username: req.user.usr
         });
     } catch (error) {
-        logger.child({ _requestid: req._requestid, error: { detail: error.stack, message: error.toString() } }).error("Request logout");
+        logger.child({ _requestid: req._requestid, error: { detail: error.stack, message: error.toString() } }).error(`Request to ${req.originalUrl}`);
     }
     return res.json({ data: null, error: false })
 }
