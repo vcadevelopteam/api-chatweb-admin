@@ -1,4 +1,3 @@
-require('dotenv').config();
 const axios = require('axios')
 const { errors, getErrorCode } = require('../config/helpers');
 const { executesimpletransaction } = require('../config/triggerfunctions');;
@@ -9,7 +8,7 @@ const exchangeApiEndpoint = process.env.EXCHANGEAPI;
 exports.sendInvoice = async (req, res) => {
     const { parameters = {} } = req.body;
     
-    setSessionParameters(parameters, req.user);
+    setSessionParameters(parameters, req.user, req._requestid);
 
     parameters.status = "ERROR";
     parameters.error = "";
@@ -113,14 +112,14 @@ exports.sendInvoice = async (req, res) => {
         }
     } catch (error) {
         console.log(error)
-        return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+        return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR, error, "Request sendInvoice"));
     }
 }
 
 exports.exchangeRate = async (req, res) => {
     const { parameters = {} } = req.body;
 
-    setSessionParameters(parameters, req.user);
+    setSessionParameters(parameters, req.user, req._requestid);
 
     try {
         var exchangeRate = 0;
@@ -154,6 +153,6 @@ exports.exchangeRate = async (req, res) => {
             success: false
         });
     } catch (error) {
-        return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+        return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR, error, "Request exchangeRate"));
     }
 }

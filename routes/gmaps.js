@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const gmapsController = require("../controllers/gmapsController");
-const auth = require('../middleware/auth');
+const ip = require('../middleware/ip');
 
 router.get("/geocode",
+    ip,
     gmapsController.geocode
 )
 

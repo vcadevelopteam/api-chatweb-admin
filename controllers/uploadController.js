@@ -1,5 +1,6 @@
 var ibm = require('ibm-cos-sdk');
 const { v4: uuidv4 } = require('uuid');
+const { getErrorCode } = require('../config/helpers');
 
 var config = {
     endpoint: 's3.us-east.cloud-object-storage.appdomain.cloud',
@@ -33,7 +34,7 @@ exports.upload = async (req, res) => {
             return res.json({ success: true, url: data.Location })
         })
     }
-    catch (error) {
-        return res.json({ success: false, msg: 'Hubo un error#2 en la carga de archivo.', err })
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, "Request upload", req._requestid));
     }
 }

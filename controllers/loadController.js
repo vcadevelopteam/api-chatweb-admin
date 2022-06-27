@@ -7,7 +7,7 @@ exports.load = async (req, res) => {
     const { table_name, action } = req.params;
     const coreTables = getCoreTables();
     const validActions = ['insert_one', 'insert_many', 'update','remove','find_one','find_many']
-    // setSessionParameters(parameters, req.user);
+    // setSessionParameters(parameters, req.user, req.requestid);
 
     if (coreTables.includes(table_name))
         return res.status(400).json({ code: 'INVALID CORE TABLE' })

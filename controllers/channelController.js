@@ -51,8 +51,8 @@ exports.checkPaymentPlan = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            msg: exception.message,
-            success: false
+            ...getErrorCode(null, error, "Request checkpaymentplan"),
+            msg: exception.message
         });
     }
 }
@@ -640,8 +640,8 @@ exports.deleteChannel = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            msg: exception.message,
-            success: false
+            ...getErrorCode(null, exception, "Request deletechannel"),
+            msg: exception.message
         });
     }
 }
@@ -698,8 +698,8 @@ exports.getChannelService = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            msg: exception.message,
-            success: false
+            ...getErrorCode(null, error, "Request getchannelservice"),
+            msg: exception.message
         });
     }
 }
@@ -731,8 +731,8 @@ exports.getLongToken = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            msg: exception.message,
-            success: false
+            ...getErrorCode(null, error, "Request getlongtoken"),
+            msg: exception.message
         });
     }
 }
@@ -764,8 +764,8 @@ exports.getPageList = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            msg: exception.message,
-            success: false
+            ...getErrorCode(null, error, "Request getpagelist"),
+            msg: exception.message
         });
     }
 }
@@ -1616,8 +1616,8 @@ exports.insertChannel = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            msg: exception.message,
-            success: false
+            ...getErrorCode(null, error, "Request insertchannel"),
+            msg: exception.message
         });
     }
 }
@@ -1731,8 +1731,8 @@ exports.updateChannel = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            msg: exception.message,
-            success: false
+            ...getErrorCode(null, error, "Request updatechannel"),
+            msg: exception.message
         });
     }
 }
@@ -1854,8 +1854,8 @@ exports.activateChannel = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            msg: exception.message,
-            success: false
+            ...getErrorCode(null, error, "Request activateChannel"),
+            msg: exception.message
         });
     }
 }

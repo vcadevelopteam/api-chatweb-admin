@@ -11,9 +11,7 @@ const VOXIMPLANT_ENVIRONMENT = process.env.VOXIMPLANT_ENVIRONMENT;
 exports.updateInformation = async (req, res) => {
     const { data: parameters } = req.body;
 
-    console.log("updateInformation", parameters)
-
-    setSessionParameters(parameters, req.user);
+    setSessionParameters(parameters, req.user, req._requestid);
     /*
     oldpassword
     password
@@ -58,8 +56,8 @@ exports.updateInformation = async (req, res) => {
         }
         else
             return res.status(result.rescode).json(result);
-    } catch (error) {
-        return res.status(500).json(getErrorCode(null, error));
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, "Request user/updateInformation", req._requestid));
     }
 }
 
@@ -83,7 +81,7 @@ exports.sendMailPassword = async (req, res) => {
         return x;
     })
 
-    const result = await executeTransaction(header, detail, req.user.menu || {});
+    const result = await executeTransaction(header, detail, req.user.menu || {}, req._requestid);
 
     if (result.success) {
         // VOXIMPLANT //

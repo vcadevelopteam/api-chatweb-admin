@@ -1,7 +1,7 @@
 const channelfunctions = require("../config/channelfunctions");
 const voximplant = require("../config/voximplantfunctions");
 const { executesimpletransaction } = require('../config/triggerfunctions');
-const { setSessionParameters } = require('../config/helpers');
+const { setSessionParameters, getErrorCode } = require('../config/helpers');
 
 const voximplantParentAccountId = process.env.VOXIMPLANT_ACCOUNT_ID;
 const voximplantParentApiKey = process.env.VOXIMPLANT_APIKEY;
@@ -30,13 +30,11 @@ exports.getAccountInvoices = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/getAccountInvoices"),
+            message: exception.message
+        });
     }
 }
 
@@ -47,13 +45,11 @@ exports.addAccount = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/addAccount"),
+            message: exception.message
+        });
     }
 }
 
@@ -64,13 +60,11 @@ exports.getAccountInfo = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/getAccountInfo"),
+            message: exception.message
+        });
     }
 }
 
@@ -81,13 +75,11 @@ exports.setChildAccountInfo = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/setChildAccountInfo"),
+            message: exception.message
+        });
     }
 }
 
@@ -98,13 +90,11 @@ exports.transferMoneyToChildAccount = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/transferMoneyToChildAccount"),
+            message: exception.message
+        });
     }
 }
 
@@ -115,13 +105,11 @@ exports.addApplication = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/addApplication"),
+            message: exception.message
+        });
     }
 }
 
@@ -132,13 +120,11 @@ exports.getApplications = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/getApplications"),
+            message: exception.message
+        });
     }
 }
 
@@ -149,13 +135,11 @@ exports.getApplication = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/getApplication"),
+            message: exception.message
+        });
     }
 }
 
@@ -166,13 +150,11 @@ exports.getCallHistory = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/getCallHistory"),
+            message: exception.message
+        });
     }
 }
 
@@ -183,13 +165,11 @@ exports.getTransactionHistory = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/getTransactionHistory"),
+            message: exception.message
+        });
     }
 }
 
@@ -242,11 +222,11 @@ exports.getCallRecord = async (request, result) => {
             message: "Invalid call"
         })
     }
-    catch (err) {
-        return result.status(500).json({
-            ...resultData,
-            message: err.message
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/getCallRecord"),
+            message: exception.message
+        });
     }
 }
 
@@ -257,13 +237,11 @@ exports.addUser = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/addUser"),
+            message: exception.message
+        });
     }
 }
 
@@ -274,13 +252,11 @@ exports.getUsers = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/getUsers"),
+            message: exception.message
+        });
     }
 }
 
@@ -291,13 +267,11 @@ exports.getUser = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/getUsers"),
+            message: exception.message
+        });
     }
 }
 
@@ -308,13 +282,11 @@ exports.delUser = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/delUser"),
+            message: exception.message
+        });
     }
 }
 
@@ -325,13 +297,11 @@ exports.addQueue = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/addQueue"),
+            message: exception.message
+        });
     }
 }
 
@@ -342,13 +312,11 @@ exports.getQueues = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/getQueues"),
+            message: exception.message
+        });
     }
 }
 
@@ -359,13 +327,11 @@ exports.bindUserToQueue = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/bindUserToQueue"),
+            message: exception.message
+        });
     }
 }
 
@@ -398,11 +364,9 @@ exports.getPhoneNumberCategories = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/getPhoneNumberCategories"),
+            message: exception.message
         });
     }
 }
@@ -436,11 +400,9 @@ exports.getPhoneNumberCountryStates = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/getPhoneNumberCountryStates"),
+            message: exception.message
         });
     }
 }
@@ -474,11 +436,9 @@ exports.getPhoneNumberRegions = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/getPhoneNumberRegions"),
+            message: exception.message
         });
     }
 }
@@ -490,13 +450,11 @@ exports.attachPhoneNumber = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/getPhoneNumberRegions"),
+            message: exception.message
+        });
     }
 }
 
@@ -507,13 +465,11 @@ exports.getPhoneNumbers = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/getPhoneNumbers"),
+            message: exception.message
+        });
     }
 }
 
@@ -524,13 +480,11 @@ exports.getResourcePrice = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/getResourcePrice"),
+            message: exception.message
+        });
     }
 }
 
@@ -541,13 +495,11 @@ exports.bindPhoneNumberToApplication = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/bindPhoneNumberToApplication"),
+            message: exception.message
+        });
     }
 }
 
@@ -558,13 +510,11 @@ exports.addCustomRecordStorage = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/addCustomRecordStorage"),
+            message: exception.message
+        });
     }
 }
 
@@ -575,13 +525,11 @@ exports.getCustomRecordStorages = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/getCustomRecordStorages"),
+            message: exception.message
+        });
     }
 }
 
@@ -592,13 +540,11 @@ exports.setCustomRecordStorageInfo = async (request, result) => {
             return result.json(requestResult);
         return result.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/setCustomRecordStorageInfo"),
+            message: exception.message
+        });
     }
 }
 
@@ -766,11 +712,9 @@ exports.getMaximumConsumption = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/getMaximumConsumption"),
+            message: exception.message
         });
     }
 }
@@ -846,11 +790,9 @@ exports.transferAccountBalance = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/transferAccountBalance"),
+            message: exception.message
         });
     }
 }
@@ -912,11 +854,9 @@ exports.getAccountBalance = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/getAccountBalance"),
+            message: exception.message
         });
     }
 }
@@ -1084,11 +1024,9 @@ exports.directGetMaximumConsumption = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/directGetMaximumConsumption"),
+            message: exception.message
         });
     }
 }
@@ -1163,11 +1101,9 @@ exports.directTransferAccountBalance = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/directTransferAccountBalance"),
+            message: exception.message
         });
     }
 }
@@ -1228,11 +1164,9 @@ exports.directGetAccountBalance = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/directGetAccountBalance"),
+            message: exception.message
         });
     }
 }
@@ -1416,11 +1350,9 @@ exports.updateVoximplantPeriod = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/updateVoximplantPeriod"),
+            message: exception.message
         });
     }
 }
@@ -1452,11 +1384,9 @@ exports.pricingCountryList = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/pricingCountryList"),
+            message: exception.message
         });
     }
 }
@@ -1510,11 +1440,9 @@ exports.pricingCountryData = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request voximplant/pricingCountryData"),
+            message: exception.message
         });
     }
 }

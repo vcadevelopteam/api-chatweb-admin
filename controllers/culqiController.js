@@ -1,8 +1,8 @@
 const axios = require('axios');
 const sequelize = require('../config/database');
 const triggerfunctions = require('../config/triggerfunctions');
-
-const { getErrorSeq } = require('../config/helpers');
+const logger = require('../config/winston');
+const { getErrorSeq, getErrorCode, axiosObservable } = require('../config/helpers');
 
 const Culqi = require('culqi-node');
 
@@ -538,8 +538,11 @@ exports.getToken = async (req, res) => {
         });
 
         return res.json({ error: false, success: true, data: tk });
-    } catch (error) {
-        return res.status(500).json({ msg: "There was a problem, please try again later" });
+    } catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request culqi/getToken"),
+            msg: "There was a problem, please try again later"
+        });
     }
 }
 
@@ -602,8 +605,11 @@ exports.createOrder = async (req, res) => {
         else {
             return res.status(404).json({ error: true, success: false, code: '', message: 'Invoice not found' });
         }
-    } catch (error) {
-        return res.status(500).json({ message: "There was a problem, please try again later" });
+    } catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request culqi/createOrder"),
+            message: "There was a problem, please try again later"
+        });
     }
 }
 
@@ -629,7 +635,8 @@ exports.deleteOrder = async (req, res) => {
                 orgid: orgid,
                 invoiceid: invoiceid,
                 orderid: null,
-                orderjson: null
+                orderjson: null,
+                _requestid: req._requestid
             }
 
             const result = await triggerfunctions.executesimpletransaction(query, bind);
@@ -654,8 +661,11 @@ exports.deleteOrder = async (req, res) => {
         else {
             return res.status(404).json({ error: true, success: false, code: '', message: 'Invoice not found' });
         }
-    } catch (error) {
-        return res.status(500).json({ message: "There was a problem, please try again later" });
+    } catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request culqi/deleteOrder", req._requestid),
+            message: "There was a problem, please try again later"
+        });
     }
 }
 
@@ -670,6 +680,15 @@ exports.charge = async (req, res) => {
             metadata.corpid = corpid;
             metadata.orgid = orgid;
             metadata.userid = userid;
+
+            logger.child({
+                _requestid: req._requestid, 
+                context: {
+                    settings, token, metadata,
+                    corpid,
+                    orgid, userid
+                }
+            }).debug(`eeeeee`)
 
             const charge = await createCharge(userprofile, settings, token, metadata, 'sk_test_d901e8f07d45a485');
 
@@ -726,12 +745,15 @@ exports.charge = async (req, res) => {
         else {
             return res.status(403).json({ error: true, success: false, code: '', message: 'invalid user' });
         }
-    } catch (error) {
-        if (error.charge_id) {
-            return res.status(500).json({ message: error.merchant_message });
+    } catch (exception) {
+        if (exception.charge_id) {
+            return res.status(500).json({ message: exception.merchant_message });
         }
         else {
-            return res.status(500).json({ message: "There was a problem, please try again later" });
+            return res.status(500).json({
+                ...getErrorCode(null, exception, "Request culqi/charge"),
+                message: "There was a problem, please try again later"
+            });
         }
     }
 };
@@ -809,8 +831,11 @@ exports.refundInvoice = async (req, res) => {
         else {
             return res.status(404).json({ error: true, success: false, code: '', message: 'Invoice not found' });
         }
-    } catch (error) {
-        return res.status(500).json({ message: "There was a problem, please try again later" });
+    } catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request culqi/refundInvoice"),
+            message: "There was a problem, please try again later"
+        });
     }
 };
 
@@ -856,7 +881,8 @@ exports.refund = async (req, res) => {
                         chargeid: chargeid,
                         refundtoken: refund.id,
                         refundjson: refund,
-                        username: usr
+                        username: usr,
+                        _requestid: req._requestid
                     }
 
                     const result = await triggerfunctions.executesimpletransaction(query, bind);
@@ -879,8 +905,11 @@ exports.refund = async (req, res) => {
         else {
             return res.status(404).json({ error: true, success: false, code: '', message: 'Invoice not found' });
         }
-    } catch (error) {
-        return res.status(500).json({ message: "There was a problem, please try again later" });
+    } catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request culqi/refund"),
+            message: "There was a problem, please try again later"
+        });
     }
 };
 
@@ -982,7 +1011,7 @@ exports.chargeInvoice = async (req, res) => {
                                     if (iscard) {
                                         const paymentcard = await getCard(corpid, paymentcardid);
 
-                                        const requestCulqiCharge = await axios({
+                                        const requestCulqiCharge = await axiosObservable({
                                             data: {
                                                 amount: settings.amount,
                                                 bearer: appsetting.privatekey,
@@ -996,6 +1025,7 @@ exports.chargeInvoice = async (req, res) => {
                                             },
                                             method: "post",
                                             url: `${bridgeEndpoint}processculqi/handlecharge`,
+                                            _requestid: req._requestid
                                         });
 
                                         if (requestCulqiCharge.data.success) {
@@ -1573,12 +1603,15 @@ exports.chargeInvoice = async (req, res) => {
         else {
             return res.status(403).json({ error: true, success: false, code: '', message: 'Invoice not found' });
         }
-    } catch (error) {
-        if (error.charge_id) {
-            return res.status(500).json({ message: error.merchant_message });
+    } catch (exception) {
+        if (exception.charge_id) {
+            return res.status(500).json({ message: exception.merchant_message });
         }
         else {
-            return res.status(500).json({ message: "There was a problem, please try again later" });
+            return res.status(500).json({
+                ...getErrorCode(null, exception, "Request culqi/chargeInvoice", req._requestid),
+                message: "There was a problem, please try again later"
+            });
         }
     }
 };
@@ -1902,8 +1935,11 @@ exports.createInvoice = async (request, response) => {
         else {
             return response.status(403).json({ error: true, success: false, code: '', message: 'corporationnotfound' });
         }
-    } catch (error) {
-        return response.status(500).json({ error: true, success: false, code: '', message: "generalproblem" });
+    } catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request culqi/createInvoice"),
+            message: "generalproblem"
+        });
     }
 };
 
@@ -2094,8 +2130,11 @@ exports.createCreditNote = async (request, response) => {
         else {
             return response.status(403).json({ error: true, success: false, code: '', message: 'invoicenotfound' });
         }
-    } catch (error) {
-        return response.status(500).json({ error: true, success: false, code: '', message: "generalproblem" });
+    } catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request culqi/createCreditNote"),
+            message: "generalproblem"
+        });
     }
 };
 
@@ -2113,8 +2152,11 @@ exports.regularizeInvoice = async (request, response) => {
             message: 'success',
             success: true
         });
-    } catch (error) {
-        return response.status(500).json({ error: true, success: false, code: '', message: "generalproblem" });
+    } catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request culqi/regularizeInvoice"),
+            message: "generalproblem"
+        });
     }
 };
 
@@ -2131,8 +2173,11 @@ exports.getExchangeRate = async (request, response) => {
             message: 'success',
             success: true
         });
-    } catch (error) {
-        return response.status(500).json({ error: true, success: false, code: '', message: "generalproblem" });
+    } catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request culqi/getExchangeRate"),
+            message: "generalproblem"
+        });
     }
 };
 
@@ -2656,12 +2701,15 @@ exports.createBalance = async (req, res) => {
         else {
             return res.status(403).json({ error: true, success: false, code: '', message: 'Corporation not found' });
         }
-    } catch (error) {
-        if (error.charge_id) {
-            return res.status(500).json({ message: error.merchant_message });
+    } catch (exception) {
+        if (exception.charge_id) {
+            return res.status(500).json({ message: exception.merchant_message });
         }
         else {
-            return res.status(500).json({ message: "There was a problem, please try again later" });
+            return res.status(500).json({
+                ...getErrorCode(null, exception, "Request culqi/createBalance"),
+                message: "There was a problem, please try again later"
+            });
         }
     }
 };
@@ -3021,8 +3069,11 @@ exports.emitInvoice = async (req, res) => {
         else {
             return res.status(403).json({ error: true, success: false, code: '', message: 'Invoice not found' });
         }
-    } catch (error) {
-        return res.status(500).json({ message: "There was a problem, please try again later" });
+    } catch (exception) {
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request culqi/emitInvoice"),
+            message: "There was a problem, please try again later"
+        });
     }
 }
 
@@ -3236,11 +3287,9 @@ exports.cardCreate = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request culqi/cardCreate"),
+            message: exception.message
         });
     }
 }
@@ -3312,11 +3361,9 @@ exports.cardDelete = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request culqi/cardDelete"),
+            message: exception.message
         });
     }
 }
@@ -3383,11 +3430,9 @@ exports.cardGet = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request culqi/cardGet"),
+            message: exception.message
         });
     }
 }
@@ -3395,7 +3440,7 @@ exports.cardGet = async (request, result) => {
 exports.automaticPayment = async (request, result) => {
     try {
         var requestCode = "error_unexpected_error";
-        var requestId = null;
+        var _requestid = null;
         var requestMessage = "error_unexpected_error";
         var requestObject = null;
         var requestStatus = 400;
@@ -3406,7 +3451,7 @@ exports.automaticPayment = async (request, result) => {
                 return result.status(requestStatus).json({
                     code: "error_auth_error",
                     data: {
-                        id: requestId,
+                        id: _requestid,
                         object: requestObject,
                     },
                     error: !requestSuccess,
@@ -3440,7 +3485,7 @@ exports.automaticPayment = async (request, result) => {
 
                     if (paymentdisabled) {
                         requestCode = "";
-                        requestId = 200;
+                        _requestid = 200;
                         requestMessage = "success_automaticpayment_paymentdisabled";
                         requestStatus = 200;
                         requestSuccess = true;
@@ -3448,7 +3493,7 @@ exports.automaticPayment = async (request, result) => {
                         return result.status(requestStatus).json({
                             code: requestCode,
                             data: {
-                                id: requestId,
+                                id: _requestid,
                                 object: requestObject,
                             },
                             error: !requestSuccess,
@@ -3531,7 +3576,7 @@ exports.automaticPayment = async (request, result) => {
                                                 paymentsuccess = true;
 
                                                 requestCode = "";
-                                                requestId = 200;
+                                                _requestid = 200;
                                                 requestMessage = "success_automaticpayment_paymentsuccess";
                                                 requestStatus = 200;
                                                 requestSuccess = true;
@@ -4049,7 +4094,7 @@ exports.automaticPayment = async (request, result) => {
                             }
                             else {
                                 requestCode = "";
-                                requestId = 200;
+                                _requestid = 200;
                                 requestMessage = "success_automaticpayment_alreadypaid";
                                 requestStatus = 200;
                                 requestSuccess = true;
@@ -4075,7 +4120,7 @@ exports.automaticPayment = async (request, result) => {
         return result.status(requestStatus).json({
             code: requestCode,
             data: {
-                id: requestId,
+                id: _requestid,
                 object: requestObject,
             },
             error: !requestSuccess,
@@ -4084,11 +4129,9 @@ exports.automaticPayment = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request culqi/automaticPayment"),
+            message: exception.message
         });
     }
 };

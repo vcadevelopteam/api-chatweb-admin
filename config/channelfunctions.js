@@ -495,8 +495,6 @@ exports.voximplantHandlePhoneNumber = async (corpid, orgid, usr, accountid, apik
 
                 let bindResult = await voximplant.bindPhoneNumberToApplication(bindBody);
 
-                console.log(JSON.stringify(bindResult));
-
                 if (additionalperchannel) {
                     transferBody = {
                         child_account_id: accountid,

@@ -4,7 +4,7 @@ const { setSessionParameters, errors, getErrorCode, stringToMinutes, secondsToTi
 exports.drawReport = async (req, res) => {
     const { columns, filters, summaries, parameters = {} } = req.body;
 
-    setSessionParameters(parameters, req.user);
+    setSessionParameters(parameters, req.user, req._requestid);
 
     const result = await buildQueryDynamic2(columns, filters, parameters, summaries);
     if (!result.error)
@@ -16,7 +16,7 @@ exports.drawReport = async (req, res) => {
 exports.exportReport = async (req, res) => {
     const { columns, filters, summaries, parameters = {} } = req.body;
 
-    setSessionParameters(parameters, req.user);
+    setSessionParameters(parameters, req.user, req._requestid);
 
     const resultBD = await buildQueryDynamic2(columns, filters, parameters, summaries, true);
 
@@ -51,7 +51,7 @@ exports.exportReportTask = async (req, res) => {
 exports.dashboardDesigner = async (req, res) => {
     const { parameters } = req.body;
     //dashboardtemplateid, startdate, enddate
-    setSessionParameters(parameters, req.user);
+    setSessionParameters(parameters, req.user, req._requestid);
     try {
         const template = await executesimpletransaction("QUERY_GET_DASHBOARDTEMPLATE", parameters);
         if (template instanceof Array && template.length > 0) {
@@ -101,10 +101,8 @@ exports.dashboardDesigner = async (req, res) => {
                         const columnstmp = JSON.parse(report.columnjson).filter(x => x.columnname === indicator.column);
                         if (columnstmp.length > 0) {
                             if (indicator.interval) {
-                                console.log("interval")
                                 return buildQueryDynamicGroupInterval(columnstmp, filterHard, parameters, indicator.interval, report.dataorigin, indicator.summarizationfunction);
                             } else {
-                                console.log("normal")
                                 return buildQueryDynamic2(columnstmp, filterHard, parameters, []);
                             }
                         }
@@ -229,9 +227,7 @@ exports.dashboardDesigner = async (req, res) => {
             const rr = getErrorCode(errors.UNEXPECTED_ERROR);
             return res.status(rr.rescode).json(rr);
         }
-    } catch (ex) {
-        console.log(ex);
-        const rr = getErrorCode(errors.UNEXPECTED_ERROR);
-        return res.status(rr.rescode).json(rr);
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, "Request reportdesigner/dashboard"));
     }
 }

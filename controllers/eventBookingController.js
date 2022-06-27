@@ -116,7 +116,6 @@ const send = async (data) => {
         } else {
             if (data.type === "SMS") {
                 const smschannel = await executesimpletransaction("QUERY_GET_SMS_DEFAULT_BY_ORG", data);
-                console.log(smschannel)
                 if (smschannel[0] && smschannel) {
                     data.communicationchannelid = smschannel[0].communicationchannelid;
                     data.communicationchanneltype = smschannel[0].type;
@@ -126,14 +125,13 @@ const send = async (data) => {
 
             const responseservices = await axios.post(
                 `${process.env.SERVICES}handler/external/sendhsm`, data);
-            console.log(responseservices.data)
             if (!responseservices.data || !responseservices.data instanceof Object) {
                 return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
             }
         }
     }
-    catch (ee) {
-        console.log(ee)
+    catch (exception) {
+        getErrorCode(null, exception, "Request eventbooking/send");
     }
 }
 
@@ -143,6 +141,7 @@ exports.Collection = async (req, res) => {
         const resError = getErrorCode(errors.FORBIDDEN);
         return res.status(resError.rescode).json(resError);
     }
+    parameters.requestid = req.requestid;
     const result = await executesimpletransaction(method, parameters);
 
     if (!result.error) {
@@ -150,7 +149,7 @@ exports.Collection = async (req, res) => {
             const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
 
             const { communicationchannelid, messagetemplateid, notificationtype, messagetemplatename, communicationchanneltype } = resultCalendar[0]
-            
+
             if (notificationtype === "EMAIL") {
                 const sendmessage = {
                     corpid: parameters.corpid,
@@ -160,6 +159,7 @@ exports.Collection = async (req, res) => {
                     hsmtemplateid: messagetemplateid,
                     type: "EMAIL",
                     shippingreason: "BOOKING",
+                    requestid: req.requestid,
                     hsmtemplatename: messagetemplatename,
                     communicationchanneltype: communicationchanneltype,
                     platformtype: communicationchanneltype,
@@ -174,7 +174,6 @@ exports.Collection = async (req, res) => {
                 }
                 await send(sendmessage);
             }
-
 
             if (!!parameters.conversationid && !!parameters.personid) {
                 const dataServices = {

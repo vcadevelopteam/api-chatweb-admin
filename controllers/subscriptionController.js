@@ -80,11 +80,9 @@ exports.activateUser = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request subscription/activateUser"),
+            message: exception.message
         });
     }
 }
@@ -152,11 +150,9 @@ exports.changePassword = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request subscription/changePassword"),
+            message: exception.message
         });
     }
 }
@@ -202,11 +198,9 @@ exports.countryList = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request subscription/countryList"),
+            message: exception.message
         });
     }
 }
@@ -1190,11 +1184,9 @@ exports.createSubscription = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request subscription/createSubscription"),
+            message: exception.message
         });
     }
 }
@@ -1241,11 +1233,9 @@ exports.currencyList = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request subscription/currencyList"),
+            message: exception.message
         });
     }
 }
@@ -1298,11 +1288,9 @@ exports.getContract = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request subscription/getContract"),
+            message: exception.message
         });
     }
 }
@@ -1359,11 +1347,9 @@ exports.getPageList = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request subscription/getPageList"),
+            message: exception.message
         });
     }
 }
@@ -1501,11 +1487,9 @@ exports.recoverPassword = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request subscription/recoverPassword"),
+            message: exception.message
         });
     }
 }
@@ -1828,11 +1812,9 @@ exports.validateChannels = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request subscription/validateChannels"),
+            message: exception.message
         });
     }
 }
@@ -1898,11 +1880,9 @@ exports.validateUserId = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request subscription/validateUserId"),
+            message: exception.message
         });
     }
 }
@@ -1966,11 +1946,9 @@ exports.validateUsername = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return res.status(500).json({
+            ...getErrorCode(null, exception, "Request subscription/validateUsername"),
+            message: exception.message
         });
     }
 }
