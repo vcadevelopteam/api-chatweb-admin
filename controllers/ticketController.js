@@ -393,7 +393,7 @@ exports.import = async (req, res) => {
                             buffer: Buffer.from(files[j]?.extraction),
                             mimetype: null
                         }, req.user?.orgdesc || "anonymous")
-                        attachments.push({filename: files[j].name, url: cosname });
+                        attachments.push({filename: files[j]?.fileHeader?.name, url: cosname });
                     }
                 }
             }
