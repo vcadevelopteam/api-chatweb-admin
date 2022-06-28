@@ -422,8 +422,9 @@ exports.import = async (req, res) => {
                     lines.push(data)
                 }
             }
-            const phones = [...new Set(lines.map(d => d.UserPhone))];
-            const personphone = phones.filter(p => p !== channelsite)?.[0];
+            // const phones = [...new Set(lines.map(d => d.UserPhone))];
+            // const personphone = phones.filter(p => p !== channelsite)?.[0];
+            const personphone = csv_elem.originalname.split('.')[0];
             const personname = lines.filter(l => l.UserPhone === personphone)?.[0]?.UserName;
             datatable = [
                 ...datatable,
