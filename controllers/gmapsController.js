@@ -18,6 +18,6 @@ exports.geocode = async (req, res) => {
         return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
 
     } catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, "Request gmaps/geocode", req._requestid));
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }

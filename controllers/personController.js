@@ -17,6 +17,6 @@ exports.getLeads = async (req, res) => {
             return res.status(result.rescode).json(result);
 
     } catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, "Request person/get/leads", req._requestid));
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }

@@ -52,7 +52,7 @@ exports.GetMultiDomainsValue = async (req, res) => {
         });
     }
     catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, "Request main/GetMultiDomainsValue"));
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -136,7 +136,7 @@ exports.multiCollection = async (req, res) => {
         return res.json({ success: true, data: result });
     }
     catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, "Request main/multiCollection"));
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -158,7 +158,7 @@ exports.getToken = async (req, res) => {
 exports.validateConversationWhatsapp = async (req, res) => {
     const { corpid, orgid } = req.body;
 
-    const result = await executesimpletransaction("UFN_MIGRATION_CONVERSATIONWHATSAPP_SEL", { corpid, orgid });
+    const result = await executesimpletransaction("UFN_MIGRATION_CONVERSATIONWHATSAPP_SEL", { corpid, orgid, _requestid: req._requestid });
 
     const indexChannels = {}
 

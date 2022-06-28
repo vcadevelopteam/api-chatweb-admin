@@ -81,7 +81,7 @@ exports.activateUser = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request subscription/activateUser"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -151,7 +151,7 @@ exports.changePassword = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request subscription/changePassword"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -199,7 +199,7 @@ exports.countryList = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request subscription/countryList"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -1185,7 +1185,7 @@ exports.createSubscription = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request subscription/createSubscription"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -1234,7 +1234,7 @@ exports.currencyList = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request subscription/currencyList"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -1289,7 +1289,7 @@ exports.getContract = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request subscription/getContract"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -1348,7 +1348,7 @@ exports.getPageList = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request subscription/getPageList"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -1488,7 +1488,7 @@ exports.recoverPassword = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request subscription/recoverPassword"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -1813,7 +1813,7 @@ exports.validateChannels = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request subscription/validateChannels"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -1881,7 +1881,7 @@ exports.validateUserId = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request subscription/validateUserId"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -1947,7 +1947,7 @@ exports.validateUsername = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request subscription/validateUsername"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }

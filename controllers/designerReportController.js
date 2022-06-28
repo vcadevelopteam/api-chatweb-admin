@@ -228,6 +228,6 @@ exports.dashboardDesigner = async (req, res) => {
             return res.status(rr.rescode).json(rr);
         }
     } catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, "Request reportdesigner/dashboard"));
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }

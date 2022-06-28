@@ -112,7 +112,7 @@ exports.sendInvoice = async (req, res) => {
         }
     } catch (error) {
         console.log(error)
-        return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR, error, "Request sendInvoice"));
+        return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR, error, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -153,6 +153,6 @@ exports.exchangeRate = async (req, res) => {
             success: false
         });
     } catch (error) {
-        return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR, error, "Request exchangeRate"));
+        return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR, error, `Request to ${req.originalUrl}`, req._requestid));
     }
 }

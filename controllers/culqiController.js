@@ -540,7 +540,7 @@ exports.getToken = async (req, res) => {
         return res.json({ error: false, success: true, data: tk });
     } catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request culqi/getToken"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             msg: "There was a problem, please try again later"
         });
     }
@@ -607,7 +607,7 @@ exports.createOrder = async (req, res) => {
         }
     } catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request culqi/createOrder"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: "There was a problem, please try again later"
         });
     }
@@ -663,7 +663,7 @@ exports.deleteOrder = async (req, res) => {
         }
     } catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request culqi/deleteOrder", req._requestid),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: "There was a problem, please try again later"
         });
     }
@@ -751,7 +751,7 @@ exports.charge = async (req, res) => {
         }
         else {
             return res.status(500).json({
-                ...getErrorCode(null, exception, "Request culqi/charge"),
+                ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
                 message: "There was a problem, please try again later"
             });
         }
@@ -833,7 +833,7 @@ exports.refundInvoice = async (req, res) => {
         }
     } catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request culqi/refundInvoice"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: "There was a problem, please try again later"
         });
     }
@@ -907,7 +907,7 @@ exports.refund = async (req, res) => {
         }
     } catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request culqi/refund"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: "There was a problem, please try again later"
         });
     }
@@ -1609,7 +1609,7 @@ exports.chargeInvoice = async (req, res) => {
         }
         else {
             return res.status(500).json({
-                ...getErrorCode(null, exception, "Request culqi/chargeInvoice", req._requestid),
+                ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
                 message: "There was a problem, please try again later"
             });
         }
@@ -1937,7 +1937,7 @@ exports.createInvoice = async (request, response) => {
         }
     } catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request culqi/createInvoice"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: "generalproblem"
         });
     }
@@ -2132,7 +2132,7 @@ exports.createCreditNote = async (request, response) => {
         }
     } catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request culqi/createCreditNote"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: "generalproblem"
         });
     }
@@ -2154,7 +2154,7 @@ exports.regularizeInvoice = async (request, response) => {
         });
     } catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request culqi/regularizeInvoice"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: "generalproblem"
         });
     }
@@ -2175,7 +2175,7 @@ exports.getExchangeRate = async (request, response) => {
         });
     } catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request culqi/getExchangeRate"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: "generalproblem"
         });
     }
@@ -2707,7 +2707,7 @@ exports.createBalance = async (req, res) => {
         }
         else {
             return res.status(500).json({
-                ...getErrorCode(null, exception, "Request culqi/createBalance"),
+                ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
                 message: "There was a problem, please try again later"
             });
         }
@@ -3071,7 +3071,7 @@ exports.emitInvoice = async (req, res) => {
         }
     } catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request culqi/emitInvoice"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: "There was a problem, please try again later"
         });
     }
@@ -3288,7 +3288,7 @@ exports.cardCreate = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request culqi/cardCreate"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -3362,7 +3362,7 @@ exports.cardDelete = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request culqi/cardDelete"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -3431,7 +3431,7 @@ exports.cardGet = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request culqi/cardGet"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -4130,7 +4130,7 @@ exports.automaticPayment = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request culqi/automaticPayment"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }

@@ -51,7 +51,7 @@ exports.checkPaymentPlan = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            ...getErrorCode(null, error, "Request checkpaymentplan"),
+            ...getErrorCode(null, error, `Request to ${req.originalUrl}`, req._requestid),
             msg: exception.message
         });
     }
@@ -640,7 +640,7 @@ exports.deleteChannel = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            ...getErrorCode(null, exception, "Request deletechannel"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             msg: exception.message
         });
     }
@@ -698,7 +698,7 @@ exports.getChannelService = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            ...getErrorCode(null, error, "Request getchannelservice"),
+            ...getErrorCode(null, error, `Request to ${req.originalUrl}`, req._requestid),
             msg: exception.message
         });
     }
@@ -731,7 +731,7 @@ exports.getLongToken = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            ...getErrorCode(null, error, "Request getlongtoken"),
+            ...getErrorCode(null, error, `Request to ${req.originalUrl}`, req._requestid),
             msg: exception.message
         });
     }
@@ -764,7 +764,7 @@ exports.getPageList = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            ...getErrorCode(null, error, "Request getpagelist"),
+            ...getErrorCode(null, error, `Request to ${req.originalUrl}`, req._requestid),
             msg: exception.message
         });
     }
@@ -1616,7 +1616,7 @@ exports.insertChannel = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            ...getErrorCode(null, error, "Request insertchannel"),
+            ...getErrorCode(null, error, `Request to ${req.originalUrl}`, req._requestid),
             msg: exception.message
         });
     }
@@ -1731,7 +1731,7 @@ exports.updateChannel = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            ...getErrorCode(null, error, "Request updatechannel"),
+            ...getErrorCode(null, error, `Request to ${req.originalUrl}`, req._requestid),
             msg: exception.message
         });
     }
@@ -1854,7 +1854,7 @@ exports.activateChannel = async (request, result) => {
     }
     catch (exception) {
         return result.status(500).json({
-            ...getErrorCode(null, error, "Request activateChannel"),
+            ...getErrorCode(null, error, `Request to ${req.originalUrl}`, req._requestid),
             msg: exception.message
         });
     }

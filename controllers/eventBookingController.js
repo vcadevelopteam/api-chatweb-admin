@@ -1,5 +1,5 @@
 const { executesimpletransaction } = require('../config/triggerfunctions');
-const { getErrorCode, errors } = require('../config/helpers');
+const { getErrorCode, errors, axiosObservable } = require('../config/helpers');
 const axios = require('axios')
 const method_allowed = ["QUERY_GET_PERSON_FROM_BOOKING", "QUERY_EVENT_BY_CODE", "UFN_CALENDARYBOOKING_INS", "UFN_CALENDARYBOOKING_SEL_DATETIME"]
 
@@ -123,15 +123,19 @@ const send = async (data) => {
                 }
             }
 
-            const responseservices = await axios.post(
-                `${process.env.SERVICES}handler/external/sendhsm`, data);
+            const responseservices = await axiosObservable({
+                url: `${process.env.SERVICES}handler/external/sendhsm`,
+                data,
+                method: "post",
+                _requestid: req._requestid
+            });
             if (!responseservices.data || !responseservices.data instanceof Object) {
                 return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
             }
         }
     }
     catch (exception) {
-        getErrorCode(null, exception, "Request eventbooking/send");
+        getErrorCode(null, exception, `Request to ${req.originalUrl}`, data._requestid);
     }
 }
 
@@ -141,7 +145,7 @@ exports.Collection = async (req, res) => {
         const resError = getErrorCode(errors.FORBIDDEN);
         return res.status(resError.rescode).json(resError);
     }
-    parameters.requestid = req.requestid;
+    parameters._requestid = req._requestid;
     const result = await executesimpletransaction(method, parameters);
 
     if (!result.error) {
@@ -159,7 +163,7 @@ exports.Collection = async (req, res) => {
                     hsmtemplateid: messagetemplateid,
                     type: "EMAIL",
                     shippingreason: "BOOKING",
-                    requestid: req.requestid,
+                    _requestid: req._requestid,
                     hsmtemplatename: messagetemplatename,
                     communicationchanneltype: communicationchanneltype,
                     platformtype: communicationchanneltype,
@@ -183,7 +187,11 @@ exports.Collection = async (req, res) => {
                     personid: parameters.personid,
                     ...(parameters.parameters.reduce((acc, item) => ({ ...acc, [item.name]: item.text }), {}))
                 }
-                await axios.post(`${process.env.SERVICES}handler/sendbooking`, dataServices);
+                await axiosObservable({
+                    url: `${process.env.SERVICES}handler/sendbooking`, 
+                    data: dataServices,
+                    method: "post"
+                });
             }
         }
         return res.json({ error: false, success: true, data: result, key });

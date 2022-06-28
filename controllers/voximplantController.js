@@ -32,7 +32,7 @@ exports.getAccountInvoices = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/getAccountInvoices"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -47,7 +47,7 @@ exports.addAccount = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/addAccount"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -62,7 +62,7 @@ exports.getAccountInfo = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/getAccountInfo"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -77,7 +77,7 @@ exports.setChildAccountInfo = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/setChildAccountInfo"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -92,7 +92,7 @@ exports.transferMoneyToChildAccount = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/transferMoneyToChildAccount"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -107,7 +107,7 @@ exports.addApplication = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/addApplication"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -122,7 +122,7 @@ exports.getApplications = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/getApplications"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -137,7 +137,7 @@ exports.getApplication = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/getApplication"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -152,7 +152,7 @@ exports.getCallHistory = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/getCallHistory"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -167,7 +167,7 @@ exports.getTransactionHistory = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/getTransactionHistory"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -224,7 +224,7 @@ exports.getCallRecord = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/getCallRecord"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -239,7 +239,7 @@ exports.addUser = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/addUser"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -254,7 +254,7 @@ exports.getUsers = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/getUsers"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -269,7 +269,7 @@ exports.getUser = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/getUsers"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -284,7 +284,7 @@ exports.delUser = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/delUser"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -299,7 +299,7 @@ exports.addQueue = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/addQueue"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -314,7 +314,7 @@ exports.getQueues = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/getQueues"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -329,7 +329,7 @@ exports.bindUserToQueue = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/bindUserToQueue"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -365,7 +365,7 @@ exports.getPhoneNumberCategories = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/getPhoneNumberCategories"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -401,7 +401,7 @@ exports.getPhoneNumberCountryStates = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/getPhoneNumberCountryStates"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -437,7 +437,7 @@ exports.getPhoneNumberRegions = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/getPhoneNumberRegions"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -452,7 +452,7 @@ exports.attachPhoneNumber = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/getPhoneNumberRegions"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -467,7 +467,7 @@ exports.getPhoneNumbers = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/getPhoneNumbers"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -482,7 +482,7 @@ exports.getResourcePrice = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/getResourcePrice"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -497,7 +497,7 @@ exports.bindPhoneNumberToApplication = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/bindPhoneNumberToApplication"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -512,7 +512,7 @@ exports.addCustomRecordStorage = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/addCustomRecordStorage"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -527,7 +527,7 @@ exports.getCustomRecordStorages = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/getCustomRecordStorages"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -542,7 +542,7 @@ exports.setCustomRecordStorageInfo = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/setCustomRecordStorageInfo"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -713,7 +713,7 @@ exports.getMaximumConsumption = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/getMaximumConsumption"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -791,7 +791,7 @@ exports.transferAccountBalance = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/transferAccountBalance"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -855,7 +855,7 @@ exports.getAccountBalance = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/getAccountBalance"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -1025,7 +1025,7 @@ exports.directGetMaximumConsumption = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/directGetMaximumConsumption"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -1102,7 +1102,7 @@ exports.directTransferAccountBalance = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/directTransferAccountBalance"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -1165,7 +1165,7 @@ exports.directGetAccountBalance = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/directGetAccountBalance"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -1351,7 +1351,7 @@ exports.updateVoximplantPeriod = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/updateVoximplantPeriod"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -1385,7 +1385,7 @@ exports.pricingCountryList = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/pricingCountryList"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }
@@ -1441,7 +1441,7 @@ exports.pricingCountryData = async (request, result) => {
     }
     catch (exception) {
         return res.status(500).json({
-            ...getErrorCode(null, exception, "Request voximplant/pricingCountryData"),
+            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
             message: exception.message
         });
     }

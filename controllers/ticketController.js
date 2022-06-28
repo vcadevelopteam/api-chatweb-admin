@@ -45,7 +45,7 @@ exports.reply = async (req, res) => {
         res.json(responseservices.data);
     }
     catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, "Request ticket/reply", req._requestid));
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -89,7 +89,7 @@ exports.replyListMessages = async (req, res) => {
         res.json({ success: true });
     }
     catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, "Request ticket/replyListMessages", req._requestid));
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -133,7 +133,7 @@ exports.close = async (req, res) => {
         res.json(responseservices.data);
     }
     catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, "Request ticket/close", req._requestid));
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -164,7 +164,7 @@ exports.reassign = async (req, res) => {
         res.json({ success: true });
     }
     catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, "Request ticket/reassign", req._requestid));
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -197,7 +197,7 @@ exports.massiveClose = async (req, res) => {
         res.json({ success: true });
     }
     catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, "Request ticket/massiveClose", req._requestid));
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -342,7 +342,7 @@ exports.sendHSM = async (req, res) => {
         res.json({ success: true });
     }
     catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, "Request ticket/sendHSM", req._requestid));
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -508,6 +508,6 @@ exports.import = async (req, res) => {
         res.json({ success: true });
     }
     catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, "Request ticket/import", req._requestid));
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }

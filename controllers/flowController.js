@@ -1,10 +1,15 @@
 const axios = require('axios')
 const FormData = require('form-data');
+const { axiosObservable } = require('../config/helpers');
 
 exports.Location = async (req, res) => {
     const data = req.body;
 
-    axios.post(`${process.env.SERVICES}handler/sendlocation`, data);
+    axiosObservable({
+        url: `${process.env.SERVICES}handler/sendlocation`,
+        data,
+        method: post
+    });
 
     res.json({ success: true });
 }
@@ -18,8 +23,13 @@ exports.ShippingCar = async (req, res) => {
         PD_CANTIDAD: x.quantity,
         DESCRIPCION: x.description
     }))
-    const response = await axios.post(`https://backend.laraigo.com/zyxme/bridge/api/processsolgas/sendrequestlist`, listreq);
-    
+    const response = await axiosObservable({
+        url: `https://backend.laraigo.com/zyxme/bridge/api/processsolgas/sendrequestlist`,
+        data: listreq,
+        method: "post",
+        _requestid: req._requestid
+    });
+
     res.json(response.data?.[0] || { success: false });
 }
 
