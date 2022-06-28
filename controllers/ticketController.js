@@ -434,7 +434,7 @@ exports.import = async (req, res) => {
                     "personname": personname,
                     "personphone": personphone,
                     "interactiontext": line.MessageBody,
-                    "interactionfrom": csv_elem.originalname.split('.')[0] === line.UserPhone ? 'BOT' : 'CLIENT'
+                    "interactionfrom": personphone === line.UserPhone ? 'CLIENT' : 'BOT'
                 }))
             ]
         }
