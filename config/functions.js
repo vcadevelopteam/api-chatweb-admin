@@ -2345,7 +2345,7 @@ module.exports = {
             pt.conversationid,
             'ACTIVO', 'NINGUNO',
             NOW(), 'admin', NOW(), 'admin',
-            pt.interactiontext, pt.interactionuserid, 'LOG'
+            pt.interactiontext, pt.interactionuserid, 'text'
         FROM json_populate_recordset(null::udtt_ticket_import, $datatable) pt
         `,
         module: "",

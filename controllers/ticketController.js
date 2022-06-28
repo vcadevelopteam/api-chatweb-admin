@@ -357,21 +357,26 @@ exports.sendHSM = async (req, res) => {
 exports.import = async (req, res) => {
     try {
         const { data = {}, channelsite } = req.body;
+        if (req.files.length > 10) {
+            return res.status(400).json(getErrorCode(errors.LIMIT_EXCEEDED));
+        }
         
         const attachments = []
 
-        const zip_list = req.files.filter(f => f.mimetype === 'application/x-zip-compressed');
+        const zip_list = req.files.filter(f => f.mimetype === 'application/x-zip-compressed' && f.originalname !== 'wa_layout.css');
         for (let i = 0; i < zip_list.length; i++) {
             let files = await unzip(zip_list[i])
             if (files) {
                 for (let j = 0; j < files.length; j++) {
-                    let cosname = await uploadToCOS({
-                        size: files[j]?.size,
-                        originalname: files[j]?.name,
-                        buffer: files[j]?.data,
-                        mimetype: null
-                    }, req.user?.orgdesc || "anonymous")
-                    attachments.push({filename: files[j].name, url: cosname });
+                    if (files[j]?.size < 10*1024*1024) {
+                        let cosname = await uploadToCOS({
+                            size: files[j]?.size,
+                            originalname: files[j]?.name,
+                            buffer: files[j]?.data,
+                            mimetype: null
+                        }, req.user?.orgdesc || "anonymous")
+                        attachments.push({filename: files[j].name, url: cosname });
+                    }
                 }
             }
         }
@@ -381,13 +386,15 @@ exports.import = async (req, res) => {
             let files = await unrar(rar_list[i])
             if (files) {
                 for (let j = 0; j < files.length; j++) {
-                    let cosname = await uploadToCOS({
-                        size: files[j]?.fileHeader?.unpSize,
-                        originalname: files[j]?.fileHeader?.name,
-                        buffer: Buffer.from(files[j]?.extraction),
-                        mimetype: null
-                    }, req.user?.orgdesc || "anonymous")
-                    attachments.push({filename: files[j].name, url: cosname });
+                    if (files[j]?.size < 10*1024*1024) {
+                        let cosname = await uploadToCOS({
+                            size: files[j]?.fileHeader?.unpSize,
+                            originalname: files[j]?.fileHeader?.name,
+                            buffer: Buffer.from(files[j]?.extraction),
+                            mimetype: null
+                        }, req.user?.orgdesc || "anonymous")
+                        attachments.push({filename: files[j].name, url: cosname });
+                    }
                 }
             }
         }
@@ -426,7 +433,7 @@ exports.import = async (req, res) => {
                     "personname": personname,
                     "personphone": personphone,
                     "interactiontext": line.MessageBody,
-                    "interactionfrom": line.UserPhone === channelsite ? 'BOT' : 'CLIENT'
+                    "interactionfrom": csv_elem.originalname.split('.')[0] === line.UserPhone ? 'BOT' : 'CLIENT'
                 }))
             ]
         }
