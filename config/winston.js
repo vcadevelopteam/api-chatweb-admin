@@ -15,7 +15,7 @@ const logLevel = process.env.LOG_LEVEL || "debug";
 const options = {
     key: "c5741e56fbfaca0efbe617438fa8efee",
     app: `api_laraigo_${env}`,
-    env: "testing",
+    env: env,
     level: logLevel, // Default to debug, maximum level of log, doc: https://github.com/winstonjs/winston#logging-levels
     indexMeta: true // Defaults to false, when true ensures meta object will be searchable
 }
