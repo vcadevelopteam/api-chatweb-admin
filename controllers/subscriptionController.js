@@ -343,6 +343,7 @@ exports.createSubscription = async (request, result) => {
                         channelParameters.schedule = null;
                         channelParameters.status = "PENDIENTE";
                         channelParameters.updintegration = null;
+                        channelParameters.voximplantrecording = null;
 
                         requestCode = channel.type;
 
@@ -924,9 +925,16 @@ exports.createSubscription = async (request, result) => {
                                                         recordingquality: channelServiceArray[index].recordingquality,
                                                     };
 
+                                                    var voximplantRecording = {
+                                                        recording: channelServiceArray[index].recording,
+                                                        recordingstorage: channelServiceArray[index].recordingstorage,
+                                                        recordingquality: channelServiceArray[index].recordingquality,
+                                                    };
+
                                                     channelParametersArray[index].communicationchannelsite = voximplantPhoneNumber.phonenumber;
                                                     channelParametersArray[index].communicationchannelowner = voximplantEnvironment.applicationname;
                                                     channelParametersArray[index].servicecredentials = JSON.stringify(voximplantCredentials);
+                                                    channelParametersArray[index].voximplantrecording = JSON.stringify(voximplantRecording);
                                                     channelParametersArray[index].phone = voximplantPhoneNumber.phonenumber;
                                                 }
                                             }
@@ -1566,6 +1574,7 @@ exports.validateChannels = async (request, result) => {
                         channelParameters.schedule = null;
                         channelParameters.status = "PENDIENTE";
                         channelParameters.updintegration = null;
+                        channelParameters.voximplantrecording = null;
 
                         requestCode = channel.type;
 
