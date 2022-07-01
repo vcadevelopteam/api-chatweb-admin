@@ -40,6 +40,11 @@ const properties = [
         key: "hide_log_conversation",
         type: 'bool',
     },
+    {
+        propertyname: "WAITINGTIMECUSTOMERMESSAGE",
+        key: "waiting_customer_message",
+        type: 'text',
+    },
 ];
 
 const cleanPropertyValue = (listproperty, { type, subtype }) => {
