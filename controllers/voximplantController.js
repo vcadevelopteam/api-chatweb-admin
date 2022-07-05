@@ -2,6 +2,7 @@ const channelfunctions = require("../config/channelfunctions");
 const voximplant = require("../config/voximplantfunctions");
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { setSessionParameters } = require('../config/helpers');
+const axios = require("axios");
 
 const voximplantParentAccountId = process.env.VOXIMPLANT_ACCOUNT_ID;
 const voximplantParentApiKey = process.env.VOXIMPLANT_APIKEY;
@@ -227,13 +228,36 @@ exports.getCallRecord = async (request, result) => {
         let requestResult = await voximplant.getCallRecord(request.body)
         if (requestResult) {
             if (requestResult?.result.length > 0) {
-                return result.json({
-                    code: "",
-                    error: false,
-                    data: requestResult?.result[0]?.records?.[0]?.record_url,
-                    message: "",
-                    success: true
-                });
+                let record_url_str = requestResult?.result[0]?.records?.[0]?.record_url;
+                if (!record_url_str) {
+                    return result.status(400).json({
+                        ...resultData,
+                        code: "error_no_record",
+                        message: "No record"
+                    })
+                }
+                let record_url = new URL(record_url_str);
+                record_url.searchParams.append('account_id', request.body['account_id']);
+                record_url.searchParams.append('api_key', request.body['api_key']);
+                record_url_str = record_url.toString();
+                try {
+                    record_data = await axios.get(record_url_str, {
+                        responseType: 'arraybuffer',
+                    });
+                    if (record_data.status === 200) {
+                        result.set('Content-Disposition', record_data.headers["content-disposition"]);
+                        result.set('Content-Type', record_data.headers["content-type"]);
+                        let base64data = record_data.data.toString('base64');
+                        return result.send(base64data)
+                    }
+                }
+                catch (error) {
+                    return result.status(400).json({
+                        ...resultData,
+                        code: "error_record_error",
+                        message: "Record error"
+                    })
+                }
             }
         }
         return result.status(400).json({
