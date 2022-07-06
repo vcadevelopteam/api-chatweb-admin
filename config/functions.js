@@ -2315,7 +2315,7 @@ module.exports = {
             null, null, null,
             '', '',
             '00:00:00.00', null,
-            '', null, null, '', '', null,
+            '', null, null, '', '', 'UPLOAD',
             '00:00:00.00',
             'Carga inicial'
         FROM json_populate_recordset(null::udtt_ticket_import, $datatable) pt
