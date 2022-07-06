@@ -366,6 +366,10 @@ exports.getErrorCode = (code, error = false, origin = "", _requestid = "") => {
     }
 };
 
+exports.printException = (error = false, origin = "", _requestid = "") => {
+    logger.child({ _requestid, error: { detail: error.stack || error, message: error.toString() } }).error(origin || "anonymous");
+};
+
 exports.stringToSeconds = (str) => {
     let seconds = 0;
     let days = 0;
