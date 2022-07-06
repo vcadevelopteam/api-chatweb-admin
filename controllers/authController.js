@@ -185,7 +185,6 @@ exports.getUser = async (req, res) => {
     const prevdata = { _requestid: req._requestid }
 
     try {
-        aaaaee.toString();
         const resultBD = await Promise.all([
             executesimpletransaction("UFN_APPLICATION_SEL", { ...req.user, ...prevdata }),
             executesimpletransaction("UFN_ORGANIZATION_CHANGEORG_SEL", { userid: req.user.userid, ...prevdata }),
