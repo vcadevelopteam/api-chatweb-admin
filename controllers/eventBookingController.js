@@ -1,6 +1,6 @@
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { getErrorCode, errors, axiosObservable } = require('../config/helpers');
-const axios = require('axios')
+
 const method_allowed = ["QUERY_GET_PERSON_FROM_BOOKING", "QUERY_EVENT_BY_CODE", "UFN_CALENDARYBOOKING_INS", "UFN_CALENDARYBOOKING_SEL_DATETIME"]
 
 // var https = require('https');
@@ -9,9 +9,9 @@ const method_allowed = ["QUERY_GET_PERSON_FROM_BOOKING", "QUERY_EVENT_BY_CODE", 
 //     rejectUnauthorized: false
 // });
 
-const send = async (data) => {
+const send = async (data, requestid) => {
 
-    data._requestid = req._requestid;
+    data._requestid = requestid;
 
     try {
         if (data.listmembers.every(x => !!x.personid)) {
@@ -19,7 +19,7 @@ const send = async (data) => {
                 personids: data.listmembers.map(x => x.personid),
                 corpid: data.corpid,
                 orgid: data.orgid,
-                _requestid: req._requestid
+                _requestid: requestid,
             })
         }
 
@@ -27,7 +27,7 @@ const send = async (data) => {
             let jsonconfigmail = "";
             const resBD = await Promise.all([
                 executesimpletransaction("QUERY_GET_CONFIG_MAIL", data),
-                executesimpletransaction("QUERY_GET_MESSAGETEMPLATE", data)
+                executesimpletransaction("QUERY_GET_MESSAGETEMPLATE", data),
             ]);
             const configmail = resBD[0];
             const mailtemplate = resBD[1][0];
@@ -95,6 +95,7 @@ const send = async (data) => {
                         repeatmode: 0,
                         repeatinterval: 0,
                         completed: false,
+                        _requestid: requestid,
                     })
                 } else {
                     executesimpletransaction("QUERY_INSER_HSM_HISTORY", {
@@ -131,7 +132,7 @@ const send = async (data) => {
                 url: `${process.env.SERVICES}handler/external/sendhsm`,
                 data,
                 method: "post",
-                _requestid: req._requestid
+                _requestid: requestid,
             });
             if (!responseservices.data || !responseservices.data instanceof Object) {
                 return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
@@ -145,11 +146,14 @@ const send = async (data) => {
 
 exports.Collection = async (req, res) => {
     const { parameters = {}, method, key } = req.body;
+
     if (!method_allowed.includes(method)) {
         const resError = getErrorCode(errors.FORBIDDEN);
         return res.status(resError.rescode).json(resError);
     }
+
     parameters._requestid = req._requestid;
+
     const result = await executesimpletransaction(method, parameters);
 
     if (!result.error) {
@@ -180,7 +184,8 @@ exports.Collection = async (req, res) => {
                         parameters: parameters.parameters
                     }]
                 }
-                await send(sendmessage);
+
+                await send(sendmessage, req._requestid);
             }
 
             if (!!parameters.conversationid && !!parameters.personid) {
@@ -191,10 +196,12 @@ exports.Collection = async (req, res) => {
                     personid: parameters.personid,
                     ...(parameters.parameters.reduce((acc, item) => ({ ...acc, [item.name]: item.text }), {}))
                 }
+
                 await axiosObservable({
-                    url: `${process.env.SERVICES}handler/sendbooking`, 
+                    url: `${process.env.SERVICES}handler/sendbooking`,
                     data: dataServices,
-                    method: "post"
+                    method: "post",
+                    _requestid: req._requestid,
                 });
             }
         }

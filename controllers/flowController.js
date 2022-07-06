@@ -1,5 +1,5 @@
-const axios = require('axios')
 const FormData = require('form-data');
+
 const { axiosObservable } = require('../config/helpers');
 
 exports.Location = async (req, res) => {
@@ -8,7 +8,8 @@ exports.Location = async (req, res) => {
     axiosObservable({
         url: `${process.env.SERVICES}handler/sendlocation`,
         data,
-        method: post
+        method: post,
+        _requestid: req._requestid,
     });
 
     res.json({ success: true });
@@ -27,7 +28,7 @@ exports.ShippingCar = async (req, res) => {
         url: `https://backend.laraigo.com/zyxme/bridge/api/processsolgas/sendrequestlist`,
         data: listreq,
         method: "post",
-        _requestid: req._requestid
+        _requestid: req._requestid,
     });
 
     res.json(response.data?.[0] || { success: false });
@@ -59,7 +60,7 @@ const setConfig = (auth, headers) => {
         // defaults['Authorization'] = `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
         defaults['auth'] = {
             username: username,
-            password: password
+            password: password,
         }
     }
     return defaults;
@@ -89,12 +90,12 @@ exports.TestRequest = async (req, res) => {
         }
         return res.json(result.data);
     }
-    catch (err) {
-        if (!!err.response) {
-            return res.json({ error: 'ERROR', status: err.response?.status, data: err.response?.data });
+    catch (exception) {
+        if (!!exception.response) {
+            return res.json({ error: 'ERROR', status: exception.response?.status, data: exception.response?.data });
         }
         else {
-            return res.json({ error: err.message });
+            return res.json({ error: exception.message });
         }
     }
 }

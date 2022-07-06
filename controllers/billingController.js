@@ -1,5 +1,4 @@
-const axios = require('axios')
-const { errors, getErrorCode } = require('../config/helpers');
+const { errors, getErrorCode, axiosObservable } = require('../config/helpers');
 const { executesimpletransaction } = require('../config/triggerfunctions');;
 const { setSessionParameters } = require('../config/helpers');
 
@@ -7,7 +6,7 @@ const exchangeApiEndpoint = process.env.EXCHANGEAPI;
 
 exports.sendInvoice = async (req, res) => {
     const { parameters = {} } = req.body;
-    
+
     setSessionParameters(parameters, req.user, req._requestid);
 
     parameters.status = "ERROR";
@@ -81,12 +80,12 @@ exports.sendInvoice = async (req, res) => {
                 ValorNetoProducto: x.productnetworth,
             }));
 
-            const resSendInvoice = await axios({
+            const resSendInvoice = await axiosObservable({
                 data: header,
                 method: 'post',
-                url: `${process.env.BRIDGE}processmifact/sendinvoice`
+                url: `${process.env.BRIDGE}processmifact/sendinvoice`,
+                _requestid: req._requestid,
             });
-            console.log(resSendInvoice.data)
             if (resSendInvoice.data.success) {
                 parameters.status = "INVOICED";
                 parameters.qrcode = resSendInvoice.data.result.cadenaCodigoQr;
@@ -98,9 +97,7 @@ exports.sendInvoice = async (req, res) => {
                 parameters.error = resSendInvoice.data.operationMessage;
             }
 
-            const resbd1 = await executesimpletransaction("UFN_INVOICE_SUNAT", parameters)
-
-            console.log(resbd1);
+            await executesimpletransaction("UFN_INVOICE_SUNAT", parameters)
 
             if (parameters.status === "INVOICED") {
                 return res.json({ error: false, success: true });
@@ -110,9 +107,8 @@ exports.sendInvoice = async (req, res) => {
         } else {
             return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
         }
-    } catch (error) {
-        console.log(error)
-        return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR, error, `Request to ${req.originalUrl}`, req._requestid));
+    } catch (exception) {
+        return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -128,9 +124,10 @@ exports.exchangeRate = async (req, res) => {
         var DateTime = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()));
 
         while (exchangeRate === 0 && tries < 10) {
-            const requestExchangeRate = await axios({
+            const requestExchangeRate = await axiosObservable({
                 method: 'get',
-                url: `${exchangeApiEndpoint}${DateTime.toISOString().substring(0, 10)}`
+                url: `${exchangeApiEndpoint}${DateTime.toISOString().substring(0, 10)}`,
+                _requestid: req._requestid,
             });
 
             if (requestExchangeRate.data.venta) {
@@ -152,7 +149,7 @@ exports.exchangeRate = async (req, res) => {
             exchangeRate: exchangeRate,
             success: false
         });
-    } catch (error) {
-        return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR, error, `Request to ${req.originalUrl}`, req._requestid));
+    } catch (exception) {
+        return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }

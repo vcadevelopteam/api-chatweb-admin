@@ -1,12 +1,15 @@
 const sequelize = require('../config/database');
+
 const { getErrorSeq } = require('../config/helpers');
+
 const { QueryTypes } = require('sequelize');
 
 exports.load = async (req, res) => {
-    const { filter = null, data = null, sort = null, limit = null} = req.body;
+    const { filter = null, data = null, sort = null, limit = null } = req.body;
     const { table_name, action } = req.params;
+
     const coreTables = getCoreTables();
-    const validActions = ['insert_one', 'insert_many', 'update','remove','find_one','find_many']
+    const validActions = ['insert_one', 'insert_many', 'update', 'remove', 'find_one', 'find_many'];
     // setSessionParameters(parameters, req.user, req.requestid);
 
     if (coreTables.includes(table_name))
@@ -14,11 +17,11 @@ exports.load = async (req, res) => {
 
     if (!validActions.includes(action))
         return res.status(400).json({ code: 'INVALID ACTION' })
-    
+
 
     let columns, values, q_data, w_data, s_data = []
     let query = '';
-    
+
     switch (action) {
         case 'insert_one':
             columns = getColumns(data)
@@ -29,7 +32,7 @@ exports.load = async (req, res) => {
         case 'insert_many':
             values = getValues(data)
             columns = getColumns(data)
-            query = `INSERT INTO ${table_name}(${columns.join(',')}) VALUES ${values.map(e => "(" + e.join(',') + ")" )}`
+            query = `INSERT INTO ${table_name}(${columns.join(',')}) VALUES ${values.map(e => "(" + e.join(',') + ")")}`
             break;
 
         case 'update':
@@ -59,8 +62,8 @@ exports.load = async (req, res) => {
         default:
             break;
     }
-    
-    let result = await sequelize.query(query,{type: QueryTypes.SELECT}).catch(err => getErrorSeq(err));
+
+    let result = await sequelize.query(query, { type: QueryTypes.SELECT }).catch(err => getErrorSeq(err));
 
     if (result instanceof Array) {
         result = (action === 'find_one') ? result[0] : result;
@@ -88,13 +91,13 @@ function getValues(data) {
 }
 
 function equalQuery(data) {
-    return Object.entries(data).map(([k,v]) => `${k} = '${v}'`)
+    return Object.entries(data).map(([k, v]) => `${k} = '${v}'`)
 }
 
 function getSort(data) {
-    return Object.entries(data).map(([k,v]) => `${k} ${v}`)
+    return Object.entries(data).map(([k, v]) => `${k} ${v}`)
 }
 
 function getCoreTables() {
-    return ['appintegration','application','block','blockversion','classification','communicationchannel','communicationchannelstatus','conversation','conversationclassification','corp','domain','groupconfiguration','inappropriatewords','inputvalidation','integrationmanager','intelligentmodels','interaction','location','messagetemplate','org','orguser','person','personcommunicationchannel','post','productivity','property','quickreply','report','reportbiinteraction','role','roleapplication','sla','survey','surveyanswer','surveyquestion','tablevariable','tablevariableconfiguration','timezone','userhistory','userstatus','usertoken','usr','usrnotification','whitelist']
+    return ['appintegration', 'application', 'block', 'blockversion', 'classification', 'communicationchannel', 'communicationchannelstatus', 'conversation', 'conversationclassification', 'corp', 'domain', 'groupconfiguration', 'inappropriatewords', 'inputvalidation', 'integrationmanager', 'intelligentmodels', 'interaction', 'location', 'messagetemplate', 'org', 'orguser', 'person', 'personcommunicationchannel', 'post', 'productivity', 'property', 'quickreply', 'report', 'reportbiinteraction', 'role', 'roleapplication', 'sla', 'survey', 'surveyanswer', 'surveyquestion', 'tablevariable', 'tablevariableconfiguration', 'timezone', 'userhistory', 'userstatus', 'usertoken', 'usr', 'usrnotification', 'whitelist']
 }

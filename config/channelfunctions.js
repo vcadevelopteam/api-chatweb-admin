@@ -7,7 +7,7 @@ const voximplantRulePattern = process.env.VOXIMPLANT_RULEPATTERN;
 const voximplantParentAccountId = process.env.VOXIMPLANT_ACCOUNT_ID;
 const voximplantParentApiKey = process.env.VOXIMPLANT_APIKEY;
 
-const voximplantManageOrg = async (corpid, orgid, operation, voximplantuser = null, voximplantmail = null, voximplantpassword = null, voximplantaccountid = null, voximplantapikey = null, voximplantapplicationid = null, voximplantruleid = null, voximplantscenarioid = null, voximplantuserid = null, voximplantapplicationname = null) => {
+const voximplantManageOrg = async (corpid, orgid, operation, voximplantuser = null, voximplantmail = null, voximplantpassword = null, voximplantaccountid = null, voximplantapikey = null, voximplantapplicationid = null, voximplantruleid = null, voximplantscenarioid = null, voximplantuserid = null, voximplantapplicationname = null, requestid = null) => {
     const queryMethod = "UFN_ORG_VOXIMPLANT_UPD";
     const queryParameters = {
         corpid: corpid,
@@ -23,6 +23,7 @@ const voximplantManageOrg = async (corpid, orgid, operation, voximplantuser = nu
         voximplantscenarioid: voximplantscenarioid,
         voximplantuserid: voximplantuserid,
         voximplantapplicationname: voximplantapplicationname,
+        _requestid: requestid,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
@@ -36,7 +37,7 @@ const voximplantManageOrg = async (corpid, orgid, operation, voximplantuser = nu
     return null;
 }
 
-const voximplantTransferIns = async (corpid, orgid, description, status, type, parentaccountid, parentaccountapikey, childaccountid, transferamount, motive, username) => {
+const voximplantTransferIns = async (corpid, orgid, description, status, type, parentaccountid, parentaccountapikey, childaccountid, transferamount, motive, username, requestid = null) => {
     const queryMethod = "UFN_VOXITRANSFERHISTORY_INS";
     const queryParameters = {
         corpid: corpid,
@@ -50,6 +51,7 @@ const voximplantTransferIns = async (corpid, orgid, description, status, type, p
         transferamount: transferamount,
         motive: motive,
         username: username,
+        _requestid: requestid,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
@@ -63,7 +65,7 @@ const voximplantTransferIns = async (corpid, orgid, description, status, type, p
     return null;
 }
 
-const voximplantTransferSel = async (corpid, orgid, motive, startdate, enddate, offset) => {
+const voximplantTransferSel = async (corpid, orgid, motive, startdate, enddate, offset, requestid = null) => {
     const queryMethod = "UFN_VOXITRANSFERHISTORY_SEL";
     const queryParameters = {
         corpid: corpid,
@@ -72,6 +74,7 @@ const voximplantTransferSel = async (corpid, orgid, motive, startdate, enddate, 
         startdate: startdate,
         enddate: enddate,
         offset: offset,
+        _requestid: requestid,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
@@ -85,8 +88,8 @@ const voximplantTransferSel = async (corpid, orgid, motive, startdate, enddate, 
     return null;
 }
 
-const getAppSetting = async () => {
-    const queryResult = await triggerfunctions.executesimpletransaction("UFN_APPSETTING_VOXIMPLANT_SEL");
+const getAppSetting = async (requestid = null) => {
+    const queryResult = await triggerfunctions.executesimpletransaction("UFN_APPSETTING_VOXIMPLANT_SEL", { _requestid: requestid });
 
     if (queryResult instanceof Array) {
         if (queryResult.length > 0) {
@@ -97,7 +100,7 @@ const getAppSetting = async () => {
     return null
 }
 
-exports.voximplantChannelSel = async (corpid, orgid, year, month, timezoneoffset) => {
+exports.voximplantChannelSel = async (corpid, orgid, year, month, timezoneoffset, requestid = null) => {
     const queryMethod = "UFN_COMMUNICATIONCHANNEL_SEL_VOXIMPLANT";
     const queryParameters = {
         corpid: corpid,
@@ -105,6 +108,7 @@ exports.voximplantChannelSel = async (corpid, orgid, year, month, timezoneoffset
         year: year,
         month: month,
         timezoneoffset: timezoneoffset,
+        _requestid: requestid,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
@@ -118,7 +122,7 @@ exports.voximplantChannelSel = async (corpid, orgid, year, month, timezoneoffset
     return null;
 }
 
-exports.voximplantPeriodUpdate = async (corpid, orgid, year, month, voximplantcallphonecost, voximplantcallpubliccost, voximplantcallvoipcost, voximplantcallrecordingcost, voximplantcallothercost, force) => {
+exports.voximplantPeriodUpdate = async (corpid, orgid, year, month, voximplantcallphonecost, voximplantcallpubliccost, voximplantcallvoipcost, voximplantcallrecordingcost, voximplantcallothercost, force, requestid = null) => {
     const queryMethod = "UFN_BILLINGPERIOD_UPD_VOXIMPLANT";
     const queryParameters = {
         corpid: corpid,
@@ -131,6 +135,7 @@ exports.voximplantPeriodUpdate = async (corpid, orgid, year, month, voximplantca
         voximplantcallrecordingcost: voximplantcallrecordingcost,
         voximplantcallothercost: voximplantcallothercost,
         force: force,
+        _requestid: requestid,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
@@ -144,7 +149,7 @@ exports.voximplantPeriodUpdate = async (corpid, orgid, year, month, voximplantca
     return null;
 }
 
-exports.voximplantManageOrg = async (corpid, orgid, operation, voximplantuser = null, voximplantmail = null, voximplantpassword = null, voximplantaccountid = null, voximplantapikey = null, voximplantapplicationid = null, voximplantruleid = null, voximplantscenarioid = null, voximplantuserid = null, voximplantapplicationname = null) => {
+exports.voximplantManageOrg = async (corpid, orgid, operation, voximplantuser = null, voximplantmail = null, voximplantpassword = null, voximplantaccountid = null, voximplantapikey = null, voximplantapplicationid = null, voximplantruleid = null, voximplantscenarioid = null, voximplantuserid = null, voximplantapplicationname = null, requestid = null) => {
     const queryMethod = "UFN_ORG_VOXIMPLANT_UPD";
     const queryParameters = {
         corpid: corpid,
@@ -160,6 +165,7 @@ exports.voximplantManageOrg = async (corpid, orgid, operation, voximplantuser = 
         voximplantscenarioid: voximplantscenarioid,
         voximplantuserid: voximplantuserid,
         voximplantapplicationname: voximplantapplicationname,
+        _requestid: requestid,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
@@ -173,7 +179,7 @@ exports.voximplantManageOrg = async (corpid, orgid, operation, voximplantuser = 
     return null;
 }
 
-exports.voximplantTransferIns = async (corpid, orgid, description, status, type, parentaccountid, parentaccountapikey, childaccountid, transferamount, motive, username) => {
+exports.voximplantTransferIns = async (corpid, orgid, description, status, type, parentaccountid, parentaccountapikey, childaccountid, transferamount, motive, username, requestid = null) => {
     const queryMethod = "UFN_VOXITRANSFERHISTORY_INS";
     const queryParameters = {
         corpid: corpid,
@@ -187,6 +193,7 @@ exports.voximplantTransferIns = async (corpid, orgid, description, status, type,
         transferamount: transferamount,
         motive: motive,
         username: username,
+        _requestid: requestid,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
@@ -200,7 +207,7 @@ exports.voximplantTransferIns = async (corpid, orgid, description, status, type,
     return null;
 }
 
-exports.voximplantTransferSel = async (corpid, orgid, motive, startdate, enddate, offset) => {
+exports.voximplantTransferSel = async (corpid, orgid, motive, startdate, enddate, offset, requestid = null) => {
     const queryMethod = "UFN_VOXITRANSFERHISTORY_SEL";
     const queryParameters = {
         corpid: corpid,
@@ -209,6 +216,7 @@ exports.voximplantTransferSel = async (corpid, orgid, motive, startdate, enddate
         startdate: startdate,
         enddate: enddate,
         offset: offset,
+        _requestid: requestid,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
@@ -222,7 +230,7 @@ exports.voximplantTransferSel = async (corpid, orgid, motive, startdate, enddate
     return null;
 }
 
-exports.voximplantHandleEnvironment = async (corpid, orgid) => {
+exports.voximplantHandleEnvironment = async (corpid, orgid, originalurl, requestid) => {
     var voximplantEnvironment = {
         accountid: null,
         apikey: null,
@@ -233,7 +241,7 @@ exports.voximplantHandleEnvironment = async (corpid, orgid) => {
     };
 
     try {
-        const orgData = await voximplantManageOrg(corpid, orgid, 'SELECT');
+        const orgData = await voximplantManageOrg(corpid, orgid, 'SELECT', null, null, null, null, null, null, null, null, null, null, requestid);
 
         if (orgData) {
             voximplantEnvironment.additionalperchannel = orgData.voximplantadditionalperchannel;
@@ -255,7 +263,7 @@ exports.voximplantHandleEnvironment = async (corpid, orgid) => {
 
                 if (childUserResult) {
                     if (childUserResult.result) {
-                        await voximplantManageOrg(corpid, orgid, 'ACCOUNT', childUserBody.account_name, childUserBody.account_email, childUserBody.account_password, childUserResult.account_id, childUserResult.api_key);
+                        await voximplantManageOrg(corpid, orgid, 'ACCOUNT', childUserBody.account_name, childUserBody.account_email, childUserBody.account_password, childUserResult.account_id, childUserResult.api_key, null, null, null, null, null, requestid);
 
                         voximplantEnvironment.accountid = childUserResult.account_id;
                         voximplantEnvironment.apikey = childUserResult.api_key;
@@ -286,7 +294,7 @@ exports.voximplantHandleEnvironment = async (corpid, orgid) => {
 
                 if (applicationResult) {
                     if (applicationResult.result) {
-                        await voximplantManageOrg(corpid, orgid, 'APPLICATION', null, null, null, null, null, applicationResult.application_id, null, null, null, applicationResult.application_name);
+                        await voximplantManageOrg(corpid, orgid, 'APPLICATION', null, null, null, null, null, applicationResult.application_id, null, null, null, applicationResult.application_name, requestid);
 
                         voximplantEnvironment.applicationid = applicationResult.application_id;
                         voximplantEnvironment.applicationname = applicationResult.application_name;
@@ -323,7 +331,7 @@ exports.voximplantHandleEnvironment = async (corpid, orgid) => {
 
                 if (userResult) {
                     if (userResult.result) {
-                        await voximplantManageOrg(corpid, orgid, 'USER', null, null, null, null, null, null, null, null, userResult.user_id);
+                        await voximplantManageOrg(corpid, orgid, 'USER', null, null, null, null, null, null, null, null, userResult.user_id, null, requestid);
 
                         voximplantEnvironment.userid = userResult.user_id;
                     }
@@ -338,25 +346,27 @@ exports.voximplantHandleEnvironment = async (corpid, orgid) => {
         voximplantEnvironment.applicationname = null;
         voximplantEnvironment.userid = null;
         voximplantEnvironment.additionalperchannel = null;
+
+        printException(exception, originalurl, requestid);
     }
 
     return voximplantEnvironment;
 }
 
-exports.voximplantHandleScenario = async (corpid, orgid, accountid, apikey, applicationid) => {
+exports.voximplantHandleScenario = async (corpid, orgid, accountid, apikey, applicationid, originalurl, requestid) => {
     var voximplantScenario = {
         ruleid: null,
         scenarioid: null,
     };
 
     try {
-        const orgData = await voximplantManageOrg(corpid, orgid, 'SELECT');
+        const orgData = await voximplantManageOrg(corpid, orgid, 'SELECT', null, null, null, null, null, null, null, null, null, null, requestid);
 
         if (orgData) {
             var createRule = false;
 
             if (!orgData.voximplantscenarioid) {
-                const appsetting = await getAppSetting();
+                const appsetting = await getAppSetting(requestid);
 
                 if (appsetting) {
                     createRule = true;
@@ -372,7 +382,7 @@ exports.voximplantHandleScenario = async (corpid, orgid, accountid, apikey, appl
 
                     if (scenarioResult) {
                         if (scenarioResult.result) {
-                            await voximplantManageOrg(corpid, orgid, 'SCENARIO', null, null, null, null, null, null, null, scenarioResult.scenario_id);
+                            await voximplantManageOrg(corpid, orgid, 'SCENARIO', null, null, null, null, null, null, null, scenarioResult.scenario_id, null, null, requestid);
 
                             voximplantScenario.scenarioid = scenarioResult.scenario_id;
                         }
@@ -404,7 +414,7 @@ exports.voximplantHandleScenario = async (corpid, orgid, accountid, apikey, appl
 
                 if (ruleResult) {
                     if (ruleResult.result) {
-                        await voximplantManageOrg(corpid, orgid, 'RULE', null, null, null, null, null, null, ruleResult.rule_id);
+                        await voximplantManageOrg(corpid, orgid, 'RULE', null, null, null, null, null, null, ruleResult.rule_id, null, null, null, requestid);
 
                         voximplantScenario.ruleid = ruleResult.rule_id;
                     }
@@ -415,12 +425,14 @@ exports.voximplantHandleScenario = async (corpid, orgid, accountid, apikey, appl
     catch (exception) {
         voximplantScenario.ruleid = null;
         voximplantScenario.scenarioid = null;
+
+        printException(exception, originalurl, requestid);
     }
 
     return voximplantScenario;
 }
 
-exports.voximplantHandlePhoneNumber = async (corpid, orgid, usr, accountid, apikey, applicationid, ruleid, country, category, state, region, cost, costinstallation, additionalperchannel) => {
+exports.voximplantHandlePhoneNumber = async (corpid, orgid, usr, accountid, apikey, applicationid, ruleid, country, category, state, region, cost, costinstallation, additionalperchannel, originalurl, requestid) => {
     var voximplantPhoneNumber = {
         phoneid: null,
         phonenumber: null,
@@ -441,7 +453,7 @@ exports.voximplantHandlePhoneNumber = async (corpid, orgid, usr, accountid, apik
             let transferResult = await voximplant.transferMoneyToUser(transferBody);
 
             if (transferResult.result) {
-                await voximplantTransferIns(corpid, orgid, 'NUMBER ADD', 'ACTIVO', 'CHANNEL', voximplantParentAccountId, voximplantParentApiKey, accountid, cost, 'CHANNEL', usr);
+                await voximplantTransferIns(corpid, orgid, 'NUMBER ADD', 'ACTIVO', 'CHANNEL', voximplantParentAccountId, voximplantParentApiKey, accountid, cost, 'CHANNEL', usr, requestid);
 
                 hasMoney = true;
             }
@@ -505,7 +517,7 @@ exports.voximplantHandlePhoneNumber = async (corpid, orgid, usr, accountid, apik
                     let transferResult = await voximplant.transferMoneyToUser(transferBody);
 
                     if (transferResult.result) {
-                        await voximplantTransferIns(corpid, orgid, 'NUMBER EXTRA', 'ACTIVO', 'CHANNEL', voximplantParentAccountId, voximplantParentApiKey, accountid, (additionalperchannel || 0), 'CHANNELEXTRA', usr);
+                        await voximplantTransferIns(corpid, orgid, 'NUMBER EXTRA', 'ACTIVO', 'CHANNEL', voximplantParentAccountId, voximplantParentApiKey, accountid, (additionalperchannel || 0), 'CHANNELEXTRA', usr, requestid);
                     }
                 }
             }
@@ -519,7 +531,7 @@ exports.voximplantHandlePhoneNumber = async (corpid, orgid, usr, accountid, apik
                 let transferResult = await voximplant.transferMoneyToUser(transferBody);
 
                 if (transferResult.result) {
-                    await voximplantTransferIns(corpid, orgid, 'NUMBER RETURN', 'ACTIVO', 'CHANNEL', voximplantParentAccountId, voximplantParentApiKey, accountid, (cost * -1), 'CHANNEL', usr);
+                    await voximplantTransferIns(corpid, orgid, 'NUMBER RETURN', 'ACTIVO', 'CHANNEL', voximplantParentAccountId, voximplantParentApiKey, accountid, (cost * -1), 'CHANNEL', usr, requestid);
                 }
             }
         }
@@ -527,19 +539,21 @@ exports.voximplantHandlePhoneNumber = async (corpid, orgid, usr, accountid, apik
     catch (exception) {
         voximplantPhoneNumber.phoneid = null;
         voximplantPhoneNumber.phonenumber = null;
+
+        printException(exception, originalurl, requestid);
     }
 
     return voximplantPhoneNumber;
 }
 
-exports.voximplantDeletePhoneNumber = async (corpid, orgid, phoneid, queueid) => {
+exports.voximplantDeletePhoneNumber = async (corpid, orgid, phoneid, queueid, originalurl, requestid) => {
     var voximplantPhoneNumber = {
         phoneid: null,
         queueid: null,
     };
 
     try {
-        const orgData = await voximplantManageOrg(corpid, orgid, 'SELECT');
+        const orgData = await voximplantManageOrg(corpid, orgid, 'SELECT', null, null, null, null, null, null, null, null, null, null, requestid);
 
         if (orgData) {
             if (orgData.voximplantaccountid && orgData.voximplantapikey) {
@@ -576,6 +590,8 @@ exports.voximplantDeletePhoneNumber = async (corpid, orgid, phoneid, queueid) =>
     catch (exception) {
         voximplantPhoneNumber.phoneid = null;
         voximplantPhoneNumber.queueid = null;
+
+        printException(exception, originalurl, requestid);
     }
 
     return voximplantPhoneNumber;

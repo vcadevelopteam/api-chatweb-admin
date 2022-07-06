@@ -1,11 +1,13 @@
-const { executesimpletransaction, executeTransaction, getCollectionPagination, exportData, buildQueryWithFilterAndSort, GetMultiCollection } = require('../config/triggerfunctions');
 const bcryptjs = require("bcryptjs");
+
+const { executesimpletransaction, executeTransaction, getCollectionPagination, exportData, buildQueryWithFilterAndSort, GetMultiCollection } = require('../config/triggerfunctions');
 const { setSessionParameters, getErrorCode } = require('../config/helpers');
 
 exports.GetCollection = async (req, res) => {
     const { parameters = {}, method, key } = req.body;
+
     setSessionParameters(parameters, req.user, req._requestid);
-    
+
     const result = await executesimpletransaction(method, parameters, req.user.menu || {});
 
     if (result instanceof Array)
@@ -42,7 +44,7 @@ exports.GetMultiDomainsValue = async (req, res) => {
                     domainname
                 }
             }))
-            
+
             const result = await GetMultiCollection(detailRequest, false, req._requestid);
             return res.json({ success: true, data: result });
         }
@@ -74,7 +76,7 @@ exports.executeTransaction = async (req, res) => {
     })
 
     const result = await executeTransaction(header, detail, req.user.menu || {}, req._requestid);
-    
+
     if (!result.error)
         return res.json(result);
     else
@@ -100,6 +102,7 @@ exports.getGraphic = async (req, res) => {
     setSessionParameters(parameters, req.user, req._requestid);
 
     const result = !parameters.isNotPaginated ? await buildQueryWithFilterAndSort(method, parameters) : await executesimpletransaction(method, parameters);
+
     if (!result.error) {
         res.json(result);
     } else {
@@ -142,9 +145,9 @@ exports.multiCollection = async (req, res) => {
 
 exports.getToken = async (req, res) => {
     const { data } = req.body;
-    
-    const result = await executesimpletransaction("UFN_GET_TOKEN_LOGGED_MOVIL", data);
-    
+
+    const result = await executesimpletransaction("UFN_GET_TOKEN_LOGGED_MOVIL", { ...data, _requestid: req._requestid });
+
     if (result instanceof Array) {
         if (result.length > 0) {
             return res.json({ error: false, success: true, token: result[0].token });
@@ -193,7 +196,7 @@ exports.validateConversationWhatsapp = async (req, res) => {
         ]
     }, []);
 
-    const insert = await executesimpletransaction("UFN_MIGRATION_CONVERSATIONWHATSAPP_INS", { corpid, orgid, table: JSON.stringify(cwsp) });
+    const insert = await executesimpletransaction("UFN_MIGRATION_CONVERSATIONWHATSAPP_INS", { corpid, orgid, table: JSON.stringify(cwsp), _requestid: req._requestid });
 
     return res.json({ error: false, success: true, insert, cwsp });
 }

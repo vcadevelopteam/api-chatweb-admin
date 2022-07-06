@@ -1,9 +1,8 @@
-const axios = require("axios");
 const bcryptjs = require("bcryptjs");
 const channelfunctions = require("../config/channelfunctions");
 const triggerfunctions = require("../config/triggerfunctions");
 
-const { setSessionParameters } = require('../config/helpers');
+const { setSessionParameters, axiosObservable } = require('../config/helpers');
 
 const cryptojs = require("crypto-js");
 
@@ -20,7 +19,7 @@ const webChatApplication = process.env.CHATAPPLICATION;
 const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
 const whitelist = process.env.WHITELIST;
 
-exports.activateUser = async (request, result) => {
+exports.activateUser = async (request, response) => {
     try {
         var requestCode = "error_unexpected_error";
         var requestMessage = "error_unexpected_error";
@@ -29,7 +28,7 @@ exports.activateUser = async (request, result) => {
 
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
-                return result.status(requestStatus).json({
+                return response.status(requestStatus).json({
                     code: "error_auth_error",
                     error: !requestSuccess,
                     message: "error_auth_error",
@@ -51,6 +50,7 @@ exports.activateUser = async (request, result) => {
             var userParameters = {
                 corpid: userData.corpid,
                 userid: userData.userid,
+                _requestid: request._requestid,
             };
 
             const queryActivateUser = await triggerfunctions.executesimpletransaction(userMethod, userParameters);
@@ -72,7 +72,7 @@ exports.activateUser = async (request, result) => {
             }
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             error: !requestSuccess,
             message: requestMessage,
@@ -80,14 +80,14 @@ exports.activateUser = async (request, result) => {
         });
     }
     catch (exception) {
-        return res.status(500).json({
-            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             message: exception.message
         });
     }
 }
 
-exports.changePassword = async (request, result) => {
+exports.changePassword = async (request, response) => {
     try {
         var requestCode = "error_unexpected_error";
         var requestMessage = "error_unexpected_error";
@@ -96,7 +96,7 @@ exports.changePassword = async (request, result) => {
 
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
-                return result.status(requestStatus).json({
+                return response.status(requestStatus).json({
                     code: "error_auth_error",
                     error: !requestSuccess,
                     message: "error_auth_error",
@@ -122,6 +122,7 @@ exports.changePassword = async (request, result) => {
                     var passwordParameters = {
                         password: await bcryptjs.hash(request.body.password, await bcryptjs.genSalt(10)),
                         userid: userData.userid,
+                        _requestid: request._requestid,
                     };
 
                     const queryUpdatePassword = await triggerfunctions.executesimpletransaction(passwordMethod, passwordParameters);
@@ -142,7 +143,7 @@ exports.changePassword = async (request, result) => {
             }
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             error: !requestSuccess,
             message: requestMessage,
@@ -150,14 +151,14 @@ exports.changePassword = async (request, result) => {
         });
     }
     catch (exception) {
-        return res.status(500).json({
-            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             message: exception.message
         });
     }
 }
 
-exports.countryList = async (request, result) => {
+exports.countryList = async (request, response) => {
     try {
         var requestData = null;
         var requestCode = "error_unexpected_error";
@@ -167,7 +168,7 @@ exports.countryList = async (request, result) => {
 
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
-                return result.status(requestStatus).json({
+                return response.status(requestStatus).json({
                     code: "error_auth_error",
                     error: !requestSuccess,
                     message: "error_auth_error",
@@ -176,7 +177,7 @@ exports.countryList = async (request, result) => {
             }
         }
 
-        const queryCountryGet = await triggerfunctions.executesimpletransaction("UFN_COUNTRY_SEL", {});
+        const queryCountryGet = await triggerfunctions.executesimpletransaction("UFN_COUNTRY_SEL", { _requestid: request._requestid });
 
         if (queryCountryGet instanceof Array) {
             requestData = queryCountryGet;
@@ -189,7 +190,7 @@ exports.countryList = async (request, result) => {
             requestCode = queryCountryGet.code;
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             data: requestData,
             error: !requestSuccess,
@@ -198,14 +199,14 @@ exports.countryList = async (request, result) => {
         });
     }
     catch (exception) {
-        return res.status(500).json({
-            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             message: exception.message
         });
     }
 }
 
-exports.createSubscription = async (request, result) => {
+exports.createSubscription = async (request, response) => {
     try {
         var requestCode = "error_unexpected_error";
         var requestMessage = "error_unexpected_error";
@@ -214,7 +215,7 @@ exports.createSubscription = async (request, result) => {
 
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
-                return result.status(requestStatus).json({
+                return response.status(requestStatus).json({
                     code: "error_auth_error",
                     error: !requestSuccess,
                     message: "error_auth_error",
@@ -238,12 +239,12 @@ exports.createSubscription = async (request, result) => {
             var cardError = false;
 
             if (card) {
-                const appsetting = await getAppSetting();
+                const appsetting = await getAppSetting(request._requestid);
 
                 if (appsetting) {
                     card.cardnumber = card.cardnumber.split(" ").join("");
 
-                    const requestCulqiClient = await axios({
+                    const requestCulqiClient = await axiosObservable({
                         data: {
                             address: (parameters.fiscaladdress || '').substring(0, 100),
                             addressCity: (parameters.timezone || '').substring(0, 30),
@@ -258,10 +259,11 @@ exports.createSubscription = async (request, result) => {
                         },
                         method: "post",
                         url: `${bridgeEndpoint}processculqi/handleclient`,
+                        _requestid: request._requestid,
                     });
 
                     if (requestCulqiClient.data.success) {
-                        const requestCulqiCard = await axios({
+                        const requestCulqiCard = await axiosObservable({
                             data: {
                                 bearer: appsetting.privatekey,
                                 bearerToken: appsetting.publickey,
@@ -277,6 +279,7 @@ exports.createSubscription = async (request, result) => {
                             },
                             method: "post",
                             url: `${bridgeEndpoint}processculqi/handlecard`,
+                            _requestid: request._requestid,
                         });
 
                         if (requestCulqiCard.data.success) {
@@ -303,7 +306,7 @@ exports.createSubscription = async (request, result) => {
             }
 
             if (cardError) {
-                return result.status(requestStatus).json({
+                return response.status(requestStatus).json({
                     code: requestCode,
                     error: !requestSuccess,
                     message: requestMessage,
@@ -337,6 +340,7 @@ exports.createSubscription = async (request, result) => {
                         channelParameters.schedule = null;
                         channelParameters.status = "PENDIENTE";
                         channelParameters.updintegration = null;
+                        channelParameters._requestid = request._requestid;
 
                         requestCode = channel.type;
 
@@ -392,15 +396,16 @@ exports.createSubscription = async (request, result) => {
                                     type: "CHAZ",
                                 }
 
-                                const requestChatwebIntegration = await axios({
+                                const requestChatwebIntegration = await axiosObservable({
                                     data: webChatData,
                                     method: "post",
                                     url: `${brokerEndpoint}integrations/save`,
+                                    _requestid: request._requestid,
                                 });
 
                                 if (requestChatwebIntegration.data) {
                                     if (typeof requestChatwebIntegration.data.id !== "undefined" && requestChatwebIntegration.data.id) {
-                                        const requestChatwebWebhook = await axios({
+                                        const requestChatwebWebhook = await axiosObservable({
                                             data: {
                                                 description: channelParameters.description,
                                                 integration: requestChatwebIntegration.data.id,
@@ -410,11 +415,12 @@ exports.createSubscription = async (request, result) => {
                                             },
                                             method: "post",
                                             url: `${brokerEndpoint}webhooks/save`,
+                                            _requestid: request._requestid,
                                         });
 
                                         if (requestChatwebWebhook.data) {
                                             if (typeof requestChatwebWebhook.data.id !== "undefined" && requestChatwebWebhook.data.id) {
-                                                const requestChatwebPlugin = await axios({
+                                                const requestChatwebPlugin = await axiosObservable({
                                                     data: {
                                                         integration: requestChatwebIntegration.data.id,
                                                         name: channelParameters.description,
@@ -422,6 +428,7 @@ exports.createSubscription = async (request, result) => {
                                                     },
                                                     method: "post",
                                                     url: `${brokerEndpoint}plugins/save`,
+                                                    _requestid: request._requestid,
                                                 });
 
                                                 if (requestChatwebPlugin.data) {
@@ -515,7 +522,7 @@ exports.createSubscription = async (request, result) => {
                                     }
 
                                     if (channel.type === "INSTAGRAM" || channel.type === "INSTAMESSENGER") {
-                                        const requestInstagramBusiness = await axios({
+                                        const requestInstagramBusiness = await axiosObservable({
                                             data: {
                                                 accessToken: channelService.accesstoken,
                                                 linkType: "GETBUSINESS",
@@ -523,6 +530,7 @@ exports.createSubscription = async (request, result) => {
                                             },
                                             method: "post",
                                             url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
+                                            _requestid: request._requestid,
                                         });
 
                                         if (requestInstagramBusiness.data.success) {
@@ -535,7 +543,7 @@ exports.createSubscription = async (request, result) => {
                                         }
                                     }
 
-                                    const requestFacebookLink = await axios({
+                                    const requestFacebookLink = await axiosObservable({
                                         data: {
                                             accessToken: channelService.accesstoken,
                                             linkType: channelLinkService,
@@ -543,6 +551,7 @@ exports.createSubscription = async (request, result) => {
                                         },
                                         method: "post",
                                         url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
+                                        _requestid: request._requestid,
                                     });
 
                                     if (requestFacebookLink.data.success) {
@@ -583,13 +592,14 @@ exports.createSubscription = async (request, result) => {
 
                             case "SMOOCHANDROID":
                             case "SMOOCHIOS":
-                                const requestSmoochLink = await axios({
+                                const requestSmoochLink = await axiosObservable({
                                     data: {
                                         linkType: channel.type === "SMOOCHANDROID" ? "ANDROIDADD" : "IOSADD",
                                         name: channelParameters.description,
                                     },
                                     method: "post",
                                     url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
+                                    _requestid: request._requestid,
                                 });
 
                                 if (requestSmoochLink.data.success) {
@@ -620,13 +630,14 @@ exports.createSubscription = async (request, result) => {
                                 break;
 
                             case "TELEGRAM":
-                                const requestTelegramLink = await axios({
+                                const requestTelegramLink = await axiosObservable({
                                     data: {
                                         accessToken: channelService.accesstoken,
                                         linkType: "TELEGRAMADD",
                                     },
                                     method: "post",
                                     url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`,
+                                    _requestid: request._requestid,
                                 });
 
                                 if (requestTelegramLink.data.success) {
@@ -654,7 +665,7 @@ exports.createSubscription = async (request, result) => {
 
                             case "TWITTER":
                             case "TWITTERDM":
-                                const requestTwitterBusiness = await axios({
+                                const requestTwitterBusiness = await axiosObservable({
                                     data: {
                                         accessSecret: channelService.accesssecret,
                                         accessToken: channelService.accesstoken,
@@ -665,6 +676,7 @@ exports.createSubscription = async (request, result) => {
                                     },
                                     method: "post",
                                     url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
+                                    _requestid: request._requestid,
                                 });
 
                                 if (requestTwitterBusiness.data.success) {
@@ -697,7 +709,7 @@ exports.createSubscription = async (request, result) => {
                                     const queryTwitterInsert = await triggerfunctions.executesimpletransaction(channelMethod, channelParametersDummy);
 
                                     if (queryTwitterInsert instanceof Array) {
-                                        const requestTwitterLink = await axios({
+                                        const requestTwitterLink = await axiosObservable({
                                             data: {
                                                 accessSecret: channelService.accesssecret,
                                                 accessToken: channelService.accesstoken,
@@ -709,6 +721,7 @@ exports.createSubscription = async (request, result) => {
                                             },
                                             method: "post",
                                             url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
+                                            _requestid: request._requestid,
                                         });
 
                                         if (!requestTwitterLink.data.success) {
@@ -811,7 +824,7 @@ exports.createSubscription = async (request, result) => {
                 }
 
                 if (channelError) {
-                    return result.status(requestStatus).json({
+                    return response.status(requestStatus).json({
                         code: requestCode,
                         error: !requestSuccess,
                         message: requestMessage,
@@ -831,6 +844,7 @@ exports.createSubscription = async (request, result) => {
             }
 
             parameters.password = await bcryptjs.hash(parameters.password, await bcryptjs.genSalt(10));
+            parameters._requestid = request._requestid;
 
             const queryCreateSubscription = await triggerfunctions.executesimpletransaction(method, parameters);
 
@@ -856,6 +870,7 @@ exports.createSubscription = async (request, result) => {
                         type: "",
                         username: parameters.username,
                         operation: "INSERT",
+                        _requestid: request._requestid,
                     };
 
                     const queryCardCreate = await triggerfunctions.executesimpletransaction(cardMethod, cardParameters);
@@ -863,7 +878,7 @@ exports.createSubscription = async (request, result) => {
                     if (!queryCardCreate instanceof Array) {
                         requestMessage = "error_card_create";
 
-                        return result.status(requestStatus).json({
+                        return response.status(requestStatus).json({
                             code: requestCode,
                             error: !requestSuccess,
                             message: requestMessage,
@@ -877,15 +892,15 @@ exports.createSubscription = async (request, result) => {
 
                     for (const channelMethod of channelMethodArray) {
                         if (channelTypeArray[index] === "VOXIMPLANTPHONE") {
-                            var voximplantEnvironment = await channelfunctions.voximplantHandleEnvironment(corpId, orgId);
+                            var voximplantEnvironment = await channelfunctions.voximplantHandleEnvironment(corpId, orgId, request.originalUrl, request._requestid);
 
                             if (voximplantEnvironment) {
                                 if (voximplantEnvironment.accountid && voximplantEnvironment.apikey && voximplantEnvironment.applicationid && voximplantEnvironment.userid) {
-                                    var voximplantScenario = await channelfunctions.voximplantHandleScenario(corpId, orgId, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid);
+                                    var voximplantScenario = await channelfunctions.voximplantHandleScenario(corpId, orgId, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, request.originalUrl, request._requestid);
 
                                     if (voximplantScenario) {
                                         if (voximplantScenario.ruleid && voximplantScenario.scenarioid) {
-                                            var voximplantPhoneNumber = await channelfunctions.voximplantHandlePhoneNumber(corpId, orgId, parameters.username, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, voximplantScenario.ruleid, channelServiceArray[index].country, channelServiceArray[index].category, channelServiceArray[index].state, (channelServiceArray[index].region || 0).toString(), channelServiceArray[index].cost, channelServiceArray[index].costinstallation, voximplantEnvironment.additionalperchannel);
+                                            var voximplantPhoneNumber = await channelfunctions.voximplantHandlePhoneNumber(corpId, orgId, parameters.username, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, voximplantScenario.ruleid, channelServiceArray[index].country, channelServiceArray[index].category, channelServiceArray[index].state, (channelServiceArray[index].region || 0).toString(), channelServiceArray[index].cost, channelServiceArray[index].costinstallation, voximplantEnvironment.additionalperchannel, request.originalUrl, request._requestid);
 
                                             if (voximplantPhoneNumber) {
                                                 if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.phonenumber && voximplantPhoneNumber.queueid) {
@@ -938,7 +953,7 @@ exports.createSubscription = async (request, result) => {
                         else {
                             requestMessage = "error_subscription_channel_create";
 
-                            return result.status(requestStatus).json({
+                            return response.status(requestStatus).json({
                                 code: requestCode,
                                 error: !requestSuccess,
                                 message: requestMessage,
@@ -955,6 +970,7 @@ exports.createSubscription = async (request, result) => {
                                     domainname: "WHATSAPPBODY",
                                     orgid: 0,
                                     username: parameters.username,
+                                    _requestid: request._requestid,
                                 };
 
                                 const queryDomainAlertBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
@@ -999,7 +1015,7 @@ exports.createSubscription = async (request, result) => {
                                         alertSubject = alertSubject.split("{{phonenumberwhatsappbusiness}}").join(channelServiceArray[index].phonenumberwhatsappbusiness);
                                         alertSubject = alertSubject.split("{{username}}").join(parameters.username);
 
-                                        const requestMailSend = await axios({
+                                        const requestMailSend = await axiosObservable({
                                             data: {
                                                 mailAddress: alertRecipient,
                                                 mailBody: alertBody,
@@ -1007,12 +1023,13 @@ exports.createSubscription = async (request, result) => {
                                             },
                                             method: "post",
                                             url: `${bridgeEndpoint}processscheduler/sendmail`,
+                                            _requestid: request._requestid,
                                         });
 
                                         if (!requestMailSend.data.success) {
                                             requestMessage = "error_subscription_alert_failure";
 
-                                            return result.status(requestStatus).json({
+                                            return response.status(requestStatus).json({
                                                 code: requestCode,
                                                 error: !requestSuccess,
                                                 message: requestMessage,
@@ -1023,7 +1040,7 @@ exports.createSubscription = async (request, result) => {
                                     else {
                                         requestMessage = "error_subscription_alert_error";
 
-                                        return result.status(requestStatus).json({
+                                        return response.status(requestStatus).json({
                                             code: requestCode,
                                             error: !requestSuccess,
                                             message: requestMessage,
@@ -1034,7 +1051,7 @@ exports.createSubscription = async (request, result) => {
                                 else {
                                     requestMessage = "error_subscription_alert_error";
 
-                                    return result.status(requestStatus).json({
+                                    return response.status(requestStatus).json({
                                         code: requestCode,
                                         error: !requestSuccess,
                                         message: requestMessage,
@@ -1055,6 +1072,7 @@ exports.createSubscription = async (request, result) => {
                         corpid: corpId,
                         orgid: orgId,
                         userid: userId,
+                        _requestid: request._requestid,
                     }
 
                     const queryOrgUserUpdate = await triggerfunctions.executesimpletransaction(updateMethod, updateParameters);
@@ -1062,7 +1080,7 @@ exports.createSubscription = async (request, result) => {
                     if (!queryOrgUserUpdate instanceof Array) {
                         requestMessage = "error_subscription_orguser_update";
 
-                        return result.status(requestStatus).json({
+                        return response.status(requestStatus).json({
                             code: requestCode,
                             error: !requestSuccess,
                             message: requestMessage,
@@ -1076,6 +1094,7 @@ exports.createSubscription = async (request, result) => {
                     var userParameters = {
                         corpid: corpId,
                         userid: userId,
+                        _requestid: request._requestid,
                     };
 
                     const queryActivateUser = await triggerfunctions.executesimpletransaction(userMethod, userParameters);
@@ -1098,6 +1117,7 @@ exports.createSubscription = async (request, result) => {
                         domainname: "ACTIVATEBODY",
                         orgid: 0,
                         username: parameters.username,
+                        _requestid: request._requestid,
                     };
 
                     const transactionGetBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
@@ -1142,7 +1162,7 @@ exports.createSubscription = async (request, result) => {
                             alertSubject = alertSubject.split("{{paymentplan}}").join(parameters.paymentplan);
                             alertSubject = alertSubject.split("{{username}}").join(parameters.username);
 
-                            const requestMailSend = await axios({
+                            const requestMailSend = await axiosObservable({
                                 data: {
                                     mailAddress: parameters.username,
                                     mailBody: alertBody,
@@ -1150,6 +1170,7 @@ exports.createSubscription = async (request, result) => {
                                 },
                                 method: "post",
                                 url: `${bridgeEndpoint}processscheduler/sendmail`,
+                                _requestid: request._requestid,
                             });
 
                             if (requestMailSend.data.success) {
@@ -1176,7 +1197,7 @@ exports.createSubscription = async (request, result) => {
             }
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             error: !requestSuccess,
             message: requestMessage,
@@ -1184,14 +1205,14 @@ exports.createSubscription = async (request, result) => {
         });
     }
     catch (exception) {
-        return res.status(500).json({
-            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             message: exception.message
         });
     }
 }
 
-exports.currencyList = async (request, result) => {
+exports.currencyList = async (request, response) => {
     try {
         var requestCode = "error_unexpected_error";
         var requestData = null;
@@ -1201,7 +1222,7 @@ exports.currencyList = async (request, result) => {
 
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
-                return result.status(requestStatus).json({
+                return response.status(requestStatus).json({
                     code: "error_auth_error",
                     data: requestData,
                     error: !requestSuccess,
@@ -1211,7 +1232,7 @@ exports.currencyList = async (request, result) => {
             }
         }
 
-        const queryCurrencySel = await triggerfunctions.executesimpletransaction("UFN_CURRENCY_SEL", {});
+        const queryCurrencySel = await triggerfunctions.executesimpletransaction("UFN_CURRENCY_SEL", { _requestid: request._requestid });
 
         if (queryCurrencySel instanceof Array) {
             requestCode = "";
@@ -1224,7 +1245,7 @@ exports.currencyList = async (request, result) => {
             requestCode = queryCurrencySel.code;
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             data: requestData,
             error: !requestSuccess,
@@ -1233,14 +1254,14 @@ exports.currencyList = async (request, result) => {
         });
     }
     catch (exception) {
-        return res.status(500).json({
-            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             message: exception.message
         });
     }
 }
 
-exports.getContract = async (request, result) => {
+exports.getContract = async (request, response) => {
     try {
         var requestCode = "error_unexpected_error";
         var requestData = null;
@@ -1250,7 +1271,7 @@ exports.getContract = async (request, result) => {
 
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
-                return result.status(requestStatus).json({
+                return response.status(requestStatus).json({
                     code: "error_auth_error",
                     data: requestData,
                     error: !requestSuccess,
@@ -1261,7 +1282,9 @@ exports.getContract = async (request, result) => {
         }
 
         if (request.body) {
-            const { parameters = {} } = request.body;
+            var { parameters = {} } = request.body;
+
+            parameters._requestid = request._requestid;
 
             const queryContractGet = await triggerfunctions.executesimpletransaction("GET_CONTRACT", parameters);
 
@@ -1279,7 +1302,7 @@ exports.getContract = async (request, result) => {
             }
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             data: requestData,
             error: !requestSuccess,
@@ -1288,14 +1311,14 @@ exports.getContract = async (request, result) => {
         });
     }
     catch (exception) {
-        return res.status(500).json({
-            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             message: exception.message
         });
     }
 }
 
-exports.getPageList = async (request, result) => {
+exports.getPageList = async (request, response) => {
     try {
         var requestCode = "error_unexpected_error";
         var requestData = null;
@@ -1305,7 +1328,7 @@ exports.getPageList = async (request, result) => {
 
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
-                return result.status(requestStatus).json({
+                return response.status(requestStatus).json({
                     code: "error_auth_error",
                     error: !requestSuccess,
                     message: "error_auth_error",
@@ -1316,7 +1339,7 @@ exports.getPageList = async (request, result) => {
         }
 
         if (request.body) {
-            const requestFacebookPages = await axios({
+            const requestFacebookPages = await axiosObservable({
                 data: {
                     accessToken: request.body.accessToken,
                     appId: request.body.appId,
@@ -1324,6 +1347,7 @@ exports.getPageList = async (request, result) => {
                 },
                 method: "post",
                 url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
+                _requestid: request._requestid,
             });
 
             if (requestFacebookPages.data.success) {
@@ -1338,7 +1362,7 @@ exports.getPageList = async (request, result) => {
             }
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             error: !requestSuccess,
             message: requestMessage,
@@ -1347,14 +1371,14 @@ exports.getPageList = async (request, result) => {
         });
     }
     catch (exception) {
-        return res.status(500).json({
-            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             message: exception.message
         });
     }
 }
 
-exports.recoverPassword = async (request, result) => {
+exports.recoverPassword = async (request, response) => {
     try {
         var requestCode = "error_unexpected_error";
         var requestMessage = "error_unexpected_error";
@@ -1363,7 +1387,7 @@ exports.recoverPassword = async (request, result) => {
 
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
-                return result.status(requestStatus).json({
+                return response.status(requestStatus).json({
                     code: "error_auth_error",
                     error: !requestSuccess,
                     message: "error_auth_error",
@@ -1376,6 +1400,7 @@ exports.recoverPassword = async (request, result) => {
             var userMethod = "UFN_USERBYUSER";
             var userParameters = {
                 username: request.body.username,
+                _requestid: request._requestid,
             };
 
             const queryUserGet = await triggerfunctions.executesimpletransaction(userMethod, userParameters);
@@ -1398,6 +1423,7 @@ exports.recoverPassword = async (request, result) => {
                             domainname: "RECOVERPASSBODY",
                             orgid: 0,
                             username: request.body.username,
+                            _requestid: request._requestid,
                         };
 
                         const queryDomainBodySel = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
@@ -1438,7 +1464,7 @@ exports.recoverPassword = async (request, result) => {
                                 alertSubject = alertSubject.split("{{userid}}").join(queryUserGet[0].userid);
                                 alertSubject = alertSubject.split("{{usr}}").join(queryUserGet[0].usr);
 
-                                const requestMailSend = await axios({
+                                const requestMailSend = await axiosObservable({
                                     data: {
                                         mailAddress: queryUserGet[0].email,
                                         mailBody: alertBody,
@@ -1446,6 +1472,7 @@ exports.recoverPassword = async (request, result) => {
                                     },
                                     method: "post",
                                     url: `${bridgeEndpoint}processscheduler/sendmail`,
+                                    _requestid: request._requestid,
                                 });
 
                                 if (requestMailSend.data.success) {
@@ -1479,7 +1506,7 @@ exports.recoverPassword = async (request, result) => {
             }
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             error: !requestSuccess,
             message: requestMessage,
@@ -1487,14 +1514,14 @@ exports.recoverPassword = async (request, result) => {
         });
     }
     catch (exception) {
-        return res.status(500).json({
-            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             message: exception.message
         });
     }
 }
 
-exports.validateChannels = async (request, result) => {
+exports.validateChannels = async (request, response) => {
     try {
         var requestCode = "error_unexpected_error";
         var requestMessage = "error_unexpected_error";
@@ -1503,7 +1530,7 @@ exports.validateChannels = async (request, result) => {
 
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
-                return result.status(requestStatus).json({
+                return response.status(requestStatus).json({
                     code: "error_auth_error",
                     error: !requestSuccess,
                     message: "error_auth_error",
@@ -1545,6 +1572,7 @@ exports.validateChannels = async (request, result) => {
                         channelParameters.schedule = null;
                         channelParameters.status = "PENDIENTE";
                         channelParameters.updintegration = null;
+                        channelParameters._requestid = request._requestid;
 
                         requestCode = channel.type;
 
@@ -1586,7 +1614,7 @@ exports.validateChannels = async (request, result) => {
                                     }
 
                                     if (channel.type === "INSTAGRAM" || channel.type === "INSTAMESSENGER") {
-                                        const requestInstagramBusiness = await axios({
+                                        const requestInstagramBusiness = await axiosObservable({
                                             data: {
                                                 accessToken: channelService.accesstoken,
                                                 linkType: "GETBUSINESS",
@@ -1594,6 +1622,7 @@ exports.validateChannels = async (request, result) => {
                                             },
                                             method: "post",
                                             url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
+                                            _requestid: request._requestid,
                                         });
 
                                         if (requestInstagramBusiness.data.success) {
@@ -1606,7 +1635,7 @@ exports.validateChannels = async (request, result) => {
                                         }
                                     }
 
-                                    const requestFacebookLink = await axios({
+                                    const requestFacebookLink = await axiosObservable({
                                         data: {
                                             accessToken: channelService.accesstoken,
                                             linkType: channelLinkService,
@@ -1614,6 +1643,7 @@ exports.validateChannels = async (request, result) => {
                                         },
                                         method: "post",
                                         url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
+                                        _requestid: request._requestid,
                                     });
 
                                     if (requestFacebookLink.data.success) {
@@ -1652,13 +1682,14 @@ exports.validateChannels = async (request, result) => {
                                 break;
 
                             case "TELEGRAM":
-                                const requestTelegramLink = await axios({
+                                const requestTelegramLink = await axiosObservable({
                                     data: {
                                         accessToken: channelService.accesstoken,
                                         linkType: "TELEGRAMADD",
                                     },
                                     method: "post",
                                     url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`,
+                                    _requestid: request._requestid,
                                 });
 
                                 if (requestTelegramLink.data.success) {
@@ -1685,7 +1716,7 @@ exports.validateChannels = async (request, result) => {
 
                             case "TWITTER":
                             case "TWITTERDM":
-                                const requestTwitterBusiness = await axios({
+                                const requestTwitterBusiness = await axiosObservable({
                                     data: {
                                         accessSecret: channelService.accesssecret,
                                         accessToken: channelService.accesstoken,
@@ -1696,6 +1727,7 @@ exports.validateChannels = async (request, result) => {
                                     },
                                     method: "post",
                                     url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
+                                    _requestid: request._requestid,
                                 });
 
                                 if (requestTwitterBusiness.data.success) {
@@ -1728,7 +1760,7 @@ exports.validateChannels = async (request, result) => {
                                     const queryTwitterInsert = await triggerfunctions.executesimpletransaction(channelMethod, channelParametersDummy);
 
                                     if (queryTwitterInsert instanceof Array) {
-                                        const requestTwitterLink = await axios({
+                                        const requestTwitterLink = await axiosObservable({
                                             data: {
                                                 accessSecret: channelService.accesssecret,
                                                 accessToken: channelService.accesstoken,
@@ -1740,6 +1772,7 @@ exports.validateChannels = async (request, result) => {
                                             },
                                             method: "post",
                                             url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
+                                            _requestid: request._requestid,
                                         });
 
                                         if (!requestTwitterLink.data.success) {
@@ -1789,7 +1822,7 @@ exports.validateChannels = async (request, result) => {
                 }
 
                 if (channelError) {
-                    return result.status(requestStatus).json({
+                    return response.status(requestStatus).json({
                         code: requestCode,
                         error: !requestSuccess,
                         message: requestMessage,
@@ -1804,7 +1837,7 @@ exports.validateChannels = async (request, result) => {
             requestSuccess = true;
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             error: !requestSuccess,
             message: requestMessage,
@@ -1812,14 +1845,14 @@ exports.validateChannels = async (request, result) => {
         });
     }
     catch (exception) {
-        return res.status(500).json({
-            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             message: exception.message
         });
     }
 }
 
-exports.validateUserId = async (request, result) => {
+exports.validateUserId = async (request, response) => {
     try {
         var requestCode = "error_unexpected_error";
         var requestMessage = "error_unexpected_error";
@@ -1828,7 +1861,7 @@ exports.validateUserId = async (request, result) => {
 
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
-                return result.status(requestStatus).json({
+                return response.status(requestStatus).json({
                     code: "error_auth_error",
                     error: !requestSuccess,
                     message: "error_auth_error",
@@ -1840,7 +1873,7 @@ exports.validateUserId = async (request, result) => {
         if (request.body) {
             var { method, parameters = {} } = request.body;
 
-            setSessionParameters(parameters, request.user);
+            setSessionParameters(parameters, request.user, request._requestid);
 
             parameters.password = await bcryptjs.hash(parameters.password, await bcryptjs.genSalt(10));
             parameters.userid = request.user.userid;
@@ -1872,7 +1905,7 @@ exports.validateUserId = async (request, result) => {
             }
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             error: !requestSuccess,
             message: requestMessage,
@@ -1880,14 +1913,14 @@ exports.validateUserId = async (request, result) => {
         });
     }
     catch (exception) {
-        return res.status(500).json({
-            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             message: exception.message
         });
     }
 }
 
-exports.validateUsername = async (request, result) => {
+exports.validateUsername = async (request, response) => {
     try {
         var requestCode = "error_unexpected_error";
         var requestIsValid = false;
@@ -1897,7 +1930,7 @@ exports.validateUsername = async (request, result) => {
 
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
-                return result.status(requestStatus).json({
+                return response.status(requestStatus).json({
                     code: "error_auth_error",
                     error: !requestSuccess,
                     isvalid: requestIsValid,
@@ -1913,11 +1946,13 @@ exports.validateUsername = async (request, result) => {
             if (typeof parameters.facebookid !== "undefined" && parameters.facebookid) {
                 parameters.googleid = null;
                 parameters.usr = null;
+                parameters._requestid = request._requestid;
             }
 
             if (typeof parameters.googleid !== "undefined" && parameters.googleid) {
                 parameters.facebookid = null;
                 parameters.usr = null;
+                parameters._requestid = request._requestid;
             }
 
             const queryUserSel = await triggerfunctions.executesimpletransaction(method, parameters);
@@ -1937,7 +1972,7 @@ exports.validateUsername = async (request, result) => {
             }
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             error: !requestSuccess,
             isvalid: requestIsValid,
@@ -1946,15 +1981,15 @@ exports.validateUsername = async (request, result) => {
         });
     }
     catch (exception) {
-        return res.status(500).json({
-            ...getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid),
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             message: exception.message
         });
     }
 }
 
-const getAppSetting = async () => {
-    const queryAppSettingGet = await triggerfunctions.executesimpletransaction("UFN_APPSETTING_INVOICE_SEL");
+const getAppSetting = async (requestId) => {
+    const queryAppSettingGet = await triggerfunctions.executesimpletransaction("UFN_APPSETTING_INVOICE_SEL", { _requestid: requestId });
 
     if (queryAppSettingGet instanceof Array) {
         if (queryAppSettingGet.length > 0) {

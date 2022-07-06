@@ -1,11 +1,12 @@
 const logger = require('../config/winston');
-const { v4: uuidv4 } = require('uuid');
 
-const { executesimpletransaction } = require('../config/triggerfunctions');;
-const bcryptjs = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const { v4: uuidv4 } = require('uuid');
+const { executesimpletransaction } = require('../config/triggerfunctions');
 const { errors, getErrorCode } = require('../config/helpers');
 const { addApplication } = require('./voximplantController');
+
+const bcryptjs = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 //type: int|string|bool
 const properties = [
@@ -121,7 +122,8 @@ exports.authenticate = async (req, res) => {
             token: tokenzyx,
             origin: 'WEB',
             type: 'LOGIN',
-            description: null
+            description: null,
+            _requestid: req._requestid,
         };
         let notifications = [];
 
@@ -247,8 +249,8 @@ exports.getUser = async (req, res) => {
 exports.logout = async (req, res) => {
     try {
         executesimpletransaction("UFN_USERSTATUS_UPDATE", { _requestid: req._requestid, ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
-    } catch (error) {
-        logger.child({ error: { detail: error.stack, message: error.toString() } }).error(`Request to ${req.originalUrl}`);
+    } catch (exception) {
+        logger.child({ error: { detail: exception.stack, message: exception.toString() } }).error(`Request to ${req.originalUrl}`);
     }
     return res.json({ data: null, error: false })
 }
@@ -265,8 +267,8 @@ exports.connect = async (req, res) => {
             motive,
             username: req.user.usr
         });
-    } catch (error) {
-        logger.child({ _requestid: req._requestid, error: { detail: error.stack, message: error.toString() } }).error(`Request to ${req.originalUrl}`);
+    } catch (exception) {
+        logger.child({ _requestid: req._requestid, error: { detail: exception.stack, message: exception.toString() } }).error(`Request to ${req.originalUrl}`);
     }
     return res.json({ data: null, error: false })
 }
