@@ -5,6 +5,8 @@ const morganMiddleware = require("./config/morgan.middleware");
 const express = require('express');
 const cors = require('cors');
 
+const { v4: uuidv4 } = require('uuid');
+
 const allowedOrigins = process.env.ADDRESSES_ALLOWED?.split(",") || [];
 
 const app = express();
@@ -29,6 +31,11 @@ app.use(cors({
 app.use(express.json({ limit: '100mb' }));//to accept json
 
 const PORT = process.env.PORT || 6065;
+
+app.use(function (req, res, next) {
+    req._requestid = uuidv4();
+    next();
+});
 
 // app.use(require('morgan')({ "stream": logger.stream }));
 
