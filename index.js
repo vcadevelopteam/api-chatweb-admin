@@ -9,7 +9,9 @@ const app = express();
 app.use(cors({
     origin: function (origin, callback) {
         const dateRequest = new Date().toISOString();
-        console.log(`${dateRequest}: request from ${origin}`);
+        if (origin) {
+            console.log(`${dateRequest}: request from ${origin}`);
+        }
         if (!origin) return callback(null, true);
         if (allowedOrigins.indexOf(origin) === -1) {
             console.log(`${dateRequest}: not allowed from ${origin}`)
