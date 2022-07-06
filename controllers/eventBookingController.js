@@ -10,12 +10,16 @@ const method_allowed = ["QUERY_GET_PERSON_FROM_BOOKING", "QUERY_EVENT_BY_CODE", 
 // });
 
 const send = async (data) => {
+
+    data._requestid = req._requestid;
+
     try {
         if (data.listmembers.every(x => !!x.personid)) {
             await executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", undefined, false, {
                 personids: data.listmembers.map(x => x.personid),
                 corpid: data.corpid,
                 orgid: data.orgid,
+                _requestid: req._requestid
             })
         }
 
