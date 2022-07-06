@@ -40,7 +40,10 @@ exports.executesimpletransaction = async (method, data, permissions = false, rep
         }
         const query = functionMethod.query;
         if (data instanceof Object || data === undefined) {
-            console.time("simple-" + method);
+            //evitar logear las consultas x lado de hook 
+            if (method !== "UFN_COMMUNICATIONCHANNELSITE_SEL") {
+                console.time("simple-" + method);
+            }
             const result = await sequelize.query(query, {
                 type: QueryTypes.SELECT,
                 replacements,
@@ -49,7 +52,10 @@ exports.executesimpletransaction = async (method, data, permissions = false, rep
                 console.log(err)
                 return getErrorSeq(err)
             });
-            console.timeEnd("simple-" + method);
+            //evitar logear las consultas x lado de hook 
+            if (method !== "UFN_COMMUNICATIONCHANNELSITE_SEL") {
+                console.timeEnd("simple-" + method);
+            }
             return result;
         } else {
             return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
