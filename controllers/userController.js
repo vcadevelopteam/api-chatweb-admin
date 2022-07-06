@@ -166,13 +166,14 @@ exports.sendMailPassword = async (req, res) => {
                             let channel_group = []
                             for (let vi = 0; vi < voxichanneldata.length; vi++) {
                                 channel_group = [...channel_group, ...groups.map(cg => `${voxichanneldata[vi].communicationchannelsite}.${cg}`)];
+                                let current_channel_group = groups.map(cg => `${voxichanneldata[vi].communicationchannelsite}.${cg}`)
                                 // Create queues if not exists {site}.{group}
                                 for (let gi = 0; gi < groups.length; gi++) {
                                     if (!voxiqueues_names.includes(`${voxichanneldata[vi].communicationchannelsite}.${groups[gi]}`)) {
                                         await voximplant.addQueue({
                                             account_id: account_id,
                                             application_id: application_id,
-                                            acd_queue_name: channel_group[gi]
+                                            acd_queue_name: current_channel_group[gi]
                                         });
                                     }
                                 }
