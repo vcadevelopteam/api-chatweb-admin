@@ -1,5 +1,7 @@
 const sequelize = require('../config/database');
+
 const { getErrorSeq } = require('../config/helpers');
+
 const { QueryTypes } = require('sequelize');
 
 exports.auth = async (req, res) => {
