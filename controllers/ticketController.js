@@ -1,11 +1,12 @@
-const axios = require('axios')
 const { errors, getErrorCode, axiosObservable } = require('../config/helpers');
 const { executesimpletransaction } = require('../config/triggerfunctions');
+
 // var https = require('https');
 
 // const agent = new https.Agent({
 //     rejectUnauthorized: false
 // });
+
 exports.reply = async (req, res) => {
     try {
         const { data } = req.body;
@@ -32,7 +33,7 @@ exports.reply = async (req, res) => {
             method: "post",
             url: `${process.env.SERVICES}ServiceLogicHook/ProcessMessageOut`,
             data: { method: "", parameters: data },
-            _requestid: req._requestid
+            _requestid: req._requestid,
         });
 
         if (!responseservices.data || !responseservices.data instanceof Object)
@@ -76,7 +77,7 @@ exports.replyListMessages = async (req, res) => {
                 method: "post",
                 url: `${process.env.SERVICES}ServiceLogicHook/ProcessMessageOut`,
                 data: { method: "", parameters: data },
-                _requestid: req._requestid
+                _requestid: req._requestid,
             });
 
             if (!responseservices.data || !responseservices.data instanceof Object)
@@ -120,7 +121,7 @@ exports.close = async (req, res) => {
             method: "post",
             url: `${process.env.SERVICES}ServiceLogicHook/closeticket`,
             data: { method: "", parameters: data },
-            _requestid: req._requestid
+            _requestid: req._requestid,
         });
 
         if (!responseservices.data || !responseservices.data instanceof Object)
@@ -159,7 +160,7 @@ exports.reassign = async (req, res) => {
             data.newuserid = req.user.userid;
         }
 
-        await executesimpletransaction("UFN_CONVERSATION_REASSIGNTICKET", data);
+        await executesimpletransaction("UFN_CONVERSATION_REASSIGNTICKET", { ...data, _requestid: req._requestid });
 
         res.json({ success: true });
     }
@@ -184,7 +185,7 @@ exports.massiveClose = async (req, res) => {
             method: "post",
             url: `${process.env.SERVICES}ServiceLogicHook/ManageTickets`,
             data: { method: "", parameters: data },
-            _requestid: req._requestid
+            _requestid: req._requestid,
         });
 
         if (!responseservices.data || !responseservices.data instanceof Object) {
@@ -212,11 +213,11 @@ exports.sendHSM = async (req, res) => {
             data.username = req.user.usr;
         if (!data.userid)
             data.userid = req.user.userid;
-        
+
         data._requestid = req._requestid;
 
         if (data.listmembers.every(x => !!x.personid)) {
-            await executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", undefined, false, {
+            await executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", { _requestid: req._requestid }, false, {
                 personids: data.listmembers.map(x => x.personid),
                 corpid: data.corpid,
                 orgid: data.orgid,
@@ -295,6 +296,7 @@ exports.sendHSM = async (req, res) => {
                         repeatmode: 0,
                         repeatinterval: 0,
                         completed: false,
+                        _requestid: req._requestid,
                     })
                 } else {
                     executesimpletransaction("QUERY_INSER_HSM_HISTORY", {
@@ -332,7 +334,7 @@ exports.sendHSM = async (req, res) => {
                 method: "post",
                 url: `${process.env.SERVICES}handler/external/sendhsm`,
                 data,
-                _requestid: req._requestid
+                _requestid: req._requestid,
             });
 
             if (!responseservices.data.Success) {
@@ -359,6 +361,7 @@ exports.import = async (req, res) => {
         const bot_result = await executesimpletransaction("QUERY_ORG_BOT_SEL", {
             corpid: data.corpid,
             orgid: data.orgid,
+            _requestid: req._requestid,
         });
 
         const botid = bot_result?.[0]?.userid || 2;
@@ -377,7 +380,8 @@ exports.import = async (req, res) => {
         const channel_result = await executesimpletransaction("QUERY_TICKETIMPORT_CHANNELS_SEL", {
             corpid: data.corpid,
             orgid: data.orgid,
-            channels: channel_list.join(',')
+            channels: channel_list.join(','),
+            _requestid: req._requestid,
         });
 
         const channel_dict = channel_result.reduce((ac, c) => ({
@@ -396,7 +400,8 @@ exports.import = async (req, res) => {
         // Pcc info
         const pcc_result = await executesimpletransaction("QUERY_TICKETIMPORT_PCC_SEL", {
             corpid: data.corpid,
-            orgid: data.orgid
+            orgid: data.orgid,
+            _requestid: req._requestid,
         });
 
         const pcc_dict = pcc_result.reduce((ac, c) => ({
@@ -441,7 +446,8 @@ exports.import = async (req, res) => {
                 corpid: data.corpid,
                 orgid: data.orgid,
                 botname: botname,
-                datatable: JSON.stringify(pcc_to_create)
+                datatable: JSON.stringify(pcc_to_create),
+                _requestid: req._requestid,
             });
 
             const person_dict = person_result.reduce((ac, c) => ({
@@ -459,7 +465,8 @@ exports.import = async (req, res) => {
             await executesimpletransaction("QUERY_TICKETIMPORT_PCC_INS", {
                 corpid: data.corpid,
                 orgid: data.orgid,
-                datatable: JSON.stringify(pcc_to_create)
+                datatable: JSON.stringify(pcc_to_create),
+                _requestid: req._requestid,
             });
 
             // Add person information to the data
@@ -477,13 +484,15 @@ exports.import = async (req, res) => {
             corpid: data.corpid,
             orgid: data.orgid,
             botid: botid,
-            datatable: JSON.stringify(conversation_to_create)
+            datatable: JSON.stringify(conversation_to_create),
+            _requestid: req._requestid,
         });
 
         // Actualización de ticketnum<orgid>seq
         await executesimpletransaction("UFN_TICKETNUM_FIX", {
             corpid: data.corpid,
             orgid: data.orgid,
+            _requestid: req._requestid,
         });
 
         const conversation_dict = conversation_result.reduce((ac, c) => ({
@@ -502,7 +511,8 @@ exports.import = async (req, res) => {
         await executesimpletransaction("QUERY_TICKETIMPORT_INTERACTION_INS", {
             corpid: data.corpid,
             orgid: data.orgid,
-            datatable: JSON.stringify(data.datatable)
+            datatable: JSON.stringify(data.datatable),
+            _requestid: req._requestid,
         });
 
         res.json({ success: true });

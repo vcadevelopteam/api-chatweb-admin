@@ -6,6 +6,7 @@ const { setSessionParameters } = require('../config/helpers');
 
 exports.getLeads = async (req, res) => {
     const { parameters = {} } = req.body;
+
     setSessionParameters(parameters, req.user, req._requestid);
 
     try {

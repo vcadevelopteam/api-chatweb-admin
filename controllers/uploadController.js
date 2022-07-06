@@ -1,6 +1,8 @@
 var ibm = require('ibm-cos-sdk');
+
 const { v4: uuidv4 } = require('uuid');
 const { getErrorCode } = require('../config/helpers');
+
 const logger = require('../config/winston');
 
 var config = {
@@ -18,7 +20,7 @@ exports.upload = async (req, res) => {
         if (req.file.size > 999999999) {
             return res.status(500).json({ success: false, msg: 'Archivo demasiado grande.' });
         }
-        
+
         const params = {
             ACL: 'public-read',
             Key: `${req.user?.orgdesc || "anonymous"}/${uuidv4()}/${req.file.originalname}`,
@@ -30,7 +32,7 @@ exports.upload = async (req, res) => {
         s3.upload(params, (err, data) => {
             if (err) {
                 logger.child({ _requestid: req._requestid, error: { detail: err, message: err.toString() } }).error(`Request to ${req.originalUrl}`);
-                return res.json({ success: false, msg: 'Hubo un error#1 en la carga de archivo.', err })
+                return res.json({ success: false, msg: 'Hubo un error #1 en la carga de archivo.', err })
             }
             return res.json({ success: true, url: data.Location })
         })

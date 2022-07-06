@@ -9,8 +9,8 @@ router.post('/',
     checkController.load)
 
 router.get('/auth',
-    auth,
     ip,
+    auth,
     checkController.auth
 )
 

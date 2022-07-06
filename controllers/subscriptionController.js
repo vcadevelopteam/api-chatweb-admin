@@ -21,6 +21,8 @@ const whitelist = process.env.WHITELIST;
 
 exports.activateUser = async (request, response) => {
     try {
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
         var requestCode = "error_unexpected_error";
         var requestMessage = "error_unexpected_error";
         var requestStatus = 400;
@@ -89,6 +91,8 @@ exports.activateUser = async (request, response) => {
 
 exports.changePassword = async (request, response) => {
     try {
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
         var requestCode = "error_unexpected_error";
         var requestMessage = "error_unexpected_error";
         var requestStatus = 400;
@@ -160,6 +164,8 @@ exports.changePassword = async (request, response) => {
 
 exports.countryList = async (request, response) => {
     try {
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
         var requestData = null;
         var requestCode = "error_unexpected_error";
         var requestMessage = "error_unexpected_error";
@@ -208,6 +214,8 @@ exports.countryList = async (request, response) => {
 
 exports.createSubscription = async (request, response) => {
     try {
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
         var requestCode = "error_unexpected_error";
         var requestMessage = "error_unexpected_error";
         var requestStatus = 400;
@@ -1214,6 +1222,8 @@ exports.createSubscription = async (request, response) => {
 
 exports.currencyList = async (request, response) => {
     try {
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
         var requestCode = "error_unexpected_error";
         var requestData = null;
         var requestMessage = "error_unexpected_error";
@@ -1263,6 +1273,8 @@ exports.currencyList = async (request, response) => {
 
 exports.getContract = async (request, response) => {
     try {
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
         var requestCode = "error_unexpected_error";
         var requestData = null;
         var requestMessage = "error_unexpected_error";
@@ -1320,6 +1332,8 @@ exports.getContract = async (request, response) => {
 
 exports.getPageList = async (request, response) => {
     try {
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
         var requestCode = "error_unexpected_error";
         var requestData = null;
         var requestMessage = "error_unexpected_error";
@@ -1380,6 +1394,8 @@ exports.getPageList = async (request, response) => {
 
 exports.recoverPassword = async (request, response) => {
     try {
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
         var requestCode = "error_unexpected_error";
         var requestMessage = "error_unexpected_error";
         var requestStatus = 400;
@@ -1523,6 +1539,8 @@ exports.recoverPassword = async (request, response) => {
 
 exports.validateChannels = async (request, response) => {
     try {
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
         var requestCode = "error_unexpected_error";
         var requestMessage = "error_unexpected_error";
         var requestStatus = 400;
@@ -1854,6 +1872,8 @@ exports.validateChannels = async (request, response) => {
 
 exports.validateUserId = async (request, response) => {
     try {
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
         var requestCode = "error_unexpected_error";
         var requestMessage = "error_unexpected_error";
         var requestStatus = 400;
@@ -1922,6 +1942,8 @@ exports.validateUserId = async (request, response) => {
 
 exports.validateUsername = async (request, response) => {
     try {
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        
         var requestCode = "error_unexpected_error";
         var requestIsValid = false;
         var requestMessage = "error_unexpected_error";
