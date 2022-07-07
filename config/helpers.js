@@ -1,4 +1,6 @@
 const columnsFunction = require('./columnsFunction');
+const logger = require('./winston');
+const axios = require('axios')
 
 exports.generatefilter = (filters, origin, daterange, offset) => {
     let where = "";
@@ -44,7 +46,7 @@ exports.generatefilter = (filters, origin, daterange, offset) => {
                                     break;
                                 default:
                                     break;
-                                }
+                            }
                             break;
                         case "datestr":
                             switch (f.operator) {
@@ -259,7 +261,9 @@ exports.generateSort = (sorts, origin) => {
     return order;
 }
 
-exports.setSessionParameters = (parameters, user) => {
+exports.setSessionParameters = (parameters, user, id) => {
+    if (id)
+        parameters._requestid = id;
     if (parameters.corpid === null || parameters.corpid === undefined)
         parameters.corpid = user.corpid ? user.corpid : 1;
     if (parameters.orgid === null || parameters.orgid === undefined)
@@ -279,7 +283,7 @@ const errorstmp = {
     COS_UNEXPECTED: "COS_UNEXPECTED",
     ZERO_RECORDS_ERROR: "ZERO_RECORDS",
     FORBIDDEN: "E-ZYX-FORBIDDEN",
-    
+
     LOGIN_USER_INCORRECT: "LOGIN_USER_INCORRECT",
     LOGIN_USER_PENDING: "LOGIN_USER_PENDING",
     LOGIN_LOCKED_BY_ATTEMPTS_FAILED_PASSWORD: "LOGIN_LOCKED_BY_ATTEMPTS_FAILED_PASSWORD",
@@ -315,11 +319,34 @@ const errorstmp = {
 }
 exports.errors = errorstmp;
 
-exports.getErrorSeq = err => {
+exports.axiosObservable = async ({ method = "post", url, data = undefined, headers = undefined, _requestid = undefined }) => {
+    const profiler = logger.startTimer();
+
+    return await axios({
+        method,
+        url,
+        data,
+        headers,
+    })
+        .then(r => {
+            profiler.done({ _requestid, message: `Request to ${url}`, status: r.status, input: data, output: r.data });
+            return r;
+        })
+        .catch(r => {
+            profiler.done({ level: "warn", _requestid, message: `Request to ${url}`, status: r.response?.status, input: data, output: r.data });
+            throw { ...r, notLog: true }
+        });
+}
+
+exports.getErrorSeq = (err, profiler, method) => {
+    //profiler es el contorl de tiempo
     const messageerror = err.toString().replace("SequelizeDatabaseError: ", "");
     const errorcode = messageerror.includes("Named bind parameter") ? "PARAMETER_IS_MISSING" : err.parent.code;
-    console.log(`${new Date()}: ${errorcode}-${messageerror}`);
+
+    profiler && profiler.done({ message: `Executed ${method}`, level: "error", error: { message: messageerror, code: errorcode, detail: err } });
+
     const codeError = (errorcode === 'P0001') ? messageerror : errorcode;
+
     return {
         success: false,
         error: true,
@@ -328,10 +355,9 @@ exports.getErrorSeq = err => {
     };
 };
 
-exports.getErrorCode = (code, error = false) => {
-    if (error) {
-        const posibleError = JSON.stringify(error);
-        console.log(`${new Date()}: ${posibleError !== "{}" && posibleError ? posibleError : error}`);
+exports.getErrorCode = (code, error = false, origin = "", _requestid = "") => {
+    if (error && !error?.notLog) {
+        logger.child({ _requestid, error: { detail: error.stack || error, message: error.toString() } }).error(origin || "anonymous");
     }
     return {
         success: false,
@@ -339,6 +365,10 @@ exports.getErrorCode = (code, error = false) => {
         rescode: code === errorstmp.FORBIDDEN ? 401 : 400,
         code: code || errorstmp.UNEXPECTED_ERROR
     }
+};
+
+exports.printException = (error = false, origin = "", _requestid = "") => {
+    logger.child({ _requestid, error: { detail: error.stack || error, message: error.toString() } }).error(origin || "anonymous");
 };
 
 exports.stringToSeconds = (str) => {

@@ -1,6 +1,9 @@
+const { v4: uuidv4 } = require('uuid');
 const ipsAllowed = (process.env.IPS_ALLOWED || '').split(',');
 
 module.exports = async function (req, res, next) {
+    req._requestid = uuidv4();
+
     return next();
     let origin = req.headers['origin'];
     try {
@@ -8,8 +11,6 @@ module.exports = async function (req, res, next) {
             next();
         }
         else {
-            console.log('ip', req.ip)
-            console.log('x-forwarded-for:', req.headers['x-forwarded-for'])
             if (ipsAllowed.includes(req.ip)) {
                 next();
             }

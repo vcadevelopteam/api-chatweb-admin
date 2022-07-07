@@ -1,8 +1,9 @@
+const logger = require('./winston');
 const sequelize = require('./database');
 const functionsbd = require('./functions');
 const XLSX = require('xlsx');
 const { generatefilter, generateSort, errors, getErrorSeq, getErrorCode, stringToSeconds, secondsToTime } = require('./helpers');
-
+const { v4: uuidv4 } = require('uuid');
 const { QueryTypes } = require('sequelize');
 require('pg').defaults.parseInt8 = true;
 
@@ -18,14 +19,18 @@ const COS_BUCKET_NAME = "staticfileszyxme"
 const REPLACEFILTERS = "###FILTERS###";
 const REPLACESEL = "###REPLACESEL###";
 
-const executeQuery = async (query, bind = {}) => {
+const executeQuery = async (query, bind = {}, _requestid) => {
+    const profiler = logger.child({ context: bind, _requestid }).startTimer();
+
     return await sequelize.query(query, {
         type: QueryTypes.SELECT,
         bind
-    }).catch(err => {
-        console.log(err)
-        return getErrorSeq(err)
-    });
+    })
+        .then(r => {
+            profiler.done({ level: "debug", message: `Executed query ${query}` });
+            return r;
+        })
+        .catch(err => getErrorSeq(err, profiler, query));
 }
 //no se puede usar bind y replace en el mismo query 
 exports.executesimpletransaction = async (method, data, permissions = false, replacements = undefined) => {
@@ -33,30 +38,25 @@ exports.executesimpletransaction = async (method, data, permissions = false, rep
     if (functionMethod) {
         if (permissions && functionMethod.module) {
             const application = permissions[functionMethod.module];
-
             if (functionMethod.protected && (!application || ((functionMethod.protected === "SELECT" && !application[0]) || (functionMethod.protected === "INSERT" && !application[2])))) {
                 return getErrorCode(errors.FORBIDDEN);
             }
         }
         const query = functionMethod.query;
+
         if (data instanceof Object || data === undefined) {
-            //evitar logear las consultas x lado de hook 
-            if (method !== "UFN_COMMUNICATIONCHANNELSITE_SEL") {
-                console.time("simple-" + method);
-            }
-            const result = await sequelize.query(query, {
+            const profiler = logger.child({ context: { ...data, menu: undefined }, _requestid: data?._requestid || replacements?._requestid }).startTimer();
+
+            return await sequelize.query(query, {
                 type: QueryTypes.SELECT,
                 replacements,
                 bind: data
-            }).catch(err => {
-                console.log(err)
-                return getErrorSeq(err)
-            });
-            //evitar logear las consultas x lado de hook 
-            if (method !== "UFN_COMMUNICATIONCHANNELSITE_SEL") {
-                console.timeEnd("simple-" + method);
-            }
-            return result;
+            })
+                .then(r => {
+                    profiler.done({ level: "debug", message: `Executed method ${method}` });
+                    return r;
+                })
+                .catch(err => getErrorSeq(err, profiler, method));
         } else {
             return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
         }
@@ -66,7 +66,6 @@ exports.executesimpletransaction = async (method, data, permissions = false, rep
 }
 
 exports.getCollectionPagination = async (methodcollection, methodcount, data, permissions = false) => {
-
     try {
         let functionMethod = functionsbd[methodcollection];
 
@@ -89,7 +88,8 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
                 const queryCollectionCleaned = querycollection.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
                 const queryCountCleaned = querycount.replace("###WHERE###", data.where || "");
 
-                console.time("pagination-" + methodcollection);
+                const profiler = logger.child({ context: data, _requestid: data._requestid }).startTimer();
+
                 const results = await Promise.all([
                     sequelize.query(queryCollectionCleaned, {
                         type: QueryTypes.SELECT,
@@ -99,8 +99,12 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
                         type: QueryTypes.SELECT,
                         bind: data
                     })
-                ]).catch(err => getErrorSeq(err));
-                console.timeEnd("pagination-" + methodcollection);
+                ])
+                    .then(r => {
+                        profiler.done({ level: "debug", message: `Executed paginated ${methodcollection}` });
+                        return r;
+                    })
+                    .catch(err => getErrorSeq(err, profiler, `paginated ${methodcollection}`))
 
                 if (!(results instanceof Array)) {
                     return results
@@ -119,8 +123,8 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
         } else {
             return getErrorCode(errors.NOT_FUNCTION_ERROR);
         }
-    } catch (error) {
-        return getErrorCode(errors.UNEXPECTED_ERROR);
+    } catch (exception) {
+        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing getCollectionPagination");
     }
 }
 
@@ -135,13 +139,17 @@ exports.buildQueryWithFilterAndSort = async (method, data) => {
 
                 const queryCollectionCleaned = query.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
 
-                console.time("build-" + method);
-                const result = await sequelize.query(queryCollectionCleaned, {
+                const profiler = logger.child({ context: data, _requestid: data._requestid }).startTimer();
+
+                return await sequelize.query(queryCollectionCleaned, {
                     type: QueryTypes.SELECT,
                     bind: data
-                });
-                console.timeEnd("build-" + method);
-                return result;
+                })
+                    .then(r => {
+                        profiler.done({ level: "debug", message: `Executed builded query ${queryCollectionCleaned}` });
+                        return r;
+                    })
+                    .catch(err => getErrorSeq(err, profiler, `builded query ${queryCollectionCleaned}`));
 
             } else {
                 return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
@@ -149,13 +157,12 @@ exports.buildQueryWithFilterAndSort = async (method, data) => {
         } else {
             return getErrorCode(errors.NOT_FUNCTION_ERROR);
         }
-    } catch (e) {
-        console.log(e);
-        return getErrorCode(errors.UNEXPECTED_ERROR);
+    } catch (exception) {
+        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing buildQueryWithFilterAndSort", data._requestid);
     }
 }
 
-exports.GetMultiCollection = async (detail, permissions = false) => {
+exports.GetMultiCollection = async (detail, permissions = false, _requestid) => {
     return await Promise.all(detail.map(async (item, index) => {
         let functionMethod = functionsbd[item.method];
         if (functionMethod) {
@@ -165,12 +172,17 @@ exports.GetMultiCollection = async (detail, permissions = false) => {
                     return getErrorCode(errors.FORBIDDEN);
                 }
             }
-            console.time("multi-" + index + "-" + item.method);
+            const profiler = logger.child({ context: item.parameters, _requestid }).startTimer();
+
             const r = await sequelize.query(functionMethod.query, {
                 type: QueryTypes.SELECT,
                 bind: item.parameters
-            }).catch(err => getErrorSeq(err));
-            console.timeEnd("multi-" + index + "-" + item.method);
+            })
+                .then(r => {
+                    profiler.done({ level: "debug", message: `Executed multi method ${item.method}` });
+                    return r;
+                })
+                .catch(err => getErrorSeq(err, profiler, `multi ${item.method}`));
 
             if (!(r instanceof Array))
                 return r;
@@ -186,7 +198,7 @@ exports.GetMultiCollection = async (detail, permissions = false) => {
     }))
 }
 
-exports.executeTransaction = async (header, detail, permissions = false) => {
+exports.executeTransaction = async (header, detail, permissions = false, _requestid) => {
     let detailtmp = detail;
     const transaction = await sequelize.transaction();
     let resultHeader = null;
@@ -204,13 +216,19 @@ exports.executeTransaction = async (header, detail, permissions = false) => {
             }
 
             if (parameters instanceof Object) {
-                console.time("header-" + method);
+                const profiler = logger.child({ context: parameters, _requestid }).startTimer();
+
                 const result = await sequelize.query(functionMethod.query, {
                     type: QueryTypes.SELECT,
                     bind: parameters,
                     transaction
-                }).catch(err => getErrorSeq(err));
-                console.timeEnd("header-" + method);
+                })
+                    .then(r => {
+                        profiler.done({ level: "debug", message: `Executed transaction header ${method}` });
+                        return r;
+                    })
+                    .catch(err => getErrorSeq(err, profiler, `transaction header ${method}`));
+
                 if (!(result instanceof Array)) {
                     await transaction.rollback();
                     return result;
@@ -237,17 +255,23 @@ exports.executeTransaction = async (header, detail, permissions = false) => {
     try {
         await Promise.all(detailtmp.map(async (item) => {
             if (functionsbd[item.method]) {
-                console.time("detail-" + item.method);
+                const profiler = logger.child({ context: item.parameters, _requestid }).startTimer();
+
                 const query = functionsbd[item.method];
                 await sequelize.query(query, {
                     type: QueryTypes.SELECT,
                     bind: item.parameters,
                     transaction
-                }).catch(err => {
-                    lasterror = getErrorSeq(err);
-                    throw 'error'
-                });
-                console.timeEnd("detail-" + item.method);
+                })
+                    .then(r => {
+                        profiler.done({ level: "debug", message: `transaction detail ${item.method}` });
+                        return r;
+                    })
+                    .catch(err => {
+                        lasterror = getErrorSeq(err, profiler, `transaction detail ${item.method}`);
+                        throw 'error'
+
+                    });
             } else {
                 lasterror = getErrorCode(errors.NOT_FUNCTION_ERROR);
                 throw 'error'
@@ -279,16 +303,16 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
     try {
         const TABLENAME = columns[0].tablename;
         const ALLCOLUMNS = [...columns, ...filters];
-        
+
         let JOINNERS = Array.from(new Set(ALLCOLUMNS.filter(x => !!x.join_alias).map(x => x.join_alias))).reduce((acc, join_alias) => {
             const { join_table, join_on } = ALLCOLUMNS.find(x => x.join_alias === join_alias);
             return acc + `\nLEFT JOIN ${join_table} ${join_alias} ${join_on}`;
         }, "");
 
         const columnValueUnique = filters.find(x => x.type_filter === "unique_value");
-        
+
         let columnToAdd = [];
-        
+
         if (columnValueUnique) {
             const columnFound = columns.find(x => x.columnname === columnValueUnique.columnname)
             if (!columnFound) {
@@ -313,7 +337,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 return acc + (index === 0 ? "" : ",") + `${selcol} as "${item.columnname.replace(".", "")}"`
             }
         }, "")
-        
+
         const FILTERS = filters.reduce((acc, { type, columnname, start, end, value }) => {
             if (DATES.includes(type)) {
                 return `${acc}\nand ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
@@ -342,7 +366,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 return acc;
             }
         }, "")
-        
+
         let query = `
             select
                 ${COLUMNESSELECT}
@@ -352,8 +376,8 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 ${TABLENAME}.corpid = $corpid and ${TABLENAME}.orgid = $orgid
                 ${FILTERS}
             `;
-        // console.log(query)
-        const resultbd = await executeQuery(query, parameters);
+
+        const resultbd = await executeQuery(query, parameters, parameters._requestid);
 
         if (summaries.length > 0 && resultbd.length > 0) {
             const firstColumn = columns.reduce((acc, item) => ({
@@ -408,9 +432,8 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             resultbd.unshift(datawith);
         }
         return resultbd;
-    } catch (error) {
-        console.log(error)
-        return getErrorCode(errors.UNEXPECTED_ERROR, error);
+    } catch (exception) {
+        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing buildQueryDynamic2", parameters._requestid);
     }
 }
 
@@ -518,13 +541,12 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
         GROUP BY 1${!!GROUP_BY ? "," : ""} ${GROUP_BY}
         ORDER BY 1 desc
         `;
-        // console.log(query)
-        const resultbd = await executeQuery(query, parameters);
+
+        const resultbd = await executeQuery(query, parameters, parameters._requestid);
 
         return resultbd;
-    } catch (error) {
-        console.log(error)
-        return getErrorCode(errors.UNEXPECTED_ERROR, error);
+    } catch (exception) {
+        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing buildQueryDynamicGroupInterval", parameters._requestid);
     }
 }
 
@@ -617,11 +639,10 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
         }
 
         query = query.replace(REPLACEFILTERS, whereQuery).replace(REPLACESEL, selQuery);
-        // console.log(query)
 
-        return await executeQuery(query, parameters);
-    } catch (error) {
-        return getErrorCode(errors.UNEXPECTED_ERROR, error);
+        return await executeQuery(query, parameters, parameters._requestid);
+    } catch (exception) {
+        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing buildQueryDynamic", parameters._requestid);
     }
 }
 
@@ -634,7 +655,7 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
             let keysHeaders;
             const keys = Object.keys(dataToExport[0]);
             keysHeaders = keys;
-            // console.log(headerClient)
+
             if (headerClient) {
                 keysHeaders = keys.reduce((acc, item) => {
                     const keyclientfound = headerClient.find(x => x.key === item);
@@ -712,7 +733,7 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
         } else {
             return getErrorCode(errors.ZERO_RECORDS_ERROR);
         }
-    } catch (error) {
-        return getErrorCode(errors.UNEXPECTED_ERROR, error);
+    } catch (exception) {
+        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing exportdata");
     }
 }

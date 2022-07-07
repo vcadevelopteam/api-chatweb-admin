@@ -4,15 +4,18 @@ const uploadController = require("../controllers/uploadController");
 const auth = require('../middleware/auth');
 var multer = require('multer');
 var upload = multer();
+const ip = require('../middleware/ip');
 
 router.post("/",
+    ip,
     auth,
-    upload.single('file'), 
+    upload.single('file'),
     uploadController.upload
 );
 
 router.post("/file",
-    upload.single('file'), 
+    ip,
+    upload.single('file'),
     uploadController.upload
 );
 
