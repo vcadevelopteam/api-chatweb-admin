@@ -4,6 +4,7 @@ const { getErrorSeq } = require('../config/helpers');
 const { QueryTypes } = require('sequelize');
 const axios = require('axios');
 const bcryptjs = require("bcryptjs");
+const logger = require('../config/winston');
 
 /* Índice de tablas
 
@@ -104,7 +105,7 @@ const parseHrtimeToSeconds = (hrtime) => {
 const errorSeq = err => {
     const messageerror = err.toString().replace("SequelizeDatabaseError: ", "");
     const errorcode = messageerror.includes("Named bind parameter") ? "PARAMETER_IS_MISSING" : err.parent.code;
-    console.log(`${new Date()}: ${errorcode}-${messageerror}`);
+    logger.error(`${new Date()}: ${errorcode}-${messageerror}`);
     return {
         code: errorcode,
         msg: messageerror
@@ -142,11 +143,11 @@ const recryptPwd = async (table, data) => {
                             data[i].pwd = await bcryptjs.hash(response.data.find(r => r.userid === data[i].zyxmeuserid).pwd, salt);
                         }
                         catch (error) {
-                            console.log(error);
+                            logger.error(error);
                         }
                     }
                 } catch (error) {
-                    console.log(error);
+                    logger.error(error);
                 }
             }
             break;
@@ -201,7 +202,7 @@ const reconfigWebhook = async (table, data, move = false) => {
                             }
                         }
                     } catch (error) {
-                        console.log(error);
+                        logger.error(error);
                     }
                 }
             }
@@ -236,14 +237,14 @@ const reconfigWebhookPart2 = async (table, data, move) => {
                                     url: `${apiZyxmeHookEndpoint}support/migratechannel`
                                 });
                                 if (response.data && response.data.success) {
-                                    console.log(response.data)
+                                    logger.info(response.data);
                                 }
                                 break;
                             default:
                                 break;
                         }
                     } catch (error) {
-                        console.log(error);
+                        logger.error(error);
                     }
                 }
             }
@@ -493,13 +494,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                 if (preprocessResult instanceof Array) {
                                 }
                                 else {
-                                    console.log(preprocessResult);
+                                    logger.info(preprocessResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({script: preprocessResult});
                                 }
                             } catch (error) {
                                 let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                                console.log(error);
+                                logger.error(error);
                                 executeResult[k].errors.push({script: error});
                             }
                         }
@@ -511,13 +512,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                 if (insertResult instanceof Array) {
                                 }
                                 else {
-                                    console.log(insertResult);
+                                    logger.info(insertResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({script: insertResult});
                                 }
                             } catch (error) {
                                 let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                                console.log(error);
+                                logger.error(error);
                                 executeResult[k].errors.push({script: error});
                             }
                         }
@@ -529,13 +530,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                 if (postprocessResult instanceof Array) {
                                 }
                                 else {
-                                    console.log(postprocessResult);
+                                    logger.info(postprocessResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({script: postprocessResult});
                                 }
                             } catch (error) {
                                 let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                                console.log(error);
+                                logger.error(error);
                                 executeResult[k].errors.push({script: error});
                             }
                         }
@@ -544,7 +545,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     counter += 1;
                 }
                 else {
-                    console.log(selectResult);
+                    logger.info(selectResult);
                     executeResult[k].success = false;
                     executeResult[k].errors.push({script: selectResult});
                     break;
@@ -565,13 +566,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     if (updateResult instanceof Array) {
                     }
                     else {
-                        console.log(updateResult);
+                        logger.info(updateResult);
                         executeResult[k].success = false;
                         executeResult[k].errors.push({script: updateResult});
                     }
                 } catch (error) {
                     let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                    console.log(error);
+                    logger.error(error);
                     executeResult[k].errors.push({script: error});
                 }
             }
@@ -591,7 +592,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 }
             }
         } catch (error) {
-            console.log(error);
+            logger.error(error);
             executeResult[k].success = false;
             executeResult[k].errors.push({script: error});
         }
