@@ -4,6 +4,7 @@ const { getErrorSeq } = require('../config/helpers');
 const { QueryTypes } = require('sequelize');
 const axios = require('axios');
 const bcryptjs = require("bcryptjs");
+const logger = require('../config/winston');
 
 /* ESTE MIGRADOR SOLO ES PARA AÑADIR DATA DE ZYXME A LARAIGO */
 
@@ -106,7 +107,7 @@ const parseHrtimeToSeconds = (hrtime) => {
 const errorSeq = err => {
     const messageerror = err.toString().replace("SequelizeDatabaseError: ", "");
     const errorcode = messageerror.includes("Named bind parameter") ? "PARAMETER_IS_MISSING" : err.parent.code;
-    console.log(`${new Date()}: ${errorcode}-${messageerror}`);
+    logger.error(`${new Date()}: ${errorcode}-${messageerror}`);
     return {
         code: errorcode,
         msg: messageerror
@@ -144,11 +145,11 @@ const recryptPwd = async (table, data) => {
                             data[i].pwd = await bcryptjs.hash(response.data.find(r => r.userid === data[i].zyxmeuserid).pwd, salt);
                         }
                         catch (error) {
-                            console.log(error);
+                            logger.error(error);
                         }
                     }
                 } catch (error) {
-                    console.log(error);
+                    logger.error(error);
                 }
             }
             break;
@@ -203,7 +204,7 @@ const reconfigWebhook = async (table, data, move = false) => {
                             }
                         }
                     } catch (error) {
-                        console.log(error);
+                        logger.error(error);
                     }
                 }
             }
@@ -238,14 +239,14 @@ const reconfigWebhookPart2 = async (table, data, move) => {
                                     url: `${apiZyxmeHookEndpoint}support/migratechannel`
                                 });
                                 if (response.data && response.data.success) {
-                                    console.log(response.data)
+                                    logger.info(response.data)
                                 }
                                 break;
                             default:
                                 break;
                         }
                     } catch (error) {
-                        console.log(error);
+                        logger.error(error);
                     }
                 }
             }
@@ -482,12 +483,12 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                             counter += 1;
                         }
                         else {
-                            console.log(selectResult);
+                            logger.info(selectResult);
                             break;
                         }
                     }
                 } catch (error) {
-                    console.log(error);
+                    logger.error(error);
                 }
             }
 
@@ -539,7 +540,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                 if (insertResult instanceof Array) {
                                 }
                                 else {
-                                    console.log(insertResult);
+                                    logger.info(insertResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({ script: insertResult });
                                     for (const chunkelem of chunk) {
@@ -554,7 +555,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                 }
                             } catch (error) {
                                 let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                                console.log(error);
+                                logger.error(error);
                                 executeResult[k].errors.push({ script: error });
                             }
                         }
@@ -569,7 +570,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     // break;
                 }
                 else {
-                    console.log(selectResult);
+                    logger.info(selectResult);
                     executeResult[k].success = false;
                     executeResult[k].errors.push({ script: selectResult });
                     break;
@@ -592,13 +593,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     if (updateResult instanceof Array) {
                     }
                     else {
-                        console.log(updateResult);
+                        logger.info(updateResult);
                         executeResult[k].success = false;
                         executeResult[k].errors.push({ script: updateResult });
                     }
                 } catch (error) {
                     let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                    console.log(error);
+                    logger.error(error);
                     executeResult[k].errors.push({ script: error });
                 }
             }
@@ -622,9 +623,9 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     await laraigoQuery(`UPDATE migrationhelper SET idsjson = $idsjson`, { idsjson: JSON.stringify(corpidBind['idsjson']) })
                 }
             }
-            console.log(`Done ${k} maxid: ${corpidBind['maxid']}`)
+            logger.info(`Done ${k} maxid: ${corpidBind['maxid']}`)
         } catch (error) {
-            console.log(error);
+            logger.error(error);
             executeResult[k].success = false;
             executeResult[k].errors.push({ script: error });
         }
@@ -4516,7 +4517,7 @@ exports.executeMigration = async (req, res) => {
                 }
             }
         } catch (error) {
-            console.log(error);
+            logger.error(error);
         }
         let queryResult = { core: {}, subcore: {}, extras: {} };
         await zyxmeQuery(`CREATE TABLE IF NOT EXISTS migration (corpid bigint, run boolean, params jsonb, result jsonb, startdate timestamp without time zone, enddate timestamp without time zone)`);
