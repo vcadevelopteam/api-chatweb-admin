@@ -1597,15 +1597,15 @@ exports.insertChannel = async (request, result) => {
                                             recording: service.recording,
                                             sms: service.sms,
                                             outbound: service.outbound,
-                                            recordingstorage: service.recordingstorage,
-                                            recordingquality: service.recordingquality,
+                                            recordingstorage: service.recordingstorage?.value,
+                                            recordingquality: service.recordingquality?.value,
                                             additionalperchannel: voximplantEnvironment.additionalperchannel,
                                         };
 
                                         var voximplantRecording = {
                                             recording: service.recording,
-                                            recordingstorage: service.recordingstorage,
-                                            recordingquality: service.recordingquality,
+                                            recordingstorage: service.recordingstorage?.value,
+                                            recordingquality: service.recordingquality?.value,
                                         };
 
                                         parameters.communicationchannelsite = voximplantPhoneNumber.phonenumber;
