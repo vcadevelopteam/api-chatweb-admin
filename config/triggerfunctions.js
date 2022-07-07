@@ -53,7 +53,9 @@ exports.executesimpletransaction = async (method, data, permissions = false, rep
                 bind: data
             })
                 .then(r => {
-                    profiler.done({ level: "debug", message: `Executed method ${method}` });
+                    if (method !== "UFN_COMMUNICATIONCHANNELSITE_SEL") {
+                        profiler.done({ level: "debug", message: `Executed method ${method}` });
+                    }
                     return r;
                 })
                 .catch(err => getErrorSeq(err, profiler, method));
