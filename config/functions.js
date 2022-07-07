@@ -2236,10 +2236,15 @@ module.exports = {
     },
     QUERY_TICKETIMPORT_PCC_SEL: {
         query: `
-        SELECT pcc.personid, pcc.personcommunicationchannel
+        SELECT pcc.personid, pcc.personcommunicationchannel, pcc.personcommunicationchannelowner
         FROM personcommunicationchannel pcc
         WHERE pcc.corpid = $corpid
         AND pcc.orgid = $orgid
+        AND (
+            pcc.personcommunicationchannel = ANY(string_to_array($personcommunicationchannel,','))
+            OR
+            pcc.personcommunicationchannelowner = ANY(string_to_array($personcommunicationchannelowner,','))
+        )
         `,
         module: "",
         protected: false

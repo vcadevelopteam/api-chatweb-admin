@@ -481,10 +481,16 @@ exports.import = async (req, res) => {
             personcommunicationchannel: `${d.personphone}_${channel_dict[d.channel]?.channeltype}`
         }));
 
+        // Unique pcc
+        const personcommunicationchannel_list = [...new Set(datatable.map(d => d.personcommunicationchannel))];
+        const personcommunicationchannelowner_list = [...new Set(datatable.map(d => d.personphone))];
+
         // Pcc info
         const pcc_result = await executesimpletransaction("QUERY_TICKETIMPORT_PCC_SEL", {
             corpid: data.corpid,
-            orgid: data.orgid
+            orgid: data.orgid,
+            personcommunicationchannel: personcommunicationchannel_list.join(','),
+            personcommunicationchannelowner: personcommunicationchannelowner_list.join(',')
         });
 
         const pcc_dict = pcc_result.reduce((ac, c) => ({
@@ -492,10 +498,15 @@ exports.import = async (req, res) => {
             [c.personcommunicationchannel]: c
         }), {});
 
+        const pccowner_dict = pcc_result.reduce((ac, c) => ({
+            ...ac,
+            [c.personcommunicationchannelowner]: c
+        }), {});
+
         // Add pcc information to the data
         datatable = datatable.map(d => ({
             ...d,
-            personid: pcc_dict[d.personcommunicationchannel]?.personid
+            personid: pcc_dict[d.personcommunicationchannel]?.personid || pccowner_dict[d.personphone]?.personid
         }));
 
         // Get uniques personcommunicationchannel
@@ -523,13 +534,17 @@ exports.import = async (req, res) => {
         ALTER TABLE conversation ADD COLUMN auxid BIGINT;
         */
 
-        // Create persons
+        // Create pcc and persons
         if (pcc_to_create.length > 0) {
+            // Filter pcc without personid
+            const person_to_create = pcc_to_create.filter(d => !d.personid);
+            
+            // Create persons
             const person_result = await executesimpletransaction("QUERY_TICKETIMPORT_PERSON_INS", {
                 corpid: data.corpid,
                 orgid: data.orgid,
                 botname: botname,
-                datatable: JSON.stringify(pcc_to_create)
+                datatable: JSON.stringify(person_to_create)
             });
     
             const person_dict = person_result.reduce((ac, c) => ({
@@ -540,7 +555,7 @@ exports.import = async (req, res) => {
             // Add person information to pcc to create
             pcc_to_create = pcc_to_create.map(p => ({
                 ...p,
-                personid: person_dict[p.personcommunicationchannel]?.personid
+                personid: !p.personid ? person_dict[p.personcommunicationchannel]?.personid : p.personid
             }));
     
             // Create pccs
