@@ -963,14 +963,14 @@ exports.createSubscription = async (request, result) => {
                                                         recording: channelServiceArray[index].recording,
                                                         sms: channelServiceArray[index].sms,
                                                         outbound: channelServiceArray[index].outbound,
-                                                        recordingstorage: channelServiceArray[index].recordingstorage,
-                                                        recordingquality: channelServiceArray[index].recordingquality,
+                                                        recordingstorage: channelServiceArray[index].recordingstorage?.value,
+                                                        recordingquality: channelServiceArray[index].recordingquality?.value,
                                                     };
 
                                                     var voximplantRecording = {
                                                         recording: channelServiceArray[index].recording,
-                                                        recordingstorage: channelServiceArray[index].recordingstorage,
-                                                        recordingquality: channelServiceArray[index].recordingquality,
+                                                        recordingstorage: channelServiceArray[index].recordingstorage?.value,
+                                                        recordingquality: channelServiceArray[index].recordingquality?.value,
                                                     };
 
                                                     channelParametersArray[index].communicationchannelsite = voximplantPhoneNumber.phonenumber;
