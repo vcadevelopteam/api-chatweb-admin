@@ -957,7 +957,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORGANIZATION_CHANGEORG_SEL: {
-        query: "SELECT * FROM ufn_organiaaaaaaaaaadzation_changeorg_sel($userid)",
+        query: "SELECT * FROM ufn_organization_changeorg_sel($userid)",
         module: "",
         protected: "SELECT"
     },
