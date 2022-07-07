@@ -4,6 +4,7 @@ const { getErrorSeq } = require('../config/helpers');
 const { QueryTypes } = require('sequelize');
 const axios = require('axios');
 const bcryptjs = require("bcryptjs");
+const logger = require('../config/winston');
 
 /* ESTE MIGRADOR SOLO ES PARA AÑADIR DATA DE ZYXME A LARAIGO */
 
@@ -106,7 +107,7 @@ const parseHrtimeToSeconds = (hrtime) => {
 const errorSeq = err => {
     const messageerror = err.toString().replace("SequelizeDatabaseError: ", "");
     const errorcode = messageerror.includes("Named bind parameter") ? "PARAMETER_IS_MISSING" : err.parent.code;
-    console.log(`${new Date()}: ${errorcode}-${messageerror}`);
+    logger.error(`${new Date()}: ${errorcode}-${messageerror}`);
     return {
         code: errorcode,
         msg: messageerror
@@ -144,11 +145,11 @@ const recryptPwd = async (table, data) => {
                             data[i].pwd = await bcryptjs.hash(response.data.find(r => r.userid === data[i].zyxmeuserid).pwd, salt);
                         }
                         catch (error) {
-                            console.log(error);
+                            logger.error(error);
                         }
                     }
                 } catch (error) {
-                    console.log(error);
+                    logger.error(error);
                 }
             }
             break;
@@ -203,7 +204,7 @@ const reconfigWebhook = async (table, data, move = false) => {
                             }
                         }
                     } catch (error) {
-                        console.log(error);
+                        logger.error(error);
                     }
                 }
             }
@@ -238,14 +239,14 @@ const reconfigWebhookPart2 = async (table, data, move) => {
                                     url: `${apiZyxmeHookEndpoint}support/migratechannel`
                                 });
                                 if (response.data && response.data.success) {
-                                    console.log(response.data)
+                                    logger.info(response.data)
                                 }
                                 break;
                             default:
                                 break;
                         }
                     } catch (error) {
-                        console.log(error);
+                        logger.error(error);
                     }
                 }
             }
@@ -467,6 +468,32 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 }
             }
 
+            // Select a la BD de ZyxMe para UPDATE
+            if (q.update) {
+                try {
+                    while (true) {
+                        let selectResult = await zyxmeQuery(`${q.select} ${q.select_update_where}`.replace('\n', ' '), { ...corpidBind, offset: counter * limit, limit });
+                        if (selectResult instanceof Array) {
+                            if (selectResult.length === 0) {
+                                break;
+                            }
+                            selectResult = renameVariable(k, selectResult);
+                            selectResult = restructureVariable(k, selectResult);
+                            let updateResult = await laraigoQuery(q.update.replace('###DT###', q.dt).replace('\n', ' '), { datatable: JSON.stringify(selectResult) });
+                            counter += 1;
+                        }
+                        else {
+                            logger.info(selectResult);
+                            break;
+                        }
+                    }
+                } catch (error) {
+                    logger.error(error);
+                }
+            }
+
+            counter = 0;
+
             while (true) {
                 // Último registro en laraigo
                 if (q.id) {
@@ -482,7 +509,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     break;
                 }
 
-                // Select a la BD de ZyxMe
+                // Select a la BD de ZyxMe para INSERT
                 let selectStartTime = process.hrtime();
                 let selectResult = await zyxmeQuery(`${q.select} ${q.select_insert_where}`.replace('\n', ' '), { ...corpidBind, offset: counter * limit, limit });
                 let selectElapsedSeconds = parseHrtimeToSeconds(process.hrtime(selectStartTime));
@@ -513,7 +540,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                 if (insertResult instanceof Array) {
                                 }
                                 else {
-                                    console.log(insertResult);
+                                    logger.info(insertResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({ script: insertResult });
                                     for (const chunkelem of chunk) {
@@ -528,7 +555,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                 }
                             } catch (error) {
                                 let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                                console.log(error);
+                                logger.error(error);
                                 executeResult[k].errors.push({ script: error });
                             }
                         }
@@ -543,7 +570,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     // break;
                 }
                 else {
-                    console.log(selectResult);
+                    logger.info(selectResult);
                     executeResult[k].success = false;
                     executeResult[k].errors.push({ script: selectResult });
                     break;
@@ -566,13 +593,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     if (updateResult instanceof Array) {
                     }
                     else {
-                        console.log(updateResult);
+                        logger.info(updateResult);
                         executeResult[k].success = false;
                         executeResult[k].errors.push({ script: updateResult });
                     }
                 } catch (error) {
                     let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                    console.log(error);
+                    logger.error(error);
                     executeResult[k].errors.push({ script: error });
                 }
             }
@@ -596,15 +623,63 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     await laraigoQuery(`UPDATE migrationhelper SET idsjson = $idsjson`, { idsjson: JSON.stringify(corpidBind['idsjson']) })
                 }
             }
-            console.log(`Done ${k} maxid: ${corpidBind['maxid']}`)
+            logger.info(`Done ${k} maxid: ${corpidBind['maxid']}`)
         } catch (error) {
-            console.log(error);
+            logger.error(error);
             executeResult[k].success = false;
             executeResult[k].errors.push({ script: error });
         }
     };
     return executeResult;
 }
+
+/*
+SELECT jsonb_build_object(
+    'domainid', COALESCE((SELECT MAX(domainid) FROM domain),0),
+    'inputvalidationid', COALESCE((SELECT MAX(inputvalidationid) FROM inputvalidation),0),
+    'appintegrationid',  COALESCE((SELECT MAX(appintegrationid) FROM appintegration),0),
+    'botconfigurationid',  COALESCE((SELECT MAX(botconfigurationid) FROM botconfiguration),0),
+    'communicationchannelid',  COALESCE((SELECT MAX(communicationchannelid) FROM communicationchannel),0),
+    'communicationchannelstatusid',  COALESCE((SELECT MAX(communicationchannelstatusid) FROM communicationchannelstatus),0),
+    'propertyid',  COALESCE((SELECT MAX(propertyid) FROM property),0),
+    'userid',  COALESCE((SELECT MAX(userid) FROM usr),0),
+    'usertokenid',  COALESCE((SELECT MAX(usertokenid) FROM usertoken),0),
+    'userstatusid',  COALESCE((SELECT MAX(userstatusid) FROM userstatus),0),
+    'userhistoryid',  COALESCE((SELECT MAX(userhistoryid) FROM userhistory),0),
+    'usrnotificationid',  COALESCE((SELECT MAX(usrnotificationid) FROM usrnotification),0),
+    'classificationid',  COALESCE((SELECT MAX(classificationid) FROM classification),0),
+    'quickreplyid',  COALESCE((SELECT MAX(quickreplyid) FROM quickreply),0),
+    'personid',  COALESCE((SELECT MAX(personid) FROM person),0),
+    'personaddinfoid',  COALESCE((SELECT MAX(personaddinfoid) FROM personaddinfo),0),
+    'postid',  COALESCE((SELECT MAX(postid) FROM post),0),
+    'pccstatusid',  COALESCE((SELECT MAX(pccstatusid) FROM pccstatus),0),
+    'conversationid',  COALESCE((SELECT MAX(conversationid) FROM conversation),0),
+    'conversationnoteid',  COALESCE((SELECT MAX(conversationnoteid) FROM conversationnote),0),
+    'conversationpauseid',  COALESCE((SELECT MAX(conversationpauseid) FROM conversationpause),0),
+    'conversationstatusid',  COALESCE((SELECT MAX(conversationstatusid) FROM conversationstatus),0),
+    'interactionid',  COALESCE((SELECT MAX(interactionid) FROM interaction),0),
+    'surveyansweredid',  COALESCE((SELECT MAX(surveyansweredid) FROM surveyanswered),0),
+    'messagetemplateid',  COALESCE((SELECT MAX(messagetemplateid) FROM messagetemplate),0),
+    'campaignid',  COALESCE((SELECT MAX(campaignid) FROM campaign),0),
+    'campaignmemberid',  COALESCE((SELECT MAX(campaignmemberid) FROM campaignmember),0),
+    'campaignhistoryid',  COALESCE((SELECT MAX(campaignhistoryid) FROM campaignhistory),0),
+    'taskschedulerid',  COALESCE((SELECT MAX(taskschedulerid) FROM taskscheduler),0),
+    'chatblockversionid',  COALESCE((SELECT MAX(chatblockversionid) FROM blockversion),0),
+    'tablevariableconfigurationid',  COALESCE((SELECT MAX(tablevariableconfigurationid) FROM tablevariableconfiguration),0),
+    'intelligentmodelsid',  COALESCE((SELECT MAX(intelligentmodelsid) FROM intelligentmodels),0),
+    'intelligentmodelsconfigurationid',  COALESCE((SELECT MAX(intelligentmodelsconfigurationid) FROM intelligentmodelsconfiguration),0),
+    'paymentid',  COALESCE((SELECT MAX(paymentid) FROM payment),0),
+    'productivityid',  COALESCE((SELECT MAX(productivityid) FROM productivity),0),
+    'blacklistid',  COALESCE((SELECT MAX(blacklistid) FROM blacklist),0),
+    'hsmhistoryid',  COALESCE((SELECT MAX(hsmhistoryid) FROM hsmhistory),0),
+    'inappropriatewordsid',  COALESCE((SELECT MAX(inappropriatewordsid) FROM inappropriatewords),0),
+    'labelid',  COALESCE((SELECT MAX(labelid) FROM label),0),
+    'locationid',  COALESCE((SELECT MAX(locationid) FROM location),0),
+    'reporttemplateid',  COALESCE((SELECT MAX(reporttemplateid) FROM reporttemplate),0),
+    'slaid',  COALESCE((SELECT MAX(slaid) FROM sla),0),
+    'whitelistid',  COALESCE((SELECT MAX(whitelistid) FROM whitelist),0)
+)
+*/
 
 const maxids =
 {
@@ -674,7 +749,7 @@ const queryCore = {
             orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         )
         AND domainid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -732,7 +807,7 @@ const queryCore = {
         select_update_where: `
         WHERE corpid = $corpid
         AND inputvalidationid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -784,7 +859,7 @@ const queryCore = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND appintegrationid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -841,7 +916,7 @@ const queryCore = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND botconfigurationid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -903,7 +978,7 @@ const queryCore = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND communicationchannelid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -981,7 +1056,7 @@ const queryCore = {
         WHERE ccs.corpid = $corpid
         AND ccs.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND ccs.communicationchannelstatusid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE ccs.corpid = $corpid
@@ -1040,7 +1115,7 @@ const queryCore = {
             orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         )
         AND propertyid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -1119,7 +1194,53 @@ const queryCore = {
         select_update_where: `
         WHERE usr.type <> 'SYSTEM'
         AND usr.userid <= $maxid
-        AND usr.changedate > $lastdate::TIMESTAMP
+        AND usr.changedate > $backupdate::TIMESTAMP
+        ORDER BY usr.userid
+        LIMIT $limit
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE usr xupd
+        SET
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit,
+        doctype = dt.doctype,
+        docnum = dt.docnum,
+        firstname = dt.firstname,
+        lastname = dt.lastname,
+        email = dt.username,
+        pwdchangefirstlogin = dt.pwdchangefirstlogin,
+        facebookid = dt.facebookid,
+        googleid = dt.googleid,
+        company = dt.company,
+        twofactorauthentication = dt.twofactorauthentication,
+        usersupport = dt.usersupport,
+        billinggroup = dt.billinggroup,
+        registercode = dt.registercode,
+        usercall = dt.usercall,
+        passwordchangedate = dt.passwordchangedate,
+        lastlogin = dt.lastlogin,
+        lastlogout = dt.lastlogout,
+        lasttokenorigin = dt.lasttokenorigin,
+        lasttokenstatus = dt.lasttokenstatus,
+        lasthistorystatus = dt.lasthistorystatus,
+        lasthistorytype = dt.lasthistorytype,
+        lastmotivetype = dt.lastmotivetype,
+        lastmotivedescription = dt.lastmotivedescription,
+        attemptslogin = dt.attemptslogin,
+        lastuserstatus = dt.lastuserstatus,
+        area = dt.area,
+        location = dt.location,
+        management = dt.management,
+        phone = dt.phone
+        ###DT###
+        WHERE xupd.userid = dt.zyxmeuserid
         `,
         select_insert_where: `
         WHERE usr.type <> 'SYSTEM'
@@ -1200,7 +1321,27 @@ const queryCore = {
         select_update_where: `
         WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid) AND ous.userid = ut.userid)
         AND ut.usertokenid <= $maxid
-        AND ut.changedate > $lastdate::TIMESTAMP
+        AND ut.changedate > $backupdate::TIMESTAMP
+        ORDER BY ut.usertokenid
+        LIMIT $limit
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE usertoken xupd
+        SET
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit,
+        token = dt.token,
+        expirationproperty = dt.expirationproperty,
+        origin = dt.origin
+        ###DT###
+        WHERE xupd.usertokenid = dt.zyxmeusertokenid
         `,
         select_insert_where: `
         WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid) AND ous.userid = ut.userid)
@@ -1253,7 +1394,24 @@ const queryCore = {
         select_update_where: `
         WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid) AND ous.userid = us.userid)
         AND us.userstatusid <= $maxid
-        AND us.changedate > $lastdate::TIMESTAMP
+        AND us.changedate > $backupdate::TIMESTAMP
+        ORDER BY us.userstatusid
+        LIMIT $limit
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE userstatus xupd
+        SET
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit
+        ###DT###
+        WHERE xupd.userstatusid = dt.zyxmeuserstatusid
         `,
         select_insert_where: `
         WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid) AND ous.userid = us.userid)
@@ -1306,7 +1464,29 @@ const queryCore = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND userhistoryid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
+        ORDER BY userhistoryid
+        LIMIT $limit
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE userhistory xupd
+        SET
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit,
+        motivetype = dt.motivetype,
+        motivedescription = dt.motivedescription,
+        desconectedtime = dt.desconectedtime
+        ###DT###
+        WHERE xupd.corpid = dt.zyxmecorpid
+        AND xupd.orgid = dt.zyxmeorgid
+        AND xupd.userhistoryid = dt.zyxmeuserhistoryid
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -1365,7 +1545,7 @@ const queryCore = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND usrnotificationid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -1426,8 +1606,35 @@ const queryCore = {
         select_update_where: `
         WHERE ous.corpid = $corpid
         AND ous.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
-        AND ous.createdate <= $lastdate::TIMESTAMP
-        AND ous.changedate > $lastdate::TIMESTAMP
+        AND ous.createdate <= $backupdate::TIMESTAMP
+        AND ous.changedate > $backupdate::TIMESTAMP
+        ORDER BY ous.corpid, ous.orgid, ous.userid
+        LIMIT $limit
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE orguser xupd
+        SET
+        roleid = dt.roleid,
+        supervisor = dt.supervisor,
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit,
+        bydefault = dt.bydefault,
+        labels = dt.labels,
+        groups = dt.groups,
+        channels = dt.channels,
+        defaultsort = dt.defaultsort,
+        redirect = dt.redirect
+        ###DT###
+        WHERE xupd.corpid = dt.zyxmecorpid
+        AND xupd.orgid = dt.zyxmeorgid
+        AND xupd.userid = dt.zyxmeuserid
         `,
         select_insert_where: `
         WHERE ous.corpid = $corpid
@@ -1506,7 +1713,7 @@ const querySubcoreClassification = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND classificationid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -1571,7 +1778,7 @@ const querySubcoreClassification = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND quickreplyid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -1641,7 +1848,74 @@ const querySubcorePerson = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND personid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
+        ORDER BY personid
+        LIMIT $limit
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE person xupd
+        SET
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit,
+        groups = dt.groups,
+        name = dt.name,
+        referringperson = dt.referringperson,
+        referringpersonid = dt.referringpersonid,
+        persontype = dt.persontype,
+        personstatus = dt.personstatus,
+        phone = dt.phone,
+        email = dt.email,
+        alternativephone = dt.alternativephone,
+        alternativeemail = dt.alternativeemail,
+        firstcontact = dt.firstcontact,
+        lastcontact = dt.lastcontact,
+        lastcommunicationchannelid = dt.lastcommunicationchannelid,
+        documenttype = dt.documenttype,
+        documentnumber = dt.documentnumber,
+        firstname = dt.firstname,
+        lastname = dt.lastname,
+        imageurldef = dt.imageurldef,
+        sex = dt.sex,
+        gender = dt.gender,
+        birthday = dt.birthday,
+        civilstatus = dt.civilstatus,
+        occupation = dt.occupation,
+        educationlevel = dt.educationlevel,
+        termsandconditions = dt.termsandconditions,
+        installments = dt.installments,
+        feeamount = dt.feeamount,
+        approvedamount = dt.approvedamount,
+        evaluationstatus = dt.evaluationstatus,
+        lastdateevaluation = dt.lastdateevaluation,
+        lastdatestatus = dt.lastdatestatus,
+        daysfornextevaluation = dt.daysfornextevaluation,
+        address = dt.address,
+        addressreference = dt.addressreference,
+        clientnumber = dt.clientnumber,
+        mailflag = dt.mailflag,
+        ecommerceaccounts = dt.ecommerceaccounts,
+        salary = dt.salary,
+        country = dt.country,
+        region = dt.region,
+        district = dt.district,
+        latitude = dt.latitude,
+        longitude = dt.longitude,
+        province = dt.province,
+        contact = dt.contact,
+        usercall = dt.usercall,
+        geographicalarea = dt.geographicalarea,
+        age = dt.age
+        ###DT###
+        WHERE xupd.corpid = dt.zyxmecorpid
+        AND xupd.orgid = dt.zyxmeorgid
+        AND xupd.personid = dt.zyxmepersonid
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -1736,7 +2010,7 @@ const querySubcorePerson = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND personaddinfoid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -1795,8 +2069,8 @@ const querySubcorePerson = {
         AND pe.corpid = $corpid
         AND pcc.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND pe.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
-        AND pcc.createdate <= $lastdate::TIMESTAMP
-        AND pcc.changedate > $lastdate::TIMESTAMP
+        AND pcc.createdate <= $backupdate::TIMESTAMP
+        AND pcc.changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE pcc.corpid = $corpid
@@ -1864,7 +2138,7 @@ const querySubcoreConversation = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND postid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -1927,7 +2201,7 @@ const querySubcoreConversation = {
         WHERE pcc.corpid = $corpid
         AND pcc.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND pcc.pccstatusid <= $maxid
-        AND pcc.changedate > $lastdate::TIMESTAMP
+        AND pcc.changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE pcc.corpid = $corpid
@@ -2021,7 +2295,157 @@ const querySubcoreConversation = {
         WHERE co.corpid = $corpid
         AND co.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND co.conversationid <= $maxid
-        AND co.finishdate > $lastdate::TIMESTAMP
+        AND co.finishdate > $backupdate::TIMESTAMP
+        ORDER BY co.conversationid
+        LIMIT $limit
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE conversation xupd
+        SET
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit,
+        firstconversationdate = dt.firstconversationdate,
+        lastconversationdate = dt.lastconversationdate,
+        firstuserid = dt.firstuserid,
+        lastuserid = dt.lastuserid,
+        firstreplytime = dt.firstreplytime,
+        averagereplytime = dt.averagereplytime,
+        userfirstreplytime = dt.userfirstreplytime,
+        useraveragereplytime = dt.useraveragereplytime,
+        startdate = dt.startdate,
+        finishdate = dt.finishdate,
+        totalduration = dt.totalduration,
+        realduration = dt.realduration,
+        totalpauseduration = dt.totalpauseduration,
+        personaveragereplytime = dt.personaveragereplytime,
+        closetype = dt.closetype,
+        context = dt.context,
+        postexternalid = dt.postexternalid,
+        commentexternalid = dt.commentexternalid,
+        replyexternalid = dt.replyexternalid,
+        botduration = dt.botduration,
+        autoclosetime = dt.autoclosetime,
+        handoffdate = dt.handoffdate,
+        pausedauto = dt.pausedauto,
+        chatflowcontext = dt.chatflowcontext,
+        variablecontext = dt.variablecontext,
+        usergroup = dt.usergroup,
+        mailflag = dt.mailflag,
+        sentiment = dt.sentiment,
+        sadness = dt.sadness,
+        joy = dt.joy,
+        fear = dt.fear,
+        disgust = dt.disgust,
+        anger = dt.anger,
+        usersentiment = dt.usersentiment,
+        usersadness = dt.usersadness,
+        userjoy = dt.userjoy,
+        userfear = dt.userfear,
+        userdisgust = dt.userdisgust,
+        useranger = dt.useranger,
+        personsentiment = dt.personsentiment,
+        personsadness = dt.personsadness,
+        personjoy = dt.personjoy,
+        personfear = dt.personfear,
+        persondisgust = dt.persondisgust,
+        personanger = dt.personanger,
+        balancetimes = dt.balancetimes,
+        firstassignedtime = dt.firstassignedtime,
+        extradata = dt.extradata,
+        holdingwaitingtime = dt.holdingwaitingtime,
+        closetabdate = dt.closetabdate,
+        abandoned = dt.abandoned,
+        lastreplydate = dt.lastreplydate,
+        personlastreplydate = dt.personlastreplydate,
+        tags = dt.tags,
+        wnlucategories = dt.wnlucategories,
+        wnluconcepts = dt.wnluconcepts,
+        wnluentities = dt.wnluentities,
+        wnlukeywords = dt.wnlukeywords,
+        wnlumetadata = dt.wnlumetadata,
+        wnlurelations = dt.wnlurelations,
+        wnlusemanticroles = dt.wnlusemanticroles,
+        wnlcclass = dt.wnlcclass,
+        wtaanger = dt.wtaanger,
+        wtafear = dt.wtafear,
+        wtajoy = dt.wtajoy,
+        wtasadness = dt.wtasadness,
+        wtaanalytical = dt.wtaanalytical,
+        wtaconfident = dt.wtaconfident,
+        wtatentative = dt.wtatentative,
+        wtaexcited = dt.wtaexcited,
+        wtafrustrated = dt.wtafrustrated,
+        wtaimpolite = dt.wtaimpolite,
+        wtapolite = dt.wtapolite,
+        wtasad = dt.wtasad,
+        wtasatisfied = dt.wtasatisfied,
+        wtasympathetic = dt.wtasympathetic,
+        wtauseranger = dt.wtauseranger,
+        wtauserfear = dt.wtauserfear,
+        wtauserjoy = dt.wtauserjoy,
+        wtausersadness = dt.wtausersadness,
+        wtauseranalytical = dt.wtauseranalytical,
+        wtauserconfident = dt.wtauserconfident,
+        wtausertentative = dt.wtausertentative,
+        wtauserexcited = dt.wtauserexcited,
+        wtauserfrustrated = dt.wtauserfrustrated,
+        wtauserimpolite = dt.wtauserimpolite,
+        wtauserpolite = dt.wtauserpolite,
+        wtausersad = dt.wtausersad,
+        wtausersatisfied = dt.wtausersatisfied,
+        wtausersympathetic = dt.wtausersympathetic,
+        wtapersonanger = dt.wtapersonanger,
+        wtapersonfear = dt.wtapersonfear,
+        wtapersonjoy = dt.wtapersonjoy,
+        wtapersonsadness = dt.wtapersonsadness,
+        wtapersonanalytical = dt.wtapersonanalytical,
+        wtapersonconfident = dt.wtapersonconfident,
+        wtapersontentative = dt.wtapersontentative,
+        wtapersonexcited = dt.wtapersonexcited,
+        wtapersonfrustrated = dt.wtapersonfrustrated,
+        wtapersonimpolite = dt.wtapersonimpolite,
+        wtapersonpolite = dt.wtapersonpolite,
+        wtapersonsad = dt.wtapersonsad,
+        wtapersonsatisfied = dt.wtapersonsatisfied,
+        wtapersonsympathetic = dt.wtapersonsympathetic,
+        wnlusyntax = dt.wnlusyntax,
+        wnlusentiment = dt.wnlusentiment,
+        wnlusadness = dt.wnlusadness,
+        wnlujoy = dt.wnlujoy,
+        wnlufear = dt.wnlufear,
+        wnludisgust = dt.wnludisgust,
+        wnluanger = dt.wnluanger,
+        wnluusersentiment = dt.wnluusersentiment,
+        wnluusersadness = dt.wnluusersadness,
+        wnluuserjoy = dt.wnluuserjoy,
+        wnluuserfear = dt.wnluuserfear,
+        wnluuserdisgust = dt.wnluuserdisgust,
+        wnluuseranger = dt.wnluuseranger,
+        wnlupersonsentiment = dt.wnlupersonsentiment,
+        wnlupersonsadness = dt.wnlupersonsadness,
+        wnlupersonjoy = dt.wnlupersonjoy,
+        wnlupersonfear = dt.wnlupersonfear,
+        wnlupersondisgust = dt.wnlupersondisgust,
+        wnlupersonanger = dt.wnlupersonanger,
+        enquiries = dt.enquiries,
+        classification = dt.classification,
+        firstusergroup = dt.firstusergroup,
+        emailalertsent = dt.emailalertsent,
+        tdatime = dt.tdatime,
+        handoffafteransweruser = dt.handoffafteransweruser,
+        lastseendate = dt.lastseendate,
+        closecomment = dt.closecomment
+        ###DT###
+        WHERE xupd.corpid = dt.zyxmecorpid
+        AND xupd.orgid = dt.zyxmeorgid
+        AND xupd.conversationid = dt.zyxmeconversationid
         `,
         select_insert_where: `
         WHERE co.corpid = $corpid
@@ -2239,7 +2663,7 @@ const querySubcoreConversation = {
         WHERE co.corpid = $corpid
         AND co.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND co.conversationnoteid <= $maxid
-        AND co.changedate > $lastdate::TIMESTAMP
+        AND co.changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE co.corpid = $corpid
@@ -2310,7 +2734,28 @@ const querySubcoreConversation = {
         WHERE co.corpid = $corpid
         AND co.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND co.conversationpauseid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
+        ORDER BY co.conversationpauseid
+        LIMIT $limit
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE conversationpause xupd
+        SET
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit,
+        startpause = dt.startpause,
+        stoppause = dt.stoppause
+        ###DT###
+        WHERE xupd.corpid = dt.zyxmecorpid
+        AND xupd.orgid = dt.zyxmeorgid
+        AND xupd.conversationpauseid = dt.zyxmeconversationpauseid
         `,
         select_insert_where: `
         WHERE co.corpid = $corpid
@@ -2436,7 +2881,7 @@ const querySubcoreConversation = {
         WHERE co.corpid = $corpid
         AND co.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND co.conversationstatusid <= $maxid
-        AND co.changedate > $lastdate::TIMESTAMP
+        AND co.changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE co.corpid = $corpid
@@ -2623,7 +3068,7 @@ const querySubcoreConversation = {
         WHERE sa.corpid = $corpid
         AND sa.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND sa.surveyansweredid <= $maxid
-        AND sa.changedate > $lastdate::TIMESTAMP
+        AND sa.changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE sa.corpid = $corpid
@@ -2707,7 +3152,7 @@ const querySubcoreCampaign = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND hsmtemplateid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -2779,7 +3224,7 @@ const querySubcoreCampaign = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND campaignid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -2935,7 +3380,7 @@ const querySubcoreCampaign = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND campaignhistoryid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -3087,7 +3532,38 @@ const querySubcoreOthers = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND chatblockversionid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
+        ORDER BY chatblockversionid
+        LIMIT $limit
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE blockversion xupd
+        SET
+        communicationchannelid = dt.communicationchannelid,
+        chatblockid = dt.chatblockid,
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit,
+        title = dt.title,
+        defaultgroupid = dt.defaultgroupid,
+        defaultblockid = dt.defaultblockid,
+        firstblockid = dt.firstblockid,
+        aiblockid = dt.aiblockid,
+        blockgroup = dt.blockgroup,
+        variablecustom = dt.variablecustom,
+        color = dt.color,
+        icontype = dt.icontype,
+        tag = dt.tag
+        ###DT###
+        WHERE xupd.corpid = dt.zyxmecorpid
+        AND xupd.orgid = dt.zyxmeorgid
+        AND xupd.chatblockversionid = dt.zyxmechatblockversionid
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -3150,8 +3626,38 @@ const querySubcoreOthers = {
         select_update_where: `
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
-        AND createdate <= $lastdate::TIMESTAMP
-        AND changedate > $lastdate::TIMESTAMP
+        AND createdate <= $backupdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
+        ORDER BY ctid
+        LIMIT $limit
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE block xupd
+        SET
+        communicationchannelid = dt.communicationchannelid,
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit,
+        title = dt.title,
+        defaultgroupid = dt.defaultgroupid,
+        defaultblockid = dt.defaultblockid,
+        firstblockid = dt.firstblockid,
+        aiblockid = dt.aiblockid,
+        blockgroup = dt.blockgroup,
+        variablecustom = dt.variablecustom,
+        color = dt.color,
+        icontype = dt.icontype,
+        tag = dt.tag,
+        chatblockversionid = dt.zyxmechatblockversionid
+        ###DT###
+        WHERE xupd.corpid = dt.zyxmecorpid
+        AND xupd.chatblockid = dt.chatblockid
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -3216,7 +3722,7 @@ const querySubcoreOthers = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND tablevariableconfigurationid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -3274,7 +3780,7 @@ const querySubcoreOthers = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND intelligentmodelsid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -3330,7 +3836,7 @@ const querySubcoreOthers = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND intelligentmodelsconfigurationid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -3391,7 +3897,7 @@ const querySubcoreOthers = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND paymentid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -3462,7 +3968,7 @@ const querySubcoreOthers = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND productivityid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -3536,7 +4042,7 @@ const queryExtras = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND blacklistid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -3591,7 +4097,7 @@ const queryExtras = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND hsmhistoryid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -3647,7 +4153,7 @@ const queryExtras = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND inappropriatewordsid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -3699,7 +4205,7 @@ const queryExtras = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND labelid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -3755,7 +4261,7 @@ const queryExtras = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND locationid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -3814,7 +4320,7 @@ const queryExtras = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND reporttemplateid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -3876,7 +4382,7 @@ const queryExtras = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND slaid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -3950,7 +4456,7 @@ const queryExtras = {
         WHERE corpid = $corpid
         AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         AND whitelistid <= $maxid
-        AND changedate > $lastdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         `,
         select_insert_where: `
         WHERE corpid = $corpid
@@ -4011,7 +4517,7 @@ exports.executeMigration = async (req, res) => {
                 }
             }
         } catch (error) {
-            console.log(error);
+            logger.error(error);
         }
         let queryResult = { core: {}, subcore: {}, extras: {} };
         await zyxmeQuery(`CREATE TABLE IF NOT EXISTS migration (corpid bigint, run boolean, params jsonb, result jsonb, startdate timestamp without time zone, enddate timestamp without time zone)`);
