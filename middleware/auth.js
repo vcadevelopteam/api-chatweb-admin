@@ -33,7 +33,7 @@ module.exports = async function (req, res, next) {
         next();
     } catch (exception) {
         return res.status(401).json({
-            ...getErrorCode(null, exception, "Exception on auth middleware"),
+            ...getErrorCode(null, exception, "Exception on auth middleware " + authHeader),
             message: "Token no valido"
         });
     }
