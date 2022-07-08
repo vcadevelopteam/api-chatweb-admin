@@ -128,11 +128,7 @@ exports.exportTrigger = async (req, res) => {
     if (!responseservices.data || !responseservices.data instanceof Object)
         return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
 
-    if (!responseservices.data.Success) {
-        return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
-    }
-
-    res.json(responseservices.data);
+    return res.json(responseservices.data);
 }
 
 exports.export = async (req, res) => {
