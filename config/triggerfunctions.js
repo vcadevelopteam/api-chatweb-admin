@@ -726,14 +726,14 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
                 }
 
                 dataToExport = null;
-                
+
                 profiler.done({ level: "debug", message: `Drawed csv` });
                 // console.timeEnd(`draw-csv`);
 
                 const params = {
                     ACL: 'public-read',
                     Key: titlefile,
-                    Body: Buffer.from(content, 'ASCII'),
+                    Body: Buffer.from(content, 'utf8'),
                     Bucket: COS_BUCKET_NAME,
                     ContentType: "text/csv",
                 }
