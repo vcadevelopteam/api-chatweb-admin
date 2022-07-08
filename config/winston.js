@@ -1,6 +1,8 @@
 const { createLogger, format, transports } = require("winston");
 const logdnaWinston = require('logdna-winston');
 
+const currentDate = new Date().toISOString().substring(0, 10);
+
 const levels = {
     error: 0,   //error on catch exception
     warn: 1,    //error on request from api
@@ -26,11 +28,11 @@ const logger = createLogger({
     format: format.combine(format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }), format.json()),
     transports: [
         new transports.Console(),
-        new transports.File({ filename: `logs/all-${new Date().toISOString().substring(0, 10)}.log` }),
-        new transports.File({ filename: `logs/err-${new Date().toISOString().substring(0, 10)}.log`, level: "error" }),
+        new transports.File({ filename: `logs/all-${currentDate}.log` }),
+        new transports.File({ filename: `logs/err-${currentDate}.log`, level: "error" }),
     ],
-    exceptionHandlers: [new transports.File({ filename: "logs/exceptions.log" })],
-    rejectionHandlers: [new transports.File({ filename: "logs/rejections.log" })],
+    exceptionHandlers: [new transports.File({ filename: `logs/exceptions-${currentDate}.log` })],
+    rejectionHandlers: [new transports.File({ filename: `logs/rejections-${currentDate}.log` })],
     exitOnError: false
 });
 
