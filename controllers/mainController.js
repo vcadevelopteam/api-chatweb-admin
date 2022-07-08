@@ -120,7 +120,7 @@ exports.exportTrigger = async (req, res) => {
         url: `${process.env.API2}main/exportTrigger`,
         data: { parameters, method },
         headers: {
-            "Authorization": `Bearer ${authHeader}`
+            "Authorization": authHeader
         },
         _requestid: req._requestid,
     });
