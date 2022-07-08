@@ -113,10 +113,15 @@ exports.getGraphic = async (req, res) => {
 exports.exportTrigger = async (req, res) => {
     const { parameters, method } = req.body;
 
+    const authHeader = String(req.headers['authorization'] || '');
+
     const responseservices = await axiosObservable({
         method: "post",
         url: `${process.env.API2}main/exportTrigger`,
         data: { parameters, method },
+        headers: {
+            "Authorization": `Bearer ${authHeader}`
+        },
         _requestid: req._requestid,
     });
 
