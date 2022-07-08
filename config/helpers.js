@@ -327,6 +327,7 @@ exports.axiosObservable = async ({ method = "post", url, data = undefined, heade
         url,
         data,
         headers,
+        timeout: 600000
     })
         .then(r => {
             profiler.done({ _requestid, message: `Request to ${url}`, status: r.status, input: data, output: r.data });
