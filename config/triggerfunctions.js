@@ -26,10 +26,10 @@ const executeQuery = async (query, bind = {}, _requestid) => {
         type: QueryTypes.SELECT,
         bind
     })
-        .then(r => {
-            profiler.done({ level: "debug", message: `Executed query ${query}` });
-            return r;
-        })
+        // .then(r => {
+        //     profiler.done({ level: "debug", message: `Executed query ${query}` });
+        //     return r;
+        // })
         .catch(err => getErrorSeq(err, profiler, query));
 }
 //no se puede usar bind y replace en el mismo query 
@@ -52,12 +52,12 @@ exports.executesimpletransaction = async (method, data, permissions = false, rep
                 replacements,
                 bind: data
             })
-                .then(r => {
-                    if (method !== "UFN_COMMUNICATIONCHANNELSITE_SEL") {
-                        profiler.done({ level: "debug", message: `Executed method ${method}` });
-                    }
-                    return r;
-                })
+                // .then(r => {
+                //     if (method !== "UFN_COMMUNICATIONCHANNELSITE_SEL") {
+                //         profiler.done({ level: "debug", message: `Executed method ${method}` });
+                //     }
+                //     return r;
+                // })
                 .catch(err => getErrorSeq(err, profiler, method));
         } else {
             return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
@@ -102,10 +102,10 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
                         bind: data
                     })
                 ])
-                    .then(r => {
-                        profiler.done({ level: "debug", message: `Executed paginated ${methodcollection}` });
-                        return r;
-                    })
+                    // .then(r => {
+                    //     profiler.done({ level: "debug", message: `Executed paginated ${methodcollection}` });
+                    //     return r;
+                    // })
                     .catch(err => getErrorSeq(err, profiler, `paginated ${methodcollection}`))
 
                 if (!(results instanceof Array)) {
@@ -184,10 +184,10 @@ exports.GetMultiCollection = async (detail, permissions = false, _requestid) => 
                 type: QueryTypes.SELECT,
                 bind: item.parameters
             })
-                .then(r => {
-                    profiler.done({ level: "debug", message: `Executed multi method ${item.method}` });
-                    return r;
-                })
+                // .then(r => {
+                //     profiler.done({ level: "debug", message: `Executed multi method ${item.method}` });
+                //     return r;
+                // })
                 .catch(err => getErrorSeq(err, profiler, `multi ${item.method}`));
 
             if (!(r instanceof Array))
@@ -229,10 +229,10 @@ exports.executeTransaction = async (header, detail, permissions = false, _reques
                     bind: parameters,
                     transaction
                 })
-                    .then(r => {
-                        profiler.done({ level: "debug", message: `Executed transaction header ${method}` });
-                        return r;
-                    })
+                    // .then(r => {
+                    //     profiler.done({ level: "debug", message: `Executed transaction header ${method}` });
+                    //     return r;
+                    // })
                     .catch(err => getErrorSeq(err, profiler, `transaction header ${method}`));
 
                 if (!(result instanceof Array)) {
@@ -269,10 +269,10 @@ exports.executeTransaction = async (header, detail, permissions = false, _reques
                     bind: item.parameters,
                     transaction
                 })
-                    .then(r => {
-                        profiler.done({ level: "debug", message: `transaction detail ${item.method}` });
-                        return r;
-                    })
+                    // .then(r => {
+                    //     profiler.done({ level: "debug", message: `transaction detail ${item.method}` });
+                    //     return r;
+                    // })
                     .catch(err => {
                         lasterror = getErrorSeq(err, profiler, `transaction detail ${item.method}`);
                         throw 'error'
