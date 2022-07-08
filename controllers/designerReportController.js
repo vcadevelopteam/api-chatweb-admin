@@ -20,7 +20,7 @@ exports.exportReport = async (req, res) => {
 
     const resultBD = await buildQueryDynamic2(columns, filters, parameters, summaries, true);
 
-    const result = await exportData(resultBD, parameters.reportName, parameters.formatToExport, parameters.headerClient);
+    const result = await exportData(resultBD, parameters.reportName, parameters.formatToExport, parameters.headerClient, req._requestid);
 
     if (!result.error) {
         return res.json(result);
@@ -39,7 +39,7 @@ exports.exportReportTask = async (req, res) => {
 
     const resultBD = await buildQueryDynamic2(columns, filters, parameters, summaries, true);
 
-    const result = await exportData(resultBD, parameters.reportName, parameters.formatToExport, parameters.headerClient);
+    const result = await exportData(resultBD, parameters.reportName, parameters.formatToExport, parameters.headerClient, req._requestid);
 
     if (!result.error) {
         return res.json(result);
