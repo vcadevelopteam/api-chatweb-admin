@@ -117,7 +117,7 @@ exports.export = async (req, res) => {
 
     const resultBD = !parameters.isNotPaginated ? await buildQueryWithFilterAndSort(method, parameters) : await executesimpletransaction(method, parameters);
 
-    const result = await exportData(resultBD, parameters.reportName, parameters.formatToExport, parameters.headerClient);
+    const result = await exportData(resultBD, parameters.reportName, parameters.formatToExport, parameters.headerClient, req._requestid);
 
     if (!result.error) {
         return res.json(result);

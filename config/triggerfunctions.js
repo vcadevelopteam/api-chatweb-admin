@@ -142,15 +142,19 @@ exports.buildQueryWithFilterAndSort = async (method, data) => {
                 const queryCollectionCleaned = query.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
 
                 const profiler = logger.child({ context: data, _requestid: data._requestid }).startTimer();
+                
+                // profiler.done({ level: "debug", message: `Executed builded query ${queryCollectionCleaned}` });
+
+                logger.child({ context: data, _requestid: data._requestid }).debug(`executing ${queryCollectionCleaned}`)
 
                 return await sequelize.query(queryCollectionCleaned, {
                     type: QueryTypes.SELECT,
                     bind: data
                 })
-                    .then(r => {
-                        profiler.done({ level: "debug", message: `Executed builded query ${queryCollectionCleaned}` });
-                        return r;
-                    })
+                    // .then(r => {
+                    //     profiler.done({ level: "debug", message: `Executed builded query ${queryCollectionCleaned}` });
+                    //     return r;
+                    // })
                     .catch(err => getErrorSeq(err, profiler, `builded query ${queryCollectionCleaned}`));
 
             } else {
@@ -648,10 +652,11 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
     }
 }
 
-exports.exportData = (dataToExport, reportName, formatToExport, headerClient = null) => {
+exports.exportData = (dataToExport, reportName, formatToExport, headerClient = null, _requestid) => {
     let content = "";
+    formatToExport = "csv";
     try {
-        const titlefile = (reportName || "report") + new Date().toISOString() + (formatToExport ? ".xlsx" : ".csv");
+        const titlefile = (reportName || "report") + new Date().toISOString() + (formatToExport !== "csv" ? ".xlsx" : ".csv");
         if (dataToExport instanceof Array && dataToExport.length > 0) {
             var s3 = new ibm.S3(config);
             let keysHeaders;
@@ -672,8 +677,9 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
                 }, {});
                 dataToExport.unshift(keysHeaders);
             }
-
             if (formatToExport === "excel") {
+                logger.child({ _requestid }).debug(`executing excel`)
+
                 const ws = XLSX.utils.json_to_sheet(dataToExport, headerClient ? {
                     skipHeader: !!headerClient,
                 } : undefined);
@@ -688,19 +694,24 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
                     Bucket: COS_BUCKET_NAME,
                     ContentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
                 }
-                console.time(`uploadcos`);
+                const profiler = logger.child({ _requestid }).startTimer();
+                // console.time(`uploadcos`);
                 return new Promise((res, rej) => {
                     s3.upload(params, (err, data) => {
                         if (err) {
+                            profiler.done({ level: "error", error: err, message: `Upload cos` });
                             res(getErrorCode(errors.COS_UNEXPECTED, err));
                         } else {
-                            console.timeEnd(`uploadcos`);
+                            profiler.done({ level: "debug", message: `Upload cos` });
                             res({ url: (data.Location || "").replace("http:", "https:") })
                         }
                     });
                 });
             } else {
-                console.time(`draw-csv`);
+                logger.child({ _requestid }).debug(`drawing csv`)
+
+                const profiler = logger.child({ _requestid }).startTimer();
+                // console.time(`draw-csv`);
                 content += Object.keys(dataToExport[0]).join() + "\n";
                 dataToExport.forEach((rowdata) => {
                     let rowjoined = Object.values(rowdata).join("##");
@@ -711,8 +722,8 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
                     }
                     content += rowjoined + "\n";
                 });
-                console.timeEnd(`draw-csv`);
-
+                profiler.done({ level: "debug", message: `Drawed csv` });
+                // console.timeEnd(`draw-csv`);
 
                 const params = {
                     ACL: 'public-read',
@@ -721,13 +732,20 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
                     Bucket: COS_BUCKET_NAME,
                     ContentType: "text/csv",
                 }
-                console.time(`uploadcos`);
+
+                logger.child({ _requestid }).debug(`Uploading to COS`)
+                
+                const profiler1 = logger.child({ _requestid }).startTimer();
+
+                // console.time(`uploadcos`);
                 return new Promise((res, rej) => {
                     s3.upload(params, (err, data) => {
                         if (err) {
+                            profiler1.done({ level: "error", error: err, message: `Uploaded cos` });
                             rej(getErrorCode(errors.COS_UNEXPECTED_ERROR, err));
                         }
-                        console.timeEnd(`uploadcos`);
+                        profiler1.done({ level: "debug", message: `Upload cos` });
+                        // console.timeEnd(`uploadcos`);
                         res({ url: (data.Location || "").replace("http:", "https:") })
                     });
                 });

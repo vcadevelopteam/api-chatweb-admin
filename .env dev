@@ -1,5 +1,6 @@
 SECRETA=palabrasecreta
 DBNAME=laraigodev
+NODE_ENV=development
 DBUSER=admin
 DBPASSWORD=d549887c9ee5db461976c0d23ee4604235f67e6848ac2cbd2d
 DBHOST=d5f3bbe9-f872-48c5-93b0-768afcc6a391.4b2136ddd30a46e9b7bdb2b2db7f8cd0.private.databases.appdomain.cloud
