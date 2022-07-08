@@ -1,6 +1,7 @@
 require('dotenv').config();
 const logger = require('./config/winston');
 const morganMiddleware = require("./config/morgan.middleware");
+var timeout = require('connect-timeout'); //express v4
 
 const express = require('express');
 const cors = require('cors');
@@ -12,6 +13,8 @@ const allowedOrigins = process.env.ADDRESSES_ALLOWED?.split(",") || [];
 const app = express();
 
 app.use(morganMiddleware);
+
+app.use(timeout(600000));
 
 app.use(cors({
     origin: function (origin, callback) {
