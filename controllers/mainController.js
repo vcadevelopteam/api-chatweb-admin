@@ -125,6 +125,8 @@ exports.exportTrigger = async (req, res) => {
         _requestid: req._requestid,
     });
 
+    logger.child({ _requestid, responseservices }).debug(`executing excel`)
+
     if (!responseservices.data || !responseservices.data instanceof Object)
         return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
 
