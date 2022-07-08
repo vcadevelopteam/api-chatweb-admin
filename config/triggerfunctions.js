@@ -715,14 +715,14 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
                 content += Object.keys(dataToExport[0]).join() + "\n";
 
                 for (let ii = 0; ii < dataToExport.length; ii++) {
-                    var rowdata = dataToExport[ii];
-                    var rowjoined = Object.values(rowdata).join("##");
-                    if (rowjoined.includes(",")) {
-                        rowjoined = Object.values(rowdata).map(x => (x && typeof x === "string") ? (x.includes(",") ? `"${x}"` : x) : x).join();
-                    } else {
-                        rowjoined = rowjoined.replace(/##/gi, ",");
-                    }
-                    content += rowjoined + "\n";
+                    // var rowdata = dataToExport[ii];
+                    content += Object.values(dataToExport[ii]).join("|") + "\n";;
+                    // if (rowjoined.includes(",")) {
+                    //     rowjoined = Object.values(rowdata).map(x => (x && typeof x === "string") ? (x.includes(",") ? `"${x}"` : x) : x).join();
+                    // } else {
+                    //     rowjoined = rowjoined.replace(/##/gi, ",");
+                    // }
+                    // content += rowjoined + "\n";
                 }
 
                 dataToExport = null;
@@ -733,7 +733,7 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
                 const params = {
                     ACL: 'public-read',
                     Key: titlefile,
-                    Body: Buffer.from(content, 'utf8'),
+                    Body: Buffer.from(content, 'ASCII'),
                     Bucket: COS_BUCKET_NAME,
                     ContentType: "text/csv",
                 }
