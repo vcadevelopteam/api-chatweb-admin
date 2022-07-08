@@ -716,7 +716,7 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
 
                 for (let ii = 0; ii < dataToExport.length; ii++) {
                     // var rowdata = dataToExport[ii];
-                    content += Object.values(dataToExport[ii]).join("|").replace(/[^\p{L}\p{N}\p{P}\p{Z}^$\n|]/gu, '') + "\n";;
+                    content += Object.values(dataToExport[ii]).join("|").replace(/(?![\x00-\x7F]|[\xC0-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF7][\x80-\xBF]{3})./g, '') + "\n";;
                     // if (rowjoined.includes(",")) {
                     //     rowjoined = Object.values(rowdata).map(x => (x && typeof x === "string") ? (x.includes(",") ? `"${x}"` : x) : x).join();
                     // } else {
