@@ -1,7 +1,7 @@
 const bcryptjs = require("bcryptjs");
 
 const { executesimpletransaction, executeTransaction, getCollectionPagination, exportData, buildQueryWithFilterAndSort, GetMultiCollection } = require('../config/triggerfunctions');
-const { setSessionParameters, getErrorCode } = require('../config/helpers');
+const { setSessionParameters, getErrorCode, axiosObservable } = require('../config/helpers');
 
 exports.GetCollection = async (req, res) => {
     const { parameters = {}, method, key } = req.body;
@@ -108,6 +108,26 @@ exports.getGraphic = async (req, res) => {
     } else {
         return res.status(result.rescode).json(result);
     }
+}
+
+exports.exportTrigger = async (req, res) => {
+    const { parameters, method } = req.body;
+
+    const responseservices = await axiosObservable({
+        method: "post",
+        url: `${process.env.API2}main/exportTrigger`,
+        data: { parameters, method },
+        _requestid: req._requestid,
+    });
+
+    if (!responseservices.data || !responseservices.data instanceof Object)
+        return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+
+    if (!responseservices.data.Success) {
+        return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+    }
+
+    res.json(responseservices.data);
 }
 
 exports.export = async (req, res) => {
