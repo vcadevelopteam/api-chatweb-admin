@@ -3,9 +3,10 @@ const sequelize = require('./database');
 const functionsbd = require('./functions');
 const XLSX = require('xlsx');
 const { generatefilter, generateSort, errors, getErrorSeq, getErrorCode, stringToSeconds, secondsToTime } = require('./helpers');
-const { v4: uuidv4 } = require('uuid');
 const { QueryTypes } = require('sequelize');
 require('pg').defaults.parseInt8 = true;
+
+const fs = require('fs');
 
 var ibm = require('ibm-cos-sdk');
 
@@ -142,7 +143,7 @@ exports.buildQueryWithFilterAndSort = async (method, data) => {
                 const queryCollectionCleaned = query.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
 
                 const profiler = logger.child({ context: data, _requestid: data._requestid }).startTimer();
-                
+
                 // profiler.done({ level: "debug", message: `Executed builded query ${queryCollectionCleaned}` });
 
                 logger.child({ context: data, _requestid: data._requestid }).debug(`executing ${queryCollectionCleaned}`)
@@ -653,7 +654,6 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
 }
 
 exports.exportData = (dataToExport, reportName, formatToExport, headerClient = null, _requestid) => {
-    let content = "";
     formatToExport = "csv";
     try {
         const titlefile = (reportName || "report") + new Date().toISOString() + (formatToExport !== "csv" ? ".xlsx" : ".csv");
@@ -711,24 +711,14 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
                 logger.child({ _requestid }).debug(`drawing csv`)
 
                 const profiler = logger.child({ _requestid }).startTimer();
-                // console.time(`draw-csv`);
-                content += Object.keys(dataToExport[0]).join() + "\n";
 
-                for (let ii = 0; ii < dataToExport.length; ii++) {
-                    // var rowdata = dataToExport[ii];
-                    content += Object.values(dataToExport[ii]).join("|").replace(/(?![\x00-\x7F]|[\xC0-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF7][\x80-\xBF]{3})./g, '') + "\n";;
-                    // if (rowjoined.includes(",")) {
-                    //     rowjoined = Object.values(rowdata).map(x => (x && typeof x === "string") ? (x.includes(",") ? `"${x}"` : x) : x).join();
-                    // } else {
-                    //     rowjoined = rowjoined.replace(/##/gi, ",");
-                    // }
-                    // content += rowjoined + "\n";
-                }
+                let content =
+                    Object.keys(dataToExport[0]).join() + "\n" +
+                    dataToExport.map(item => Object.values(item).join("|").replace(/(?![\x00-\x7F]|[\xC0-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF7][\x80-\xBF]{3})./g, '')).join("\n");
 
                 dataToExport = null;
 
                 profiler.done({ level: "debug", message: `Drawed csv` });
-                // console.timeEnd(`draw-csv`);
 
                 const params = {
                     ACL: 'public-read',
@@ -738,11 +728,12 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
                     ContentType: "text/csv",
                 }
 
+                content = "";
+
                 logger.child({ _requestid }).debug(`Uploading to COS`)
-                
+
                 const profiler1 = logger.child({ _requestid }).startTimer();
 
-                // console.time(`uploadcos`);
                 return new Promise((res, rej) => {
                     s3.upload(params, (err, data) => {
                         if (err) {
@@ -750,7 +741,7 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
                             rej(getErrorCode(errors.COS_UNEXPECTED_ERROR, err));
                         }
                         profiler1.done({ level: "debug", message: `Upload cos` });
-                        // console.timeEnd(`uploadcos`);
+
                         res({ url: (data.Location || "").replace("http:", "https:") })
                     });
                 });
