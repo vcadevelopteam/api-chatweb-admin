@@ -2236,10 +2236,15 @@ module.exports = {
     },
     QUERY_TICKETIMPORT_PCC_SEL: {
         query: `
-        SELECT pcc.personid, pcc.personcommunicationchannel
+        SELECT pcc.personid, pcc.personcommunicationchannel, pcc.personcommunicationchannelowner
         FROM personcommunicationchannel pcc
         WHERE pcc.corpid = $corpid
         AND pcc.orgid = $orgid
+        AND (
+            pcc.personcommunicationchannel = ANY(string_to_array($personcommunicationchannel,','))
+            OR
+            pcc.personcommunicationchannelowner = ANY(string_to_array($personcommunicationchannelowner,','))
+        )
         `,
         module: "",
         protected: false
@@ -2315,7 +2320,7 @@ module.exports = {
             null, null, null,
             '', '',
             '00:00:00.00', null,
-            '', null, null, '', '', null,
+            '', null, null, '', '', 'UPLOAD',
             '00:00:00.00',
             'Carga inicial'
         FROM json_populate_recordset(null::udtt_ticket_import, $datatable) pt
@@ -2345,7 +2350,7 @@ module.exports = {
             pt.conversationid,
             'ACTIVO', 'NINGUNO',
             NOW(), 'admin', NOW(), 'admin',
-            pt.interactiontext, pt.interactionuserid, 'LOG'
+            pt.interactiontext, pt.interactionuserid, 'text'
         FROM json_populate_recordset(null::udtt_ticket_import, $datatable) pt
         `,
         module: "",

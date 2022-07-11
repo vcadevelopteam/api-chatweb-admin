@@ -2,6 +2,7 @@ const axios = require('axios')
 const tf = require('../config/triggerfunctions');
 const { generatefilter, generateSort, errors, getErrorCode } = require('../config/helpers');
 const { executesimpletransaction } = require('../config/triggerfunctions');
+const { uploadToCOS, unrar, unzip } = require('../config/filefunctions');
 // var https = require('https');
 
 // const agent = new https.Agent({
@@ -355,7 +356,89 @@ exports.sendHSM = async (req, res) => {
 
 exports.import = async (req, res) => {
     try {
-        const { data } = req.body;
+        const { data = {}, channelsite } = req.body;
+        if (req.files.length > 10) {
+            return res.status(400).json(getErrorCode(errors.LIMIT_EXCEEDED));
+        }
+        
+        const attachments = []
+
+        const zip_list = req.files.filter(f => f.mimetype === 'application/x-zip-compressed' && f.originalname !== 'wa_layout.css');
+        for (let i = 0; i < zip_list.length; i++) {
+            let files = await unzip(zip_list[i])
+            if (files) {
+                for (let j = 0; j < files.length; j++) {
+                    if (files[j]?.size < 10*1024*1024) {
+                        let cosname = await uploadToCOS({
+                            size: files[j]?.size,
+                            originalname: files[j]?.name,
+                            buffer: files[j]?.data,
+                            mimetype: null
+                        }, req.user?.orgdesc || "anonymous")
+                        attachments.push({filename: files[j].name, url: cosname });
+                    }
+                }
+            }
+        }
+        
+        const rar_list = req.files.filter(f => f.originalname.includes('.rar'));
+        for (let i = 0; i < rar_list.length; i++) {
+            let files = await unrar(rar_list[i])
+            if (files) {
+                for (let j = 0; j < files.length; j++) {
+                    if (files[j]?.size < 10*1024*1024) {
+                        let cosname = await uploadToCOS({
+                            size: files[j]?.fileHeader?.unpSize,
+                            originalname: files[j]?.fileHeader?.name,
+                            buffer: Buffer.from(files[j]?.extraction),
+                            mimetype: null
+                        }, req.user?.orgdesc || "anonymous")
+                        attachments.push({filename: files[j]?.fileHeader?.name, url: cosname });
+                    }
+                }
+            }
+        }
+
+        // Joining csv files
+        const csv_list = req.files.filter(f => f.mimetype === 'text/csv');
+        let datatable = [];
+        for (const csv_elem of csv_list) {
+            const csv = csv_elem.buffer.toString();
+            let allTextLines = csv.split(/\r\n|\n/);
+            let headers = allTextLines[0].split(';');
+            let lines = [];
+            for (let i = 1; i < allTextLines.length; i++) {
+                if (allTextLines[i].split(';').length === headers.length) {
+                    const line = allTextLines[i].split(';')
+                    const data = {
+                        ...headers.reduce((ad, key, j) => ({
+                            ...ad,
+                            [key]: line[j][0] === '"' && line[j].slice(-1) === '"' ? line[j].slice(1,-1) : line[j]
+                        }), {}),
+                    }
+                    for (let j = 0; j < attachments.length; j++) {
+                        data.MessageBody = data.MessageBody.replace(attachments[j].filename, attachments[j].url)
+                    }
+                    lines.push(data)
+                }
+            }
+            // const phones = [...new Set(lines.map(d => d.UserPhone))];
+            // const personphone = phones.filter(p => p !== channelsite)?.[0];
+            const personphone = csv_elem.originalname.split('.')[0];
+            const personname = lines.filter(l => l.UserPhone === personphone)?.[0]?.UserName;
+            datatable = [
+                ...datatable,
+                ...lines.map(line => ({
+                    ...line,
+                    "channel": channelsite,
+                    "personname": personname,
+                    "personphone": personphone,
+                    "interactiontext": line.MessageBody,
+                    "interactionfrom": personphone === line.UserPhone ? 'CLIENT' : 'BOT'
+                }))
+            ]
+        }
+
         if (!data?.corpid)
             data.corpid = req.user?.corpid ? req.user.corpid : 1;
         if (!data?.orgid)
@@ -370,13 +453,13 @@ exports.import = async (req, res) => {
         const botname = bot_result?.[0]?.fullname || 'BOT SYSTEM';
         
         // Add conversation unique identifier
-        data.datatable = data.datatable.map(d => ({
+        datatable = datatable.map(d => ({
             ...d,
             auxid: d.personphone
         }));
 
         // Unique channels
-        const channel_list = [...new Set(data.datatable.map(d => d.channel))];
+        const channel_list = [...new Set(datatable.map(d => d.channel))];
 
         // Channels info
         const channel_result = await executesimpletransaction("QUERY_TICKETIMPORT_CHANNELS_SEL", {
@@ -391,17 +474,23 @@ exports.import = async (req, res) => {
         }), {});
 
         // Add channel information to the data
-        data.datatable = data.datatable.map(d => ({
+        datatable = datatable.map(d => ({
             ...d,
             communicationchannelid: channel_dict[d.channel]?.communicationchannelid,
             channeltype: channel_dict[d.channel]?.channeltype,
             personcommunicationchannel: `${d.personphone}_${channel_dict[d.channel]?.channeltype}`
         }));
 
+        // Unique pcc
+        const personcommunicationchannel_list = [...new Set(datatable.map(d => d.personcommunicationchannel))];
+        const personcommunicationchannelowner_list = [...new Set(datatable.map(d => d.personphone))];
+
         // Pcc info
         const pcc_result = await executesimpletransaction("QUERY_TICKETIMPORT_PCC_SEL", {
             corpid: data.corpid,
-            orgid: data.orgid
+            orgid: data.orgid,
+            personcommunicationchannel: personcommunicationchannel_list.join(','),
+            personcommunicationchannelowner: personcommunicationchannelowner_list.join(',')
         });
 
         const pcc_dict = pcc_result.reduce((ac, c) => ({
@@ -409,14 +498,19 @@ exports.import = async (req, res) => {
             [c.personcommunicationchannel]: c
         }), {});
 
+        const pccowner_dict = pcc_result.reduce((ac, c) => ({
+            ...ac,
+            [c.personcommunicationchannelowner]: c
+        }), {});
+
         // Add pcc information to the data
-        data.datatable = data.datatable.map(d => ({
+        datatable = datatable.map(d => ({
             ...d,
-            personid: pcc_dict[d.personcommunicationchannel]?.personid
+            personid: pcc_dict[d.personcommunicationchannel]?.personid || pccowner_dict[d.personphone]?.personid
         }));
 
         // Get uniques personcommunicationchannel
-        let pcc_to_create = [...new Map(data.datatable.map(d => [d['personcommunicationchannel'], d])).values()];
+        let pcc_to_create = [...new Map(datatable.map(d => [d['personcommunicationchannel'], d])).values()];
 
         // Filter the pcc that should be created
         pcc_to_create = pcc_to_create.filter(d => !pcc_result.map(pcc => pcc.personcommunicationchannel).includes(d.personcommunicationchannel));
@@ -440,13 +534,17 @@ exports.import = async (req, res) => {
         ALTER TABLE conversation ADD COLUMN auxid BIGINT;
         */
 
-        // Create persons
+        // Create pcc and persons
         if (pcc_to_create.length > 0) {
+            // Filter pcc without personid
+            const person_to_create = pcc_to_create.filter(d => !d.personid);
+            
+            // Create persons
             const person_result = await executesimpletransaction("QUERY_TICKETIMPORT_PERSON_INS", {
                 corpid: data.corpid,
                 orgid: data.orgid,
                 botname: botname,
-                datatable: JSON.stringify(pcc_to_create)
+                datatable: JSON.stringify(person_to_create)
             });
     
             const person_dict = person_result.reduce((ac, c) => ({
@@ -457,7 +555,7 @@ exports.import = async (req, res) => {
             // Add person information to pcc to create
             pcc_to_create = pcc_to_create.map(p => ({
                 ...p,
-                personid: person_dict[p.personcommunicationchannel]?.personid
+                personid: !p.personid ? person_dict[p.personcommunicationchannel]?.personid : p.personid
             }));
     
             // Create pccs
@@ -468,14 +566,14 @@ exports.import = async (req, res) => {
             });
     
             // Add person information to the data
-            data.datatable = data.datatable.map(d => ({
+            datatable = datatable.map(d => ({
                 ...d,
                 personid: !d.personid ? person_dict[d.personcommunicationchannel]?.personid : d.personid
             }));
         }
 
         // Get uniques conversation
-        const conversation_to_create = [...new Map(data.datatable.map(d => [d['auxid'], d])).values()];
+        const conversation_to_create = [...new Map(datatable.map(d => [d['auxid'], d])).values()];
 
         // Create conversations
         const conversation_result = await executesimpletransaction("QUERY_TICKETIMPORT_CONVERSATION_INS", {
@@ -497,7 +595,7 @@ exports.import = async (req, res) => {
         }), {});
 
         // Add conversation information to the data
-        data.datatable = data.datatable.map(d => ({
+        datatable = datatable.map(d => ({
             ...d,
             conversationid: conversation_dict[d.auxid]?.conversationid,
             interactionuserid: d.interactionfrom === 'CLIENT' ? null : botid
@@ -507,7 +605,7 @@ exports.import = async (req, res) => {
         await executesimpletransaction("QUERY_TICKETIMPORT_INTERACTION_INS", {
             corpid: data.corpid,
             orgid: data.orgid,
-            datatable: JSON.stringify(data.datatable)
+            datatable: JSON.stringify(datatable)
         });
         
         res.json({ success: true });
