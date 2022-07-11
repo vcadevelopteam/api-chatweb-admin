@@ -713,15 +713,20 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
                 const profiler = logger.child({ _requestid }).startTimer();
                 // console.time(`draw-csv`);
                 content += Object.keys(dataToExport[0]).join() + "\n";
-                dataToExport.forEach((rowdata) => {
-                    let rowjoined = Object.values(rowdata).join("##");
-                    if (rowjoined.includes(",")) {
-                        rowjoined = Object.values(rowdata).map(x => (x && typeof x === "string") ? (x.includes(",") ? `"${x}"` : x) : x).join();
-                    } else {
-                        rowjoined = rowjoined.replace(/##/gi, ",");
-                    }
-                    content += rowjoined + "\n";
-                });
+
+                for (let ii = 0; ii < dataToExport.length; ii++) {
+                    // var rowdata = dataToExport[ii];
+                    content += Object.values(dataToExport[ii]).join("|").replace(/(?![\x00-\x7F]|[\xC0-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF7][\x80-\xBF]{3})./g, '') + "\n";;
+                    // if (rowjoined.includes(",")) {
+                    //     rowjoined = Object.values(rowdata).map(x => (x && typeof x === "string") ? (x.includes(",") ? `"${x}"` : x) : x).join();
+                    // } else {
+                    //     rowjoined = rowjoined.replace(/##/gi, ",");
+                    // }
+                    // content += rowjoined + "\n";
+                }
+
+                dataToExport = null;
+
                 profiler.done({ level: "debug", message: `Drawed csv` });
                 // console.timeEnd(`draw-csv`);
 
