@@ -1,5 +1,5 @@
 const bcryptjs = require("bcryptjs");
-
+const logger = require('../config/winston');
 const { executesimpletransaction, executeTransaction, getCollectionPagination, exportData, buildQueryWithFilterAndSort, GetMultiCollection } = require('../config/triggerfunctions');
 const { setSessionParameters, getErrorCode, axiosObservable } = require('../config/helpers');
 
@@ -113,21 +113,28 @@ exports.getGraphic = async (req, res) => {
 exports.exportTrigger = async (req, res) => {
     const { parameters, method } = req.body;
 
-    const responseservices = await axiosObservable({
-        method: "post",
-        url: `${process.env.API2}main/exportTrigger`,
-        data: { parameters, method },
-        _requestid: req._requestid,
-    });
+    const authHeader = String(req.headers['authorization'] || '');
 
-    if (!responseservices.data || !responseservices.data instanceof Object)
-        return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+    try {
+        const responseservices = await axiosObservable({
+            method: "post",
+            url: `${process.env.API2}main/exportTrigger`,
+            data: { parameters, method },
+            headers: {
+                "Authorization": authHeader
+            },
+            _requestid: req._requestid,
+        });
 
-    if (!responseservices.data.Success) {
-        return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+        logger.child({ _requestid: req._requestid, response: responseservices.data }).debug(`executing excel`)
+
+        if (!responseservices.data || !responseservices.data instanceof Object)
+            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+
+        return res.json(responseservices.data);
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
-
-    res.json(responseservices.data);
 }
 
 exports.export = async (req, res) => {
