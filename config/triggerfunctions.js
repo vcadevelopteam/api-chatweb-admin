@@ -654,7 +654,7 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
 }
 
 exports.exportData = (dataToExport, reportName, formatToExport, headerClient = null, _requestid) => {
-    // formatToExport = "csv";
+    formatToExport = "csv";
     try {
         const titlefile = (reportName || "report") + new Date().toISOString() + (formatToExport !== "csv" ? ".xlsx" : ".csv");
         if (dataToExport instanceof Array && dataToExport.length > 0) {
@@ -678,17 +678,11 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
                 dataToExport.unshift(keysHeaders);
             }
             if (formatToExport === "excel") {
-                logger.child({ _requestid }).debug(`drawing excel`)
-
-                const profiler1 = logger.child({ _requestid }).startTimer();
+                logger.child({ _requestid }).debug(`executing excel`)
 
                 const ws = XLSX.utils.json_to_sheet(dataToExport, headerClient ? {
                     skipHeader: !!headerClient,
                 } : undefined);
-
-                dataToExport = null;
-                
-                profiler1.done({ level: "debug", message: `drawed excel` });
 
                 const wb = { Sheets: { 'data': ws }, SheetNames: ['data'] };
                 const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
