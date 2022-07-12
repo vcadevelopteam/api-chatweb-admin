@@ -1,7 +1,9 @@
 const bcryptjs = require("bcryptjs");
 const logger = require('../config/winston');
-const { executesimpletransaction, executeTransaction, getCollectionPagination, exportData, buildQueryWithFilterAndSort, GetMultiCollection } = require('../config/triggerfunctions');
+const { executesimpletransaction, executeTransaction, getCollectionPagination, exportData, buildQueryWithFilterAndSort, GetMultiCollection, getQuery } = require('../config/triggerfunctions');
 const { setSessionParameters, getErrorCode, axiosObservable } = require('../config/helpers');
+const { Pool } = require('pg')
+const Cursor = require('pg-cursor')
 
 exports.GetCollection = async (req, res) => {
     const { parameters = {}, method, key } = req.body;
@@ -224,4 +226,53 @@ exports.validateConversationWhatsapp = async (req, res) => {
     const insert = await executesimpletransaction("UFN_MIGRATION_CONVERSATIONWHATSAPP_INS", { corpid, orgid, table: JSON.stringify(cwsp), _requestid: req._requestid });
 
     return res.json({ error: false, success: true, insert, cwsp });
+}
+
+exports.export22 = async (req, res) => {
+    const { parameters, method } = req.body;
+
+    setSessionParameters(parameters, req.user, req._requestid);
+
+    const pool = new Pool({
+        user: process.env.DBUSER,
+        host: process.env.DBHOST,
+        database: process.env.DBNAME,
+        password: process.env.DBPASSWORD,
+        port: process.env.DBPORT,
+        ssl: {
+            rejectUnauthorized: false
+        }
+    })
+    const client = await pool.connect()
+
+    const BATCH_SIZE = 100000;
+
+    const query = getQuery(method, parameters);
+
+    const values = query.match(/\$[\_\w]+/g).map(x => parameters[x])
+
+    const cursor = client.query(new Cursor(query, values));
+
+    function processResults() {
+        return new Promise((resolve, reject) => {
+            (function read() {
+                cursor.read(BATCH_SIZE, async (err, rows) => {
+                    if (err) {
+                        return resolve({ error: true, err });
+                    }
+    
+                    // no more rows, so we're done!
+                    if (!rows.length) {
+                        return resolve({ error: false });
+                    }
+    
+                    return read();
+                });
+            })();
+        });
+    }
+
+    const allprocess = await processResults();
+
+    return res.status(500).json(allprocess);
 }

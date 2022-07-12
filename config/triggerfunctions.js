@@ -6,8 +6,6 @@ const { generatefilter, generateSort, errors, getErrorSeq, getErrorCode, stringT
 const { QueryTypes } = require('sequelize');
 require('pg').defaults.parseInt8 = true;
 
-const fs = require('fs');
-
 var ibm = require('ibm-cos-sdk');
 
 var config = {
@@ -751,5 +749,31 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
         }
     } catch (exception) {
         return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing exportdata");
+    }
+}
+
+
+
+exports.getQuery = (method, data) => {
+    try {
+        if (functionsbd[method]) {
+            let query = functionsbd[method].query;
+            if (data instanceof Object) {
+
+                data.where = generatefilter(data.filters, data.origin, data.daterange, data.offset);
+                data.order = generateSort(data.sorts, data.origin);
+
+                const queryCollectionCleaned = query.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
+
+                return queryCollectionCleaned;
+
+            } else {
+                return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
+            }
+        } else {
+            return getErrorCode(errors.NOT_FUNCTION_ERROR);
+        }
+    } catch (exception) {
+        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing buildQueryWithFilterAndSort", data._requestid);
     }
 }
