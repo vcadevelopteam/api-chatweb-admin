@@ -278,7 +278,7 @@ exports.export22 = async (req, res) => {
                         } else if (indexPart % 5 === 0) {
                             const buffer = await zip.generateAsync({ type: "nodebuffer", compression: 'DEFLATE' })
                             const rr = await onlyCSV(req._requestid, buffer);
-                            resultLink.push(rr)
+                            resultLink.push(rr.url)
 
                             zip = new JSZip(); //reiniciamos
                         }
@@ -291,7 +291,7 @@ exports.export22 = async (req, res) => {
                             const buffer = await zip.generateAsync({ type: "nodebuffer", compression: 'DEFLATE' })
                             const rr = await onlyCSV(req._requestid, buffer);
                             zip = null;
-                            resultLink.push(rr)
+                            resultLink.push(rr.url)
                             return resolve({ error: false });
                         }
                         await uploadCSV(rows, parameters.headerClient, req._requestid, indexPart, zip);
