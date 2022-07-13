@@ -264,7 +264,7 @@ exports.export22 = async (req, res) => {
         const cursor = client.query(new Cursor(query, values));
 
         const resultLink = [];
-        
+
         function processResults() {
             return new Promise((resolve, reject) => {
                 (function read() {
@@ -272,15 +272,15 @@ exports.export22 = async (req, res) => {
                         if (err) {
                             return resolve({ error: true, err });
                         }
-        
+
                         // no more rows, so we're done!
                         if (!rows.length) {
                             return resolve({ error: false, resultLink });
                         }
                         const url = await uploadCSV(rows, parameters.headerClient, req._requestid);
-    
+
                         resultLink.push(url);
-    
+
                         return read();
                     });
                 })();
@@ -288,7 +288,7 @@ exports.export22 = async (req, res) => {
         }
         const allprocess = await processResults();
 
-        return res.status(200).json(allprocess);
+        return res.status(200).json({ ...allprocess, resultLink });
     } catch (error) {
         return res.status(500).json({ error });
     }
