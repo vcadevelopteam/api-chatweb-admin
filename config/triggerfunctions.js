@@ -778,9 +778,9 @@ exports.getQuery = (method, data) => {
     }
 }
 
-exports.uploadCSV = async (data, headerClient, _requestid) => {
+exports.uploadCSV = async (data, headerClient, _requestid, indexPart) => {
     const formatToExport = "csv";
-    const titlefile = new Date().toISOString() + (formatToExport !== "csv" ? ".xlsx" : ".csv");
+    const titlefile = "Part-" + indexPart + "-" + new Date().toISOString() + (formatToExport !== "csv" ? ".xlsx" : ".csv");
     var s3 = new ibm.S3(config);
     let keysHeaders;
     const keys = Object.keys(data[0]);
