@@ -277,9 +277,9 @@ exports.export22 = async (req, res) => {
                         if (!rows.length) {
                             return resolve({ error: false, resultLink });
                         }
-                        const url = await uploadCSV(rows, parameters.headerClient, req._requestid);
+                        const res = await uploadCSV(rows, parameters.headerClient, req._requestid);
 
-                        resultLink.push(url);
+                        resultLink.push(res.url);
 
                         return read();
                     });
