@@ -778,7 +778,7 @@ exports.getQuery = (method, data) => {
     }
 }
 
-exports.uploadCSV = async (data, headerClient, _requestid, indexPart) => {
+exports.uploadCSV = async (data, headerClient, _requestid, indexPart, zip) => {
     const formatToExport = "csv";
     const titlefile = "Part-" + indexPart + "-" + new Date().toISOString() + (formatToExport !== "csv" ? ".xlsx" : ".csv");
     var s3 = new ibm.S3(config);
@@ -813,12 +813,47 @@ exports.uploadCSV = async (data, headerClient, _requestid, indexPart) => {
 
     profiler.done({ level: "debug", message: `Drawed csv` });
 
+    if (zip) {
+        zip.file(titlefile, Buffer.from(content, 'ASCII'), { binary : true } )
+    } else {
+        const params = {
+            ACL: 'public-read',
+            Key: titlefile,
+            Body: Buffer.from(content, 'ASCII'),
+            Bucket: COS_BUCKET_NAME,
+            ContentType: "text/csv",
+        }
+    
+        content = "";
+    
+        logger.child({ _requestid }).debug(`Uploading to COS`)
+    
+        const profiler1 = logger.child({ _requestid }).startTimer();
+    
+        return new Promise((res, rej) => {
+            s3.upload(params, (err, data) => {
+                if (err) {
+                    profiler1.done({ level: "error", error: err, message: `Uploaded cos` });
+                    rej(getErrorCode(errors.COS_UNEXPECTED_ERROR, err));
+                }
+                profiler1.done({ level: "debug", message: `Upload cos` });
+    
+                res({ url: (data.Location || "").replace("http:", "https:") })
+            });
+        });
+    }
+}
+
+exports.onlyCSV = async (_requestid, buffer) => {
+    
+    var s3 = new ibm.S3(config);
+    
     const params = {
         ACL: 'public-read',
-        Key: titlefile,
-        Body: Buffer.from(content, 'ASCII'),
+        Key: "report-x",
+        Body: buffer,
         Bucket: COS_BUCKET_NAME,
-        ContentType: "text/csv",
+        ContentType: "application/zip",
     }
 
     content = "";

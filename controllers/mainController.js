@@ -4,6 +4,7 @@ const { executesimpletransaction, executeTransaction, getCollectionPagination, e
 const { setSessionParameters, getErrorCode, axiosObservable } = require('../config/helpers');
 const { Pool } = require('pg')
 const Cursor = require('pg-cursor')
+var zip = new require('node-zip')();
 
 exports.GetCollection = async (req, res) => {
     const { parameters = {}, method, key } = req.body;
@@ -278,9 +279,9 @@ exports.export22 = async (req, res) => {
                         if (!rows.length) {
                             return resolve({ error: false, resultLink });
                         }
-                        const res = await uploadCSV(rows, parameters.headerClient, req._requestid, indexPart);
+                        await uploadCSV(rows, parameters.headerClient, req._requestid, indexPart, zip);
 
-                        resultLink.push(res.url);
+                        // resultLink.push(res.url);
 
                         indexPart++;
 
@@ -290,6 +291,11 @@ exports.export22 = async (req, res) => {
             });
         }
         const allprocess = await processResults();
+
+        const buffer = await zip.generateAsync({
+            type: "nodebuffer",
+            compression: 'DEFLATE'
+        })
 
         return res.status(200).json({ ...allprocess, resultLink });
     } catch (error) {
