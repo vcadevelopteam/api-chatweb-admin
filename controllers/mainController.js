@@ -263,10 +263,11 @@ exports.export22 = async (req, res) => {
 
         const cursor = client.query(new Cursor(query, values));
 
+        const resultLink = [];
+        
         function processResults() {
             return new Promise((resolve, reject) => {
                 (function read() {
-                    const resultLink = [];
                     cursor.read(BATCH_SIZE, async (err, rows) => {
                         if (err) {
                             return resolve({ error: true, err });
