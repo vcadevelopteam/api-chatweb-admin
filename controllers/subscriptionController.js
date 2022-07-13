@@ -1,7 +1,7 @@
 const bcryptjs = require("bcryptjs");
 const channelfunctions = require("../config/channelfunctions");
 const triggerfunctions = require("../config/triggerfunctions");
-
+const { getErrorCode } = require('../config/helpers');
 const { setSessionParameters, axiosObservable } = require('../config/helpers');
 
 const cryptojs = require("crypto-js");
