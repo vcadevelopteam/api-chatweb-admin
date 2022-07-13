@@ -1,10 +1,10 @@
 const bcryptjs = require("bcryptjs");
 const logger = require('../config/winston');
-const { executesimpletransaction, executeTransaction, getCollectionPagination, exportData, buildQueryWithFilterAndSort, GetMultiCollection, getQuery, uploadCSV } = require('../config/triggerfunctions');
+const { executesimpletransaction, executeTransaction, getCollectionPagination, exportData, buildQueryWithFilterAndSort, GetMultiCollection, getQuery, uploadCSV, onlyCSV } = require('../config/triggerfunctions');
 const { setSessionParameters, getErrorCode, axiosObservable } = require('../config/helpers');
 const { Pool } = require('pg')
 const Cursor = require('pg-cursor')
-var zip = new require('node-zip')();
+var JSZip = require("jszip")
 
 exports.GetCollection = async (req, res) => {
     const { parameters = {}, method, key } = req.body;
@@ -248,7 +248,7 @@ exports.export22 = async (req, res) => {
         })
         const client = await pool.connect()
 
-        const BATCH_SIZE = 100_000;
+        const BATCH_SIZE = 1000;
 
         let query = getQuery(method, parameters);
 
@@ -266,6 +266,8 @@ exports.export22 = async (req, res) => {
 
         const resultLink = [];
         let indexPart = 1;
+
+        var zip = new JSZip();
 
         function processResults() {
             return new Promise((resolve, reject) => {
@@ -297,8 +299,11 @@ exports.export22 = async (req, res) => {
             compression: 'DEFLATE'
         })
 
-        return res.status(200).json({ ...allprocess, resultLink });
-    } catch (error) {
-        return res.status(500).json({ error });
+
+        const rr = await onlyCSV(req._requestid, buffer);
+
+        return res.status(200).json(rr);
+    } catch (exception) {
+        return getErrorCode(null, exception, "Executing getCollectionPagination");
     }
 }
