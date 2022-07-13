@@ -273,13 +273,14 @@ exports.export22 = async (req, res) => {
             return new Promise((resolve, reject) => {
                 (function read() {
                     cursor.read(BATCH_SIZE, async (err, rows) => {
+                        let alreadysave = false;
                         if (indexPart === 1) {
                             zip = new JSZip();
-                        } else if (indexPart % 5 === 0) {
+                        } else if ((indexPart - 1) % 5 === 0) {
                             const buffer = await zip.generateAsync({ type: "nodebuffer", compression: 'DEFLATE' })
                             const rr = await onlyCSV(req._requestid, buffer);
                             resultLink.push(rr.url)
-
+                            alreadysave = true;
                             zip = new JSZip(); //reiniciamos
                         }
                         if (err) {
@@ -288,10 +289,12 @@ exports.export22 = async (req, res) => {
 
                         // no more rows, so we're done!
                         if (!rows.length) {
-                            const buffer = await zip.generateAsync({ type: "nodebuffer", compression: 'DEFLATE' })
-                            const rr = await onlyCSV(req._requestid, buffer);
-                            zip = null;
-                            resultLink.push(rr.url)
+                            if (!alreadysave) {
+                                const buffer = await zip.generateAsync({ type: "nodebuffer", compression: 'DEFLATE' })
+                                const rr = await onlyCSV(req._requestid, buffer);
+                                zip = null;
+                                resultLink.push(rr.url)
+                            }
                             return resolve({ error: false });
                         }
                         await uploadCSV(rows, parameters.headerClient, req._requestid, indexPart, zip);
