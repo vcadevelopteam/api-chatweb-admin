@@ -276,8 +276,14 @@ exports.export22 = async (req, res) => {
                         let alreadysave = false;
                         if (indexPart === 1) {
                             zip = new JSZip();
-                        } else if ((indexPart - 1) % 5 === 0) {
-                            const buffer = await zip.generateAsync({ type: "nodebuffer", compression: 'DEFLATE' })
+                        } else if ((indexPart - 1) % 4 === 0) {
+                            const buffer = await zip.generateAsync({
+                                type: "nodebuffer",
+                                compression: 'DEFLATE',
+                                compressionOptions: {
+                                    level: 9,
+                                }
+                            })
                             const rr = await onlyCSV(req._requestid, buffer);
                             resultLink.push(rr.url)
                             alreadysave = true;
