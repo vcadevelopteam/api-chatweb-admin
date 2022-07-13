@@ -308,7 +308,7 @@ exports.export22 = async (req, res) => {
 
         await cursor.close();
 
-        return res.status(200).json(rr);
+        return res.status(200).json({ url: resultLink.join() });
     } catch (exception) {
         return getErrorCode(null, exception, "Executing getCollectionPagination");
     }
