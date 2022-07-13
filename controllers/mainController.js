@@ -264,7 +264,7 @@ exports.export22 = async (req, res) => {
 
         const cursor = client.query(new Cursor(query, values));
 
-        const resultLink = [];
+        // const resultLink = [];
         let indexPart = 1;
 
         var zip = new JSZip();
@@ -279,7 +279,7 @@ exports.export22 = async (req, res) => {
 
                         // no more rows, so we're done!
                         if (!rows.length) {
-                            return resolve({ error: false, resultLink });
+                            return resolve({ error: false });
                         }
                         await uploadCSV(rows, parameters.headerClient, req._requestid, indexPart, zip);
 
@@ -292,13 +292,14 @@ exports.export22 = async (req, res) => {
                 })();
             });
         }
-        const allprocess = await processResults();
+        await processResults();
+
+        await cursor.close();
 
         const buffer = await zip.generateAsync({
             type: "nodebuffer",
             compression: 'DEFLATE'
         })
-
 
         const rr = await onlyCSV(req._requestid, buffer);
 
