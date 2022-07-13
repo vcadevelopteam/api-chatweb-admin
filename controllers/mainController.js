@@ -292,9 +292,9 @@ exports.export22 = async (req, res) => {
                             if (!alreadysave) {
                                 const buffer = await zip.generateAsync({ type: "nodebuffer", compression: 'DEFLATE' })
                                 const rr = await onlyCSV(req._requestid, buffer);
-                                zip = null;
                                 resultLink.push(rr.url)
                             }
+                            zip = null;
                             return resolve({ error: false });
                         }
                         await uploadCSV(rows, parameters.headerClient, req._requestid, indexPart, zip);
