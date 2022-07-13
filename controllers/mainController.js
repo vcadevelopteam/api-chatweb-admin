@@ -231,52 +231,63 @@ exports.validateConversationWhatsapp = async (req, res) => {
 exports.export22 = async (req, res) => {
     const { parameters, method } = req.body;
 
-    setSessionParameters(parameters, req.user, req._requestid);
+    try {
+        setSessionParameters(parameters, req.user, req._requestid);
 
-    const pool = new Pool({
-        user: process.env.DBUSER,
-        host: process.env.DBHOST,
-        database: process.env.DBNAME,
-        password: process.env.DBPASSWORD,
-        port: process.env.DBPORT,
-        ssl: {
-            rejectUnauthorized: false
-        }
-    })
-    const client = await pool.connect()
+        const pool = new Pool({
+            user: process.env.DBUSER,
+            host: process.env.DBHOST,
+            database: process.env.DBNAME,
+            password: process.env.DBPASSWORD,
+            port: process.env.DBPORT,
+            max: 50,
+            ssl: {
+                rejectUnauthorized: false
+            }
+        })
+        const client = await pool.connect()
 
-    const BATCH_SIZE = 100000;
+        const BATCH_SIZE = 50_000;
 
-    const query = getQuery(method, parameters);
+        let query = getQuery(method, parameters);
 
-    const values = query.match(/\$[\_\w]+/g).map(x => parameters[x])
+        const resultRx = query.match(/\$[\_\w]+/g)
 
-    const cursor = client.query(new Cursor(query, values));
+        resultRx?.forEach((x, i) => {
+            query = query.replace(x, "$" + (i + 1))
+        })
 
-    function processResults() {
-        return new Promise((resolve, reject) => {
-            const resultLink = [];
-            (function read() {
-                cursor.read(BATCH_SIZE, async (err, rows) => {
-                    if (err) {
-                        return resolve({ error: true, err });
-                    }
+        const values = resultRx?.map(x => parameters[x.replace("$", "")]) || []
+
+        logger.debug(`executing ${query}`)
+
+        const cursor = client.query(new Cursor(query, values));
+
+        function processResults() {
+            return new Promise((resolve, reject) => {
+                (function read() {
+                    cursor.read(BATCH_SIZE, async (err, rows) => {
+                        if (err) {
+                            return resolve({ error: true, err });
+                        }
+        
+                        // no more rows, so we're done!
+                        if (!rows.length) {
+                            return resolve({ error: false, resultLink });
+                        }
+                        const url = await uploadCSV(rows, parameters.headerClient, req._requestid);
     
-                    // no more rows, so we're done!
-                    if (!rows.length) {
-                        return resolve({ error: false, resultLink });
-                    }
-                    const url = await uploadCSV(rows, parameters.headerClient, req._requestid);
+                        resultLink.push(url);
+    
+                        return read();
+                    });
+                })();
+            });
+        }
+        const allprocess = await processResults();
 
-                    resultLink.push(url);
-
-                    return read();
-                });
-            })();
-        });
+        return res.status(200).json(allprocess);
+    } catch (error) {
+        return res.status(500).json({ error });
     }
-
-    const allprocess = await processResults();
-
-    return res.status(500).json(allprocess);
 }
