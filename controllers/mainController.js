@@ -281,7 +281,7 @@ exports.export22 = async (req, res) => {
                                 type: "nodebuffer",
                                 compression: 'DEFLATE',
                                 compressionOptions: {
-                                    level: 9,
+                                    level: 1,
                                 }
                             })
                             const rr = await onlyCSV(req._requestid, buffer);
