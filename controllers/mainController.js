@@ -248,7 +248,7 @@ exports.export22 = async (req, res) => {
         })
         const client = await pool.connect()
 
-        const BATCH_SIZE = 1000;
+        const BATCH_SIZE = 100_000;
 
         let query = getQuery(method, parameters);
 
