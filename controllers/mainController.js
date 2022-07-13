@@ -1,6 +1,6 @@
 const bcryptjs = require("bcryptjs");
 const logger = require('../config/winston');
-const { executesimpletransaction, executeTransaction, getCollectionPagination, exportData, buildQueryWithFilterAndSort, GetMultiCollection, getQuery } = require('../config/triggerfunctions');
+const { executesimpletransaction, executeTransaction, getCollectionPagination, exportData, buildQueryWithFilterAndSort, GetMultiCollection, getQuery, uploadCSV } = require('../config/triggerfunctions');
 const { setSessionParameters, getErrorCode, axiosObservable } = require('../config/helpers');
 const { Pool } = require('pg')
 const Cursor = require('pg-cursor')
@@ -255,6 +255,7 @@ exports.export22 = async (req, res) => {
 
     function processResults() {
         return new Promise((resolve, reject) => {
+            const resultLink = [];
             (function read() {
                 cursor.read(BATCH_SIZE, async (err, rows) => {
                     if (err) {
@@ -263,9 +264,12 @@ exports.export22 = async (req, res) => {
     
                     // no more rows, so we're done!
                     if (!rows.length) {
-                        return resolve({ error: false });
+                        return resolve({ error: false, resultLink });
                     }
-    
+                    const url = await uploadCSV(rows, parameters.headerClient, req._requestid);
+
+                    resultLink.push(url);
+
                     return read();
                 });
             })();

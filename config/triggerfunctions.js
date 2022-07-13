@@ -777,3 +777,63 @@ exports.getQuery = (method, data) => {
         return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing buildQueryWithFilterAndSort", data._requestid);
     }
 }
+
+exports.uploadCSV = async (data, headerClient, _requestid) => {
+    var s3 = new ibm.S3(config);
+    let keysHeaders;
+    const keys = Object.keys(data[0]);
+    keysHeaders = keys;
+
+    if (headerClient) {
+        keysHeaders = keys.reduce((acc, item) => {
+            const keyclientfound = headerClient.find(x => x.key === item);
+            if (!keyclientfound)
+                return acc;
+            else {
+                return {
+                    ...acc,
+                    [item]: keyclientfound.alias
+                }
+            }
+        }, {});
+        data.unshift(keysHeaders);
+    }
+    
+    logger.child({ _requestid }).debug(`drawing csv`)
+
+    const profiler = logger.child({ _requestid }).startTimer();
+
+    let content =
+        (headerClient ? "" : (Object.keys(data[0]).join("|") + "\n")) +
+        data.map(item => Object.values(item).join("|").replace(/(?![\x00-\x7FáéíóúñÁÉÍÓÚÑ]|[\xC0-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF7][\x80-\xBF]{3})./g, '')).join("\n");
+
+    data = null;
+
+    profiler.done({ level: "debug", message: `Drawed csv` });
+
+    const params = {
+        ACL: 'public-read',
+        Key: titlefile,
+        Body: Buffer.from(content, 'ASCII'),
+        Bucket: COS_BUCKET_NAME,
+        ContentType: "text/csv",
+    }
+
+    content = "";
+
+    logger.child({ _requestid }).debug(`Uploading to COS`)
+
+    const profiler1 = logger.child({ _requestid }).startTimer();
+
+    return new Promise((res, rej) => {
+        s3.upload(params, (err, data) => {
+            if (err) {
+                profiler1.done({ level: "error", error: err, message: `Uploaded cos` });
+                rej(getErrorCode(errors.COS_UNEXPECTED_ERROR, err));
+            }
+            profiler1.done({ level: "debug", message: `Upload cos` });
+
+            res({ url: (data.Location || "").replace("http:", "https:") })
+        });
+    });
+}
