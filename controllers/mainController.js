@@ -264,21 +264,33 @@ exports.export22 = async (req, res) => {
 
         const cursor = client.query(new Cursor(query, values));
 
-        // const resultLink = [];
+        const resultLink = [];
         let indexPart = 1;
 
-        var zip = new JSZip();
+        let zip = null;
 
         function processResults() {
             return new Promise((resolve, reject) => {
                 (function read() {
                     cursor.read(BATCH_SIZE, async (err, rows) => {
+                        if (indexPart === 1) {
+                            zip = new JSZip();
+                        } else if (indexPart % 5 === 0) {
+                            const buffer = await zip.generateAsync({ type: "nodebuffer", compression: 'DEFLATE' })
+                            const rr = await onlyCSV(req._requestid, buffer);
+                            resultLink.push(rr)
+
+                            zip = new JSZip(); //reiniciamos
+                        }
                         if (err) {
                             return resolve({ error: true, err });
                         }
 
                         // no more rows, so we're done!
                         if (!rows.length) {
+                            const buffer = await zip.generateAsync({ type: "nodebuffer", compression: 'DEFLATE' })
+                            const rr = await onlyCSV(req._requestid, buffer);
+                            resultLink.push(rr)
                             return resolve({ error: false });
                         }
                         await uploadCSV(rows, parameters.headerClient, req._requestid, indexPart, zip);
@@ -295,13 +307,6 @@ exports.export22 = async (req, res) => {
         await processResults();
 
         await cursor.close();
-
-        const buffer = await zip.generateAsync({
-            type: "nodebuffer",
-            compression: 'DEFLATE'
-        })
-
-        const rr = await onlyCSV(req._requestid, buffer);
 
         return res.status(200).json(rr);
     } catch (exception) {
