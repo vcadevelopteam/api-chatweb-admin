@@ -780,7 +780,7 @@ exports.getQuery = (method, data) => {
 
 exports.uploadCSV = async (data, headerClient, _requestid, indexPart, zip) => {
     const formatToExport = "csv";
-    const titlefile = "Part-" + indexPart + "-" + new Date().toISOString() + (formatToExport !== "csv" ? ".xlsx" : ".csv");
+    const titlefile = "Part-" + indexPart + "-" + (formatToExport !== "csv" ? ".xlsx" : ".csv");
     var s3 = new ibm.S3(config);
     let keysHeaders;
     const keys = Object.keys(data[0]);
@@ -850,7 +850,7 @@ exports.onlyCSV = async (_requestid, buffer) => {
     
     const params = {
         ACL: 'public-read',
-        Key: "report-x",
+        Key: new Date().toISOString() + ".zip",
         Body: buffer,
         Bucket: COS_BUCKET_NAME,
         ContentType: "application/zip",
