@@ -43,6 +43,7 @@ app.use('/api/payment', require('./routes/payment'));
 app.use('/api/billing', require('./routes/billing'));
 app.use('/api/gmaps', require('./routes/gmaps'));
 app.use('/api/voximplant', require('./routes/voximplant'));
+app.use('/api/google', require('./routes/google'));
 
 // Definir la pagina principal
 app.get('/', (req, res) => {
