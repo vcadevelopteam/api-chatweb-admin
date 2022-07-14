@@ -3,7 +3,7 @@ const { transformCSV, uploadCSV } = require('./triggerfunctions');
 
 const BATCH_SIZE = 100_000;
 
-exports.processCursor = (cursor, _requestid) => {
+exports.processCursor = (cursor, _requestid, headerClient) => {
     let indexPart = 1;
     const resultLink = [];
     let zip = null;
@@ -40,7 +40,7 @@ exports.processCursor = (cursor, _requestid) => {
                     zip = null;
                     return resolve({ error: false, resultLink });
                 }
-                await transformCSV(rows, parameters.headerClient, _requestid, indexPart, zip);
+                await transformCSV(rows, headerClient, _requestid, indexPart, zip);
 
                 indexPart++;
 
