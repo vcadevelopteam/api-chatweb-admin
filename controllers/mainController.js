@@ -127,6 +127,7 @@ exports.exportTrigger = async (req, res) => {
                 "Authorization": authHeader
             },
             _requestid: req._requestid,
+            timeout: 600000 * 3
         });
 
         logger.child({ _requestid: req._requestid, response: responseservices.data }).debug(`executing excel`)
