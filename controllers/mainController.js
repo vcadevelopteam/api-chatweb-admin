@@ -248,12 +248,8 @@ exports.exportWithCursor = async (req, res) => {
         })
         const client = await pool.connect()
 
-        const rq = getQuery(method, parameters, parameters.isNotPaginated);
+        const { query, values } = getQuery(method, parameters, parameters.isNotPaginated);
 
-        console.log("rq", rq)
-        
-        const query = rq.query;
-        
         logger.debug(`executing ${query}`)
 
         const cursor = client.query(new Cursor(query, values));

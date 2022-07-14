@@ -720,15 +720,13 @@ exports.getQuery = (method, data, isNotPaginated) => {
     try {
         if (functionsbd[method]) {
             let query = functionsbd[method].query;
-            console.log(query)
+            
             if (!isNotPaginated) {
                 if (data instanceof Object) {
                     data.where = generatefilter(data.filters, data.origin, data.daterange, data.offset);
                     data.order = generateSort(data.sorts, data.origin);
 
-                    const queryCollectionCleaned = query.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
-
-                    return queryCollectionCleaned;
+                    query = query.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
                 } else {
                     return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
                 }
