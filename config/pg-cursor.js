@@ -3,7 +3,7 @@ const { transformCSV, uploadCSV } = require('./triggerfunctions');
 
 const BATCH_SIZE = 100_000;
 
-exports.processCursor = (cursor) => {
+exports.processCursor = (cursor, _requestid) => {
     let indexPart = 1;
     const resultLink = [];
     let zip = null;
@@ -22,7 +22,7 @@ exports.processCursor = (cursor) => {
                             level: 1,
                         }
                     })
-                    const rr = await uploadCSV(req._requestid, buffer);
+                    const rr = await uploadCSV(_requestid, buffer);
                     resultLink.push(rr.url)
                     alreadysave = true;
                     zip = new JSZip(); //reiniciamos
@@ -34,13 +34,13 @@ exports.processCursor = (cursor) => {
                 if (!rows.length) {
                     if (!alreadysave) {
                         const buffer = await zip.generateAsync({ type: "nodebuffer", compression: 'DEFLATE' })
-                        const rr = await uploadCSV(req._requestid, buffer);
+                        const rr = await uploadCSV(_requestid, buffer);
                         resultLink.push(rr.url)
                     }
                     zip = null;
                     return resolve({ error: false, resultLink });
                 }
-                await transformCSV(rows, parameters.headerClient, req._requestid, indexPart, zip);
+                await transformCSV(rows, parameters.headerClient, _requestid, indexPart, zip);
 
                 indexPart++;
 

@@ -254,7 +254,7 @@ exports.exportWithCursor = async (req, res) => {
 
         const cursor = client.query(new Cursor(query, values));
 
-        const res = await processCursor(cursor);
+        const res = await processCursor(cursor, req._requestid);
 
         await cursor.close();
 
