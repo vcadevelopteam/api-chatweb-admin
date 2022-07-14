@@ -740,7 +740,7 @@ exports.getQuery = (method, data, isNotPaginated) => {
             })
 
             const values = resultRx?.map(x => data[x.replace("$", "")]) || []
-
+            console.log(query)
             return { query, values };
 
         } else {
