@@ -49,7 +49,7 @@ router.post("/export",
 router.post("/exportTrigger",
     ip,
     auth,
-    mainController.export22
+    mainController.exportWithCursor
 )
 
 router.post("/getToken",
