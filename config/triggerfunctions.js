@@ -25,10 +25,6 @@ const executeQuery = async (query, bind = {}, _requestid) => {
         type: QueryTypes.SELECT,
         bind
     })
-        // .then(r => {
-        //     profiler.done({ level: "debug", message: `Executed query ${query}` });
-        //     return r;
-        // })
         .catch(err => getErrorSeq(err, profiler, query));
 }
 //no se puede usar bind y replace en el mismo query 
@@ -51,12 +47,6 @@ exports.executesimpletransaction = async (method, data, permissions = false, rep
                 replacements,
                 bind: data
             })
-                // .then(r => {
-                //     if (method !== "UFN_COMMUNICATIONCHANNELSITE_SEL") {
-                //         profiler.done({ level: "debug", message: `Executed method ${method}` });
-                //     }
-                //     return r;
-                // })
                 .catch(err => getErrorSeq(err, profiler, method));
         } else {
             return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
@@ -101,10 +91,6 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
                         bind: data
                     })
                 ])
-                    // .then(r => {
-                    //     profiler.done({ level: "debug", message: `Executed paginated ${methodcollection}` });
-                    //     return r;
-                    // })
                     .catch(err => getErrorSeq(err, profiler, `paginated ${methodcollection}`))
 
                 if (!(results instanceof Array)) {
@@ -142,18 +128,12 @@ exports.buildQueryWithFilterAndSort = async (method, data) => {
 
                 const profiler = logger.child({ context: data, _requestid: data._requestid }).startTimer();
 
-                // profiler.done({ level: "debug", message: `Executed builded query ${queryCollectionCleaned}` });
-
                 logger.child({ context: data, _requestid: data._requestid }).debug(`executing ${queryCollectionCleaned}`)
 
                 return await sequelize.query(queryCollectionCleaned, {
                     type: QueryTypes.SELECT,
                     bind: data
                 })
-                    // .then(r => {
-                    //     profiler.done({ level: "debug", message: `Executed builded query ${queryCollectionCleaned}` });
-                    //     return r;
-                    // })
                     .catch(err => getErrorSeq(err, profiler, `builded query ${queryCollectionCleaned}`));
 
             } else {
@@ -183,10 +163,6 @@ exports.GetMultiCollection = async (detail, permissions = false, _requestid) => 
                 type: QueryTypes.SELECT,
                 bind: item.parameters
             })
-                // .then(r => {
-                //     profiler.done({ level: "debug", message: `Executed multi method ${item.method}` });
-                //     return r;
-                // })
                 .catch(err => getErrorSeq(err, profiler, `multi ${item.method}`));
 
             if (!(r instanceof Array))
@@ -228,10 +204,6 @@ exports.executeTransaction = async (header, detail, permissions = false, _reques
                     bind: parameters,
                     transaction
                 })
-                    // .then(r => {
-                    //     profiler.done({ level: "debug", message: `Executed transaction header ${method}` });
-                    //     return r;
-                    // })
                     .catch(err => getErrorSeq(err, profiler, `transaction header ${method}`));
 
                 if (!(result instanceof Array)) {
@@ -268,10 +240,6 @@ exports.executeTransaction = async (header, detail, permissions = false, _reques
                     bind: item.parameters,
                     transaction
                 })
-                    // .then(r => {
-                    //     profiler.done({ level: "debug", message: `transaction detail ${item.method}` });
-                    //     return r;
-                    // })
                     .catch(err => {
                         lasterror = getErrorSeq(err, profiler, `transaction detail ${item.method}`);
                         throw 'error'
@@ -451,10 +419,6 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
             const { join_table, join_on } = ALLCOLUMNS.find(x => x.join_alias === join_alias);
             return acc + `\nLEFT JOIN ${join_table} ${join_alias} ${join_on}`;
         }, "");
-
-        // if (ALLCOLUMNS.some(x => x.type === "variable")) {
-        //     JOINNERS += `\nCROSS JOIN CASTconversation.variablecontextjsonb as jo`
-        // }
 
         const firstSelect = interval === "day" ?
             `to_char(${dataorigin}.createdate + $offset * INTERVAL '1hour', 'MM-DD') "interval"` : (interval === "month" ?
@@ -752,24 +716,33 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
     }
 }
 
-
-
-exports.getQuery = (method, data) => {
+exports.getQuery = (method, data, isNotPaginated) => {
     try {
         if (functionsbd[method]) {
             let query = functionsbd[method].query;
-            if (data instanceof Object) {
+            if (!isNotPaginated) {
+                if (data instanceof Object) {
+                    data.where = generatefilter(data.filters, data.origin, data.daterange, data.offset);
+                    data.order = generateSort(data.sorts, data.origin);
 
-                data.where = generatefilter(data.filters, data.origin, data.daterange, data.offset);
-                data.order = generateSort(data.sorts, data.origin);
+                    const queryCollectionCleaned = query.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
 
-                const queryCollectionCleaned = query.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
-
-                return queryCollectionCleaned;
-
-            } else {
-                return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
+                    return queryCollectionCleaned;
+                } else {
+                    return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
+                }
             }
+
+            const resultRx = query.match(/\$[\_\w]+/g)
+
+            resultRx?.forEach((x, i) => {
+                query = query.replace(x, "$" + (i + 1))
+            })
+
+            const values = resultRx?.map(x => data[x.replace("$", "")]) || []
+
+            return { query, values };
+
         } else {
             return getErrorCode(errors.NOT_FUNCTION_ERROR);
         }
@@ -778,10 +751,10 @@ exports.getQuery = (method, data) => {
     }
 }
 
-exports.uploadCSV = async (data, headerClient, _requestid, indexPart, zip) => {
+exports.transformCSV = async (data, headerClient, _requestid, indexPart, zip) => {
     const formatToExport = "csv";
     const titlefile = "Part-" + indexPart + (formatToExport !== "csv" ? ".xlsx" : ".csv");
-    
+
     let keysHeaders;
     const keys = Object.keys(data[0]);
     keysHeaders = keys;
@@ -811,12 +784,12 @@ exports.uploadCSV = async (data, headerClient, _requestid, indexPart, zip) => {
 
     profiler.done({ level: "debug", message: `Drawed csv` });
 
-    zip.file(titlefile, Buffer.from(content, 'ASCII'), { binary : true } )
+    zip.file(titlefile, Buffer.from(content, 'ASCII'), { binary: true })
 }
 
-exports.onlyCSV = async (_requestid, buffer) => {
+exports.uploadCSV = async (_requestid, buffer) => {
     var s3 = new ibm.S3(config);
-    
+
     const params = {
         ACL: 'public-read',
         Key: new Date().toISOString() + ".zip",

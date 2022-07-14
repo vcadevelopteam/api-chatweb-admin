@@ -1,10 +1,10 @@
 const bcryptjs = require("bcryptjs");
 const logger = require('../config/winston');
-const { executesimpletransaction, executeTransaction, getCollectionPagination, exportData, buildQueryWithFilterAndSort, GetMultiCollection, getQuery, uploadCSV, onlyCSV } = require('../config/triggerfunctions');
+const { executesimpletransaction, executeTransaction, getCollectionPagination, exportData, buildQueryWithFilterAndSort, GetMultiCollection, getQuery } = require('../config/triggerfunctions');
 const { setSessionParameters, getErrorCode, axiosObservable } = require('../config/helpers');
 const { Pool } = require('pg')
 const Cursor = require('pg-cursor')
-var JSZip = require("jszip")
+const { processCursor } = require("../config/pg-cursor");
 
 exports.GetCollection = async (req, res) => {
     const { parameters = {}, method, key } = req.body;
@@ -140,19 +140,19 @@ exports.exportTrigger = async (req, res) => {
     }
 }
 
-exports.export = async (req, res) => {
-    const { parameters, method } = req.body;
+// exports.export = async (req, res) => {
+//     const { parameters, method } = req.body;
 
-    setSessionParameters(parameters, req.user, req._requestid);
+//     setSessionParameters(parameters, req.user, req._requestid);
 
-    const result = await exportData((!parameters.isNotPaginated ? await buildQueryWithFilterAndSort(method, parameters) : await executesimpletransaction(method, parameters)), parameters.reportName, parameters.formatToExport, parameters.headerClient, req._requestid);
+//     const result = await exportData((!parameters.isNotPaginated ? await buildQueryWithFilterAndSort(method, parameters) : await executesimpletransaction(method, parameters)), parameters.reportName, parameters.formatToExport, parameters.headerClient, req._requestid);
 
-    if (!result.error) {
-        return res.json(result);
-    } else {
-        return res.status(result.rescode).json(result);
-    }
-}
+//     if (!result.error) {
+//         return res.json(result);
+//     } else {
+//         return res.status(result.rescode).json(result);
+//     }
+// }
 
 exports.multiCollection = async (req, res) => {
     try {
@@ -229,7 +229,7 @@ exports.validateConversationWhatsapp = async (req, res) => {
     return res.json({ error: false, success: true, insert, cwsp });
 }
 
-exports.export22 = async (req, res) => {
+exports.exportWithCursor = async (req, res) => {
     const { parameters, method } = req.body;
 
     try {
@@ -248,77 +248,18 @@ exports.export22 = async (req, res) => {
         })
         const client = await pool.connect()
 
-        const BATCH_SIZE = 100_000;
-
-        let query = getQuery(method, parameters);
-
-        const resultRx = query.match(/\$[\_\w]+/g)
-
-        resultRx?.forEach((x, i) => {
-            query = query.replace(x, "$" + (i + 1))
-        })
-
-        const values = resultRx?.map(x => parameters[x.replace("$", "")]) || []
+        const { query, values } = getQuery(method, parameters, parameters.isNotPaginated);
 
         logger.debug(`executing ${query}`)
 
         const cursor = client.query(new Cursor(query, values));
 
-        const resultLink = [];
-        let indexPart = 1;
-
-        let zip = null;
-
-        function processResults() {
-            return new Promise((resolve, reject) => {
-                (function read() {
-                    cursor.read(BATCH_SIZE, async (err, rows) => {
-                        let alreadysave = false;
-                        if (indexPart === 1) {
-                            zip = new JSZip();
-                        } else if ((indexPart - 1) % 4 === 0) {
-                            const buffer = await zip.generateAsync({
-                                type: "nodebuffer",
-                                compression: 'DEFLATE',
-                                compressionOptions: {
-                                    level: 1,
-                                }
-                            })
-                            const rr = await onlyCSV(req._requestid, buffer);
-                            resultLink.push(rr.url)
-                            alreadysave = true;
-                            zip = new JSZip(); //reiniciamos
-                        }
-                        if (err) {
-                            return resolve({ error: true, err });
-                        }
-
-                        // no more rows, so we're done!
-                        if (!rows.length) {
-                            if (!alreadysave) {
-                                const buffer = await zip.generateAsync({ type: "nodebuffer", compression: 'DEFLATE' })
-                                const rr = await onlyCSV(req._requestid, buffer);
-                                resultLink.push(rr.url)
-                            }
-                            zip = null;
-                            return resolve({ error: false });
-                        }
-                        await uploadCSV(rows, parameters.headerClient, req._requestid, indexPart, zip);
-
-                        // resultLink.push(res.url);
-
-                        indexPart++;
-
-                        return read();
-                    });
-                })();
-            });
-        }
-        await processResults();
+        const res = await processCursor(cursor);
 
         await cursor.close();
 
-        return res.status(200).json({ url: resultLink.join() });
+        return res.status(200).json({ url: res.resultLink.join() });
+
     } catch (exception) {
         return getErrorCode(null, exception, "Executing getCollectionPagination");
     }
