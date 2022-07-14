@@ -1,4 +1,5 @@
 var JSZip = require("jszip");
+const logger = require('../config/winston');
 const { transformCSV, uploadCSV } = require('./triggerfunctions');
 
 const BATCH_SIZE = 100_000;
@@ -28,6 +29,7 @@ exports.processCursor = (cursor, _requestid, headerClient) => {
                     zip = new JSZip(); //reiniciamos
                 }
                 if (err) {
+                    logger.error({ error: err })
                     return resolve({ error: true, err });
                 }
                 // no more rows, so we're done!
