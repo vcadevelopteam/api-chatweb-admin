@@ -6,8 +6,6 @@ const { generatefilter, generateSort, errors, getErrorSeq, getErrorCode, stringT
 const { QueryTypes } = require('sequelize');
 require('pg').defaults.parseInt8 = true;
 
-const fs = require('fs');
-
 var ibm = require('ibm-cos-sdk');
 
 var config = {
@@ -27,10 +25,6 @@ const executeQuery = async (query, bind = {}, _requestid) => {
         type: QueryTypes.SELECT,
         bind
     })
-        // .then(r => {
-        //     profiler.done({ level: "debug", message: `Executed query ${query}` });
-        //     return r;
-        // })
         .catch(err => getErrorSeq(err, profiler, query));
 }
 //no se puede usar bind y replace en el mismo query 
@@ -53,12 +47,6 @@ exports.executesimpletransaction = async (method, data, permissions = false, rep
                 replacements,
                 bind: data
             })
-                // .then(r => {
-                //     if (method !== "UFN_COMMUNICATIONCHANNELSITE_SEL") {
-                //         profiler.done({ level: "debug", message: `Executed method ${method}` });
-                //     }
-                //     return r;
-                // })
                 .catch(err => getErrorSeq(err, profiler, method));
         } else {
             return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
@@ -103,10 +91,6 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
                         bind: data
                     })
                 ])
-                    // .then(r => {
-                    //     profiler.done({ level: "debug", message: `Executed paginated ${methodcollection}` });
-                    //     return r;
-                    // })
                     .catch(err => getErrorSeq(err, profiler, `paginated ${methodcollection}`))
 
                 if (!(results instanceof Array)) {
@@ -144,18 +128,12 @@ exports.buildQueryWithFilterAndSort = async (method, data) => {
 
                 const profiler = logger.child({ context: data, _requestid: data._requestid }).startTimer();
 
-                // profiler.done({ level: "debug", message: `Executed builded query ${queryCollectionCleaned}` });
-
                 logger.child({ context: data, _requestid: data._requestid }).debug(`executing ${queryCollectionCleaned}`)
 
                 return await sequelize.query(queryCollectionCleaned, {
                     type: QueryTypes.SELECT,
                     bind: data
                 })
-                    // .then(r => {
-                    //     profiler.done({ level: "debug", message: `Executed builded query ${queryCollectionCleaned}` });
-                    //     return r;
-                    // })
                     .catch(err => getErrorSeq(err, profiler, `builded query ${queryCollectionCleaned}`));
 
             } else {
@@ -185,10 +163,6 @@ exports.GetMultiCollection = async (detail, permissions = false, _requestid) => 
                 type: QueryTypes.SELECT,
                 bind: item.parameters
             })
-                // .then(r => {
-                //     profiler.done({ level: "debug", message: `Executed multi method ${item.method}` });
-                //     return r;
-                // })
                 .catch(err => getErrorSeq(err, profiler, `multi ${item.method}`));
 
             if (!(r instanceof Array))
@@ -230,10 +204,6 @@ exports.executeTransaction = async (header, detail, permissions = false, _reques
                     bind: parameters,
                     transaction
                 })
-                    // .then(r => {
-                    //     profiler.done({ level: "debug", message: `Executed transaction header ${method}` });
-                    //     return r;
-                    // })
                     .catch(err => getErrorSeq(err, profiler, `transaction header ${method}`));
 
                 if (!(result instanceof Array)) {
@@ -270,10 +240,6 @@ exports.executeTransaction = async (header, detail, permissions = false, _reques
                     bind: item.parameters,
                     transaction
                 })
-                    // .then(r => {
-                    //     profiler.done({ level: "debug", message: `transaction detail ${item.method}` });
-                    //     return r;
-                    // })
                     .catch(err => {
                         lasterror = getErrorSeq(err, profiler, `transaction detail ${item.method}`);
                         throw 'error'
@@ -453,10 +419,6 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
             const { join_table, join_on } = ALLCOLUMNS.find(x => x.join_alias === join_alias);
             return acc + `\nLEFT JOIN ${join_table} ${join_alias} ${join_on}`;
         }, "");
-
-        // if (ALLCOLUMNS.some(x => x.type === "variable")) {
-        //     JOINNERS += `\nCROSS JOIN CASTconversation.variablecontextjsonb as jo`
-        // }
 
         const firstSelect = interval === "day" ?
             `to_char(${dataorigin}.createdate + $offset * INTERVAL '1hour', 'MM-DD') "interval"` : (interval === "month" ?
@@ -752,4 +714,101 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
     } catch (exception) {
         return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing exportdata");
     }
+}
+
+exports.getQuery = (method, data, isNotPaginated) => {
+    try {
+        if (functionsbd[method]) {
+            let query = functionsbd[method].query;
+            
+            if (!isNotPaginated) {
+                if (data instanceof Object) {
+                    data.where = generatefilter(data.filters, data.origin, data.daterange, data.offset);
+                    data.order = generateSort(data.sorts, data.origin);
+
+                    query = query.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
+                } else {
+                    return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
+                }
+            }
+
+            const resultRx = query.match(/\$[\_\w]+/g)
+
+            resultRx?.forEach((x, i) => {
+                query = query.replace(x, "$" + (i + 1))
+            })
+
+            const values = resultRx?.map(x => data[x.replace("$", "")]) || []
+            return { query, values };
+
+        } else {
+            return getErrorCode(errors.NOT_FUNCTION_ERROR);
+        }
+    } catch (exception) {
+        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing buildQueryWithFilterAndSort", data._requestid);
+    }
+}
+
+exports.transformCSV = async (data, headerClient, _requestid, indexPart, zip) => {
+    const formatToExport = "csv";
+    const titlefile = "Part-" + indexPart + (formatToExport !== "csv" ? ".xlsx" : ".csv");
+
+    let keysHeaders;
+    const keys = Object.keys(data[0]);
+    keysHeaders = keys;
+
+    if (headerClient) {
+        keysHeaders = keys.reduce((acc, item) => {
+            const keyclientfound = headerClient.find(x => x.key === item);
+            if (!keyclientfound)
+                return acc;
+            else {
+                return {
+                    ...acc,
+                    [item]: keyclientfound.alias
+                }
+            }
+        }, {});
+        data.unshift(keysHeaders);
+    }
+
+    const profiler = logger.child({ _requestid }).startTimer();
+
+    let content =
+        (headerClient ? "" : (Object.keys(data[0]).join("|") + "\n")) +
+        data.map(item => Object.values(item).join("|").replace(/(?![\x00-\x7FáéíóúñÁÉÍÓÚÑ]|[\xC0-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF7][\x80-\xBF]{3})./g, '')).join("\n");
+
+    data = null;
+
+    profiler.done({ level: "debug", message: `Drawed csv` });
+
+    zip.file(titlefile, Buffer.from(content, 'ASCII'), { binary: true })
+}
+
+exports.uploadCSV = async (_requestid, buffer) => {
+    var s3 = new ibm.S3(config);
+
+    const params = {
+        ACL: 'public-read',
+        Key: new Date().toISOString() + ".zip",
+        Body: buffer,
+        Bucket: COS_BUCKET_NAME,
+        ContentType: "application/zip",
+    }
+
+    logger.child({ _requestid }).debug(`Uploading to COS`)
+
+    const profiler1 = logger.child({ _requestid }).startTimer();
+
+    return new Promise((res, rej) => {
+        s3.upload(params, (err, data) => {
+            if (err) {
+                profiler1.done({ level: "error", error: err, message: `Uploaded cos` });
+                rej(getErrorCode(errors.COS_UNEXPECTED_ERROR, err));
+            }
+            profiler1.done({ level: "debug", message: `Upload cos` });
+
+            res({ url: (data.Location || "").replace("http:", "https:") })
+        });
+    });
 }

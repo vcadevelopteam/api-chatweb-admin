@@ -1,7 +1,10 @@
 const bcryptjs = require("bcryptjs");
 const logger = require('../config/winston');
-const { executesimpletransaction, executeTransaction, getCollectionPagination, exportData, buildQueryWithFilterAndSort, GetMultiCollection } = require('../config/triggerfunctions');
+const { executesimpletransaction, executeTransaction, getCollectionPagination, exportData, buildQueryWithFilterAndSort, GetMultiCollection, getQuery } = require('../config/triggerfunctions');
 const { setSessionParameters, getErrorCode, axiosObservable } = require('../config/helpers');
+const { Pool } = require('pg')
+const Cursor = require('pg-cursor')
+const { processCursor } = require("../config/pg-cursor");
 
 exports.GetCollection = async (req, res) => {
     const { parameters = {}, method, key } = req.body;
@@ -137,19 +140,19 @@ exports.exportTrigger = async (req, res) => {
     }
 }
 
-exports.export = async (req, res) => {
-    const { parameters, method } = req.body;
+// exports.export = async (req, res) => {
+//     const { parameters, method } = req.body;
 
-    setSessionParameters(parameters, req.user, req._requestid);
+//     setSessionParameters(parameters, req.user, req._requestid);
 
-    const result = await exportData((!parameters.isNotPaginated ? await buildQueryWithFilterAndSort(method, parameters) : await executesimpletransaction(method, parameters)), parameters.reportName, parameters.formatToExport, parameters.headerClient, req._requestid);
+//     const result = await exportData((!parameters.isNotPaginated ? await buildQueryWithFilterAndSort(method, parameters) : await executesimpletransaction(method, parameters)), parameters.reportName, parameters.formatToExport, parameters.headerClient, req._requestid);
 
-    if (!result.error) {
-        return res.json(result);
-    } else {
-        return res.status(result.rescode).json(result);
-    }
-}
+//     if (!result.error) {
+//         return res.json(result);
+//     } else {
+//         return res.status(result.rescode).json(result);
+//     }
+// }
 
 exports.multiCollection = async (req, res) => {
     try {
@@ -224,4 +227,40 @@ exports.validateConversationWhatsapp = async (req, res) => {
     const insert = await executesimpletransaction("UFN_MIGRATION_CONVERSATIONWHATSAPP_INS", { corpid, orgid, table: JSON.stringify(cwsp), _requestid: req._requestid });
 
     return res.json({ error: false, success: true, insert, cwsp });
+}
+
+exports.exportWithCursor = async (req, res) => {
+    const { parameters, method } = req.body;
+
+    try {
+        setSessionParameters(parameters, req.user, req._requestid);
+
+        const pool = new Pool({
+            user: process.env.DBUSER,
+            host: process.env.DBHOST,
+            database: process.env.DBNAME,
+            password: process.env.DBPASSWORD,
+            port: process.env.DBPORT,
+            max: 50,
+            ssl: {
+                rejectUnauthorized: false
+            }
+        })
+        const client = await pool.connect()
+
+        const { query, values } = getQuery(method, parameters, parameters.isNotPaginated);
+
+        logger.debug(`executing ${query}`)
+
+        const cursor = client.query(new Cursor(query, values));
+
+        const resCursor = await processCursor(cursor, req._requestid, parameters.headerClient);
+
+        await cursor.close();
+
+        return res.status(200).json({ url: resCursor.resultLink.join() });
+
+    } catch (exception) {
+        return getErrorCode(null, exception, "Executing getCollectionPagination");
+    }
 }
