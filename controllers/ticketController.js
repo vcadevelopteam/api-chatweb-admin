@@ -586,7 +586,7 @@ exports.import = async (req, res) => {
                 corpid: data.corpid,
                 orgid: data.orgid,
                 botname: botname,
-                datatable: JSON.stringify(pcc_to_create),
+                datatable: JSON.stringify(person_to_create),
                 _requestid: req._requestid,
             });
 
@@ -651,7 +651,7 @@ exports.import = async (req, res) => {
         await executesimpletransaction("QUERY_TICKETIMPORT_INTERACTION_INS", {
             corpid: data.corpid,
             orgid: data.orgid,
-            datatable: JSON.stringify(data.datatable),
+            datatable: JSON.stringify(datatable),
             _requestid: req._requestid,
         });
 
