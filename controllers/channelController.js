@@ -797,6 +797,7 @@ exports.insertChannel = async (request, result) => {
         parameters.username = request.user.usr;
         parameters.phone = null;
         parameters.apikey = null;
+        parameters.voximplantrecording = null;
 
         switch (request.body.type) {
             case 'CHATWEB':
@@ -1593,12 +1594,24 @@ exports.insertChannel = async (request, result) => {
                                             cost: service.cost,
                                             costvca: service.costvca,
                                             costinstallation: service.costinstallation,
+                                            recording: service.recording,
+                                            sms: service.sms,
+                                            outbound: service.outbound,
+                                            recordingstorage: service.recordingstorage?.value,
+                                            recordingquality: service.recordingquality?.value,
                                             additionalperchannel: voximplantEnvironment.additionalperchannel,
+                                        };
+
+                                        var voximplantRecording = {
+                                            recording: service.recording,
+                                            recordingstorage: service.recordingstorage?.value,
+                                            recordingquality: service.recordingquality?.value,
                                         };
 
                                         parameters.communicationchannelsite = voximplantPhoneNumber.phonenumber;
                                         parameters.communicationchannelowner = voximplantEnvironment.applicationname;
                                         parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                                        parameters.voximplantrecording = JSON.stringify(voximplantRecording);
                                         parameters.phone = voximplantPhoneNumber.phonenumber;
                                         parameters.type = 'VOXI';
 
@@ -1815,6 +1828,7 @@ exports.activateChannel = async (request, result) => {
         parameters.resolvelithium = null;
         parameters.phone = null;
         parameters.apikey = null;
+        parameters.voximplantrecording = null;
 
         if (request.body.type === 'WHATSAPP') {
             const requestCreateWhatsApp = await axios({

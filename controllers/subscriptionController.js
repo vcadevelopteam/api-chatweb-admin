@@ -344,6 +344,7 @@ exports.createSubscription = async (request, result) => {
                         channelParameters.status = "PENDIENTE";
                         channelParameters.updintegration = null;
                         channelParameters.apikey = null;
+                        channelParameters.voximplantrecording = null;
 
                         requestCode = channel.type;
 
@@ -959,11 +960,23 @@ exports.createSubscription = async (request, result) => {
                                                         costvca: channelServiceArray[index].costvca,
                                                         costinstallation: channelServiceArray[index].costinstallation,
                                                         additionalperchannel: voximplantEnvironment.additionalperchannel,
+                                                        recording: channelServiceArray[index].recording,
+                                                        sms: channelServiceArray[index].sms,
+                                                        outbound: channelServiceArray[index].outbound,
+                                                        recordingstorage: channelServiceArray[index].recordingstorage?.value,
+                                                        recordingquality: channelServiceArray[index].recordingquality?.value,
+                                                    };
+
+                                                    var voximplantRecording = {
+                                                        recording: channelServiceArray[index].recording,
+                                                        recordingstorage: channelServiceArray[index].recordingstorage?.value,
+                                                        recordingquality: channelServiceArray[index].recordingquality?.value,
                                                     };
 
                                                     channelParametersArray[index].communicationchannelsite = voximplantPhoneNumber.phonenumber;
                                                     channelParametersArray[index].communicationchannelowner = voximplantEnvironment.applicationname;
                                                     channelParametersArray[index].servicecredentials = JSON.stringify(voximplantCredentials);
+                                                    channelParametersArray[index].voximplantrecording = JSON.stringify(voximplantRecording);
                                                     channelParametersArray[index].phone = voximplantPhoneNumber.phonenumber;
                                                 }
                                             }
@@ -1604,6 +1617,7 @@ exports.validateChannels = async (request, result) => {
                         channelParameters.status = "PENDIENTE";
                         channelParameters.updintegration = null;
                         channelParameters.apikey = null;
+                        channelParameters.voximplantrecording = null;
 
                         requestCode = channel.type;
 
