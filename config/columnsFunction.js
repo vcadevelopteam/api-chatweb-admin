@@ -93,6 +93,12 @@ module.exports = {
         intent: {
             column: "inter.intent"
         },
+        ticketgroup: {
+            column: "dogr.domaindesc"
+        },
+        email: {
+            column: "pe.email"
+        },
         interactiontype: {
             column: "inter.interactiontype"
         },
