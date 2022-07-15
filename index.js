@@ -1,7 +1,6 @@
 require('dotenv').config();
 const logger = require('./config/winston');
 const morganMiddleware = require("./config/morgan.middleware");
-
 const express = require('express');
 const cors = require('cors');
 
@@ -15,8 +14,7 @@ app.use(morganMiddleware);
 
 app.use(cors({
     origin: function (origin, callback) {
-        const dateRequest = new Date().toISOString();
-        // console.log(`${dateRequest}: request from ${origin}`);
+        // const dateRequest = new Date().toISOString();
         if (!origin) return callback(null, true);
         if (allowedOrigins.indexOf(origin) === -1) {
             // console.log(`${dateRequest}: not allowed from ${origin}`)

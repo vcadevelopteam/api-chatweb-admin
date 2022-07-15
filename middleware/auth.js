@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const tf = require('../config/triggerfunctions');;
+const { getErrorCode } = require('../config/helpers');;
 
 module.exports = async function (req, res, next) {
     let token = "";
@@ -32,7 +33,7 @@ module.exports = async function (req, res, next) {
         next();
     } catch (exception) {
         return res.status(401).json({
-            ...getErrorCode(null, exception, "Exception on auth middleware"),
+            ...getErrorCode(null, exception, "Exception on auth middleware "),
             message: "Token no valido"
         });
     }

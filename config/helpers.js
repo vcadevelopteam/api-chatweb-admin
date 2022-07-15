@@ -319,7 +319,7 @@ const errorstmp = {
 }
 exports.errors = errorstmp;
 
-exports.axiosObservable = async ({ method = "post", url, data = undefined, headers = undefined, _requestid = undefined }) => {
+exports.axiosObservable = async ({ method = "post", url, data = undefined, headers = undefined, _requestid = undefined, timeout }) => {
     const profiler = logger.startTimer();
 
     return await axios({
@@ -327,6 +327,7 @@ exports.axiosObservable = async ({ method = "post", url, data = undefined, heade
         url,
         data,
         headers,
+        timeout: timeout || 600000
     })
         .then(r => {
             profiler.done({ _requestid, message: `Request to ${url}`, status: r.status, input: data, output: r.data });
