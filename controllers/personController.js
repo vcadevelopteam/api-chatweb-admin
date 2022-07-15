@@ -6,7 +6,8 @@ const { setSessionParameters } = require('../config/helpers');
 
 exports.getLeads = async (req, res) => {
     const { parameters = {} } = req.body;
-    setSessionParameters(parameters, req.user);
+
+    setSessionParameters(parameters, req.user, req._requestid);
 
     try {
         const result = await executesimpletransaction("UFN_LEADBYPERSONCOMMUNICATIONCHANNEL_SEL", parameters);
@@ -16,8 +17,7 @@ exports.getLeads = async (req, res) => {
         else
             return res.status(result.rescode).json(result);
 
-    } catch (error) {
-        console.log(error)
-        return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }

@@ -37,7 +37,7 @@ router.post("/massiveclose",
 )
 
 router.post("/import",
-    auth,    
+    auth,
     upload.any(), 
     ticketController.import
 )

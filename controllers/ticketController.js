@@ -1,6 +1,4 @@
-const axios = require('axios')
-const tf = require('../config/triggerfunctions');
-const { generatefilter, generateSort, errors, getErrorCode } = require('../config/helpers');
+const { errors, getErrorCode, axiosObservable } = require('../config/helpers');
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { uploadToCOS, unrar, unzip } = require('../config/filefunctions');
 // var https = require('https');
@@ -8,6 +6,7 @@ const { uploadToCOS, unrar, unzip } = require('../config/filefunctions');
 // const agent = new https.Agent({
 //     rejectUnauthorized: false
 // });
+
 exports.reply = async (req, res) => {
     try {
         const { data } = req.body;
@@ -30,9 +29,12 @@ exports.reply = async (req, res) => {
 
         data.agentName = req.user.fullname;
 
-        const responseservices = await axios.post(
-            `${process.env.SERVICES}ServiceLogicHook/ProcessMessageOut`,
-            { method: "", parameters: data });
+        const responseservices = await axiosObservable({
+            method: "post",
+            url: `${process.env.SERVICES}ServiceLogicHook/ProcessMessageOut`,
+            data: { method: "", parameters: data },
+            _requestid: req._requestid,
+        });
 
         if (!responseservices.data || !responseservices.data instanceof Object)
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
@@ -43,11 +45,8 @@ exports.reply = async (req, res) => {
 
         res.json(responseservices.data);
     }
-    catch (ee) {
-        console.log(ee);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -74,9 +73,12 @@ exports.replyListMessages = async (req, res) => {
 
             data.agentName = req.user.fullname;
 
-            const responseservices = await axios.post(
-                `${process.env.SERVICES}ServiceLogicHook/ProcessMessageOut`,
-                { method: "", parameters: data });
+            const responseservices = await axiosObservable({
+                method: "post",
+                url: `${process.env.SERVICES}ServiceLogicHook/ProcessMessageOut`,
+                data: { method: "", parameters: data },
+                _requestid: req._requestid,
+            });
 
             if (!responseservices.data || !responseservices.data instanceof Object)
                 return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
@@ -87,18 +89,14 @@ exports.replyListMessages = async (req, res) => {
         })
         res.json({ success: true });
     }
-    catch (ee) {
-        console.log(ee);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
 exports.close = async (req, res) => {
     try {
         const { data } = req.body;
-        console.log(data)
 
         for (const [key, value] of Object.entries(data)) {
             if (value === null)
@@ -119,29 +117,24 @@ exports.close = async (req, res) => {
         data.closeby = "USER";
         data.p_status = "CERRADO";
 
-        const responseservices = await axios.post(
-            `${process.env.SERVICES}ServiceLogicHook/closeticket`,
-            { method: "", parameters: data });
-        console.log(responseservices.data)
+        const responseservices = await axiosObservable({
+            method: "post",
+            url: `${process.env.SERVICES}ServiceLogicHook/closeticket`,
+            data: { method: "", parameters: data },
+            _requestid: req._requestid,
+        });
+
         if (!responseservices.data || !responseservices.data instanceof Object)
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
 
         if (!responseservices.data.Success) {
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
         }
-        // data.isanswered = data.isanswered.toString();
-        // const responseapp = await axios.post(`${process.env.APP}inbox/CloseTicketUpdateSupervisors`, data);
-
-        // if (!responseapp.data || !responseapp.data instanceof Object)
-        //     return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
 
         res.json(responseservices.data);
     }
-    catch (ee) {
-        console.log(ee);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -157,6 +150,7 @@ exports.reassign = async (req, res) => {
             data.username = req.user.usr;
 
         data.userid = req.user.userid;
+        data._requestid = req._requestid;
 
         if (!data.newuserid && data.usergroup) { //id del bot
             data.newuserid = 3;
@@ -166,15 +160,12 @@ exports.reassign = async (req, res) => {
             data.newuserid = req.user.userid;
         }
 
-        await tf.executesimpletransaction("UFN_CONVERSATION_REASSIGNTICKET", data);
+        await executesimpletransaction("UFN_CONVERSATION_REASSIGNTICKET", { ...data, _requestid: req._requestid });
 
         res.json({ success: true });
     }
-    catch (ee) {
-        console.log(ee);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -189,11 +180,13 @@ exports.massiveClose = async (req, res) => {
             data.p_username = req.user.usr;
         if (!data.userid)
             data.p_userid = req.user.userid;
-        const responseservices = await axios.post(
-            `${process.env.SERVICES}ServiceLogicHook/ManageTickets`,
-            { method: "", parameters: data });
 
-        console.log(responseservices.data)
+        const responseservices = await axiosObservable({
+            method: "post",
+            url: `${process.env.SERVICES}ServiceLogicHook/ManageTickets`,
+            data: { method: "", parameters: data },
+            _requestid: req._requestid,
+        });
 
         if (!responseservices.data || !responseservices.data instanceof Object) {
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
@@ -204,8 +197,8 @@ exports.massiveClose = async (req, res) => {
         }
         res.json({ success: true });
     }
-    catch (ee) {
-        return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES, ee));
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -221,8 +214,10 @@ exports.sendHSM = async (req, res) => {
         if (!data.userid)
             data.userid = req.user.userid;
 
+        data._requestid = req._requestid;
+
         if (data.listmembers.every(x => !!x.personid)) {
-            await tf.executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", undefined, false, {
+            await executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", { _requestid: req._requestid }, false, {
                 personids: data.listmembers.map(x => x.personid),
                 corpid: data.corpid,
                 orgid: data.orgid,
@@ -232,8 +227,8 @@ exports.sendHSM = async (req, res) => {
         if (data.type === "MAIL") {
             let jsonconfigmail = "";
             const resBD = await Promise.all([
-                tf.executesimpletransaction("QUERY_GET_CONFIG_MAIL", data),
-                tf.executesimpletransaction("QUERY_GET_MESSAGETEMPLATE", data)
+                executesimpletransaction("QUERY_GET_CONFIG_MAIL", data),
+                executesimpletransaction("QUERY_GET_MESSAGETEMPLATE", data)
             ]);
             const configmail = resBD[0];
             const mailtemplate = resBD[1][0];
@@ -250,26 +245,25 @@ exports.sendHSM = async (req, res) => {
             }
 
             data.listmembers.forEach(async x => {
-                const resCheck = await tf.executesimpletransaction("UFN_BALANCE_CHECK", { ...data, receiver: x.email, communicationchannelid: 0 })
+                const resCheck = await executesimpletransaction("UFN_BALANCE_CHECK", { ...data, receiver: x.email, communicationchannelid: 0 })
 
                 let send = false;
                 if (resCheck instanceof Array && resCheck.length > 0) {
                     data.fee = resCheck[0].fee;
                     const balanceid = resCheck[0].balanceid;
-                    
+
                     if (balanceid == 0) {
                         send = true;
                     } else {
-                        const resValidate = await tf.executesimpletransaction("UFN_BALANCE_OUTPUT", { ...data, receiver: x.email, communicationchannelid: 0 })
+                        const resValidate = await executesimpletransaction("UFN_BALANCE_OUTPUT", { ...data, receiver: x.email, communicationchannelid: 0 })
                         if (resValidate instanceof Array) {
                             send = true;
                         }
                     }
                 }
-                
-                
+
                 if (send) {
-                    tf.executesimpletransaction("QUERY_INSERT_TASK_SCHEDULER", {
+                    executesimpletransaction("QUERY_INSERT_TASK_SCHEDULER", {
                         corpid: data.corpid,
                         orgid: data.orgid,
                         tasktype: "sendmail",
@@ -302,9 +296,10 @@ exports.sendHSM = async (req, res) => {
                         repeatmode: 0,
                         repeatinterval: 0,
                         completed: false,
+                        _requestid: req._requestid,
                     })
                 } else {
-                    tf.executesimpletransaction("QUERY_INSER_HSM_HISTORY", {
+                    executesimpletransaction("QUERY_INSER_HSM_HISTORY", {
                         ...data,
                         status: 'FINALIZADO',
                         success: false,
@@ -326,8 +321,8 @@ exports.sendHSM = async (req, res) => {
             })
         } else {
             if (data.type === "SMS") {
-                const smschannel = await tf.executesimpletransaction("QUERY_GET_SMS_DEFAULT_BY_ORG", data);
-                console.log(smschannel)
+                const smschannel = await executesimpletransaction("QUERY_GET_SMS_DEFAULT_BY_ORG", data);
+
                 if (smschannel[0] && smschannel) {
                     data.communicationchannelid = smschannel[0].communicationchannelid;
                     data.communicationchanneltype = smschannel[0].type;
@@ -335,12 +330,12 @@ exports.sendHSM = async (req, res) => {
                 }
             }
 
-            const responseservices = await axios.post(
-                `${process.env.SERVICES}handler/external/sendhsm`, data);
-            console.log(responseservices.data)
-            if (!responseservices.data || !responseservices.data instanceof Object) {
-                return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
-            }
+            const responseservices = await axiosObservable({
+                method: "post",
+                url: `${process.env.SERVICES}handler/external/sendhsm`,
+                data,
+                _requestid: req._requestid,
+            });
 
             if (!responseservices.data.Success) {
                 return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
@@ -348,9 +343,8 @@ exports.sendHSM = async (req, res) => {
         }
         res.json({ success: true });
     }
-    catch (ee) {
-        console.log(ee)
-        return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR, ee));
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -444,14 +438,17 @@ exports.import = async (req, res) => {
         if (!data?.orgid)
             data.orgid = req.user?.orgid ? req.user.orgid : 1;
 
+        data._requestid = req._requestid;
+
         const bot_result = await executesimpletransaction("QUERY_ORG_BOT_SEL", {
             corpid: data.corpid,
             orgid: data.orgid,
+            _requestid: req._requestid,
         });
-        
+
         const botid = bot_result?.[0]?.userid || 2;
         const botname = bot_result?.[0]?.fullname || 'BOT SYSTEM';
-        
+
         // Add conversation unique identifier
         datatable = datatable.map(d => ({
             ...d,
@@ -465,12 +462,13 @@ exports.import = async (req, res) => {
         const channel_result = await executesimpletransaction("QUERY_TICKETIMPORT_CHANNELS_SEL", {
             corpid: data.corpid,
             orgid: data.orgid,
-            channels: channel_list.join(',')
+            channels: channel_list.join(','),
+            _requestid: req._requestid,
         });
 
         const channel_dict = channel_result.reduce((ac, c) => ({
             ...ac,
-            [c.communicationchannelsite]: c 
+            [c.communicationchannelsite]: c
         }), {});
 
         // Add channel information to the data
@@ -490,7 +488,8 @@ exports.import = async (req, res) => {
             corpid: data.corpid,
             orgid: data.orgid,
             personcommunicationchannel: personcommunicationchannel_list.join(','),
-            personcommunicationchannelowner: personcommunicationchannelowner_list.join(',')
+            personcommunicationchannelowner: personcommunicationchannelowner_list.join(','),
+            _requestid: req._requestid,
         });
 
         const pcc_dict = pcc_result.reduce((ac, c) => ({
@@ -544,27 +543,29 @@ exports.import = async (req, res) => {
                 corpid: data.corpid,
                 orgid: data.orgid,
                 botname: botname,
-                datatable: JSON.stringify(person_to_create)
+                datatable: JSON.stringify(person_to_create),
+                _requestid: req._requestid,
             });
-    
+
             const person_dict = person_result.reduce((ac, c) => ({
                 ...ac,
                 [c.personcommunicationchannel]: c
             }), {});
-    
+
             // Add person information to pcc to create
             pcc_to_create = pcc_to_create.map(p => ({
                 ...p,
                 personid: !p.personid ? person_dict[p.personcommunicationchannel]?.personid : p.personid
             }));
-    
+
             // Create pccs
             await executesimpletransaction("QUERY_TICKETIMPORT_PCC_INS", {
                 corpid: data.corpid,
                 orgid: data.orgid,
-                datatable: JSON.stringify(pcc_to_create)
+                datatable: JSON.stringify(pcc_to_create),
+                _requestid: req._requestid,
             });
-    
+
             // Add person information to the data
             datatable = datatable.map(d => ({
                 ...d,
@@ -580,13 +581,15 @@ exports.import = async (req, res) => {
             corpid: data.corpid,
             orgid: data.orgid,
             botid: botid,
-            datatable: JSON.stringify(conversation_to_create)
+            datatable: JSON.stringify(conversation_to_create),
+            _requestid: req._requestid,
         });
 
         // Actualización de ticketnum<orgid>seq
         await executesimpletransaction("UFN_TICKETNUM_FIX", {
             corpid: data.corpid,
             orgid: data.orgid,
+            _requestid: req._requestid,
         });
 
         const conversation_dict = conversation_result.reduce((ac, c) => ({
@@ -605,12 +608,13 @@ exports.import = async (req, res) => {
         await executesimpletransaction("QUERY_TICKETIMPORT_INTERACTION_INS", {
             corpid: data.corpid,
             orgid: data.orgid,
-            datatable: JSON.stringify(datatable)
+            datatable: JSON.stringify(datatable),
+            _requestid: req._requestid,
         });
-        
+
         res.json({ success: true });
     }
-    catch (ee) {
-        return res.status(400).json(ee);
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }

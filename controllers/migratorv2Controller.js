@@ -4,6 +4,7 @@ const { getErrorSeq } = require('../config/helpers');
 const { QueryTypes } = require('sequelize');
 const axios = require('axios');
 const bcryptjs = require("bcryptjs");
+const logger = require('../config/winston');
 
 /* Índice de tablas
 
@@ -101,10 +102,10 @@ const parseHrtimeToSeconds = (hrtime) => {
     return seconds;
 }
 
-const errorSeq = err => {
+const errorSeq = (err, bind) => {
     const messageerror = err.toString().replace("SequelizeDatabaseError: ", "");
     const errorcode = messageerror.includes("Named bind parameter") ? "PARAMETER_IS_MISSING" : err.parent.code;
-    console.log(`${new Date()}: ${errorcode}-${messageerror}`);
+    logger.child({ _requestid: bind._requestid }).error(`${new Date()}: ${errorcode}-${messageerror}`);
     return {
         code: errorcode,
         msg: messageerror
@@ -115,18 +116,18 @@ const zyxmeQuery = async (query, bind = {}) => {
     return await zyxmeSequelize.query(query, {
         type: QueryTypes.SELECT,
         bind
-    }).catch(err => errorSeq(err));
+    }).catch(err => errorSeq(err, bind));
 }
 
 const laraigoQuery = async (query, bind = {}) => {
     return await sequelize.query(query, {
         type: QueryTypes.SELECT,
         bind
-    }).catch(err => errorSeq(err));
+    }).catch(err => errorSeq(err, bind));
 }
 
 const apiServiceEndpoint = process.env.APISERVICES;
-const recryptPwd = async (table, data) => {
+const recryptPwd = async (table, data, corpidBind) => {
     switch (table) {
         case 'usr':
             if (apiServiceEndpoint) {
@@ -142,11 +143,11 @@ const recryptPwd = async (table, data) => {
                             data[i].pwd = await bcryptjs.hash(response.data.find(r => r.userid === data[i].zyxmeuserid).pwd, salt);
                         }
                         catch (error) {
-                            console.log(error);
+                            logger.child({ _requestid: corpidBind._requestid }).error(error);
                         }
                     }
                 } catch (error) {
-                    console.log(error);
+                    logger.child({ _requestid: corpidBind._requestid }).error(error);
                 }
             }
             break;
@@ -156,7 +157,7 @@ const recryptPwd = async (table, data) => {
 
 const apiZyxmeHookEndpoint = process.env.ZYXMEHOOK;
 const apiLaraigoHookEndpoint = process.env.HOOK;
-const reconfigWebhook = async (table, data, move = false) => {
+const reconfigWebhook = async (table, data, corpidBind, move = false) => {
     switch (table) {
         case 'communicationchannel':
             if (apiZyxmeHookEndpoint) {
@@ -201,7 +202,7 @@ const reconfigWebhook = async (table, data, move = false) => {
                             }
                         }
                     } catch (error) {
-                        console.log(error);
+                        logger.child({ _requestid: corpidBind._requestid }).error(error);
                     }
                 }
             }
@@ -210,7 +211,7 @@ const reconfigWebhook = async (table, data, move = false) => {
     return data;
 }
 
-const reconfigWebhookPart2 = async (table, data, move) => {
+const reconfigWebhookPart2 = async (table, data, corpidBind, move) => {
     switch (table) {
         case 'communicationchannel':
             if (apiZyxmeHookEndpoint) {
@@ -236,14 +237,14 @@ const reconfigWebhookPart2 = async (table, data, move) => {
                                     url: `${apiZyxmeHookEndpoint}support/migratechannel`
                                 });
                                 if (response.data && response.data.success) {
-                                    console.log(response.data)
+                                    logger.child({ _requestid: corpidBind._requestid }).info(response.data)
                                 }
                                 break;
                             default:
                                 break;
                         }
                     } catch (error) {
-                        console.log(error);
+                        logger.child({ _requestid: corpidBind._requestid }).error(error);
                     }
                 }
             }
@@ -471,8 +472,8 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     if (selectResult.length === 0) {
                         break;
                     }
-                    selectResult = await recryptPwd(k, selectResult);
-                    selectResult = await reconfigWebhook(k, selectResult, movewebhook);
+                    selectResult = await recryptPwd(k, selectResult, corpidBind);
+                    selectResult = await reconfigWebhook(k, selectResult, corpidBind, movewebhook);
                     selectResult = renameVariable(k, selectResult);
                     selectResult = restructureVariable(k, selectResult);
                     let chunkArray = selectResult.reduce((chunk, item, index) => { 
@@ -493,13 +494,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                 if (preprocessResult instanceof Array) {
                                 }
                                 else {
-                                    console.log(preprocessResult);
+                                    logger.child({ _requestid: corpidBind._requestid }).info(preprocessResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({script: preprocessResult});
                                 }
                             } catch (error) {
                                 let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                                console.log(error);
+                                logger.child({ _requestid: corpidBind._requestid }).error(error);
                                 executeResult[k].errors.push({script: error});
                             }
                         }
@@ -511,13 +512,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                 if (insertResult instanceof Array) {
                                 }
                                 else {
-                                    console.log(insertResult);
+                                    logger.child({ _requestid: corpidBind._requestid }).info(insertResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({script: insertResult});
                                 }
                             } catch (error) {
                                 let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                                console.log(error);
+                                logger.child({ _requestid: corpidBind._requestid }).error(error);
                                 executeResult[k].errors.push({script: error});
                             }
                         }
@@ -529,22 +530,22 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                 if (postprocessResult instanceof Array) {
                                 }
                                 else {
-                                    console.log(postprocessResult);
+                                    logger.child({ _requestid: corpidBind._requestid }).info(postprocessResult);
                                     executeResult[k].success = false;
                                     executeResult[k].errors.push({script: postprocessResult});
                                 }
                             } catch (error) {
                                 let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                                console.log(error);
+                                logger.child({ _requestid: corpidBind._requestid }).error(error);
                                 executeResult[k].errors.push({script: error});
                             }
                         }
                     }
-                    await reconfigWebhookPart2(k, selectResult, movewebhook);
+                    await reconfigWebhookPart2(k, selectResult, corpidBind, movewebhook);
                     counter += 1;
                 }
                 else {
-                    console.log(selectResult);
+                    logger.child({ _requestid: corpidBind._requestid }).info(selectResult);
                     executeResult[k].success = false;
                     executeResult[k].errors.push({script: selectResult});
                     break;
@@ -565,13 +566,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     if (updateResult instanceof Array) {
                     }
                     else {
-                        console.log(updateResult);
+                        logger.child({ _requestid: corpidBind._requestid }).info(updateResult);
                         executeResult[k].success = false;
                         executeResult[k].errors.push({script: updateResult});
                     }
                 } catch (error) {
                     let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                    console.log(error);
+                    logger.child({ _requestid: corpidBind._requestid }).error(error);
                     executeResult[k].errors.push({script: error});
                 }
             }
@@ -591,7 +592,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 }
             }
         } catch (error) {
-            console.log(error);
+            logger.child({ _requestid: corpidBind._requestid }).error(error);
             executeResult[k].success = false;
             executeResult[k].errors.push({script: error});
         }
@@ -3224,6 +3225,7 @@ exports.executeMigration = async (req, res) => {
     let { corpid, orgid, inc, modules, clean = false, movewebhook = false } = req.body;
     if (!!corpid && !!modules) {
         const corpidBind = {
+            _requestid: req._requestid,
             corpid: corpid,
             orgid: orgid,
             incuserid: inc?.userid || 10000,
@@ -3232,23 +3234,33 @@ exports.executeMigration = async (req, res) => {
             inccampaignmemberid: inc?.campaignmemberid || 100000,
         }
         let queryResult = {core: {}, subcore: {}, extras: {}};
-        await zyxmeQuery(`CREATE TABLE IF NOT EXISTS migration (corpid bigint, run boolean, params jsonb, result jsonb, startdate timestamp without time zone, enddate timestamp without time zone)`);
-        await zyxmeQuery(`ALTER TABLE migration ADD COLUMN IF NOT EXISTS orgid bigint`);
-        let migrationstatus = await zyxmeQuery(`SELECT corpid, orgid FROM migration WHERE corpid = $corpid and orgid = $orgid`, bind = {corpid: corpid, orgid: orgid});
+        await zyxmeQuery(`CREATE TABLE IF NOT EXISTS migration (corpid bigint, run boolean, params jsonb, result jsonb, startdate timestamp without time zone, enddate timestamp without time zone)`, bind = {
+            _requestid: req._requestid,
+        });
+        await zyxmeQuery(`ALTER TABLE migration ADD COLUMN IF NOT EXISTS orgid bigint`, bind = {
+            _requestid: req._requestid,
+        });
+        let migrationstatus = await zyxmeQuery(`SELECT corpid, orgid FROM migration WHERE corpid = $corpid and orgid = $orgid`, bind = {
+            _requestid: req._requestid,
+            corpid: corpid,
+            orgid: orgid,
+        });
         if (migrationstatus.length > 0) {
             await zyxmeQuery(`UPDATE migration SET run = $run, params = $params, startdate = NOW() WHERE corpid = $corpid and orgid = $orgid`, bind = {
+                _requestid: req._requestid,
                 corpid: corpid,
                 orgid: orgid,
                 run: true,
-                params: req.body
+                params: req.body,
             });
         }
         else {
             await zyxmeQuery(`INSERT INTO migration (corpid, orgid, run, params, startdate) SELECT $corpid, $orgid, $run, $params, NOW()`, bind = {
+                _requestid: req._requestid,
                 corpid: corpid,
                 orgid: orgid,
                 run: true,
-                params: req.body
+                params: req.body,
             });
         }
         try {
@@ -3401,10 +3413,11 @@ exports.executeMigration = async (req, res) => {
                 AND orgid = $orgid
             `, bind = corpidBind);
             await zyxmeQuery(`UPDATE migration SET run = $run, result = $result, enddate = NOW() WHERE corpid = $corpid and orgid = $orgid`, bind = {
+                _requestid: req._requestid,
                 corpid: corpid,
                 orgid: orgid,
                 run: false,
-                result: queryResult
+                result: queryResult,
             });
             return res.status(200).json({ error: false, success: true, data: queryResult });
         }
