@@ -1,6 +1,7 @@
 const axios = require('axios');
-const triggerfunctions = require('../config/triggerfunctions');
 const channelfunctions = require("../config/channelfunctions");
+const triggerfunctions = require('../config/triggerfunctions');
+const jwt = require("jsonwebtoken");
 
 const { setSessionParameters } = require('../config/helpers');
 
@@ -15,6 +16,9 @@ const webChatApplication = process.env.CHATAPPLICATION;
 const webChatPlatformEndpoint = process.env.WEBCHATPLATFORM;
 const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
 const whatsAppEndpoint = process.env.WHATSAPPAPI;
+const googleClientId = process.env.GOOGLE_CLIENTID;
+const googleClientSecret = process.env.GOOGLE_CLIENTSECRET;
+const googleTopicName = process.env.GOOGLE_TOPICNAME;
 
 exports.checkPaymentPlan = async (request, result) => {
     try {
@@ -1150,11 +1154,85 @@ exports.insertChannel = async (request, result) => {
                 }
                 break;
 
+            case 'GMAIL':
+                if (service) {
+                    var informationtoken = jwt.decode(service.idtoken);
+
+                    parameters.communicationchannelowner = informationtoken.name;
+                    parameters.integrationid = informationtoken.email;
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.status = 'ACTIVO';
+                    parameters.communicationchannelsite = informationtoken.email;
+                    parameters.type = 'MAIL';
+
+                    await channelfunctions.serviceTokenUpdate(informationtoken.email, service.accesstoken, service.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', request?.user?.usr, 50);
+
+                    await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, informationtoken.email, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-GMAIL', 'ACTIVO', request?.user?.usr, `${hookEndpoint}mail/gmailwebhookasync`, 2880);
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
             case 'BLOGGER':
+            case 'YOUTUBE':
+                if (service) {
+                    var informationtoken = jwt.decode(service.idtoken);
+
+                    parameters.communicationchannelowner = informationtoken.name;
+                    parameters.integrationid = service.channel;
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.status = 'ACTIVO';
+
+                    await channelfunctions.serviceTokenUpdate(informationtoken.email, service.accesstoken, service.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', request?.user?.usr, 50);
+
+                    switch (request.body.type) {
+                        case 'BLOGGER':
+                            parameters.communicationchannelsite = `${informationtoken.email}&%BLOG%&${service.channel}`;
+                            parameters.type = 'BLOG';
+
+                            await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, service.channel, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-BLOGGER', 'ACTIVO', request?.user?.usr, `${hookEndpoint}blogger/webhookasync`, 2);
+                            break;
+
+                        case 'YOUTUBE':
+                            parameters.communicationchannelsite = `${informationtoken.email}&%YOUT%&${service.channel}`;
+                            parameters.type = 'YOUT';
+
+                            await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, service.channel, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-YOUTUBE', 'ACTIVO', request?.user?.usr, `${hookEndpoint}youtube/webhookasync`, 2);
+                            break;
+                    }
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return result.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return result.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
+
             case 'LINKEDIN':
             case 'MICROSOFTTEAMS':
             case 'TIKTOK':
-            case 'YOUTUBE':
                 if (service) {
                     parameters.communicationchannelowner = service.account;
                     parameters.communicationchannelsite = service.account;
@@ -1163,10 +1241,6 @@ exports.insertChannel = async (request, result) => {
                     parameters.status = 'PENDIENTE';
 
                     switch (request.body.type) {
-                        case 'BLOGGER':
-                            parameters.type = 'BLOG';
-                            break;
-
                         case 'LINKEDIN':
                             parameters.type = 'LNKD';
                             break;
@@ -1177,10 +1251,6 @@ exports.insertChannel = async (request, result) => {
 
                         case 'TIKTOK':
                             parameters.type = 'TITO';
-                            break;
-
-                        case 'YOUTUBE':
-                            parameters.type = 'YOUT';
                             break;
                     }
 
