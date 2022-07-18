@@ -596,3 +596,51 @@ exports.voximplantDeletePhoneNumber = async (corpid, orgid, phoneid, queueid, or
 
     return voximplantPhoneNumber;
 }
+
+exports.serviceSubscriptionUpdate = async (account, node, extradata, type, status, usr, webhook, interval) => {
+    const queryMethod = "UFN_SERVICESUBSCRIPTION_UPD";
+    const queryParameters = {
+        account: account,
+        node: node,
+        extradata: extradata,
+        type: type,
+        status: status,
+        usr: usr,
+        webhook: webhook,
+        interval: interval,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult;
+        }
+    }
+
+    return null;
+}
+
+exports.serviceTokenUpdate = async (account, accesstoken, refreshtoken, extradata, type, status, usr, interval) => {
+    const queryMethod = "UFN_SERVICETOKEN_UPD";
+    const queryParameters = {
+        account: account,
+        accesstoken: accesstoken,
+        refreshtoken: refreshtoken,
+        extradata: extradata,
+        type: type,
+        status: status,
+        usr: usr,
+        interval: interval,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult;
+        }
+    }
+
+    return null;
+}
