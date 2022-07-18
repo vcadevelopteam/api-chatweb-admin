@@ -1,3 +1,4 @@
+const logger = require('../config/winston');
 const bcryptjs = require("bcryptjs");
 const channelfunctions = require("../config/channelfunctions");
 const triggerfunctions = require("../config/triggerfunctions");
