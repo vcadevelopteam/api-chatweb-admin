@@ -217,10 +217,11 @@ exports.sendHSM = async (req, res) => {
         data._requestid = req._requestid;
 
         if (data.listmembers.every(x => !!x.personid)) {
-            await executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", { _requestid: req._requestid }, false, {
+            await executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", undefined, false, {
                 personids: data.listmembers.map(x => x.personid),
                 corpid: data.corpid,
                 orgid: data.orgid,
+                _requestid: req._requestid
             })
         }
 
