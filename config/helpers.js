@@ -342,7 +342,7 @@ exports.axiosObservable = async ({ method = "post", url, data = undefined, heade
 exports.getErrorSeq = (err, profiler, method) => {
     //profiler es el contorl de tiempo
     const messageerror = err.toString().replace("SequelizeDatabaseError: ", "");
-    const errorcode = messageerror.includes("Named bind parameter") ? "PARAMETER_IS_MISSING" : err.parent.code;
+    const errorcode = messageerror.includes("Named bind parameter") ? "PARAMETER_IS_MISSING" : err?.parent?.code;
 
     profiler && profiler.done({ message: `Executed ${method}`, level: "error", error: { message: messageerror, code: errorcode, detail: err } });
 
