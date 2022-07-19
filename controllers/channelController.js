@@ -1210,12 +1210,12 @@ exports.insertChannel = async (request, response) => {
                     const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateGeneric instanceof Array) {
-                        return result.json({
+                        return response.json({
                             success: true
                         });
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionCreateGeneric.code,
                             success: false
                         });
@@ -1254,12 +1254,12 @@ exports.insertChannel = async (request, response) => {
                     const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateGeneric instanceof Array) {
-                        return result.json({
+                        return response.json({
                             success: true
                         });
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionCreateGeneric.code,
                             success: false
                         });
@@ -1295,12 +1295,12 @@ exports.insertChannel = async (request, response) => {
                     const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateGeneric instanceof Array) {
-                        return result.json({
+                        return response.json({
                             success: true
                         });
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionCreateGeneric.code,
                             success: false
                         });
