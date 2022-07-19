@@ -63,7 +63,7 @@ exports.exchangeCode = async (request, response) => {
         return response.status(500).json({
             code: "error_unexpected_error",
             error: true,
-            message: exception.message + ` - ${JSON.stringify(exception)}`,
+            message: exception.response.data,
             success: false,
         });
     }
