@@ -112,20 +112,20 @@ const createCharge = async (userProfile, settings, token, metadata, privateKey) 
     });
 
     var culqiBody = {
-        amount: settings.amount,
+        amount: `${settings.amount}`,
         antifraud_details: {
-            address: (removeSpecialCharacter(userProfile.address || 'EMPTY')).slice(0, 100),
-            address_city: (removeSpecialCharacter(userProfile.address_city || 'EMPTY')).slice(0, 30),
-            country_code: ((userProfile.country || token.client.ip_country_code) || 'PE'),
-            first_name: (removeSpecialCharacter(userProfile.firstname || 'EMPTY')).slice(0, 50),
-            last_name: (removeSpecialCharacter(userProfile.lastname || 'EMPTY')).slice(0, 50),
-            phone_number: (userProfile.phone ? userProfile.phone.replace(/[^0-9]/g, '') : '51999999999').slice(0, 15),
+            address: `${(removeSpecialCharacter(userProfile.address || 'EMPTY')).slice(0, 100)}`,
+            address_city: `${(removeSpecialCharacter(userProfile.address_city || 'EMPTY')).slice(0, 30)}`,
+            country_code: `${((userProfile.country || token.client.ip_country_code) || 'PE')}`,
+            first_name: `${(removeSpecialCharacter(userProfile.firstname || 'EMPTY')).slice(0, 50)}`,
+            last_name: `${(removeSpecialCharacter(userProfile.lastname || 'EMPTY')).slice(0, 50)}`,
+            phone_number: `${(userProfile.phone ? userProfile.phone.replace(/[^0-9]/g, '') : '51999999999').slice(0, 15)}`,
         },
-        currency_code: settings.currency,
-        description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
-        email: token.email.slice(0, 50),
+        currency_code: `${settings.currency}`,
+        description: `${(removeSpecialCharacter(settings.description || '').replace(/[^0-9A-Za-z ]/g, '')).slice(0, 80)}`,
+        email: `${token.email.slice(0, 50)}`,
         metadata: metadata,
-        source_id: token.id,
+        source_id: `${token.id}`,
     }
 
     return await culqiService.charges.createCharge(culqiBody);
@@ -534,7 +534,7 @@ const getPaymentCard = async (corpId, id, requestId) => {
 }
 
 const getProfile = async (userId, requestId) => {
-    const queryString = "SELECT firstname, lastname, email, phone, country FROM usr WHERE userid = $userid";
+    const queryString = "UFN_PROFILE_SEL";
     const queryParameters = {
         userid: userId,
         _requestid: requestId,
@@ -1972,7 +1972,7 @@ exports.chargeInvoice = async (request, response) => {
                                             await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, responsedata.id);
                                         }
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, null, null, 'culqipaysuccess', 200, true);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, null, { message: 'process finished' }, 'culqipaysuccess', 200, true);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                     else {
@@ -2539,7 +2539,7 @@ exports.createBalance = async (request, response) => {
                                     }
 
                                     if (iscard) {
-                                        responsedata = genericfunctions.changeResponseData(responsedata, null, null, 'culqipaysuccess', 200, true);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, null, { message: 'finished process' }, 'culqipaysuccess', 200, true);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                     else {
@@ -2734,7 +2734,7 @@ exports.createCreditNote = async (request, response) => {
                                         await changeInvoiceStatus(corpid, orgid, invoiceid, 'CANCELED', usr, responsedata.id)
                                     }
 
-                                    responsedata = genericfunctions.changeResponseData(responsedata, null, requestCulqiCharge.data.result, 'successinvoiced', 200, true);
+                                    responsedata = genericfunctions.changeResponseData(responsedata, null, requestSendToSunat.data.result, 'successinvoiced', 200, true);
                                     return response.status(responsedata.status).json(responsedata);
                                 }
                                 else {
@@ -3414,7 +3414,7 @@ exports.emitInvoice = async (request, response) => {
                                     if (requestSendToSunat.data.result) {
                                         await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, null, requestCulqiCharge.data.result, 'successinvoiced', 200, true);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, null, requestSendToSunat.data.result, 'successinvoiced', 200, true);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                     else {
@@ -3520,7 +3520,7 @@ exports.getExchangeRate = async (request, response) => {
 
         var lastExchange = await getExchange(request.originalUrl, responsedata.id);
 
-        responsedata = genericfunctions.changeResponseData(responsedata, null, requestCulqiCharge.data.result, 'success', 200, true);
+        responsedata = genericfunctions.changeResponseData(responsedata, null, {}, 'success', 200, true);
         responsedata.exchangerate = lastExchange;
 
         return response.status(responsedata.status).json(responsedata);
@@ -3543,7 +3543,7 @@ exports.regularizeInvoice = async (request, response) => {
 
         await changeInvoicePayment(corpid, orgid, invoiceid, 'PAID', invoicepaymentnote, invoicereferencefile, invoicepaymentcommentary, usr, responsedata.id);
 
-        responsedata = genericfunctions.changeResponseData(responsedata, null, requestCulqiCharge.data.result, 'success', 200, true);
+        responsedata = genericfunctions.changeResponseData(responsedata, null, { message: "finished process" }, 'success', 200, true);
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
         return response.status(500).json({
