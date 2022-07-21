@@ -15,7 +15,6 @@ router.post("/stop",
 )
 
 router.post("/voxiTrigger",
-    auth,    
     campaignController.voxiTrigger
 )
 
