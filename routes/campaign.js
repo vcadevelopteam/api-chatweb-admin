@@ -14,4 +14,9 @@ router.post("/stop",
     campaignController.stop
 )
 
+router.post("/voxiTrigger",
+    auth,    
+    campaignController.voxiTrigger
+)
+
 module.exports = router;

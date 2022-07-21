@@ -1,7 +1,7 @@
 module.exports = {
     QUERY_AUTHENTICATED: {
         query: `
-        SELECT us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.redirect,pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi
+        SELECT us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi
         FROM usr us 
         INNER JOIN orguser ous ON ous.userid = us.userid 
         INNER JOIN org org ON org.orgid = ous.orgid 
@@ -23,7 +23,7 @@ module.exports = {
     },
     QUERY_AUTHENTICATED_BY_FACEBOOKID: {
         query: `
-        SELECT us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, c.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi
+        SELECT us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi
         from usr us 
         INNER JOIN orguser ous on ous.userid = us.userid 
         INNER JOIN org org on org.orgid = ous.orgid 
@@ -31,7 +31,7 @@ module.exports = {
         INNER JOIN corp corp on corp.corpid = ous.corpid 
         LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid 
         INNER JOIN role role on role.roleid = ous.roleid 
-        LEFT JOIN communicationchannel cc ON cc.corpid = ous.corpid AND cc.orgid = ous.orgid AND cc.type = 'VOXI' AND status = 'ACTIVO'
+        LEFT JOIN communicationchannel cc ON cc.corpid = ous.corpid AND cc.orgid = ous.orgid AND cc.type = 'VOXI' AND us.status = 'ACTIVO'
         WHERE us.facebookid = $facebookid 
         AND ous.bydefault 
         AND ous.status <> 'ELIMINADO'
@@ -41,7 +41,7 @@ module.exports = {
     },
     QUERY_AUTHENTICATED_BY_GOOGLEID: {
         query: `
-        SELECT us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, c.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi
+        SELECT us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, c.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi
         from usr us 
         INNER JOIN orguser ous on ous.userid = us.userid 
         INNER JOIN org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency 
@@ -591,7 +591,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CONVERSATION_SEL_TICKETSBYUSER: {
-        query: "SELECT * FROM ufn_conversation_sel_ticketsbyuser($corpid, $orgid, $userid)",
+        query: "SELECT * FROM ufn_conversation_sel_ticketsbyuser($corpid, $orgid, $agentid, $userid)",
         module: "", //messag einbox y supervisor admitir arrays
         protected: "SELECT"
     },
@@ -671,7 +671,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_COMMUNICATIONCHANNEL_INS: {
-        query: "SELECT * FROM ufn_communicationchannel_ins($corpid, $orgid, $id, $description, $type, $communicationchannelsite, $communicationchannelowner, $communicationchannelcontact, $communicationchanneltoken, $customicon, $coloricon, $status, $username, $operation, $botenabled, $botconfigurationid, $chatflowenabled, $schedule, $integrationid, $appintegrationid, $country, $channelparameters, $updintegration, $resolvelithium, $color, $icons, $other, $form, $apikey, $servicecredentials, $motive, $phone)",
+        query: "SELECT * FROM ufn_communicationchannel_ins($corpid, $orgid, $id, $description, $type, $communicationchannelsite, $communicationchannelowner, $communicationchannelcontact, $communicationchanneltoken, $customicon, $coloricon, $status, $username, $operation, $botenabled, $botconfigurationid, $chatflowenabled, $schedule, $integrationid, $appintegrationid, $country, $channelparameters, $updintegration, $resolvelithium, $color, $icons, $other, $form, $apikey, $servicecredentials, $motive, $phone, $voximplantrecording)",
         module: "",
         protected: "INSERT"
     },
@@ -1539,7 +1539,12 @@ module.exports = {
         protected: "INSERT"
     },
     QUERY_GET_VOXIMPLANT_ORG: {
-        query: "SELECT org.corpid, org.orgid, org.voximplantaccountid, org.voximplantapikey, org.voximplantapplicationid FROM org WHERE org.corpid = $corpid AND org.orgid = $orgid;",
+        query: "SELECT org.voximplantaccountid, org.voximplantapikey, org.voximplantapplicationid, org.voximplantcampaignruleid FROM org WHERE org.corpid = $corpid AND org.orgid = $orgid;",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_GET_NUMBER_FROM_COMMUNICATIONCHANNEL: {
+        query: "SELECT communicationchannelsite FROM communicationchannel WHERE corpid = $corpid AND orgid = $orgid AND communicationchannelid = $communicationchannelid;",
         module: "",
         protected: "SELECT"
     },
@@ -1594,7 +1599,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGCONFIGURATION_INS: {
-        query: "SELECT * FROM ufn_billingconfiguration_ins($year,$month,$plan,$id,$basicfee,$userfreequantity,$useradditionalfee,$channelfreequantity,$channelwhatsappfee,$channelotherfee,$clientfreequantity,$clientadditionalfee,$allowhsm,$hsmfee,$description,$status,$whatsappconversationfreequantity,$freewhatsappchannel,$usercreateoverride,$channelcreateoverride,$vcacomissionperhsm,$type,$username,$operation)",
+        query: "SELECT * FROM ufn_billingconfiguration_ins($year,$month,$plan,$id,$basicfee,$userfreequantity,$useradditionalfee,$channelfreequantity,$channelwhatsappfee,$channelotherfee,$clientfreequantity,$clientadditionalfee,$allowhsm,$hsmfee,$description,$status,$whatsappconversationfreequantity,$freewhatsappchannel,$usercreateoverride,$channelcreateoverride,$vcacomissionperhsm,$vcacomissionpervoicechannel,$type,$username,$operation)",
         module: "",
         protected: "INSERT"
     },
@@ -1629,7 +1634,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_BILLINGPERIOD_UPD: {
-        query: "SELECT * FROM ufn_billingperiod_upd($corpid, $orgid, $year, $month, $billingplan, $supportplan, $basicfee, $userfreequantity, $useradditionalfee, $channelfreequantity, $channelwhatsappfee, $channelotherfee, $clientfreequantity, $clientadditionalfee, $supportbasicfee, $unitpricepersms, $vcacomissionpersms, $unitepricepermail, $vcacomissionpermail, $additionalservicename1, $additionalservicefee1, $additionalservicename2, $additionalservicefee2, $additionalservicename3, $additionalservicefee3, $freewhatsappchannel, $freewhatsappconversations, $usercreateoverride, $channelcreateoverride, $vcacomissionperconversation, $vcacomissionperhsm, $force)",
+        query: "SELECT * FROM ufn_billingperiod_upd($corpid, $orgid, $year, $month, $billingplan, $supportplan, $basicfee, $userfreequantity, $useradditionalfee, $channelfreequantity, $channelwhatsappfee, $channelotherfee, $clientfreequantity, $clientadditionalfee, $supportbasicfee, $unitpricepersms, $vcacomissionpersms, $unitepricepermail, $vcacomissionpermail, $additionalservicename1, $additionalservicefee1, $additionalservicename2, $additionalservicefee2, $additionalservicename3, $additionalservicefee3, $freewhatsappchannel, $freewhatsappconversations, $usercreateoverride, $channelcreateoverride, $vcacomissionperconversation, $vcacomissionperhsm, $minimumsmsquantity, $minimummailquantity, $vcacomissionpervoicechannel, $force)",
         module: "",
         protected: "INSERT"
     },
@@ -2122,7 +2127,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PRODUCTCATALOG_INS: {
-        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $id, $code, $description, $descriptiontext, $category, $status, $type, $imagereference, $notes, $unitprice, $username, $operation)",
+        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $id, $code, $description, $descriptiontext, $category, $status, $type, $imagereference, $notes, $title, $website, $currency, $condition, $contentid, $facebookcatalogid, $facebookproductid, $facebookcatalogname, $unitprice, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -2281,10 +2286,15 @@ module.exports = {
     },
     QUERY_TICKETIMPORT_PCC_SEL: {
         query: `
-        SELECT pcc.personid, pcc.personcommunicationchannel
+        SELECT pcc.personid, pcc.personcommunicationchannel, pcc.personcommunicationchannelowner
         FROM personcommunicationchannel pcc
         WHERE pcc.corpid = $corpid
         AND pcc.orgid = $orgid
+        AND (
+            pcc.personcommunicationchannel = ANY(string_to_array($personcommunicationchannel,','))
+            OR
+            pcc.personcommunicationchannelowner = ANY(string_to_array($personcommunicationchannelowner,','))
+        )
         `,
         module: "",
         protected: false
@@ -2360,7 +2370,7 @@ module.exports = {
             null, null, null,
             '', '',
             '00:00:00.00', null,
-            '', null, null, '', '', null,
+            '', null, null, '', '', 'UPLOAD',
             '00:00:00.00',
             'Carga inicial'
         FROM json_populate_recordset(null::udtt_ticket_import, $datatable) pt
@@ -2390,7 +2400,7 @@ module.exports = {
             pt.conversationid,
             'ACTIVO', 'NINGUNO',
             NOW(), 'admin', NOW(), 'admin',
-            pt.interactiontext, pt.interactionuserid, 'LOG'
+            pt.interactiontext, pt.interactionuserid, 'text'
         FROM json_populate_recordset(null::udtt_ticket_import, $datatable) pt
         `,
         module: "",
@@ -2411,4 +2421,79 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_BILLINGPERIOD_UPD_VOXIMPLANT: {
+        query: "SELECT * FROM ufn_billingperiod_upd_voximplant($corpid, $orgid, $year, $month, $voximplantcallphonecost, $voximplantcallpubliccost, $voximplantcallvoipcost, $voximplantcallrecordingcost, $voximplantcallothercost, $force);",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_COMMUNICATIONCHANNEL_SEL_VOXIMPLANT: {
+        query: "SELECT * FROM ufn_communicationchannel_sel_voximplant($corpid, $orgid, $year, $month, $timezoneoffset);",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLING_REPORT_HSMHISTORY: {
+        query: "SELECT * FROM ufn_billing_report_hsmhistory($corpid, $orgid, $year, $month, $type)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_VOXIMPLANTLANDING_COUNTRY_SEL: {
+        query: "SELECT * FROM ufn_voximplantlanding_country_sel()",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_VOXIMPLANTLANDING_INBOUND_SEL: {
+        query: "SELECT * FROM ufn_voximplantlanding_inbound_sel($countrycode)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_VOXIMPLANTLANDING_NUMBER_SEL: {
+        query: "SELECT * FROM ufn_voximplantlanding_number_sel($countrycode)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_VOXIMPLANTLANDING_OUTBOUND_SEL: {
+        query: "SELECT * FROM ufn_voximplantlanding_outbound_sel($countrycode)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIOD_SEL_PHONETAX: {
+        query: "SELECT * FROM ufn_billingperiod_sel_phonetax($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_DICONNECTIONTIMES_SEL: {
+        query: "SELECT * FROM ufn_dashboard_disconnectiontimes_sel($corpid, $orgid, $startdate, $enddate, $asesorid, $supervisorid, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_ASESOR_VS_TICKET_EXPORT: {
+        query: "SELECT * FROM ufn_report_asesor_vs_ticket_export($corpid, $orgid, $where, $order, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_ASESOR_VS_TICKET_SEL: {
+        query: "SELECT * FROM ufn_report_asesor_vs_ticket_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_ASESOR_VS_TICKET_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_report_asesor_vs_ticket_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_USERBYSUPERVISOR_LST: {
+        query: "SELECT * FROM ufn_userbysupervisor_lst($corpid, $orgid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PROPERTY_SEL_BY_INCLUDE_NAME: {
+        query: "SELECT * FROM ufn_property_sel_by_include_name($corpid, $orgid, $propertyname)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PROFILE_SEL: {
+        query: "SELECT firstname, lastname, email, phone, country FROM usr WHERE userid = $userid;",
+        module: "",
+        protected: "SELECT"
+    }
 }

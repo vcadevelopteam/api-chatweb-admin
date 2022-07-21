@@ -1,12 +1,37 @@
-const axios = require('axios')
 const FormData = require('form-data');
+
+const { axiosObservable } = require('../config/helpers');
 
 exports.Location = async (req, res) => {
     const data = req.body;
 
-    axios.post(`${process.env.SERVICES}handler/sendlocation`, data);
+    axiosObservable({
+        url: `${process.env.SERVICES}handler/sendlocation`,
+        data,
+        method: post,
+        _requestid: req._requestid,
+    });
 
     res.json({ success: true });
+}
+
+exports.ShippingCar = async (req, res) => {
+    const data = req.body;
+    const listreq = data.list.map(x => ({
+        ...data,
+        list: undefined,
+        PR_CODIGO: x.key,
+        PD_CANTIDAD: x.quantity,
+        DESCRIPCION: x.description
+    }))
+    const response = await axiosObservable({
+        url: `https://backend.laraigo.com/zyxme/bridge/api/processsolgas/sendrequestlist`,
+        data: listreq,
+        method: "post",
+        _requestid: req._requestid,
+    });
+
+    res.json(response.data?.[0] || { success: false });
 }
 
 const getHttpAuthorization = (authorization) => {
@@ -35,7 +60,7 @@ const setConfig = (auth, headers) => {
         // defaults['Authorization'] = `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
         defaults['auth'] = {
             username: username,
-            password: password
+            password: password,
         }
     }
     return defaults;
@@ -44,33 +69,33 @@ const setConfig = (auth, headers) => {
 exports.TestRequest = async (req, res) => {
     try {
         const { method, url, authorization, headers, postformat, body, parameters } = req.body;
-        let headersjson = headers.reduce((a, x) => ({...a, [x.key]: x.value}), {});
-        let parametersjson = parameters.reduce((a, x) => ({...a, [x.key]: x.value}), {});
+        let headersjson = headers.reduce((a, x) => ({ ...a, [x.key]: x.value }), {});
+        let parametersjson = parameters.reduce((a, x) => ({ ...a, [x.key]: x.value }), {});
         let result = {}
         if (method === 'POST') {
             if (postformat.toLowerCase() === 'urlencoded') {
                 const formData = new FormData();
                 Object.keys(parametersjson).forEach(key => formData.append(key, parametersjson[key]));
-                result = await axios.post(url, formData, {...setConfig(authorization, {...formData.getHeaders(), ...headersjson})});
+                result = await axios.post(url, formData, { ...setConfig(authorization, { ...formData.getHeaders(), ...headersjson }) });
             }
             else if (postformat.toLowerCase() === 'json') {
-                result = await axios.post(url, JSON.parse(body), {...setConfig(authorization, headersjson)});
+                result = await axios.post(url, JSON.parse(body), { ...setConfig(authorization, headersjson) });
             }
             else {
-                result = await axios.post(url, body, {...setConfig(authorization, headersjson)});
+                result = await axios.post(url, body, { ...setConfig(authorization, headersjson) });
             }
         }
         else {
-            result = await axios.get(url, {...setConfig(authorization, headersjson)});
+            result = await axios.get(url, { ...setConfig(authorization, headersjson) });
         }
         return res.json(result.data);
     }
-    catch (err) {
-        if (!!err.response) {
-            return res.json({error: 'ERROR', status: err.response?.status, data: err.response?.data}); 
+    catch (exception) {
+        if (!!exception.response) {
+            return res.json({ error: 'ERROR', status: exception.response?.status, data: exception.response?.data });
         }
         else {
-            return res.json({error: err.message}); 
+            return res.json({ error: exception.message });
         }
     }
 }

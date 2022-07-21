@@ -1,12 +1,12 @@
-const axios = require('axios')
-const tf = require('../config/triggerfunctions');
-const { generatefilter, generateSort, errors, getErrorCode } = require('../config/helpers');
+const { errors, getErrorCode, axiosObservable } = require('../config/helpers');
 const { executesimpletransaction } = require('../config/triggerfunctions');
+const { uploadToCOS, unrar, unzip } = require('../config/filefunctions');
 // var https = require('https');
 
 // const agent = new https.Agent({
 //     rejectUnauthorized: false
 // });
+
 exports.reply = async (req, res) => {
     try {
         const { data } = req.body;
@@ -29,9 +29,12 @@ exports.reply = async (req, res) => {
 
         data.agentName = req.user.fullname;
 
-        const responseservices = await axios.post(
-            `${process.env.SERVICES}ServiceLogicHook/ProcessMessageOut`,
-            { method: "", parameters: data });
+        const responseservices = await axiosObservable({
+            method: "post",
+            url: `${process.env.SERVICES}ServiceLogicHook/ProcessMessageOut`,
+            data: { method: "", parameters: data },
+            _requestid: req._requestid,
+        });
 
         if (!responseservices.data || !responseservices.data instanceof Object)
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
@@ -42,11 +45,8 @@ exports.reply = async (req, res) => {
 
         res.json(responseservices.data);
     }
-    catch (ee) {
-        console.log(ee);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -73,9 +73,12 @@ exports.replyListMessages = async (req, res) => {
 
             data.agentName = req.user.fullname;
 
-            const responseservices = await axios.post(
-                `${process.env.SERVICES}ServiceLogicHook/ProcessMessageOut`,
-                { method: "", parameters: data });
+            const responseservices = await axiosObservable({
+                method: "post",
+                url: `${process.env.SERVICES}ServiceLogicHook/ProcessMessageOut`,
+                data: { method: "", parameters: data },
+                _requestid: req._requestid,
+            });
 
             if (!responseservices.data || !responseservices.data instanceof Object)
                 return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
@@ -86,18 +89,14 @@ exports.replyListMessages = async (req, res) => {
         })
         res.json({ success: true });
     }
-    catch (ee) {
-        console.log(ee);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
 exports.close = async (req, res) => {
     try {
         const { data } = req.body;
-        console.log(data)
 
         for (const [key, value] of Object.entries(data)) {
             if (value === null)
@@ -118,29 +117,24 @@ exports.close = async (req, res) => {
         data.closeby = "USER";
         data.p_status = "CERRADO";
 
-        const responseservices = await axios.post(
-            `${process.env.SERVICES}ServiceLogicHook/closeticket`,
-            { method: "", parameters: data });
-        console.log(responseservices.data)
+        const responseservices = await axiosObservable({
+            method: "post",
+            url: `${process.env.SERVICES}ServiceLogicHook/closeticket`,
+            data: { method: "", parameters: data },
+            _requestid: req._requestid,
+        });
+
         if (!responseservices.data || !responseservices.data instanceof Object)
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
 
         if (!responseservices.data.Success) {
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
         }
-        // data.isanswered = data.isanswered.toString();
-        // const responseapp = await axios.post(`${process.env.APP}inbox/CloseTicketUpdateSupervisors`, data);
-
-        // if (!responseapp.data || !responseapp.data instanceof Object)
-        //     return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
 
         res.json(responseservices.data);
     }
-    catch (ee) {
-        console.log(ee);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -156,6 +150,7 @@ exports.reassign = async (req, res) => {
             data.username = req.user.usr;
 
         data.userid = req.user.userid;
+        data._requestid = req._requestid;
 
         if (!data.newuserid && data.usergroup) { //id del bot
             data.newuserid = 3;
@@ -165,15 +160,12 @@ exports.reassign = async (req, res) => {
             data.newuserid = req.user.userid;
         }
 
-        await tf.executesimpletransaction("UFN_CONVERSATION_REASSIGNTICKET", data);
+        await executesimpletransaction("UFN_CONVERSATION_REASSIGNTICKET", { ...data, _requestid: req._requestid });
 
         res.json({ success: true });
     }
-    catch (ee) {
-        console.log(ee);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -188,11 +180,13 @@ exports.massiveClose = async (req, res) => {
             data.p_username = req.user.usr;
         if (!data.userid)
             data.p_userid = req.user.userid;
-        const responseservices = await axios.post(
-            `${process.env.SERVICES}ServiceLogicHook/ManageTickets`,
-            { method: "", parameters: data });
 
-        console.log(responseservices.data)
+        const responseservices = await axiosObservable({
+            method: "post",
+            url: `${process.env.SERVICES}ServiceLogicHook/ManageTickets`,
+            data: { method: "", parameters: data },
+            _requestid: req._requestid,
+        });
 
         if (!responseservices.data || !responseservices.data instanceof Object) {
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
@@ -203,8 +197,8 @@ exports.massiveClose = async (req, res) => {
         }
         res.json({ success: true });
     }
-    catch (ee) {
-        return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES, ee));
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -220,19 +214,22 @@ exports.sendHSM = async (req, res) => {
         if (!data.userid)
             data.userid = req.user.userid;
 
+        data._requestid = req._requestid;
+
         if (data.listmembers.every(x => !!x.personid)) {
-            await tf.executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", undefined, false, {
+            await executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", undefined, false, {
                 personids: data.listmembers.map(x => x.personid),
                 corpid: data.corpid,
                 orgid: data.orgid,
+                _requestid: req._requestid
             })
         }
 
         if (data.type === "MAIL") {
             let jsonconfigmail = "";
             const resBD = await Promise.all([
-                tf.executesimpletransaction("QUERY_GET_CONFIG_MAIL", data),
-                tf.executesimpletransaction("QUERY_GET_MESSAGETEMPLATE", data)
+                executesimpletransaction("QUERY_GET_CONFIG_MAIL", data),
+                executesimpletransaction("QUERY_GET_MESSAGETEMPLATE", data)
             ]);
             const configmail = resBD[0];
             const mailtemplate = resBD[1][0];
@@ -249,26 +246,25 @@ exports.sendHSM = async (req, res) => {
             }
 
             data.listmembers.forEach(async x => {
-                const resCheck = await tf.executesimpletransaction("UFN_BALANCE_CHECK", { ...data, receiver: x.email, communicationchannelid: 0 })
+                const resCheck = await executesimpletransaction("UFN_BALANCE_CHECK", { ...data, receiver: x.email, communicationchannelid: 0 })
 
                 let send = false;
                 if (resCheck instanceof Array && resCheck.length > 0) {
                     data.fee = resCheck[0].fee;
                     const balanceid = resCheck[0].balanceid;
-                    
+
                     if (balanceid == 0) {
                         send = true;
                     } else {
-                        const resValidate = await tf.executesimpletransaction("UFN_BALANCE_OUTPUT", { ...data, receiver: x.email, communicationchannelid: 0 })
+                        const resValidate = await executesimpletransaction("UFN_BALANCE_OUTPUT", { ...data, receiver: x.email, communicationchannelid: 0 })
                         if (resValidate instanceof Array) {
                             send = true;
                         }
                     }
                 }
-                
-                
+
                 if (send) {
-                    tf.executesimpletransaction("QUERY_INSERT_TASK_SCHEDULER", {
+                    executesimpletransaction("QUERY_INSERT_TASK_SCHEDULER", {
                         corpid: data.corpid,
                         orgid: data.orgid,
                         tasktype: "sendmail",
@@ -301,9 +297,10 @@ exports.sendHSM = async (req, res) => {
                         repeatmode: 0,
                         repeatinterval: 0,
                         completed: false,
+                        _requestid: req._requestid,
                     })
                 } else {
-                    tf.executesimpletransaction("QUERY_INSER_HSM_HISTORY", {
+                    executesimpletransaction("QUERY_INSER_HSM_HISTORY", {
                         ...data,
                         status: 'FINALIZADO',
                         success: false,
@@ -325,8 +322,8 @@ exports.sendHSM = async (req, res) => {
             })
         } else {
             if (data.type === "SMS") {
-                const smschannel = await tf.executesimpletransaction("QUERY_GET_SMS_DEFAULT_BY_ORG", data);
-                console.log(smschannel)
+                const smschannel = await executesimpletransaction("QUERY_GET_SMS_DEFAULT_BY_ORG", data);
+
                 if (smschannel[0] && smschannel) {
                     data.communicationchannelid = smschannel[0].communicationchannelid;
                     data.communicationchanneltype = smschannel[0].type;
@@ -334,12 +331,12 @@ exports.sendHSM = async (req, res) => {
                 }
             }
 
-            const responseservices = await axios.post(
-                `${process.env.SERVICES}handler/external/sendhsm`, data);
-            console.log(responseservices.data)
-            if (!responseservices.data || !responseservices.data instanceof Object) {
-                return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
-            }
+            const responseservices = await axiosObservable({
+                method: "post",
+                url: `${process.env.SERVICES}handler/external/sendhsm`,
+                data,
+                _requestid: req._requestid,
+            });
 
             if (!responseservices.data.Success) {
                 return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
@@ -347,61 +344,153 @@ exports.sendHSM = async (req, res) => {
         }
         res.json({ success: true });
     }
-    catch (ee) {
-        console.log(ee)
-        return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR, ee));
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
 exports.import = async (req, res) => {
     try {
-        const { data } = req.body;
+        const { data = {}, channelsite } = req.body;
+        if (req.files.length > 10) {
+            return res.status(400).json(getErrorCode(errors.LIMIT_EXCEEDED));
+        }
+        
+        const attachments = []
+
+        const zip_list = req.files.filter(f => f.mimetype === 'application/x-zip-compressed' && f.originalname !== 'wa_layout.css');
+        for (let i = 0; i < zip_list.length; i++) {
+            let files = await unzip(zip_list[i])
+            if (files) {
+                for (let j = 0; j < files.length; j++) {
+                    if (files[j]?.size < 10*1024*1024) {
+                        let cosname = await uploadToCOS({
+                            size: files[j]?.size,
+                            originalname: files[j]?.name,
+                            buffer: files[j]?.data,
+                            mimetype: null
+                        }, req.user?.orgdesc || "anonymous")
+                        attachments.push({filename: files[j].name, url: cosname });
+                    }
+                }
+            }
+        }
+        
+        const rar_list = req.files.filter(f => f.originalname.includes('.rar'));
+        for (let i = 0; i < rar_list.length; i++) {
+            let files = await unrar(rar_list[i])
+            if (files) {
+                for (let j = 0; j < files.length; j++) {
+                    if (files[j]?.size < 10*1024*1024) {
+                        let cosname = await uploadToCOS({
+                            size: files[j]?.fileHeader?.unpSize,
+                            originalname: files[j]?.fileHeader?.name,
+                            buffer: Buffer.from(files[j]?.extraction),
+                            mimetype: null
+                        }, req.user?.orgdesc || "anonymous")
+                        attachments.push({filename: files[j]?.fileHeader?.name, url: cosname });
+                    }
+                }
+            }
+        }
+
+        // Joining csv files
+        const csv_list = req.files.filter(f => f.mimetype === 'text/csv');
+        let datatable = [];
+        for (const csv_elem of csv_list) {
+            const csv = csv_elem.buffer.toString();
+            let allTextLines = csv.split(/\r\n|\n/);
+            let headers = allTextLines[0].split(';');
+            let lines = [];
+            for (let i = 1; i < allTextLines.length; i++) {
+                if (allTextLines[i].split(';').length === headers.length) {
+                    const line = allTextLines[i].split(';')
+                    const data = {
+                        ...headers.reduce((ad, key, j) => ({
+                            ...ad,
+                            [key]: line[j][0] === '"' && line[j].slice(-1) === '"' ? line[j].slice(1,-1) : line[j]
+                        }), {}),
+                    }
+                    for (let j = 0; j < attachments.length; j++) {
+                        data.MessageBody = data.MessageBody.replace(attachments[j].filename, attachments[j].url)
+                    }
+                    lines.push(data)
+                }
+            }
+            // const phones = [...new Set(lines.map(d => d.UserPhone))];
+            // const personphone = phones.filter(p => p !== channelsite)?.[0];
+            const personphone = csv_elem.originalname.split('.')[0];
+            const personname = lines.filter(l => l.UserPhone === personphone)?.[0]?.UserName;
+            datatable = [
+                ...datatable,
+                ...lines.map(line => ({
+                    ...line,
+                    "channel": channelsite,
+                    "personname": personname,
+                    "personphone": personphone,
+                    "interactiontext": line.MessageBody,
+                    "interactionfrom": personphone === line.UserPhone ? 'CLIENT' : 'BOT'
+                }))
+            ]
+        }
+
         if (!data?.corpid)
             data.corpid = req.user?.corpid ? req.user.corpid : 1;
         if (!data?.orgid)
             data.orgid = req.user?.orgid ? req.user.orgid : 1;
 
+        data._requestid = req._requestid;
+
         const bot_result = await executesimpletransaction("QUERY_ORG_BOT_SEL", {
             corpid: data.corpid,
             orgid: data.orgid,
+            _requestid: req._requestid,
         });
-        
+
         const botid = bot_result?.[0]?.userid || 2;
         const botname = bot_result?.[0]?.fullname || 'BOT SYSTEM';
-        
+
         // Add conversation unique identifier
-        data.datatable = data.datatable.map(d => ({
+        datatable = datatable.map(d => ({
             ...d,
             auxid: d.personphone
         }));
 
         // Unique channels
-        const channel_list = [...new Set(data.datatable.map(d => d.channel))];
+        const channel_list = [...new Set(datatable.map(d => d.channel))];
 
         // Channels info
         const channel_result = await executesimpletransaction("QUERY_TICKETIMPORT_CHANNELS_SEL", {
             corpid: data.corpid,
             orgid: data.orgid,
-            channels: channel_list.join(',')
+            channels: channel_list.join(','),
+            _requestid: req._requestid,
         });
 
         const channel_dict = channel_result.reduce((ac, c) => ({
             ...ac,
-            [c.communicationchannelsite]: c 
+            [c.communicationchannelsite]: c
         }), {});
 
         // Add channel information to the data
-        data.datatable = data.datatable.map(d => ({
+        datatable = datatable.map(d => ({
             ...d,
             communicationchannelid: channel_dict[d.channel]?.communicationchannelid,
             channeltype: channel_dict[d.channel]?.channeltype,
             personcommunicationchannel: `${d.personphone}_${channel_dict[d.channel]?.channeltype}`
         }));
 
+        // Unique pcc
+        const personcommunicationchannel_list = [...new Set(datatable.map(d => d.personcommunicationchannel))];
+        const personcommunicationchannelowner_list = [...new Set(datatable.map(d => d.personphone))];
+
         // Pcc info
         const pcc_result = await executesimpletransaction("QUERY_TICKETIMPORT_PCC_SEL", {
             corpid: data.corpid,
-            orgid: data.orgid
+            orgid: data.orgid,
+            personcommunicationchannel: personcommunicationchannel_list.join(','),
+            personcommunicationchannelowner: personcommunicationchannelowner_list.join(','),
+            _requestid: req._requestid,
         });
 
         const pcc_dict = pcc_result.reduce((ac, c) => ({
@@ -409,14 +498,19 @@ exports.import = async (req, res) => {
             [c.personcommunicationchannel]: c
         }), {});
 
+        const pccowner_dict = pcc_result.reduce((ac, c) => ({
+            ...ac,
+            [c.personcommunicationchannelowner]: c
+        }), {});
+
         // Add pcc information to the data
-        data.datatable = data.datatable.map(d => ({
+        datatable = datatable.map(d => ({
             ...d,
-            personid: pcc_dict[d.personcommunicationchannel]?.personid
+            personid: pcc_dict[d.personcommunicationchannel]?.personid || pccowner_dict[d.personphone]?.personid
         }));
 
         // Get uniques personcommunicationchannel
-        let pcc_to_create = [...new Map(data.datatable.map(d => [d['personcommunicationchannel'], d])).values()];
+        let pcc_to_create = [...new Map(datatable.map(d => [d['personcommunicationchannel'], d])).values()];
 
         // Filter the pcc that should be created
         pcc_to_create = pcc_to_create.filter(d => !pcc_result.map(pcc => pcc.personcommunicationchannel).includes(d.personcommunicationchannel));
@@ -440,55 +534,63 @@ exports.import = async (req, res) => {
         ALTER TABLE conversation ADD COLUMN auxid BIGINT;
         */
 
-        // Create persons
+        // Create pcc and persons
         if (pcc_to_create.length > 0) {
+            // Filter pcc without personid
+            const person_to_create = pcc_to_create.filter(d => !d.personid);
+            
+            // Create persons
             const person_result = await executesimpletransaction("QUERY_TICKETIMPORT_PERSON_INS", {
                 corpid: data.corpid,
                 orgid: data.orgid,
                 botname: botname,
-                datatable: JSON.stringify(pcc_to_create)
+                datatable: JSON.stringify(person_to_create),
+                _requestid: req._requestid,
             });
-    
+
             const person_dict = person_result.reduce((ac, c) => ({
                 ...ac,
                 [c.personcommunicationchannel]: c
             }), {});
-    
+
             // Add person information to pcc to create
             pcc_to_create = pcc_to_create.map(p => ({
                 ...p,
-                personid: person_dict[p.personcommunicationchannel]?.personid
+                personid: !p.personid ? person_dict[p.personcommunicationchannel]?.personid : p.personid
             }));
-    
+
             // Create pccs
             await executesimpletransaction("QUERY_TICKETIMPORT_PCC_INS", {
                 corpid: data.corpid,
                 orgid: data.orgid,
-                datatable: JSON.stringify(pcc_to_create)
+                datatable: JSON.stringify(pcc_to_create),
+                _requestid: req._requestid,
             });
-    
+
             // Add person information to the data
-            data.datatable = data.datatable.map(d => ({
+            datatable = datatable.map(d => ({
                 ...d,
                 personid: !d.personid ? person_dict[d.personcommunicationchannel]?.personid : d.personid
             }));
         }
 
         // Get uniques conversation
-        const conversation_to_create = [...new Map(data.datatable.map(d => [d['auxid'], d])).values()];
+        const conversation_to_create = [...new Map(datatable.map(d => [d['auxid'], d])).values()];
 
         // Create conversations
         const conversation_result = await executesimpletransaction("QUERY_TICKETIMPORT_CONVERSATION_INS", {
             corpid: data.corpid,
             orgid: data.orgid,
             botid: botid,
-            datatable: JSON.stringify(conversation_to_create)
+            datatable: JSON.stringify(conversation_to_create),
+            _requestid: req._requestid,
         });
 
         // Actualización de ticketnum<orgid>seq
         await executesimpletransaction("UFN_TICKETNUM_FIX", {
             corpid: data.corpid,
             orgid: data.orgid,
+            _requestid: req._requestid,
         });
 
         const conversation_dict = conversation_result.reduce((ac, c) => ({
@@ -497,7 +599,7 @@ exports.import = async (req, res) => {
         }), {});
 
         // Add conversation information to the data
-        data.datatable = data.datatable.map(d => ({
+        datatable = datatable.map(d => ({
             ...d,
             conversationid: conversation_dict[d.auxid]?.conversationid,
             interactionuserid: d.interactionfrom === 'CLIENT' ? null : botid
@@ -507,12 +609,13 @@ exports.import = async (req, res) => {
         await executesimpletransaction("QUERY_TICKETIMPORT_INTERACTION_INS", {
             corpid: data.corpid,
             orgid: data.orgid,
-            datatable: JSON.stringify(data.datatable)
+            datatable: JSON.stringify(datatable),
+            _requestid: req._requestid,
         });
-        
+
         res.json({ success: true });
     }
-    catch (ee) {
-        return res.status(400).json(ee);
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }

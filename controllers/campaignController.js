@@ -1,6 +1,62 @@
 const voximplant = require("../config/voximplantfunctions");
 const { executesimpletransaction } = require('../config/triggerfunctions');
-const { setSessionParameters, buildcsv } = require('../config/helpers');
+const { setSessionParameters, getErrorCode, buildcsv } = require('../config/helpers');
+const logger = require('../config/winston');
+
+exports.voxiTrigger = async (req, res) => {
+    try {
+        const { corpid, orgid, data, campaignid, communicationchannelid } = req.body;
+
+        logger.child({ context: { corpid, orgid, communicationchannelid, data, campaignid }, _requestid: req._requestid }).debug(`Request to ${req.originalUrl}`)
+
+        const voxinumber = await executesimpletransaction("QUERY_GET_NUMBER_FROM_COMMUNICATIONCHANNEL", { corpid, orgid, communicationchannelid });
+
+        const csv = buildcsv(data.map((d) => ({
+            ...d,
+            caller_id: voxinumber[0].communicationchannelsite,
+            __start_execution_time: '00:00:00',
+            __end_execution_time: '23:59:59',
+            __start_at: Math.trunc(new Date().getTime() / 1000)
+        })));
+
+        let result = undefined;
+
+        const bodyToSend = {
+            name: `${corpid}-${orgid}-${campaignid}-${new Date().toISOString()}`,
+            file_content: csv
+        };
+
+        // Try to get information of VOXI in org table
+        const voxiorgdata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_ORG", { corpid, orgid });
+        
+        // If exists info of VOXI in org
+        if (voxiorgdata instanceof Array && voxiorgdata.length > 0) {
+            bodyToSend['account_id'] = voxiorgdata[0].voximplantaccountid;
+            bodyToSend['child_apikey'] = voxiorgdata[0].voximplantapikey;
+            bodyToSend['application_id'] = voxiorgdata[0].voximplantapplicationid;
+            bodyToSend['rule_id'] = voxiorgdata[0].voximplantcampaignruleid;
+        }
+
+        let callListResult = await voximplant.createCallList(req.body)
+        if (callListResult?.result) {
+            bodyToSend['list_id'] = callListResult?.list_id;
+            // await executesimpletransaction("QUERY_CAMPAIGN_START", {
+            //     corpid: req.body.corpid,
+            //     orgid: req.body.orgid,
+            //     campaignid: req.body.campaignid,
+            //     taskid: callListResult?.list_id
+            // });
+            result = [callListResult?.list_id];
+
+            return res.json({ error: false, result });
+        }
+
+        return res.json({ error: true });
+    }
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+    }
+}
 
 exports.start = async (req, res) => {
     let resultData = {
@@ -16,9 +72,9 @@ exports.start = async (req, res) => {
                 message: 'Invalid campaign'
             });
         }
-        
+
         setSessionParameters(req.body, req.user);
-        
+
         const campaignData = await executesimpletransaction("QUERY_CAMPAIGN_SEL", {
             corpid: req.body.corpid,
             orgid: req.body.orgid,
@@ -33,25 +89,27 @@ exports.start = async (req, res) => {
         }
 
         let result = undefined;
+        const campaign = campaignData[0];
 
-        if (campaignData[0].status === 'ACTIVO') {
-            switch (campaignData[0].communicationchanneltype) {
+        if (campaign.status === 'ACTIVO') {
+            switch (campaign.communicationchanneltype) {
                 case 'VOXI':
-                    const campaignmemberData = await executesimpletransaction("QUERY_CAMPAIGNMEMBER_SEL", {
-                        corpid: req.body.corpid,
-                        orgid: req.body.orgid,
-                        campaignid: req.body.campaignid
-                    });
-                    const batchjson = campaignData[0].batchjson.reduce((acd, cd) => ({
+                    const batchjson = campaign.batchjson.reduce((acd, cd) => ({
                         ...acd,
-                        [cd.batchindex]: Math.trunc(new Date(new Date(`${cd.date} ${cd.time} UTC`) - req.body.offset * 60*60*1000).getTime() / 1000)
+                        [cd.batchindex]: Math.trunc(new Date(new Date(`${cd.date} ${cd.time} UTC`) - req.body.offset * 60 * 60 * 1000).getTime() / 1000)
                     }), {});
 
                     // Crear ticket para cada miembro
                     // Crear campaignhistory para cada miembro
 
+                    const campaignmemberData = await executesimpletransaction("QUERY_CAMPAIGNMEMBER_SEL", {
+                        corpid: req.body.corpid,
+                        orgid: req.body.orgid,
+                        campaignid: req.body.campaignid
+                    });
+
                     let data = campaignmemberData.map((d) => {
-                        let message = campaignData[0].message;
+                        let message = campaign.message;
                         Object.keys(d).forEach(k => {
                             message = message.replace(`{{${k}}}`, d[k])
                         });
@@ -60,7 +118,7 @@ exports.start = async (req, res) => {
                             message,
                             __start_execution_time: '00:00:00',
                             __end_execution_time: '23:59:59',
-                            __start_at: campaignData[0].executiontype === 'SCHEDULED' ? batchjson[d.batchindex] : Math.trunc(new Date().getTime() / 1000)
+                            __start_at: campaign.executiontype === 'SCHEDULED' ? batchjson[d.batchindex] : Math.trunc(new Date().getTime() / 1000)
                         }
                     });
                     let csv = buildcsv(data);
@@ -81,10 +139,9 @@ exports.start = async (req, res) => {
 
                     req.body['name'] = `${req.body.corpid}-${req.body.orgid}-${req.body.campaignid}-${new Date().toISOString()}`;
                     req.body['file_content'] = csv;
-                    
+
                     let callListResult = await voximplant.createCallList(req.body)
-                    if (callListResult?.result) 
-                    {
+                    if (callListResult?.result) {
                         req.body['list_id'] = callListResult?.list_id;
                         await executesimpletransaction("QUERY_CAMPAIGN_START", {
                             corpid: req.body.corpid,
@@ -138,9 +195,9 @@ exports.stop = async (req, res) => {
                 message: 'Invalid campaign'
             })
         }
-        
+
         setSessionParameters(req.body, req.user);
-        
+
         const campaignData = await executesimpletransaction("QUERY_CAMPAIGN_SEL", {
             corpid: req.body.corpid,
             orgid: req.body.orgid,

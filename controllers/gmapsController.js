@@ -1,24 +1,25 @@
-const axios = require('axios')
-const { errors, getErrorCode } = require('../config/helpers');
+const { errors, getErrorCode, axiosObservable } = require('../config/helpers');
 
 exports.geocode = async (req, res) => {
     const { lat, lng } = req.query;
-    
+
     const APIKEY = process.env.APIKEY_GMAPS;
 
     try {
         const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${APIKEY}`;
 
-        const response = await axios.get(url);
+        const response = await axiosObservable.get({
+            url: url,
+            method: "get",
+            _requestid: req._requestid,
+        });
 
         if (response.data && response.data.status === "OK") {
             return res.json(response.data);
         }
 
-    } catch (error) {
-        console.log(error)
         return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
-
-    return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
 }

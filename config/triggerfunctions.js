@@ -1,8 +1,8 @@
+const logger = require('./winston');
 const sequelize = require('./database');
 const functionsbd = require('./functions');
 const XLSX = require('xlsx');
 const { generatefilter, generateSort, errors, getErrorSeq, getErrorCode, stringToSeconds, secondsToTime } = require('./helpers');
-
 const { QueryTypes } = require('sequelize');
 require('pg').defaults.parseInt8 = true;
 
@@ -18,14 +18,14 @@ const COS_BUCKET_NAME = "staticfileszyxme"
 const REPLACEFILTERS = "###FILTERS###";
 const REPLACESEL = "###REPLACESEL###";
 
-const executeQuery = async (query, bind = {}) => {
+const executeQuery = async (query, bind = {}, _requestid) => {
+    const profiler = logger.child({ context: bind, _requestid }).startTimer();
+
     return await sequelize.query(query, {
         type: QueryTypes.SELECT,
         bind
-    }).catch(err => {
-        console.log(err)
-        return getErrorSeq(err)
-    });
+    })
+        .catch(err => getErrorSeq(err, profiler, query));
 }
 //no se puede usar bind y replace en el mismo query 
 exports.executesimpletransaction = async (method, data, permissions = false, replacements = undefined) => {
@@ -33,24 +33,21 @@ exports.executesimpletransaction = async (method, data, permissions = false, rep
     if (functionMethod) {
         if (permissions && functionMethod.module) {
             const application = permissions[functionMethod.module];
-
             if (functionMethod.protected && (!application || ((functionMethod.protected === "SELECT" && !application[0]) || (functionMethod.protected === "INSERT" && !application[2])))) {
                 return getErrorCode(errors.FORBIDDEN);
             }
         }
         const query = functionMethod.query;
+
         if (data instanceof Object || data === undefined) {
-            console.time("simple-" + method);
-            const result = await sequelize.query(query, {
+            const profiler = logger.child({ context: { ...data, menu: undefined }, _requestid: data?._requestid || replacements?._requestid }).startTimer();
+
+            return await sequelize.query(query, {
                 type: QueryTypes.SELECT,
                 replacements,
                 bind: data
-            }).catch(err => {
-                console.log(err)
-                return getErrorSeq(err)
-            });
-            console.timeEnd("simple-" + method);
-            return result;
+            })
+                .catch(err => getErrorSeq(err, profiler, method));
         } else {
             return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
         }
@@ -60,7 +57,6 @@ exports.executesimpletransaction = async (method, data, permissions = false, rep
 }
 
 exports.getCollectionPagination = async (methodcollection, methodcount, data, permissions = false) => {
-
     try {
         let functionMethod = functionsbd[methodcollection];
 
@@ -83,7 +79,8 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
                 const queryCollectionCleaned = querycollection.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
                 const queryCountCleaned = querycount.replace("###WHERE###", data.where || "");
 
-                console.time("pagination-" + methodcollection);
+                const profiler = logger.child({ context: data, _requestid: data._requestid }).startTimer();
+
                 const results = await Promise.all([
                     sequelize.query(queryCollectionCleaned, {
                         type: QueryTypes.SELECT,
@@ -93,8 +90,8 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
                         type: QueryTypes.SELECT,
                         bind: data
                     })
-                ]).catch(err => getErrorSeq(err));
-                console.timeEnd("pagination-" + methodcollection);
+                ])
+                    .catch(err => getErrorSeq(err, profiler, `paginated ${methodcollection}`))
 
                 if (!(results instanceof Array)) {
                     return results
@@ -113,8 +110,8 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
         } else {
             return getErrorCode(errors.NOT_FUNCTION_ERROR);
         }
-    } catch (error) {
-        return getErrorCode(errors.UNEXPECTED_ERROR);
+    } catch (exception) {
+        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing getCollectionPagination");
     }
 }
 
@@ -129,13 +126,15 @@ exports.buildQueryWithFilterAndSort = async (method, data) => {
 
                 const queryCollectionCleaned = query.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
 
-                console.time("build-" + method);
-                const result = await sequelize.query(queryCollectionCleaned, {
+                const profiler = logger.child({ context: data, _requestid: data._requestid }).startTimer();
+
+                logger.child({ context: data, _requestid: data._requestid }).debug(`executing ${queryCollectionCleaned}`)
+
+                return await sequelize.query(queryCollectionCleaned, {
                     type: QueryTypes.SELECT,
                     bind: data
-                });
-                console.timeEnd("build-" + method);
-                return result;
+                })
+                    .catch(err => getErrorSeq(err, profiler, `builded query ${queryCollectionCleaned}`));
 
             } else {
                 return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
@@ -143,13 +142,12 @@ exports.buildQueryWithFilterAndSort = async (method, data) => {
         } else {
             return getErrorCode(errors.NOT_FUNCTION_ERROR);
         }
-    } catch (e) {
-        console.log(e);
-        return getErrorCode(errors.UNEXPECTED_ERROR);
+    } catch (exception) {
+        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing buildQueryWithFilterAndSort", data._requestid);
     }
 }
 
-exports.GetMultiCollection = async (detail, permissions = false) => {
+exports.GetMultiCollection = async (detail, permissions = false, _requestid) => {
     return await Promise.all(detail.map(async (item, index) => {
         let functionMethod = functionsbd[item.method];
         if (functionMethod) {
@@ -159,12 +157,13 @@ exports.GetMultiCollection = async (detail, permissions = false) => {
                     return getErrorCode(errors.FORBIDDEN);
                 }
             }
-            console.time("multi-" + index + "-" + item.method);
+            const profiler = logger.child({ context: item.parameters, _requestid }).startTimer();
+
             const r = await sequelize.query(functionMethod.query, {
                 type: QueryTypes.SELECT,
                 bind: item.parameters
-            }).catch(err => getErrorSeq(err));
-            console.timeEnd("multi-" + index + "-" + item.method);
+            })
+                .catch(err => getErrorSeq(err, profiler, `multi ${item.method}`));
 
             if (!(r instanceof Array))
                 return r;
@@ -180,7 +179,7 @@ exports.GetMultiCollection = async (detail, permissions = false) => {
     }))
 }
 
-exports.executeTransaction = async (header, detail, permissions = false) => {
+exports.executeTransaction = async (header, detail, permissions = false, _requestid) => {
     let detailtmp = detail;
     const transaction = await sequelize.transaction();
     let resultHeader = null;
@@ -198,13 +197,15 @@ exports.executeTransaction = async (header, detail, permissions = false) => {
             }
 
             if (parameters instanceof Object) {
-                console.time("header-" + method);
+                const profiler = logger.child({ context: parameters, _requestid }).startTimer();
+
                 const result = await sequelize.query(functionMethod.query, {
                     type: QueryTypes.SELECT,
                     bind: parameters,
                     transaction
-                }).catch(err => getErrorSeq(err));
-                console.timeEnd("header-" + method);
+                })
+                    .catch(err => getErrorSeq(err, profiler, `transaction header ${method}`));
+
                 if (!(result instanceof Array)) {
                     await transaction.rollback();
                     return result;
@@ -231,17 +232,19 @@ exports.executeTransaction = async (header, detail, permissions = false) => {
     try {
         await Promise.all(detailtmp.map(async (item) => {
             if (functionsbd[item.method]) {
-                console.time("detail-" + item.method);
+                const profiler = logger.child({ context: item.parameters, _requestid }).startTimer();
+
                 const query = functionsbd[item.method];
                 await sequelize.query(query, {
                     type: QueryTypes.SELECT,
                     bind: item.parameters,
                     transaction
-                }).catch(err => {
-                    lasterror = getErrorSeq(err);
-                    throw 'error'
-                });
-                console.timeEnd("detail-" + item.method);
+                })
+                    .catch(err => {
+                        lasterror = getErrorSeq(err, profiler, `transaction detail ${item.method}`);
+                        throw 'error'
+
+                    });
             } else {
                 lasterror = getErrorCode(errors.NOT_FUNCTION_ERROR);
                 throw 'error'
@@ -273,19 +276,16 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
     try {
         const TABLENAME = columns[0].tablename;
         const ALLCOLUMNS = [...columns, ...filters];
+
         let JOINNERS = Array.from(new Set(ALLCOLUMNS.filter(x => !!x.join_alias).map(x => x.join_alias))).reduce((acc, join_alias) => {
             const { join_table, join_on } = ALLCOLUMNS.find(x => x.join_alias === join_alias);
             return acc + `\nLEFT JOIN ${join_table} ${join_alias} ${join_on}`;
         }, "");
 
-        // if (ALLCOLUMNS.some(x => x.type === "variable")) {
-        //     JOINNERS += `\nCROSS JOIN CAST conversation.variablecontextjsonb as jo`
-        // }
-
         const columnValueUnique = filters.find(x => x.type_filter === "unique_value");
-        
+
         let columnToAdd = [];
-        
+
         if (columnValueUnique) {
             const columnFound = columns.find(x => x.columnname === columnValueUnique.columnname)
             if (!columnFound) {
@@ -310,8 +310,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 return acc + (index === 0 ? "" : ",") + `${selcol} as "${item.columnname.replace(".", "")}"`
             }
         }, "")
-        console.log('aa')
-        // console.log(filters)
+
         const FILTERS = filters.reduce((acc, { type, columnname, start, end, value }) => {
             if (DATES.includes(type)) {
                 return `${acc}\nand ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
@@ -340,18 +339,18 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 return acc;
             }
         }, "")
-        
+
         let query = `
-        select
-            ${COLUMNESSELECT}
-        from ${TABLENAME}
-        ${JOINNERS}
-        WHERE 
-            ${TABLENAME}.corpid = $corpid and ${TABLENAME}.orgid = $orgid
-            ${FILTERS}
-        `;
-        // console.log(query)
-        const resultbd = await executeQuery(query, parameters);
+            select
+                ${COLUMNESSELECT}
+            from ${TABLENAME}
+            ${JOINNERS}
+            WHERE 
+                ${TABLENAME}.corpid = $corpid and ${TABLENAME}.orgid = $orgid
+                ${FILTERS}
+            `;
+
+        const resultbd = await executeQuery(query, parameters, parameters._requestid);
 
         if (summaries.length > 0 && resultbd.length > 0) {
             const firstColumn = columns.reduce((acc, item) => ({
@@ -406,9 +405,8 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             resultbd.unshift(datawith);
         }
         return resultbd;
-    } catch (error) {
-        console.log(error)
-        return getErrorCode(errors.UNEXPECTED_ERROR, error);
+    } catch (exception) {
+        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing buildQueryDynamic2", parameters._requestid);
     }
 }
 
@@ -421,10 +419,6 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
             const { join_table, join_on } = ALLCOLUMNS.find(x => x.join_alias === join_alias);
             return acc + `\nLEFT JOIN ${join_table} ${join_alias} ${join_on}`;
         }, "");
-
-        // if (ALLCOLUMNS.some(x => x.type === "variable")) {
-        //     JOINNERS += `\nCROSS JOIN CASTconversation.variablecontextjsonb as jo`
-        // }
 
         const firstSelect = interval === "day" ?
             `to_char(${dataorigin}.createdate + $offset * INTERVAL '1hour', 'MM-DD') "interval"` : (interval === "month" ?
@@ -516,13 +510,12 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
         GROUP BY 1${!!GROUP_BY ? "," : ""} ${GROUP_BY}
         ORDER BY 1 desc
         `;
-        // console.log(query)
-        const resultbd = await executeQuery(query, parameters);
+
+        const resultbd = await executeQuery(query, parameters, parameters._requestid);
 
         return resultbd;
-    } catch (error) {
-        console.log(error)
-        return getErrorCode(errors.UNEXPECTED_ERROR, error);
+    } catch (exception) {
+        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing buildQueryDynamicGroupInterval", parameters._requestid);
     }
 }
 
@@ -615,24 +608,23 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
         }
 
         query = query.replace(REPLACEFILTERS, whereQuery).replace(REPLACESEL, selQuery);
-        // console.log(query)
 
-        return await executeQuery(query, parameters);
-    } catch (error) {
-        return getErrorCode(errors.UNEXPECTED_ERROR, error);
+        return await executeQuery(query, parameters, parameters._requestid);
+    } catch (exception) {
+        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing buildQueryDynamic", parameters._requestid);
     }
 }
 
-exports.exportData = (dataToExport, reportName, formatToExport, headerClient = null) => {
-    let content = "";
+exports.exportData = (dataToExport, reportName, formatToExport, headerClient = null, _requestid) => {
+    formatToExport = "csv";
     try {
-        const titlefile = (reportName || "report") + new Date().toISOString() + (formatToExport ? ".xlsx" : ".csv");
+        const titlefile = (reportName || "report") + new Date().toISOString() + (formatToExport !== "csv" ? ".xlsx" : ".csv");
         if (dataToExport instanceof Array && dataToExport.length > 0) {
             var s3 = new ibm.S3(config);
             let keysHeaders;
             const keys = Object.keys(dataToExport[0]);
             keysHeaders = keys;
-            // console.log(headerClient)
+
             if (headerClient) {
                 keysHeaders = keys.reduce((acc, item) => {
                     const keyclientfound = headerClient.find(x => x.key === item);
@@ -647,8 +639,9 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
                 }, {});
                 dataToExport.unshift(keysHeaders);
             }
-
             if (formatToExport === "excel") {
+                logger.child({ _requestid }).debug(`executing excel`)
+
                 const ws = XLSX.utils.json_to_sheet(dataToExport, headerClient ? {
                     skipHeader: !!headerClient,
                 } : undefined);
@@ -663,31 +656,31 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
                     Bucket: COS_BUCKET_NAME,
                     ContentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
                 }
-                console.time(`uploadcos`);
+                const profiler = logger.child({ _requestid }).startTimer();
+                // console.time(`uploadcos`);
                 return new Promise((res, rej) => {
                     s3.upload(params, (err, data) => {
                         if (err) {
+                            profiler.done({ level: "error", error: err, message: `Upload cos` });
                             res(getErrorCode(errors.COS_UNEXPECTED, err));
                         } else {
-                            console.timeEnd(`uploadcos`);
+                            profiler.done({ level: "debug", message: `Upload cos` });
                             res({ url: (data.Location || "").replace("http:", "https:") })
                         }
                     });
                 });
             } else {
-                console.time(`draw-csv`);
-                content += Object.keys(dataToExport[0]).join() + "\n";
-                dataToExport.forEach((rowdata) => {
-                    let rowjoined = Object.values(rowdata).join("##");
-                    if (rowjoined.includes(",")) {
-                        rowjoined = Object.values(rowdata).map(x => (x && typeof x === "string") ? (x.includes(",") ? `"${x}"` : x) : x).join();
-                    } else {
-                        rowjoined = rowjoined.replace(/##/gi, ",");
-                    }
-                    content += rowjoined + "\n";
-                });
-                console.timeEnd(`draw-csv`);
+                logger.child({ _requestid }).debug(`drawing csv`)
 
+                const profiler = logger.child({ _requestid }).startTimer();
+
+                let content =
+                    (headerClient ? "" : (Object.keys(dataToExport[0]).join("|") + "\n")) +
+                    dataToExport.map(item => Object.values(item).join("|").replace(/(?![\x00-\x7FáéíóúñÁÉÍÓÚÑ]|[\xC0-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF7][\x80-\xBF]{3})./g, '')).join("\n");
+
+                dataToExport = null;
+
+                profiler.done({ level: "debug", message: `Drawed csv` });
 
                 const params = {
                     ACL: 'public-read',
@@ -696,13 +689,21 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
                     Bucket: COS_BUCKET_NAME,
                     ContentType: "text/csv",
                 }
-                console.time(`uploadcos`);
+
+                content = "";
+
+                logger.child({ _requestid }).debug(`Uploading to COS`)
+
+                const profiler1 = logger.child({ _requestid }).startTimer();
+
                 return new Promise((res, rej) => {
                     s3.upload(params, (err, data) => {
                         if (err) {
+                            profiler1.done({ level: "error", error: err, message: `Uploaded cos` });
                             rej(getErrorCode(errors.COS_UNEXPECTED_ERROR, err));
                         }
-                        console.timeEnd(`uploadcos`);
+                        profiler1.done({ level: "debug", message: `Upload cos` });
+
                         res({ url: (data.Location || "").replace("http:", "https:") })
                     });
                 });
@@ -710,7 +711,104 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
         } else {
             return getErrorCode(errors.ZERO_RECORDS_ERROR);
         }
-    } catch (error) {
-        return getErrorCode(errors.UNEXPECTED_ERROR, error);
+    } catch (exception) {
+        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing exportdata");
     }
+}
+
+exports.getQuery = (method, data, isNotPaginated) => {
+    try {
+        if (functionsbd[method]) {
+            let query = functionsbd[method].query;
+            
+            if (!isNotPaginated) {
+                if (data instanceof Object) {
+                    data.where = generatefilter(data.filters, data.origin, data.daterange, data.offset);
+                    data.order = generateSort(data.sorts, data.origin);
+
+                    query = query.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
+                } else {
+                    return getErrorCode(errors.VARIABLE_INCOMPATIBILITY_ERROR);
+                }
+            }
+
+            const resultRx = query.match(/\$[\_\w]+/g)
+
+            resultRx?.forEach((x, i) => {
+                query = query.replace(x, "$" + (i + 1))
+            })
+
+            const values = resultRx?.map(x => data[x.replace("$", "")]) || []
+            return { query, values };
+
+        } else {
+            return getErrorCode(errors.NOT_FUNCTION_ERROR);
+        }
+    } catch (exception) {
+        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing buildQueryWithFilterAndSort", data._requestid);
+    }
+}
+
+exports.transformCSV = async (data, headerClient, _requestid, indexPart, zip) => {
+    const formatToExport = "csv";
+    const titlefile = "Part-" + indexPart + (formatToExport !== "csv" ? ".xlsx" : ".csv");
+
+    let keysHeaders;
+    const keys = Object.keys(data[0]);
+    keysHeaders = keys;
+
+    if (headerClient) {
+        keysHeaders = keys.reduce((acc, item) => {
+            const keyclientfound = headerClient.find(x => x.key === item);
+            if (!keyclientfound)
+                return acc;
+            else {
+                return {
+                    ...acc,
+                    [item]: keyclientfound.alias
+                }
+            }
+        }, {});
+        data.unshift(keysHeaders);
+    }
+
+    const profiler = logger.child({ _requestid }).startTimer();
+
+    let content =
+        (headerClient ? "" : (Object.keys(data[0]).join("|") + "\n")) +
+        data.map(item => Object.values(item).join("|").replace(/(?![\x00-\x7FáéíóúñÁÉÍÓÚÑ]|[\xC0-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF7][\x80-\xBF]{3})./g, '')).join("\n");
+
+    data = null;
+
+    profiler.done({ level: "debug", message: `Drawed csv` });
+
+    zip.file(titlefile, Buffer.from(content, 'ASCII'), { binary: true })
+}
+
+exports.uploadCSV = async (_requestid, buffer) => {
+    var s3 = new ibm.S3(config);
+
+    const params = {
+        ACL: 'public-read',
+        Key: new Date().toISOString() + ".zip",
+        Body: buffer,
+        Bucket: COS_BUCKET_NAME,
+        ContentType: "application/zip",
+    }
+
+    logger.child({ _requestid }).debug(`Uploading to COS`)
+
+    const profiler1 = logger.child({ _requestid }).startTimer();
+
+    return new Promise((res, rej) => {
+        s3.upload(params, (err, data) => {
+            if (err) {
+                profiler1.done({ level: "error", error: err, message: `Uploaded cos` });
+                rej(getErrorCode(errors.COS_UNEXPECTED_ERROR, err));
+            }
+            profiler1.done({ level: "debug", message: `Upload cos` });
+
+            res({ url: (data.Location || "").replace("http:", "https:") })
+        });
+    });
 }

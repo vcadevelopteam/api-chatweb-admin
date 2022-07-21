@@ -6,6 +6,8 @@ const axios = require('axios');
 const bcryptjs = require("bcryptjs");
 const logger = require('../config/winston');
 
+/* ESTE MIGRADOR SOLO ES PARA AÑADIR DATA DE ZYXME A LARAIGO */
+
 /* Índice de tablas
 
 Propios del sistema
@@ -133,7 +135,7 @@ const recryptPwd = async (table, data, corpidBind) => {
             if (apiServiceEndpoint) {
                 try {
                     const response = await axios({
-                        data: data.map(d => ({userid: d.zyxmeuserid, pwd: d.pwd, secret: "VCAPERU2022LARAIGO#!"})),
+                        data: data.map(d => ({ userid: d.zyxmeuserid, pwd: d.pwd, secret: "VCAPERU2022LARAIGO#!" })),
                         method: 'post',
                         url: `${apiServiceEndpoint}decryption`,
                     });
@@ -151,7 +153,7 @@ const recryptPwd = async (table, data, corpidBind) => {
                 }
             }
             break;
-        }
+    }
     return data;
 }
 
@@ -163,7 +165,7 @@ const reconfigWebhook = async (table, data, corpidBind, move = false) => {
             if (apiZyxmeHookEndpoint) {
                 const url = new URL(apiLaraigoHookEndpoint);
                 const laraigoUrl = url.origin + url.pathname.split('hook')[0];
-                for (let i = 0; i< data.length; i++) {
+                for (let i = 0; i < data.length; i++) {
                     try {
                         data[i].servicecredentials = null;
                         let zyxmeData = {
@@ -217,7 +219,7 @@ const reconfigWebhookPart2 = async (table, data, corpidBind, move) => {
             if (apiZyxmeHookEndpoint) {
                 const url = new URL(apiLaraigoHookEndpoint);
                 const laraigoUrl = url.origin + url.pathname.split('hook')[0];
-                for (let i = 0; i< data.length; i++) {
+                for (let i = 0; i < data.length; i++) {
                     try {
                         let zyxmeData = {
                             communicationChannelSite: data[i].communicationchannelsite,
@@ -237,7 +239,7 @@ const reconfigWebhookPart2 = async (table, data, corpidBind, move) => {
                                     url: `${apiZyxmeHookEndpoint}support/migratechannel`
                                 });
                                 if (response.data && response.data.success) {
-                                    logger.child({ _requestid: corpidBind._requestid }).info(response.data);
+                                    logger.child({ _requestid: corpidBind._requestid }).info(response.data)
                                 }
                                 break;
                             default:
@@ -370,8 +372,8 @@ const renameVariable = (table, data) => {
             data = data.map(d => {
                 if (d.variablecontext !== null && isJson(d.variablecontext)) {
                     for (const [oldname, newname] of variableRenameList) {
-                        d.variablecontext = d.variablecontext.replace(new RegExp(`"id":"${oldname}_custom"`, "g"),`"id":"${newname}_custom"`);
-                        d.variablecontext = d.variablecontext.replace(new RegExp(`"Name":"${oldname}"`, "g"),`"Name":"${newname}"`);
+                        d.variablecontext = d.variablecontext.replace(new RegExp(`"id":"${oldname}_custom"`, "g"), `"id":"${newname}_custom"`);
+                        d.variablecontext = d.variablecontext.replace(new RegExp(`"Name":"${oldname}"`, "g"), `"Name":"${newname}"`);
                     }
                 }
                 else {
@@ -381,33 +383,33 @@ const renameVariable = (table, data) => {
             });
             break;
         case 'tablevariable':
-            data = data.map(d => {    
+            data = data.map(d => {
                 for (const [oldname, newname] of variableRenameList) {
-                    d.description = d.description.replace(`${oldname}`,`${newname}`);
+                    d.description = d.description.replace(`${oldname}`, `${newname}`);
                 }
                 return d;
             });
             break;
         case 'tablevariableconfiguration':
-            data = data.map(d => {    
+            data = data.map(d => {
                 for (const [oldname, newname] of variableRenameList) {
-                    d.variable = d.variable.replace(`${oldname}`,`${newname}`);
+                    d.variable = d.variable.replace(`${oldname}`, `${newname}`);
                 }
                 return d;
             });
             break;
         case 'block': case 'blockversion':
-            data = data.map(d => {       
+            data = data.map(d => {
                 for (const [oldname, newname] of variableRenameList) {
-                    d.blockgroup = d.blockgroup.replace(new RegExp(`"title":"${oldname}","caption"`, "g"),`"title":"${newname}","caption"`);
-                    d.blockgroup = d.blockgroup.replace(new RegExp(`"variablename":"${oldname}"`, "g"),`"variablename":"${newname}"`);
-                    d.blockgroup = d.blockgroup.replace(new RegExp(`"variablecontext":"${oldname}"`, "g"),`"variablecontext":"${newname}"`);
-                    d.blockgroup = d.blockgroup.replace(new RegExp(`"conditionvariable":"${oldname}"`, "g"),`"conditionvariable":"${newname}"`);
-                    d.blockgroup = d.blockgroup.replace(new RegExp(`"latitude":"${oldname}"`, "g"),`"latitude":"${newname}"`);
-                    d.blockgroup = d.blockgroup.replace(new RegExp(`"longitude":"${oldname}"`, "g"),`"longitude":"${newname}"`);
-                    d.blockgroup = d.blockgroup.replace(new RegExp(`{{${oldname}}}`, "g"),`{{${newname}}}`);
-                    d.variablecustom = d.variablecustom.replace(new RegExp(`"id":"${oldname}_custom"`, "g"),`"id":"${newname}_custom"`);
-                    d.variablecustom = d.variablecustom.replace(new RegExp(`"name":"${oldname}"`, "g"),`"name":"${newname}"`);
+                    d.blockgroup = d.blockgroup.replace(new RegExp(`"title":"${oldname}","caption"`, "g"), `"title":"${newname}","caption"`);
+                    d.blockgroup = d.blockgroup.replace(new RegExp(`"variablename":"${oldname}"`, "g"), `"variablename":"${newname}"`);
+                    d.blockgroup = d.blockgroup.replace(new RegExp(`"variablecontext":"${oldname}"`, "g"), `"variablecontext":"${newname}"`);
+                    d.blockgroup = d.blockgroup.replace(new RegExp(`"conditionvariable":"${oldname}"`, "g"), `"conditionvariable":"${newname}"`);
+                    d.blockgroup = d.blockgroup.replace(new RegExp(`"latitude":"${oldname}"`, "g"), `"latitude":"${newname}"`);
+                    d.blockgroup = d.blockgroup.replace(new RegExp(`"longitude":"${oldname}"`, "g"), `"longitude":"${newname}"`);
+                    d.blockgroup = d.blockgroup.replace(new RegExp(`{{${oldname}}}`, "g"), `{{${newname}}}`);
+                    d.variablecustom = d.variablecustom.replace(new RegExp(`"id":"${oldname}_custom"`, "g"), `"id":"${newname}_custom"`);
+                    d.variablecustom = d.variablecustom.replace(new RegExp(`"name":"${oldname}"`, "g"), `"name":"${newname}"`);
                 }
                 return d;
             });
@@ -419,7 +421,7 @@ const renameVariable = (table, data) => {
 const restructureVariable = (table, data) => {
     switch (table) {
         case 'conversation':
-            data.map(d => {    
+            data.map(d => {
                 if (d.variablecontext) {
                     let variablecontext = JSON.parse(d.variablecontext);
                     if (Array.isArray(variablecontext)) {
@@ -438,8 +440,8 @@ const restructureVariable = (table, data) => {
 
 const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
     let executeResult = {};
-    for (const [k,q] of Object.entries(queries)) {
-        executeResult[k] = {success: true, errors: []};
+    for (const [k, q] of Object.entries(queries)) {
+        executeResult[k] = { success: true, errors: [] };
         try {
             let migrationstatus = await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind);
             let running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
@@ -447,256 +449,340 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 break;
             }
 
-            if (['usr','person','conversation','campaignmember'].includes(k)) {
-                if (q.id) {
-                    // Ultimo registro en laraigo
-                    max = await laraigoQuery(`SELECT MAX(${q.id}) FROM ${k}`);
-                    corpidBind[`inc${q.id}`] = max[0].max + corpidBind[`inc${q.id}`];
+            lastloopid = 0;
+            corpidBind['maxid'] = 0;
+            let limit = 10000; // PRUEBAS 100
+            let counter = 0;
+            const perChunk = 1000;
+            // Último registro en laraigo
+            // Setear inc por si se ha insertado data adicional antes del merge de info
+            if (q.id) {
+                let laraigoid = q.newid ? q.newid : q.id;
+                max = await laraigoQuery(`SELECT MAX(${laraigoid}) FROM ${k}`);
+                corpidBind['maxid'] = max?.[0]?.max || 0;
+                if (!!corpidBind[`max${laraigoid}`]) {
+                    corpidBind[`inc${laraigoid}`] = corpidBind['maxid'] - corpidBind[`max${laraigoid}`];
+                }
+                else {
+                    corpidBind[`inc${laraigoid}`] = 0;
                 }
             }
 
-            let limit = 10000;
-            let counter = 0;
-            const perChunk = 1000;
+            // Select a la BD de ZyxMe para UPDATE
+            if (q.update) {
+                try {
+                    while (true) {
+                        let selectResult = await zyxmeQuery(`${q.select} ${q.select_update_where}`.replace('\n', ' '), { ...corpidBind, offset: counter * limit, limit });
+                        if (selectResult instanceof Array) {
+                            if (selectResult.length === 0) {
+                                break;
+                            }
+                            selectResult = renameVariable(k, selectResult);
+                            selectResult = restructureVariable(k, selectResult);
+                            let updateResult = await laraigoQuery(q.update.replace('###DT###', q.dt).replace('\n', ' '), { datatable: JSON.stringify(selectResult) });
+                            counter += 1;
+                        }
+                        else {
+                            logger.child({ _requestid: corpidBind._requestid }).info(selectResult);
+                            break;
+                        }
+                    }
+                } catch (error) {
+                    logger.child({ _requestid: corpidBind._requestid }).error(error);
+                }
+            }
+
+            counter = 0;
+
             while (true) {
+                // Último registro en laraigo
+                if (q.id) {
+                    let laraigoid = q.newid ? q.newid : q.id;
+                    max = await laraigoQuery(`SELECT MAX(${laraigoid}) FROM ${k}`);
+                    corpidBind['maxid'] = max?.[0]?.max || 0;
+                }
+                
+                // Revisión del estado de la migración
                 migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind) : migrationstatus;
                 running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
                 if (!running) {
                     break;
                 }
-                
-            let selectStartTime = process.hrtime();
-                let selectResult = await zyxmeQuery(q.select.replace('\n',' '), {...corpidBind, offset: counter * limit, limit});
+
+                // Select a la BD de ZyxMe para INSERT
+                let selectStartTime = process.hrtime();
+                let selectResult = await zyxmeQuery(`${q.select} ${q.select_insert_where}`.replace('\n', ' '), { ...corpidBind, offset: counter * limit, limit });
                 let selectElapsedSeconds = parseHrtimeToSeconds(process.hrtime(selectStartTime));
                 if (selectResult instanceof Array) {
-                    if (selectResult.length === 0) {
+                    if (selectResult.length === 0 || lastloopid === selectResult[0][`zyxme${q.id}`]) {
                         break;
                     }
                     selectResult = await recryptPwd(k, selectResult, corpidBind);
-                    selectResult = await reconfigWebhook(k, selectResult, corpidBind, movewebhook);
+                    // selectResult = await reconfigWebhook(k, selectResult, movewebhook);
                     selectResult = renameVariable(k, selectResult);
                     selectResult = restructureVariable(k, selectResult);
-                    let chunkArray = selectResult.reduce((chunk, item, index) => { 
-                        const chunkIndex = Math.floor(index/perChunk)
-                        if(!chunk[chunkIndex]) {
-                        chunk[chunkIndex] = []
+                    let chunkArray = selectResult.reduce((chunk, item, index) => {
+                        const chunkIndex = Math.floor(index / perChunk)
+                        if (!chunk[chunkIndex]) {
+                            chunk[chunkIndex] = []
                         }
                         chunk[chunkIndex].push(item)
                         return chunk
                     }, []);
-    
+
                     for (const chunk of chunkArray) {
-                        if (q.preprocess) {
-                            let startTime = process.hrtime();
-                            try {
-                                let preprocessResult = await laraigoQuery(q.preprocess.replace('\n',' '), { datatable: JSON.stringify(chunk) });
-                                let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                                if (preprocessResult instanceof Array) {
-                                }
-                                else {
-                                    logger.child({ _requestid: corpidBind._requestid }).info(preprocessResult);
-                                    executeResult[k].success = false;
-                                    executeResult[k].errors.push({script: preprocessResult});
-                                }
-                            } catch (error) {
-                                let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                                logger.child({ _requestid: corpidBind._requestid }).error(error);
-                                executeResult[k].errors.push({script: error});
-                            }
-                        }
+                        // Insert a la BD de Laraigo
                         if (q.insert) {
                             let startTime = process.hrtime();
                             try {
-                                let insertResult = await laraigoQuery(q.insert.replace('\n',' '), { datatable: JSON.stringify(chunk) });
+                                let insertResult = await laraigoQuery(q.insert.replace('###DT###', q.dt).replace('\n', ' '), { datatable: JSON.stringify(chunk) });
                                 let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
                                 if (insertResult instanceof Array) {
                                 }
                                 else {
                                     logger.child({ _requestid: corpidBind._requestid }).info(insertResult);
                                     executeResult[k].success = false;
-                                    executeResult[k].errors.push({script: insertResult});
+                                    executeResult[k].errors.push({ script: insertResult });
+                                    for (const chunkelem of chunk) {
+                                        let eleminsertResult = await laraigoQuery(q.insert.replace('###DT###', q.dt).replace('\n', ' '), { datatable: JSON.stringify([chunkelem]) });
+                                        if (eleminsertResult instanceof Array) {
+                                        }
+                                        else {
+                                            break;
+                                        }
+                                    }
+                                    elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
                                 }
                             } catch (error) {
                                 let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
                                 logger.child({ _requestid: corpidBind._requestid }).error(error);
-                                executeResult[k].errors.push({script: error});
-                            }
-                        }
-                        if (q.postprocess) {
-                            let startTime = process.hrtime();
-                            try {
-                                let postprocessResult = await laraigoQuery(q.postprocess.replace('\n',' '), { datatable: JSON.stringify(chunk) });
-                                let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                                if (postprocessResult instanceof Array) {
-                                }
-                                else {
-                                    logger.child({ _requestid: corpidBind._requestid }).info(postprocessResult);
-                                    executeResult[k].success = false;
-                                    executeResult[k].errors.push({script: postprocessResult});
-                                }
-                            } catch (error) {
-                                let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
-                                logger.child({ _requestid: corpidBind._requestid }).error(error);
-                                executeResult[k].errors.push({script: error});
+                                executeResult[k].errors.push({ script: error });
                             }
                         }
                     }
-                    await reconfigWebhookPart2(k, selectResult, corpidBind, movewebhook);
+                    // Counter para queries offset limit
                     counter += 1;
+                    // Lastloopid para queries > id limit
+                    if (q.id) {
+                        lastloopid = selectResult[0][`zyxme${q.id}`];
+                    }
+                    // PRUEBAS Break solo para pruebas de 1 loop
+                    // break;
                 }
                 else {
                     logger.child({ _requestid: corpidBind._requestid }).info(selectResult);
                     executeResult[k].success = false;
-                    executeResult[k].errors.push({script: selectResult});
+                    executeResult[k].errors.push({ script: selectResult });
                     break;
                 }
             }
 
+            // Revisión del estado de la migración
             migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind) : migrationstatus;
             running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
             if (!running) {
                 break;
             }
 
-            if (q.update) {
+            // Acciones post insert
+            if (q.post_1) {
                 let startTime = process.hrtime();
                 try {
-                    let updateResult = await laraigoQuery(q.update.replace('\n',' '), corpidBind);
+                    let updateResult = await laraigoQuery(q.post_1.replace('\n', ' '), corpidBind);
                     let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
                     if (updateResult instanceof Array) {
                     }
                     else {
                         logger.child({ _requestid: corpidBind._requestid }).info(updateResult);
                         executeResult[k].success = false;
-                        executeResult[k].errors.push({script: updateResult});
+                        executeResult[k].errors.push({ script: updateResult });
                     }
                 } catch (error) {
                     let elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
                     logger.child({ _requestid: corpidBind._requestid }).error(error);
-                    executeResult[k].errors.push({script: error});
+                    executeResult[k].errors.push({ script: error });
                 }
             }
 
+            // Revisión del estado de la migración
             migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind) : migrationstatus;
             running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
             if (!running) {
                 break;
             }
 
-            if (['usr','person','conversation','campaignmember'].includes(k)) {
-                if (q.id) {
-                    // Actualizar secuencia
-                    max = await laraigoQuery(`SELECT MAX(${q.id}) FROM ${k}`);
-                    await laraigoQuery(`ALTER SEQUENCE ${q.sequence} START ${parseInt(max[0].max) + corpidBind[`inc${q.id}`]}`);
+            if (q.id) {
+                // Actualizar secuencia
+                let laraigoid = q.newid ? q.newid : q.id;
+                max = await laraigoQuery(`SELECT MAX(${laraigoid}) FROM ${k}`);
+                if (max?.[0]?.max) {
+                    corpidBind['maxid'] = max?.[0]?.max;
+                    await laraigoQuery(`ALTER SEQUENCE ${q.sequence} START ${parseInt(max[0].max) + 1}`);
                     await laraigoQuery(`ALTER SEQUENCE ${q.sequence} RESTART`);
+                    corpidBind['idsjson'][laraigoid] = max?.[0]?.max;
+                    await laraigoQuery(`UPDATE migrationhelper SET idsjson = $idsjson`, { idsjson: JSON.stringify(corpidBind['idsjson']) })
                 }
             }
+            logger.child({ _requestid: corpidBind._requestid }).info(`Done ${k} maxid: ${corpidBind['maxid']}`)
         } catch (error) {
             logger.child({ _requestid: corpidBind._requestid }).error(error);
             executeResult[k].success = false;
-            executeResult[k].errors.push({script: error});
+            executeResult[k].errors.push({ script: error });
         }
     };
     return executeResult;
 }
 
+/*
+SELECT jsonb_build_object(
+    'domainid', COALESCE((SELECT MAX(domainid) FROM domain),0),
+    'inputvalidationid', COALESCE((SELECT MAX(inputvalidationid) FROM inputvalidation),0),
+    'appintegrationid',  COALESCE((SELECT MAX(appintegrationid) FROM appintegration),0),
+    'botconfigurationid',  COALESCE((SELECT MAX(botconfigurationid) FROM botconfiguration),0),
+    'communicationchannelid',  COALESCE((SELECT MAX(communicationchannelid) FROM communicationchannel),0),
+    'communicationchannelstatusid',  COALESCE((SELECT MAX(communicationchannelstatusid) FROM communicationchannelstatus),0),
+    'propertyid',  COALESCE((SELECT MAX(propertyid) FROM property),0),
+    'userid',  COALESCE((SELECT MAX(userid) FROM usr),0),
+    'usertokenid',  COALESCE((SELECT MAX(usertokenid) FROM usertoken),0),
+    'userstatusid',  COALESCE((SELECT MAX(userstatusid) FROM userstatus),0),
+    'userhistoryid',  COALESCE((SELECT MAX(userhistoryid) FROM userhistory),0),
+    'usrnotificationid',  COALESCE((SELECT MAX(usrnotificationid) FROM usrnotification),0),
+    'classificationid',  COALESCE((SELECT MAX(classificationid) FROM classification),0),
+    'quickreplyid',  COALESCE((SELECT MAX(quickreplyid) FROM quickreply),0),
+    'personid',  COALESCE((SELECT MAX(personid) FROM person),0),
+    'personaddinfoid',  COALESCE((SELECT MAX(personaddinfoid) FROM personaddinfo),0),
+    'postid',  COALESCE((SELECT MAX(postid) FROM post),0),
+    'pccstatusid',  COALESCE((SELECT MAX(pccstatusid) FROM pccstatus),0),
+    'conversationid',  COALESCE((SELECT MAX(conversationid) FROM conversation),0),
+    'conversationnoteid',  COALESCE((SELECT MAX(conversationnoteid) FROM conversationnote),0),
+    'conversationpauseid',  COALESCE((SELECT MAX(conversationpauseid) FROM conversationpause),0),
+    'conversationstatusid',  COALESCE((SELECT MAX(conversationstatusid) FROM conversationstatus),0),
+    'interactionid',  COALESCE((SELECT MAX(interactionid) FROM interaction),0),
+    'surveyansweredid',  COALESCE((SELECT MAX(surveyansweredid) FROM surveyanswered),0),
+    'messagetemplateid',  COALESCE((SELECT MAX(messagetemplateid) FROM messagetemplate),0),
+    'campaignid',  COALESCE((SELECT MAX(campaignid) FROM campaign),0),
+    'campaignmemberid',  COALESCE((SELECT MAX(campaignmemberid) FROM campaignmember),0),
+    'campaignhistoryid',  COALESCE((SELECT MAX(campaignhistoryid) FROM campaignhistory),0),
+    'taskschedulerid',  COALESCE((SELECT MAX(taskschedulerid) FROM taskscheduler),0),
+    'chatblockversionid',  COALESCE((SELECT MAX(chatblockversionid) FROM blockversion),0),
+    'tablevariableconfigurationid',  COALESCE((SELECT MAX(tablevariableconfigurationid) FROM tablevariableconfiguration),0),
+    'intelligentmodelsid',  COALESCE((SELECT MAX(intelligentmodelsid) FROM intelligentmodels),0),
+    'intelligentmodelsconfigurationid',  COALESCE((SELECT MAX(intelligentmodelsconfigurationid) FROM intelligentmodelsconfiguration),0),
+    'paymentid',  COALESCE((SELECT MAX(paymentid) FROM payment),0),
+    'productivityid',  COALESCE((SELECT MAX(productivityid) FROM productivity),0),
+    'blacklistid',  COALESCE((SELECT MAX(blacklistid) FROM blacklist),0),
+    'hsmhistoryid',  COALESCE((SELECT MAX(hsmhistoryid) FROM hsmhistory),0),
+    'inappropriatewordsid',  COALESCE((SELECT MAX(inappropriatewordsid) FROM inappropriatewords),0),
+    'labelid',  COALESCE((SELECT MAX(labelid) FROM label),0),
+    'locationid',  COALESCE((SELECT MAX(locationid) FROM location),0),
+    'reporttemplateid',  COALESCE((SELECT MAX(reporttemplateid) FROM reporttemplate),0),
+    'slaid',  COALESCE((SELECT MAX(slaid) FROM sla),0),
+    'whitelistid',  COALESCE((SELECT MAX(whitelistid) FROM whitelist),0)
+)
+*/
+
+const maxids =
+{
+    "domainid": 5124,
+    "inputvalidationid": 40,
+    "appintegrationid": 0,
+    "botconfigurationid": 10,
+    "communicationchannelid": 65,
+    "communicationchannelstatusid": 0,
+    "propertyid": 1948,
+    "userid": 1991,
+    "usertokenid": 232761,
+    "userstatusid": 2135,
+    "userhistoryid": 1218721,
+    "usrnotificationid": 501,
+    "classificationid": 1173,
+    "quickreplyid": 90,
+    "personid": 7637830,
+    "personaddinfoid": 13728,
+    "postid": 25889,
+    "pccstatusid": 9752861,
+    "conversationid": 10425530,
+    "conversationnoteid": 71,
+    "conversationpauseid": 546720,
+    "conversationstatusid": 21314656,
+    "interactionid": 205480198,
+    "surveyansweredid": 0,
+    "messagetemplateid": 157,
+    "campaignid": 46386,
+    "campaignmemberid": 5587971,
+    "campaignhistoryid": 5047008,
+    "taskschedulerid": 46032,
+    "chatblockversionid": 89,
+    "tablevariableconfigurationid": 2853,
+    "intelligentmodelsid": 0,
+    "intelligentmodelsconfigurationid": 0,
+    "paymentid": 0,
+    "productivityid": 5092128,
+    "blacklistid": 0,
+    "hsmhistoryid": 371432,
+    "inappropriatewordsid": 2,
+    "labelid": 4,
+    "locationid": 13772,
+    "reporttemplateid": 21,
+    "slaid": 0,
+    "whitelistid": 5122
+}
+
 const queryCore = {
-    corp: {
-        id: 'corpid',
-        sequence: 'corpseq',
-        select: `SELECT corpid as zyxmecorpid,
-        description, status, type, createdate, createby, changedate, changeby, edit,
-        logo, logotipo as logotype
-        FROM corp
-        WHERE corpid = $corpid
-        ORDER BY corpid
-        LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO corp (
-            zyxmecorpid,
-            description, status, type, createdate, createby, changedate, changeby, edit,
-            logo, logotype, paymentplanid
-        )
-        SELECT
-            dt.zyxmecorpid,
-            dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
-            dt.logo, dt.logotype, 2
-        FROM json_populate_recordset(null::record, $datatable)
-        AS dt (
-            zyxmecorpid bigint,
-			description character varying, status character varying, type character varying,
-			createdate timestamp without time zone, createby character varying,
-			changedate timestamp without time zone, changeby character varying,
-			edit boolean,
-			logo text, logotype text,
-			companysize character varying, paymentplanid bigint
-        )`
-    },
-    org: {
-        id: 'orgid',
-        sequence: 'orgseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
-        description, status, type, createdate, createby, changedate, changeby, edit
-        FROM org
-        WHERE corpid = $corpid
-        ORDER BY orgid
-        LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO org (
-            zyxmecorpid,
-            corpid,
-            zyxmeorgid,
-            description, status, type, createdate, createby, changedate, changeby, edit,
-            timezoneoffset, timezone, currency, country
-        )
-        SELECT
-            dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            dt.zyxmeorgid,
-            dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
-            -5, 'America/Lima', 'PEN', 'PE'
-        FROM json_populate_recordset(null::record, $datatable)
-        AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
-			description character varying, status character varying, type character varying,
-			createdate timestamp without time zone, createby character varying,
-			changedate timestamp without time zone, changeby character varying,
-			edit boolean,
-			timezoneoffset double precision, timezone character varying,
-			currency character varying, country character varying
-        )`
-    },
     domain: {
         id: 'domainid',
         sequence: 'domainseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, domainid as zyxmedomainid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        domainid + CASE WHEN domainid > $maxdomainid THEN $incdomainid ELSE 0 END as zyxmedomainid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         domainname, domainvalue, domaindesc, bydefault, "system", priorityorder
         FROM domain
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND (
+            orgid IN (0)
+            OR
+            orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        )
+        AND domainid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND (
+            orgid IN (0)
+            OR
+            orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        )
+        AND domainid > $maxid
         ORDER BY domainid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO domain (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO domain (
             corpid,
             orgid,
-            zyxmedomainid,
+            domainid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             domainname, domainvalue, domaindesc, bydefault, "system", priorityorder
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            CASE WHEN COALESCE(dt.zyxmeorgid, 0) = 0 THEN 0
-            ELSE (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1)
-            END,
+            dt.zyxmeorgid,
             dt.zyxmedomainid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.domainname, dt.domainvalue, dt.domaindesc, dt.bydefault, dt.system, dt.priorityorder
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmedomainid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
@@ -704,70 +790,105 @@ const queryCore = {
 			edit boolean,
 			domainname character varying, domainvalue character varying, domaindesc character varying,
 			bydefault boolean, system boolean, priorityorder bigint
-        )`
+        )
+        `
     },
     inputvalidation: {
         id: 'inputvalidationid',
         sequence: 'inputvalidationseq',
-        select: `SELECT corpid as zyxmecorpid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        inputvalidationid + CASE WHEN inputvalidationid > $maxinputvalidationid THEN $incinputvalidationid ELSE 0 END as zyxmeinputvalidationid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         inputvalue
         FROM inputvalidation
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND inputvalidationid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND inputvalidationid > $maxid
         ORDER BY inputvalidationid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO inputvalidation (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO inputvalidation (
             corpid,
+            inputvalidationid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             inputvalue
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
+            dt.zyxmeinputvalidationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.inputvalue
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
             zyxmecorpid bigint,
+            zyxmeinputvalidationid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			inputvalue character varying
-        )`
+        )
+        `
     },
     /* appintegrationid is required for communicationchannel but no values seen */
     appintegration: {
         id: 'appintegrationid',
         sequence: 'appintegrationseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, appintegrationid as zyxmeappintegrationid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        appintegrationid + CASE WHEN appintegrationid > $maxappintegrationid THEN $incappintegrationid ELSE 0 END as zyxmeappintegrationid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         appid, externalsource, environment, keyparameters, integrationid
         FROM appintegration
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND appintegrationid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND appintegrationid > $maxid
         ORDER BY appintegrationid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO appintegration (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO appintegration (
             corpid,
             orgid,
-            zyxmeappintegrationid,
+            appintegrationid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             appid, externalsource, environment, keyparameters, integrationid
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             dt.zyxmeappintegrationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.appid, dt.externalsource, dt.environment, dt.keyparameters, dt.integrationid
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmeappintegrationid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
@@ -775,65 +896,102 @@ const queryCore = {
 			edit boolean,
 			appid character varying, externalsource character varying, environment character varying,
 			keyparameters text, integrationid character varying
-        )`
+        )
+        `
     },
     /* botconfiguration is required for communicationchannel */
     botconfiguration: {
         id: 'botconfigurationid',
         sequence: 'botconfigurationseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, botconfigurationid as zyxmebotconfigurationid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        botconfigurationid + CASE WHEN botconfigurationid > $maxbotconfigurationid THEN $incbotconfigurationid ELSE 0 END as zyxmebotconfigurationid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         bottype, parameterjson
         FROM botconfiguration
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND botconfigurationid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND botconfigurationid > $maxid
         ORDER BY botconfigurationid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO botconfiguration (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO botconfiguration (
             corpid,
             orgid,
-            zyxmebotconfigurationid,
+            botconfigurationid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             bottype, parameterjson
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             dt.zyxmebotconfigurationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.bottype, dt.parameterjson
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-			zyxmecorpid bigint, zyxmeorgid bigint,
+			zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmebotconfigurationid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			bottype character varying, parameterjson text
-        )`
+        )
+        `
     },
     communicationchannel: {
         id: 'communicationchannelid',
         sequence: 'communicationchannelseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, communicationchannelid as zyxmecommunicationchannelid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        communicationchannelid + CASE WHEN communicationchannelid > $maxcommunicationchannelid THEN $inccommunicationchannelid ELSE 0 END as zyxmecommunicationchannelid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         communicationchannelsite, communicationchannelowner, communicationchannelcontact, communicationchanneltoken,
-        botenabled, customicon, coloricon, botconfigurationid as zyxmebotconfigurationid, relatedid, schedule, chatflowenabled,
-        integrationid, appintegrationid as zyxmeappintegrationid, country, channelparameters, channelactive, resolvelithium,
+        botenabled, customicon, coloricon,
+        botconfigurationid + CASE WHEN botconfigurationid > $maxbotconfigurationid THEN $incbotconfigurationid ELSE 0 END as zyxmebotconfigurationid,
+        relatedid, schedule, chatflowenabled,
+        integrationid,
+        appintegrationid + CASE WHEN appintegrationid > $maxappintegrationid THEN $incappintegrationid ELSE 0 END as zyxmeappintegrationid,
+        country, channelparameters, channelactive, resolvelithium,
         color, icons, other, form, apikey
         FROM communicationchannel
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND communicationchannelid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND communicationchannelid > $maxid
         ORDER BY communicationchannelid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO communicationchannel (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO communicationchannel (
             corpid,
             orgid,
-            zyxmecommunicationchannelid,
+            communicationchannelid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             communicationchannelsite, communicationchannelowner, communicationchannelcontact, communicationchanneltoken,
             botenabled, customicon, coloricon,
@@ -847,24 +1005,25 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             dt.zyxmecommunicationchannelid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             COALESCE(dt.communicationchannelsite, ''), COALESCE(dt.communicationchannelowner, ''), COALESCE(dt.communicationchannelcontact, ''), dt.communicationchanneltoken,
             dt.botenabled, dt.customicon, dt.coloricon,
-            (SELECT b.botconfigurationid FROM botconfiguration b WHERE b.zyxmecorpid = dt.zyxmecorpid AND b.zyxmebotconfigurationid = dt.zyxmebotconfigurationid ORDER BY b.botconfigurationid DESC LIMIT 1),
+            dt.zyxmebotconfigurationid,
             dt.relatedid, dt.schedule, dt.chatflowenabled,
             dt.integrationid,
-            CASE WHEN COALESCE(dt.zyxmeappintegrationid, 0) = 0 THEN 0
-            ELSE (SELECT a.appintegrationid FROM appintegration a WHERE a.zyxmecorpid = dt.zyxmecorpid AND a.zyxmeappintegrationid = dt.zyxmeappintegrationid ORDER BY a.appintegrationid DESC LIMIT 1)
-            END,
+            dt.zyxmeappintegrationid,
             dt.country, dt.channelparameters, dt.channelactive, dt.resolvelithium,
             dt.color, dt.icons, dt.other, dt.form, dt.apikey,
             dt.servicecredentials
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmecommunicationchannelid bigint,
             description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
@@ -878,59 +1037,103 @@ const queryCore = {
 			country character varying, channelparameters text, channelactive boolean, resolvelithium boolean,
 			color text, icons text, other text, form text, apikey text,
 			servicecredentials character varying
-        )`
+        )
+        `
     },
     communicationchannelstatus: {
         id: 'communicationchannelstatusid',
         sequence: 'communicationchannelstatusseq',
-        select: `SELECT ccs.corpid as zyxmecorpid, ccs.orgid as zyxmeorgid, ccs.communicationchannelid as zyxmecommunicationchannelid,
+        select: `
+        SELECT
+        ccs.corpid as zyxmecorpid,
+        ccs.orgid as zyxmeorgid,
+        ccs.communicationchannelid + CASE WHEN ccs.communicationchannelid > $maxcommunicationchannelid THEN $inccommunicationchannelid ELSE 0 END as zyxmecommunicationchannelid,
+        ccs.communicationchannelstatusid + CASE WHEN ccs.communicationchannelstatusid > $maxcommunicationchannelstatusid THEN $inccommunicationchannelstatusid ELSE 0 END as zyxmecommunicationchannelstatusid,
         ccs.description, ccs.status, ccs.type, ccs.createdate, ccs.createby, ccs.changedate, ccs.changeby, ccs.edit
         FROM communicationchannelstatus ccs
+        `,
+        select_update_where: `
         WHERE ccs.corpid = $corpid
+        AND ccs.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND ccs.communicationchannelstatusid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE ccs.corpid = $corpid
+        AND ccs.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND ccs.communicationchannelstatusid > $maxid
         ORDER BY ccs.communicationchannelstatusid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO communicationchannelstatus (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO communicationchannelstatus (
             corpid,
             orgid,
             communicationchannelid,
+            communicationchannelstatusid,
             description, status, type, createdate, createby, changedate, changeby, edit
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
-            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
+            dt.zyxmeorgid,
+            dt.zyxmecommunicationchannelid,
+            dt.zyxmecommunicationchannelstatusid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
-			zyxmecommunicationchannelid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
+			zyxmecommunicationchannelid bigint, zyxmecommunicationchannelstatusid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean
-        )`
+        )
+        `
     },
     property: {
         id: 'propertyid',
         sequence: 'propertyseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, communicationchannelid as zyxmecommunicationchannelid,
-        propertyid as zyxmepropertyid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        communicationchannelid + CASE WHEN communicationchannelid > $maxcommunicationchannelid THEN $inccommunicationchannelid ELSE 0 END as zyxmecommunicationchannelid,
+        propertyid + CASE WHEN propertyid > $maxpropertyid THEN $incpropertyid ELSE 0 END as zyxmepropertyid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         propertyname, propertyvalue
         FROM property
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND (
+            orgid IN (0)
+            OR
+            orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        )
+        AND propertyid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND (
+            orgid IN (0)
+            OR
+            orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        )
+        AND propertyid > $maxid
         ORDER BY propertyid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO property (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO property (
             corpid,
             orgid,
             communicationchannelid,
-            zyxmepropertyid,
+            propertyid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             propertyname, propertyvalue,
             inputtype,
@@ -941,13 +1144,8 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            CASE WHEN COALESCE(dt.zyxmeorgid, 0) = 0 THEN 0
-            ELSE (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1)
-            END,
-            CASE WHEN COALESCE(dt.zyxmecommunicationchannelid, 0) = 0 THEN 0
-            ELSE (SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1)
-            END,
+            dt.zyxmeorgid,
+            dt.zyxmecommunicationchannelid,
             dt.zyxmepropertyid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.propertyname::CHARACTER VARYING, dt.propertyvalue,
@@ -956,9 +1154,13 @@ const queryCore = {
             (SELECT category FROM property WHERE propertyname = dt.propertyname LIMIT 1),
             (SELECT "group" FROM property WHERE propertyname = dt.propertyname LIMIT 1),
             (SELECT level FROM property WHERE propertyname = dt.propertyname LIMIT 1)
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmecommunicationchannelid bigint,
 			zyxmepropertyid bigint,
 			description character varying, status character varying, type character varying,
@@ -968,13 +1170,16 @@ const queryCore = {
 			propertyname character varying, propertyvalue character varying,
 			inputtype character varying, domainname character varying,
 			category character varying, "group" character varying, level character varying
-        )`
+        )
+        `
     },
     usr: {
         id: 'userid',
         sequence: 'userseq',
-        select: `SELECT DISTINCT ON(usr.userid) 
-        ous.corpid as zyxmecorpid, usr.userid + $incuserid as zyxmeuserid,
+        select: `
+        SELECT DISTINCT ON(usr.userid) 
+        ous.corpid as zyxmecorpid,
+        usr.userid + CASE WHEN usr.userid > $maxuserid THEN $incuserid ELSE 0 END as zyxmeuserid,
         usr.description, usr.status, usr.type, usr.createdate, usr.createby, usr.changedate, usr.changeby, usr.edit,
         usr.usr as username, usr.doctype, usr.docnum, usr.pwd, usr.firstname, usr.lastname, usr.email,
         usr.pwdchangefirstlogin, usr.facebookid, usr.googleid, usr.company,
@@ -984,25 +1189,68 @@ const queryCore = {
         usr.attemptslogin, usr.lastuserstatus,
         usr.area, usr.location, usr.management, usr.phone
         FROM usr
-        JOIN orguser ous ON ous.corpid = $corpid AND ous.userid = usr.userid
+        JOIN orguser ous ON ous.corpid = $corpid AND ous.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid) AND ous.userid = usr.userid
+        `,
+        select_update_where: `
         WHERE usr.type <> 'SYSTEM'
+        AND usr.userid <= $maxid
+        AND usr.changedate > $backupdate::TIMESTAMP
         ORDER BY usr.userid
         LIMIT $limit
-        OFFSET $offset`,
-        preprocess: `UPDATE usr
-        SET zyxmeuserid = dt.zyxmeuserid
-        FROM json_populate_recordset(null::record, $datatable)
-        AS dt (
-            zyxmecorpid bigint,
-            zyxmeuserid bigint,
-            pwd character varying,
-            username character varying
-        )
-        WHERE usr = dt.username::CHARACTER VARYING`,
-        insert: `INSERT INTO usr (
-            zyxmecorpid,
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE usr xupd
+        SET
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit,
+        doctype = dt.doctype,
+        docnum = dt.docnum,
+        firstname = dt.firstname,
+        lastname = dt.lastname,
+        email = dt.username,
+        pwdchangefirstlogin = dt.pwdchangefirstlogin,
+        facebookid = dt.facebookid,
+        googleid = dt.googleid,
+        company = dt.company,
+        twofactorauthentication = dt.twofactorauthentication,
+        usersupport = dt.usersupport,
+        billinggroup = dt.billinggroup,
+        registercode = dt.registercode,
+        usercall = dt.usercall,
+        passwordchangedate = dt.passwordchangedate,
+        lastlogin = dt.lastlogin,
+        lastlogout = dt.lastlogout,
+        lasttokenorigin = dt.lasttokenorigin,
+        lasttokenstatus = dt.lasttokenstatus,
+        lasthistorystatus = dt.lasthistorystatus,
+        lasthistorytype = dt.lasthistorytype,
+        lastmotivetype = dt.lastmotivetype,
+        lastmotivedescription = dt.lastmotivedescription,
+        attemptslogin = dt.attemptslogin,
+        lastuserstatus = dt.lastuserstatus,
+        area = dt.area,
+        location = dt.location,
+        management = dt.management,
+        phone = dt.phone
+        ###DT###
+        WHERE xupd.userid = dt.zyxmeuserid
+        `,
+        select_insert_where: `
+        WHERE usr.type <> 'SYSTEM'
+        AND usr.userid > $maxid
+        ORDER BY usr.userid
+        LIMIT $limit
+        `,
+        insert: `
+        INSERT INTO usr (
             userid,
-            zyxmeuserid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             usr, doctype, docnum, pwd, firstname, lastname, email,
             pwdchangefirstlogin, facebookid, googleid, company,
@@ -1015,19 +1263,20 @@ const queryCore = {
             area, location, management, phone
         )
         SELECT
-            dt.zyxmecorpid,
-            dt.zyxmeuserid,
             dt.zyxmeuserid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.username::CHARACTER VARYING, dt.doctype, dt.docnum, dt.pwd, dt.firstname, dt.lastname, dt.username::CHARACTER VARYING,
             dt.pwdchangefirstlogin, dt.facebookid, dt.googleid, dt.company,
             dt.twofactorauthentication, dt.usersupport,
-            (SELECT p.propertyid FROM property p WHERE p.zyxmecorpid = dt.zyxmecorpid AND p.zyxmepropertyid = dt.billinggroup ORDER BY p.propertyid DESC LIMIT 1),
+            dt.billinggroup,
             dt.registercode, dt.usercall,
             dt.passwordchangedate, dt.lastlogin, dt.lastlogout, dt.lasttokenorigin, dt.lasttokenstatus,
             dt.lasthistorystatus, dt.lasthistorytype, dt.lastmotivetype, dt.lastmotivedescription,
             dt.attemptslogin, dt.lastuserstatus,
             dt.area, dt.location, dt.management, dt.phone
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
             zyxmecorpid bigint,
@@ -1051,42 +1300,73 @@ const queryCore = {
 			area character varying, location character varying, management character varying, phone character varying,
 			sales boolean, customerservice boolean, marketing boolean, rolecompany character varying,
 			redirect character varying, image character varying, join_reason text, country character varying
-        )`,
-        update: `UPDATE usr
-        SET zyxmeuserid = CASE
-        WHEN usr = 'system.bot' THEN 42
-        WHEN usr = 'system.holding' THEN 51
-        END
-        WHERE usr IN ('system.bot','system.holding')`,
+        )
+        `
     },
     usertoken: {
         id: 'usertokenid',
         sequence: 'usertokenseq',
-        select: `SELECT (SELECT ous.corpid FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = ut.userid LIMIT 1) as zyxmecorpid,
+        select: `
+        SELECT
+        ut.usertokenid + CASE WHEN ut.usertokenid > $maxusertokenid THEN $incusertokenid ELSE 0 END as zyxmeusertokenid,
+        (SELECT ous.corpid FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = ut.userid LIMIT 1) as zyxmecorpid,
         CASE WHEN ut.userid = 42 THEN 2
         WHEN ut.userid = 51 THEN 3
-        ELSE ut.userid + $incuserid
+        ELSE ut.userid + CASE WHEN ut.userid > $maxuserid THEN $incuserid ELSE 0 END
         END as zyxmeuserid,
         ut.description, ut.status, ut.type, ut.createdate, ut.createby, ut.changedate, ut.changeby, ut.edit,
         ut.token, ut.expirationproperty, ut.origin
         FROM usertoken ut
-        WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = ut.userid)
+        `,
+        select_update_where: `
+        WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid) AND ous.userid = ut.userid)
+        AND ut.usertokenid <= $maxid
+        AND ut.changedate > $backupdate::TIMESTAMP
         ORDER BY ut.usertokenid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO usertoken (
-            zyxmecorpid,
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE usertoken xupd
+        SET
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit,
+        token = dt.token,
+        expirationproperty = dt.expirationproperty,
+        origin = dt.origin
+        ###DT###
+        WHERE xupd.usertokenid = dt.zyxmeusertokenid
+        `,
+        select_insert_where: `
+        WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid) AND ous.userid = ut.userid)
+        AND ut.usertokenid > $maxid
+        ORDER BY ut.usertokenid
+        LIMIT $limit
+        `,
+        insert: `
+        INSERT INTO usertoken (
+            usertokenid,
             userid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             token, expirationproperty, origin
         )
         SELECT
-            dt.zyxmecorpid,
+            dt.zyxmeusertokenid, 
             dt.zyxmeuserid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.token, dt.expirationproperty, dt.origin
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
+            zyxmeusertokenid bigint,
             zyxmecorpid bigint,
 			zyxmeuserid bigint,
 			description character varying, status character varying, type character varying,
@@ -1094,135 +1374,277 @@ const queryCore = {
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			token text, expirationproperty character varying, origin character varying
-        )`
+        )
+        `
     },
     userstatus: {
         id: 'userstatusid',
         sequence: 'userstatusseq',
-        select: `SELECT (SELECT ous.corpid FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = us.userid LIMIT 1) as zyxmecorpid,
+        select: `
+        SELECT
+        us.userstatusid + CASE WHEN us.userstatusid > $maxuserstatusid THEN $incuserstatusid ELSE 0 END as zyxmeuserstatusid,
+        (SELECT ous.corpid FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = us.userid LIMIT 1) as zyxmecorpid,
         CASE WHEN us.userid = 42 THEN 2
         WHEN us.userid = 51 THEN 3
-        ELSE us.userid + $incuserid
+        ELSE us.userid + CASE WHEN us.userid > $maxuserid THEN $incuserid ELSE 0 END
         END as zyxmeuserid,
         us.description, us.status, us.type, us.createdate, us.createby, us.changedate, us.changeby, us.edit
         FROM userstatus us
-        WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.userid = us.userid)
+        `,
+        select_update_where: `
+        WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid) AND ous.userid = us.userid)
+        AND us.userstatusid <= $maxid
+        AND us.changedate > $backupdate::TIMESTAMP
         ORDER BY us.userstatusid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO userstatus (
-            zyxmecorpid,
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE userstatus xupd
+        SET
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit
+        ###DT###
+        WHERE xupd.userstatusid = dt.zyxmeuserstatusid
+        `,
+        select_insert_where: `
+        WHERE EXISTS (SELECT 1 FROM orguser ous WHERE ous.corpid = $corpid AND ous.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid) AND ous.userid = us.userid)
+        AND us.userstatusid > $maxid
+        ORDER BY us.userstatusid
+        LIMIT $limit
+        `,
+        insert: `
+        INSERT INTO userstatus (
             userid,
+            userstatusid,
             description, status, type, createdate, createby, changedate, changeby, edit
         )
         SELECT
-            dt.zyxmecorpid,
             dt.zyxmeuserid,
+            dt.zyxmeuserstatusid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
+            zyxmeuserstatusid bigint,
             zyxmecorpid bigint,
 			zyxmeuserid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean
-        )`
+        )
+        `
     },
     userhistory: {
         id: 'userhistoryid',
         sequence: 'userhistoryseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        userhistoryid + CASE WHEN userhistoryid > $maxuserhistoryid THEN $incuserhistoryid ELSE 0 END as zyxmeuserhistoryid,
         CASE WHEN userid = 42 THEN 2
         WHEN userid = 51 THEN 3
-        ELSE userid + $incuserid
+        ELSE userid + CASE WHEN userid > $maxuserid THEN $incuserid ELSE 0 END
         END as zyxmeuserid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         motivetype, motivedescription, desconectedtime::text
         FROM userhistory
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND userhistoryid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
         ORDER BY userhistoryid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO userhistory (
-            zyxmecorpid,
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE userhistory xupd
+        SET
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit,
+        motivetype = dt.motivetype,
+        motivedescription = dt.motivedescription,
+        desconectedtime = dt.desconectedtime
+        ###DT###
+        WHERE xupd.corpid = dt.zyxmecorpid
+        AND xupd.orgid = dt.zyxmeorgid
+        AND xupd.userhistoryid = dt.zyxmeuserhistoryid
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND userhistoryid > $maxid
+        ORDER BY userhistoryid
+        LIMIT $limit
+        `,
+        insert: `
+        INSERT INTO userhistory (
             corpid,
             orgid,
             userid,
+            userhistoryid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             motivetype, motivedescription, desconectedtime
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             dt.zyxmeuserid,
+            dt.zyxmeuserhistoryid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.motivetype, dt.motivedescription, dt.desconectedtime
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmeuserid bigint,
+            zyxmeuserhistoryid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			motivetype character varying, motivedescription character varying, desconectedtime interval
-        )`
+        )
+        `
     },
     usrnotification: {
         id: 'usrnotificationid',
         sequence: 'usrnotificationid_seq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, usridfrom + $incuserid as zyxmeusridfrom, usrid + $incuserid as zyxmeusrid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        usrnotificationid + CASE WHEN usrnotificationid > $maxusrnotificationid THEN $incusrnotificationid ELSE 0 END as zyxmeusrnotificationid,
+        usridfrom + CASE WHEN usridfrom > $maxuserid THEN $incuserid ELSE 0 END as zyxmeusridfrom,
+        usrid + CASE WHEN usrid > $maxuserid THEN $incuserid ELSE 0 END as zyxmeusrid,
         description, status, type, createdate, createby, changedate, changeby, edit
         FROM usrnotification
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND usrnotificationid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND usrnotificationid > $maxid
         ORDER BY usrnotificationid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO usrnotification (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO usrnotification (
             corpid,
             orgid,
+            usrnotificationid,
             usridfrom,
             usrid,
             description, status, type, createdate, createby, changedate, changeby, edit
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
+            dt.zyxmeusrnotificationid,
             dt.zyxmeusridfrom,
             dt.zyxmeusrid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
+            zyxmeusrnotificationid bigint,
 			zyxmeusridfrom bigint, zyxmeusrid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean
-        )`
+        )
+        `
     },
     orguser: {
-        select: `SELECT ous.corpid as zyxmecorpid, ous.orgid as zyxmeorgid,
+        select: `
+        SELECT
+        ous.corpid as zyxmecorpid,
+        ous.orgid as zyxmeorgid,
         CASE WHEN ous.type = 'BOT' THEN 2
         WHEN ous.type = 'HOLDING' THEN 3
-        ELSE ous.userid + $incuserid
+        ELSE ous.userid + CASE WHEN ous.userid > $maxuserid THEN $incuserid ELSE 0 END
         END as zyxmeuserid,
-        ous.roleid, CASE WHEN ous.supervisor = 0 THEN 0 ELSE ous.supervisor + $incuserid END as supervisor,
+        ous.roleid,
+        ous.supervisor + CASE WHEN ous.supervisor > $maxuserid THEN $incuserid ELSE 0 END as supervisor,
         ous.description, ous.status, ous.type, ous.createdate, ous.createby, ous.changedate, ous.changeby, ous.edit,
         ous.bydefault, ous.labels, ous.groups, ous.channels, ous.defaultsort, ous.redirect,
         r.code as rolecode
         FROM orguser ous
         JOIN role r ON r.roleid = ous.roleid AND r.corpid = 1 AND r.orgid = 1
+        `,
+        select_update_where: `
         WHERE ous.corpid = $corpid
+        AND ous.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND ous.createdate <= $backupdate::TIMESTAMP
+        AND ous.changedate > $backupdate::TIMESTAMP
         ORDER BY ous.corpid, ous.orgid, ous.userid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO orguser (
-            zyxmecorpid,
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE orguser xupd
+        SET
+        roleid = dt.roleid,
+        supervisor = dt.supervisor,
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit,
+        bydefault = dt.bydefault,
+        labels = dt.labels,
+        groups = dt.groups,
+        channels = dt.channels,
+        defaultsort = dt.defaultsort,
+        redirect = dt.redirect
+        ###DT###
+        WHERE xupd.corpid = dt.zyxmecorpid
+        AND xupd.orgid = dt.zyxmeorgid
+        AND xupd.userid = dt.zyxmeuserid
+        `,
+        select_insert_where: `
+        WHERE ous.corpid = $corpid
+        AND ous.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        ORDER BY ous.corpid, ous.orgid, ous.userid
+        LIMIT $limit
+        OFFSET $offset
+        `,
+        insert: `
+        INSERT INTO orguser (
             corpid,
             orgid,
             userid,
@@ -1235,39 +1657,42 @@ const queryCore = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             dt.zyxmeuserid,
-            (SELECT r.roleid FROM role r WHERE r.corpid = 1 AND r.orgid = 1 AND r.code = dt.rolecode AND r.status = 'ACTIVO' LIMIT 1),
+            dt.roleid,
             dt.supervisor,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.bydefault, dt.labels, dt.groups,
-            (
-                SELECT string_agg(communicationchannelid::text,',')
-                FROM communicationchannel
-                WHERE zyxmecorpid = dt.zyxmecorpid AND 
-                zyxmecommunicationchannelid IN (SELECT UNNEST(string_to_array(dt.channels,',')::BIGINT[]))
-            ),
+            dt.channels,
             dt.defaultsort, dt.redirect
+        ###DT###
+        WHERE NOT EXISTS (SELECT 1 FROM orguser x WHERE x.corpid = dt.zyxmecorpid AND x.orgid = dt.zyxmeorgid AND x.userid = dt.zyxmeuserid)
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
-			zyxmeuserid bigint, rolecode text, supervisor bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
+			zyxmeuserid bigint,
+            roleid bigint, supervisor bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			bydefault boolean, labels character varying, groups character varying,
-			channels character varying, defaultsort bigint, redirect character varying
-        )`,
-        update: `UPDATE orguser ous
+			channels character varying, defaultsort bigint, redirect character varying,
+            rolecode text
+        )
+        `,
+        post_1: `
+        UPDATE orguser ous
         SET redirect = CASE
         WHEN r.code = 'ASESOR' THEN '/message_inbox'
         WHEN r.code = 'SUPERVISOR' THEN '/supervisor'
         ELSE '/usersettings' END
 		FROM role r
 		WHERE r.corpid = 1 AND r.orgid = 1 AND r.roleid = ous.roleid
-        AND ous.zyxmecorpid = $corpid`,
+        AND ous.corpid = $corpid`,
     }
 }
 
@@ -1275,19 +1700,33 @@ const querySubcoreClassification = {
     classification: {
         id: 'classificationid',
         sequence: 'classificationseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, classificationid as zyxmeclassificationid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        classificationid + CASE WHEN classificationid > $maxclassificationid THEN $incclassificationid ELSE 0 END as zyxmeclassificationid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         parent, communicationchannel, path, jobplan, usergroup, schedule
         FROM classification
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND classificationid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND classificationid > $maxid
         ORDER BY classificationid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO classification (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO classification (
             corpid,
             orgid,
-            zyxmeclassificationid,
+            classificationid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             title, parent, communicationchannel, path, jobplan,
             usergroup,
@@ -1295,18 +1734,21 @@ const querySubcoreClassification = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             dt.zyxmeclassificationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.description,
             dt.parent,
             dt.communicationchannel, dt.path, dt.jobplan,
-            (SELECT p.propertyid FROM property p WHERE p.zyxmecorpid = dt.zyxmecorpid AND p.zyxmepropertyid = dt.usergroup ORDER BY p.propertyid DESC LIMIT 1),
+            dt.usergroup,
             dt.schedule
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmeclassificationid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
@@ -1316,54 +1758,67 @@ const querySubcoreClassification = {
 			parent bigint,
 			communicationchannel character varying, path character varying, jobplan text,
 			usergroup bigint, schedule text, tags character varying
-        )`,
-		update: `UPDATE classification cla
-		SET parent = (
-			SELECT clatemp.classificationid
-			FROM classification clatemp
-			WHERE clatemp.zyxmeclassificationid = cla.parent
-			AND clatemp.zyxmecorpid = $corpid
-			LIMIT 1
-		)
-		WHERE COALESCE(cla.parent, 0) <> 0
-		AND cla.zyxmecorpid = $corpid`
+        )
+        `
     },
     quickreply: {
         id: 'quickreplyid',
         sequence: 'quickreplyseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, classificationid as zyxmeclassificationid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        classificationid + CASE WHEN classificationid > $maxclassificationid THEN $incclassificationid ELSE 0 END as zyxmeclassificationid,
+        quickreplyid + CASE WHEN quickreplyid > $maxquickreplyid THEN $incquickreplyid ELSE 0 END as zyxmequickreplyid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         quickreply
         FROM quickreply
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND quickreplyid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND quickreplyid > $maxid
         ORDER BY quickreplyid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO quickreply (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO quickreply (
             corpid,
             orgid,
             classificationid,
+            quickreplyid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             quickreply
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
-            (SELECT c.classificationid FROM classification c WHERE c.zyxmecorpid = dt.zyxmecorpid AND c.zyxmeclassificationid = dt.zyxmeclassificationid ORDER BY c.classificationid DESC LIMIT 1),
+            dt.zyxmeorgid,
+            dt.zyxmeclassificationid,
+            dt.zyxmequickreplyid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.quickreply
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmeclassificationid bigint,
+            zyxmequickreplyid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			quickreply text
-        )`
+        )
+        `
     },
 }
 
@@ -1371,29 +1826,113 @@ const querySubcorePerson = {
     person: {
         id: 'personid',
         sequence: 'personseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, NULLIF(personid, 0) + $incpersonid as zyxmepersonid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        personid + CASE WHEN personid > $maxpersonid THEN $incpersonid ELSE 0 END as zyxmepersonid,
         description, status, type, createdate, createby, changedate, changeby, edit,
-        groups, name, referringperson, NULLIF(referringpersonid, 0) + $incpersonid, persontype, personstatus,
+        groups, name, referringperson, NULLIF(referringpersonid, 0), persontype, personstatus,
         phone, email, alternativephone, alternativeemail,
-        firstcontact, lastcontact, lastcommunicationchannelid, documenttype, documentnumber,
+        firstcontact, lastcontact,
+        lastcommunicationchannelid + CASE WHEN lastcommunicationchannelid > $maxcommunicationchannelid THEN $inccommunicationchannelid ELSE 0 END as lastcommunicationchannelid,
+        documenttype, documentnumber,
         firstname, lastname, imageurldef, sex, gender, birthday, civilstatus, occupation, educationlevel,
         termsandconditions, installments, feeamount, approvedamount, evaluationstatus,
         lastdateevaluation, lastdatestatus, daysfornextevaluation,
         address, addressreference, clientnumber, mailflag, ecommerceaccounts, salary,
         country, region, district, latitude, longitude, province, contact, usercall, geographicalarea, age
         FROM person
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND personid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
         ORDER BY personid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO person (
-            zyxmecorpid,
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE person xupd
+        SET
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit,
+        groups = dt.groups,
+        name = dt.name,
+        referringperson = dt.referringperson,
+        referringpersonid = dt.referringpersonid,
+        persontype = dt.persontype,
+        personstatus = dt.personstatus,
+        phone = dt.phone,
+        email = dt.email,
+        alternativephone = dt.alternativephone,
+        alternativeemail = dt.alternativeemail,
+        firstcontact = dt.firstcontact,
+        lastcontact = dt.lastcontact,
+        lastcommunicationchannelid = dt.lastcommunicationchannelid,
+        documenttype = dt.documenttype,
+        documentnumber = dt.documentnumber,
+        firstname = dt.firstname,
+        lastname = dt.lastname,
+        imageurldef = dt.imageurldef,
+        sex = dt.sex,
+        gender = dt.gender,
+        birthday = dt.birthday,
+        civilstatus = dt.civilstatus,
+        occupation = dt.occupation,
+        educationlevel = dt.educationlevel,
+        termsandconditions = dt.termsandconditions,
+        installments = dt.installments,
+        feeamount = dt.feeamount,
+        approvedamount = dt.approvedamount,
+        evaluationstatus = dt.evaluationstatus,
+        lastdateevaluation = dt.lastdateevaluation,
+        lastdatestatus = dt.lastdatestatus,
+        daysfornextevaluation = dt.daysfornextevaluation,
+        address = dt.address,
+        addressreference = dt.addressreference,
+        clientnumber = dt.clientnumber,
+        mailflag = dt.mailflag,
+        ecommerceaccounts = dt.ecommerceaccounts,
+        salary = dt.salary,
+        country = dt.country,
+        region = dt.region,
+        district = dt.district,
+        latitude = dt.latitude,
+        longitude = dt.longitude,
+        province = dt.province,
+        contact = dt.contact,
+        usercall = dt.usercall,
+        geographicalarea = dt.geographicalarea,
+        age = dt.age
+        ###DT###
+        WHERE xupd.corpid = dt.zyxmecorpid
+        AND xupd.orgid = dt.zyxmeorgid
+        AND xupd.personid = dt.zyxmepersonid
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND personid > $maxid
+        ORDER BY personid
+        LIMIT $limit
+        `,
+        insert: `
+        INSERT INTO person (
             corpid,
             orgid,
             personid,
-            zyxmepersonid,
             description, status, type, createdate, createby, changedate, changeby, edit,
-            groups, name, referringperson, referringpersonid, persontype, personstatus,
+            groups, name, referringperson,
+            referringpersonid,
+            persontype, personstatus,
             phone, email, alternativephone, alternativeemail,
             firstcontact, lastcontact,
             lastcommunicationchannelid,
@@ -1406,9 +1945,7 @@ const querySubcorePerson = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
-            dt.zyxmepersonid,
+            dt.zyxmeorgid,
             dt.zyxmepersonid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.groups, dt.name, dt.referringperson,
@@ -1416,16 +1953,20 @@ const querySubcorePerson = {
             dt.persontype, dt.personstatus,
             dt.phone, dt.email, dt.alternativephone, dt.alternativeemail,
             dt.firstcontact, dt.lastcontact,
-            (SELECT c.communicationchannelid FROM communicationchannel c WHERE c.zyxmecorpid = dt.zyxmecorpid AND c.zyxmecommunicationchannelid = dt.lastcommunicationchannelid ORDER BY c.communicationchannelid DESC LIMIT 1),
+            dt.lastcommunicationchannelid,
             dt.documenttype, dt.documentnumber,
             dt.firstname, dt.lastname, dt.imageurldef, dt.sex, dt.gender, dt.birthday, dt.civilstatus, dt.occupation, dt.educationlevel,
             dt.termsandconditions, dt.installments, dt.feeamount, dt.approvedamount, dt.evaluationstatus,
             dt.lastdateevaluation, dt.lastdatestatus, dt.daysfornextevaluation,
             dt.address, dt.addressreference, dt.clientnumber, dt.mailflag, dt.ecommerceaccounts, dt.salary,
             dt.country, dt.region, dt.district, dt.latitude, dt.longitude, dt.province, dt.contact, dt.usercall, dt.geographicalarea, dt.age
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmepersonid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
@@ -1449,59 +1990,100 @@ const querySubcorePerson = {
 			country character varying, region character varying, district character varying,
 			latitude character varying, longitude character varying, province character varying, contact character varying,
 			usercall boolean, geographicalarea character varying, age character varying
-        )`
+        )
+        `
     },
     personaddinfo: {
         id: 'personaddinfoid',
         sequence: 'personaddinfoseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, NULLIF(personid, 0) + $incpersonid as zyxmepersonid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        personid + CASE WHEN personid > $maxpersonid THEN $incpersonid ELSE 0 END as zyxmepersonid,
+        personaddinfoid + CASE WHEN personaddinfoid > $maxpersonaddinfoid THEN $incpersonaddinfoid ELSE 0 END as zyxmepersonaddinfoid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         addinfo
         FROM personaddinfo
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND personaddinfoid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND personaddinfoid > $maxid
         ORDER BY personaddinfoid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO personaddinfo (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO personaddinfo (
             corpid,
             orgid,
             personid,
+            personaddinfoid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             addinfo
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             dt.zyxmepersonid,
+            dt.zyxmepersonaddinfoid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.addinfo
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmepersonid bigint,
+            zyxmepersonaddinfoid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			addinfo text
-        )`
+        )
+        `
     },
     personcommunicationchannel: {
-        select: `SELECT pcc.corpid as zyxmecorpid, pcc.orgid as zyxmeorgid, NULLIF(pcc.personid, 0) + $incpersonid as zyxmepersonid,
+        select: `
+        SELECT
+        pcc.corpid as zyxmecorpid,
+        pcc.orgid as zyxmeorgid,
+        pcc.personid + CASE WHEN pcc.personid > $maxpersonid THEN $incpersonid ELSE 0 END as zyxmepersonid,
         pcc.personcommunicationchannel,
         pcc.description, pcc.status, pcc.type, pcc.createdate, pcc.createby, pcc.changedate, pcc.changeby, pcc.edit,
         pcc.imageurl, pcc.personcommunicationchannelowner, pcc.displayname, pcc.pendingsurvey, pcc.surveycontext, pcc.locked, pcc.lastusergroup
         FROM personcommunicationchannel pcc
         JOIN person pe ON pe.corpid = pcc.corpid AND pe.orgid = pcc.orgid AND pe.personid = pcc.personid
+        `,
+        select_update_where: `
         WHERE pcc.corpid = $corpid
         AND pe.corpid = $corpid
+        AND pcc.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND pe.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND pcc.createdate <= $backupdate::TIMESTAMP
+        AND pcc.changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE pcc.corpid = $corpid
+        AND pe.corpid = $corpid
+        AND pcc.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND pe.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND pcc.createdate >= $backupdate::TIMESTAMP
         ORDER BY pcc.personid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO personcommunicationchannel (
-            zyxmecorpid,
+        OFFSET $offset
+        `,
+        insert: `
+        INSERT INTO personcommunicationchannel (
             corpid,
             orgid,
             personid,
@@ -1511,18 +2093,19 @@ const querySubcorePerson = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
-            COALESCE(
-                dt.zyxmepersonid,
-                (SELECT personid FROM person WHERE zyxmecorpid = dt.zyxmecorpid AND orgid = (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1) LIMIT 1)
-            ),
+            dt.zyxmeorgid,
+            dt.zyxmepersonid,
             dt.personcommunicationchannel,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.imageurl, dt.personcommunicationchannelowner, dt.displayname, dt.pendingsurvey, dt.surveycontext, dt.locked, dt.lastusergroup
+        ###DT###
+        WHERE NOT EXISTS (SELECT 1 FROM personcommunicationchannel x WHERE x.corpid = dt.zyxmecorpid AND x.orgid = dt.zyxmeorgid AND x.personid = dt.zyxmepersonid AND x.personcommunicationchannel = dt.personcommunicationchannel)
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmepersonid bigint,
 			personcommunicationchannel character varying,
 			description character varying, status character varying, type character varying,
@@ -1531,7 +2114,8 @@ const querySubcorePerson = {
 			edit boolean,
 			imageurl character varying, personcommunicationchannelowner character varying, displayname character varying,
 			pendingsurvey boolean, surveycontext text, locked boolean, lastusergroup character varying
-        )`
+        )
+        `
     },
 }
 
@@ -1539,98 +2123,146 @@ const querySubcoreConversation = {
     post: {
         id: 'postid',
         sequence: 'postseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
-        communicationchannelid as zyxmecommunicationchannelid, NULLIF(personid, 0) + $incpersonid as zyxmepersonid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        communicationchannelid + CASE WHEN communicationchannelid > $maxcommunicationchannelid THEN $inccommunicationchannelid ELSE 0 END as zyxmecommunicationchannelid,
+        personid + CASE WHEN personid > $maxpersonid THEN $incpersonid ELSE 0 END as zyxmepersonid,
+        postid + CASE WHEN postid > $maxpostid THEN $incpostid ELSE 0 END as zyxmepostid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         postexternalid, message, content, postexternalparentid, commentexternalid
         FROM post
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND postid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND postid > $maxid
         ORDER BY postid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO post (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO post (
             corpid,
             orgid,
             communicationchannelid,
             personid,
+            postid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             postexternalid, message, content, postexternalparentid, commentexternalid
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
-            (SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1),
+            dt.zyxmeorgid,
+            dt.zyxmecommunicationchannelid,
             dt.zyxmepersonid,
+            dt.zyxmepostid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.postexternalid, dt.message, dt.content, dt.postexternalparentid, dt.commentexternalid
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmecommunicationchannelid bigint,
 			zyxmepersonid bigint,
+            zyxmepostid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			postexternalid character varying, message text, content text,
 			postexternalparentid character varying, commentexternalid character varying
-        )`
+        )
+        `
     },
     pccstatus: {
         id: 'pccstatusid',
         sequence: 'pccstatusseq',
-        select: `SELECT pcc.corpid as zyxmecorpid, pcc.orgid as zyxmeorgid,
-        pcc.communicationchannelid as zyxmecommunicationchannelid,
+        select: `
+        SELECT
+        pcc.corpid as zyxmecorpid,
+        pcc.orgid as zyxmeorgid,
+        pcc.communicationchannelid + CASE WHEN pcc.communicationchannelid > $maxcommunicationchannelid THEN $inccommunicationchannelid ELSE 0 END as zyxmecommunicationchannelid,
         pcc.personcommunicationchannel,
+        pcc.pccstatusid + CASE WHEN pcc.pccstatusid > $maxpccstatusid THEN $incpccstatusid ELSE 0 END as zyxmepccstatusid,
         pcc.description, pcc.status, pcc.type, pcc.createdate, pcc.createby, pcc.changedate, pcc.changeby, pcc.edit
         FROM pccstatus pcc
+        `,
+        select_update_where: `
         WHERE pcc.corpid = $corpid
+        AND pcc.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND pcc.pccstatusid <= $maxid
+        AND pcc.changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE pcc.corpid = $corpid
+        AND pcc.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND pcc.pccstatusid > $maxid
         ORDER BY pcc.pccstatusid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO pccstatus (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO pccstatus (
             corpid,
             orgid,
             communicationchannelid,
             personcommunicationchannel,
+            pccstatusid,
             description, status, type, createdate, createby, changedate, changeby, edit
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
-            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
+            dt.zyxmeorgid,
+            dt.zyxmecommunicationchannelid,
             dt.personcommunicationchannel,
+            dt.zyxmepccstatusid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmecommunicationchannelid bigint,
 			personcommunicationchannel character varying,
+            zyxmepccstatusid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean
-        )`
+        )
+        `
     },
     conversation: {
         id: 'conversationid',
         sequence: 'conversationseq',
-        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, NULLIF(co.personid, 0) + $incpersonid as zyxmepersonid,
-        co.personcommunicationchannel, co.communicationchannelid as zyxmecommunicationchannelid,
-        NULLIF(co.conversationid, 0) + $incconversationid as zyxmeconversationid,
+        select: `
+        SELECT
+        co.corpid as zyxmecorpid,
+        co.orgid as zyxmeorgid,
+        co.personid + CASE WHEN co.personid > $maxpersonid THEN $incpersonid ELSE 0 END as zyxmepersonid,
+        co.personcommunicationchannel,
+        co.communicationchannelid + CASE WHEN co.communicationchannelid > $maxcommunicationchannelid THEN $inccommunicationchannelid ELSE 0 END as zyxmecommunicationchannelid,
+        co.conversationid + CASE WHEN co.conversationid > $maxconversationid THEN $incconversationid ELSE 0 END as zyxmeconversationid,
         co.description, co.status, co.type, co.createdate, co.createby, co.changedate, co.changeby, co.edit,
         co.firstconversationdate, co.lastconversationdate,
         CASE WHEN co.firstuserid = 42 THEN 2
         WHEN co.firstuserid = 51 THEN 3
-        ELSE co.firstuserid + $incuserid
+        ELSE co.firstuserid + CASE WHEN co.firstuserid > $maxuserid THEN $incuserid ELSE 0 END
         END firstuserid,
         CASE WHEN co.lastuserid = 42 THEN 2
         WHEN co.lastuserid = 51 THEN 3
-        ELSE co.lastuserid + $incuserid
+        ELSE co.lastuserid + CASE WHEN co.lastuserid > $maxuserid THEN $incuserid ELSE 0 END
         END lastuserid,
         co.firstreplytime::text, co.averagereplytime::text, co.userfirstreplytime::text, co.useraveragereplytime::text,
         co.ticketnum, co.startdate, co.finishdate, co.totalduration::text, co.realduration::text, co.totalpauseduration::text, co.personaveragereplytime::text,
@@ -1658,24 +2290,184 @@ const querySubcoreConversation = {
         co.interactionaiquantity, co.interactionaipersonquantity, co.interactionaibotquantity, co.interactionaiasesorquantity,
         co.handoffafteransweruser, co.lastseendate, co.closecomment
         FROM conversation co
+        `,
+        select_update_where: `
         WHERE co.corpid = $corpid
+        AND co.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND co.conversationid <= $maxid
+        AND co.finishdate > $backupdate::TIMESTAMP
+        ORDER BY co.conversationid
+        LIMIT $limit
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE conversation xupd
+        SET
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit,
+        firstconversationdate = dt.firstconversationdate,
+        lastconversationdate = dt.lastconversationdate,
+        firstuserid = dt.firstuserid,
+        lastuserid = dt.lastuserid,
+        firstreplytime = dt.firstreplytime,
+        averagereplytime = dt.averagereplytime,
+        userfirstreplytime = dt.userfirstreplytime,
+        useraveragereplytime = dt.useraveragereplytime,
+        startdate = dt.startdate,
+        finishdate = dt.finishdate,
+        totalduration = dt.totalduration,
+        realduration = dt.realduration,
+        totalpauseduration = dt.totalpauseduration,
+        personaveragereplytime = dt.personaveragereplytime,
+        closetype = dt.closetype,
+        context = dt.context,
+        postexternalid = dt.postexternalid,
+        commentexternalid = dt.commentexternalid,
+        replyexternalid = dt.replyexternalid,
+        botduration = dt.botduration,
+        autoclosetime = dt.autoclosetime,
+        handoffdate = dt.handoffdate,
+        pausedauto = dt.pausedauto,
+        chatflowcontext = dt.chatflowcontext,
+        variablecontext = dt.variablecontext,
+        usergroup = dt.usergroup,
+        mailflag = dt.mailflag,
+        sentiment = dt.sentiment,
+        sadness = dt.sadness,
+        joy = dt.joy,
+        fear = dt.fear,
+        disgust = dt.disgust,
+        anger = dt.anger,
+        usersentiment = dt.usersentiment,
+        usersadness = dt.usersadness,
+        userjoy = dt.userjoy,
+        userfear = dt.userfear,
+        userdisgust = dt.userdisgust,
+        useranger = dt.useranger,
+        personsentiment = dt.personsentiment,
+        personsadness = dt.personsadness,
+        personjoy = dt.personjoy,
+        personfear = dt.personfear,
+        persondisgust = dt.persondisgust,
+        personanger = dt.personanger,
+        balancetimes = dt.balancetimes,
+        firstassignedtime = dt.firstassignedtime,
+        extradata = dt.extradata,
+        holdingwaitingtime = dt.holdingwaitingtime,
+        closetabdate = dt.closetabdate,
+        abandoned = dt.abandoned,
+        lastreplydate = dt.lastreplydate,
+        personlastreplydate = dt.personlastreplydate,
+        tags = dt.tags,
+        wnlucategories = dt.wnlucategories,
+        wnluconcepts = dt.wnluconcepts,
+        wnluentities = dt.wnluentities,
+        wnlukeywords = dt.wnlukeywords,
+        wnlumetadata = dt.wnlumetadata,
+        wnlurelations = dt.wnlurelations,
+        wnlusemanticroles = dt.wnlusemanticroles,
+        wnlcclass = dt.wnlcclass,
+        wtaanger = dt.wtaanger,
+        wtafear = dt.wtafear,
+        wtajoy = dt.wtajoy,
+        wtasadness = dt.wtasadness,
+        wtaanalytical = dt.wtaanalytical,
+        wtaconfident = dt.wtaconfident,
+        wtatentative = dt.wtatentative,
+        wtaexcited = dt.wtaexcited,
+        wtafrustrated = dt.wtafrustrated,
+        wtaimpolite = dt.wtaimpolite,
+        wtapolite = dt.wtapolite,
+        wtasad = dt.wtasad,
+        wtasatisfied = dt.wtasatisfied,
+        wtasympathetic = dt.wtasympathetic,
+        wtauseranger = dt.wtauseranger,
+        wtauserfear = dt.wtauserfear,
+        wtauserjoy = dt.wtauserjoy,
+        wtausersadness = dt.wtausersadness,
+        wtauseranalytical = dt.wtauseranalytical,
+        wtauserconfident = dt.wtauserconfident,
+        wtausertentative = dt.wtausertentative,
+        wtauserexcited = dt.wtauserexcited,
+        wtauserfrustrated = dt.wtauserfrustrated,
+        wtauserimpolite = dt.wtauserimpolite,
+        wtauserpolite = dt.wtauserpolite,
+        wtausersad = dt.wtausersad,
+        wtausersatisfied = dt.wtausersatisfied,
+        wtausersympathetic = dt.wtausersympathetic,
+        wtapersonanger = dt.wtapersonanger,
+        wtapersonfear = dt.wtapersonfear,
+        wtapersonjoy = dt.wtapersonjoy,
+        wtapersonsadness = dt.wtapersonsadness,
+        wtapersonanalytical = dt.wtapersonanalytical,
+        wtapersonconfident = dt.wtapersonconfident,
+        wtapersontentative = dt.wtapersontentative,
+        wtapersonexcited = dt.wtapersonexcited,
+        wtapersonfrustrated = dt.wtapersonfrustrated,
+        wtapersonimpolite = dt.wtapersonimpolite,
+        wtapersonpolite = dt.wtapersonpolite,
+        wtapersonsad = dt.wtapersonsad,
+        wtapersonsatisfied = dt.wtapersonsatisfied,
+        wtapersonsympathetic = dt.wtapersonsympathetic,
+        wnlusyntax = dt.wnlusyntax,
+        wnlusentiment = dt.wnlusentiment,
+        wnlusadness = dt.wnlusadness,
+        wnlujoy = dt.wnlujoy,
+        wnlufear = dt.wnlufear,
+        wnludisgust = dt.wnludisgust,
+        wnluanger = dt.wnluanger,
+        wnluusersentiment = dt.wnluusersentiment,
+        wnluusersadness = dt.wnluusersadness,
+        wnluuserjoy = dt.wnluuserjoy,
+        wnluuserfear = dt.wnluuserfear,
+        wnluuserdisgust = dt.wnluuserdisgust,
+        wnluuseranger = dt.wnluuseranger,
+        wnlupersonsentiment = dt.wnlupersonsentiment,
+        wnlupersonsadness = dt.wnlupersonsadness,
+        wnlupersonjoy = dt.wnlupersonjoy,
+        wnlupersonfear = dt.wnlupersonfear,
+        wnlupersondisgust = dt.wnlupersondisgust,
+        wnlupersonanger = dt.wnlupersonanger,
+        enquiries = dt.enquiries,
+        classification = dt.classification,
+        firstusergroup = dt.firstusergroup,
+        emailalertsent = dt.emailalertsent,
+        tdatime = dt.tdatime,
+        handoffafteransweruser = dt.handoffafteransweruser,
+        lastseendate = dt.lastseendate,
+        closecomment = dt.closecomment
+        ###DT###
+        WHERE xupd.corpid = dt.zyxmecorpid
+        AND xupd.orgid = dt.zyxmeorgid
+        AND xupd.conversationid = dt.zyxmeconversationid
+        `,
+        select_insert_where: `
+        WHERE co.corpid = $corpid
+        AND co.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND co.conversationid > $maxid
         ORDER BY co.conversationid ASC
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO conversation (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO conversation (
             corpid,
             orgid,
             personid,
             personcommunicationchannel,
             communicationchannelid,
             conversationid,
-            zyxmeconversationid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             firstconversationdate, lastconversationdate,
             firstuserid, lastuserid,
             firstreplytime, averagereplytime, userfirstreplytime, useraveragereplytime,
-            ticketnum, startdate, finishdate, totalduration, realduration, totalpauseduration, personaveragereplytime,
+            ticketnum,
+            startdate, finishdate, totalduration, realduration, totalpauseduration, personaveragereplytime,
             closetype, context, postexternalid, commentexternalid, replyexternalid,
             botduration, autoclosetime, handoffdate, pausedauto,
             chatflowcontext, variablecontext, usergroup, mailflag,
@@ -1702,19 +2494,18 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
-            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
-            dt.zyxmeconversationid,
+            dt.zyxmecommunicationchannelid,
             dt.zyxmeconversationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.firstconversationdate, dt.lastconversationdate,
             dt.firstuserid,
             dt.lastuserid,
             dt.firstreplytime, dt.averagereplytime, dt.userfirstreplytime, dt.useraveragereplytime,
-            dt.ticketnum, dt.startdate, dt.finishdate, dt.totalduration, dt.realduration, dt.totalpauseduration, dt.personaveragereplytime,
+            LPAD(nextval(CONCAT('ticketnum',dt.zyxmeorgid,'seq'))::text,7,'0'),
+            dt.startdate, dt.finishdate, dt.totalduration, dt.realduration, dt.totalpauseduration, dt.personaveragereplytime,
             dt.closetype, dt.context, dt.postexternalid, dt.commentexternalid, dt.replyexternalid,
             dt.botduration, dt.autoclosetime, dt.handoffdate, dt.pausedauto,
             dt.chatflowcontext, dt.variablecontext, dt.usergroup, dt.mailflag,
@@ -1738,9 +2529,13 @@ const querySubcoreConversation = {
             0, 0, 0, 0,
             0, 0, 0, 0,
             dt.handoffafteransweruser, dt.lastseendate, dt.closecomment
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmepersonid bigint,
 			personcommunicationchannel character varying,
 			zyxmecommunicationchannelid bigint,
@@ -1778,24 +2573,35 @@ const querySubcoreConversation = {
 			interactionaiquantity bigint, interactionaipersonquantity bigint, interactionaibotquantity bigint, interactionaiasesorquantity bigint,
 			handoffafteransweruser timestamp without time zone, lastseendate timestamp without time zone, closecomment text
         )`,
-        update: `SELECT ufn_ticketnum_ins(orgid)
+        post_1: `SELECT ufn_ticketnum_ins(orgid)
         FROM org
-        WHERE zyxmecorpid = $corpid`
+        WHERE zyxmecorpid = $corpid
+        AND zyxmeorgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)`
     },
     conversationclassification: {
-        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, NULLIF(co.personid, 0) + $incpersonid as zyxmepersonid,
-        co.personcommunicationchannel, NULLIF(co.conversationid, 0) + $incconversationid as zyxmeconversationid,
-        co.communicationchannelid as zyxmecommunicationchannelid,
-        co.classificationid as zyxmeclassificationid,
+        select: `
+        SELECT
+        co.corpid as zyxmecorpid,
+        co.orgid as zyxmeorgid,
+        co.personid + CASE WHEN co.personid > $maxpersonid THEN $incpersonid ELSE 0 END as zyxmepersonid,
+        co.personcommunicationchannel,
+        co.conversationid + CASE WHEN co.conversationid > $maxconversationid THEN $incconversationid ELSE 0 END as zyxmeconversationid,
+        co.communicationchannelid + CASE WHEN co.communicationchannelid > $maxcommunicationchannelid THEN $inccommunicationchannelid ELSE 0 END as zyxmecommunicationchannelid,
+        co.classificationid + CASE WHEN co.classificationid > $maxclassificationid THEN $incclassificationid ELSE 0 END as zyxmeclassificationid,
         co.status, co.createdate, co.createby, co.changedate, co.changeby, co.edit,
         co.jobplan
         FROM conversationclassification co
+        `,
+        select_insert_where: `
         WHERE co.corpid = $corpid
+        AND co.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND co.createdate >= $backupdate::TIMESTAMP
         ORDER BY co.conversationid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO conversationclassification (
-            zyxmecorpid,
+        OFFSET $offset
+        `,
+        insert: `
+        INSERT INTO conversationclassification (
             corpid,
             orgid,
             personid,
@@ -1808,18 +2614,22 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
             COALESCE(dt.zyxmeconversationid,0),
-            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
-            COALESCE((SELECT c.classificationid FROM classification c WHERE c.zyxmecorpid = dt.zyxmecorpid AND c.zyxmeclassificationid = dt.zyxmeclassificationid ORDER BY c.classificationid DESC LIMIT 1), 0),
+            dt.zyxmecommunicationchannelid,
+            dt.zyxmeclassificationid,
             dt.status, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.jobplan
+        ###DT###
+        WHERE NOT EXISTS (SELECT 1 FROM conversationclassification x WHERE x.corpid = dt.zyxmecorpid AND x.orgid = dt.zyxmeorgid AND x.conversationid = dt.zyxmeconversationid AND x.classificationid = dt.zyxmeclassificationid)
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmepersonid bigint,
 			personcommunicationchannel character varying,
 			zyxmeconversationid bigint,
@@ -1830,120 +2640,195 @@ const querySubcoreConversation = {
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			jobplan text
-        )`
+        )
+        `
     },
     conversationnote: {
         id: 'conversationnoteid',
         sequence: 'conversationnoteseq',
-        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, NULLIF(co.personid, 0) + $incpersonid as zyxmepersonid,
-        co.personcommunicationchannel, co.communicationchannelid as zyxmecommunicationchannelid,
-        NULLIF(co.conversationid, 0) + $incconversationid as zyxmeconversationid,
+        select: `
+        SELECT
+        co.corpid as zyxmecorpid,
+        co.orgid as zyxmeorgid,
+        co.personid + CASE WHEN co.personid > $maxpersonid THEN $incpersonid ELSE 0 END as zyxmepersonid,
+        co.personcommunicationchannel,
+        co.communicationchannelid + CASE WHEN co.communicationchannelid > $maxcommunicationchannelid THEN $inccommunicationchannelid ELSE 0 END as zyxmecommunicationchannelid,
+        co.conversationid + CASE WHEN co.conversationid > $maxconversationid THEN $incconversationid ELSE 0 END as zyxmeconversationid,
+        co.conversationnoteid + CASE WHEN co.conversationnoteid > $maxconversationnoteid THEN $incconversationnoteid ELSE 0 END as zyxmeconversationnoteid,
         co.description, co.status, co.type, co.createdate, co.createby, co.changedate, co.changeby, co.edit,
         co.addpersonnote, co.note
         FROM conversationnote co
+        `,
+        select_update_where: `
         WHERE co.corpid = $corpid
+        AND co.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND co.conversationnoteid <= $maxid
+        AND co.changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE co.corpid = $corpid
+        AND co.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND co.conversationnoteid > $maxid
         ORDER BY co.conversationnoteid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO conversationnote (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO conversationnote (
             corpid,
             orgid,
             personid,
             personcommunicationchannel,
             communicationchannelid,
             conversationid,
+            conversationnoteid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             addpersonnote, note
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
-            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
+            dt.zyxmecommunicationchannelid,
             COALESCE(dt.zyxmeconversationid, 0),
+            dt.zyxmeconversationnoteid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.addpersonnote, dt.note
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmepersonid bigint,
 			personcommunicationchannel character varying,
 			zyxmecommunicationchannelid bigint,
 			zyxmeconversationid bigint,
+            zyxmeconversationnoteid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			addpersonnote boolean, note text
-        )`
+        )
+        `
     },
     conversationpause: {
         id: 'conversationpauseid',
         sequence: 'conversationpauseseq',
-        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, NULLIF(co.personid, 0) + $incpersonid as zyxmepersonid,
-        co.personcommunicationchannel, co.communicationchannelid as zyxmecommunicationchannelid,
-        NULLIF(co.conversationid, 0) + $incconversationid as zyxmeconversationid,
+        select: `
+        SELECT
+        co.corpid as zyxmecorpid,
+        co.orgid as zyxmeorgid,
+        co.personid + CASE WHEN co.personid > $maxpersonid THEN $incpersonid ELSE 0 END as zyxmepersonid,
+        co.personcommunicationchannel,
+        co.communicationchannelid + CASE WHEN co.communicationchannelid > $maxcommunicationchannelid THEN $inccommunicationchannelid ELSE 0 END as zyxmecommunicationchannelid,
+        co.conversationid + CASE WHEN co.conversationid > $maxconversationid THEN $incconversationid ELSE 0 END as zyxmeconversationid,
+        co.conversationpauseid + CASE WHEN co.conversationpauseid > $maxconversationpauseid THEN $incconversationpauseid ELSE 0 END as zyxmeconversationpauseid,
         co.description, co.status, co.type, co.createdate, co.createby, co.changedate, co.changeby, co.edit,
         co.startpause, co.stoppause
         FROM conversationpause co
+        `,
+        select_update_where: `
         WHERE co.corpid = $corpid
+        AND co.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND co.conversationpauseid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
         ORDER BY co.conversationpauseid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO conversationpause (
-            zyxmecorpid,
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE conversationpause xupd
+        SET
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit,
+        startpause = dt.startpause,
+        stoppause = dt.stoppause
+        ###DT###
+        WHERE xupd.corpid = dt.zyxmecorpid
+        AND xupd.orgid = dt.zyxmeorgid
+        AND xupd.conversationpauseid = dt.zyxmeconversationpauseid
+        `,
+        select_insert_where: `
+        WHERE co.corpid = $corpid
+        AND co.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND co.conversationpauseid > $maxid
+        ORDER BY co.conversationpauseid
+        LIMIT $limit
+        `,
+        insert: `
+        INSERT INTO conversationpause (
             corpid,
             orgid,
             personid,
             personcommunicationchannel,
             communicationchannelid,
             conversationid,
+            conversationpauseid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             startpause, stoppause
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
-            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
+            dt.zyxmecommunicationchannelid,
             COALESCE(dt.zyxmeconversationid, 0),
+            dt.zyxmeconversationpauseid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.startpause, dt.stoppause
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmepersonid bigint,
 			personcommunicationchannel character varying,
 			zyxmecommunicationchannelid bigint,
 			zyxmeconversationid bigint,
+            zyxmeconversationpauseid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			startpause timestamp without time zone, stoppause timestamp without time zone
-        )`
+        )
+        `
     },
     conversationpending: {
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
         personcommunicationchannel,
         CASE WHEN userid = 42 THEN 2
         WHEN userid = 51 THEN 3
-        ELSE userid + $incuserid
+        ELSE userid + CASE WHEN userid > $maxuserid THEN $incuserid ELSE 0 END
         END as zyxmeuserid,
-        NULLIF(conversationid, 0) + $incconversationid as zyxmeconversationid,
+        conversationid + CASE WHEN conversationid > $maxconversationid THEN $incconversationid ELSE 0 END as zyxmeconversationid,
         status, communicationchannelsite, interactiontext
         FROM conversationpending
+        `,
+        select_insert_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
         ORDER BY conversationid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO conversationpending (
-            zyxmecorpid,
+        OFFSET $offset
+        `,
+        insert: `
+        INSERT INTO conversationpending (
             corpid,
             orgid,
             personcommunicationchannel,
@@ -1953,15 +2838,19 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             dt.personcommunicationchannel,
             dt.zyxmeuserid,
             dt.zyxmeconversationid,
             dt.status, dt.communicationchannelsite, dt.interactiontext
+        ###DT###
+        WHERE NOT EXISTS (SELECT 1 FROM conversationpending x WHERE x.corpid = dt.zyxmecorpid AND x.orgid = dt.zyxmeorgid AND x.conversationid = dt.zyxmeconversationid)
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			personcommunicationchannel character varying,
 			zyxmeuserid bigint,
             zyxmeconversationid bigint,
@@ -1970,63 +2859,93 @@ const querySubcoreConversation = {
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			communicationchannelsite character varying, interactiontext text
-        )`
+        )
+        `
     },
     conversationstatus: {
         id: 'conversationstatusid',
         sequence: 'conversationstatusseq',
-        select: `SELECT co.corpid as zyxmecorpid, co.orgid as zyxmeorgid, NULLIF(co.personid, 0) + $incpersonid as zyxmepersonid,
-        co.personcommunicationchannel, co.communicationchannelid as zyxmecommunicationchannelid,
-        NULLIF(co.conversationid, 0) + $incconversationid as zyxmeconversationid,
+        select: `
+        SELECT
+        co.corpid as zyxmecorpid,
+        co.orgid as zyxmeorgid,
+        co.personid + CASE WHEN co.personid > $maxpersonid THEN $incpersonid ELSE 0 END as zyxmepersonid,
+        co.personcommunicationchannel,
+        co.communicationchannelid + CASE WHEN co.communicationchannelid > $maxcommunicationchannelid THEN $inccommunicationchannelid ELSE 0 END as zyxmecommunicationchannelid,
+        co.conversationid + CASE WHEN co.conversationid > $maxconversationid THEN $incconversationid ELSE 0 END as zyxmeconversationid,
+        co.conversationstatusid + CASE WHEN co.conversationstatusid > $maxconversationstatusid THEN $incconversationstatusid ELSE 0 END as zyxmeconversationstatusid,
         co.description, co.status, co.type, co.createdate, co.createby, co.changedate, co.changeby, co.edit
         FROM conversationstatus co
+        `,
+        select_update_where: `
         WHERE co.corpid = $corpid
+        AND co.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND co.conversationstatusid <= $maxid
+        AND co.changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE co.corpid = $corpid
+        AND co.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND co.conversationstatusid > $maxid
         ORDER BY co.conversationstatusid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO conversationstatus (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO conversationstatus (
             corpid,
             orgid,
             personid,
             personcommunicationchannel,
             communicationchannelid,
             conversationid,
+            conversationstatusid,
             description, status, type, createdate, createby, changedate, changeby, edit
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             COALESCE(dt.zyxmepersonid, 0),
             dt.personcommunicationchannel,
-            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
+            dt.zyxmecommunicationchannelid,
             COALESCE(dt.zyxmeconversationid, 0),
+            dt.zyxmeconversationstatusid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmepersonid bigint,
 			personcommunicationchannel character varying,
 			zyxmecommunicationchannelid bigint,
 			zyxmeconversationid bigint,
+            zyxmeconversationstatusid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean
-        )`
+        )
+        `
     },
     interaction: {
         id: 'interactionid',
         sequence: 'interactionseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, NULLIF(personid, 0) + $incpersonid as zyxmepersonid,
-        personcommunicationchannel, communicationchannelid as zyxmecommunicationchannelid,
-        conversationid + $incconversationid as zyxmeconversationid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        personid + CASE WHEN personid > $maxpersonid THEN $incpersonid ELSE 0 END as zyxmepersonid,
+        personcommunicationchannel,
+        communicationchannelid + CASE WHEN communicationchannelid > $maxcommunicationchannelid THEN $inccommunicationchannelid ELSE 0 END as zyxmecommunicationchannelid,
+        conversationid + CASE WHEN conversationid > $maxconversationid THEN $incconversationid ELSE 0 END as zyxmeconversationid,
+        interactionid + CASE WHEN interactionid > $maxinteractionid THEN $incinteractionid ELSE 0 END as zyxmeinteractionid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         interactiontext,
         CASE WHEN userid = 42 THEN 2
         WHEN userid = 51 THEN 3
-        ELSE userid + $incuserid
+        ELSE userid + CASE WHEN userid > $maxuserid THEN $incuserid ELSE 0 END
         END as zyxmeuserid,
         intent, intentexample, entityname, entityvalue,
         dialognode, dialogcondition, urlattachment, htmlattachment,
@@ -2041,18 +2960,23 @@ const querySubcoreConversation = {
         wnlusyntax, wnlusentiment, wnlusadness, wnlujoy, wnlufear, wnludisgust, wnluanger, wnluresult,
         waintent, waentityname, waentityvalue, waresult
         FROM interaction
+        `,
+        select_insert_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND interactionid > $maxid
         ORDER BY interactionid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO interaction (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO interaction (
             corpid,
             orgid,
             personid,
             personcommunicationchannel,
             communicationchannelid,
             conversationid,
+            interactionid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             interactiontext, userid, intent, intentexample, entityname, entityvalue,
             dialognode, dialogcondition, urlattachment, htmlattachment,
@@ -2069,12 +2993,12 @@ const querySubcoreConversation = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             dt.zyxmepersonid,
             dt.personcommunicationchannel,
-            COALESCE((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1), 0),
+            dt.zyxmecommunicationchannelid,
             dt.zyxmeconversationid,
+            dt.zyxmeinteractionid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.interactiontext,
             dt.zyxmeuserid,
@@ -2090,13 +3014,18 @@ const querySubcoreConversation = {
             dt.wtafrustrated, dt.wtaimpolite, dt.wtapolite, dt.wtasad, dt.wtasatisfied, dt.wtasympathetic, dt.wtaresult,
             dt.wnlusyntax, dt.wnlusentiment, dt.wnlusadness, dt.wnlujoy, dt.wnlufear, dt.wnludisgust, dt.wnluanger, dt.wnluresult,
             dt.waintent, dt.waentityname, dt.waentityvalue, dt.waresult
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmepersonid bigint,
 			personcommunicationchannel character varying,
 			zyxmecommunicationchannelid bigint,
 			zyxmeconversationid bigint,
+            zyxmeinteractionid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
@@ -2115,37 +3044,54 @@ const querySubcoreConversation = {
 			wtafrustrated numeric, wtaimpolite numeric, wtapolite numeric, wtasad numeric, wtasatisfied numeric, wtasympathetic numeric, wtaresult text,
 			wnlusyntax text, wnlusentiment numeric, wnlusadness numeric, wnlujoy numeric, wnlufear numeric, wnludisgust numeric, wnluanger numeric, wnluresult text,
 			waintent text, waentityname text, waentityvalue text, waresult text
-        )`
+        )
+        `
     },
     surveyanswered: {
         id: 'surveyansweredid',
         sequence: 'surveyansweredseq',
-        select: `SELECT sa.corpid as zyxmecorpid, sa.orgid as zyxmeorgid, NULLIF(sa.conversationid, 0) + $incconversationid as zyxmeconversationid,
+        select: `
+        SELECT
+        sa.corpid as zyxmecorpid,
+        sa.orgid as zyxmeorgid,
+        sa.conversationid + CASE WHEN sa.conversationid > $maxconversationid THEN $incconversationid ELSE 0 END as zyxmeconversationid,
+        sa.surveyansweredid + CASE WHEN sa.surveyansweredid > $maxsurveyansweredid THEN $incsurveyansweredid ELSE 0 END as zyxmesurveyansweredid,
         sa.description, sa.status, COALESCE(split_part(pr.propertyname, 'NUMEROPREGUNTA', 1), CONCAT('QUESTION', sq.questionnumber::text)) as type, sa.createdate, sa.createby, sa.changedate, sa.changeby, sa.edit,
         sa.answer, CASE WHEN sa.answer ~ '^[0-9]+$' AND sa.answervalue = 0 THEN sa.answer::integer ELSE sa.answervalue END as answervalue, sa.comment,
         sq.question, (SELECT GREATEST(COUNT(q.a)::text, MAX(q.a[1])) FROM (SELECT regexp_matches(sq.question,'[\\d𝟏𝟐𝟑𝟒𝟓]+','g') a) q)::BIGINT scale
         FROM surveyanswered sa
         LEFT JOIN surveyquestion sq ON sq.corpid = sa.corpid AND sq.orgid = sa.orgid AND sq.surveyquestionid = sa.surveyquestionid
         LEFT JOIN property pr ON pr.corpid = sa.corpid AND pr.orgid = sa.orgid AND pr.status = 'ACTIVO'
-        AND pr.propertyname ILIKE '%NUMEROPREGUNTA' AND pr.propertyvalue = sq.questionnumber::text
+        AND pr.propertyname ILIKE '%NUMEROPREGUNTA' AND pr.propertyname NOT IN ('FCRNUMEROPREGUNTA') AND pr.propertyvalue = sq.questionnumber::text
+        `,
+        select_update_where: `
         WHERE sa.corpid = $corpid
-        ORDER BY surveyansweredid
+        AND sa.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND sa.surveyansweredid <= $maxid
+        AND sa.changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE sa.corpid = $corpid
+        AND sa.orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND sa.surveyansweredid > $maxid
+        ORDER BY sa.surveyansweredid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO surveyanswered (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO surveyanswered (
             corpid,
             orgid,
             conversationid,
+            surveyansweredid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             answer, answervalue, comment,
             question, scale, high, medium, low, fcr
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             dt.zyxmeconversationid,
+            dt.zyxmesurveyansweredid,
             dt.description, dt.status, dt.type::CHARACTER VARYING, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.answer, dt.answervalue, dt.comment,
             dt.question, dt.scale::BIGINT,
@@ -2161,46 +3107,65 @@ const querySubcoreConversation = {
             WHEN dt.type NOT IN ('FCR','FIX') AND dt.scale IN (5) THEN '1,2'
             END,
             CASE WHEN dt.type IN ('FCR','FIX') THEN true END
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmeconversationid bigint,
+            zyxmesurveyansweredid bigint,
 			description character varying, status character varying, type text,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			answer text, answervalue integer, comment text, question text, scale bigint
         )`,
-        update: `
+        post_1: `
         UPDATE surveyanswered
         SET rank = CASE WHEN answervalue = ANY(string_to_array(low,',')::BIGINT[]) THEN 'LOW'
         WHEN answervalue = ANY(string_to_array(medium,',')::BIGINT[]) THEN 'MEDIUM'
         WHEN answervalue = ANY(string_to_array(high,',')::BIGINT[]) THEN 'HIGH'
         END
-        WHERE zyxmecorpid = $corpid AND rank is null`
+        WHERE corpid = $corpid AND rank is null`
     },
 }
 
-const querySubcoreCampaign = {    
+const querySubcoreCampaign = {
     messagetemplate: {
         oldtable: 'hsmtemplate',
         id: 'hsmtemplateid',
         newid: 'messagetemplateid',
         sequence: 'messagetemplateseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, hsmtemplateid as zyxmemessagetemplateid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        hsmtemplateid + CASE WHEN hsmtemplateid > $maxmessagetemplateid THEN $incmessagetemplateid ELSE 0 END as zyxmemessagetemplateid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         hsmid as name, namespace, category, language,
         message as body, header, buttons
         FROM hsmtemplate
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND hsmtemplateid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND hsmtemplateid > $maxid
         ORDER BY hsmtemplateid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO messagetemplate (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO messagetemplate (
             corpid,
             orgid,
-            zyxmemessagetemplateid,
+            messagetemplateid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             name, namespace, category, language,
             templatetype, headerenabled, headertype, header, body,
@@ -2208,8 +3173,7 @@ const querySubcoreCampaign = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             dt.zyxmemessagetemplateid,
             dt.description, dt.status, dt.type::CHARACTER VARYING, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.name, dt.namespace, dt.category, dt.language,
@@ -2221,9 +3185,13 @@ const querySubcoreCampaign = {
             false, '',
             NULLIF(NULLIF(dt.buttons, '[]'),'')::JSON IS NOT NULL,
             REPLACE(REPLACE(NULLIF(NULLIF(dt.buttons, '[]'),''),'"value":','"payload":'),'"text":','"title":')::JSON
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmemessagetemplateid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
@@ -2231,30 +3199,45 @@ const querySubcoreCampaign = {
 			edit boolean,
 			name character varying, namespace character varying, category character varying, language character varying,
 			header character varying, body character varying, buttons character varying
-        )`
+        )
+        `
     },
     campaign: {
         id: 'campaignid',
         sequence: 'campaignseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, campaignid as zyxmecampaignid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        campaignid + CASE WHEN campaignid > $maxcampaignid THEN $inccampaignid ELSE 0 END as zyxmecampaignid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         title, members, startdate, enddate, repeatable, frecuency,
         message, communicationchannelid as zyxmecommunicationchannelid, hsmid as messagetemplatename, hsmnamespace as messagetemplatenamespace,
         counter, lastrundate, usergroup, subject,
-        hsmtemplateid as zyxmemessagetemplateid,
+        hsmtemplateid + CASE WHEN hsmtemplateid > $maxmessagetemplateid THEN $incmessagetemplateid ELSE 0 END as zyxmemessagetemplateid,
         REGEXP_REPLACE(REGEXP_REPLACE(REGEXP_REPLACE(NULLIF(hsmheader,''), '\\\\+\\"', '"', 'g'),'^\\"+\\{','{','g'),'\\}\\"+$','}','g') as messagetemplateheader,
         REGEXP_REPLACE(REGEXP_REPLACE(REGEXP_REPLACE(NULLIF(hsmbuttons,''), '\\\\+\\"', '"', 'g'),'^\\"+\\[','[','g'),'\\]\\"+$',']','g') as messagetemplatebuttons,
         executiontype, batchjson, taskid as zyxmetaskid, fields
         FROM campaign
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND campaignid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND campaignid > $maxid
         ORDER BY campaignid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO campaign (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO campaign (
             corpid,
             orgid,
-            zyxmecampaignid,
+            campaignid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             title, members, startdate, enddate, repeatable, frecuency,
             message,
@@ -2268,29 +3251,28 @@ const querySubcoreCampaign = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             dt.zyxmecampaignid,
             dt.description, dt.status, REPLACE(dt.type, 'HSMID', 'HSM'), dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.title, dt.members, dt.startdate::DATE, dt.enddate::DATE, dt.repeatable, dt.frecuency,
             dt.message,
-            (SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = dt.zyxmecommunicationchannelid ORDER BY cc.communicationchannelid DESC LIMIT 1),
+            dt.zyxmecommunicationchannelid,
             dt.messagetemplatename, dt.messagetemplatenamespace,
             dt.counter, dt.lastrundate, dt.usergroup, dt.subject,
-            (SELECT mt.messagetemplateid FROM messagetemplate mt WHERE mt.zyxmecorpid = dt.zyxmecorpid AND mt.zyxmemessagetemplateid = dt.zyxmemessagetemplateid ORDER BY mt.messagetemplateid DESC LIMIT 1),
-            dt.messagetemplateheader::JSONB,
-            REPLACE(REPLACE(NULLIF(NULLIF(dt.messagetemplatebuttons, '[]'),''),'"value":','"payload":'),'"text":','"title":')::JSONB,
-            dt.executiontype, dt.batchjson::JSONB,
-            (
-                SELECT string_agg(taskschedulerid::text,',')
-                FROM taskscheduler
-                WHERE zyxmecorpid = dt.zyxmecorpid AND 
-                zyxmetaskschedulerid IN (SELECT UNNEST(string_to_array(dt.zyxmetaskid,',')::BIGINT[]))
-            ),
-            dt.fields::JSONB
+            dt.zyxmemessagetemplateid,
+            NULLIF(dt.messagetemplateheader,'""null""')::JSONB,
+            REPLACE(REPLACE(NULLIF(NULLIF(NULLIF(dt.messagetemplatebuttons,'""null""'), '[]'),''),'"value":','"payload":'),'"text":','"title":')::JSONB,
+            dt.executiontype,
+            NULLIF(dt.batchjson,'""null""')::JSONB,
+            dt.zyxmetaskid,
+            NULLIF(dt.fields,'""null""')::JSONB
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmecampaignid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
@@ -2307,30 +3289,39 @@ const querySubcoreCampaign = {
 			executiontype character varying, batchjson text,
 			zyxmetaskid text,
 			fields text
-        )`
+        )
+        `
     },
     campaignmember: {
         id: 'campaignmemberid',
         sequence: 'campaignmemberseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, campaignid as zyxmecampaignid,
-        NULLIF(personid, 0) + $incpersonid as zyxmepersonid, campaignmemberid + $inccampaignmemberid as zyxmecampaignmemberid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        campaignid + CASE WHEN campaignid > $maxcampaignid THEN $inccampaignid ELSE 0 END as zyxmecampaignid,
+        personid + CASE WHEN personid > $maxpersonid THEN $incpersonid ELSE 0 END as zyxmepersonid,
+        campaignmemberid + CASE WHEN campaignmemberid > $maxcampaignmemberid THEN $inccampaignmemberid ELSE 0 END as zyxmecampaignmemberid,
         status, personcommunicationchannel, type, displayname, personcommunicationchannelowner,
         field1, field2, field3, field4, field5, field6, field7, field8, field9,
         field10, field11, field12, field13, field14, field15,
         resultfromsend, batchindex
         FROM campaignmember
+        `,
+        select_insert_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND campaignmemberid > $maxid
         ORDER BY campaignmemberid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO campaignmember (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO campaignmember (
             corpid,
             orgid,
             campaignid,
             personid,
             campaignmemberid,
-            zyxmecampaignmemberid,
             status, personcommunicationchannel, type, displayname, personcommunicationchannelowner,
             field1, field2, field3, field4, field5, field6, field7, field8, field9,
             field10, field11, field12, field13, field14, field15,
@@ -2338,19 +3329,21 @@ const querySubcoreCampaign = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
-            (SELECT ca.campaignid FROM campaign ca WHERE ca.zyxmecorpid = dt.zyxmecorpid AND ca.zyxmecampaignid = dt.zyxmecampaignid ORDER BY ca.campaignid DESC LIMIT 1),
+            dt.zyxmeorgid,
+            dt.zyxmecampaignid,
             dt.zyxmepersonid,
-            dt.zyxmecampaignmemberid,
             dt.zyxmecampaignmemberid,
             dt.status, dt.personcommunicationchannel, dt.type, dt.displayname, dt.personcommunicationchannelowner,
             dt.field1, dt.field2, dt.field3, dt.field4, dt.field5, dt.field6, dt.field7, dt.field8, dt.field9,
             dt.field10, dt.field11, dt.field12, dt.field13, dt.field14, dt.field15,
             dt.resultfromsend, dt.batchindex
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmecampaignid bigint,
 			zyxmepersonid bigint,
 			zyxmecampaignmemberid bigint,
@@ -2363,47 +3356,74 @@ const querySubcoreCampaign = {
 			field6 character varying, field7 character varying, field8 character varying, field9 character varying, field10 character varying,
 			field11 character varying, field12 character varying, field13 character varying, field14 character varying, field15 character varying,
 			resultfromsend text, batchindex bigint
-        )`
+        )
+        `
     },
     campaignhistory: {
         id: 'campaignhistoryid',
         sequence: 'campaignhistoryseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, campaignid as zyxmecampaignid,
-        NULLIF(personid, 0) + $incpersonid as zyxmepersonid, campaignmemberid + $inccampaignmemberid as zyxmecampaignmemberid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        campaignid + CASE WHEN campaignid > $maxcampaignid THEN $inccampaignid ELSE 0 END as zyxmecampaignid,
+        personid + CASE WHEN personid > $maxpersonid THEN $incpersonid ELSE 0 END as zyxmepersonid,
+        campaignmemberid + CASE WHEN campaignmemberid > $maxcampaignmemberid THEN $inccampaignmemberid ELSE 0 END as zyxmecampaignmemberid,
+        campaignhistoryid + CASE WHEN campaignhistoryid > $maxcampaignhistoryid THEN $inccampaignhistoryid ELSE 0 END as zyxmecampaignhistoryid,
         description, status, type, createdate, createby, changedate, changeby, edit,
-        success, message, rundate, NULLIF(conversationid, 0) + $incconversationid as zyxmeconversationid, attended
+        success, message, rundate,
+        conversationid + CASE WHEN conversationid > $maxconversationid THEN $incconversationid ELSE 0 END as zyxmeconversationid,
+        attended
         FROM campaignhistory
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND campaignhistoryid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND campaignhistoryid > $maxid
         ORDER BY campaignhistoryid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO campaignhistory (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO campaignhistory (
             corpid,
             orgid,
             campaignid,
             personid,
             campaignmemberid,
+            campaignhistoryid,
             description, status, type, createdate, createby, changedate, changeby, edit,
-            success, message, rundate, conversationid, attended
+            success, message, rundate,
+            conversationid,
+            attended
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
-            (SELECT ca.campaignid FROM campaign ca WHERE ca.zyxmecorpid = dt.zyxmecorpid AND ca.zyxmecampaignid = dt.zyxmecampaignid ORDER BY ca.campaignid DESC LIMIT 1),
+            dt.zyxmeorgid,
+            dt.zyxmecampaignid,
             COALESCE(dt.zyxmepersonid, 0),
             COALESCE(dt.zyxmecampaignmemberid, 0),
+            dt.zyxmecampaignhistoryid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.success, dt.message, dt.rundate,
             COALESCE(dt.zyxmeconversationid, 0),
             dt.attended
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmecampaignid bigint,
 			zyxmepersonid bigint,
 			zyxmecampaignmemberid bigint,
+            zyxmecampaignhistoryid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
@@ -2411,17 +3431,28 @@ const querySubcoreCampaign = {
 			success boolean, message text, rundate timestamp without time zone,
 			zyxmeconversationid bigint,
 			attended boolean
-        )`
+        )
+        `
     },
 }
 
-const querySubcoreOthers = {    
+const querySubcoreOthers = {
     taskscheduler: {
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, taskschedulerid as zyxmetaskschedulerid,
+        id: 'taskschedulerid',
+        sequence: 'taskscheduler_taskschedulerid_seq',
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        taskschedulerid + CASE WHEN taskschedulerid > $maxtaskschedulerid THEN $inctaskschedulerid ELSE 0 END as zyxmetaskschedulerid,
         tasktype, taskbody, repeatflag, repeatmode, repeatinterval, completed,
         datetimestart, datetimeend, datetimeoriginalstart, datetimelastrun, taskprocessedids
         FROM taskscheduler
+        `,
+        select_insert_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND taskschedulerid > $maxid
         AND tasktype NOT IN
         ('CHECKABANDONMENT',
         'CLEANSMOOCHSESSION',
@@ -2441,37 +3472,33 @@ const querySubcoreOthers = {
         'YOUTUBECOMMENTCHECK')
         ORDER BY taskschedulerid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO taskscheduler (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO taskscheduler (
             corpid,
             orgid,
-            zyxmetaskschedulerid,
+            taskschedulerid,
             tasktype,
             taskbody,
             repeatflag, repeatmode, repeatinterval, completed,
             datetimestart, datetimeend, datetimeoriginalstart, datetimelastrun, taskprocessedids
         )
+        OVERRIDING SYSTEM VALUE
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             dt.zyxmetaskschedulerid,
             dt.tasktype::TEXT,
-            CASE WHEN dt.tasktype = 'ExecuteCampaign'
-            THEN jsonb_set(
-                dt.taskbody::JSONB,
-                '{campaignid}',
-                to_jsonb((SELECT ca.campaignid FROM campaign ca WHERE ca.zyxmecorpid = dt.zyxmecorpid AND ca.zyxmecampaignid = (dt.taskbody::JSONB->>'campaignid')::BIGINT ORDER BY ca.campaignid DESC LIMIT 1)),
-                false
-            )::TEXT
-            ELSE dt.taskbody::TEXT
-            END,
+            dt.taskbody,
             dt.repeatflag, dt.repeatmode, dt.repeatinterval, dt.completed,
             dt.datetimestart, dt.datetimeend, dt.datetimeoriginalstart, dt.datetimelastrun, dt.taskprocessedids
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmetaskschedulerid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
@@ -2483,26 +3510,73 @@ const querySubcoreOthers = {
 			datetimestart timestamp without time zone, datetimeend timestamp without time zone,
 			datetimeoriginalstart timestamp without time zone, datetimelastrun timestamp without time zone,
 			taskprocessedids character varying
-        )`
+        )
+        `
     },
     blockversion: {
         id: 'chatblockversionid',
         sequence: 'blockversionseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, chatblockversionid as zyxmechatblockversionid,
-        communicationchannelid, chatblockid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        chatblockversionid + CASE WHEN chatblockversionid > $maxchatblockversionid THEN $incchatblockversionid ELSE 0 END as zyxmechatblockversionid,
+        communicationchannelid,
+        chatblockid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         title, defaultgroupid, defaultblockid, firstblockid, aiblockid, blockgroup, variablecustom,
         color, icontype, tag
         FROM blockversion
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND chatblockversionid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
         ORDER BY chatblockversionid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO blockversion (
-            zyxmecorpid,
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE blockversion xupd
+        SET
+        communicationchannelid = dt.communicationchannelid,
+        chatblockid = dt.chatblockid,
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit,
+        title = dt.title,
+        defaultgroupid = dt.defaultgroupid,
+        defaultblockid = dt.defaultblockid,
+        firstblockid = dt.firstblockid,
+        aiblockid = dt.aiblockid,
+        blockgroup = dt.blockgroup,
+        variablecustom = dt.variablecustom,
+        color = dt.color,
+        icontype = dt.icontype,
+        tag = dt.tag
+        ###DT###
+        WHERE xupd.corpid = dt.zyxmecorpid
+        AND xupd.orgid = dt.zyxmeorgid
+        AND xupd.chatblockversionid = dt.zyxmechatblockversionid
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND chatblockversionid > $maxid
+        ORDER BY chatblockversionid
+        LIMIT $limit
+        `,
+        insert: `
+        INSERT INTO blockversion (
             corpid,
             orgid,
-            zyxmechatblockversionid,
+            chatblockversionid,
             communicationchannelid,
             chatblockid,
             description, status, type, createdate, createby, changedate, changeby, edit,
@@ -2511,22 +3585,20 @@ const querySubcoreOthers = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             dt.zyxmechatblockversionid,
-            (
-                SELECT string_agg(communicationchannelid::text,',')
-                FROM communicationchannel
-                WHERE zyxmecorpid = dt.zyxmecorpid AND 
-                zyxmecommunicationchannelid IN (SELECT UNNEST(string_to_array(dt.communicationchannelid,',')::BIGINT[]))
-            ),
+            dt.communicationchannelid,
             dt.chatblockid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.title, dt.defaultgroupid, dt.defaultblockid, dt.firstblockid, dt.aiblockid, dt.blockgroup, dt.variablecustom,
             dt.color, dt.icontype, dt.tag
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmechatblockversionid bigint,
 			communicationchannelid character varying,
 			chatblockid text,
@@ -2536,21 +3608,66 @@ const querySubcoreOthers = {
 			edit boolean,
 			title text, defaultgroupid text, defaultblockid text, firstblockid text, aiblockid text, blockgroup text, variablecustom text,
 			color character varying, icontype character varying, tag text
-        )`
+        )
+        `
     },
     block: {
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
-        communicationchannelid, chatblockid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        communicationchannelid,
+        chatblockid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         title, defaultgroupid, defaultblockid, firstblockid, aiblockid, blockgroup, variablecustom,
         color, icontype, tag, chatblockversionid as zyxmechatblockversionid
         FROM block
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND createdate <= $backupdate::TIMESTAMP
+        AND changedate > $backupdate::TIMESTAMP
         ORDER BY ctid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO block (
-            zyxmecorpid,
+        OFFSET $offset
+        `,
+        update: `
+        UPDATE block xupd
+        SET
+        communicationchannelid = dt.communicationchannelid,
+        description = dt.description,
+        status = dt.status,
+        type = dt.type,
+        createdate = dt.createdate,
+        createby = dt.createby,
+        changedate = dt.changedate,
+        changeby = dt.changeby,
+        edit = dt.edit,
+        title = dt.title,
+        defaultgroupid = dt.defaultgroupid,
+        defaultblockid = dt.defaultblockid,
+        firstblockid = dt.firstblockid,
+        aiblockid = dt.aiblockid,
+        blockgroup = dt.blockgroup,
+        variablecustom = dt.variablecustom,
+        color = dt.color,
+        icontype = dt.icontype,
+        tag = dt.tag,
+        chatblockversionid = dt.zyxmechatblockversionid
+        ###DT###
+        WHERE xupd.corpid = dt.zyxmecorpid
+        AND xupd.chatblockid = dt.chatblockid
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        ORDER BY ctid
+        LIMIT $limit
+        OFFSET $offset
+        `,
+        insert: `
+        INSERT INTO block (
             corpid,
             orgid,
             communicationchannelid,
@@ -2562,22 +3679,21 @@ const querySubcoreOthers = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
-            (
-                SELECT string_agg(communicationchannelid::text,',')
-                FROM communicationchannel
-                WHERE zyxmecorpid = dt.zyxmecorpid AND 
-                zyxmecommunicationchannelid IN (SELECT UNNEST(string_to_array(dt.communicationchannelid,',')::BIGINT[]))
-            ),
+            dt.zyxmeorgid,
+            dt.communicationchannelid,
             dt.chatblockid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.title, dt.defaultgroupid, dt.defaultblockid, dt.firstblockid, dt.aiblockid, dt.blockgroup, dt.variablecustom,
             dt.color, dt.icontype, dt.tag,
-            (SELECT bv.chatblockversionid FROM blockversion bv WHERE bv.zyxmecorpid = dt.zyxmecorpid AND bv.zyxmechatblockversionid = dt.zyxmechatblockversionid ORDER BY bv.chatblockversionid DESC LIMIT 1)
+            dt.zyxmechatblockversionid
+        ###DT###
+        WHERE NOT EXISTS (SELECT 1 FROM block x WHERE x.corpid = dt.zyxmecorpid AND x.orgid = dt.zyxmeorgid AND x.chatblockid = dt.chatblockid)
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			communicationchannelid character varying,
 			chatblockid text,
 			description character varying, status character varying, type character varying,
@@ -2586,216 +3702,287 @@ const querySubcoreOthers = {
 			edit boolean,
 			title text, defaultgroupid text, defaultblockid text, firstblockid text, aiblockid text, blockgroup text, variablecustom text,
 			color character varying, icontype character varying, tag text, zyxmechatblockversionid bigint
-        )`
+        )
+        `
     },
     tablevariableconfiguration: {
         id: 'tablevariableconfigurationid',
         sequence: 'tablevariableconfigurationseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        tablevariableconfigurationid + CASE WHEN tablevariableconfigurationid > $maxtablevariableconfigurationid THEN $inctablevariableconfigurationid ELSE 0 END as zyxmetablevariableconfigurationid,
         chatblockid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         variable, fontcolor, fontbold, priority, visible
         FROM tablevariableconfiguration
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND tablevariableconfigurationid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND tablevariableconfigurationid > $maxid
         ORDER BY tablevariableconfigurationid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO tablevariableconfiguration (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO tablevariableconfiguration (
             corpid,
             orgid,
+            tablevariableconfigurationid,
             chatblockid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             variable, fontcolor, fontbold, priority, visible
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
+            dt.zyxmetablevariableconfigurationid,
             dt.chatblockid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.variable, dt.fontcolor, dt.fontbold, dt.priority, dt.visible
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
+            zyxmetablevariableconfigurationid bigint,
 			chatblockid text,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			variable character varying, fontcolor character varying, fontbold boolean, priority bigint, visible boolean
-		)`
+		)
+        `
     },
     intelligentmodels: {
         id: 'intelligentmodelsid',
         sequence: 'inteligentseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        intelligentmodelsid + CASE WHEN intelligentmodelsid > $maxintelligentmodelsid THEN $incintelligentmodelsid ELSE 0 END as zyxmeintelligentmodelsid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         endpoint, modelid, apikey, provider
         FROM intelligentmodels
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND intelligentmodelsid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND intelligentmodelsid > $maxid
         ORDER BY intelligentmodelsid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO intelligentmodels (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO intelligentmodels (
             corpid,
             orgid,
+            intelligentmodelsid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             endpoint, modelid, apikey, provider
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
+            dt.zyxmeintelligentmodelsid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.endpoint, dt.modelid, dt.apikey, dt.provider
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
+            zyxmeintelligentmodelsid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			endpoint text, modelid text, apikey character varying, provider character varying
-        )`
+        )
+        `
     },
     intelligentmodelsconfiguration: {
         id: 'intelligentmodelsconfigurationid',
         sequence: 'intelligentmodelsconfigurationseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, communicationchannelid as zyxmecommunicationchannelid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        communicationchannelid as zyxmecommunicationchannelid,
+        intelligentmodelsconfigurationid + CASE WHEN intelligentmodelsconfigurationid > $maxintelligentmodelsconfigurationid THEN $incintelligentmodelsconfigurationid ELSE 0 END as zyxmeintelligentmodelsconfigurationid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         parameters, channels, color, icontype
         FROM intelligentmodelsconfiguration
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND intelligentmodelsconfigurationid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND intelligentmodelsconfigurationid > $maxid
         ORDER BY intelligentmodelsconfigurationid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO intelligentmodelsconfiguration (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO intelligentmodelsconfiguration (
             corpid,
             orgid,
+            intelligentmodelsconfigurationid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             parameters, channels, color, icontype
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
+            dt.zyxmeintelligentmodelsconfigurationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
-            (SELECT jsonb_agg(
-                        jsonb_set(
-                            jsonb_set(
-                                jo.jv,
-                                '{intelligentmodelsid}',
-                                to_jsonb(jo.zyxmeintelligentmodelsid),
-                                false
-                            ),
-                            '{type_of_service}',
-                            to_jsonb(jo.servicetype),
-                            true
-                    )
-                    )
-                    FROM (
-                        SELECT
-                        ja.value as jv,
-                        (SELECT i.intelligentmodelsid FROM intelligentmodels i WHERE i.zyxmecorpid = dt.zyxmecorpid AND i.intelligentmodelsid = (ja.value->>'intelligentmodelsid')::BIGINT ORDER BY i.intelligentmodelsid DESC LIMIT 1) as zyxmeintelligentmodelsid,
-                        CASE ja.value->>'service'
-                        WHEN 'WATSON ASSISTANT' THEN 'ASSISTANT'
-                        WHEN 'RASA' THEN 'ASSISTANT'
-                        WHEN 'NATURAL LANGUAGE CLASSIFIER' THEN 'CLASSIFIER'
-                        WHEN 'NATURAL LANGUAGE UNDERSTANDING' THEN 'NATURAL LANGUAGE UNDERSTANDING'
-                        WHEN 'TONE ANALYZER' THEN 'TONE ANALYZER'
-                        END as servicetype
-                        FROM jsonb_array_elements(dt.parameters::JSONB) ja	 
-                    )  jo
-            ),
-            (
-                SELECT string_agg(communicationchannelid::text,',')
-                FROM communicationchannel
-                WHERE zyxmecorpid = dt.zyxmecorpid AND 
-                zyxmecommunicationchannelid IN (SELECT UNNEST(string_to_array(dt.channels,',')::BIGINT[]))
-            ),
+            dt.parameters,
+            dt.channels,
             dt.color, dt.icontype
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmecommunicationchannelid bigint,
+            zyxmeintelligentmodelsconfigurationid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			parameters text, channels character varying, color character varying, icontype character varying
-        )`
+        )
+        `
     },
     payment: {
         id: 'paymentid',
         sequence: 'paymentseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
-        NULLIF(conversationid, 0) + $incconversationid as zyxmeconversationid, NULLIF(personid, 0) + $incpersonid as zyxmepersonid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        conversationid + CASE WHEN conversationid > $maxconversationid THEN $incconversationid ELSE 0 END as zyxmeconversationid,
+        personid + CASE WHEN personid > $maxpersonid THEN $incpersonid ELSE 0 END as zyxmepersonid,
+        paymentid + CASE WHEN paymentid > $maxpaymentid THEN $incpaymentid ELSE 0 END as zyxmepaymentid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         pocketbook, tokenid, title, amount, currency, email, capture,
         tokenjson, chargejson, refundjson, customerjson, cardjson, planjson, subscriptionjson
         FROM payment
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND paymentid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND paymentid > $maxid
         ORDER BY paymentid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO payment (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO payment (
             corpid,
             orgid,
             conversationid,
             personid,
+            paymentid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             pocketbook, tokenid, title, amount, currency, email, capture,
             tokenjson, chargejson, refundjson, customerjson, cardjson, planjson, subscriptionjson
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             dt.zyxmeconversationid,
             dt.zyxmepersonid,
+            dt.zyxmepaymentid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.pocketbook, dt.tokenid, dt.title, dt.amount, dt.currency, dt.email, dt.capture,
             dt.tokenjson, dt.chargejson, dt.refundjson, dt.customerjson, dt.cardjson, dt.planjson, dt.subscriptionjson
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmeconversationid bigint,
 			zyxmepersonid bigint,
+            zyxmepaymentid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			pocketbook text, tokenid text, title text, amount numeric, currency text, email text, capture boolean,
 			tokenjson text, chargejson text, refundjson text, customerjson text, cardjson text, planjson text, subscriptionjson text
-        )`
+        )
+        `
     },
     productivity: {
         id: 'productivityid',
         sequence: 'productivityseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
         CASE WHEN userid = 42 THEN 2
         WHEN userid = 51 THEN 3
-        ELSE userid + $incuserid
+        ELSE userid + CASE WHEN userid > $maxuserid THEN $incuserid ELSE 0 END
         END as zyxmeuserid,
+        productivityid + CASE WHEN productivityid > $maxproductivityid THEN $incproductivityid ELSE 0 END as zyxmeproductivityid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         fullname, communicationchannel, communicationchanneldesc,
         datestr, hours, hoursrange,
         worktime::text, busytimewithinwork::text, freetimewithinwork::text, busytimeoutsidework::text,
         onlinetime::text, idletime::text, qtytickets, qtyconnection, qtydisconnection
         FROM productivity
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND productivityid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND productivityid > $maxid
         ORDER BY productivityid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO productivity (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO productivity (
             corpid,
             orgid,
             userid,
+            productivityid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             fullname, communicationchannel, communicationchanneldesc,
             datestr, hours, hoursrange,
@@ -2804,25 +3991,25 @@ const querySubcoreOthers = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             dt.zyxmeuserid,
+            dt.zyxmeproductivityid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.fullname,
-            (
-                SELECT string_agg(communicationchannelid::text,',')
-                FROM communicationchannel
-                WHERE zyxmecorpid = dt.zyxmecorpid AND 
-                zyxmecommunicationchannelid IN (SELECT UNNEST(string_to_array(dt.communicationchannel,',')::BIGINT[]))
-            ),
+            dt.communicationchannel,
             dt.communicationchanneldesc,
             dt.datestr::DATE, dt.hours, dt.hoursrange,
             dt.worktime, dt.busytimewithinwork, dt.freetimewithinwork, dt.busytimeoutsidework,
             dt.onlinetime, dt.idletime, dt.qtytickets, dt.qtyconnection, dt.qtydisconnection
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmeuserid bigint,
+            zyxmeproductivityid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
@@ -2833,7 +4020,8 @@ const querySubcoreOthers = {
 			datestr text, hours text, hoursrange text,
 			worktime interval, busytimewithinwork interval, freetimewithinwork interval, busytimeoutsidework interval,
 			onlinetime interval, idletime interval, qtytickets bigint, qtyconnection bigint, qtydisconnection bigint
-        )`
+        )
+        `
     },
 }
 
@@ -2841,173 +4029,271 @@ const queryExtras = {
     blacklist: {
         id: 'blacklistid',
         sequence: 'blacklistseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid, blacklistid as zyxmeblacklistid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        blacklistid + CASE WHEN blacklistid > $maxblacklistid THEN $incblacklistid ELSE 0 END as zyxmeblacklistid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         phone
         FROM blacklist
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND blacklistid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND blacklistid > $maxid
         ORDER BY blacklistid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO blacklist (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO blacklist (
             corpid,
             orgid,
-            zyxmeblacklistid,
+            blacklistid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             phone
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
             dt.zyxmeblacklistid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.phone
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
 			zyxmeblacklistid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			phone character varying
-        )`
+        )
+        `
     },
     hsmhistory: {
         id: 'hsmhistoryid',
         sequence: 'hsmhistoryseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        hsmhistoryid + CASE WHEN hsmhistoryid > $maxhsmhistoryid THEN $inchsmhistoryid ELSE 0 END as zyxmehsmhistoryid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         config, success, message, groupname, transactionid, externalid
         FROM hsmhistory
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND hsmhistoryid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND hsmhistoryid > $maxid
         ORDER BY hsmhistoryid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO hsmhistory (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO hsmhistory (
             corpid,
             orgid,
+            hsmhistoryid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             config,
             success, message, groupname, transactionid, externalid
         )
         SELECT 
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
+            dt.zyxmehsmhistoryid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
-            COALESCE(jsonb_set(
-                dt.config::JSONB,
-                '{CommunicationChannelId}',
-                to_jsonb((SELECT cc.communicationchannelid FROM communicationchannel cc WHERE cc.zyxmecorpid = dt.zyxmecorpid AND cc.zyxmecommunicationchannelid = (dt.config::JSONB->>'CommunicationChannelId')::BIGINT ORDER BY cc.communicationchannelid DESC LIMIT 1)),
-                false
-            ), dt.config::JSONB)::TEXT,
+            dt.config,
             dt.success, dt.message, dt.groupname, dt.transactionid, dt.externalid
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
+            zyxmehsmhistoryid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			config text, success boolean, message text, groupname character varying, transactionid character varying, externalid character varying
-        )`
+        )
+        `
     },
     inappropriatewords: {
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
+        id: 'inappropriatewordsid',
+        sequence: 'inappropriatewords_inappropriatewordsid_seq',
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        inappropriatewordsid + CASE WHEN inappropriatewordsid > $maxinappropriatewordsid THEN $incinappropriatewordsid ELSE 0 END as zyxmeinappropriatewordsid,
         description, status, type, createdate, createby, changedate, changeby, edit
         FROM inappropriatewords
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND inappropriatewordsid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND inappropriatewordsid > $maxid
         ORDER BY inappropriatewordsid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO inappropriatewords (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO inappropriatewords (
             corpid,
             orgid,
+            inappropriatewordsid,
             description, status, type, createdate, createby, changedate, changeby, edit
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
+            dt.zyxmeinappropriatewordsid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
+            zyxmeinappropriatewordsid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean
-        )`
+        )
+        `
     },
     label: {
         id: 'labelid',
         sequence: 'labelseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        labelid + CASE WHEN labelid > $maxlabelid THEN $inclabelid ELSE 0 END as zyxmelabelid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         color, intent, tags
         FROM label
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND labelid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND labelid > $maxid
         ORDER BY labelid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO label (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO label (
             corpid,
             orgid,
+            labelid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             color, intent, tags
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
+            dt.zyxmelabelid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.color, dt.intent, dt.tags
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
+            zyxmelabelid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			color character varying, intent text, tags text
-        )`
+        )
+        `
     },
     location: {
         id: 'locationid',
         sequence: 'locationseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        locationid + CASE WHEN locationid > $maxlocationid THEN $inclocationid ELSE 0 END as zyxmelocationid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         name, address, district, city, country, schedule, phone, alternativephone, email, alternativeemail,
         latitude, longitude, googleurl
         FROM location
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND locationid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND locationid > $maxid
         ORDER BY locationid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO location (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO location (
             corpid,
             orgid,
+            locationid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             name, address, district, city, country, schedule, phone, alternativephone, email, alternativeemail,
             latitude, longitude, googleurl
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
+            dt.zyxmelocationid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.name, dt.address, dt.district, dt.city, dt.country, dt.schedule, dt.phone, dt.alternativephone, dt.email, dt.alternativeemail,
             dt.latitude, dt.longitude, dt.googleurl
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
+            zyxmelocationid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
@@ -3015,53 +4301,74 @@ const queryExtras = {
 			name character varying, address character varying, district character varying, city character varying, country character varying,
 			schedule character varying, phone character varying, alternativephone character varying, email character varying, alternativeemail character varying,
 			latitude double precision, longitude double precision, googleurl character varying
-        )`
+        )
+        `
     },
     reporttemplate: {
         id: 'reporttemplateid',
         sequence: 'reporttemplateseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        reporttemplateid + CASE WHEN reporttemplateid > $maxreporttemplateid THEN $increporttemplateid ELSE 0 END as zyxmereporttemplateid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         communicationchannelid, columnjson, filterjson
         FROM reporttemplate
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND reporttemplateid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND reporttemplateid > $maxid
         ORDER BY reporttemplateid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO reporttemplate (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO reporttemplate (
             corpid,
             orgid,
+            reporttemplateid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             communicationchannelid, columnjson, filterjson
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
+            dt.zyxmereporttemplateid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
-            (
-                SELECT string_agg(communicationchannelid::text,',')
-                FROM communicationchannel
-                WHERE zyxmecorpid = dt.zyxmecorpid AND 
-                zyxmecommunicationchannelid IN (SELECT UNNEST(string_to_array(dt.communicationchannelid,',')::BIGINT[]))
-            ),
+            dt.communicationchannelid,
             dt.columnjson, dt.filterjson
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
+            zyxmereporttemplateid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			communicationchannelid text,
 			columnjson text, filterjson text
-        )`
+        )
+        `
     },
     sla: {
         id: 'slaid',
         sequence: 'slaseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        slaid + CASE WHEN slaid > $maxslaid THEN $incslaid ELSE 0 END as zyxmeslaid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         company, communicationchannelid, usergroup,
         totaltmo::text, totaltmopercentmax, totaltmopercentmin,
@@ -3070,14 +4377,25 @@ const queryExtras = {
         usertme::text, usertmepercentmax, usertmepercentmin,
         productivitybyhour, totaltmomin::text, usertmomin::text, tmemin::text, usertmemin::text, tmoclosedby, tmeclosedby
         FROM sla
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND slaid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND slaid > $maxid
         ORDER BY slaid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO sla (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO sla (
             corpid,
             orgid,
+            slaid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             company, communicationchannelid, usergroup,
             totaltmo, totaltmopercentmax, totaltmopercentmin,
@@ -3088,25 +4406,25 @@ const queryExtras = {
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
+            dt.zyxmeslaid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.company,
-            (
-                SELECT string_agg(communicationchannelid::text,',')
-                FROM communicationchannel
-                WHERE zyxmecorpid = dt.zyxmecorpid AND 
-                zyxmecommunicationchannelid IN (SELECT UNNEST(string_to_array(dt.communicationchannelid,',')::BIGINT[]))
-            ),
+            dt.communicationchannelid,
             dt.usergroup,
             dt.totaltmo, dt.totaltmopercentmax, dt.totaltmopercentmin,
             dt.usertmo, dt.usertmopercentmax, dt.usertmopercentmin,
             dt.tme, dt.tmepercentmax, dt.tmepercentmin,
             dt.usertme, dt.usertmepercentmax, dt.usertmepercentmin,
             dt.productivitybyhour, dt.totaltmomin, dt.usertmomin, dt.tmemin, dt.usertmemin, dt.tmoclosedby, dt.tmeclosedby
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
+            zyxmeslaid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
@@ -3119,67 +4437,92 @@ const queryExtras = {
 			tme interval, tmepercentmax numeric, tmepercentmin numeric,
 			usertme interval, usertmepercentmax numeric, usertmepercentmin numeric,
 			productivitybyhour numeric, totaltmomin interval, usertmomin interval, tmemin interval, usertmemin interval, tmoclosedby text, tmeclosedby text
-        )`
+        )
+        `
     },
     whitelist: {
         id: 'whitelistid',
         sequence: 'whitelistseq',
-        select: `SELECT corpid as zyxmecorpid, orgid as zyxmeorgid,
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        whitelistid + CASE WHEN whitelistid > $maxwhitelistid THEN $incwhitelistid ELSE 0 END as zyxmewhitelistid,
         description, status, type, createdate, createby, changedate, changeby, edit,
         phone, asesorname, documenttype, documentnumber, usergroup
         FROM whitelist
+        `,
+        select_update_where: `
         WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND whitelistid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND whitelistid > $maxid
         ORDER BY whitelistid
         LIMIT $limit
-        OFFSET $offset`,
-        insert: `INSERT INTO whitelist (
-            zyxmecorpid,
+        `,
+        insert: `
+        INSERT INTO whitelist (
             corpid,
             orgid,
+            whitelistid,
             description, status, type, createdate, createby, changedate, changeby, edit,
             phone, asesorname, documenttype, documentnumber, usergroup
         )
         SELECT
             dt.zyxmecorpid,
-            (SELECT c.corpid FROM corp c WHERE c.zyxmecorpid = dt.zyxmecorpid ORDER BY c.corpid DESC LIMIT 1),
-            (SELECT o.orgid FROM org o WHERE o.zyxmecorpid = dt.zyxmecorpid AND o.zyxmeorgid = dt.zyxmeorgid ORDER BY o.orgid DESC LIMIT 1),
+            dt.zyxmeorgid,
+            dt.zyxmewhitelistid,
             dt.description, dt.status, dt.type, dt.createdate, dt.createby, dt.changedate, dt.changeby, dt.edit,
             dt.phone, dt.asesorname, dt.documenttype, dt.documentnumber, dt.usergroup
+        ###DT###
+        `,
+        dt: `
         FROM json_populate_recordset(null::record, $datatable)
         AS dt (
-            zyxmecorpid bigint, zyxmeorgid bigint,
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
+            zyxmewhitelistid bigint,
 			description character varying, status character varying, type character varying,
 			createdate timestamp without time zone, createby character varying,
 			changedate timestamp without time zone, changeby character varying,
 			edit boolean,
 			phone character varying, asesorname character varying, documenttype character varying, documentnumber character varying, usergroup character varying
-        )`
+        )
+        `
     }
 }
 
 const queryCorpSel = `SELECT corpid, description FROM corp WHERE status = 'ACTIVO'`;
 
-exports.listCorp = async (req, res) => {
-    let result = await zyxmeQuery(queryCorpSel);
-    if (result instanceof Array) {
-        return res.json({ error: false, success: true, data: result });
-    }
-    else
-        return res.status(result.rescode).json(result);
-}
-
 exports.executeMigration = async (req, res) => {
-    let { corpid, inc, modules, clean = false, movewebhook = false } = req.body;
-    if (!!corpid && !!modules) {
+    let { corpid, modules, backupdate } = req.body;
+    if (!!corpid && !!modules && !!backupdate) {
         const corpidBind = {
             _requestid: req._requestid,
             corpid: corpid,
-            incuserid: inc?.userid || 10000,
-            incpersonid: inc?.personid || 1000000,
-            incconversationid: inc?.conversationid || 1000000,
-            inccampaignmemberid: inc?.campaignmemberid || 100000,
+            backupdate: backupdate,
         }
-        let queryResult = {core: {}, subcore: {}, extras: {}};
+        try {
+            idsResult = await laraigoQuery(`SELECT idsjson FROM migrationhelper`, bind = {
+                _requestid: req._requestid,
+            });
+            if (idsResult instanceof Array && idsResult.length > 0) {
+                let idsJson = idsResult?.[0]?.idsjson;
+                corpidBind['idsjson'] = idsJson;
+                for (const kid of Object.keys(idsJson)) {
+                    corpidBind[`max${kid}`] = idsJson[kid];
+                    corpidBind[`inc${kid}`] = 0;
+                }
+            }
+        } catch (error) {
+            logger.child({ _requestid: req._requestid }).error(error);
+        }
+        let queryResult = { core: {}, subcore: {}, extras: {} };
         await zyxmeQuery(`CREATE TABLE IF NOT EXISTS migration (corpid bigint, run boolean, params jsonb, result jsonb, startdate timestamp without time zone, enddate timestamp without time zone)`, bind = {
             _requestid: req._requestid,
         });
@@ -3192,7 +4535,10 @@ exports.executeMigration = async (req, res) => {
                 _requestid: req._requestid,
                 corpid: corpid,
                 run: true,
-                params: req.body,
+                params: {
+                    ...req.body,
+                    corpidBind: corpidBind
+                }
             });
         }
         else {
@@ -3200,21 +4546,17 @@ exports.executeMigration = async (req, res) => {
                 _requestid: req._requestid,
                 corpid: corpid,
                 run: true,
-                params: req.body,
+                params: {
+                    ...req.body,
+                    corpidBind: corpidBind
+                }
             });
         }
         try {
             if (modules.includes('core')) {
-                if (clean === true) {
-                    await laraigoQuery('SELECT FROM ufn_migration_core_delete($corpid)', bind = corpidBind);
-                    clean = false;
-                }
-                queryResult.core = await migrationExecute(corpidBind, queryCore, movewebhook);
+                queryResult.core = await migrationExecute(corpidBind, queryCore);
             }
             if (modules.includes('subcore')) {
-                if (clean === true) {
-                    await laraigoQuery('SELECT FROM ufn_migration_subcore_delete($corpid)', bind = corpidBind);
-                }
                 queryResult.subcore.classification = await migrationExecute(corpidBind, querySubcoreClassification);
                 queryResult.subcore.person = await migrationExecute(corpidBind, querySubcorePerson);
                 queryResult.subcore.conversation = await migrationExecute(corpidBind, querySubcoreConversation);
@@ -3222,134 +4564,57 @@ exports.executeMigration = async (req, res) => {
                 queryResult.subcore.others = await migrationExecute(corpidBind, querySubcoreOthers);
             }
             if (!modules.includes('subcore') && modules.includes('subcore.classification')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "quickreply" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "classification" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                }
                 queryResult.subcore.classification = await migrationExecute(corpidBind, querySubcoreClassification);
             }
             if (!modules.includes('subcore') && modules.includes('subcore.person')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "personcommunicationchannel" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "personaddinfo" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "person" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                }
                 queryResult.subcore.person = await migrationExecute(corpidBind, querySubcorePerson);
             }
             if (!modules.includes('subcore') && modules.includes('subcore.conversation')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "surveyanswered" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "interaction" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "conversationstatus" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "conversationpending" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "conversationpause" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "conversationnote" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "conversationclassification" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "conversation" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "pccstatus" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "post" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                }
                 queryResult.subcore.conversation = await migrationExecute(corpidBind, querySubcoreConversation);
             }
             if (!modules.includes('subcore') && !modules.includes('subcore.conversation') && modules.includes('subcore.surveyanswered')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "surveyanswered" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                }
-                queryResult.subcore.surveyanswered = await migrationExecute(corpidBind, {surveyanswered: querySubcoreConversation.surveyanswered});
+                queryResult.subcore.surveyanswered = await migrationExecute(corpidBind, { surveyanswered: querySubcoreConversation.surveyanswered });
             }
             if (!modules.includes('subcore') && modules.includes('subcore.campaign')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "campaignhistory" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "campaignmember" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "campaign" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "messagetemplate" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                }
                 queryResult.subcore.campaign = await migrationExecute(corpidBind, querySubcoreCampaign);
             }
             if (!modules.includes('subcore') && modules.includes('subcore.others')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "productivity" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "payment" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "intelligentmodelsconfiguration" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "intelligentmodels" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "tablevariableconfiguration" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "block" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "blockversion" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                    await laraigoQuery('DELETE FROM "taskscheduler" WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid) AND orgid IN (SELECT orgid FROM org WHERE zyxmecorpid = $corpid)', bind = corpidBind);
-                }
                 queryResult.subcore.others = await migrationExecute(corpidBind, querySubcoreOthers);
             }
             if (modules.includes('extras')) {
-                if (clean === true) {
-                    await laraigoQuery('SELECT FROM ufn_migration_extras_delete($corpid)', bind = corpidBind);
-                }
-                queryResult.extras.blacklist = await migrationExecute(corpidBind, {blacklist: queryExtras.blacklist});
-                queryResult.extras.hsmhistory = await migrationExecute(corpidBind, {hsmhistory: queryExtras.hsmhistory});
-                queryResult.extras.inappropriatewords = await migrationExecute(corpidBind, {inappropriatewords: queryExtras.inappropriatewords});
-                queryResult.extras.label = await migrationExecute(corpidBind, {label: queryExtras.label});
-                queryResult.extras.location = await migrationExecute(corpidBind, {location: queryExtras.location});
-                queryResult.extras.reporttemplate = await migrationExecute(corpidBind, {reporttemplate: queryExtras.reporttemplate});
-                queryResult.extras.sla = await migrationExecute(corpidBind, {sla: queryExtras.sla});
-                queryResult.extras.whitelist = await migrationExecute(corpidBind, {whitelist: queryExtras.whitelist});
+                queryResult.extras.blacklist = await migrationExecute(corpidBind, { blacklist: queryExtras.blacklist });
+                queryResult.extras.hsmhistory = await migrationExecute(corpidBind, { hsmhistory: queryExtras.hsmhistory });
+                queryResult.extras.inappropriatewords = await migrationExecute(corpidBind, { inappropriatewords: queryExtras.inappropriatewords });
+                queryResult.extras.label = await migrationExecute(corpidBind, { label: queryExtras.label });
+                queryResult.extras.location = await migrationExecute(corpidBind, { location: queryExtras.location });
+                queryResult.extras.reporttemplate = await migrationExecute(corpidBind, { reporttemplate: queryExtras.reporttemplate });
+                queryResult.extras.sla = await migrationExecute(corpidBind, { sla: queryExtras.sla });
+                queryResult.extras.whitelist = await migrationExecute(corpidBind, { whitelist: queryExtras.whitelist });
             }
             if (!modules.includes('extras') && modules.includes('extras.blacklist')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "blacklist" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
-                queryResult.extras.blacklist = await migrationExecute(corpidBind, {blacklist: queryExtras.blacklist});
+                queryResult.extras.blacklist = await migrationExecute(corpidBind, { blacklist: queryExtras.blacklist });
             }
             if (!modules.includes('extras') && modules.includes('extras.hsmhistory')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "hsmhistory" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
-                queryResult.extras.hsmhistory = await migrationExecute(corpidBind, {hsmhistory: queryExtras.hsmhistory});
+                queryResult.extras.hsmhistory = await migrationExecute(corpidBind, { hsmhistory: queryExtras.hsmhistory });
             }
             if (!modules.includes('extras') && modules.includes('extras.inappropriatewords')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "inappropriatewords" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
-                queryResult.extras.inappropriatewords = await migrationExecute(corpidBind, {inappropriatewords: queryExtras.inappropriatewords});
+                queryResult.extras.inappropriatewords = await migrationExecute(corpidBind, { inappropriatewords: queryExtras.inappropriatewords });
             }
             if (!modules.includes('extras') && modules.includes('extras.label')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "label" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
-                queryResult.extras.label = await migrationExecute(corpidBind, {label: queryExtras.label});
+                queryResult.extras.label = await migrationExecute(corpidBind, { label: queryExtras.label });
             }
             if (!modules.includes('extras') && modules.includes('extras.location')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "location" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
-                queryResult.extras.location = await migrationExecute(corpidBind, {location: queryExtras.location});
+                queryResult.extras.location = await migrationExecute(corpidBind, { location: queryExtras.location });
             }
             if (!modules.includes('extras') && modules.includes('extras.reporttemplate')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "reporttemplate" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
-                queryResult.extras.reporttemplate = await migrationExecute(corpidBind, {reporttemplate: queryExtras.reporttemplate});
+                queryResult.extras.reporttemplate = await migrationExecute(corpidBind, { reporttemplate: queryExtras.reporttemplate });
             }
             if (!modules.includes('extras') && modules.includes('extras.sla')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "sla" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
-                queryResult.extras.sla = await migrationExecute(corpidBind, {sla: queryExtras.sla});
+                queryResult.extras.sla = await migrationExecute(corpidBind, { sla: queryExtras.sla });
             }
             if (!modules.includes('extras') && modules.includes('extras.whitelist')) {
-                if (clean === true) {
-                    await laraigoQuery('DELETE FROM "whitelist" WHERE zyxmecorpid = $corpid', bind = corpidBind);
-                }
-                queryResult.extras.whitelist = await migrationExecute(corpidBind, {whitelist: queryExtras.whitelist});
+                queryResult.extras.whitelist = await migrationExecute(corpidBind, { whitelist: queryExtras.whitelist });
             }
-            await laraigoQuery(`
-                SELECT ufn_columntemplate_ins(corpid, orgid)
-                FROM org
-                WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid)
-            `, bind = corpidBind);
-            await laraigoQuery(`
-                SELECT ufn_intelligentmodelsorgtemplate_ins(corpid, orgid)
-                FROM org
-                WHERE corpid IN (SELECT corpid FROM corp WHERE zyxmecorpid = $corpid)
-            `, bind = corpidBind);
             await zyxmeQuery(`UPDATE migration SET run = $run, result = $result, enddate = NOW() WHERE corpid = $corpid`, bind = {
                 _requestid: req._requestid,
                 corpid: corpid,

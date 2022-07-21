@@ -1,6 +1,6 @@
 const { executesimpletransaction } = require('../config/triggerfunctions');
-const { getErrorCode, errors } = require('../config/helpers');
-const axios = require('axios')
+const { getErrorCode, errors, axiosObservable } = require('../config/helpers');
+
 const method_allowed = ["QUERY_GET_PERSON_FROM_BOOKING", "QUERY_EVENT_BY_CODE", "UFN_CALENDARYBOOKING_INS", "UFN_CALENDARYBOOKING_SEL_DATETIME"]
 
 // var https = require('https');
@@ -9,13 +9,17 @@ const method_allowed = ["QUERY_GET_PERSON_FROM_BOOKING", "QUERY_EVENT_BY_CODE", 
 //     rejectUnauthorized: false
 // });
 
-const send = async (data) => {
+const send = async (data, requestid) => {
+
+    data._requestid = requestid;
+
     try {
         if (data.listmembers.every(x => !!x.personid)) {
             await executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", undefined, false, {
                 personids: data.listmembers.map(x => x.personid),
                 corpid: data.corpid,
                 orgid: data.orgid,
+                _requestid: requestid,
             })
         }
 
@@ -23,7 +27,7 @@ const send = async (data) => {
             let jsonconfigmail = "";
             const resBD = await Promise.all([
                 executesimpletransaction("QUERY_GET_CONFIG_MAIL", data),
-                executesimpletransaction("QUERY_GET_MESSAGETEMPLATE", data)
+                executesimpletransaction("QUERY_GET_MESSAGETEMPLATE", data),
             ]);
             const configmail = resBD[0];
             const mailtemplate = resBD[1][0];
@@ -91,6 +95,7 @@ const send = async (data) => {
                         repeatmode: 0,
                         repeatinterval: 0,
                         completed: false,
+                        _requestid: requestid,
                     })
                 } else {
                     executesimpletransaction("QUERY_INSER_HSM_HISTORY", {
@@ -116,7 +121,6 @@ const send = async (data) => {
         } else {
             if (data.type === "SMS") {
                 const smschannel = await executesimpletransaction("QUERY_GET_SMS_DEFAULT_BY_ORG", data);
-                console.log(smschannel)
                 if (smschannel[0] && smschannel) {
                     data.communicationchannelid = smschannel[0].communicationchannelid;
                     data.communicationchanneltype = smschannel[0].type;
@@ -124,25 +128,32 @@ const send = async (data) => {
                 }
             }
 
-            const responseservices = await axios.post(
-                `${process.env.SERVICES}handler/external/sendhsm`, data);
-            console.log(responseservices.data)
+            const responseservices = await axiosObservable({
+                url: `${process.env.SERVICES}handler/external/sendhsm`,
+                data,
+                method: "post",
+                _requestid: requestid,
+            });
             if (!responseservices.data || !responseservices.data instanceof Object) {
                 return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
             }
         }
     }
-    catch (ee) {
-        console.log(ee)
+    catch (exception) {
+        getErrorCode(null, exception, `Request to ${req.originalUrl}`, data._requestid);
     }
 }
 
 exports.Collection = async (req, res) => {
     const { parameters = {}, method, key } = req.body;
+
     if (!method_allowed.includes(method)) {
         const resError = getErrorCode(errors.FORBIDDEN);
         return res.status(resError.rescode).json(resError);
     }
+
+    parameters._requestid = req._requestid;
+
     const result = await executesimpletransaction(method, parameters);
 
     if (!result.error) {
@@ -150,7 +161,7 @@ exports.Collection = async (req, res) => {
             const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
 
             const { communicationchannelid, messagetemplateid, notificationtype, messagetemplatename, communicationchanneltype } = resultCalendar[0]
-            
+
             if (notificationtype === "EMAIL") {
                 const sendmessage = {
                     corpid: parameters.corpid,
@@ -160,6 +171,7 @@ exports.Collection = async (req, res) => {
                     hsmtemplateid: messagetemplateid,
                     type: "EMAIL",
                     shippingreason: "BOOKING",
+                    _requestid: req._requestid,
                     hsmtemplatename: messagetemplatename,
                     communicationchanneltype: communicationchanneltype,
                     platformtype: communicationchanneltype,
@@ -172,9 +184,9 @@ exports.Collection = async (req, res) => {
                         parameters: parameters.parameters
                     }]
                 }
-                await send(sendmessage);
-            }
 
+                await send(sendmessage, req._requestid);
+            }
 
             if (!!parameters.conversationid && !!parameters.personid) {
                 const dataServices = {
@@ -184,7 +196,13 @@ exports.Collection = async (req, res) => {
                     personid: parameters.personid,
                     ...(parameters.parameters.reduce((acc, item) => ({ ...acc, [item.name]: item.text }), {}))
                 }
-                await axios.post(`${process.env.SERVICES}handler/sendbooking`, dataServices);
+
+                await axiosObservable({
+                    url: `${process.env.SERVICES}handler/sendbooking`,
+                    data: dataServices,
+                    method: "post",
+                    _requestid: req._requestid,
+                });
             }
         }
         return res.json({ error: false, success: true, data: result, key });
