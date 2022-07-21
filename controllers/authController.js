@@ -1,10 +1,12 @@
-require('dotenv').config();
-const { v4: uuidv4 } = require('uuid');
+const logger = require('../config/winston');
 
-const tf = require('../config/triggerfunctions');;
+const { v4: uuidv4 } = require('uuid');
+const { executesimpletransaction } = require('../config/triggerfunctions');
+const { errors, getErrorCode } = require('../config/helpers');
+const { addApplication } = require('./voximplantController');
+
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { errors, getErrorCode } = require('../config/helpers');
 
 //type: int|string|bool
 const properties = [
@@ -38,6 +40,11 @@ const properties = [
     {
         propertyname: "OCULTARLOGCONVERSACION",
         key: "hide_log_conversation",
+        type: 'bool',
+    },
+    {
+        propertyname: "LIMITARREASIGNACIONGRUPO",
+        key: "limit_reassign_group",
         type: 'bool',
     },
     {
@@ -79,17 +86,19 @@ const validateResProperty = (r, type) => {
 
 exports.authenticate = async (req, res) => {
     const { data: { usr, password, facebookid, googleid } } = req.body;
+
     let integration = false;
+    const prevdata = { _requestid: req._requestid }
     try {
         let result;
         if (facebookid) {
-            result = await tf.executesimpletransaction("QUERY_AUTHENTICATED_BY_FACEBOOKID", { facebookid });
+            result = await executesimpletransaction("QUERY_AUTHENTICATED_BY_FACEBOOKID", { ...prevdata, facebookid });
             integration = true;
         } else if (googleid) {
-            result = await tf.executesimpletransaction("QUERY_AUTHENTICATED_BY_GOOGLEID", { googleid });
+            result = await executesimpletransaction("QUERY_AUTHENTICATED_BY_GOOGLEID", { ...prevdata, googleid });
             integration = true;
         } else {
-            result = await tf.executesimpletransaction("QUERY_AUTHENTICATED", { usr });
+            result = await executesimpletransaction("QUERY_AUTHENTICATED", { ...prevdata, usr });
         }
 
         if (integration && !(result instanceof Array))
@@ -118,23 +127,25 @@ exports.authenticate = async (req, res) => {
             token: tokenzyx,
             origin: 'WEB',
             type: 'LOGIN',
-            description: null
+            description: null,
+            _requestid: req._requestid,
         };
         let notifications = [];
 
         if (user.status === 'ACTIVO') {
             // let resultProperties = {};
-            const resConnection = await tf.executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...user, propertyname: 'CONEXIONAUTOMATICAINBOX' })
+            const resConnection = await executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...user, ...prevdata, propertyname: 'CONEXIONAUTOMATICAINBOX' })
 
             const automaticConnection = validateResProperty(resConnection, 'bool');
 
             await Promise.all([
-                tf.executesimpletransaction("UFN_USERTOKEN_INS", dataSesion),
-                tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", dataSesion)
+                executesimpletransaction("UFN_USERTOKEN_INS", dataSesion),
+                executesimpletransaction("UFN_USERSTATUS_UPDATE", dataSesion)
             ]);
 
             if (automaticConnection) {
-                await tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", {
+                await executesimpletransaction("UFN_USERSTATUS_UPDATE", {
+                    ...prevdata,
                     ...user,
                     type: 'INBOX',
                     status: 'ACTIVO',
@@ -169,26 +180,28 @@ exports.authenticate = async (req, res) => {
         } else {
             return res.status(401).json({ code: errors.LOGIN_USER_INACTIVE })
         }
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json(getErrorCode(null, error));
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
 exports.getUser = async (req, res) => {
     let resultProperties = {};
+    const prevdata = { _requestid: req._requestid }
+
     try {
         const resultBD = await Promise.all([
-            tf.executesimpletransaction("UFN_APPLICATION_SEL", req.user),
-            tf.executesimpletransaction("UFN_ORGANIZATION_CHANGEORG_SEL", { userid: req.user.userid }),
-            tf.executesimpletransaction("UFN_LEADACTIVITY_DUEDATE_SEL", { ...req.user, username: req.user.usr }),
-            tf.executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN", undefined, false, {
+            executesimpletransaction("UFN_APPLICATION_SEL", { ...req.user, ...prevdata }),
+            executesimpletransaction("UFN_ORGANIZATION_CHANGEORG_SEL", { userid: req.user.userid, ...prevdata }),
+            executesimpletransaction("UFN_LEADACTIVITY_DUEDATE_SEL", { ...req.user, username: req.user.usr, ...prevdata }),
+            executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN", undefined, false, {
                 propertynames: properties.map(x => x.propertyname),
                 corpid: req.user.corpid,
                 orgid: req.user.orgid,
-                userid: req.user.userid
+                userid: req.user.userid,
+                ...prevdata
             }),
-            tf.executesimpletransaction("UFN_DOMAIN_LST_VALUES_ONLY_DATA", { ...req.user, domainname: "TIPODESCONEXION" }),
+            executesimpletransaction("UFN_DOMAIN_LST_VALUES_ONLY_DATA", { ...req.user, domainname: "TIPODESCONEXION", ...prevdata }),
         ]);
 
         const resultBDProperties = resultBD[3];
@@ -232,17 +245,16 @@ exports.getUser = async (req, res) => {
                 }
             });
         })
-    } catch (error) {
-        console.log(error)
-        return res.status(500).json(getErrorCode(null, error));
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
 exports.logout = async (req, res) => {
     try {
-        tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", { ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
-    } catch (error) {
-        console.log(`${new Date()}: ${JSON.stringify(error)}`);
+        executesimpletransaction("UFN_USERSTATUS_UPDATE", { _requestid: req._requestid, ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
+    } catch (exception) {
+        logger.child({ error: { detail: exception.stack, message: exception.toString() } }).error(`Request to ${req.originalUrl}`);
     }
     return res.json({ data: null, error: false })
 }
@@ -250,23 +262,24 @@ exports.logout = async (req, res) => {
 exports.connect = async (req, res) => {
     try {
         const { connect, description, motive } = req.body.data;
-        tf.executesimpletransaction("UFN_USERSTATUS_UPDATE", {
+        executesimpletransaction("UFN_USERSTATUS_UPDATE", {
             ...req.user,
+            _requestid: req._requestid,
             type: 'INBOX',
             status: connect ? 'ACTIVO' : 'DESCONECTADO',
             description,
             motive,
             username: req.user.usr
         });
-    } catch (error) {
-        console.log(`${new Date()}: ${JSON.stringify(error)}`);
+    } catch (exception) {
+        logger.child({ _requestid: req._requestid, error: { detail: exception.stack, message: exception.toString() } }).error(`Request to ${req.originalUrl}`);
     }
     return res.json({ data: null, error: false })
 }
 
 exports.changeOrganization = async (req, res) => {
     const { parameters } = req.body;
-    const resultBD = await tf.executesimpletransaction("UFN_USERSTATUS_UPDATE_ORG", { ...req.user, ...parameters });
+    const resultBD = await executesimpletransaction("UFN_USERSTATUS_UPDATE_ORG", { ...req.user, ...parameters, _requestid: req._requestid, });
 
     if (!resultBD.error) {
         const newusertoken = {
@@ -275,6 +288,7 @@ exports.changeOrganization = async (req, res) => {
             corpid: parameters.newcorpid,
             corpdesc: parameters.corpdesc,
             orgdesc: parameters.orgdesc,
+            _requestid: req._requestid,
             redirect: resultBD[0]?.redirect || '/tickets',
             plan: resultBD[0]?.plan || '',
             currencysymbol: resultBD[0]?.currencysymbol || 'S/',
@@ -282,7 +296,7 @@ exports.changeOrganization = async (req, res) => {
             paymentmethod: resultBD[0]?.paymentmethod || 'POSTPAGO',
         };
 
-        const resBDMenu = await tf.executesimpletransaction("UFN_APPLICATION_SEL", newusertoken);
+        const resBDMenu = await executesimpletransaction("UFN_APPLICATION_SEL", newusertoken);
 
         const menu = resBDMenu.reduce((acc, item) => ({
             ...acc, [item.path]:
@@ -303,7 +317,6 @@ exports.changeOrganization = async (req, res) => {
             return res.json({ data: { token } });
         })
     } else {
-        const error = getErrorCode();
-        return res.status(error.rescode).json(error);
+        return res.status(400).json(getErrorCode());
     }
 }

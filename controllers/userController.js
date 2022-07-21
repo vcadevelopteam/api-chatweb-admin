@@ -1,19 +1,19 @@
 const { executesimpletransaction, executeTransaction } = require('../config/triggerfunctions');
-const jwt = require("jsonwebtoken");
-require('dotenv').config();
-const bcryptjs = require("bcryptjs");
 const { setSessionParameters } = require('../config/helpers');
 const { errors, getErrorCode } = require('../config/helpers');
+
+const bcryptjs = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const voximplant = require("../config/voximplantfunctions");
+
+require('dotenv').config();
 
 const VOXIMPLANT_ENVIRONMENT = process.env.VOXIMPLANT_ENVIRONMENT;
 
 exports.updateInformation = async (req, res) => {
     const { data: parameters } = req.body;
 
-    console.log("updateInformation", parameters)
-
-    setSessionParameters(parameters, req.user);
+    setSessionParameters(parameters, req.user, req._requestid);
     /*
     oldpassword
     password
@@ -58,8 +58,8 @@ exports.updateInformation = async (req, res) => {
         }
         else
             return res.status(result.rescode).json(result);
-    } catch (error) {
-        return res.status(500).json(getErrorCode(null, error));
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -75,15 +75,15 @@ exports.sendMailPassword = async (req, res) => {
     }
 
     if (header) {
-        setSessionParameters(header.parameters, req.user);
+        setSessionParameters(header.parameters, req.user, req._requestid);
     }
 
     const detail = detailtmp.map(x => {
-        setSessionParameters(x.parameters, req.user);
+        setSessionParameters(x.parameters, req.user, req._requestid);
         return x;
     })
 
-    const result = await executeTransaction(header, detail, req.user.menu || {});
+    const result = await executeTransaction(header, detail, req.user.menu || {}, req._requestid);
 
     if (result.success) {
         // VOXIMPLANT //
@@ -103,6 +103,7 @@ exports.sendMailPassword = async (req, res) => {
             const voxiorgdata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_ORG", {
                 corpid: v_corpid,
                 orgid: v_orgid,
+                _requestid: req._requestid,
             });
 
             // If exists info of VOXI in org
@@ -128,7 +129,8 @@ exports.sendMailPassword = async (req, res) => {
                 const voxichanneldata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_VALIDATION", {
                     corpid: v_corpid,
                     orgid: v_orgid,
-                    channels: detail[di].parameters.channels
+                    channels: detail[di].parameters.channels,
+                    _requestid: req._requestid,
                 });
                 if (voxichanneldata instanceof Array && voxichanneldata.length > 0) {
                     voxiuser = await voximplant.getUser({
@@ -166,13 +168,14 @@ exports.sendMailPassword = async (req, res) => {
                             let channel_group = []
                             for (let vi = 0; vi < voxichanneldata.length; vi++) {
                                 channel_group = [...channel_group, ...groups.map(cg => `${voxichanneldata[vi].communicationchannelsite}.${cg}`)];
+                                let current_channel_group = groups.map(cg => `${voxichanneldata[vi].communicationchannelsite}.${cg}`)
                                 // Create queues if not exists {site}.{group}
                                 for (let gi = 0; gi < groups.length; gi++) {
                                     if (!voxiqueues_names.includes(`${voxichanneldata[vi].communicationchannelsite}.${groups[gi]}`)) {
                                         await voximplant.addQueue({
                                             account_id: account_id,
                                             application_id: application_id,
-                                            acd_queue_name: channel_group[gi]
+                                            acd_queue_name: current_channel_group[gi]
                                         });
                                     }
                                 }
@@ -214,8 +217,8 @@ exports.sendMailPassword = async (req, res) => {
 
         let jsonconfigmail = "";
         const resBD = await Promise.all([
-            executesimpletransaction("QUERY_GET_CONFIG_MAIL", parameters),
-            executesimpletransaction("QUERY_GET_MESSAGETEMPLATE_BYNAMESPACE", parameters)
+            executesimpletransaction("QUERY_GET_CONFIG_MAIL", { ...parameters, _requestid: req._requestid }),
+            executesimpletransaction("QUERY_GET_MESSAGETEMPLATE_BYNAMESPACE", { ...parameters, _requestid: req._requestid })
         ]);
         const configmail = resBD[0];
         const mailtemplate = resBD[1][0];
@@ -260,6 +263,7 @@ exports.sendMailPassword = async (req, res) => {
             repeatmode: 0,
             repeatinterval: 0,
             completed: false,
+            _requestid: req._requestid,
         });
     }
 
@@ -289,7 +293,7 @@ exports.delete = async (req, res) => {
     const result = await executeTransaction(header, detail, req.user.menu || {});
 
     // VOXIMPLANT //
-    const orgs = await executesimpletransaction("UFN_ORGUSER_SEL", { all: true, corpid: 0, orgid: 0, userid: detail[0].parameters.id, username: '' })
+    const orgs = await executesimpletransaction("UFN_ORGUSER_SEL", { all: true, corpid: 0, orgid: 0, userid: detail[0].parameters.id, username: '', _requestid: req._requestid })
     // Loop for every ORGUSER_SEL
     for (let i = 0; i < orgs.length; i++) {
         let account_id = undefined;
@@ -303,6 +307,7 @@ exports.delete = async (req, res) => {
         const voxiorgdata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_ORG", {
             corpid: v_corpid,
             orgid: v_orgid,
+            _requestid: req._requestid,
         });
 
         // If exists info of VOXI in org

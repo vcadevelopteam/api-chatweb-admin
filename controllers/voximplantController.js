@@ -1,199 +1,179 @@
 const channelfunctions = require("../config/channelfunctions");
 const voximplant = require("../config/voximplantfunctions");
+
 const { executesimpletransaction } = require('../config/triggerfunctions');
-const { setSessionParameters } = require('../config/helpers');
+const { setSessionParameters, getErrorCode } = require('../config/helpers');
+const axios = require("axios");
 
 const voximplantParentAccountId = process.env.VOXIMPLANT_ACCOUNT_ID;
 const voximplantParentApiKey = process.env.VOXIMPLANT_APIKEY;
 
-exports.getChildrenAccounts = async (request, result) => {
+exports.getChildrenAccounts = async (request, response) => {
     try {
-        let requestResult = await voximplant.getChildrenAccounts(request.body)
+        let requestResult = await voximplant.getChildrenAccounts({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.getAccountInvoices = async (request, result) => {
+exports.getAccountInvoices = async (request, response) => {
     try {
-        let requestResult = await voximplant.getAccountInvoices(request.body)
+        let requestResult = await voximplant.getAccountInvoices({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.addAccount = async (request, result) => {
+exports.addAccount = async (request, response) => {
     try {
-        let requestResult = await voximplant.addAccount(request.body)
+        let requestResult = await voximplant.addAccount({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.getAccountInfo = async (request, result) => {
+exports.getAccountInfo = async (request, response) => {
     try {
-        let requestResult = await voximplant.getAccountInfo(request.body)
+        let requestResult = await voximplant.getAccountInfo({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.setChildAccountInfo = async (request, result) => {
+exports.setChildAccountInfo = async (request, response) => {
     try {
-        let requestResult = await voximplant.setChildAccountInfo(request.body)
+        let requestResult = await voximplant.setChildAccountInfo({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.transferMoneyToChildAccount = async (request, result) => {
+exports.transferMoneyToChildAccount = async (request, response) => {
     try {
-        let requestResult = await voximplant.transferMoneyToUser(request.body)
+        let requestResult = await voximplant.transferMoneyToUser({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.addApplication = async (request, result) => {
+exports.addApplication = async (request, response) => {
     try {
-        let requestResult = await voximplant.addApplication(request.body)
+        let requestResult = await voximplant.addApplication({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.getApplications = async (request, result) => {
+exports.getApplications = async (request, response) => {
     try {
-        let requestResult = await voximplant.getApplications(request.body)
+        let requestResult = await voximplant.getApplications({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.getApplication = async (request, result) => {
+exports.getApplication = async (request, response) => {
     try {
-        let requestResult = await voximplant.getApplication(request.body)
+        let requestResult = await voximplant.getApplication({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.getCallHistory = async (request, result) => {
+exports.getCallHistory = async (request, response) => {
     try {
-        let requestResult = await voximplant.getCallHistory(request.body)
+        let requestResult = await voximplant.getCallHistory({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.getTransactionHistory = async (request, result) => {
+exports.getTransactionHistory = async (request, response) => {
     try {
-        let requestResult = await voximplant.getTransactionHistory(request.body)
+        let requestResult = await voximplant.getTransactionHistory({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.getCallRecord = async (request, result) => {
+exports.getCallRecord = async (request, response) => {
     let resultData = {
         code: "error_unexpected_error",
         error: true,
@@ -202,19 +182,20 @@ exports.getCallRecord = async (request, result) => {
     }
     try {
         if (!request.body.call_session_history_id) {
-            return result.status(400).json({
+            return response.status(400).json({
                 ...resultData,
                 code: "error_invalid_call",
                 message: "Invalid call"
             })
         }
 
-        setSessionParameters(request.body, request.user);
+        setSessionParameters(request.body, request.user, request._requestid);
 
         // Try to get information of VOXI in org table
         const voxiorgdata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_ORG", {
             corpid: request.body.corpid,
             orgid: request.body.orgid,
+            _requestid: request._requestid,
         });
 
         // If exists info of VOXI in org
@@ -224,152 +205,161 @@ exports.getCallRecord = async (request, result) => {
             request.body['application_id'] = voxiorgdata[0].voximplantapplicationid;
         }
 
-        let requestResult = await voximplant.getCallRecord(request.body)
+        let requestResult = await voximplant.getCallRecord({ ...request.body, requestid: request._requestid });
         if (requestResult) {
             if (requestResult?.result.length > 0) {
-                return result.json({
-                    code: "",
-                    error: false,
-                    data: requestResult?.result[0]?.records?.[0]?.record_url,
-                    message: "",
-                    success: true
-                });
+                let record_url_str = requestResult?.result[0]?.records?.[0]?.record_url;
+                if (!record_url_str) {
+                    return result.status(400).json({
+                        ...resultData,
+                        code: "error_no_record",
+                        message: "No record"
+                    })
+                }
+                let record_url = new URL(record_url_str);
+                record_url.searchParams.append('account_id', request.body['account_id']);
+                record_url.searchParams.append('api_key', request.body['api_key']);
+                record_url_str = record_url.toString();
+                try {
+                    record_data = await axios.get(record_url_str, {
+                        responseType: 'arraybuffer',
+                    });
+                    if (record_data.status === 200) {
+                        result.set('Content-Disposition', record_data.headers["content-disposition"]);
+                        result.set('Content-Type', record_data.headers["content-type"]);
+                        let base64data = record_data.data.toString('base64');
+                        return result.send(base64data)
+                    }
+                }
+                catch (error) {
+                    return result.status(400).json({
+                        ...resultData,
+                        code: "error_record_error",
+                        message: "Record error"
+                    })
+                }
             }
         }
-        return result.status(400).json({
+        return response.status(400).json({
             ...resultData,
             code: "error_invalid_call",
             message: "Invalid call"
         })
     }
-    catch (err) {
-        return result.status(500).json({
-            ...resultData,
-            message: err.message
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.addUser = async (request, result) => {
+exports.addUser = async (request, response) => {
     try {
-        let requestResult = await voximplant.addUser(request.body)
+        let requestResult = await voximplant.addUser({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.getUsers = async (request, result) => {
+exports.getUsers = async (request, response) => {
     try {
-        let requestResult = await voximplant.getUsers(request.body)
+        let requestResult = await voximplant.getUsers({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.getUser = async (request, result) => {
+exports.getUser = async (request, response) => {
     try {
-        let requestResult = await voximplant.getUser(request.body)
+        let requestResult = await voximplant.getUser({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.delUser = async (request, result) => {
+exports.delUser = async (request, response) => {
     try {
-        let requestResult = await voximplant.delUser(request.body)
+        let requestResult = await voximplant.delUser({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.addQueue = async (request, result) => {
+exports.addQueue = async (request, response) => {
     try {
-        let requestResult = await voximplant.addQueue(request.body)
+        let requestResult = await voximplant.addQueue({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.getQueues = async (request, result) => {
+exports.getQueues = async (request, response) => {
     try {
-        let requestResult = await voximplant.getQueues(request.body)
+        let requestResult = await voximplant.getQueues({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.bindUserToQueue = async (request, result) => {
+exports.bindUserToQueue = async (request, response) => {
     try {
-        let requestResult = await voximplant.bindUserToQueue(request.body)
+        let requestResult = await voximplant.bindUserToQueue({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.getPhoneNumberCategories = async (request, result) => {
+exports.getPhoneNumberCategories = async (request, response) => {
     try {
         var requestCode = "error_unexpected_error";
         var requestData = null;
@@ -377,7 +367,7 @@ exports.getPhoneNumberCategories = async (request, result) => {
         var requestStatus = 400;
         var requestSuccess = false;
 
-        let requestResult = await voximplant.getPhoneNumberCategories(request.body);
+        let requestResult = await voximplant.getPhoneNumberCategories({ ...request.body, requestid: request._requestid });
 
         if (requestResult) {
             if (requestResult.result) {
@@ -389,7 +379,7 @@ exports.getPhoneNumberCategories = async (request, result) => {
             }
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             data: requestData,
             error: !requestSuccess,
@@ -398,16 +388,14 @@ exports.getPhoneNumberCategories = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
         });
     }
 }
 
-exports.getPhoneNumberCountryStates = async (request, result) => {
+exports.getPhoneNumberCountryStates = async (request, response) => {
     try {
         var requestCode = "error_unexpected_error";
         var requestData = null;
@@ -415,7 +403,7 @@ exports.getPhoneNumberCountryStates = async (request, result) => {
         var requestStatus = 400;
         var requestSuccess = false;
 
-        let requestResult = await voximplant.getPhoneNumberCountryStates(request.body);
+        let requestResult = await voximplant.getPhoneNumberCountryStates({ ...request.body, requestid: request._requestid });
 
         if (requestResult) {
             if (requestResult.result) {
@@ -427,7 +415,7 @@ exports.getPhoneNumberCountryStates = async (request, result) => {
             }
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             data: requestData,
             error: !requestSuccess,
@@ -436,16 +424,14 @@ exports.getPhoneNumberCountryStates = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
         });
     }
 }
 
-exports.getPhoneNumberRegions = async (request, result) => {
+exports.getPhoneNumberRegions = async (request, response) => {
     try {
         var requestCode = "error_unexpected_error";
         var requestData = null;
@@ -453,7 +439,7 @@ exports.getPhoneNumberRegions = async (request, result) => {
         var requestStatus = 400;
         var requestSuccess = false;
 
-        let requestResult = await voximplant.getPhoneNumberRegions(request.body);
+        let requestResult = await voximplant.getPhoneNumberRegions({ ...request.body, requestid: request._requestid });
 
         if (requestResult) {
             if (requestResult.result) {
@@ -465,7 +451,7 @@ exports.getPhoneNumberRegions = async (request, result) => {
             }
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             data: requestData,
             error: !requestSuccess,
@@ -474,135 +460,119 @@ exports.getPhoneNumberRegions = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
         });
     }
 }
 
-exports.attachPhoneNumber = async (request, result) => {
+exports.attachPhoneNumber = async (request, response) => {
     try {
-        let requestResult = await voximplant.attachPhoneNumber(request.body)
+        let requestResult = await voximplant.attachPhoneNumber({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.getPhoneNumbers = async (request, result) => {
+exports.getPhoneNumbers = async (request, response) => {
     try {
-        let requestResult = await voximplant.getPhoneNumbers(request.body)
+        let requestResult = await voximplant.getPhoneNumbers({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.getResourcePrice = async (request, result) => {
+exports.getResourcePrice = async (request, response) => {
     try {
-        let requestResult = await voximplant.getResourcePrice(request.body)
+        let requestResult = await voximplant.getResourcePrice({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.bindPhoneNumberToApplication = async (request, result) => {
+exports.bindPhoneNumberToApplication = async (request, response) => {
     try {
-        let requestResult = await voximplant.bindPhoneNumberToApplication(request.body)
+        let requestResult = await voximplant.bindPhoneNumberToApplication({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.addCustomRecordStorage = async (request, result) => {
+exports.addCustomRecordStorage = async (request, response) => {
     try {
-        let requestResult = await voximplant.addCustomRecordStorage(request.body)
+        let requestResult = await voximplant.addCustomRecordStorage({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.getCustomRecordStorages = async (request, result) => {
+exports.getCustomRecordStorages = async (request, response) => {
     try {
-        let requestResult = await voximplant.getCustomRecordStorages(request.body)
+        let requestResult = await voximplant.getCustomRecordStorages({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.setCustomRecordStorageInfo = async (request, result) => {
+exports.setCustomRecordStorageInfo = async (request, response) => {
     try {
-        let requestResult = await voximplant.setCustomRecordStorageInfo(request.body)
+        let requestResult = await voximplant.setCustomRecordStorageInfo({ ...request.body, requestid: request._requestid });
         if (requestResult)
-            return result.json(requestResult);
-        return result.status(400).json(requestResult)
+            return response.json(requestResult);
+        return response.status(400).json(requestResult)
     }
-    catch (err) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: err.message,
-            success: false,
-        })
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
     }
 }
 
-exports.getMaximumConsumption = async (request, result) => {
+exports.getMaximumConsumption = async (request, response) => {
     var requestCode = "error_unexpected_error";
     var requestData = null;
     var requestMessage = "error_unexpected_error";
@@ -614,7 +584,7 @@ exports.getMaximumConsumption = async (request, result) => {
             const { orgid, daterange, timezoneoffset } = request.body;
             const { corpid } = request.user;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT");
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 requestCode = "";
@@ -644,6 +614,7 @@ exports.getMaximumConsumption = async (request, result) => {
                         child_apikey: orgData.voximplantapikey,
                         count: "1000",
                         offset: offset.toString(),
+                        requestid: request._requestid,
                     })
 
                     if (callHistoryResult) {
@@ -665,6 +636,7 @@ exports.getMaximumConsumption = async (request, result) => {
                                     child_apikey: orgData.voximplantapikey,
                                     count: "1000",
                                     offset: offset.toString(),
+                                    requestid: request._requestid,
                                 })
 
                                 if (callHistoryResult) {
@@ -757,7 +729,7 @@ exports.getMaximumConsumption = async (request, result) => {
             }
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             data: requestData,
             error: !requestSuccess,
@@ -766,16 +738,14 @@ exports.getMaximumConsumption = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
         });
     }
 }
 
-exports.transferAccountBalance = async (request, result) => {
+exports.transferAccountBalance = async (request, response) => {
     var requestCode = "error_unexpected_error";
     var requestMessage = "error_unexpected_error";
     var requestStatus = 400;
@@ -786,19 +756,20 @@ exports.transferAccountBalance = async (request, result) => {
             const { orgid, transferamount } = request.body;
             const { corpid, usr } = request.user;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT");
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 if (orgData.voximplantaccountid && orgData.voximplantapplicationid && orgData.voximplantapikey) {
                     var transferResult = await voximplant.transferMoneyToUser({
                         child_account_id: orgData.voximplantaccountid,
                         amount: (transferamount || 0).toString(),
-                        currency: "USD"
+                        currency: "USD",
+                        requestid: request._requestid,
                     })
 
                     if (transferResult) {
                         if (transferResult.result) {
-                            await channelfunctions.voximplantTransferIns(corpid, orgid, 'MANUAL', 'ACTIVO', 'MANUAL', voximplantParentAccountId, voximplantParentApiKey, orgData.voximplantaccountid, (transferamount || 0), 'MANUAL', usr)
+                            await channelfunctions.voximplantTransferIns(corpid, orgid, 'MANUAL', 'ACTIVO', 'MANUAL', voximplantParentAccountId, voximplantParentApiKey, orgData.voximplantaccountid, (transferamount || 0), 'MANUAL', usr, request._requestid)
 
                             requestCode = "";
                             requestMessage = "";
@@ -838,7 +809,7 @@ exports.transferAccountBalance = async (request, result) => {
             }
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             error: !requestSuccess,
             message: requestMessage,
@@ -846,16 +817,14 @@ exports.transferAccountBalance = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
         });
     }
 }
 
-exports.getAccountBalance = async (request, result) => {
+exports.getAccountBalance = async (request, response) => {
     var requestCode = "error_unexpected_error";
     var requestData = null;
     var requestMessage = "error_unexpected_error";
@@ -867,7 +836,7 @@ exports.getAccountBalance = async (request, result) => {
             const { orgid } = request.body;
             const { corpid } = request.user;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT");
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 requestCode = "";
@@ -880,6 +849,7 @@ exports.getAccountBalance = async (request, result) => {
                     var childInfoResult = await voximplant.getAccountInfo({
                         account_id: orgData.voximplantaccountid,
                         account_apikey: orgData.voximplantapikey,
+                        requestid: request._requestid,
                     })
 
                     if (childInfoResult) {
@@ -889,7 +859,7 @@ exports.getAccountBalance = async (request, result) => {
                     }
                 }
 
-                var parentInfoResult = await voximplant.getAccountInfo({})
+                var parentInfoResult = await voximplant.getAccountInfo({ requestid: request._requestid });
 
                 if (parentInfoResult) {
                     if (parentInfoResult.result) {
@@ -903,7 +873,7 @@ exports.getAccountBalance = async (request, result) => {
             }
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             data: requestData,
             error: !requestSuccess,
@@ -912,16 +882,14 @@ exports.getAccountBalance = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
         });
     }
 }
 
-exports.directGetMaximumConsumption = async (request, result) => {
+exports.directGetMaximumConsumption = async (request, response) => {
     var requestCode = "error_unexpected_error";
     var requestData = null;
     var requestMessage = "error_unexpected_error";
@@ -932,7 +900,7 @@ exports.directGetMaximumConsumption = async (request, result) => {
         if (request.body) {
             const { corpid, orgid, daterange, timezoneoffset } = request.body;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT");
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 requestCode = "";
@@ -962,6 +930,7 @@ exports.directGetMaximumConsumption = async (request, result) => {
                         child_apikey: orgData.voximplantapikey,
                         count: "1000",
                         offset: offset.toString(),
+                        requestid: request._requestid,
                     })
 
                     if (callHistoryResult) {
@@ -983,6 +952,7 @@ exports.directGetMaximumConsumption = async (request, result) => {
                                     child_apikey: orgData.voximplantapikey,
                                     count: "1000",
                                     offset: offset.toString(),
+                                    requestid: request._requestid,
                                 })
 
                                 if (callHistoryResult) {
@@ -1075,7 +1045,7 @@ exports.directGetMaximumConsumption = async (request, result) => {
             }
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             data: requestData,
             error: !requestSuccess,
@@ -1084,16 +1054,14 @@ exports.directGetMaximumConsumption = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
         });
     }
 }
 
-exports.directTransferAccountBalance = async (request, result) => {
+exports.directTransferAccountBalance = async (request, response) => {
     var requestCode = "error_unexpected_error";
     var requestMessage = "error_unexpected_error";
     var requestStatus = 400;
@@ -1103,19 +1071,20 @@ exports.directTransferAccountBalance = async (request, result) => {
         if (request.body) {
             const { corpid, orgid, usr, transferamount, description, type, motive } = request.body;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT");
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 if (orgData.voximplantaccountid && orgData.voximplantapplicationid && orgData.voximplantapikey) {
                     var transferResult = await voximplant.transferMoneyToUser({
                         child_account_id: orgData.voximplantaccountid,
                         amount: (transferamount || 0).toString(),
-                        currency: "USD"
+                        currency: "USD",
+                        requestid: request._requestid,
                     })
 
                     if (transferResult) {
                         if (transferResult.result) {
-                            await channelfunctions.voximplantTransferIns(corpid, orgid, description, 'ACTIVO', type, voximplantParentAccountId, voximplantParentApiKey, orgData.voximplantaccountid, (transferamount || 0), motive, usr)
+                            await channelfunctions.voximplantTransferIns(corpid, orgid, description, 'ACTIVO', type, voximplantParentAccountId, voximplantParentApiKey, orgData.voximplantaccountid, (transferamount || 0), motive, usr, request._requestid)
 
                             requestCode = "";
                             requestMessage = "";
@@ -1155,7 +1124,7 @@ exports.directTransferAccountBalance = async (request, result) => {
             }
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             error: !requestSuccess,
             message: requestMessage,
@@ -1163,16 +1132,14 @@ exports.directTransferAccountBalance = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
         });
     }
 }
 
-exports.directGetAccountBalance = async (request, result) => {
+exports.directGetAccountBalance = async (request, response) => {
     var requestCode = "error_unexpected_error";
     var requestData = null;
     var requestMessage = "error_unexpected_error";
@@ -1183,7 +1150,7 @@ exports.directGetAccountBalance = async (request, result) => {
         if (request.body) {
             const { corpid, orgid } = request.body;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT");
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 requestCode = "";
@@ -1196,6 +1163,7 @@ exports.directGetAccountBalance = async (request, result) => {
                     var childInfoResult = await voximplant.getAccountInfo({
                         account_id: orgData.voximplantaccountid,
                         account_apikey: orgData.voximplantapikey,
+                        requestid: request._requestid,
                     })
 
                     if (childInfoResult) {
@@ -1205,7 +1173,7 @@ exports.directGetAccountBalance = async (request, result) => {
                     }
                 }
 
-                var parentInfoResult = await voximplant.getAccountInfo({})
+                var parentInfoResult = await voximplant.getAccountInfo({ requestid: request._requestid });
 
                 if (parentInfoResult) {
                     if (parentInfoResult.result) {
@@ -1219,7 +1187,7 @@ exports.directGetAccountBalance = async (request, result) => {
             }
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             data: requestData,
             error: !requestSuccess,
@@ -1228,16 +1196,14 @@ exports.directGetAccountBalance = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
         });
     }
 }
 
-exports.updateVoximplantPeriod = async (request, result) => {
+exports.updateVoximplantPeriod = async (request, response) => {
     var requestCode = "error_unexpected_error";
     var requestMessage = "error_unexpected_error";
     var requestStatus = 400;
@@ -1247,7 +1213,7 @@ exports.updateVoximplantPeriod = async (request, result) => {
         if (request.body) {
             const { corpid, orgid, year, month } = request.body;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT");
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 requestCode = "";
@@ -1270,6 +1236,7 @@ exports.updateVoximplantPeriod = async (request, result) => {
                         account_apikey: orgData.voximplantapikey,
                         count: "1000",
                         offset: offset.toString(),
+                        requestid: request._requestid,
                     })
 
                     if (transactionHistoryResult) {
@@ -1290,6 +1257,7 @@ exports.updateVoximplantPeriod = async (request, result) => {
                                     account_apikey: orgData.voximplantapikey,
                                     count: "1000",
                                     offset: offset.toString(),
+                                    requestid: request._requestid,
                                 })
 
                                 if (transactionHistoryResult) {
@@ -1382,7 +1350,7 @@ exports.updateVoximplantPeriod = async (request, result) => {
                                 recordcost = Math.abs(recordcost);
                                 othercost = Math.abs(othercost);
 
-                                const channellist = await channelfunctions.voximplantChannelSel(corpid, orgid, year, month, (orgData.timezoneoffset || 0));
+                                const channellist = await channelfunctions.voximplantChannelSel(corpid, orgid, year, month, (orgData.timezoneoffset || 0), request._requestid);
 
                                 if (channellist) {
                                     channellist.forEach(element => {
@@ -1396,7 +1364,7 @@ exports.updateVoximplantPeriod = async (request, result) => {
                                     });
                                 }
 
-                                await channelfunctions.voximplantPeriodUpdate(corpid, orgid, year, month, (phonecost || 0), (pstncost || 0), (voipcost || 0), (recordcost || 0), (othercost || 0), true);
+                                await channelfunctions.voximplantPeriodUpdate(corpid, orgid, year, month, (phonecost || 0), (pstncost || 0), (voipcost || 0), (recordcost || 0), (othercost || 0), true, request._requestid);
                             }
                         }
                     }
@@ -1408,7 +1376,7 @@ exports.updateVoximplantPeriod = async (request, result) => {
             }
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             error: !requestSuccess,
             message: requestMessage,
@@ -1416,16 +1384,14 @@ exports.updateVoximplantPeriod = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
         });
     }
 }
 
-exports.pricingCountryList = async (request, result) => {
+exports.pricingCountryList = async (request, response) => {
     var requestCode = "error_unexpected_error";
     var requestData = null;
     var requestMessage = "error_unexpected_error";
@@ -1433,7 +1399,7 @@ exports.pricingCountryList = async (request, result) => {
     var requestSuccess = false;
 
     try {
-        const countryTransaction = await executesimpletransaction("UFN_VOXIMPLANTLANDING_COUNTRY_SEL");
+        const countryTransaction = await executesimpletransaction("UFN_VOXIMPLANTLANDING_COUNTRY_SEL", { _requestid: request._requestid });
 
         if (countryTransaction instanceof Array && countryTransaction.length > 0) {
             requestCode = "";
@@ -1443,7 +1409,7 @@ exports.pricingCountryList = async (request, result) => {
             requestSuccess = true;
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             data: requestData,
             error: !requestSuccess,
@@ -1452,16 +1418,14 @@ exports.pricingCountryList = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
         });
     }
 }
 
-exports.pricingCountryData = async (request, result) => {
+exports.pricingCountryData = async (request, response) => {
     var requestCode = "error_unexpected_error";
     var requestData = null;
     var requestMessage = "error_unexpected_error";
@@ -1482,26 +1446,26 @@ exports.pricingCountryData = async (request, result) => {
             requestStatus = 200;
             requestSuccess = true;
 
-            const numberTransaction = await executesimpletransaction("UFN_VOXIMPLANTLANDING_NUMBER_SEL", { countrycode: countrycode });
+            const numberTransaction = await executesimpletransaction("UFN_VOXIMPLANTLANDING_NUMBER_SEL", { countrycode: countrycode, _requestid: request._requestid });
 
             if (numberTransaction instanceof Array && numberTransaction.length > 0) {
                 requestData.numberData = numberTransaction;
             }
 
-            const inboundTransaction = await executesimpletransaction("UFN_VOXIMPLANTLANDING_INBOUND_SEL", { countrycode: countrycode });
+            const inboundTransaction = await executesimpletransaction("UFN_VOXIMPLANTLANDING_INBOUND_SEL", { countrycode: countrycode, _requestid: request._requestid });
 
             if (inboundTransaction instanceof Array && inboundTransaction.length > 0) {
                 requestData.inboundData = inboundTransaction;
             }
 
-            const outboundTransaction = await executesimpletransaction("UFN_VOXIMPLANTLANDING_OUTBOUND_SEL", { countrycode: countrycode });
+            const outboundTransaction = await executesimpletransaction("UFN_VOXIMPLANTLANDING_OUTBOUND_SEL", { countrycode: countrycode, _requestid: request._requestid });
 
             if (outboundTransaction instanceof Array && outboundTransaction.length > 0) {
                 requestData.outboundData = outboundTransaction;
             }
         }
 
-        return result.status(requestStatus).json({
+        return response.status(requestStatus).json({
             code: requestCode,
             data: requestData,
             error: !requestSuccess,
@@ -1510,11 +1474,9 @@ exports.pricingCountryData = async (request, result) => {
         });
     }
     catch (exception) {
-        return result.status(500).json({
-            code: "error_unexpected_error",
-            error: true,
-            message: exception.message,
-            success: false,
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
         });
     }
 }

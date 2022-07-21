@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const tf = require('../config/triggerfunctions');;
+const { getErrorCode } = require('../config/helpers');;
 
 module.exports = async function (req, res, next) {
     let token = "";
@@ -16,7 +17,7 @@ module.exports = async function (req, res, next) {
     try {
         const cifrado = jwt.verify(token, process.env.SECRETA);
         req.user = cifrado.user;
-        
+
         const result = await tf.executesimpletransaction("UFN_USERTOKEN_SEL", cifrado.user);
 
         if (result && result instanceof Array && result.length > 0) {
@@ -30,7 +31,10 @@ module.exports = async function (req, res, next) {
             return res.status(401).json({ message: 'Token no valido' });
         }
         next();
-    } catch (error) {
-        res.status(401).json({ message: 'Token no valido' });
+    } catch (exception) {
+        return res.status(401).json({
+            ...getErrorCode(null, exception, "Exception on auth middleware "),
+            message: "Token no valido"
+        });
     }
 }

@@ -1,8 +1,9 @@
-const axios = require('axios');
-const triggerfunctions = require('../config/triggerfunctions');
 const channelfunctions = require("../config/channelfunctions");
+const triggerfunctions = require('../config/triggerfunctions');
 
-const { setSessionParameters } = require('../config/helpers');
+const { setSessionParameters, axiosObservable } = require('../config/helpers');
+
+const logger = require('../config/winston');
 
 const bridgeEndpoint = process.env.BRIDGE;
 const brokerEndpoint = process.env.CHATBROKER;
@@ -16,11 +17,13 @@ const webChatPlatformEndpoint = process.env.WEBCHATPLATFORM;
 const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
 const whatsAppEndpoint = process.env.WHATSAPPAPI;
 
-exports.checkPaymentPlan = async (request, result) => {
+exports.checkPaymentPlan = async (request, response) => {
     try {
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
         var { method, parameters } = request.body;
 
-        setSessionParameters(parameters, request.user);
+        setSessionParameters(parameters, request.user, request._requestid);
 
         const transactionCheckPaymentPlan = await triggerfunctions.executesimpletransaction(method, parameters);
 
@@ -28,14 +31,14 @@ exports.checkPaymentPlan = async (request, result) => {
             if (transactionCheckPaymentPlan.length > 0) {
                 var createChannel = transactionCheckPaymentPlan[0].channelnumber < transactionCheckPaymentPlan[0].channelscontracted ? true : false;
 
-                return result.json({
+                return response.json({
                     createChannel: createChannel,
                     providerWhatsApp: transactionCheckPaymentPlan[0].providerwhatsapp,
                     success: true
                 });
             }
             else {
-                return result.json({
+                return response.json({
                     createChannel: true,
                     providerWhatsApp: 'DIALOG',
                     success: true
@@ -43,25 +46,27 @@ exports.checkPaymentPlan = async (request, result) => {
             }
         }
         else {
-            return result.status(400).json({
+            return response.status(400).json({
                 msg: transactionCheckPaymentPlan.code,
                 success: false
             });
         }
     }
     catch (exception) {
-        return result.status(500).json({
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
-            success: false
         });
     }
 }
 
-exports.deleteChannel = async (request, result) => {
+exports.deleteChannel = async (request, response) => {
     try {
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
         var { method, parameters = {} } = request.body;
 
-        setSessionParameters(parameters, request.user);
+        setSessionParameters(parameters, request.user, request._requestid);
 
         parameters.corpid = request.user.corpid;
         parameters.motive = 'Delete from API';
@@ -75,33 +80,34 @@ exports.deleteChannel = async (request, result) => {
             case 'ANDR':
             case 'APPL':
                 if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
-                    const requestDeleteSmooch = await axios({
+                    const requestDeleteSmooch = await axiosObservable({
                         data: {
                             linkType: parameters.type === 'ANDR' ? 'ANDROIDREMOVE' : 'IOSREMOVE',
                             applicationId: parameters.communicationchannelsite,
                             integrationId: parameters.integrationid
                         },
                         method: 'post',
-                        url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
+                        url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
+                        _requestid: request._requestid,
                     });
 
                     if (requestDeleteSmooch.data.success) {
                         const transactionDeleteSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionDeleteSmooch instanceof Array) {
-                            return result.json({
+                            return response.json({
                                 success: true
                             });
                         }
                         else {
-                            return result.status(400).json({
+                            return response.status(400).json({
                                 msg: transactionDeleteSmooch.code,
                                 success: false
                             });
                         }
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: requestDeleteSmooch.data.operationMessage,
                             success: false
                         });
@@ -111,12 +117,12 @@ exports.deleteChannel = async (request, result) => {
                     const transactionDeleteSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteSmooch instanceof Array) {
-                        return result.json({
+                        return response.json({
                             success: true
                         });
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionDeleteSmooch.code,
                             success: false
                         });
@@ -125,44 +131,47 @@ exports.deleteChannel = async (request, result) => {
 
             case 'CHAZ':
                 if (typeof parameters.communicationchannelcontact !== 'undefined' && parameters.communicationchannelcontact) {
-                    await axios({
+                    await axiosObservable({
                         data: {
-                            status: 'ELIMINADO'
+                            status: 'ELIMINADO',
                         },
                         method: 'put',
-                        url: `${brokerEndpoint}plugins/update/${parameters.communicationchannelcontact}`
+                        url: `${brokerEndpoint}plugins/update/${parameters.communicationchannelcontact}`,
+                        _requestid: request._requestid,
                     });
                 }
 
                 if (typeof parameters.communicationchannelowner !== 'undefined' && parameters.communicationchannelowner) {
-                    await axios({
+                    await axiosObservable({
                         data: {
                             status: 'ELIMINADO'
                         },
                         method: 'put',
-                        url: `${brokerEndpoint}webhooks/update/${parameters.communicationchannelowner}`
+                        url: `${brokerEndpoint}webhooks/update/${parameters.communicationchannelowner}`,
+                        _requestid: request._requestid,
                     });
                 }
 
                 if (typeof parameters.integrationid !== 'undefined' && parameters.integrationid) {
-                    await axios({
+                    await axiosObservable({
                         data: {
                             status: 'ELIMINADO'
                         },
                         method: 'put',
-                        url: `${brokerEndpoint}integrations/update/${parameters.integrationid}`
+                        url: `${brokerEndpoint}integrations/update/${parameters.integrationid}`,
+                        _requestid: request._requestid,
                     });
                 }
 
                 const transactionDeleteChatWeb = await triggerfunctions.executesimpletransaction(method, parameters);
 
                 if (transactionDeleteChatWeb instanceof Array) {
-                    return result.json({
+                    return response.json({
                         success: true
                     });
                 }
                 else {
-                    return result.status(400).json({
+                    return response.status(400).json({
                         msg: transactionDeleteChatWeb.code,
                         success: false
                     });
@@ -194,7 +203,8 @@ exports.deleteChannel = async (request, result) => {
                         var validateMethod = 'UFN_COMMUNICATIONCHANNELSITE_SEL';
                         var validateParameters = {
                             communicationchannelsite: serviceCredentials.siteId,
-                            type: (parameters.type === 'INST' ? 'INDM' : 'INST')
+                            type: (parameters.type === 'INST' ? 'INDM' : 'INST'),
+                            _requestid: request._requestid,
                         };
 
                         const transactionValidateInstagram = await triggerfunctions.executesimpletransaction(validateMethod, validateParameters);
@@ -205,7 +215,7 @@ exports.deleteChannel = async (request, result) => {
                             }
                         }
                         else {
-                            return result.status(400).json({
+                            return response.status(400).json({
                                 msg: transactionValidateInstagram.code,
                                 success: false
                             });
@@ -213,18 +223,19 @@ exports.deleteChannel = async (request, result) => {
                     }
 
                     if (DeleteIntegration) {
-                        const requestDeleteFacebook = await axios({
+                        const requestDeleteFacebook = await axiosObservable({
                             data: {
                                 accessToken: serviceCredentials.accessToken,
                                 linkType: linkType,
                                 siteId: ((parameters.type === 'INST' || parameters.type === 'INDM') ? parameters.communicationchannelowner : serviceCredentials.siteId)
                             },
                             method: 'post',
-                            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
+                            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
+                            _requestid: request._requestid,
                         });
 
                         if (!requestDeleteFacebook.data.success) {
-                            return result.status(400).json({
+                            return response.status(400).json({
                                 msg: requestDeleteFacebook.data.operationMessage,
                                 success: false
                             });
@@ -234,12 +245,12 @@ exports.deleteChannel = async (request, result) => {
                     const transactionDeleteFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteFacebook instanceof Array) {
-                        return result.json({
+                        return response.json({
                             success: true
                         });
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionDeleteFacebook.code,
                             success: false
                         });
@@ -249,12 +260,12 @@ exports.deleteChannel = async (request, result) => {
                     const transactionDeleteFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteFacebook instanceof Array) {
-                        return result.json({
+                        return response.json({
                             success: true
                         });
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionDeleteFacebook.code,
                             success: false
                         });
@@ -265,7 +276,7 @@ exports.deleteChannel = async (request, result) => {
                 if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
                     var serviceCredentials = JSON.parse(parameters.servicecredentials);
 
-                    const requestDeleteInstagramSmooch = await axios({
+                    const requestDeleteInstagramSmooch = await axiosObservable({
                         data: {
                             linkType: 'WEBHOOKREMOVE',
                             apiKeyId: serviceCredentials.apiKeyId,
@@ -274,26 +285,27 @@ exports.deleteChannel = async (request, result) => {
                             integrationId: parameters.integrationid
                         },
                         method: 'post',
-                        url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
+                        url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
+                        _requestid: request._requestid,
                     });
 
                     if (requestDeleteInstagramSmooch.data.success) {
                         const transactionDeleteInstagramSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionDeleteInstagramSmooch instanceof Array) {
-                            return result.json({
+                            return response.json({
                                 success: true
                             });
                         }
                         else {
-                            return result.status(400).json({
+                            return response.status(400).json({
                                 msg: transactionDeleteInstagramSmooch.code,
                                 success: false
                             });
                         }
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: requestDeleteInstagramSmooch.data.operationMessage,
                             success: false
                         });
@@ -303,12 +315,12 @@ exports.deleteChannel = async (request, result) => {
                     const transactionDeleteInstagramSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteInstagramSmooch instanceof Array) {
-                        return result.json({
+                        return response.json({
                             success: true
                         });
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionDeleteInstagramSmooch.code,
                             success: false
                         });
@@ -319,33 +331,34 @@ exports.deleteChannel = async (request, result) => {
                 if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
                     var serviceCredentials = JSON.parse(parameters.servicecredentials);
 
-                    const requestDeleteTelegram = await axios({
+                    const requestDeleteTelegram = await axiosObservable({
                         data: {
                             accessToken: serviceCredentials.token,
                             linkType: 'TELEGRAMREMOVE',
                             siteId: serviceCredentials.bot
                         },
                         method: 'post',
-                        url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`
+                        url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`,
+                        _requestid: request._requestid,
                     });
 
                     if (requestDeleteTelegram.data.success) {
                         const transactionDeleteTelegram = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionDeleteTelegram instanceof Array) {
-                            return result.json({
+                            return response.json({
                                 success: true
                             });
                         }
                         else {
-                            return result.status(400).json({
+                            return response.status(400).json({
                                 msg: transactionDeleteTelegram.code,
                                 success: false
                             });
                         }
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: requestDeleteTelegram.data.operationMessage,
                             success: false
                         });
@@ -355,12 +368,12 @@ exports.deleteChannel = async (request, result) => {
                     const transactionDeleteTelegram = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteTelegram instanceof Array) {
-                        return result.json({
+                        return response.json({
                             success: true
                         });
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionDeleteTelegram.code,
                             success: false
                         });
@@ -375,7 +388,8 @@ exports.deleteChannel = async (request, result) => {
                     var validateMethod = 'UFN_COMMUNICATIONCHANNELSITE_SEL';
                     var validateParameters = {
                         communicationchannelsite: serviceCredentials.twitterPageId,
-                        type: (parameters.type === 'TWIT' ? 'TWMS' : 'TWIT')
+                        type: (parameters.type === 'TWIT' ? 'TWMS' : 'TWIT'),
+                        _requestid: request._requestid,
                     };
 
                     const transactionValidateTwitter = await triggerfunctions.executesimpletransaction(validateMethod, validateParameters);
@@ -385,48 +399,49 @@ exports.deleteChannel = async (request, result) => {
                             const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
 
                             if (transactionDeleteTwitter instanceof Array) {
-                                return result.json({
+                                return response.json({
                                     success: true
                                 });
                             }
                             else {
-                                return result.status(400).json({
+                                return response.status(400).json({
                                     msg: transactionDeleteTwitter.code,
                                     success: false
                                 });
                             }
                         }
                         else {
-                            const requestDeleteTwitter = await axios({
+                            const requestDeleteTwitter = await axiosObservable({
                                 data: {
                                     accessSecret: serviceCredentials.accessSecret,
                                     accessToken: serviceCredentials.accessToken,
                                     consumerKey: serviceCredentials.consumerKey,
                                     consumerSecret: serviceCredentials.consumerSecret,
                                     developmentEnvironment: serviceCredentials.devEnvironment,
-                                    linkType: 'TWITTERREMOVE'
+                                    linkType: 'TWITTERREMOVE',
                                 },
                                 method: 'post',
-                                url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`
+                                url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
+                                _requestid: request._requestid,
                             });
 
                             if (requestDeleteTwitter.data.success) {
                                 const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
 
                                 if (transactionDeleteTwitter instanceof Array) {
-                                    return result.json({
+                                    return response.json({
                                         success: true
                                     });
                                 }
                                 else {
-                                    return result.status(400).json({
+                                    return response.status(400).json({
                                         msg: transactionDeleteTwitter.code,
                                         success: false
                                     });
                                 }
                             }
                             else {
-                                return result.status(400).json({
+                                return response.status(400).json({
                                     msg: requestDeleteTwitter.data.operationMessage,
                                     success: false
                                 });
@@ -434,7 +449,7 @@ exports.deleteChannel = async (request, result) => {
                         }
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionValidateTwitter.code,
                             success: false
                         });
@@ -444,12 +459,12 @@ exports.deleteChannel = async (request, result) => {
                     const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteTwitter instanceof Array) {
-                        return result.json({
+                        return response.json({
                             success: true
                         });
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionDeleteTwitter.code,
                             success: false
                         });
@@ -460,33 +475,34 @@ exports.deleteChannel = async (request, result) => {
                 if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
                     var serviceCredentials = JSON.parse(parameters.servicecredentials);
 
-                    const requestDeleteWhatsApp = await axios({
+                    const requestDeleteWhatsApp = await axiosObservable({
                         data: {
                             accessToken: serviceCredentials.apiKey,
                             linkType: 'WHATSAPPREMOVE',
                             siteId: serviceCredentials.number
                         },
                         method: 'post',
-                        url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`
+                        url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`,
+                        _requestid: request._requestid,
                     });
 
                     if (requestDeleteWhatsApp.data.success) {
                         const transactionDeleteWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionDeleteWhatsApp instanceof Array) {
-                            return result.json({
+                            return response.json({
                                 success: true
                             });
                         }
                         else {
-                            return result.status(400).json({
+                            return response.status(400).json({
                                 msg: transactionDeleteWhatsApp.code,
                                 success: false
                             });
                         }
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: requestDeleteWhatsApp.data.operationMessage,
                             success: false
                         });
@@ -496,12 +512,12 @@ exports.deleteChannel = async (request, result) => {
                     const transactionDeleteWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteWhatsApp instanceof Array) {
-                        return result.json({
+                        return response.json({
                             success: true
                         });
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionDeleteWhatsApp.code,
                             success: false
                         });
@@ -513,7 +529,7 @@ exports.deleteChannel = async (request, result) => {
                     var serviceCredentials = JSON.parse(parameters.servicecredentials);
 
                     if (typeof serviceCredentials.apiKeyId !== 'undefined' && serviceCredentials.apiKeyId) {
-                        const requestDeleteWhatsAppSmooch = await axios({
+                        const requestDeleteWhatsAppSmooch = await axiosObservable({
                             data: {
                                 linkType: 'WEBHOOKCLEAR',
                                 apiKeyId: serviceCredentials.apiKeyId,
@@ -522,26 +538,27 @@ exports.deleteChannel = async (request, result) => {
                                 integrationId: parameters.integrationid
                             },
                             method: 'post',
-                            url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
+                            url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
+                            _requestid: request._requestid,
                         });
 
                         if (requestDeleteWhatsAppSmooch.data.success) {
                             const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                             if (transactionDeleteWhatsAppSmooch instanceof Array) {
-                                return result.json({
+                                return response.json({
                                     success: true
                                 });
                             }
                             else {
-                                return result.status(400).json({
+                                return response.status(400).json({
                                     msg: transactionDeleteWhatsAppSmooch.code,
                                     success: false
                                 });
                             }
                         }
                         else {
-                            return result.status(400).json({
+                            return response.status(400).json({
                                 msg: requestDeleteWhatsAppSmooch.data.operationMessage,
                                 success: false
                             });
@@ -551,12 +568,12 @@ exports.deleteChannel = async (request, result) => {
                         const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionDeleteWhatsAppSmooch instanceof Array) {
-                            return result.json({
+                            return response.json({
                                 success: true
                             });
                         }
                         else {
-                            return result.status(400).json({
+                            return response.status(400).json({
                                 msg: transactionDeleteWhatsAppSmooch.code,
                                 success: false
                             });
@@ -567,12 +584,12 @@ exports.deleteChannel = async (request, result) => {
                     const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteWhatsAppSmooch instanceof Array) {
-                        return result.json({
+                        return response.json({
                             success: true
                         });
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionDeleteWhatsAppSmooch.code,
                             success: false
                         });
@@ -583,25 +600,25 @@ exports.deleteChannel = async (request, result) => {
                 if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
                     var serviceCredentials = JSON.parse(parameters.servicecredentials);
 
-                    var voximplantPhoneNumber = await channelfunctions.voximplantDeletePhoneNumber(request.user.corpid, request.user.orgid, serviceCredentials.phoneid, serviceCredentials.queueid);
+                    var voximplantPhoneNumber = await channelfunctions.voximplantDeletePhoneNumber(request.user.corpid, request.user.orgid, serviceCredentials.phoneid, serviceCredentials.queueid, request.originalUrl, request._requestid);
 
                     if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.queueid) {
                         const transactionDeleteVoximplant = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionDeleteVoximplant instanceof Array) {
-                            return result.json({
+                            return response.json({
                                 success: true
                             });
                         }
                         else {
-                            return result.status(400).json({
+                            return response.status(400).json({
                                 msg: transactionDeleteVoximplant.code,
                                 success: false
                             });
                         }
                     }
 
-                    return result.status(400).json({
+                    return response.status(400).json({
                         msg: 'voximplant_phonenumberdelete_error',
                         success: false
                     });
@@ -610,12 +627,12 @@ exports.deleteChannel = async (request, result) => {
                     const transactionDeleteVoximplant = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteVoximplant instanceof Array) {
-                        return result.json({
+                        return response.json({
                             success: true
                         });
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionDeleteVoximplant.code,
                             success: false
                         });
@@ -626,12 +643,12 @@ exports.deleteChannel = async (request, result) => {
                 const transactionDeleteGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
 
                 if (transactionDeleteGeneric instanceof Array) {
-                    return result.json({
+                    return response.json({
                         success: true
                     });
                 }
                 else {
-                    return result.status(400).json({
+                    return response.status(400).json({
                         msg: transactionDeleteGeneric.code,
                         success: false
                     });
@@ -639,22 +656,25 @@ exports.deleteChannel = async (request, result) => {
         }
     }
     catch (exception) {
-        return result.status(500).json({
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
-            success: false
         });
     }
 }
 
-exports.getChannelService = async (request, result) => {
+exports.getChannelService = async (request, response) => {
     try {
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
         var method = null;
         var parameters = null;
 
         if (request.body.siteType === 'SMCH') {
             method = 'UFN_COMMUNICATIONCHANNELSITE_SMOOCH_SEL';
             parameters = {
-                communicationchannelsite: request.body.siteId
+                communicationchannelsite: request.body.siteId,
+                _requestid: request._requestid,
             };
         }
         else {
@@ -662,6 +682,7 @@ exports.getChannelService = async (request, result) => {
             parameters = {
                 communicationchannelsite: request.body.siteId,
                 type: request.body.siteType,
+                _requestid: request._requestid,
             };
         }
 
@@ -670,111 +691,119 @@ exports.getChannelService = async (request, result) => {
         if (transactionSelectCredentials instanceof Array) {
             if (transactionSelectCredentials.length > 0) {
                 if (request.body.siteType !== 'TWTR') {
-                    return result.json({
+                    return response.json({
                         serviceData: transactionSelectCredentials[0].servicecredentials,
                         success: true
                     });
                 }
                 else {
-                    return result.json({
+                    return response.json({
                         serviceData: transactionSelectCredentials[0].servicedata,
                         success: true
                     });
                 }
             }
             else {
-                return result.json({
+                return response.json({
                     msg: 'Not found',
                     success: false
                 });
             }
         }
         else {
-            return result.status(400).json({
+            return response.status(400).json({
                 msg: transactionSelectCredentials.code,
                 success: false
             });
         }
     }
     catch (exception) {
-        return result.status(500).json({
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
-            success: false
         });
     }
 }
 
-exports.getLongToken = async (request, result) => {
+exports.getLongToken = async (request, response) => {
     try {
-        const requestGetLongToken = await axios({
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
+        const requestGetLongToken = await axiosObservable({
             data: {
                 accessToken: request.body.accessToken,
                 appId: request.body.appId,
                 linkType: 'GENERATELONGTOKEN'
             },
             method: 'post',
-            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
+            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
+            _requestid: request._requestid,
         });
 
         if (requestGetLongToken.data.success) {
-            return result.json({
+            return response.json({
                 longToken: requestGetLongToken.data.longToken,
                 success: true
             });
         }
         else {
-            return result.status(400).json({
+            return response.status(400).json({
                 msg: requestGetLongToken.data.operationMessage,
                 success: false
             });
         }
     }
     catch (exception) {
-        return result.status(500).json({
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
-            success: false
         });
     }
 }
 
-exports.getPageList = async (request, result) => {
+exports.getPageList = async (request, response) => {
     try {
-        const requestGetPageList = await axios({
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
+        const requestGetPageList = await axiosObservable({
             data: {
                 accessToken: request.body.accessToken,
                 appId: request.body.appId,
                 linkType: 'GETPAGES'
             },
             method: 'post',
-            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
+            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
+            _requestid: request._requestid,
         });
 
         if (requestGetPageList.data.success) {
-            return result.json({
+            return response.json({
                 pageData: requestGetPageList.data.pageData,
                 success: true
             });
         }
         else {
-            return result.status(400).json({
+            return response.status(400).json({
                 msg: requestGetPageList.data.operationMessage,
                 success: false
             });
         }
     }
     catch (exception) {
-        return result.status(500).json({
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
-            success: false
         });
     }
 }
 
-exports.insertChannel = async (request, result) => {
+exports.insertChannel = async (request, response) => {
     try {
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
         var { method, parameters = {}, service = {} } = request.body;
 
-        setSessionParameters(parameters, request.user);
+        setSessionParameters(parameters, request.user, request._requestid);
 
         parameters.appintegrationid = null;
         parameters.botconfigurationid = null;
@@ -796,6 +825,8 @@ exports.insertChannel = async (request, result) => {
         parameters.updintegration = null;
         parameters.username = request.user.usr;
         parameters.phone = null;
+        parameters.apikey = null;
+        parameters.voximplantrecording = null;
 
         switch (request.body.type) {
             case 'CHATWEB':
@@ -849,14 +880,15 @@ exports.insertChannel = async (request, result) => {
                     }
                 }
 
-                const requestWebChatCreate = await axios({
+                const requestWebChatCreate = await axiosObservable({
                     data: webChatData,
                     method: 'post',
-                    url: `${brokerEndpoint}integrations/save`
+                    url: `${brokerEndpoint}integrations/save`,
+                    _requestid: request._requestid,
                 });
 
                 if (typeof requestWebChatCreate.data.id !== 'undefined' && requestWebChatCreate.data.id) {
-                    const requestWebChatWebhook = await axios({
+                    const requestWebChatWebhook = await axiosObservable({
                         data: {
                             description: parameters.description,
                             integration: requestWebChatCreate.data.id,
@@ -865,18 +897,20 @@ exports.insertChannel = async (request, result) => {
                             webUrl: `${hookEndpoint}chatweb/webhookasync`
                         },
                         method: 'post',
-                        url: `${brokerEndpoint}webhooks/save`
+                        url: `${brokerEndpoint}webhooks/save`,
+                        _requestid: request._requestid,
                     });
 
                     if (typeof requestWebChatWebhook.data.id !== 'undefined' && requestWebChatWebhook.data.id) {
-                        const requestWebChatPlugin = await axios({
+                        const requestWebChatPlugin = await axiosObservable({
                             data: {
                                 integration: requestWebChatCreate.data.id,
                                 name: parameters.description,
                                 status: 'ACTIVO'
                             },
                             method: 'post',
-                            url: `${brokerEndpoint}plugins/save`
+                            url: `${brokerEndpoint}plugins/save`,
+                            _requestid: request._requestid,
                         });
 
                         if (typeof requestWebChatPlugin.data.id !== 'undefined' && requestWebChatPlugin.data.id) {
@@ -895,45 +929,46 @@ exports.insertChannel = async (request, result) => {
                             if (transactionCreateWebChat instanceof Array) {
                                 try {
                                     if (typeof webChatPlatformEndpoint !== 'undefined' && webChatPlatformEndpoint) {
-                                        await axios({
+                                        await axiosObservable({
                                             data: parameters,
                                             method: 'post',
-                                            url: `${webChatPlatformEndpoint}integration/addtodatabase`
+                                            url: `${webChatPlatformEndpoint}integration/addtodatabase`,
+                                            _requestid: request._requestid,
                                         });
                                     }
                                 }
                                 catch (exception) {
-                                    console.log(JSON.stringify(exception));
+                                    printException(exception, request.originalUrl, responsedata.id);
                                 }
 
-                                return result.json({
+                                return response.json({
                                     integrationid: requestWebChatCreate.data.id,
                                     success: true
                                 });
                             }
                             else {
-                                return result.status(400).json({
+                                return response.status(400).json({
                                     msg: transactionCreateWebChat.code,
                                     success: false
                                 });
                             }
                         }
                         else {
-                            return result.status(400).json({
+                            return response.status(400).json({
                                 msg: 'Could not create plugin',
                                 success: false
                             });
                         }
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: 'Could not create webhook',
                             success: false
                         });
                     }
                 }
                 else {
-                    return result.status(400).json({
+                    return response.status(400).json({
                         msg: 'Could not create integration',
                         success: false
                     });
@@ -943,14 +978,15 @@ exports.insertChannel = async (request, result) => {
             case 'INSTAGRAM':
             case 'INSTAMESSENGER':
             case 'MESSENGER':
-                const requestGetLongToken = await axios({
+                const requestGetLongToken = await axiosObservable({
                     data: {
                         accessToken: service.accesstoken,
                         appId: service.appid,
                         linkType: 'GENERATELONGTOKEN'
                     },
                     method: 'post',
-                    url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
+                    url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
+                    _requestid: request._requestid,
                 });
 
                 if (requestGetLongToken.data.success) {
@@ -986,35 +1022,37 @@ exports.insertChannel = async (request, result) => {
                     }
 
                     if (request.body.type === 'INSTAGRAM' || request.body.type === 'INSTAMESSENGER') {
-                        const requestGetBusiness = await axios({
+                        const requestGetBusiness = await axiosObservable({
                             data: {
                                 accessToken: service.accesstoken,
                                 linkType: 'GETBUSINESS',
                                 siteId: service.siteid
                             },
                             method: 'post',
-                            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`
+                            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
+                            _requestid: request._requestid,
                         });
 
                         if (requestGetBusiness.data.success) {
                             businessId = requestGetBusiness.data.businessId;
                         }
                         else {
-                            return result.status(400).json({
+                            return response.status(400).json({
                                 msg: 'No Instagram account',
                                 success: false
                             });
                         }
                     }
 
-                    const requestCreateFacebook = await axios({
-                        url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
-                        method: 'post',
+                    const requestCreateFacebook = await axiosObservable({
                         data: {
                             linkType: channelLinkService,
                             accessToken: requestGetLongToken.data.longToken,
                             siteId: service.siteid
-                        }
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
+                        _requestid: request._requestid,
                     });
 
                     if (requestCreateFacebook.data.success) {
@@ -1038,26 +1076,26 @@ exports.insertChannel = async (request, result) => {
                         const transactionCreateFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionCreateFacebook instanceof Array) {
-                            return result.json({
+                            return response.json({
                                 success: true
                             });
                         }
                         else {
-                            return result.status(400).json({
+                            return response.status(400).json({
                                 msg: transactionCreateFacebook.code,
                                 success: false
                             });
                         }
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: requestCreateFacebook.data.operationMessage,
                             success: false
                         });
                     }
                 }
                 else {
-                    return result.status(400).json({
+                    return response.status(400).json({
                         msg: requestGetLongToken.data.operationMessage,
                         success: false
                     });
@@ -1065,13 +1103,14 @@ exports.insertChannel = async (request, result) => {
 
             case 'SMOOCHANDROID':
             case 'SMOOCHIOS':
-                const requestCreateSmooch = await axios({
+                const requestCreateSmooch = await axiosObservable({
                     data: {
                         linkType: request.body.type === 'SMOOCHANDROID' ? 'ANDROIDADD' : 'IOSADD',
-                        name: parameters.description
+                        name: parameters.description,
                     },
                     method: 'post',
-                    url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
+                    url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
+                    _requestid: request._requestid,
                 });
 
                 if (requestCreateSmooch.data.success) {
@@ -1092,21 +1131,21 @@ exports.insertChannel = async (request, result) => {
                     const transactionCreateSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateSmooch instanceof Array) {
-                        return result.json({
+                        return response.json({
                             applicationId: requestCreateSmooch.data.applicationId,
                             integrationId: requestCreateSmooch.data.integrationId,
                             success: true
                         });
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionCreateSmooch.code,
                             success: false
                         });
                     }
                 }
                 else {
-                    return result.status(400).json({
+                    return response.status(400).json({
                         msg: requestCreateSmooch.data.operationMessage,
                         success: false
                     });
@@ -1136,26 +1175,78 @@ exports.insertChannel = async (request, result) => {
                     const transactionCreateInfobip = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateInfobip instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateInfobip.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
+            case 'BLOGGER':
+            case 'LINKEDIN':
+            case 'MICROSOFTTEAMS':
+            case 'TIKTOK':
+            case 'YOUTUBE':
+                if (service) {
+                    parameters.communicationchannelowner = service.account;
+                    parameters.communicationchannelsite = service.account;
+                    parameters.integrationid = service.account;
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.status = 'PENDIENTE';
+
+                    switch (request.body.type) {
+                        case 'BLOGGER':
+                            parameters.type = 'BLOG';
+                            break;
+
+                        case 'LINKEDIN':
+                            parameters.type = 'LNKD';
+                            break;
+
+                        case 'MICROSOFTTEAMS':
+                            parameters.type = 'TEAM';
+                            break;
+
+                        case 'TIKTOK':
+                            parameters.type = 'TITO';
+                            break;
+
+                        case 'YOUTUBE':
+                            parameters.type = 'YOUT';
+                            break;
+                    }
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
                         return result.json({
                             success: true
                         });
                     }
                     else {
                         return result.status(400).json({
-                            msg: transactionCreateInfobip.code,
+                            msg: transactionCreateGeneric.code,
                             success: false
                         });
                     }
                 }
+                break;
 
             case 'TELEGRAM':
-                const requestCreateTelegram = await axios({
+                const requestCreateTelegram = await axiosObservable({
                     data: {
                         accessToken: service.accesstoken,
                         linkType: 'TELEGRAMADD'
                     },
                     method: 'post',
-                    url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`
+                    url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`,
+                    _requestid: request._requestid,
                 });
 
                 if (requestCreateTelegram.data.success) {
@@ -1172,19 +1263,19 @@ exports.insertChannel = async (request, result) => {
                     const transactionCreateTelegram = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateTelegram instanceof Array) {
-                        return result.json({
+                        return response.json({
                             success: true
                         });
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionCreateTelegram.code,
                             success: false
                         });
                     }
                 }
                 else {
-                    return result.status(400).json({
+                    return response.status(400).json({
                         msg: requestCreateTelegram.data.operationMessage,
                         success: false
                     });
@@ -1192,7 +1283,7 @@ exports.insertChannel = async (request, result) => {
 
             case 'TWITTER':
             case 'TWITTERDM':
-                const requestPageTwitter = await axios({
+                const requestPageTwitter = await axiosObservable({
                     data: {
                         accessSecret: service.accesssecret,
                         accessToken: service.accesstoken,
@@ -1202,7 +1293,8 @@ exports.insertChannel = async (request, result) => {
                         linkType: 'GETPAGEID'
                     },
                     method: 'post',
-                    url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`
+                    url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
+                    _requestid: request._requestid,
                 });
 
                 if (requestPageTwitter.data.success) {
@@ -1228,7 +1320,7 @@ exports.insertChannel = async (request, result) => {
                     const transactionCreateTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateTwitter instanceof Array) {
-                        const requestCreateTwitter = await axios({
+                        const requestCreateTwitter = await axiosObservable({
                             data: {
                                 accessSecret: service.accesssecret,
                                 accessToken: service.accesstoken,
@@ -1239,11 +1331,12 @@ exports.insertChannel = async (request, result) => {
                                 pageId: requestPageTwitter.data.pageId
                             },
                             method: 'post',
-                            url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`
+                            url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
+                            _requestid: request._requestid,
                         });
 
                         if (requestCreateTwitter.data.success) {
-                            return result.json({
+                            return response.json({
                                 success: true
                             });
                         }
@@ -1255,13 +1348,13 @@ exports.insertChannel = async (request, result) => {
                             const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
 
                             if (transactionDeleteTwitter instanceof Array) {
-                                return result.status(400).json({
+                                return response.status(400).json({
                                     msg: requestCreateTwitter.data.operationMessage,
                                     success: false
                                 });
                             }
                             else {
-                                return result.status(400).json({
+                                return response.status(400).json({
                                     msg: transactionDeleteTwitter.code,
                                     success: false
                                 });
@@ -1269,27 +1362,28 @@ exports.insertChannel = async (request, result) => {
                         }
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionCreateTwitter.code,
                             success: false
                         });
                     }
                 }
                 else {
-                    return result.status(400).json({
+                    return response.status(400).json({
                         msg: requestPageTwitter.data.operationMessage,
                         success: false
                     });
                 }
 
             case 'WHATSAPP':
-                const requestCreateWhatsApp = await axios({
+                const requestCreateWhatsApp = await axiosObservable({
                     data: {
                         accessToken: service.accesstoken,
                         linkType: 'WHATSAPPADD'
                     },
                     method: 'post',
-                    url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`
+                    url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`,
+                    _requestid: request._requestid,
                 });
 
                 if (requestCreateWhatsApp.data.success) {
@@ -1307,19 +1401,19 @@ exports.insertChannel = async (request, result) => {
                     const transactionCreateWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateWhatsApp instanceof Array) {
-                        return result.json({
+                        return response.json({
                             success: true
                         });
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionCreateWhatsApp.code,
                             success: false
                         });
                     }
                 }
                 else {
-                    return result.status(400).json({
+                    return response.status(400).json({
                         msg: requestCreateWhatsApp.data.operationMessage,
                         success: false
                     });
@@ -1342,7 +1436,8 @@ exports.insertChannel = async (request, result) => {
                             corpid: 1,
                             domainname: 'WHATSAPPRECIPIENT',
                             orgid: 0,
-                            username: request.user.usr
+                            username: request.user.usr,
+                            _requestid: request._requestid,
                         };
 
                         const transactionGetRecipient = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
@@ -1354,7 +1449,8 @@ exports.insertChannel = async (request, result) => {
                                     corpid: 1,
                                     domainname: 'WHATSAPPSUBJECT',
                                     orgid: 0,
-                                    username: request.user.usr
+                                    username: request.user.usr,
+                                    _requestid: request._requestid,
                                 };
 
                                 const transactionGetSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
@@ -1366,7 +1462,8 @@ exports.insertChannel = async (request, result) => {
                                             corpid: 1,
                                             domainname: 'WHATSAPPBODY',
                                             orgid: 0,
-                                            username: request.user.usr
+                                            username: request.user.usr,
+                                            _requestid: request._requestid,
                                         };
 
                                         const transactionGetBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
@@ -1403,18 +1500,19 @@ exports.insertChannel = async (request, result) => {
                                                 mailSubject = mailSubject.split("{{orgid}}").join(request.user.orgid);
                                                 mailSubject = mailSubject.split("{{username}}").join(request.user.usr);
 
-                                                const requestSendMail = await axios({
+                                                const requestSendMail = await axiosObservable({
                                                     data: {
                                                         mailAddress: mailRecipient,
                                                         mailBody: mailBody,
                                                         mailTitle: mailSubject
                                                     },
                                                     method: 'post',
-                                                    url: `${bridgeEndpoint}processscheduler/sendmail`
+                                                    url: `${bridgeEndpoint}processscheduler/sendmail`,
+                                                    _requestid: request._requestid,
                                                 });
 
                                                 if (!requestSendMail.data.success) {
-                                                    return result.status(400).json({
+                                                    return response.status(400).json({
                                                         msg: requestSendMail.data.operationMessage,
                                                         success: false,
                                                         error: true
@@ -1423,7 +1521,7 @@ exports.insertChannel = async (request, result) => {
                                             }
                                         }
                                         else {
-                                            return result.status(400).json({
+                                            return response.status(400).json({
                                                 msg: transactionGetBody.code,
                                                 success: false,
                                                 error: true
@@ -1432,7 +1530,7 @@ exports.insertChannel = async (request, result) => {
                                     }
                                 }
                                 else {
-                                    return result.status(400).json({
+                                    return response.status(400).json({
                                         msg: transactionGetSubject.code,
                                         success: false,
                                         error: true
@@ -1441,7 +1539,7 @@ exports.insertChannel = async (request, result) => {
                             }
                         }
                         else {
-                            return result.status(400).json({
+                            return response.status(400).json({
                                 msg: transactionGetRecipient.code,
                                 success: false,
                                 error: true
@@ -1449,19 +1547,19 @@ exports.insertChannel = async (request, result) => {
                         }
                     }
 
-                    return result.json({
+                    return response.json({
                         success: true
                     });
                 }
                 else {
-                    return result.status(400).json({
+                    return response.status(400).json({
                         msg: transactionCreateWhatsAppSmooch.code,
                         success: false
                     });
                 }
 
             case 'WHATSAPPSMOOCHINSERT':
-                const requestInsertWhatsAppSmooch = await axios({
+                const requestInsertWhatsAppSmooch = await axiosObservable({
                     data: {
                         apiKeyId: service.apikeyid,
                         apiKeySecret: service.apikeysecret,
@@ -1469,7 +1567,8 @@ exports.insertChannel = async (request, result) => {
                         linkType: 'WEBHOOKMIGRATE'
                     },
                     method: 'post',
-                    url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
+                    url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
+                    _requestid: request._requestid,
                 });
 
                 if (requestInsertWhatsAppSmooch.data.success) {
@@ -1489,34 +1588,34 @@ exports.insertChannel = async (request, result) => {
                     const transactionInsertWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionInsertWhatsApp instanceof Array) {
-                        return result.json({
+                        return response.json({
                             success: true
                         });
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionInsertWhatsApp.code,
                             success: false
                         });
                     }
                 }
                 else {
-                    return result.status(400).json({
+                    return response.status(400).json({
                         msg: requestInsertWhatsAppSmooch.data.operationMessage,
                         success: false
                     });
                 }
 
             case 'VOXIMPLANTPHONE':
-                var voximplantEnvironment = await channelfunctions.voximplantHandleEnvironment(request.user.corpid, request.user.orgid);
+                var voximplantEnvironment = await channelfunctions.voximplantHandleEnvironment(request.user.corpid, request.user.orgid, request.originalUrl, request._requestid);
 
                 if (voximplantEnvironment) {
                     if (voximplantEnvironment.accountid && voximplantEnvironment.apikey && voximplantEnvironment.applicationid && voximplantEnvironment.userid) {
-                        var voximplantScenario = await channelfunctions.voximplantHandleScenario(request.user.corpid, request.user.orgid, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid);
+                        var voximplantScenario = await channelfunctions.voximplantHandleScenario(request.user.corpid, request.user.orgid, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, request.originalUrl, request._requestid);
 
                         if (voximplantScenario) {
                             if (voximplantScenario.ruleid && voximplantScenario.scenarioid) {
-                                var voximplantPhoneNumber = await channelfunctions.voximplantHandlePhoneNumber(request.user.corpid, request.user.orgid, request.user.usr, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, voximplantScenario.ruleid, service.country, service.category, service.state, (service.region || 0).toString(), service.cost, service.costinstallation, voximplantEnvironment.additionalperchannel);
+                                var voximplantPhoneNumber = await channelfunctions.voximplantHandlePhoneNumber(request.user.corpid, request.user.orgid, request.user.usr, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, voximplantScenario.ruleid, service.country, service.category, service.state, (service.region || 0).toString(), service.cost, service.costinstallation, voximplantEnvironment.additionalperchannel, request.originalUrl, request._requestid);
 
                                 if (voximplantPhoneNumber) {
                                     if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.phonenumber && voximplantPhoneNumber.queueid) {
@@ -1541,92 +1640,106 @@ exports.insertChannel = async (request, result) => {
                                             cost: service.cost,
                                             costvca: service.costvca,
                                             costinstallation: service.costinstallation,
+                                            recording: service.recording,
+                                            sms: service.sms,
+                                            outbound: service.outbound,
+                                            recordingstorage: service.recordingstorage?.value,
+                                            recordingquality: service.recordingquality?.value,
                                             additionalperchannel: voximplantEnvironment.additionalperchannel,
+                                        };
+
+                                        var voximplantRecording = {
+                                            recording: service.recording,
+                                            recordingstorage: service.recordingstorage?.value,
+                                            recordingquality: service.recordingquality?.value,
                                         };
 
                                         parameters.communicationchannelsite = voximplantPhoneNumber.phonenumber;
                                         parameters.communicationchannelowner = voximplantEnvironment.applicationname;
                                         parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                                        parameters.voximplantrecording = JSON.stringify(voximplantRecording);
                                         parameters.phone = voximplantPhoneNumber.phonenumber;
                                         parameters.type = 'VOXI';
 
                                         const transactionCreateVoximplant = await triggerfunctions.executesimpletransaction(method, parameters);
 
                                         if (transactionCreateVoximplant instanceof Array) {
-                                            return result.json({
+                                            return response.json({
                                                 integrationId: voximplantPhoneNumber.phonenumber,
                                                 success: true
                                             });
                                         }
                                         else {
-                                            return result.status(400).json({
+                                            return response.status(400).json({
                                                 msg: transactionCreateVoximplant.code,
                                                 success: false
                                             });
                                         }
                                     }
                                     else {
-                                        return result.status(400).json({
+                                        return response.status(400).json({
                                             msg: 'voximplant_phonenumberqueue_error',
                                             success: false
                                         });
                                     }
                                 }
                                 else {
-                                    return result.status(400).json({
+                                    return response.status(400).json({
                                         msg: 'voximplant_phonenumberqueue_error',
                                         success: false
                                     });
                                 }
                             }
                             else {
-                                return result.status(400).json({
+                                return response.status(400).json({
                                     msg: 'voximplant_scenariorule_error',
                                     success: false
                                 });
                             }
                         }
                         else {
-                            return result.status(400).json({
+                            return response.status(400).json({
                                 msg: 'voximplant_scenariorule_error',
                                 success: false
                             });
                         }
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: 'voximplant_accountapplication_error',
                             success: false
                         });
                     }
                 }
                 else {
-                    return result.status(400).json({
+                    return response.status(400).json({
                         msg: 'voximplant_accountapplication_error',
                         success: false
                     });
                 }
 
             default:
-                return result.status(400).json({
+                return response.status(400).json({
                     msg: 'Channel not supported',
                     success: false
                 });
         }
     }
     catch (exception) {
-        return result.status(500).json({
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
-            success: false
         });
     }
 }
 
-exports.updateChannel = async (request, result) => {
+exports.updateChannel = async (request, response) => {
     try {
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
         var { method, parameters = {}, service = {} } = request.body;
 
-        setSessionParameters(parameters, request.user);
+        setSessionParameters(parameters, request.user, request._requestid);
 
         parameters.corpid = request.user.corpid;
         parameters.orgid = request.user.orgid;
@@ -1683,10 +1796,11 @@ exports.updateChannel = async (request, result) => {
             }
         }
 
-        const requestWebChatCreate = await axios({
+        const requestWebChatCreate = await axiosObservable({
             data: webChatData,
             method: 'put',
-            url: `${brokerEndpoint}integrations/update/${parameters.communicationchannelsite}`
+            url: `${brokerEndpoint}integrations/update/${parameters.communicationchannelsite}`,
+            _requestid: request._requestid,
         });
 
         if (typeof requestWebChatCreate.data.id !== 'undefined' && requestWebChatCreate.data.id) {
@@ -1698,31 +1812,32 @@ exports.updateChannel = async (request, result) => {
             if (transactionCreateWebChat instanceof Array) {
                 try {
                     if (typeof webChatPlatformEndpoint !== 'undefined' && webChatPlatformEndpoint) {
-                        await axios({
+                        await axiosObservable({
                             data: parameters,
                             method: 'post',
-                            url: `${webChatPlatformEndpoint}integration/updatetodatabase`
+                            url: `${webChatPlatformEndpoint}integration/updatetodatabase`,
+                            _requestid: request._requestid,
                         });
                     }
                 }
                 catch (exception) {
-                    console.log(JSON.stringify(exception));
+                    printException(exception, request.originalUrl, responsedata.id);
                 }
 
-                return result.json({
+                return response.json({
                     integrationid: requestWebChatCreate.data.id,
                     success: true
                 });
             }
             else {
-                return result.status(400).json({
+                return response.status(400).json({
                     msg: transactionCreateWebChat.code,
                     success: false
                 });
             }
         }
         else {
-            return result.status(400).json({
+            return response.status(400).json({
                 msg: 'Could not update integration',
                 success: false
             });
@@ -1730,18 +1845,20 @@ exports.updateChannel = async (request, result) => {
 
     }
     catch (exception) {
-        return result.status(500).json({
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
-            success: false
         });
     }
 }
 
-exports.activateChannel = async (request, result) => {
+exports.activateChannel = async (request, response) => {
     try {
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
         var { method, parameters = {}, service = {} } = request.body;
 
-        setSessionParameters(parameters, request.user);
+        setSessionParameters(parameters, request.user, request._requestid);
 
         parameters.corpid = request.user.corpid;
         parameters.motive = 'Activate from API';
@@ -1762,15 +1879,18 @@ exports.activateChannel = async (request, result) => {
         parameters.updintegration = null;
         parameters.resolvelithium = null;
         parameters.phone = null;
+        parameters.apikey = null;
+        parameters.voximplantrecording = null;
 
         if (request.body.type === 'WHATSAPP') {
-            const requestCreateWhatsApp = await axios({
+            const requestCreateWhatsApp = await axiosObservable({
                 data: {
                     accessToken: service.accesstoken,
                     linkType: 'WHATSAPPADD'
                 },
                 method: 'post',
-                url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`
+                url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`,
+                _requestid: request._requestid,
             });
 
             if (requestCreateWhatsApp.data.success) {
@@ -1788,26 +1908,26 @@ exports.activateChannel = async (request, result) => {
                 const transactionActivateWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
 
                 if (transactionActivateWhatsApp instanceof Array) {
-                    return result.json({
+                    return response.json({
                         success: true
                     });
                 }
                 else {
-                    return result.status(400).json({
+                    return response.status(400).json({
                         msg: transactionActivateWhatsApp.code,
                         success: false
                     });
                 }
             }
             else {
-                return result.status(400).json({
+                return response.status(400).json({
                     msg: requestCreateWhatsApp.data.operationMessage,
                     success: false
                 });
             }
         }
         else {
-            const requestMigrateWhatsApp = await axios({
+            const requestMigrateWhatsApp = await axiosObservable({
                 data: {
                     linkType: 'WEBHOOKMIGRATE',
                     apiKeyId: service.apikeyid,
@@ -1815,7 +1935,8 @@ exports.activateChannel = async (request, result) => {
                     applicationId: service.appid
                 },
                 method: 'post',
-                url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`
+                url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
+                _requestid: request._requestid,
             });
 
             if (requestMigrateWhatsApp.data.success) {
@@ -1833,19 +1954,19 @@ exports.activateChannel = async (request, result) => {
                 const transactionActivateWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
 
                 if (transactionActivateWhatsApp instanceof Array) {
-                    return result.json({
+                    return response.json({
                         success: true
                     });
                 }
                 else {
-                    return result.status(400).json({
+                    return response.status(400).json({
                         msg: transactionActivateWhatsApp.code,
                         success: false
                     });
                 }
             }
             else {
-                return result.status(400).json({
+                return response.status(400).json({
                     msg: requestMigrateWhatsApp.data.operationMessage,
                     success: false
                 });
@@ -1853,9 +1974,9 @@ exports.activateChannel = async (request, result) => {
         }
     }
     catch (exception) {
-        return result.status(500).json({
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
-            success: false
         });
     }
 }

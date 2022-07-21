@@ -43,8 +43,14 @@ router.post("/graphic",
 router.post("/export",
     ip,
     auth,
-    mainController.export
-)+
+    mainController.exportTrigger
+)
+
+router.post("/exportTrigger",
+    ip,
+    auth,
+    mainController.exportWithCursor
+)
 
 router.post("/getToken",
     ip,

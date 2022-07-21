@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const ticketController = require("../controllers/ticketController");
 const auth = require('../middleware/auth');
+var multer = require('multer');
+var upload = multer();
 
 router.post("/reply",
     auth,
@@ -35,7 +37,8 @@ router.post("/massiveclose",
 )
 
 router.post("/import",
-    auth,    
+    auth,
+    upload.any(), 
     ticketController.import
 )
 
