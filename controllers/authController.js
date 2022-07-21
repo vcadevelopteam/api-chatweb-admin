@@ -43,6 +43,11 @@ const properties = [
         type: 'bool',
     },
     {
+        propertyname: "LIMITARREASIGNACIONGRUPO",
+        key: "limit_reassign_group",
+        type: 'bool',
+    },
+    {
         propertyname: "WAITINGTIMECUSTOMERMESSAGE",
         key: "waiting_customer_message",
         type: 'text',
