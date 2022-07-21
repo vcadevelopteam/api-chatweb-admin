@@ -37,7 +37,7 @@ exports.voxiTrigger = async (req, res) => {
             bodyToSend['rule_id'] = voxiorgdata[0].voximplantcampaignruleid;
         }
 
-        let callListResult = await voximplant.createCallList(req.body)
+        let callListResult = await voximplant.createCallList(bodyToSend)
         if (callListResult?.result) {
             bodyToSend['list_id'] = callListResult?.list_id;
             // await executesimpletransaction("QUERY_CAMPAIGN_START", {
