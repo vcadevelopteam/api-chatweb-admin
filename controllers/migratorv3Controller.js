@@ -8,6 +8,59 @@ const logger = require('../config/winston');
 
 /* ESTE MIGRADOR SOLO ES PARA AÑADIR DATA DE ZYXME A LARAIGO */
 
+/* MIGRATION HELPER correr antes de migrar
+CREATE TABLE IF NOT EXISTS public.migrationhelper
+(
+    idsjson jsonb
+);
+INSERT INTO migrationhelper (idsjson)
+SELECT jsonb_build_object(
+    'domainid', COALESCE((SELECT MAX(domainid) FROM domain),0),
+    'inputvalidationid', COALESCE((SELECT MAX(inputvalidationid) FROM inputvalidation),0),
+    'appintegrationid',  COALESCE((SELECT MAX(appintegrationid) FROM appintegration),0),
+    'botconfigurationid',  COALESCE((SELECT MAX(botconfigurationid) FROM botconfiguration),0),
+    'communicationchannelid',  COALESCE((SELECT MAX(communicationchannelid) FROM communicationchannel),0),
+    'communicationchannelstatusid',  COALESCE((SELECT MAX(communicationchannelstatusid) FROM communicationchannelstatus),0),
+    'propertyid',  COALESCE((SELECT MAX(propertyid) FROM property),0),
+    'userid',  COALESCE((SELECT MAX(userid) FROM usr),0),
+    'usertokenid',  COALESCE((SELECT MAX(usertokenid) FROM usertoken),0),
+    'userstatusid',  COALESCE((SELECT MAX(userstatusid) FROM userstatus),0),
+    'userhistoryid',  COALESCE((SELECT MAX(userhistoryid) FROM userhistory),0),
+    'usrnotificationid',  COALESCE((SELECT MAX(usrnotificationid) FROM usrnotification),0),
+    'classificationid',  COALESCE((SELECT MAX(classificationid) FROM classification),0),
+    'quickreplyid',  COALESCE((SELECT MAX(quickreplyid) FROM quickreply),0),
+    'personid',  COALESCE((SELECT MAX(personid) FROM person),0),
+    'personaddinfoid',  COALESCE((SELECT MAX(personaddinfoid) FROM personaddinfo),0),
+    'postid',  COALESCE((SELECT MAX(postid) FROM post),0),
+    'pccstatusid',  COALESCE((SELECT MAX(pccstatusid) FROM pccstatus),0),
+    'conversationid',  COALESCE((SELECT MAX(conversationid) FROM conversation),0),
+    'conversationnoteid',  COALESCE((SELECT MAX(conversationnoteid) FROM conversationnote),0),
+    'conversationpauseid',  COALESCE((SELECT MAX(conversationpauseid) FROM conversationpause),0),
+    'conversationstatusid',  COALESCE((SELECT MAX(conversationstatusid) FROM conversationstatus),0),
+    'interactionid',  COALESCE((SELECT MAX(interactionid) FROM interaction),0),
+    'surveyansweredid',  COALESCE((SELECT MAX(surveyansweredid) FROM surveyanswered),0),
+    'messagetemplateid',  COALESCE((SELECT MAX(messagetemplateid) FROM messagetemplate),0),
+    'campaignid',  COALESCE((SELECT MAX(campaignid) FROM campaign),0),
+    'campaignmemberid',  COALESCE((SELECT MAX(campaignmemberid) FROM campaignmember),0),
+    'campaignhistoryid',  COALESCE((SELECT MAX(campaignhistoryid) FROM campaignhistory),0),
+    'taskschedulerid',  COALESCE((SELECT MAX(taskschedulerid) FROM taskscheduler),0),
+    'chatblockversionid',  COALESCE((SELECT MAX(chatblockversionid) FROM blockversion),0),
+    'tablevariableconfigurationid',  COALESCE((SELECT MAX(tablevariableconfigurationid) FROM tablevariableconfiguration),0),
+    'intelligentmodelsid',  COALESCE((SELECT MAX(intelligentmodelsid) FROM intelligentmodels),0),
+    'intelligentmodelsconfigurationid',  COALESCE((SELECT MAX(intelligentmodelsconfigurationid) FROM intelligentmodelsconfiguration),0),
+    'paymentid',  COALESCE((SELECT MAX(paymentid) FROM payment),0),
+    'productivityid',  COALESCE((SELECT MAX(productivityid) FROM productivity),0),
+    'blacklistid',  COALESCE((SELECT MAX(blacklistid) FROM blacklist),0),
+    'hsmhistoryid',  COALESCE((SELECT MAX(hsmhistoryid) FROM hsmhistory),0),
+    'inappropriatewordsid',  COALESCE((SELECT MAX(inappropriatewordsid) FROM inappropriatewords),0),
+    'labelid',  COALESCE((SELECT MAX(labelid) FROM label),0),
+    'locationid',  COALESCE((SELECT MAX(locationid) FROM location),0),
+    'reporttemplateid',  COALESCE((SELECT MAX(reporttemplateid) FROM reporttemplate),0),
+    'slaid',  COALESCE((SELECT MAX(slaid) FROM sla),0),
+    'whitelistid',  COALESCE((SELECT MAX(whitelistid) FROM whitelist),0)
+);
+*/
+
 /* Índice de tablas
 
 Propios del sistema
@@ -636,101 +689,6 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
         }
     };
     return executeResult;
-}
-
-/*
-SELECT jsonb_build_object(
-    'domainid', COALESCE((SELECT MAX(domainid) FROM domain),0),
-    'inputvalidationid', COALESCE((SELECT MAX(inputvalidationid) FROM inputvalidation),0),
-    'appintegrationid',  COALESCE((SELECT MAX(appintegrationid) FROM appintegration),0),
-    'botconfigurationid',  COALESCE((SELECT MAX(botconfigurationid) FROM botconfiguration),0),
-    'communicationchannelid',  COALESCE((SELECT MAX(communicationchannelid) FROM communicationchannel),0),
-    'communicationchannelstatusid',  COALESCE((SELECT MAX(communicationchannelstatusid) FROM communicationchannelstatus),0),
-    'propertyid',  COALESCE((SELECT MAX(propertyid) FROM property),0),
-    'userid',  COALESCE((SELECT MAX(userid) FROM usr),0),
-    'usertokenid',  COALESCE((SELECT MAX(usertokenid) FROM usertoken),0),
-    'userstatusid',  COALESCE((SELECT MAX(userstatusid) FROM userstatus),0),
-    'userhistoryid',  COALESCE((SELECT MAX(userhistoryid) FROM userhistory),0),
-    'usrnotificationid',  COALESCE((SELECT MAX(usrnotificationid) FROM usrnotification),0),
-    'classificationid',  COALESCE((SELECT MAX(classificationid) FROM classification),0),
-    'quickreplyid',  COALESCE((SELECT MAX(quickreplyid) FROM quickreply),0),
-    'personid',  COALESCE((SELECT MAX(personid) FROM person),0),
-    'personaddinfoid',  COALESCE((SELECT MAX(personaddinfoid) FROM personaddinfo),0),
-    'postid',  COALESCE((SELECT MAX(postid) FROM post),0),
-    'pccstatusid',  COALESCE((SELECT MAX(pccstatusid) FROM pccstatus),0),
-    'conversationid',  COALESCE((SELECT MAX(conversationid) FROM conversation),0),
-    'conversationnoteid',  COALESCE((SELECT MAX(conversationnoteid) FROM conversationnote),0),
-    'conversationpauseid',  COALESCE((SELECT MAX(conversationpauseid) FROM conversationpause),0),
-    'conversationstatusid',  COALESCE((SELECT MAX(conversationstatusid) FROM conversationstatus),0),
-    'interactionid',  COALESCE((SELECT MAX(interactionid) FROM interaction),0),
-    'surveyansweredid',  COALESCE((SELECT MAX(surveyansweredid) FROM surveyanswered),0),
-    'messagetemplateid',  COALESCE((SELECT MAX(messagetemplateid) FROM messagetemplate),0),
-    'campaignid',  COALESCE((SELECT MAX(campaignid) FROM campaign),0),
-    'campaignmemberid',  COALESCE((SELECT MAX(campaignmemberid) FROM campaignmember),0),
-    'campaignhistoryid',  COALESCE((SELECT MAX(campaignhistoryid) FROM campaignhistory),0),
-    'taskschedulerid',  COALESCE((SELECT MAX(taskschedulerid) FROM taskscheduler),0),
-    'chatblockversionid',  COALESCE((SELECT MAX(chatblockversionid) FROM blockversion),0),
-    'tablevariableconfigurationid',  COALESCE((SELECT MAX(tablevariableconfigurationid) FROM tablevariableconfiguration),0),
-    'intelligentmodelsid',  COALESCE((SELECT MAX(intelligentmodelsid) FROM intelligentmodels),0),
-    'intelligentmodelsconfigurationid',  COALESCE((SELECT MAX(intelligentmodelsconfigurationid) FROM intelligentmodelsconfiguration),0),
-    'paymentid',  COALESCE((SELECT MAX(paymentid) FROM payment),0),
-    'productivityid',  COALESCE((SELECT MAX(productivityid) FROM productivity),0),
-    'blacklistid',  COALESCE((SELECT MAX(blacklistid) FROM blacklist),0),
-    'hsmhistoryid',  COALESCE((SELECT MAX(hsmhistoryid) FROM hsmhistory),0),
-    'inappropriatewordsid',  COALESCE((SELECT MAX(inappropriatewordsid) FROM inappropriatewords),0),
-    'labelid',  COALESCE((SELECT MAX(labelid) FROM label),0),
-    'locationid',  COALESCE((SELECT MAX(locationid) FROM location),0),
-    'reporttemplateid',  COALESCE((SELECT MAX(reporttemplateid) FROM reporttemplate),0),
-    'slaid',  COALESCE((SELECT MAX(slaid) FROM sla),0),
-    'whitelistid',  COALESCE((SELECT MAX(whitelistid) FROM whitelist),0)
-)
-*/
-
-const maxids =
-{
-    "domainid": 5124,
-    "inputvalidationid": 40,
-    "appintegrationid": 0,
-    "botconfigurationid": 10,
-    "communicationchannelid": 65,
-    "communicationchannelstatusid": 0,
-    "propertyid": 1948,
-    "userid": 1991,
-    "usertokenid": 232761,
-    "userstatusid": 2135,
-    "userhistoryid": 1218721,
-    "usrnotificationid": 501,
-    "classificationid": 1173,
-    "quickreplyid": 90,
-    "personid": 7637830,
-    "personaddinfoid": 13728,
-    "postid": 25889,
-    "pccstatusid": 9752861,
-    "conversationid": 10425530,
-    "conversationnoteid": 71,
-    "conversationpauseid": 546720,
-    "conversationstatusid": 21314656,
-    "interactionid": 205480198,
-    "surveyansweredid": 0,
-    "messagetemplateid": 157,
-    "campaignid": 46386,
-    "campaignmemberid": 5587971,
-    "campaignhistoryid": 5047008,
-    "taskschedulerid": 46032,
-    "chatblockversionid": 89,
-    "tablevariableconfigurationid": 2853,
-    "intelligentmodelsid": 0,
-    "intelligentmodelsconfigurationid": 0,
-    "paymentid": 0,
-    "productivityid": 5092128,
-    "blacklistid": 0,
-    "hsmhistoryid": 371432,
-    "inappropriatewordsid": 2,
-    "labelid": 4,
-    "locationid": 13772,
-    "reporttemplateid": 21,
-    "slaid": 0,
-    "whitelistid": 5122
 }
 
 const queryCore = {
