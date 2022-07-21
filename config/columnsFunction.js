@@ -685,4 +685,48 @@ module.exports = {
             type: "date"
         },
     },
+    survey: {
+        ticketnum: {
+            column: "co.ticketnum"
+        },
+        ticketdate: {
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','DD/MM/YYYY')"
+        },
+        tickettime: {
+            column: "to_char(co.startdate + '||p_offset||' * INTERVAL ''1hour'',''HH24:MI:SS'')"
+        },
+        classification: {
+            column: "COALESCE(co.classification, ''NINGUNO'')"
+        },
+        supervisor: {
+            column: "CONCAT(usr2.firstname, '' '', usr2.lastname) as supervisordesc"
+        },
+        agent: {
+            column: "CONCAT(usr.firstname, '' '', usr.lastname)"
+        },
+        firstgroup: {
+            column: "COALESCE(domi.domaindesc, ''NINGUNO'')"
+        },
+        lastgroup: {
+            column: "COALESCE(dom.domaindesc, ''NINGUNO'')"
+        },
+        answer1: {
+            column: "sa.answer1"
+        },
+        comment1: {
+            column: "CASE WHEN sa.comment1 <> '''' THEN sa.comment1 ELSE ''-'' END"
+        },
+        answer2: {
+            column: "sa.answer2"
+        },
+        comment2: {
+            column: "CASE WHEN sa.comment2 <> '''' THEN sa.comment2 ELSE ''-'' END"
+        },
+        answer3: {
+            column: "sa.answer3"
+        },
+        comment3: {
+            column: "CASE WHEN sa.comment3 <> '''' THEN sa.comment3 ELSE ''-'' END"
+        },
+    },
 }
