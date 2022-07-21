@@ -619,8 +619,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     corpidBind['maxid'] = max?.[0]?.max;
                     await laraigoQuery(`ALTER SEQUENCE ${q.sequence} START ${parseInt(max[0].max) + 1}`);
                     await laraigoQuery(`ALTER SEQUENCE ${q.sequence} RESTART`);
-                    corpidBind['idsjson'][laraigoid] = max?.[0]?.max;
-                    await laraigoQuery(`UPDATE migrationhelper SET idsjson = $idsjson`, { idsjson: JSON.stringify(corpidBind['idsjson']) })
+                    try {
+                        corpidBind['idsjson'][laraigoid] = max?.[0]?.max;
+                        await laraigoQuery(`UPDATE migrationhelper SET idsjson = $idsjson`, { idsjson: JSON.stringify(corpidBind['idsjson']) })
+                    }
+                    catch (error) {
+                        logger.child({ _requestid: corpidBind._requestid }).error(error);
+                    }
                 }
             }
             logger.child({ _requestid: corpidBind._requestid }).info(`Done ${k} maxid: ${corpidBind['maxid']}`)
