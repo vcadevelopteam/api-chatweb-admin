@@ -13,6 +13,7 @@ exports.voxiTrigger = async (req, res) => {
 
         const csv = buildcsv(data.map((d) => ({
             ...d,
+            campaignid,
             caller_id: voxinumber[0].communicationchannelsite,
             __start_execution_time: '00:00:00',
             __end_execution_time: '23:59:59',
