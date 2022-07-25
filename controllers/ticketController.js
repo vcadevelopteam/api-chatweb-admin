@@ -300,7 +300,7 @@ exports.sendHSM = async (req, res) => {
                         _requestid: req._requestid,
                     })
                 } else {
-                    executesimpletransaction("QUERY_INSER_HSM_HISTORY", {
+                    executesimpletransaction("QUERY_INSERT_HSM_HISTORY", {
                         ...data,
                         status: 'FINALIZADO',
                         success: false,

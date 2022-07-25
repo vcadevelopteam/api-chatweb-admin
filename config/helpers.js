@@ -432,3 +432,13 @@ exports.secondsToTime = (sec_num) => {
     const stringdays = days === 0 ? days + " day " : (days > 1 ? days + " days " : days + " day ");
     return stringdays + hours + ':' + minutes + ':' + seconds;
 }
+
+exports.buildcsv = (data) => {
+    let csv = ""
+    csv += Object.keys(data[0]).join(";");
+    data.forEach(dt => {
+        csv += '\n';
+        csv += Object.values(dt).map(x => `${x}`.replace(/\;/, ',')).join(';');
+    });
+    return csv;
+}
