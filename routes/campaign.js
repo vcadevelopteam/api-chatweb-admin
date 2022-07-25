@@ -14,6 +14,11 @@ router.post("/stop",
     campaignController.stop
 )
 
+router.post("/hsmcall",
+    auth,    
+    campaignController.voxiTriggerHSM
+)
+
 router.post("/voxiTrigger",
     campaignController.voxiTrigger
 )
