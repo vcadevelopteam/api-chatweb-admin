@@ -95,6 +95,7 @@ exports.voxiTriggerHSM = async (req, res) => {
                     MessageTemplateId: 0,
                     ShippingReason: "INBOX",
                     HsmId: "",
+                    CommunicationChannelId: parameters.communicationchannelid,
                     Body: ""
                 }),
             })
