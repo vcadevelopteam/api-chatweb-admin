@@ -1713,8 +1713,8 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
-    QUERY_INSER_HSM_HISTORY: {
-        query: "insert into hsmhistory (corpid, orgid, description, status, type, createdate, createby, changedate, changeby, config, success, message, shippingreason, messagetemplateid) values ($corpid, $orgid, '', $status, $type, NOW(), 'admin', NOW(), 'admin', $config, $success, $message, $shippingreason, $messatemplateid)",
+    QUERY_INSERT_HSM_HISTORY: {
+        query: "insert into hsmhistory (corpid, orgid, description, status, type, createdate, createby, changedate, changeby, config, success, message, shippingreason, messagetemplateid) values ($corpid, $orgid, '', $status, $type, NOW(), 'admin', NOW(), 'admin', $config, $success, $message, $shippingreason, $messatemplateid) returning hsmhistoryid",
         module: "",
         protected: "SELECT"
     },
