@@ -2495,5 +2495,10 @@ module.exports = {
         query: "SELECT firstname, lastname, email, phone, country FROM usr WHERE userid = $userid;",
         module: "",
         protected: "SELECT"
-    }
+    },
+    UFN_CLASSIFICATION_DEL: {
+        query: "select * from ufn_classification_del($corpid, $orgid, $id)",
+        module: "",
+        protected: "SELECT"
+    },
 }
