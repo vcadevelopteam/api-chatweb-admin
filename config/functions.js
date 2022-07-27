@@ -2441,4 +2441,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DASHBOARD_DISCONNECTIONTIMES_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_disconnectiontimes_data_sel($corpid, $orgid, $startdate, $enddate, $asesorid, $supervisorid, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
 }
