@@ -2,7 +2,8 @@ const channelfunctions = require("../config/channelfunctions");
 const voximplant = require("../config/voximplantfunctions");
 
 const { executesimpletransaction } = require('../config/triggerfunctions');
-const { setSessionParameters, getErrorCode } = require('../config/helpers');
+
+const { setSessionParameters, getErrorCode, buildcsv } = require('../config/helpers');
 const axios = require("axios");
 
 const voximplantParentAccountId = process.env.VOXIMPLANT_ACCOUNT_ID;
@@ -1503,4 +1504,133 @@ function getDateString(date) {
 
 function padTwoDigits(num) {
     return num.toString().padStart(2, "0");
+}
+
+exports.createCallList = async (request, result) => {
+    try {
+        if (!request.body?.message) {
+            return res.status(500).json({ success: false, msg: 'No message' });
+        }
+        if (!request.body?.data?.length > 0) {
+            return res.status(500).json({ success: false, msg: 'No members' });
+        }
+        let unix_start_at = Math.trunc(new Date().getTime() / 1000);
+        let data = request.body?.data.map(d => {
+            let message = request.body?.message;
+            Object.keys(d).forEach(k => {
+                message = message.replace(`{{${k}}}`, d[k])
+            });
+            return {
+                ...d,
+                message,
+                __start_execution_time: '00:00:00',
+                __end_execution_time: '23:59:59',
+                __start_at: unix_start_at
+            }
+        });
+        let csv = buildcsv(data);
+        request.body['file_content'] = csv;
+        let requestResult = await voximplant.createCallList(request.body);
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
+    }
+    catch (err) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: err.message,
+            success: false,
+        })
+    }
+}
+
+exports.createManualCallList = async (request, result) => {
+    try {
+        if (!request.body?.message) {
+            return res.status(500).json({ success: false, msg: 'No message' });
+        }
+        if (!request.body?.data?.length > 0) {
+            return res.status(500).json({ success: false, msg: 'No members' });
+        }
+        let unix_start_at = Math.trunc(new Date().getTime() / 1000);
+        let data = request.body?.data.map(d => {
+            let message = request.body?.message;
+            Object.keys(d).forEach(k => {
+                message = message.replace(`{{${k}}}`, d[k])
+            });
+            return {
+                ...d,
+                message,
+                __start_execution_time: '00:00:00',
+                __end_execution_time: '23:59:59',
+                __start_at: unix_start_at
+            }
+        });
+        let csv = buildcsv(data);
+        request.body['file_content'] = csv;
+        let requestResult = await voximplant.createManualCallList(request.body);
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
+    }
+    catch (err) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: err.message,
+            success: false,
+        })
+    }
+}
+
+exports.startNextCallTask = async (request, result) => {
+    try {
+        let requestResult = await voximplant.startNextCallTask(request.body)
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
+    }
+    catch (err) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: err.message,
+            success: false,
+        })
+    }
+}
+
+exports.getCallLists = async (request, result) => {
+    try {
+        let requestResult = await voximplant.getCallLists(request.body)
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
+    }
+    catch (err) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: err.message,
+            success: false,
+        })
+    }
+}
+
+exports.stopCallListProcessing = async (request, result) => {
+    try {
+        let requestResult = await voximplant.stopCallListProcessing(request.body)
+        if (requestResult)
+            return result.json(requestResult);
+        return result.status(400).json(requestResult)
+    }
+    catch (err) {
+        return result.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: err.message,
+            success: false,
+        })
+    }
 }

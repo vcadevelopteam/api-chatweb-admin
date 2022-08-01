@@ -98,7 +98,7 @@ const send = async (data, requestid) => {
                         _requestid: requestid,
                     })
                 } else {
-                    executesimpletransaction("QUERY_INSER_HSM_HISTORY", {
+                    executesimpletransaction("QUERY_INSERT_HSM_HISTORY", {
                         ...data,
                         status: 'FINALIZADO',
                         success: false,

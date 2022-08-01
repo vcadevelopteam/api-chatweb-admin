@@ -983,3 +983,145 @@ exports.setCustomRecordStorageInfo = async ({ account_id, account_name, child_ap
         return undefined;
     }
 }
+
+exports.createCallList = async ({ account_id, account_name, child_apikey, rule_id, name = new Date().toISOString(), file_content, queue_id }) => {
+    try {
+        const data = {};
+        setChildData({ data, account_id, account_name });
+        data['rule_id'] = rule_id
+        data['priority'] = 0
+        data['max_simultaneous'] = 10
+        data['num_attempts'] = 1
+        data['name'] = name
+        data['file_content'] = file_content
+        if (queue_id) {
+            data['queue_id'] = queue_id
+        }
+        if (child_apikey) {
+            data['child_apikey'] = child_apikey;
+        }
+        const result = await voximplantRequest('CreateCallList', data);
+        return result.data;
+        // {
+        //     "result": true,
+        //     "list_id": 250933,
+        //     "count": 1
+        // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.createManualCallList = async ({ account_id, account_name, child_apikey, rule_id, name = new Date().toISOString(), file_content, queue_id }) => {
+    try {
+        const data = {};
+        setChildData({ data, account_id, account_name });
+        data['rule_id'] = rule_id
+        data['priority'] = 0
+        data['max_simultaneous'] = 10
+        data['num_attempts'] = 1
+        data['name'] = name
+        data['file_content'] = file_content
+        if (queue_id) {
+            data['queue_id'] = queue_id
+        }
+        if (child_apikey) {
+            data['child_apikey'] = child_apikey;
+        }
+        const result = await voximplantRequest('CreateManualCallList', data);
+        return result.data;
+        // {
+        //     "result": true,
+        //     "list_id": 250933,
+        //     "count": 1
+        // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.startNextCallTask = async ({ account_id, account_name, child_apikey, list_id, custom_params }) => {
+    try {
+        const data = {};
+        setChildData({ data, account_id, account_name });
+        data['list_id'] = list_id
+        if (custom_params) {
+            data['custom_params'] = custom_params
+        }
+        if (child_apikey) {
+            data['child_apikey'] = child_apikey;
+        }
+        const result = await voximplantRequest('StartNextCallTask', data);
+        return result.data;
+        // {
+        //     "result": 1,
+        //     "list_id": 250940
+        // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.getCallLists = async ({ account_id, account_name, child_apikey, list_id }) => {
+    try {
+        const data = {};
+        setChildData({ data, account_id, account_name });
+        data['list_id'] = list_id
+        if (child_apikey) {
+            data['child_apikey'] = child_apikey;
+        }
+        const result = await voximplantRequest('GetCallLists', data);
+        return result.data;
+        // {
+        //     "result": [
+        //         {
+        //             "rule_id": 763863,
+        //             "num_attempts": 1,
+        //             "type_list": "MANUAL",
+        //             "list_id": 250968,
+        //             "user_id": 3955559,
+        //             "max_simultaneous": 10,
+        //             "interval_seconds": 0,
+        //             "dt_submit": "2022-06-01 18:57:10",
+        //             "list_name": "2022-06-01T18:57:11.140Z",
+        //             "priority": 0,
+        //             "dt_complete": "2022-06-01 19:00:46",
+        //             "status": "Completed"
+        //         }
+        //     ],
+        //     "total_count": 1,
+        //     "count": 1
+        // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+exports.stopCallListProcessing = async ({ account_id, account_name, child_apikey, list_id }) => {
+    try {
+        const data = {};
+        setChildData({ data, account_id, account_name });
+        data['list_id'] = list_id
+        if (child_apikey) {
+            data['child_apikey'] = child_apikey;
+        }
+        const result = await voximplantRequest('StopCallListProcessing', data);
+        return result.data;
+        // {
+        //     "result": true,
+        //     "msg": "Tasks canceled."
+        // }
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
