@@ -8,6 +8,8 @@ const logger = require('../config/winston');
 const bridgeEndpoint = process.env.BRIDGE;
 const brokerEndpoint = process.env.CHATBROKER;
 const facebookEndpoint = process.env.FACEBOOKAPI;
+const gupshupEndpoint = process.env.GUPSHUP;
+const gupshupPartnerEndpoint = process.env.GUPSHUPPARTNER;
 const hookEndpoint = process.env.HOOK;
 const smoochEndpoint = process.env.SMOOCHAPI;
 const smoochVersion = process.env.SMOOCHVERSION;
@@ -1602,6 +1604,55 @@ exports.insertChannel = async (request, response) => {
                 else {
                     return response.status(400).json({
                         msg: requestInsertWhatsAppSmooch.data.operationMessage,
+                        success: false
+                    });
+                }
+
+            case 'WHATSAPPGUPSHUP':
+                const requestInsertWhatsAppGupshup = await axiosObservable({
+                    data: {
+                        partnerToken: service.partnertoken,
+                        applicationId: service.appid,
+                        linkType: 'WEBHOOKMIGRATE'
+                    },
+                    method: 'post',
+                    url: `${bridgeEndpoint}processlaraigo/gupshup/managegupshuplink`,
+                    _requestid: request._requestid,
+                });
+
+                if (requestInsertWhatsAppGupshup.data.success) {
+                    var serviceCredentials = {
+                        app: requestInsertWhatsAppGupshup.data.appName,
+                        apikey: requestInsertWhatsAppGupshup.data.apiKey,
+                        endpoint: gupshupEndpoint,
+                        endpointPartner: gupshupPartnerEndpoint,
+                        partnerToken: service.partnertoken,
+                        appId: service.appid,
+                    };
+
+                    parameters.communicationchannelsite = requestInsertWhatsAppGupshup.data.appName;
+                    parameters.communicationchannelowner = service.appid;
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.phone = requestInsertWhatsAppGupshup.data.phoneNumber;
+                    parameters.type = 'WHAG';
+
+                    const transactionInsertWhatsAppGupshup = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionInsertWhatsAppGupshup instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionInsertWhatsAppGupshup.code,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    return response.status(400).json({
+                        msg: requestInsertWhatsAppGupshup.data.operationMessage,
                         success: false
                     });
                 }
