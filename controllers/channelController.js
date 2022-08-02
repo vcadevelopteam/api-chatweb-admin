@@ -8,8 +8,6 @@ const logger = require('../config/winston');
 const bridgeEndpoint = process.env.BRIDGE;
 const brokerEndpoint = process.env.CHATBROKER;
 const facebookEndpoint = process.env.FACEBOOKAPI;
-const gupshupEndpoint = process.env.GUPSHUP;
-const gupshupPartnerEndpoint = process.env.GUPSHUPPARTNER;
 const hookEndpoint = process.env.HOOK;
 const smoochEndpoint = process.env.SMOOCHAPI;
 const smoochVersion = process.env.SMOOCHVERSION;
@@ -636,6 +634,59 @@ exports.deleteChannel = async (request, response) => {
                     else {
                         return response.status(400).json({
                             msg: transactionDeleteVoximplant.code,
+                            success: false
+                        });
+                    }
+                }
+
+            case 'WHAG':
+                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+                    var serviceCredentials = JSON.parse(parameters.servicecredentials);
+
+                    const requestDeleteWhatsAppGupshup = await axiosObservable({
+                        data: {
+                            apiKey: serviceCredentials.apiKey,
+                            appId: parameters.communicationchannelowner,
+                            linkType: 'GUPSHUPREMOVE',
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processlaraigo/gupshup/managegupshuplink`,
+                        _requestid: request._requestid,
+                    });
+
+                    if (requestDeleteWhatsAppGupshup.data.success) {
+                        const transactionDeleteWhatsAppGupshup = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                        if (transactionDeleteWhatsAppGupshup instanceof Array) {
+                            return response.json({
+                                success: true
+                            });
+                        }
+                        else {
+                            return response.status(400).json({
+                                msg: transactionDeleteWhatsAppGupshup.code,
+                                success: false
+                            });
+                        }
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: requestDeleteWhatsAppGupshup.data.operationMessage,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    const transactionDeleteWhatsAppGupshup = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionDeleteWhatsAppGupshup instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionDeleteWhatsAppGupshup.code,
                             success: false
                         });
                     }
@@ -1611,9 +1662,9 @@ exports.insertChannel = async (request, response) => {
             case 'WHATSAPPGUPSHUP':
                 const requestInsertWhatsAppGupshup = await axiosObservable({
                     data: {
-                        partnerToken: service.partnertoken,
-                        applicationId: service.appid,
-                        linkType: 'WEBHOOKMIGRATE'
+                        apiKey: service.apikey,
+                        appId: service.appid,
+                        linkType: 'GUPSHUPADD',
                     },
                     method: 'post',
                     url: `${bridgeEndpoint}processlaraigo/gupshup/managegupshuplink`,
@@ -1622,18 +1673,16 @@ exports.insertChannel = async (request, response) => {
 
                 if (requestInsertWhatsAppGupshup.data.success) {
                     var serviceCredentials = {
-                        app: requestInsertWhatsAppGupshup.data.appName,
-                        apikey: requestInsertWhatsAppGupshup.data.apiKey,
-                        endpoint: gupshupEndpoint,
-                        endpointPartner: gupshupPartnerEndpoint,
-                        partnerToken: service.partnertoken,
-                        appId: service.appid,
+                        apiKey: service.apikey,
+                        app: service.appname,
+                        endpoint: `${requestInsertWhatsAppGupshup.data.endpoint}sm/api/v1/`,
+                        number: service.appnumber,
                     };
 
-                    parameters.communicationchannelsite = requestInsertWhatsAppGupshup.data.appName;
+                    parameters.communicationchannelsite = service.appname;
                     parameters.communicationchannelowner = service.appid;
+                    parameters.phone = service.appnumber;
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
-                    parameters.phone = requestInsertWhatsAppGupshup.data.phoneNumber;
                     parameters.type = 'WHAG';
 
                     const transactionInsertWhatsAppGupshup = await triggerfunctions.executesimpletransaction(method, parameters);
