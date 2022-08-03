@@ -170,4 +170,21 @@ router.post("/pricingCountryData",
     voximplantController.pricingCountryData
 )
 
+// Campaign //
+router.post("/createCallList",
+    voximplantController.createCallList
+)
+router.post("/createManualCallList",
+    voximplantController.createManualCallList
+)
+router.post("/startNextCallTask",
+    voximplantController.startNextCallTask
+)
+router.post("/getCallLists",
+    voximplantController.getCallLists
+)
+router.post("/stopCallListProcessing",
+    voximplantController.stopCallListProcessing
+)
+
 module.exports = router;

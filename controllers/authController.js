@@ -38,6 +38,11 @@ const properties = [
         type: 'int'
     },
     {
+        propertyname: "SEGUNDOSARESPONDERLLAMADA",
+        key: "seconds_to_answer_call",
+        type: 'int'
+    },
+    {
         propertyname: "OCULTARLOGCONVERSACION",
         key: "hide_log_conversation",
         type: 'bool',
