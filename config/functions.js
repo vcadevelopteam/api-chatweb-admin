@@ -2495,5 +2495,25 @@ module.exports = {
         query: "SELECT firstname, lastname, email, phone, country FROM usr WHERE userid = $userid;",
         module: "",
         protected: "SELECT"
-    }
+    },
+    UFN_REPORT_SURVEY_SEL: {
+        query: "SELECT * FROM ufn_report_survey_sel($corpid, $orgid, $startdate, $enddate, $take, $skip, $where, $order, $userid, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_SURVEY_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_report_survey_totalrecords($corpid, $orgid, $startdate, $enddate, $where, $userid, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_SURVEY_EXPORT: {
+        query: "SELECT * FROM ufn_report_survey_export($corpid, $orgid, $startdate, $enddate, $where, $order, $userid, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_SURVEY_GRAPHIC: {
+        query: "SELECT * FROM ufn_report_survey_graphic($corpid, $orgid, $startdate, $enddate, $where, $order, $userid, $column, $summarization, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
 }
