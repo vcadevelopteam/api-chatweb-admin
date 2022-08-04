@@ -156,7 +156,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_WHITELIST_INS: {
-        query: "SELECT * FROM ufn_whitelist_ins($corpid,$orgid,$id,$operation,$documenttype,$documentnumber,$usergroup,$type,$status,$asesorname,$username)",
+        query: "SELECT * FROM ufn_whitelist_ins($corpid,$orgid,$id,$operation,$phone,$documenttype,$documentnumber,$usergroup,$type,$status,$asesorname,$username)",
         module: "/extras/whitelist",
         protected: "INSERT"
     },
