@@ -226,10 +226,10 @@ exports.getCallRecord = async (request, response) => {
                         responseType: 'arraybuffer',
                     });
                     if (record_data.status === 200) {
-                        result.set('Content-Disposition', record_data.headers["content-disposition"]);
-                        result.set('Content-Type', record_data.headers["content-type"]);
+                        response.set('Content-Disposition', record_data.headers["content-disposition"]);
+                        response.set('Content-Type', record_data.headers["content-type"]);
                         let base64data = record_data.data.toString('base64');
-                        return result.send(base64data)
+                        return response.send(base64data)
                     }
                 }
                 catch (error) {
