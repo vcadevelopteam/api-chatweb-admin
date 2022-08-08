@@ -211,7 +211,7 @@ exports.getCallRecord = async (request, response) => {
             if (requestResult?.result.length > 0) {
                 let record_url_str = requestResult?.result[0]?.records?.[0]?.record_url;
                 if (!record_url_str) {
-                    return result.status(400).json({
+                    return response.status(400).json({
                         ...resultData,
                         code: "error_no_record",
                         message: "No record"
@@ -233,7 +233,7 @@ exports.getCallRecord = async (request, response) => {
                     }
                 }
                 catch (error) {
-                    return result.status(400).json({
+                    return response.status(400).json({
                         ...resultData,
                         code: "error_record_error",
                         message: "Record error"
@@ -1509,10 +1509,10 @@ function padTwoDigits(num) {
 exports.createCallList = async (request, result) => {
     try {
         if (!request.body?.message) {
-            return res.status(500).json({ success: false, msg: 'No message' });
+            return result.status(500).json({ success: false, msg: 'No message' });
         }
         if (!request.body?.data?.length > 0) {
-            return res.status(500).json({ success: false, msg: 'No members' });
+            return result.status(500).json({ success: false, msg: 'No members' });
         }
         let unix_start_at = Math.trunc(new Date().getTime() / 1000);
         let data = request.body?.data.map(d => {
