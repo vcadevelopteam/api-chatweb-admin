@@ -156,7 +156,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_WHITELIST_INS: {
-        query: "SELECT * FROM ufn_whitelist_ins($corpid,$orgid,$id,$operation,$documenttype,$documentnumber,$usergroup,$type,$status,$asesorname,$username)",
+        query: "SELECT * FROM ufn_whitelist_ins($corpid,$orgid,$id,$operation,$phone,$documenttype,$documentnumber,$usergroup,$type,$status,$asesorname,$username)",
         module: "/extras/whitelist",
         protected: "INSERT"
     },
@@ -2514,6 +2514,11 @@ module.exports = {
     UFN_REPORT_SURVEY_GRAPHIC: {
         query: "SELECT * FROM ufn_report_survey_graphic($corpid, $orgid, $startdate, $enddate, $where, $order, $userid, $column, $summarization, $offset)",
         module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_CLASSIFICATION_DEL: {
+        query: "select * from ufn_classification_del($corpid, $orgid, $id)",
+        module: "",
         protected: "SELECT"
     },
 }
