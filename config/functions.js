@@ -2516,4 +2516,9 @@ module.exports = {
         module: "/reports",
         protected: "SELECT"
     },
+    UFN_CLASSIFICATION_DEL: {
+        query: "select * from ufn_classification_del($corpid, $orgid, $id)",
+        module: "",
+        protected: "SELECT"
+    },
 }
