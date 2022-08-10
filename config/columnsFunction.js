@@ -729,4 +729,84 @@ module.exports = {
             column: "CASE WHEN sa.comment3 <> '' THEN sa.comment3 ELSE '-' END"
         },
     },
+    ticketvsadviser: {
+        numeroticket: {
+            column: "co.ticketnum"
+        },
+        fechainicio: {
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')"
+        },
+        horainicio: {
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'HH24:MI:SS')"
+        },
+        asesorid: {
+            column: "co.lastuserid"
+        },
+        asesor: {
+            column: "CONCAT(usr.firstname, ' ', usr.lastname)"
+        },
+        canalid: {
+            column: "co.communicationchannelid"
+        },
+        canal: {
+            column: "cc.description"
+        },
+        tipo: {
+            column: "cla2.description"
+        },
+        submotivo: {
+            column: "cla1.description"
+        },
+        valoracion: {
+            column: "cla.description"
+        },
+        cerradopor: {
+            column: "ous.type"
+        },
+        tipocierre: {
+            column: "coalesce(do2.domaindesc, co.closetype)"
+        },
+        tipo_operacion: {
+            column: "co.variablecontextjsonb->'operacion'->>'Value'"
+        },
+        operador: {
+            column: "co.variablecontextjsonb->'nomoperador'->>'Value'"
+        },
+        plan: {
+            column: "co.variablecontextjsonb->'tipoplandest'->>'Value'"
+        },
+        modalidad_compra: {
+            column: "co.variablecontextjsonb->'var_compra_productos'->>'Value'"
+        },
+        provincia: {
+            column: "co.variablecontextjsonb->'province'->>'Value'"
+        },
+        distrito: {
+            column: "co.variablecontextjsonb->'district'->>'Value'"
+        },
+        telefono: {
+            column: "co.variablecontextjsonb->'alternativephone'->>'Value'"
+        },
+        documento: {
+            column: "co.variablecontextjsonb->'documentnumber'->>'Value'"
+        },
+        fechaprimerarespuesta: {
+            column: "CASE WHEN co.userfirstreplytime = '00:00:00' THEN null ELSE to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY') END",
+        },
+        horaprimerarespuesta: {
+            column: "CASE WHEN co.userfirstreplytime = '00:00:00' THEN null ELSE to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'HH24:MI:SS') END",
+        },
+        fechaultimarespuesta: {
+            column: "to_char(co.lastreplydate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')",
+        },
+        horaultimarespuesta: {
+            column: "to_char(co.lastreplydate + p_offset * INTERVAL '1hour', 'HH24:MI:SS')",
+        },
+        fechacierre: {
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')",
+        },
+        horacierre: {
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'HH24:MI:SS')",
+        },
+    },
 }
