@@ -2521,4 +2521,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_TEST: {
+        query: "select 1",
+        module: "",
+        protected: "SELECT"
+    },
 }
