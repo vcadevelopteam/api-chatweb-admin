@@ -22,4 +22,9 @@ router.post("/changeorganization",
     authController.changeOrganization
 )
 
+router.get("/",
+    auth,
+    authController.getUser
+)
+
 module.exports = router;
