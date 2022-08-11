@@ -1119,6 +1119,7 @@ exports.insertChannel = async (request, response) => {
                         apiKeySecret: requestCreateSmooch.data.appSecret,
                         appId: requestCreateSmooch.data.applicationId,
                         endpoint: smoochEndpoint,
+                        integrationId: requestCreateSmooch.data.integrationId,
                         version: smoochVersion
                     };
 
@@ -1577,12 +1578,15 @@ exports.insertChannel = async (request, response) => {
                         apiKeySecret: service.apikeysecret,
                         appId: service.appid,
                         endpoint: 'https://api.smooch.io/',
+                        integrationId: requestInsertWhatsAppSmooch.data.integrationId,
                         version: 'v1.1'
                     };
 
+                    parameters.communicationchannelowner = service.appid;
                     parameters.communicationchannelsite = service.appid;
-                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.integrationid = requestInsertWhatsAppSmooch.data.integrationId;
                     parameters.phone = requestInsertWhatsAppSmooch.data.phoneNumber;
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
                     parameters.type = 'WHAT';
 
                     const transactionInsertWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
@@ -1940,14 +1944,18 @@ exports.activateChannel = async (request, response) => {
             });
 
             if (requestMigrateWhatsApp.data.success) {
-                parameters.communicationchannelsite = service.appid;
                 parameters.servicecredentials = JSON.stringify({
                     apiKeyId: service.apikeyid,
                     apiKeySecret: service.apikeysecret,
                     appId: service.appid,
                     endpoint: 'https://api.smooch.io/',
+                    integrationId: requestMigrateWhatsApp.data.integrationId,
                     version: 'v1.1'
                 });
+
+                parameters.communicationchannelowner = service.appid;
+                parameters.communicationchannelsite = service.appid;
+                parameters.integrationid = requestMigrateWhatsApp.data.integrationId;
                 parameters.phone = requestMigrateWhatsApp.data.phoneNumber;
                 parameters.type = 'WHAT';
 
@@ -1977,6 +1985,46 @@ exports.activateChannel = async (request, response) => {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
+        });
+    }
+}
+
+exports.synchronizeTemplate = async (request, response) => {
+    try {
+        var requestCode = "error_unexpected_error";
+        var requestMessage = "error_unexpected_error";
+        var requestStatus = 400;
+        var requestSuccess = false;
+
+        if (typeof whitelist !== "undefined" && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return response.status(requestStatus).json({
+                    code: "error_auth_error",
+                    error: !requestSuccess,
+                    message: "error_auth_error",
+                    success: requestSuccess,
+                });
+            }
+        }
+
+        if (request.body) {
+            requestCode = "";
+            requestMessage = "";
+            requestStatus = 200;
+            requestSuccess = true;
+        }
+
+        return response.status(requestStatus).json({
+            code: requestCode,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
+    }
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
         });
     }
 }

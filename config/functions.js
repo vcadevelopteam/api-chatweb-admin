@@ -556,12 +556,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_SEL: {
-        query: "SELECT * FROM ufn_messagetemplate_sel($corpid,$orgid,$id,$username, $all)",
+        query: "SELECT * FROM ufn_messagetemplate_sel($corpid, $orgid, $id, $username, $all)",
         module: "",
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_INS: {
-        query: "SELECT * FROM ufn_messagetemplate_ins($corpid,$orgid,$id,$description,$type,$status,$name,$namespace,$category,$language,$templatetype,$headerenabled,$headertype,$header,$body,$bodyobject,$footerenabled,$footer,$buttonsenabled,$buttons,$priority,$attachment,$username,$operation)",
+        query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $bodyobject, $footerenabled, $footer, $buttonsenabled, $buttons, $priority, $attachment, $fromprovider, $externalid, $externalstatus, $communicationchannelid, $communicationchanneltype, $exampleparameters, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -1844,7 +1844,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_MESSAGETEMPLATE_LST: {
-        query: "SELECT * FROM ufn_messagetemplate_lst($corpid,$orgid,$username)",
+        query: "SELECT * FROM ufn_messagetemplate_lst($corpid, $orgid, $username)",
         module: "",
         protected: "INSERT"
     },
@@ -2495,5 +2495,15 @@ module.exports = {
         query: "SELECT firstname, lastname, email, phone, country FROM usr WHERE userid = $userid;",
         module: "",
         protected: "SELECT"
-    }
+    },
+    UFN_COMMUNICATIONCHANNEL_SEL_WHATSAPP: {
+        query: "SELECT * FROM ufn_communicationchannel_sel_whatsapp($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_MESSAGETEMPLATE_UPD: {
+        query: "SELECT * FROM ufn_messagetemplate_upd($corpid, $orgid, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $bodyobject, $footerenabled, $footer, $buttonsenabled, $buttons, $fromprovider, $externalid, $externalstatus, $communicationchannelid, $communicationchanneltype, $exampleparameters, $username)",
+        module: "",
+        protected: "SELECT"
+    },
 }

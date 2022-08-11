@@ -50,4 +50,10 @@ router.post("/updatechannel",
     channelController.updateChannel
 )
 
+router.post("/synchronizetemplate",
+    ip,
+    auth,
+    channelController.synchronizeTemplate
+)
+
 module.exports = router;
