@@ -243,6 +243,8 @@ exports.exportWithCursor = async (req, res) => {
             password: process.env.DBPASSWORD,
             port: process.env.DBPORT,
             max: 50,
+            idleTimeoutMillis: 30000,
+            allowExitOnIdle: true,
             ssl: {
                 rejectUnauthorized: false
             }
