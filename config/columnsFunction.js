@@ -201,7 +201,7 @@ module.exports = {
             column: "co.balancetimes"
         },
         tmoagent: {
-            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.totalduration - co.firstassignedtime - co.botduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM GREATEST('00:00:00'::INTERVAL, co.totalduration - co.pausedurationafteruser - co.firstassignedtime - co.botduration))::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
         },
         holdingholdtime: {
             column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.holdingwaitingtime)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
@@ -354,7 +354,7 @@ module.exports = {
             type: "time"
         },
         tmoasesor: {
-            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (CASE WHEN co.status = 'CERRADO' THEN co.totalduration - co.pausedurationafteruser - co.firstassignedtime - co.botduration ELSE NOW() - co.startdate - co.pausedurationafteruser - co.firstassignedtime - co.botduration END))::text || ' seconds ')::interval, 'HH24:MI:SS'), '00:00:00')",
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (CASE WHEN co.status = 'CERRADO' THEN GREATEST('00:00:00'::INTERVAL, co.totalduration - co.pausedurationafteruser - co.firstassignedtime - co.botduration) ELSE GREATEST('00:00:00'::INTERVAL, NOW() - co.startdate - co.pausedurationafteruser - co.firstassignedtime - co.botduration) END))::text || ' seconds ')::interval, 'HH24:MI:SS'), '00:00:00')",
             type: "time"
         },
         tiempoprimeraasignacion: {
