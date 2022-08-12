@@ -585,7 +585,7 @@ exports.getMaximumConsumption = async (request, response) => {
             const { orgid, daterange, timezoneoffset } = request.body;
             const { corpid } = request.user;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 requestCode = "";
@@ -757,7 +757,7 @@ exports.transferAccountBalance = async (request, response) => {
             const { orgid, transferamount } = request.body;
             const { corpid, usr } = request.user;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 if (orgData.voximplantaccountid && orgData.voximplantapplicationid && orgData.voximplantapikey) {
@@ -837,7 +837,7 @@ exports.getAccountBalance = async (request, response) => {
             const { orgid } = request.body;
             const { corpid } = request.user;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 requestCode = "";
@@ -901,7 +901,7 @@ exports.directGetMaximumConsumption = async (request, response) => {
         if (request.body) {
             const { corpid, orgid, daterange, timezoneoffset } = request.body;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 requestCode = "";
@@ -1072,7 +1072,7 @@ exports.directTransferAccountBalance = async (request, response) => {
         if (request.body) {
             const { corpid, orgid, usr, transferamount, description, type, motive } = request.body;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 if (orgData.voximplantaccountid && orgData.voximplantapplicationid && orgData.voximplantapikey) {
@@ -1151,7 +1151,7 @@ exports.directGetAccountBalance = async (request, response) => {
         if (request.body) {
             const { corpid, orgid } = request.body;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 requestCode = "";
@@ -1214,7 +1214,7 @@ exports.updateVoximplantPeriod = async (request, response) => {
         if (request.body) {
             const { corpid, orgid, year, month } = request.body;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 requestCode = "";

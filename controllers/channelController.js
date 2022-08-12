@@ -1625,6 +1625,8 @@ exports.insertChannel = async (request, response) => {
                                             queueid: voximplantPhoneNumber.queueid,
                                             ruleid: voximplantScenario.ruleid,
                                             scenarioid: voximplantScenario.scenarioid,
+                                            ruleoutid: voximplantScenario.ruleoutid,
+                                            scenariooutid: voximplantScenario.scenariooutid,
                                             accountid: voximplantEnvironment.accountid,
                                             apikey: voximplantEnvironment.apikey,
                                             applicationid: voximplantEnvironment.applicationid,
