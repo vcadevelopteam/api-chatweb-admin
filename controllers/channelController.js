@@ -2008,10 +2008,140 @@ exports.synchronizeTemplate = async (request, response) => {
         }
 
         if (request.body) {
-            requestCode = "";
-            requestMessage = "";
-            requestStatus = 200;
-            requestSuccess = true;
+            if (request.body.type) {
+                var templateList = null;
+
+                switch (request.body.type) {
+                    case "WHAD":
+                        if (request.body.servicecredentials) {
+                            var serviceData = JSON.parse(request.body.servicecredentials);
+
+                            const requestListDialog = await axiosObservable({
+                                data: {
+                                    ApiKey: serviceData.apiKey,
+                                    Type: "LIST",
+                                },
+                                method: 'post',
+                                url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
+                                _requestid: request._requestid,
+                            });
+
+                            if (requestListDialog.data.success) {
+                                templateList = requestListDialog.data.result;
+                            }
+                            else {
+                                requestCode = requestListDialog.data.operationMessage
+                                requestMessage = requestListDialog.data.operationMessage;
+                            }
+                        }
+                        break;
+
+                    case "WHAG":
+                        if (request.body.servicecredentials) {
+                            var serviceData = JSON.parse(request.body.servicecredentials);
+
+                            const requestListGupshup = await axiosObservable({
+                                data: {
+                                    AppName: serviceData.app,
+                                    ApiKey: serviceData.apiKey,
+                                    Type: "LIST",
+                                },
+                                method: 'post',
+                                url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
+                                _requestid: request._requestid,
+                            });
+
+                            if (requestListGupshup.data.success) {
+                                templateList = requestListGupshup.data.result;
+                            }
+                            else {
+                                requestCode = requestListGupshup.data.operationMessage
+                                requestMessage = requestListGupshup.data.operationMessage;
+                            }
+                        }
+                        break;
+
+                    case "WHAT":
+                        if (request.body.servicecredentials) {
+                            var serviceData = JSON.parse(request.body.servicecredentials);
+
+                            const requestListSmooch = await axiosObservable({
+                                data: {
+                                    AppId: serviceData.appId,
+                                    IntegrationId: request.body.integrationid,
+                                    Type: "LIST",
+                                    KeyId: serviceData.apiKeyId,
+                                    KeySecret: serviceData.apiKeySecret,
+                                },
+                                method: 'post',
+                                url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
+                                _requestid: request._requestid,
+                            });
+
+                            if (requestListSmooch.data.success) {
+                                templateList = requestListSmooch.data.result;
+                            }
+                            else {
+                                requestCode = requestListSmooch.data.operationMessage
+                                requestMessage = requestListSmooch.data.operationMessage;
+                            }
+                        }
+                        break;
+                }
+
+                if (templateList) {
+                    for (const templateData of templateList) {
+                        var buttonObject = [];
+
+                        if (templateData.buttons) {
+                            for (const buttonData of templateData.buttons) {
+                                var buttonInformation = {
+                                    type: (buttonData.type || '').toLowerCase(),
+                                    title: buttonData.text || '',
+                                    payload: (buttonData.data || buttonData.text) || '',
+                                };
+
+                                buttonObject.push(buttonInformation);
+                            }
+                        }
+
+                        await channelfunctions.messageTemplateUpd(
+                            request.body.corpid,
+                            request.body.orgid,
+                            request.body.communicationchanneldesc,
+                            'HSM',
+                            'ACTIVO',
+                            templateData.name,
+                            (request.body.type === "WHAD" || request.body.type === "WHAG") ? templateData.id : null,
+                            templateData.category,
+                            templateData.language,
+                            (templateData.header || templateData.footer || templateData.buttons) ? "MULTIMEDIA" : "STANDARD",
+                            (templateData.header) ? true : false,
+                            templateData.header?.type ? templateData.header?.type.toLowerCase() : null,
+                            templateData.header?.text || null,
+                            templateData.body?.text || null,
+                            null,
+                            (templateData.footer) ? true : false,
+                            templateData.footer?.text || null,
+                            (templateData.buttons) ? true : false,
+                            (templateData.buttons) ? JSON.stringify(buttonObject) : null,
+                            true,
+                            templateData.id,
+                            templateData.status,
+                            request.body.communicationchannelid,
+                            request.body.type,
+                            null,
+                            request.user.usr,
+                            request._requestid,
+                        );
+                    }
+
+                    requestCode = "";
+                    requestMessage = "";
+                    requestStatus = 200;
+                    requestSuccess = true;
+                }
+            }
         }
 
         return response.status(requestStatus).json({
