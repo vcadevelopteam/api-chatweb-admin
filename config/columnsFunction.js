@@ -35,14 +35,32 @@ module.exports = {
             column: "co.startdate",
             type: "date"
         },
+        enddate: {
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')"
+        },
+        endtime: {
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')"
+        },
+        firstinteractiondate: {
+            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY'), to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')) ELSE to_char((co.startdate + co.firstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY') END"
+        },
+        firstinteractiontime: {
+            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS'), to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')) ELSE to_char((co.startdate + co.firstreplytime) + p_offset * INTERVAL '1hour' ::time, 'HH24:MI:SS') END"
+        },
         person: {
             column: "pcc.displayname"
         },
         phone: {
             column: "pe.phone"
         },
+        closedby: {
+            column: "ou.type"
+        },
         agent: {
             column: "nullif(concat(us.firstname,' ',us.lastname), ' '), ' ')"
+        },
+        closetype: {
+            column: "coalesce(do2.domaindesc, co.closetype)"
         },
         channel: {
             column: "cc.description"
@@ -134,6 +152,9 @@ module.exports = {
         channel: {
             column: "cc.description"
         },
+        origin: {
+            column: "co.origin"
+        },
         client: {
             column: "pe.name"
         },
@@ -145,6 +166,9 @@ module.exports = {
         },
         agent: {
             column: "nullif(concat(us.firstname,' ',us.lastname), ' ')"
+        },
+        ticketgroup: {
+            column: "co.usergroup"
         },
         closetype: {
             column: "coalesce(do2.domaindesc, co.closetype)"
@@ -203,8 +227,14 @@ module.exports = {
         tmoagent: {
             column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM GREATEST('00:00:00'::INTERVAL, co.totalduration - co.pausedurationafteruser - co.firstassignedtime - co.botduration))::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
         },
+        tmeagent: {
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM CASE WHEN ou.type = 'ASESOR' THEN co.userfirstreplytime ELSE co.firstreplytime END)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
+        },
         holdingholdtime: {
             column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.holdingwaitingtime)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
+        },
+        tags: {
+            column: "COALESCE(co.tags, '')"
         },
     },
     userproductivityhours: {

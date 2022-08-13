@@ -43,6 +43,11 @@ const properties = [
         type: 'int'
     },
     {
+        propertyname: "HOLDINGBYSUPERVISOR",
+        key: "holding_by_supervisor",
+        type: 'text'
+    },
+    {
         propertyname: "OCULTARLOGCONVERSACION",
         key: "hide_log_conversation",
         type: 'bool',
