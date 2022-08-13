@@ -264,6 +264,6 @@ exports.exportWithCursor = async (req, res) => {
         return res.status(200).json({ url: resCursor.resultLink.join() });
 
     } catch (exception) {
-        return getErrorCode(null, exception, "Executing getCollectionPagination");
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
