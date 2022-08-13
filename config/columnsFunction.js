@@ -35,14 +35,32 @@ module.exports = {
             column: "co.startdate",
             type: "date"
         },
+        enddate: {
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')"
+        },
+        endtime: {
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')"
+        },
+        firstinteractiondate: {
+            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY'), to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')) ELSE to_char((co.startdate + co.firstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY') END"
+        },
+        firstinteractiontime: {
+            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS'), to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')) ELSE to_char((co.startdate + co.firstreplytime) + p_offset * INTERVAL '1hour' ::time, 'HH24:MI:SS') END"
+        },
         person: {
             column: "pcc.displayname"
         },
         phone: {
             column: "pe.phone"
         },
+        closedby: {
+            column: "ou.type"
+        },
         agent: {
             column: "nullif(concat(us.firstname,' ',us.lastname), ' '), ' ')"
+        },
+        closetype: {
+            column: "coalesce(do2.domaindesc, co.closetype)"
         },
         channel: {
             column: "cc.description"
