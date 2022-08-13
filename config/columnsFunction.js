@@ -134,6 +134,9 @@ module.exports = {
         channel: {
             column: "cc.description"
         },
+        origin: {
+            column: "co.origin"
+        },
         client: {
             column: "pe.name"
         },
@@ -145,6 +148,9 @@ module.exports = {
         },
         agent: {
             column: "nullif(concat(us.firstname,' ',us.lastname), ' ')"
+        },
+        ticketgroup: {
+            column: "co.usergroup"
         },
         closetype: {
             column: "coalesce(do2.domaindesc, co.closetype)"
@@ -203,8 +209,14 @@ module.exports = {
         tmoagent: {
             column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM GREATEST('00:00:00'::INTERVAL, co.totalduration - co.pausedurationafteruser - co.firstassignedtime - co.botduration))::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
         },
+        tmeagent: {
+            column: "CASE WHEN ou.type = 'ASESOR' THEN co.userfirstreplytime ELSE co.firstreplytime END"
+        },
         holdingholdtime: {
             column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.holdingwaitingtime)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
+        },
+        tags: {
+            column: "COALESCE(co.tags, '')"
         },
     },
     userproductivityhours: {
