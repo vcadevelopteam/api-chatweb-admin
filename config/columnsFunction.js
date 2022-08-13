@@ -228,7 +228,7 @@ module.exports = {
             column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM GREATEST('00:00:00'::INTERVAL, co.totalduration - co.pausedurationafteruser - co.firstassignedtime - co.botduration))::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
         },
         tmeagent: {
-            column: "CASE WHEN ou.type = 'ASESOR' THEN co.userfirstreplytime ELSE co.firstreplytime END"
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM CASE WHEN ou.type = 'ASESOR' THEN co.userfirstreplytime ELSE co.firstreplytime END)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
         },
         holdingholdtime: {
             column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.holdingwaitingtime)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
