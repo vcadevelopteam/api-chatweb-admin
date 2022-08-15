@@ -261,7 +261,7 @@ exports.exportWithCursor = async (req, res) => {
 
         await cursor.close();
 
-        pool.end();
+        client.release()
 
         return res.status(200).json({ url: resCursor.resultLink.join() });
 
