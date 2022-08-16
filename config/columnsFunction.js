@@ -605,6 +605,9 @@ module.exports = {
         templatetype: {
             column: "mt.type"
         },
+        templatename: {
+            column: "ca.messagetemplatename"
+        },
         title: {
             column: "ca.title"
         },
