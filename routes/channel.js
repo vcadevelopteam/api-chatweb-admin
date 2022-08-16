@@ -56,4 +56,16 @@ router.post("/synchronizetemplate",
     channelController.synchronizeTemplate
 )
 
+router.post("/addtemplate",
+    ip,
+    auth,
+    channelController.addTemplate
+)
+
+router.post("/deletetemplate",
+    ip,
+    auth,
+    channelController.deleteTemplate
+)
+
 module.exports = router;
