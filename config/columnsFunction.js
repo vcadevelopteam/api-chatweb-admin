@@ -303,10 +303,10 @@ module.exports = {
             type: "date"
         },
         firstusergroup: {
-            column: "do6.domaindesc"
+            column: "co.firstusergroup"
         },
         ticketgroup: {
-            column: "do5.domaindesc"
+            column: "co.usergroup"
         },
         communicationchanneldescription: {
             column: "cc.description"
@@ -604,6 +604,9 @@ module.exports = {
         },
         templatetype: {
             column: "mt.type"
+        },
+        templatename: {
+            column: "ca.messagetemplatename"
         },
         title: {
             column: "ca.title"
