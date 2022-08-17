@@ -70,6 +70,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_USER_LST: {
+        query: "SELECT * FROM ufn_user_lst($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_APPLICATION_SEL: {
         query: "SELECT * FROM ufn_application_sel($corpid, $orgid, $userid)",
         module: "",
