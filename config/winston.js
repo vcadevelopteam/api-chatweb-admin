@@ -1,4 +1,5 @@
 const { createLogger, format, transports } = require("winston");
+require('winston-daily-rotate-file');
 const logdnaWinston = require('logdna-winston');
 
 const currentDate = new Date().toISOString().substring(0, 10);
@@ -28,8 +29,17 @@ const logger = createLogger({
     format: format.combine(format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }), format.json()),
     transports: [
         new transports.Console(),
-        new transports.File({ filename: `logs/all-${currentDate}.log` }),
-        new transports.File({ filename: `logs/err-${currentDate}.log`, level: "error" }),
+        new transports.DailyRotateFile({
+            dirname: './logs',
+            filename: "all-%DATE%.log",
+            datePattern: 'YYYY-MM-DD',
+        }),
+        new transports.DailyRotateFile({
+            dirname: './logs',
+            filename: "err-%DATE%.log",
+            datePattern: 'YYYY-MM-DD',
+            level: "error"
+        }),
     ],
     exceptionHandlers: [new transports.File({ filename: `logs/exceptions-${currentDate}.log` })],
     rejectionHandlers: [new transports.File({ filename: `logs/rejections-${currentDate}.log` })],
