@@ -2245,7 +2245,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORG_VOXIMPLANT_UPD: {
-        query: "SELECT * FROM ufn_org_voximplant_upd($corpid, $orgid, $operation, $voximplantuser, $voximplantmail, $voximplantpassword, $voximplantaccountid, $voximplantapikey, $voximplantapplicationid, $voximplantruleid, $voximplantscenarioid, $voximplantuserid, $voximplantapplicationname);",
+        query: "SELECT * FROM ufn_org_voximplant_upd($corpid, $orgid, $operation, $voximplantuser, $voximplantmail, $voximplantpassword, $voximplantaccountid, $voximplantapikey, $voximplantapplicationid, $voximplantruleid, $voximplantscenarioid, $voximplantuserid, $voximplantapplicationname, $voximplantruleoutid, $voximplantscenariooutid);",
         module: "",
         protected: "UPDATE"
     },
