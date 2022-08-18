@@ -2496,8 +2496,8 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_DASHBOARD_DISCONNECTIONTIMES_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_disconnectiontimes_data_sel($corpid, $orgid, $startdate, $enddate, $asesorid, $supervisorid, $offset)",
+    UFN_PROFILE_SEL: {
+        query: "SELECT firstname, lastname, email, phone, country FROM usr WHERE userid = $userid;",
         module: "",
         protected: "SELECT"
     },
@@ -2508,11 +2508,6 @@ module.exports = {
     },
     UFN_SERVICETOKEN_UPD: {
         query: "SELECT * FROM ufn_servicetoken_upd($account, $accesstoken, $refreshtoken, $extradata, $type, $status, $usr, $interval);",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_PROFILE_SEL: {
-        query: "SELECT firstname, lastname, email, phone, country FROM usr WHERE userid = $userid;",
         module: "",
         protected: "SELECT"
     },
@@ -2541,8 +2536,23 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DASHBOARD_DISCONNECTIONTIMES_DATA_SEL: {
+        query: "SELECT * FROM ufn_dashboard_disconnectiontimes_data_sel($corpid, $orgid, $startdate, $enddate, $asesorid, $supervisorid, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_TEST: {
         query: "select 1",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_COMMUNICATIONCHANNEL_SEL_WHATSAPP: {
+        query: "SELECT * FROM ufn_communicationchannel_sel_whatsapp($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_MESSAGETEMPLATE_UPD: {
+        query: "SELECT * FROM ufn_messagetemplate_upd($corpid, $orgid, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $bodyobject, $footerenabled, $footer, $buttonsenabled, $buttons, $fromprovider, $externalid, $externalstatus, $communicationchannelid, $communicationchanneltype, $exampleparameters, $username)",
         module: "",
         protected: "SELECT"
     },
