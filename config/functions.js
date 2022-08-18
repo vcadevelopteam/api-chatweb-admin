@@ -2496,6 +2496,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_SERVICESUBSCRIPTION_UPD: {
+        query: "SELECT * FROM ufn_servicesubscription_upd($account, $node, $extradata, $type, $status, $usr, $webhook, $interval);",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_SERVICETOKEN_UPD: {
+        query: "SELECT * FROM ufn_servicetoken_upd($account, $accesstoken, $refreshtoken, $extradata, $type, $status, $usr, $interval);",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_PROFILE_SEL: {
         query: "SELECT firstname, lastname, email, phone, country FROM usr WHERE userid = $userid;",
         module: "",

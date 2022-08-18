@@ -2,6 +2,7 @@ const logger = require('../config/winston');
 const bcryptjs = require("bcryptjs");
 const channelfunctions = require("../config/channelfunctions");
 const triggerfunctions = require("../config/triggerfunctions");
+const jwt = require("jsonwebtoken");
 const { getErrorCode } = require('../config/helpers');
 const { setSessionParameters, axiosObservable } = require('../config/helpers');
 
@@ -19,6 +20,9 @@ const userSecret = process.env.USERSECRET;
 const webChatApplication = process.env.CHATAPPLICATION;
 const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
 const whitelist = process.env.WHITELIST;
+const googleClientId = process.env.GOOGLE_CLIENTID;
+const googleClientSecret = process.env.GOOGLE_CLIENTSECRET;
+const googleTopicName = process.env.GOOGLE_TOPICNAME;
 
 exports.activateUser = async (request, response) => {
     try {
@@ -806,23 +810,79 @@ exports.createSubscription = async (request, response) => {
                             case 'INFOBIPEMAIL':
                             case 'INFOBIPSMS':
                                 if (channelService) {
-                                    var serviceCredentials = {
-                                        apiKey: channelService.apikey,
-                                        callbackEndpoint: `${hookEndpoint}infobip/${channel.type === "INFOBIPEMAIL" ? "mail" : ""}webhookasync`,
-                                        callbackType: "application/json",
-                                        endpoint: channelService.url,
-                                        number: channelService.emittername,
-                                    };
+                                    if (channelService.type && channelService.type === "GMAIL") {
+                                        var informationtoken = jwt.decode(channelService.idtoken);
 
-                                    if (channel.type === "INFOBIPEMAIL") {
-                                        serviceCredentials.validateMail = false;
+                                        channelParameters.communicationchannelowner = informationtoken.name;
+                                        channelParameters.integrationid = informationtoken.email;
+                                        channelParameters.servicecredentials = JSON.stringify(channelService);
+                                        channelParameters.status = 'ACTIVO';
+                                        channelParameters.communicationchannelsite = informationtoken.email;
+                                        channelParameters.type = 'MAIL';
+
+                                        await channelfunctions.serviceTokenUpdate(informationtoken.email, channelService.accesstoken, channelService.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', parameters.username, 50);
+
+                                        await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, informationtoken.email, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-GMAIL', 'ACTIVO', parameters.username, `${hookEndpoint}mail/gmailwebhookasync`, 2880);
+
+                                        channelMethodArray.push(channelMethod);
+                                        channelParametersArray.push(channelParameters);
+                                        channelServiceArray.push(channelService);
+                                        channelTypeArray.push(channel.type);
                                     }
+                                    else {
+                                        var serviceCredentials = {
+                                            apiKey: channelService.apikey,
+                                            callbackEndpoint: `${hookEndpoint}infobip/${channel.type === "INFOBIPEMAIL" ? "mail" : ""}webhookasync`,
+                                            callbackType: "application/json",
+                                            endpoint: channelService.url,
+                                            number: channelService.emittername,
+                                        };
 
-                                    channelParameters.communicationchannelowner = channelService.emittername;
-                                    channelParameters.communicationchannelsite = channelService.emittername;
-                                    channelParameters.integrationid = channelService.emittername;
-                                    channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
-                                    channelParameters.type = (channel.type === 'INFOBIPEMAIL' ? 'MAII' : 'SMSI');
+                                        if (channel.type === "INFOBIPEMAIL") {
+                                            serviceCredentials.validateMail = false;
+                                        }
+
+                                        channelParameters.communicationchannelowner = channelService.emittername;
+                                        channelParameters.communicationchannelsite = channelService.emittername;
+                                        channelParameters.integrationid = channelService.emittername;
+                                        channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
+                                        channelParameters.type = (channel.type === 'INFOBIPEMAIL' ? 'MAII' : 'SMSI');
+
+                                        channelMethodArray.push(channelMethod);
+                                        channelParametersArray.push(channelParameters);
+                                        channelServiceArray.push(channelService);
+                                        channelTypeArray.push(channel.type);
+                                    }
+                                }
+                                break;
+
+                            case 'BLOGGER':
+                            case 'YOUTUBE':
+                                if (channelService) {
+                                    var informationtoken = jwt.decode(channelService.idtoken);
+
+                                    channelParameters.communicationchannelowner = informationtoken.name;
+                                    channelParameters.integrationid = channelService.channel;
+                                    channelParameters.servicecredentials = JSON.stringify(channelService);
+                                    channelParameters.status = 'ACTIVO';
+
+                                    await channelfunctions.serviceTokenUpdate(informationtoken.email, channelService.accesstoken, channelService.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', parameters.username, 50);
+
+                                    switch (channel.type) {
+                                        case 'BLOGGER':
+                                            channelParameters.communicationchannelsite = `${informationtoken.email}&%BLOG%&${channelService.channel}`;
+                                            channelParameters.type = 'BLOG';
+
+                                            await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, channelService.channel, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-BLOGGER', 'ACTIVO', parameters.username, `${hookEndpoint}blogger/webhookasync`, 2);
+                                            break;
+
+                                        case 'YOUTUBE':
+                                            channelParameters.communicationchannelsite = `${informationtoken.email}&%YOUT%&${channelService.channel}`;
+                                            channelParameters.type = 'YOUT';
+
+                                            await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, channelService.channel, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-YOUTUBE', 'ACTIVO', parameters.username, `${hookEndpoint}youtube/webhookasync`, 2);
+                                            break;
+                                    }
 
                                     channelMethodArray.push(channelMethod);
                                     channelParametersArray.push(channelParameters);
@@ -831,11 +891,9 @@ exports.createSubscription = async (request, response) => {
                                 }
                                 break;
 
-                            case 'BLOGGER':
                             case 'LINKEDIN':
                             case 'MICROSOFTTEAMS':
                             case 'TIKTOK':
-                            case 'YOUTUBE':
                                 if (channelService) {
                                     channelParameters.communicationchannelowner = channelService.account;
                                     channelParameters.communicationchannelsite = channelService.account;
@@ -844,24 +902,16 @@ exports.createSubscription = async (request, response) => {
                                     channelParameters.status = 'PENDIENTE';
 
                                     switch (channel.type) {
-                                        case 'BLOGGER':
-                                            channelParameters.type = 'BLOG';
-                                            break;
-                
                                         case 'LINKEDIN':
                                             channelParameters.type = 'LNKD';
                                             break;
-                
+
                                         case 'MICROSOFTTEAMS':
                                             channelParameters.type = 'TEAM';
                                             break;
-                
+
                                         case 'TIKTOK':
                                             channelParameters.type = 'TITO';
-                                            break;
-                
-                                        case 'YOUTUBE':
-                                            channelParameters.type = 'YOUT';
                                             break;
                                     }
 
