@@ -143,7 +143,6 @@ exports.authenticate = async (req, res) => {
         let notifications = [];
 
         if (user.status === 'ACTIVO') {
-            // let resultProperties = {};
             const resConnection = await executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...user, ...prevdata, propertyname: 'CONEXIONAUTOMATICAINBOX' })
 
             const automaticConnection = validateResProperty(resConnection, 'bool');
@@ -212,9 +211,11 @@ exports.getUser = async (req, res) => {
                 ...prevdata
             }),
             executesimpletransaction("UFN_DOMAIN_LST_VALUES_ONLY_DATA", { ...req.user, domainname: "TIPODESCONEXION", ...prevdata }),
+            executesimpletransaction("QUERY_SEL_PROPERTY_ENV_ON_LOGIN", { ...req.user })
         ]);
 
         const resultBDProperties = resultBD[3];
+        const propertyEnv = resultBD[5] instanceof Array  && resultBD[5].length > 0 ? resultBD[5][0].propertyvalue : "";
 
         if (!resultBD[0] instanceof Array) {
             return res.status(500).json(getErrorCode());
@@ -224,7 +225,7 @@ exports.getUser = async (req, res) => {
             resultProperties = properties.reduce((acc, item) => ({
                 ...acc,
                 [item.key]: cleanPropertyValue(resultBDProperties.filter(x => x.propertyname === item.propertyname), item)
-            }), {});
+            }), { environment: propertyEnv });
         }
 
         const menu = resultBD[0].reduce((acc, item) => ({

@@ -1708,6 +1708,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_SEL_PROPERTY_ENV_ON_LOGIN: {
+        query: "SELECT propertyname, propertyvalue FROM property p WHERE p.corpid = $corpid AND p.propertyname = 'AMBIENTE' and p.status = 'ACTIVO';",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_DASHBOARDTEMPLATE_SEL: {
         query: "SELECT * FROM ufn_dashboardtemplate_sel($corpid, $orgid, $id, $all);",
         module: "",
