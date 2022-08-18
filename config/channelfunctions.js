@@ -102,6 +102,47 @@ const getAppSetting = async (requestid = null) => {
     return null
 }
 
+exports.messageTemplateUpd = async (corpid, orgid, description, type, status, name, namespace, category, language, templatetype, headerenabled, headertype, header, body, bodyobject, footerenabled, footer, buttonsenabled, buttons, fromprovider, externalid, externalstatus, communicationchannelid, communicationchanneltype, exampleparameters, username, requestid = null) => {
+    const queryMethod = "UFN_MESSAGETEMPLATE_UPD";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: orgid,
+        description: description,
+        type: type,
+        status: status,
+        name: name,
+        namespace: namespace,
+        category: category,
+        language: language,
+        templatetype: templatetype,
+        headerenabled: headerenabled,
+        headertype: headertype,
+        header: header,
+        body: body,
+        bodyobject: bodyobject,
+        footerenabled: footerenabled,
+        footer: footer,
+        buttonsenabled: buttonsenabled,
+        buttons: buttons,
+        fromprovider: fromprovider,
+        externalid: externalid,
+        externalstatus: externalstatus,
+        communicationchannelid: communicationchannelid,
+        communicationchanneltype: communicationchanneltype,
+        exampleparameters: exampleparameters,
+        username: username,
+        _requestid: requestid,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        return queryResult;
+    }
+
+    return null;
+}
+
 exports.voximplantChannelSel = async (corpid, orgid, year, month, timezoneoffset, requestid = null) => {
     const queryMethod = "UFN_COMMUNICATIONCHANNEL_SEL_VOXIMPLANT";
     const queryParameters = {
