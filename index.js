@@ -66,4 +66,4 @@ app.get('/', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
 })
 
-logger.info(`System launch http://localhost:${PORT}`);
+logger.info(`System launch API-LARAIGO on port ${PORT}`);
