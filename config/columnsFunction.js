@@ -35,14 +35,32 @@ module.exports = {
             column: "co.startdate",
             type: "date"
         },
+        enddate: {
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')"
+        },
+        endtime: {
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')"
+        },
+        firstinteractiondate: {
+            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY'), to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')) ELSE to_char((co.startdate + co.firstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY') END"
+        },
+        firstinteractiontime: {
+            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS'), to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')) ELSE to_char((co.startdate + co.firstreplytime) + p_offset * INTERVAL '1hour' ::time, 'HH24:MI:SS') END"
+        },
         person: {
             column: "pcc.displayname"
         },
         phone: {
             column: "pe.phone"
         },
+        closedby: {
+            column: "ou.type"
+        },
         agent: {
             column: "nullif(concat(us.firstname,' ',us.lastname), ' '), ' ')"
+        },
+        closetype: {
+            column: "coalesce(do2.domaindesc, co.closetype)"
         },
         channel: {
             column: "cc.description"
@@ -134,6 +152,9 @@ module.exports = {
         channel: {
             column: "cc.description"
         },
+        origin: {
+            column: "co.origin"
+        },
         client: {
             column: "pe.name"
         },
@@ -145,6 +166,9 @@ module.exports = {
         },
         agent: {
             column: "nullif(concat(us.firstname,' ',us.lastname), ' ')"
+        },
+        ticketgroup: {
+            column: "co.usergroup"
         },
         closetype: {
             column: "coalesce(do2.domaindesc, co.closetype)"
@@ -201,10 +225,16 @@ module.exports = {
             column: "co.balancetimes"
         },
         tmoagent: {
-            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.totalduration - co.firstassignedtime - co.botduration)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM GREATEST('00:00:00'::INTERVAL, co.totalduration - co.pausedurationafteruser - co.firstassignedtime - co.botduration))::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
+        },
+        tmeagent: {
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM CASE WHEN ou.type = 'ASESOR' THEN co.userfirstreplytime ELSE co.firstreplytime END)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
         },
         holdingholdtime: {
             column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM co.holdingwaitingtime)::text || ' seconds ')::interval,'HH24:MI:SS'),'00:00:00')"
+        },
+        tags: {
+            column: "COALESCE(co.tags, '')"
         },
     },
     userproductivityhours: {
@@ -273,10 +303,10 @@ module.exports = {
             type: "date"
         },
         firstusergroup: {
-            column: "do6.domaindesc"
+            column: "co.firstusergroup"
         },
         ticketgroup: {
-            column: "do5.domaindesc"
+            column: "co.usergroup"
         },
         communicationchanneldescription: {
             column: "cc.description"
@@ -354,7 +384,7 @@ module.exports = {
             type: "time"
         },
         tmoasesor: {
-            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (CASE WHEN co.status = 'CERRADO' THEN co.totalduration - co.pausedurationafteruser - co.firstassignedtime - co.botduration ELSE NOW() - co.startdate - co.pausedurationafteruser - co.firstassignedtime - co.botduration END))::text || ' seconds ')::interval, 'HH24:MI:SS'), '00:00:00')",
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (CASE WHEN co.status = 'CERRADO' THEN GREATEST('00:00:00'::INTERVAL, co.totalduration - co.pausedurationafteruser - co.firstassignedtime - co.botduration) ELSE GREATEST('00:00:00'::INTERVAL, NOW() - co.startdate - co.pausedurationafteruser - co.firstassignedtime - co.botduration) END))::text || ' seconds ')::interval, 'HH24:MI:SS'), '00:00:00')",
             type: "time"
         },
         tiempoprimeraasignacion: {
@@ -575,6 +605,9 @@ module.exports = {
         templatetype: {
             column: "mt.type"
         },
+        templatename: {
+            column: "ca.messagetemplatename"
+        },
         title: {
             column: "ca.title"
         },
@@ -683,6 +716,130 @@ module.exports = {
         expected_closing: {
             column: "ld.date_deadline + p_offset * INTERVAL '1hour'",
             type: "date"
+        },
+    },
+    survey: {
+        ticketnum: {
+            column: "co.ticketnum"
+        },
+        ticketdate: {
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','DD/MM/YYYY')"
+        },
+        tickettime: {
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','HH24:MI:SS')"
+        },
+        classification: {
+            column: "COALESCE(co.classification, 'NINGUNO')"
+        },
+        supervisor: {
+            column: "CONCAT(usr2.firstname, ' ', usr2.lastname) as supervisordesc"
+        },
+        agent: {
+            column: "CONCAT(usr.firstname, ' ', usr.lastname)"
+        },
+        firstgroup: {
+            column: "COALESCE(domi.domaindesc, 'NINGUNO')"
+        },
+        lastgroup: {
+            column: "COALESCE(dom.domaindesc, 'NINGUNO')"
+        },
+        answer1: {
+            column: "sa.answer1"
+        },
+        comment1: {
+            column: "CASE WHEN sa.comment1 <> '' THEN sa.comment1 ELSE '-' END"
+        },
+        answer2: {
+            column: "sa.answer2"
+        },
+        comment2: {
+            column: "CASE WHEN sa.comment2 <> '' THEN sa.comment2 ELSE '-' END"
+        },
+        answer3: {
+            column: "sa.answer3"
+        },
+        comment3: {
+            column: "CASE WHEN sa.comment3 <> '' THEN sa.comment3 ELSE '-' END"
+        },
+    },
+    ticketvsadviser: {
+        numeroticket: {
+            column: "co.ticketnum"
+        },
+        fechainicio: {
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')"
+        },
+        horainicio: {
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'HH24:MI:SS')"
+        },
+        asesorid: {
+            column: "co.lastuserid"
+        },
+        asesor: {
+            column: "CONCAT(usr.firstname, ' ', usr.lastname)"
+        },
+        canalid: {
+            column: "co.communicationchannelid"
+        },
+        canal: {
+            column: "cc.description"
+        },
+        tipo: {
+            column: "cla2.description"
+        },
+        submotivo: {
+            column: "cla1.description"
+        },
+        valoracion: {
+            column: "cla.description"
+        },
+        cerradopor: {
+            column: "ous.type"
+        },
+        tipocierre: {
+            column: "coalesce(do2.domaindesc, co.closetype)"
+        },
+        tipo_operacion: {
+            column: "co.variablecontextjsonb->'operacion'->>'Value'"
+        },
+        operador: {
+            column: "co.variablecontextjsonb->'nomoperador'->>'Value'"
+        },
+        plan: {
+            column: "co.variablecontextjsonb->'tipoplandest'->>'Value'"
+        },
+        modalidad_compra: {
+            column: "co.variablecontextjsonb->'var_compra_productos'->>'Value'"
+        },
+        provincia: {
+            column: "co.variablecontextjsonb->'province'->>'Value'"
+        },
+        distrito: {
+            column: "co.variablecontextjsonb->'district'->>'Value'"
+        },
+        telefono: {
+            column: "co.variablecontextjsonb->'alternativephone'->>'Value'"
+        },
+        documento: {
+            column: "co.variablecontextjsonb->'documentnumber'->>'Value'"
+        },
+        fechaprimerarespuesta: {
+            column: "CASE WHEN co.userfirstreplytime = '00:00:00' THEN null ELSE to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY') END",
+        },
+        horaprimerarespuesta: {
+            column: "CASE WHEN co.userfirstreplytime = '00:00:00' THEN null ELSE to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'HH24:MI:SS') END",
+        },
+        fechaultimarespuesta: {
+            column: "to_char(co.lastreplydate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')",
+        },
+        horaultimarespuesta: {
+            column: "to_char(co.lastreplydate + p_offset * INTERVAL '1hour', 'HH24:MI:SS')",
+        },
+        fechacierre: {
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')",
+        },
+        horacierre: {
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'HH24:MI:SS')",
         },
     },
 }

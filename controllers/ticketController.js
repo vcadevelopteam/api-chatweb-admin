@@ -1,6 +1,6 @@
 const { errors, getErrorCode, axiosObservable } = require('../config/helpers');
 const { executesimpletransaction } = require('../config/triggerfunctions');
-const { uploadToCOS, unrar, unzip } = require('../config/filefunctions');
+const { uploadToCOS, unrar, unzip, xlsxToJSON } = require('../config/filefunctions');
 // var https = require('https');
 
 // const agent = new https.Agent({
@@ -358,9 +358,9 @@ exports.import = async (req, res) => {
         
         const attachments = []
 
-        const zip_list = req.files.filter(f => f.mimetype === 'application/x-zip-compressed' && f.originalname !== 'wa_layout.css');
-        for (let i = 0; i < zip_list.length; i++) {
-            let files = await unzip(zip_list[i])
+        let file_list = req.files.filter(f => f.mimetype === 'application/x-zip-compressed' && f.originalname !== 'wa_layout.css');
+        for (let i = 0; i < file_list.length; i++) {
+            let files = await unzip(file_list[i])
             if (files) {
                 for (let j = 0; j < files.length; j++) {
                     if (files[j]?.size < 10*1024*1024) {
@@ -376,9 +376,9 @@ exports.import = async (req, res) => {
             }
         }
         
-        const rar_list = req.files.filter(f => f.originalname.includes('.rar'));
-        for (let i = 0; i < rar_list.length; i++) {
-            let files = await unrar(rar_list[i])
+        file_list = req.files.filter(f => f.originalname.includes('.rar'));
+        for (let i = 0; i < file_list.length; i++) {
+            let files = await unrar(file_list[i])
             if (files) {
                 for (let j = 0; j < files.length; j++) {
                     if (files[j]?.size < 10*1024*1024) {
@@ -394,10 +394,31 @@ exports.import = async (req, res) => {
             }
         }
 
-        // Joining csv files
-        const csv_list = req.files.filter(f => f.mimetype === 'text/csv');
+        // Variable which will store all data
         let datatable = [];
-        for (const csv_elem of csv_list) {
+        
+        // Joining xlx files
+        file_list = req.files.filter(f => f.mimetype === 'application/vnd.ms-excel' || f.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        file_list = file_list.sort((a, b) => a.originalname > b.originalname ? 1 : -1);
+        for (const xlsx_elem of file_list) {
+            const xlsx_data = await xlsxToJSON(xlsx_elem);
+            datatable = [
+                ...datatable,
+                ...xlsx_data.map(line => ({
+                    ...line,
+                    "channel": channelsite,
+                    "date": !line.date ? line['Date'] || line['Sent Time'] : line.date,
+                    "personname": !line.personname ? line['Chats'] : line.personname,
+                    "personphone": !line.personphone ? line['Name/Phone'] || line['From Chat'] : line.personphone,
+                    "interactiontext": !line.interactiontext ? line['Content'] || line['File Name'] : line.interactiontext,
+                    "interactionfrom": !line.interactionfrom ? (line['Type'] === 'Send' || line['Sender'] === '-' ? 'CLIENT' : 'BOT') : line.interactionfrom
+                }))
+            ]
+        }
+        
+        // Joining csv files
+        file_list = req.files.filter(f => f.mimetype === 'text/csv');
+        for (const csv_elem of file_list) {
             const csv = csv_elem.buffer.toString();
             let allTextLines = csv.split(/\r\n|\n/);
             let headers = allTextLines[0].split(';');
@@ -411,14 +432,9 @@ exports.import = async (req, res) => {
                             [key]: line[j][0] === '"' && line[j].slice(-1) === '"' ? line[j].slice(1,-1) : line[j]
                         }), {}),
                     }
-                    for (let j = 0; j < attachments.length; j++) {
-                        data.MessageBody = data.MessageBody.replace(attachments[j].filename, attachments[j].url)
-                    }
                     lines.push(data)
                 }
             }
-            // const phones = [...new Set(lines.map(d => d.UserPhone))];
-            // const personphone = phones.filter(p => p !== channelsite)?.[0];
             const personphone = csv_elem.originalname.split('.')[0];
             const personname = lines.filter(l => l.UserPhone === personphone)?.[0]?.UserName;
             datatable = [
@@ -426,18 +442,45 @@ exports.import = async (req, res) => {
                 ...lines.map(line => ({
                     ...line,
                     "channel": channelsite,
-                    "personname": personname,
-                    "personphone": personphone,
-                    "interactiontext": line.MessageBody,
-                    "interactionfrom": personphone === line.UserPhone ? 'CLIENT' : 'BOT'
+                    "date": !line.date ? `${line['Date2']} ${line['Time']}` : line.date,
+                    "personname": !line.personname ? personname : line.personname,
+                    "personphone": !line.personphone ? personphone : line.personphone,
+                    "interactiontext": !line.interactiontext ? line['MessageBody'] : line.interactiontext,
+                    "interactionfrom": !line.interactionfrom ? (personphone === line['UserPhone'] ? 'CLIENT' : 'BOT') : line.interactionfrom
                 }))
             ]
         }
 
-        if (!data?.corpid)
-            data.corpid = req.user?.corpid ? req.user.corpid : 1;
-        if (!data?.orgid)
-            data.orgid = req.user?.orgid ? req.user.orgid : 1;
+        // Replace text for url of attachments
+        for (let i = 0; i < datatable.length; i++) {
+            for (let j = 0; j < attachments.length; j++) {
+                datatable[i].interactiontext = datatable[i].interactiontext.replace(attachments[j].filename, attachments[j].url)
+            }
+        }
+
+       // Get uniques personphones
+       const personphone_list = [...new Map(datatable.filter(d => !!d.personname).map(d => [d['personphone'], d])).values()];
+       const personphone_dict = personphone_list.reduce((ac, c) => ({
+           ...ac,
+           [c.personphone]: c
+       }), {});
+       
+       // Add personname for attachment files
+       datatable = datatable.map(d => ({
+           ...d,
+           personname: !d.personname ? personphone_dict[d.personphone]?.personname : d.personname
+       }));
+       
+       // Clean data without personname
+       datatable = datatable.filter(p => !!p.personname);
+       
+       // Sort data by date
+       datatable = datatable.sort((a, b) => new Date(a['date']) > new Date(b['date']) ? 1 : -1);
+
+       if (!data?.corpid)
+           data.corpid = req.user?.corpid ? req.user.corpid : 1;
+       if (!data?.orgid)
+           data.orgid = req.user?.orgid ? req.user.orgid : 1;
 
         data._requestid = req._requestid;
 

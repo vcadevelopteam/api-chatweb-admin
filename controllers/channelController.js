@@ -1,5 +1,6 @@
 const channelfunctions = require("../config/channelfunctions");
 const triggerfunctions = require('../config/triggerfunctions');
+const jwt = require("jsonwebtoken");
 
 const { setSessionParameters, axiosObservable } = require('../config/helpers');
 
@@ -16,6 +17,9 @@ const webChatApplication = process.env.CHATAPPLICATION;
 const webChatPlatformEndpoint = process.env.WEBCHATPLATFORM;
 const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
 const whatsAppEndpoint = process.env.WHATSAPPAPI;
+const googleClientId = process.env.GOOGLE_CLIENTID;
+const googleClientSecret = process.env.GOOGLE_CLIENTSECRET;
+const googleTopicName = process.env.GOOGLE_TOPICNAME;
 
 exports.checkPaymentPlan = async (request, response) => {
     try {
@@ -639,6 +643,59 @@ exports.deleteChannel = async (request, response) => {
                     }
                 }
 
+            case 'WHAG':
+                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+                    var serviceCredentials = JSON.parse(parameters.servicecredentials);
+
+                    const requestDeleteWhatsAppGupshup = await axiosObservable({
+                        data: {
+                            apiKey: serviceCredentials.apiKey,
+                            appId: parameters.communicationchannelowner,
+                            linkType: 'GUPSHUPREMOVE',
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processlaraigo/gupshup/managegupshuplink`,
+                        _requestid: request._requestid,
+                    });
+
+                    if (requestDeleteWhatsAppGupshup.data.success) {
+                        const transactionDeleteWhatsAppGupshup = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                        if (transactionDeleteWhatsAppGupshup instanceof Array) {
+                            return response.json({
+                                success: true
+                            });
+                        }
+                        else {
+                            return response.status(400).json({
+                                msg: transactionDeleteWhatsAppGupshup.code,
+                                success: false
+                            });
+                        }
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: requestDeleteWhatsAppGupshup.data.operationMessage,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    const transactionDeleteWhatsAppGupshup = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionDeleteWhatsAppGupshup instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionDeleteWhatsAppGupshup.code,
+                            success: false
+                        });
+                    }
+                }
+
             default:
                 const transactionDeleteGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
 
@@ -1189,11 +1246,85 @@ exports.insertChannel = async (request, response) => {
                 }
                 break;
 
+            case 'GMAIL':
+                if (service) {
+                    var informationtoken = jwt.decode(service.idtoken);
+
+                    parameters.communicationchannelowner = informationtoken.name;
+                    parameters.integrationid = informationtoken.email;
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.status = 'ACTIVO';
+                    parameters.communicationchannelsite = informationtoken.email;
+                    parameters.type = 'MAIL';
+
+                    await channelfunctions.serviceTokenUpdate(informationtoken.email, service.accesstoken, service.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', request?.user?.usr, 50);
+
+                    await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, informationtoken.email, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-GMAIL', 'ACTIVO', request?.user?.usr, `${hookEndpoint}mail/gmailwebhookasync`, 2880);
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
             case 'BLOGGER':
+            case 'YOUTUBE':
+                if (service) {
+                    var informationtoken = jwt.decode(service.idtoken);
+
+                    parameters.communicationchannelowner = informationtoken.name;
+                    parameters.integrationid = service.channel;
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.status = 'ACTIVO';
+
+                    await channelfunctions.serviceTokenUpdate(informationtoken.email, service.accesstoken, service.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', request?.user?.usr, 50);
+
+                    switch (request.body.type) {
+                        case 'BLOGGER':
+                            parameters.communicationchannelsite = `${informationtoken.email}&%BLOG%&${service.channel}`;
+                            parameters.type = 'BLOG';
+
+                            await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, service.channel, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-BLOGGER', 'ACTIVO', request?.user?.usr, `${hookEndpoint}blogger/webhookasync`, 2);
+                            break;
+
+                        case 'YOUTUBE':
+                            parameters.communicationchannelsite = `${informationtoken.email}&%YOUT%&${service.channel}`;
+                            parameters.type = 'YOUT';
+
+                            await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, service.channel, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-YOUTUBE', 'ACTIVO', request?.user?.usr, `${hookEndpoint}youtube/webhookasync`, 2);
+                            break;
+                    }
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
+
             case 'LINKEDIN':
             case 'MICROSOFTTEAMS':
             case 'TIKTOK':
-            case 'YOUTUBE':
                 if (service) {
                     parameters.communicationchannelowner = service.account;
                     parameters.communicationchannelsite = service.account;
@@ -1202,10 +1333,6 @@ exports.insertChannel = async (request, response) => {
                     parameters.status = 'PENDIENTE';
 
                     switch (request.body.type) {
-                        case 'BLOGGER':
-                            parameters.type = 'BLOG';
-                            break;
-
                         case 'LINKEDIN':
                             parameters.type = 'LNKD';
                             break;
@@ -1217,21 +1344,17 @@ exports.insertChannel = async (request, response) => {
                         case 'TIKTOK':
                             parameters.type = 'TITO';
                             break;
-
-                        case 'YOUTUBE':
-                            parameters.type = 'YOUT';
-                            break;
                     }
 
                     const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateGeneric instanceof Array) {
-                        return result.json({
+                        return response.json({
                             success: true
                         });
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionCreateGeneric.code,
                             success: false
                         });
@@ -1610,6 +1733,53 @@ exports.insertChannel = async (request, response) => {
                     });
                 }
 
+            case 'WHATSAPPGUPSHUP':
+                const requestInsertWhatsAppGupshup = await axiosObservable({
+                    data: {
+                        apiKey: service.apikey,
+                        appId: service.appid,
+                        linkType: 'GUPSHUPADD',
+                    },
+                    method: 'post',
+                    url: `${bridgeEndpoint}processlaraigo/gupshup/managegupshuplink`,
+                    _requestid: request._requestid,
+                });
+
+                if (requestInsertWhatsAppGupshup.data.success) {
+                    var serviceCredentials = {
+                        apiKey: service.apikey,
+                        app: service.appname,
+                        endpoint: `${requestInsertWhatsAppGupshup.data.endpoint}sm/api/v1/`,
+                        number: service.appnumber,
+                    };
+
+                    parameters.communicationchannelsite = service.appname;
+                    parameters.communicationchannelowner = service.appid;
+                    parameters.phone = service.appnumber;
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.type = 'WHAG';
+
+                    const transactionInsertWhatsAppGupshup = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionInsertWhatsAppGupshup instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionInsertWhatsAppGupshup.code,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    return response.status(400).json({
+                        msg: requestInsertWhatsAppGupshup.data.operationMessage,
+                        success: false
+                    });
+                }
+
             case 'VOXIMPLANTPHONE':
                 var voximplantEnvironment = await channelfunctions.voximplantHandleEnvironment(request.user.corpid, request.user.orgid, request.originalUrl, request._requestid);
 
@@ -1629,6 +1799,8 @@ exports.insertChannel = async (request, response) => {
                                             queueid: voximplantPhoneNumber.queueid,
                                             ruleid: voximplantScenario.ruleid,
                                             scenarioid: voximplantScenario.scenarioid,
+                                            ruleoutid: voximplantScenario.ruleoutid,
+                                            scenariooutid: voximplantScenario.scenariooutid,
                                             accountid: voximplantEnvironment.accountid,
                                             apikey: voximplantEnvironment.apikey,
                                             applicationid: voximplantEnvironment.applicationid,

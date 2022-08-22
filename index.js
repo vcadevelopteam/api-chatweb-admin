@@ -55,6 +55,7 @@ app.use('/api/payment', require('./routes/payment'));
 app.use('/api/billing', require('./routes/billing'));
 app.use('/api/gmaps', require('./routes/gmaps'));
 app.use('/api/voximplant', require('./routes/voximplant'));
+app.use('/api/google', require('./routes/google'));
 app.use('/api/campaign', require('./routes/campaign'));
 
 // Definir la pagina principal
@@ -65,4 +66,4 @@ app.get('/', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
 })
 
-logger.info(`System launch http://localhost:${PORT}`);
+logger.info(`System launch API-LARAIGO on port ${PORT}`);
