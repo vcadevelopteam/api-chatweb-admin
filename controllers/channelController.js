@@ -2262,6 +2262,8 @@ exports.synchronizeTemplate = async (request, response) => {
                 }
 
                 if (templateList) {
+                    await channelfunctions.messageTemplateReset(request.body.corpid, request.body.orgid, request.body.communicationchannelid, request.user.usr, request._requestid);
+
                     for (const templateData of templateList) {
                         var buttonObject = [];
 

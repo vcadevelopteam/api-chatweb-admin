@@ -143,6 +143,25 @@ exports.messageTemplateUpd = async (corpid, orgid, description, type, status, na
     return null;
 }
 
+exports.messageTemplateReset = async (corpid, orgid, communicationchannelid, username, requestid = null) => {
+    const queryMethod = "UFN_MESSAGETEMPLATE_RESET";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: orgid,
+        communicationchannelid: communicationchannelid,
+        username: username,
+        _requestid: requestid,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        return queryResult;
+    }
+
+    return null;
+}
+
 exports.voximplantChannelSel = async (corpid, orgid, year, month, timezoneoffset, requestid = null) => {
     const queryMethod = "UFN_COMMUNICATIONCHANNEL_SEL_VOXIMPLANT";
     const queryParameters = {
