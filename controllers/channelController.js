@@ -2090,6 +2090,8 @@ exports.synchronizeTemplate = async (request, response) => {
                 }
 
                 if (templateList) {
+                    await channelfunctions.messageTemplateReset(request.body.corpid, request.body.orgid, request.body.communicationchannelid, (request.body.type === "WHAD" || request.body.type === "WHAG") ? templateList[0]?.id || null : null, request.user.usr, request._requestid);
+
                     for (const templateData of templateList) {
                         var buttonObject = [];
 
@@ -2192,7 +2194,7 @@ exports.addTemplate = async (request, response) => {
                                 Category: request.body.category,
                                 Name: request.body.name,
                                 Language: ((request.body.language || '').split('_')).length > 1 ? `${(request.body.language || '').split('_')[0].toLowerCase()}_${(request.body.language || '').split('_')[1]}` : ((request.body.language || '').split('_')[0].toLowerCase()),
-                                Header: request.body.headerenabled ? { Type: request.body.headertype, Text: request.body.headertype === "text" ? request.body.headertype : null } : null,
+                                Header: request.body.headerenabled ? { Type: request.body.headertype, Text: request.body.headertype === "text" ? request.body.header : null } : null,
                                 Footer: request.body.footerenabled ? { Text: request.body.footer } : null,
                                 Body: { Text: request.body.body },
                             }
@@ -2253,7 +2255,7 @@ exports.addTemplate = async (request, response) => {
                                 Category: request.body.category,
                                 Name: request.body.name,
                                 Language: ((request.body.language || '').split('_')).length > 1 ? `${(request.body.language || '').split('_')[0].toLowerCase()}_${(request.body.language || '').split('_')[1]}` : ((request.body.language || '').split('_')[0].toLowerCase()),
-                                Header: request.body.headerenabled ? { Type: request.body.headertype, Text: request.body.headertype === "text" ? request.body.headertype : null } : null,
+                                Header: request.body.headerenabled ? { Type: request.body.headertype, Text: request.body.headertype === "text" ? request.body.header : null } : null,
                                 Footer: request.body.footerenabled ? { Text: request.body.footer } : null,
                                 Body: { Text: request.body.body },
                             }
@@ -2369,6 +2371,8 @@ exports.deleteTemplate = async (request, response) => {
                                 parameters.corpid = request.user.corpid;
                                 parameters.orgid = request.user.orgid;
                                 parameters.username = request.user.usr;
+                                parameters.bodyobject = JSON.stringify(request.body.bodyobject);
+                                parameters.buttons = JSON.stringify(request.body.buttons);
 
                                 const queryTemplateDelete = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
 
@@ -2411,6 +2415,8 @@ exports.deleteTemplate = async (request, response) => {
                                 parameters.corpid = request.user.corpid;
                                 parameters.orgid = request.user.orgid;
                                 parameters.username = request.user.usr;
+                                parameters.bodyobject = JSON.stringify(request.body.bodyobject);
+                                parameters.buttons = JSON.stringify(request.body.buttons);
 
                                 const queryTemplateDelete = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
 
