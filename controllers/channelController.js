@@ -2262,7 +2262,7 @@ exports.synchronizeTemplate = async (request, response) => {
                 }
 
                 if (templateList) {
-                    await channelfunctions.messageTemplateReset(request.body.corpid, request.body.orgid, request.body.communicationchannelid, request.user.usr, request._requestid);
+                    await channelfunctions.messageTemplateReset(request.body.corpid, request.body.orgid, request.body.communicationchannelid, (request.body.type === "WHAD" || request.body.type === "WHAG") ? templateList[0]?.id || null : null, request.user.usr, request._requestid);
 
                     for (const templateData of templateList) {
                         var buttonObject = [];
@@ -2543,6 +2543,8 @@ exports.deleteTemplate = async (request, response) => {
                                 parameters.corpid = request.user.corpid;
                                 parameters.orgid = request.user.orgid;
                                 parameters.username = request.user.usr;
+                                parameters.bodyobject = JSON.stringify(request.body.bodyobject);
+                                parameters.buttons = JSON.stringify(request.body.buttons);
 
                                 const queryTemplateDelete = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
 
@@ -2585,6 +2587,8 @@ exports.deleteTemplate = async (request, response) => {
                                 parameters.corpid = request.user.corpid;
                                 parameters.orgid = request.user.orgid;
                                 parameters.username = request.user.usr;
+                                parameters.bodyobject = JSON.stringify(request.body.bodyobject);
+                                parameters.buttons = JSON.stringify(request.body.buttons);
 
                                 const queryTemplateDelete = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
 
