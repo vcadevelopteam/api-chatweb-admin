@@ -2364,7 +2364,7 @@ exports.addTemplate = async (request, response) => {
                                 Category: request.body.category,
                                 Name: request.body.name,
                                 Language: ((request.body.language || '').split('_')).length > 1 ? `${(request.body.language || '').split('_')[0].toLowerCase()}_${(request.body.language || '').split('_')[1]}` : ((request.body.language || '').split('_')[0].toLowerCase()),
-                                Header: request.body.headerenabled ? { Type: request.body.headertype, Text: request.body.headertype === "text" ? request.body.headertype : null } : null,
+                                Header: request.body.headerenabled ? { Type: request.body.headertype, Text: request.body.headertype === "text" ? request.body.header : null } : null,
                                 Footer: request.body.footerenabled ? { Text: request.body.footer } : null,
                                 Body: { Text: request.body.body },
                             }
@@ -2425,7 +2425,7 @@ exports.addTemplate = async (request, response) => {
                                 Category: request.body.category,
                                 Name: request.body.name,
                                 Language: ((request.body.language || '').split('_')).length > 1 ? `${(request.body.language || '').split('_')[0].toLowerCase()}_${(request.body.language || '').split('_')[1]}` : ((request.body.language || '').split('_')[0].toLowerCase()),
-                                Header: request.body.headerenabled ? { Type: request.body.headertype, Text: request.body.headertype === "text" ? request.body.headertype : null } : null,
+                                Header: request.body.headerenabled ? { Type: request.body.headertype, Text: request.body.headertype === "text" ? request.body.header : null } : null,
                                 Footer: request.body.footerenabled ? { Text: request.body.footer } : null,
                                 Body: { Text: request.body.body },
                             }
