@@ -2561,4 +2561,24 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_WITAI_CRON: {
+        query: "SELECT * FROM ufn_witai_cron()",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_CONFIG: {
+        query: "SELECT * FROM ufn_witai_config($corpid, $orgid, $id, $appid, $token)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_GET: {
+        query: "SELECT * FROM ufn_witai_get($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_TRAIN: {
+        query: "SELECT * FROM ufn_witai_train($corpid, $orgid, $type, $name, $datajson, $username)",
+        module: "",
+        protected: "SELECT"
+    },
 }
