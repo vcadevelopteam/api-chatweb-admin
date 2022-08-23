@@ -1,7 +1,6 @@
 const { createLogger, format, transports } = require("winston");
+require('winston-daily-rotate-file');
 const logdnaWinston = require('logdna-winston');
-
-const currentDate = new Date().toISOString().substring(0, 10);
 
 const levels = {
     error: 0,   //error on catch exception
@@ -12,6 +11,7 @@ const levels = {
 
 const env = process.env.NODE_ENV || 'development';
 const logLevel = process.env.LOG_LEVEL || "debug";
+const logDisk = process.env.LOG_DISK === "true";
 
 //options to logDNA
 const options = {
@@ -28,11 +28,15 @@ const logger = createLogger({
     format: format.combine(format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }), format.json()),
     transports: [
         new transports.Console(),
-        new transports.File({ filename: `logs/all-${currentDate}.log` }),
-        new transports.File({ filename: `logs/err-${currentDate}.log`, level: "error" }),
+        ...(logDisk ? [
+            new transports.DailyRotateFile({ dirname: './logs', filename: "all-%DATE%.log", datePattern: 'YYYY-MM-DD' }),
+            new transports.DailyRotateFile({ dirname: './logs', filename: "err-%DATE%.log", datePattern: 'YYYY-MM-DD', level: "error" }),
+        ] : [])
     ],
-    exceptionHandlers: [new transports.File({ filename: `logs/exceptions-${currentDate}.log` })],
-    rejectionHandlers: [new transports.File({ filename: `logs/rejections-${currentDate}.log` })],
+    ...(logDisk ? {
+        exceptionHandlers: [new transports.DailyRotateFile({ dirname: './logs', filename: "exceptions-%DATE%.log", datePattern: 'YYYY-MM-DD' })],
+        rejectionHandlers: [new transports.DailyRotateFile({ dirname: './logs', filename: "rejections-%DATE%.log", datePattern: 'YYYY-MM-DD' })],
+    } : {}),
     exitOnError: false
 });
 

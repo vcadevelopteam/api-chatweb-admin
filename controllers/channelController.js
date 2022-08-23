@@ -1,5 +1,6 @@
 const channelfunctions = require("../config/channelfunctions");
 const triggerfunctions = require('../config/triggerfunctions');
+const jwt = require("jsonwebtoken");
 
 const { setSessionParameters, axiosObservable } = require('../config/helpers');
 
@@ -16,6 +17,9 @@ const webChatApplication = process.env.CHATAPPLICATION;
 const webChatPlatformEndpoint = process.env.WEBCHATPLATFORM;
 const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
 const whatsAppEndpoint = process.env.WHATSAPPAPI;
+const googleClientId = process.env.GOOGLE_CLIENTID;
+const googleClientSecret = process.env.GOOGLE_CLIENTSECRET;
+const googleTopicName = process.env.GOOGLE_TOPICNAME;
 
 exports.checkPaymentPlan = async (request, response) => {
     try {
@@ -639,6 +643,59 @@ exports.deleteChannel = async (request, response) => {
                     }
                 }
 
+            case 'WHAG':
+                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+                    var serviceCredentials = JSON.parse(parameters.servicecredentials);
+
+                    const requestDeleteWhatsAppGupshup = await axiosObservable({
+                        data: {
+                            apiKey: serviceCredentials.apiKey,
+                            appId: parameters.communicationchannelowner,
+                            linkType: 'GUPSHUPREMOVE',
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processlaraigo/gupshup/managegupshuplink`,
+                        _requestid: request._requestid,
+                    });
+
+                    if (requestDeleteWhatsAppGupshup.data.success) {
+                        const transactionDeleteWhatsAppGupshup = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                        if (transactionDeleteWhatsAppGupshup instanceof Array) {
+                            return response.json({
+                                success: true
+                            });
+                        }
+                        else {
+                            return response.status(400).json({
+                                msg: transactionDeleteWhatsAppGupshup.code,
+                                success: false
+                            });
+                        }
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: requestDeleteWhatsAppGupshup.data.operationMessage,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    const transactionDeleteWhatsAppGupshup = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionDeleteWhatsAppGupshup instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionDeleteWhatsAppGupshup.code,
+                            success: false
+                        });
+                    }
+                }
+
             default:
                 const transactionDeleteGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
 
@@ -1119,6 +1176,7 @@ exports.insertChannel = async (request, response) => {
                         apiKeySecret: requestCreateSmooch.data.appSecret,
                         appId: requestCreateSmooch.data.applicationId,
                         endpoint: smoochEndpoint,
+                        integrationId: requestCreateSmooch.data.integrationId,
                         version: smoochVersion
                     };
 
@@ -1188,11 +1246,85 @@ exports.insertChannel = async (request, response) => {
                 }
                 break;
 
+            case 'GMAIL':
+                if (service) {
+                    var informationtoken = jwt.decode(service.idtoken);
+
+                    parameters.communicationchannelowner = informationtoken.name;
+                    parameters.integrationid = informationtoken.email;
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.status = 'ACTIVO';
+                    parameters.communicationchannelsite = informationtoken.email;
+                    parameters.type = 'MAIL';
+
+                    await channelfunctions.serviceTokenUpdate(informationtoken.email, service.accesstoken, service.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', request?.user?.usr, 50);
+
+                    await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, informationtoken.email, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-GMAIL', 'ACTIVO', request?.user?.usr, `${hookEndpoint}mail/gmailwebhookasync`, 2880);
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
             case 'BLOGGER':
+            case 'YOUTUBE':
+                if (service) {
+                    var informationtoken = jwt.decode(service.idtoken);
+
+                    parameters.communicationchannelowner = informationtoken.name;
+                    parameters.integrationid = service.channel;
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.status = 'ACTIVO';
+
+                    await channelfunctions.serviceTokenUpdate(informationtoken.email, service.accesstoken, service.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', request?.user?.usr, 50);
+
+                    switch (request.body.type) {
+                        case 'BLOGGER':
+                            parameters.communicationchannelsite = `${informationtoken.email}&%BLOG%&${service.channel}`;
+                            parameters.type = 'BLOG';
+
+                            await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, service.channel, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-BLOGGER', 'ACTIVO', request?.user?.usr, `${hookEndpoint}blogger/webhookasync`, 2);
+                            break;
+
+                        case 'YOUTUBE':
+                            parameters.communicationchannelsite = `${informationtoken.email}&%YOUT%&${service.channel}`;
+                            parameters.type = 'YOUT';
+
+                            await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, service.channel, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-YOUTUBE', 'ACTIVO', request?.user?.usr, `${hookEndpoint}youtube/webhookasync`, 2);
+                            break;
+                    }
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
+
             case 'LINKEDIN':
             case 'MICROSOFTTEAMS':
             case 'TIKTOK':
-            case 'YOUTUBE':
                 if (service) {
                     parameters.communicationchannelowner = service.account;
                     parameters.communicationchannelsite = service.account;
@@ -1201,10 +1333,6 @@ exports.insertChannel = async (request, response) => {
                     parameters.status = 'PENDIENTE';
 
                     switch (request.body.type) {
-                        case 'BLOGGER':
-                            parameters.type = 'BLOG';
-                            break;
-
                         case 'LINKEDIN':
                             parameters.type = 'LNKD';
                             break;
@@ -1216,21 +1344,17 @@ exports.insertChannel = async (request, response) => {
                         case 'TIKTOK':
                             parameters.type = 'TITO';
                             break;
-
-                        case 'YOUTUBE':
-                            parameters.type = 'YOUT';
-                            break;
                     }
 
                     const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateGeneric instanceof Array) {
-                        return result.json({
+                        return response.json({
                             success: true
                         });
                     }
                     else {
-                        return result.status(400).json({
+                        return response.status(400).json({
                             msg: transactionCreateGeneric.code,
                             success: false
                         });
@@ -1577,12 +1701,15 @@ exports.insertChannel = async (request, response) => {
                         apiKeySecret: service.apikeysecret,
                         appId: service.appid,
                         endpoint: 'https://api.smooch.io/',
+                        integrationId: requestInsertWhatsAppSmooch.data.integrationId,
                         version: 'v1.1'
                     };
 
+                    parameters.communicationchannelowner = service.appid;
                     parameters.communicationchannelsite = service.appid;
-                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.integrationid = requestInsertWhatsAppSmooch.data.integrationId;
                     parameters.phone = requestInsertWhatsAppSmooch.data.phoneNumber;
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
                     parameters.type = 'WHAT';
 
                     const transactionInsertWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
@@ -1606,6 +1733,53 @@ exports.insertChannel = async (request, response) => {
                     });
                 }
 
+            case 'WHATSAPPGUPSHUP':
+                const requestInsertWhatsAppGupshup = await axiosObservable({
+                    data: {
+                        apiKey: service.apikey,
+                        appId: service.appid,
+                        linkType: 'GUPSHUPADD',
+                    },
+                    method: 'post',
+                    url: `${bridgeEndpoint}processlaraigo/gupshup/managegupshuplink`,
+                    _requestid: request._requestid,
+                });
+
+                if (requestInsertWhatsAppGupshup.data.success) {
+                    var serviceCredentials = {
+                        apiKey: service.apikey,
+                        app: service.appname,
+                        endpoint: `${requestInsertWhatsAppGupshup.data.endpoint}sm/api/v1/`,
+                        number: service.appnumber,
+                    };
+
+                    parameters.communicationchannelsite = service.appname;
+                    parameters.communicationchannelowner = service.appid;
+                    parameters.phone = service.appnumber;
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.type = 'WHAG';
+
+                    const transactionInsertWhatsAppGupshup = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionInsertWhatsAppGupshup instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionInsertWhatsAppGupshup.code,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    return response.status(400).json({
+                        msg: requestInsertWhatsAppGupshup.data.operationMessage,
+                        success: false
+                    });
+                }
+
             case 'VOXIMPLANTPHONE':
                 var voximplantEnvironment = await channelfunctions.voximplantHandleEnvironment(request.user.corpid, request.user.orgid, request.originalUrl, request._requestid);
 
@@ -1625,6 +1799,8 @@ exports.insertChannel = async (request, response) => {
                                             queueid: voximplantPhoneNumber.queueid,
                                             ruleid: voximplantScenario.ruleid,
                                             scenarioid: voximplantScenario.scenarioid,
+                                            ruleoutid: voximplantScenario.ruleoutid,
+                                            scenariooutid: voximplantScenario.scenariooutid,
                                             accountid: voximplantEnvironment.accountid,
                                             apikey: voximplantEnvironment.apikey,
                                             applicationid: voximplantEnvironment.applicationid,
@@ -1940,14 +2116,18 @@ exports.activateChannel = async (request, response) => {
             });
 
             if (requestMigrateWhatsApp.data.success) {
-                parameters.communicationchannelsite = service.appid;
                 parameters.servicecredentials = JSON.stringify({
                     apiKeyId: service.apikeyid,
                     apiKeySecret: service.apikeysecret,
                     appId: service.appid,
                     endpoint: 'https://api.smooch.io/',
+                    integrationId: requestMigrateWhatsApp.data.integrationId,
                     version: 'v1.1'
                 });
+
+                parameters.communicationchannelowner = service.appid;
+                parameters.communicationchannelsite = service.appid;
+                parameters.integrationid = requestMigrateWhatsApp.data.integrationId;
                 parameters.phone = requestMigrateWhatsApp.data.phoneNumber;
                 parameters.type = 'WHAT';
 
@@ -1977,6 +2157,471 @@ exports.activateChannel = async (request, response) => {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
+        });
+    }
+}
+
+exports.synchronizeTemplate = async (request, response) => {
+    try {
+        var requestCode = "error_unexpected_error";
+        var requestMessage = "error_unexpected_error";
+        var requestStatus = 400;
+        var requestSuccess = false;
+
+        if (typeof whitelist !== "undefined" && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return response.status(requestStatus).json({
+                    code: "error_auth_error",
+                    error: !requestSuccess,
+                    message: "error_auth_error",
+                    success: requestSuccess,
+                });
+            }
+        }
+
+        if (request.body) {
+            if (request.body.type) {
+                var templateList = null;
+
+                switch (request.body.type) {
+                    case "WHAD":
+                        if (request.body.servicecredentials) {
+                            var serviceData = JSON.parse(request.body.servicecredentials);
+
+                            const requestListDialog = await axiosObservable({
+                                data: {
+                                    ApiKey: serviceData.apiKey,
+                                    Type: "LIST",
+                                },
+                                method: 'post',
+                                url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
+                                _requestid: request._requestid,
+                            });
+
+                            if (requestListDialog.data.success) {
+                                templateList = requestListDialog.data.result;
+                            }
+                            else {
+                                requestCode = requestListDialog.data.operationMessage
+                                requestMessage = requestListDialog.data.operationMessage;
+                            }
+                        }
+                        break;
+
+                    case "WHAG":
+                        if (request.body.servicecredentials) {
+                            var serviceData = JSON.parse(request.body.servicecredentials);
+
+                            const requestListGupshup = await axiosObservable({
+                                data: {
+                                    AppName: serviceData.app,
+                                    ApiKey: serviceData.apiKey,
+                                    Type: "LIST",
+                                },
+                                method: 'post',
+                                url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
+                                _requestid: request._requestid,
+                            });
+
+                            if (requestListGupshup.data.success) {
+                                templateList = requestListGupshup.data.result;
+                            }
+                            else {
+                                requestCode = requestListGupshup.data.operationMessage
+                                requestMessage = requestListGupshup.data.operationMessage;
+                            }
+                        }
+                        break;
+
+                    case "WHAT":
+                        if (request.body.servicecredentials) {
+                            var serviceData = JSON.parse(request.body.servicecredentials);
+
+                            const requestListSmooch = await axiosObservable({
+                                data: {
+                                    AppId: serviceData.appId,
+                                    IntegrationId: request.body.integrationid,
+                                    Type: "LIST",
+                                    KeyId: serviceData.apiKeyId,
+                                    KeySecret: serviceData.apiKeySecret,
+                                },
+                                method: 'post',
+                                url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
+                                _requestid: request._requestid,
+                            });
+
+                            if (requestListSmooch.data.success) {
+                                templateList = requestListSmooch.data.result;
+                            }
+                            else {
+                                requestCode = requestListSmooch.data.operationMessage
+                                requestMessage = requestListSmooch.data.operationMessage;
+                            }
+                        }
+                        break;
+                }
+
+                if (templateList) {
+                    for (const templateData of templateList) {
+                        var buttonObject = [];
+
+                        if (templateData.buttons) {
+                            for (const buttonData of templateData.buttons) {
+                                var buttonInformation = {
+                                    type: (buttonData.type || '').toLowerCase(),
+                                    title: buttonData.text || '',
+                                    payload: (buttonData.data || buttonData.text) || '',
+                                };
+
+                                buttonObject.push(buttonInformation);
+                            }
+                        }
+
+                        await channelfunctions.messageTemplateUpd(
+                            request.body.corpid,
+                            request.body.orgid,
+                            request.body.communicationchanneldesc,
+                            'HSM',
+                            'ACTIVO',
+                            templateData.name,
+                            (request.body.type === "WHAD" || request.body.type === "WHAG") ? templateData.id : null,
+                            templateData.category,
+                            templateData.language,
+                            (templateData.header || templateData.footer || templateData.buttons) ? "MULTIMEDIA" : "STANDARD",
+                            (templateData.header) ? true : false,
+                            templateData.header?.type ? templateData.header?.type.toLowerCase() : null,
+                            templateData.header?.text || null,
+                            templateData.body?.text || null,
+                            null,
+                            (templateData.footer) ? true : false,
+                            templateData.footer?.text || null,
+                            (templateData.buttons) ? true : false,
+                            (templateData.buttons) ? JSON.stringify(buttonObject) : null,
+                            true,
+                            templateData.id,
+                            templateData.status,
+                            request.body.communicationchannelid,
+                            request.body.type,
+                            null,
+                            request.user.usr,
+                            request._requestid,
+                        );
+                    }
+
+                    requestCode = "";
+                    requestMessage = "";
+                    requestStatus = 200;
+                    requestSuccess = true;
+                }
+            }
+        }
+
+        return response.status(requestStatus).json({
+            code: requestCode,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
+    }
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
+    }
+}
+
+exports.addTemplate = async (request, response) => {
+    try {
+        var requestCode = "error_unexpected_error";
+        var requestMessage = "error_unexpected_error";
+        var requestStatus = 400;
+        var requestSuccess = false;
+
+        if (typeof whitelist !== "undefined" && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return response.status(requestStatus).json({
+                    code: "error_auth_error",
+                    error: !requestSuccess,
+                    message: "error_auth_error",
+                    success: requestSuccess,
+                });
+            }
+        }
+
+        if (request.body) {
+            if (request.body.communicationchanneltype) {
+                var addSuccess = false;
+
+                switch (request.body.communicationchanneltype) {
+                    case "WHAD":
+                        if (request.body.servicecredentials) {
+                            var serviceData = JSON.parse(request.body.servicecredentials);
+
+                            var createBody = {
+                                ApiKey: serviceData.apiKey,
+                                Type: "CREATE",
+                                Category: request.body.category,
+                                Name: request.body.name,
+                                Language: ((request.body.language || '').split('_')).length > 1 ? `${(request.body.language || '').split('_')[0].toLowerCase()}_${(request.body.language || '').split('_')[1]}` : ((request.body.language || '').split('_')[0].toLowerCase()),
+                                Header: request.body.headerenabled ? { Type: request.body.headertype, Text: request.body.headertype === "text" ? request.body.header : null } : null,
+                                Footer: request.body.footerenabled ? { Text: request.body.footer } : null,
+                                Body: { Text: request.body.body },
+                            }
+
+                            if (request.body.buttons && request.body.buttons.length > 0) {
+                                createBody.Buttons = [];
+
+                                request.body.buttons.forEach(element => {
+                                    createBody.Buttons.push({ Text: element.title, Type: element.type, Data: (element.type === "phone_number" ? `phoneNumber: ${element.payload}` : (element.type === "url" ? `url: ${element.payload}` : null)) });
+                                });
+                            }
+
+                            const requestCreateDialog = await axiosObservable({
+                                data: createBody,
+                                method: 'post',
+                                url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
+                                _requestid: request._requestid,
+                            });
+
+                            if (requestCreateDialog.data.success) {
+                                var parameters = request.body;
+
+                                parameters.corpid = request.user.corpid;
+                                parameters.orgid = request.user.orgid;
+                                parameters.username = request.user.usr;
+                                parameters.bodyobject = JSON.stringify(request.body.bodyobject);
+                                parameters.buttons = JSON.stringify(request.body.buttons);
+                                parameters.externalid = requestCreateDialog.data.result[0].id || '';
+                                parameters.namespace = requestCreateDialog.data.result[0].id || '';
+
+                                const queryTemplateAdd = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
+
+                                if (queryTemplateAdd instanceof Array) {
+                                    addSuccess = true;
+                                }
+                                else {
+                                    requestCode = queryTemplateAdd.code;
+                                    requestMessage = queryTemplateAdd.code;
+                                }
+                            }
+                            else {
+                                requestCode = requestCreateDialog.data.operationMessage
+                                requestMessage = requestCreateDialog.data.operationMessage;
+                            }
+                        }
+                        break;
+
+                    case "WHAT":
+                        if (request.body.servicecredentials) {
+                            var serviceData = JSON.parse(request.body.servicecredentials);
+
+                            var createBody = {
+                                AppId: serviceData.appId,
+                                IntegrationId: request.body.integrationid,
+                                Type: "CREATE",
+                                KeyId: serviceData.apiKeyId,
+                                KeySecret: serviceData.apiKeySecret,
+                                Category: request.body.category,
+                                Name: request.body.name,
+                                Language: ((request.body.language || '').split('_')).length > 1 ? `${(request.body.language || '').split('_')[0].toLowerCase()}_${(request.body.language || '').split('_')[1]}` : ((request.body.language || '').split('_')[0].toLowerCase()),
+                                Header: request.body.headerenabled ? { Type: request.body.headertype, Text: request.body.headertype === "text" ? request.body.header : null } : null,
+                                Footer: request.body.footerenabled ? { Text: request.body.footer } : null,
+                                Body: { Text: request.body.body },
+                            }
+
+                            if (request.body.buttons && request.body.buttons.length > 0) {
+                                createBody.Buttons = [];
+
+                                request.body.buttons.forEach(element => {
+                                    createBody.Buttons.push({ Text: element.title, Type: element.type, Data: (element.type === "phone_number" ? `phoneNumber: ${element.payload}` : (element.type === "url" ? `url: ${element.payload}` : null)) });
+                                });
+                            }
+
+                            const requestCreateSmooch = await axiosObservable({
+                                data: createBody,
+                                method: 'post',
+                                url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
+                                _requestid: request._requestid,
+                            });
+
+                            if (requestCreateSmooch.data.success) {
+                                var parameters = request.body;
+
+                                parameters.corpid = request.user.corpid;
+                                parameters.orgid = request.user.orgid;
+                                parameters.username = request.user.usr;
+                                parameters.bodyobject = JSON.stringify(request.body.bodyobject);
+                                parameters.buttons = JSON.stringify(request.body.buttons);
+                                parameters.externalid = requestCreateDialog.data.result[0].id || '';
+
+                                const queryTemplateAdd = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
+
+                                if (queryTemplateAdd instanceof Array) {
+                                    addSuccess = true;
+                                }
+                                else {
+                                    requestCode = queryTemplateAdd.code;
+                                    requestMessage = queryTemplateAdd.code;
+                                }
+                            }
+                            else {
+                                requestCode = requestCreateSmooch.data.operationMessage
+                                requestMessage = requestCreateSmooch.data.operationMessage;
+                            }
+                        }
+                        break;
+                }
+
+                if (addSuccess) {
+                    requestCode = "";
+                    requestMessage = "";
+                    requestStatus = 200;
+                    requestSuccess = true;
+                }
+            }
+        }
+
+        return response.status(requestStatus).json({
+            code: requestCode,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
+    }
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
+    }
+}
+
+exports.deleteTemplate = async (request, response) => {
+    try {
+        var requestCode = "error_unexpected_error";
+        var requestMessage = "error_unexpected_error";
+        var requestStatus = 400;
+        var requestSuccess = false;
+
+        if (typeof whitelist !== "undefined" && whitelist) {
+            if (!whitelist.includes(request.ip)) {
+                return response.status(requestStatus).json({
+                    code: "error_auth_error",
+                    error: !requestSuccess,
+                    message: "error_auth_error",
+                    success: requestSuccess,
+                });
+            }
+        }
+
+        if (request.body) {
+            if (request.body.communicationchanneltype) {
+                var deleteSuccess = false;
+
+                switch (request.body.communicationchanneltype) {
+                    case "WHAD":
+                        if (request.body.communicationchannelservicecredentials) {
+                            var serviceData = JSON.parse(request.body.communicationchannelservicecredentials);
+
+                            const requestDeleteDialog = await axiosObservable({
+                                data: {
+                                    ApiKey: serviceData.apiKey,
+                                    DeleteName: request.body.name,
+                                    Type: "DELETE",
+                                },
+                                method: 'post',
+                                url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
+                                _requestid: request._requestid,
+                            });
+
+                            if (requestDeleteDialog.data.success) {
+                                var parameters = request.body;
+
+                                parameters.corpid = request.user.corpid;
+                                parameters.orgid = request.user.orgid;
+                                parameters.username = request.user.usr;
+
+                                const queryTemplateDelete = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
+
+                                if (queryTemplateDelete instanceof Array) {
+                                    deleteSuccess = true;
+                                }
+                                else {
+                                    requestCode = queryTemplateDelete.code;
+                                    requestMessage = queryTemplateDelete.code;
+                                }
+                            }
+                            else {
+                                requestCode = requestDeleteDialog.data.operationMessage
+                                requestMessage = requestDeleteDialog.data.operationMessage;
+                            }
+                        }
+                        break;
+
+                    case "WHAT":
+                        if (request.body.communicationchannelservicecredentials) {
+                            var serviceData = JSON.parse(request.body.communicationchannelservicecredentials);
+
+                            const requestDeleteSmooch = await axiosObservable({
+                                data: {
+                                    AppId: serviceData.appId,
+                                    IntegrationId: request.body.communicationchannelintegrationid,
+                                    DeleteName: request.body.name,
+                                    Type: "DELETE",
+                                    KeyId: serviceData.apiKeyId,
+                                    KeySecret: serviceData.apiKeySecret,
+                                },
+                                method: 'post',
+                                url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
+                                _requestid: request._requestid,
+                            });
+
+                            if (requestDeleteSmooch.data.success) {
+                                var parameters = request.body;
+
+                                parameters.corpid = request.user.corpid;
+                                parameters.orgid = request.user.orgid;
+                                parameters.username = request.user.usr;
+
+                                const queryTemplateDelete = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
+
+                                if (queryTemplateDelete instanceof Array) {
+                                    deleteSuccess = true;
+                                }
+                                else {
+                                    requestCode = queryTemplateDelete.code;
+                                    requestMessage = queryTemplateDelete.code;
+                                }
+                            }
+                            else {
+                                requestCode = requestDeleteSmooch.data.operationMessage
+                                requestMessage = requestDeleteSmooch.data.operationMessage;
+                            }
+                        }
+                        break;
+                }
+
+                if (deleteSuccess) {
+                    requestCode = "";
+                    requestMessage = "";
+                    requestStatus = 200;
+                    requestSuccess = true;
+                }
+            }
+        }
+
+        return response.status(requestStatus).json({
+            code: requestCode,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
+    }
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
         });
     }
 }

@@ -20,4 +20,9 @@ router.post("/testrequest",
     flowController.TestRequest
 )
 
+router.post("/triggerblock",
+    auth,
+    flowController.TriggerBlock
+)
+
 module.exports = router;

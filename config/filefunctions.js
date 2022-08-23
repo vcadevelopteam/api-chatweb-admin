@@ -1,5 +1,6 @@
 var ibm = require('ibm-cos-sdk');
 const { v4: uuidv4 } = require('uuid');
+const XLSX = require('xlsx');
 const unrar = require("node-unrar-js");
 const AdmZip = require("adm-zip");
 
@@ -12,6 +13,22 @@ var config = {
 
 var s3 = new ibm.S3(config);
 const COS_BUCKET_NAME = "staticfileszyxme"
+
+exports.xlsxToJSON = async (file, type = 'buffer') => {
+    try {
+        const workbook = XLSX.read(file.buffer, { type: type });
+        const worksheet = workbook.SheetNames[0];
+        const worksheetjson = XLSX.utils.sheet_to_json(workbook.Sheets[worksheet]).map((row) =>
+            Object.keys(row).reduce((obj, key) => {
+                obj[key.trim()] = row[key];
+                return obj;
+            }, {})
+        );
+        return worksheetjson
+    } catch (error) {
+        return []
+    }
+}
 
 exports.uploadToCOS = async (file, folder) => {
     try {

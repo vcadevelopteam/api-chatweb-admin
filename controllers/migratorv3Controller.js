@@ -31,6 +31,7 @@ SELECT jsonb_build_object(
     'quickreplyid',  COALESCE((SELECT MAX(quickreplyid) FROM quickreply),0),
     'personid',  COALESCE((SELECT MAX(personid) FROM person),0),
     'personaddinfoid',  COALESCE((SELECT MAX(personaddinfoid) FROM personaddinfo),0),
+    'personextradataid',  COALESCE((SELECT MAX(personextradataid) FROM personextradata),0),
     'postid',  COALESCE((SELECT MAX(postid) FROM post),0),
     'pccstatusid',  COALESCE((SELECT MAX(pccstatusid) FROM pccstatus),0),
     'conversationid',  COALESCE((SELECT MAX(conversationid) FROM conversation),0),
@@ -98,6 +99,7 @@ SubCorePerson
 "person"
 |"personaddinfo"
 |"personcommunicationchannel"
+|"personextradata"
 SubcoreConversation
 |"post"
 ||"pccstatus"
@@ -2077,6 +2079,67 @@ const querySubcorePerson = {
 			edit boolean,
 			imageurl character varying, personcommunicationchannelowner character varying, displayname character varying,
 			pendingsurvey boolean, surveycontext text, locked boolean, lastusergroup character varying
+        )
+        `
+    },
+    personextradata: {
+        id: 'personextradataid',
+        sequence: 'personextradata_personextradataid_seq',
+        select: `
+        SELECT
+        corpid as zyxmecorpid,
+        orgid as zyxmeorgid,
+        personid + CASE WHEN personid > $maxpersonid THEN $incpersonid ELSE 0 END as zyxmepersonid,
+        personextradataid + CASE WHEN personextradataid > $maxpersonextradataid THEN $incpersonextradataid ELSE 0 END as zyxmepersonextradataid,
+        variablename, variabletype, variablevalue,
+        createdate, changedate, status
+        FROM personextradata
+        `,
+        select_update_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND personextradataid <= $maxid
+        AND changedate > $backupdate::TIMESTAMP
+        `,
+        select_insert_where: `
+        WHERE corpid = $corpid
+        AND orgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)
+        AND personextradataid > $maxid
+        ORDER BY personextradataid
+        LIMIT $limit
+        `,
+        insert: `
+        INSERT INTO personextradata (
+            corpid,
+            orgid,
+            personid,
+            personextradataid,
+            variablename, variabletype, variablevalue,
+            createdate, changedate, status
+        )
+        OVERRIDING SYSTEM VALUE
+        SELECT
+            dt.zyxmecorpid,
+            dt.zyxmeorgid,
+            dt.zyxmepersonid,
+            dt.zyxmepersonextradataid,
+            dt.variablename, dt.variabletype, dt.variablevalue,
+            dt.createdate, dt.changedate, dt.status
+        ###DT###
+        `,
+        dt: `
+        FROM json_populate_recordset(null::record, $datatable)
+        AS dt (
+            zyxmecorpid bigint,
+            zyxmeorgid bigint,
+			zyxmepersonid bigint,
+            zyxmepersonextradataid bigint,
+            variablename character varying,
+            variabletype character varying,
+            variablevalue character varying,
+			createdate timestamp without time zone,
+			changedate timestamp without time zone,
+            status character varying
         )
         `
     },

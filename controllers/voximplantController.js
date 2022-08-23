@@ -211,7 +211,7 @@ exports.getCallRecord = async (request, response) => {
             if (requestResult?.result.length > 0) {
                 let record_url_str = requestResult?.result[0]?.records?.[0]?.record_url;
                 if (!record_url_str) {
-                    return result.status(400).json({
+                    return response.status(400).json({
                         ...resultData,
                         code: "error_no_record",
                         message: "No record"
@@ -226,14 +226,14 @@ exports.getCallRecord = async (request, response) => {
                         responseType: 'arraybuffer',
                     });
                     if (record_data.status === 200) {
-                        result.set('Content-Disposition', record_data.headers["content-disposition"]);
-                        result.set('Content-Type', record_data.headers["content-type"]);
+                        response.set('Content-Disposition', record_data.headers["content-disposition"]);
+                        response.set('Content-Type', record_data.headers["content-type"]);
                         let base64data = record_data.data.toString('base64');
-                        return result.send(base64data)
+                        return response.send(base64data)
                     }
                 }
                 catch (error) {
-                    return result.status(400).json({
+                    return response.status(400).json({
                         ...resultData,
                         code: "error_record_error",
                         message: "Record error"
@@ -585,7 +585,7 @@ exports.getMaximumConsumption = async (request, response) => {
             const { orgid, daterange, timezoneoffset } = request.body;
             const { corpid } = request.user;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 requestCode = "";
@@ -757,7 +757,7 @@ exports.transferAccountBalance = async (request, response) => {
             const { orgid, transferamount } = request.body;
             const { corpid, usr } = request.user;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 if (orgData.voximplantaccountid && orgData.voximplantapplicationid && orgData.voximplantapikey) {
@@ -837,7 +837,7 @@ exports.getAccountBalance = async (request, response) => {
             const { orgid } = request.body;
             const { corpid } = request.user;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 requestCode = "";
@@ -901,7 +901,7 @@ exports.directGetMaximumConsumption = async (request, response) => {
         if (request.body) {
             const { corpid, orgid, daterange, timezoneoffset } = request.body;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 requestCode = "";
@@ -1072,7 +1072,7 @@ exports.directTransferAccountBalance = async (request, response) => {
         if (request.body) {
             const { corpid, orgid, usr, transferamount, description, type, motive } = request.body;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 if (orgData.voximplantaccountid && orgData.voximplantapplicationid && orgData.voximplantapikey) {
@@ -1151,7 +1151,7 @@ exports.directGetAccountBalance = async (request, response) => {
         if (request.body) {
             const { corpid, orgid } = request.body;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 requestCode = "";
@@ -1214,7 +1214,7 @@ exports.updateVoximplantPeriod = async (request, response) => {
         if (request.body) {
             const { corpid, orgid, year, month } = request.body;
 
-            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, request._requestid);
+            const orgData = await channelfunctions.voximplantManageOrg(corpid, orgid, "SELECT", null, null, null, null, null, null, null, null, null, null, null, null, request._requestid);
 
             if (orgData) {
                 requestCode = "";
@@ -1509,10 +1509,10 @@ function padTwoDigits(num) {
 exports.createCallList = async (request, result) => {
     try {
         if (!request.body?.message) {
-            return res.status(500).json({ success: false, msg: 'No message' });
+            return result.status(500).json({ success: false, msg: 'No message' });
         }
         if (!request.body?.data?.length > 0) {
-            return res.status(500).json({ success: false, msg: 'No members' });
+            return result.status(500).json({ success: false, msg: 'No members' });
         }
         let unix_start_at = Math.trunc(new Date().getTime() / 1000);
         let data = request.body?.data.map(d => {
