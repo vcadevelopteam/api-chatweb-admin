@@ -32,13 +32,13 @@ const witai_request = async (url, method, headers, params, data) => {
             url: myUrlWithParams.toString(),
             method: method,
             headers: headersWithAuth,
-            data: data,
+            data: data?.data,
             _requestid: data?._requestid
         });
     }
     catch (exception) {
         console.log(exception);
-        return null;
+        return exception.response;
     }
 }
 
@@ -56,10 +56,12 @@ exports.cron = async (req, res) => {
             const url = `${witai_url}/apps`;
             const witai_response = await witai_request(url, 'post', null, null, {
                 _requestid: req._requestid,
-                name: item.name,
-                lang: item.lang || 'es',
-                timezone: item.timezone || 'America/Lima',
-                private: true,
+                data: {
+                    name: item.name,
+                    lang: item.lang || 'es',
+                    timezone: item.timezone || 'America/Lima',
+                    private: true,
+                }
             });
             if (witai_response?.status == 200 && witai_response?.data instanceof Object) {
                 result.push(await executesimpletransaction("UFN_WITAI_CONFIG", {
@@ -88,7 +90,7 @@ exports.cron = async (req, res) => {
     }
 }
 
-exports.entity_train = async (req, res) => {
+exports.entity = async (req, res) => {
     let resultData = {
         code: "error_unexpected_error",
         error: true,
@@ -98,50 +100,194 @@ exports.entity_train = async (req, res) => {
     let result = null;
     try {
         const { corpid, orgid, operation, data } = req.body;
-        const witai_list = await executesimpletransaction("UFN_WITAI_GET", { _requestid: req._requestid, corpid, orgid });
-        for (const item of witai_list) {
-            let url = `${witai_url}/entities`;
-            let witai_response = null;
-            let witai_data = null;
-            switch (operation) {
-                case 'INSERT':
-                    witai_data = {
-                        name: data.name,
-                        roles: [data.name],
-                        lookups: ["keywords"],
-                        keywords: data.keywords,
-                    };
-                    witai_response = await witai_request(url, 'post', null, null, { _requestid: req._requestid, token: item.token, ...witai_data });
-                    break;
-                case 'UPDATE':
-                    witai_data = {
-                        name: data.name,
-                        roles: [data.name],
-                        lookups: ["keywords"],
-                        keywords: data.keywords,
-                    }   
-                    witai_response = await witai_request(`${url}/${data.name}`, 'put', null, null, { _requestid: req._requestid, token: item.token, ...witai_data });
-                    break;
-                case 'DELETE':
-                    witai_response = await witai_request(`${url}/${data.name}`, 'delete', null, null, {
-                        _requestid: req._requestid,
-                        token: item.token,
-                    });
-                    break;
-                default:
-                    break;
-            }
+        switch (operation) {
+            case 'INSERT': case 'UPDATE':
+                result = await executesimpletransaction("UFN_WITAI_TRAIN_INS", {
+                    _requestid: req._requestid,
+                    corpid: corpid,
+                    orgid: orgid,
+                    type: 'entity',
+                    name: data.name,
+                    datajson: data,
+                    username: 'admin',
+                });
+                break;
+            case 'DELETE':
+                // Falta el query para borrar
+                break;
         }
-        if (witai_response && witai_data) {
-            result = await executesimpletransaction("UFN_WITAI_TRAIN", {
-                _requestid: req._requestid,
-                corpid: item.corpid,
-                orgid: item.orgid,
-                type: 'entity',
-                name: data.name,
-                datajson: witai_data,
-                username: 'admin',
-            });
+        return res.json({
+            code: "",
+            error: false,
+            data: result?.[0],
+            message: "",
+            success: true
+        });
+    }
+    catch (err) {
+        return res.status(500).json({
+            ...resultData,
+            message: err.message
+        })
+    }
+}
+
+exports.intent = async (req, res) => {
+    let resultData = {
+        code: "error_unexpected_error",
+        error: true,
+        message: "",
+        success: false,
+    }
+    let result = null;
+    try {
+        const { corpid, orgid, operation, data } = req.body;
+        switch (operation) {
+            case 'INSERT': case 'UPDATE':
+                result = await executesimpletransaction("UFN_WITAI_TRAIN_INS", {
+                    _requestid: req._requestid,
+                    corpid: corpid,
+                    orgid: orgid,
+                    type: 'intent',
+                    name: data.name,
+                    datajson: data,
+                    username: 'admin',
+                });
+                break;
+            case 'DELETE':
+                // Falta el query para borrar
+                break;
+        }
+        return res.json({
+            code: "",
+            error: false,
+            data: result?.[0],
+            message: "",
+            success: true
+        });
+    }
+    catch (err) {
+        return res.status(500).json({
+            ...resultData,
+            message: err.message
+        })
+    }
+}
+
+exports.utterance = async (req, res) => {
+    let resultData = {
+        code: "error_unexpected_error",
+        error: true,
+        message: "",
+        success: false,
+    }
+    let result = null;
+    try {
+        const { corpid, orgid, operation, data } = req.body;
+        switch (operation) {
+            case 'INSERT': case 'UPDATE':
+                result = await executesimpletransaction("UFN_WITAI_TRAIN_INS", {
+                    _requestid: req._requestid,
+                    corpid: corpid,
+                    orgid: orgid,
+                    type: 'utterance',
+                    name: data.name,
+                    datajson: data,
+                    username: 'admin',
+                });
+                break;
+            case 'DELETE':
+                // FALTA el query para borrar
+                break;
+        }
+        return res.json({
+            code: "",
+            error: false,
+            data: result?.[0],
+            message: "",
+            success: true
+        });
+    }
+    catch (err) {
+        return res.status(500).json({
+            ...resultData,
+            message: err.message
+        })
+    }
+}
+
+exports.train = async (req, res) => {
+    let resultData = {
+        code: "error_unexpected_error",
+        error: true,
+        message: "",
+        success: false,
+    }
+    let result = null;
+    try {
+        const { corpid, orgid } = req.body;
+        let url = '';
+        // Trae toda la data que hay para entrenar
+        const witai_train = await executesimpletransaction("UFN_WITAI_TRAIN_SEL", { _requestid: req._requestid, corpid, orgid });
+        let witai_response = null;
+        for (const w_index of [1,2]) {
+            // Valida si hay data para entrenar para el worker n
+            const w_train = witai_train.filter(w => !w[`w${w_index}`]);
+            if (w_train.length > 0) {
+                // Traer la info del worker
+                const worker_data = await executesimpletransaction("UFN_WITAI_WORKER_SEL", { _requestid: req._requestid, corpid, orgid, worker: w_index });
+                const token = worker_data?.[0]?.token;
+                if (token) {
+                    // Entrenar entities
+                    url = `${witai_url}/entities`;
+                    let w_train_items = w_train.filter(w => w.type === 'entity');
+                    for (const item of w_train_items) {
+                        if (item[`d${w_index}`]) {
+                            witai_response = await witai_request(`${url}/${item.name}`, 'put', null, null, { _requestid: req._requestid, token, data: item.datajson });
+                        }
+                        else {
+                            witai_response = await witai_request(url, 'post', null, null, { _requestid: req._requestid, token, data: item.datajson });
+                        }
+                        if (witai_response.status === 200) {
+                            await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid: req._requestid, corpid, orgid, ...item, [`w${w_index}`]: true });
+                        }
+                        else if (witai_response.data.code === 'already-exists') {
+                            witai_response = await witai_request(`${url}/${item.name}`, 'put', null, null, { _requestid: req._requestid, token, data: item.datajson });
+                            await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid: req._requestid, corpid, orgid, ...item, [`w${w_index}`]: true });
+                        }
+                    }
+                    // Entrenar intents
+                    url = `${witai_url}/intents`;
+                    w_train_items = w_train.filter(w => w.type === 'intent');
+                    for (const item of w_train_items) {
+                        if (item[`d${w_index}`]) {
+                            witai_response = await witai_request(`${url}/${item.name}`, 'put', null, null, { _requestid: req._requestid, token, data: item.datajson });
+                        }
+                        else {
+                            witai_response = await witai_request(url, 'post', null, null, { _requestid: req._requestid, token, data: item.datajson });
+                        }
+                        if (witai_response.status === 200) {
+                            await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid: req._requestid, corpid, orgid, ...item, [`w${w_index}`]: true });
+                        }
+                        else if (witai_response.data.code === 'already-exists') {
+                            witai_response = await witai_request(`${url}/${item.name}`, 'put', null, null, { _requestid: req._requestid, token, data: item.datajson });
+                            await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid: req._requestid, corpid, orgid, ...item, [`w${w_index}`]: true });
+                        }
+                    }
+                    // Entrenar utterances
+                    url = `${witai_url}/utterances`;
+                    w_train_items = w_train.filter(w => w.type === 'utterance');
+                    if (w_train_items?.length > 0) {
+                        witai_response = await witai_request(url, 'post', null, null, { _requestid: req._requestid, token, data: w_train_items });
+                        if (witai_response.status === 200) {
+                            for (const item of w_train_items) {
+                                await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid: req._requestid, corpid, orgid, ...item, [`w${w_index}`]: true });
+                            }
+                        }
+                    }
+                }
+                break;
+            }
         }
         return res.json({
             code: "",

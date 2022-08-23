@@ -10,10 +10,28 @@ router.get("/cron",
     witaiController.cron
 )
 
-router.post("/entity/train",
+router.post("/entity",
     ip,
     //auth,
-    witaiController.entity_train
+    witaiController.entity
+)
+
+router.post("/intent",
+    ip,
+    //auth,
+    witaiController.intent
+)
+
+router.post("/utterance",
+    ip,
+    //auth,
+    witaiController.utterance
+)
+
+router.post("/train",
+    ip,
+    //auth,
+    witaiController.train
 )
 
 module.exports = router;
