@@ -1,7 +1,7 @@
 const FormData = require('form-data');
 const axios = require('axios')
 
-const { axiosObservable } = require('../config/helpers');
+const { axiosObservable, setSessionParameters } = require('../config/helpers');
 
 exports.Location = async (req, res) => {
     const data = req.body;
@@ -9,7 +9,25 @@ exports.Location = async (req, res) => {
     axiosObservable({
         url: `${process.env.SERVICES}handler/sendlocation`,
         data,
-        method: post,
+        method: "POST",
+        _requestid: req._requestid,
+    });
+
+    res.json({ success: true });
+}
+
+exports.TriggerBlock = async (req, res) => {
+    const parameters = req.body;
+
+    setSessionParameters(parameters, req.user, req._requestid);
+    parameters.p_userid = parameters.userid;
+    parameters.p_corpid = parameters.corpid;
+    parameters.p_orgid = parameters.orgid;
+
+    axiosObservable({
+        url: `${process.env.SERVICES}handler/triggerblock`,
+        data: parameters,
+        method: "POST",
         _requestid: req._requestid,
     });
 
