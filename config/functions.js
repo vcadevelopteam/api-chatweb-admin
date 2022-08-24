@@ -2561,28 +2561,28 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_WITAI_CRON: {
-        query: "SELECT * FROM ufn_witai_cron()",
+    UFN_WITAI_APP_CRON: {
+        query: "SELECT * FROM ufn_witai_app_cron()",
         module: "",
         protected: "SELECT"
     },
-    UFN_WITAI_CONFIG: {
-        query: "SELECT * FROM ufn_witai_config($corpid, $orgid, $id, $appid, $token)",
+    UFN_WITAI_APP_CONFIG: {
+        query: "SELECT * FROM ufn_witai_app_config($corpid, $orgid, $id, $appid, $token)",
         module: "",
         protected: "SELECT"
     },
-    UFN_WITAI_GET: {
-        query: "SELECT * FROM ufn_witai_get($corpid, $orgid)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_WITAI_WORKER_SEL: {
-        query: "SELECT * FROM ufn_witai_worker_sel($corpid, $orgid, $worker)",
+    UFN_WITAI_APP_GET: {
+        query: "SELECT * FROM ufn_witai_app_get($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
     UFN_WITAI_TRAIN_INS: {
-        query: "SELECT * FROM ufn_witai_train_ins($corpid, $orgid, $type, $name, $datajson, $username)",
+        query: "SELECT * FROM ufn_witai_train_ins($corpid, $orgid, $type, $name, $datajson, $operation, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_WORKER_TRAIN_SEL: {
+        query: "SELECT * FROM ufn_witai_worker_train_sel()",
         module: "",
         protected: "SELECT"
     },
@@ -2592,7 +2592,17 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_WITAI_TRAIN_UPD: {
-        query: "SELECT * FROM ufn_witai_train_upd($corpid, $orgid, $type, $name, $w1, $w2)",
+        query: "SELECT * FROM ufn_witai_train_upd($corpid, $orgid, $type, $name, $todelete, $w1, $w2)",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_WITAI_WORKER_INTASK: {
+        query: "UPDATE witai w SET intask = $intask WHERE w.corpid = $corpid AND w.orgid = $orgid AND w.id = $id",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_WITAI_WORKER_UPDATED: {
+        query: "UPDATE witai w SET intask = false, updated = true WHERE w.corpid = $corpid AND w.orgid = $orgid AND w.id = $id",
         module: "",
         protected: "SELECT"
     },
