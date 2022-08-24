@@ -1738,6 +1738,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_HSMHISTORY_REPORT_EXPORT: {
+        query: "SELECT * FROM ufn_hsmhistory_report_export($corpid, $orgid, $table, $offset);",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_REPORT_SENTMESSAGES_LST: {
         query: "SELECT * FROM ufn_report_sentmessages_lst($corpid, $orgid, $startdate, $enddate, $offset);",
         module: "",
