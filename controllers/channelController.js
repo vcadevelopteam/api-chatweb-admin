@@ -2455,7 +2455,7 @@ exports.addTemplate = async (request, response) => {
                                 parameters.username = request.user.usr;
                                 parameters.bodyobject = JSON.stringify(request.body.bodyobject);
                                 parameters.buttons = JSON.stringify(request.body.buttons);
-                                parameters.externalid = requestCreateDialog.data.result[0].id || '';
+                                parameters.externalid = requestCreateSmooch.data.result[0].id || '';
 
                                 const queryTemplateAdd = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
 
