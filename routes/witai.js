@@ -40,4 +40,10 @@ router.post("/status",
     witaiController.status
 )
 
+router.post("/message",
+    ip,
+    //auth,
+    witaiController.message
+)
+
 module.exports = router;

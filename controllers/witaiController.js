@@ -11,7 +11,7 @@ const witai_request = async (url, method, headers, params, data) => {
         const myUrlWithParams = new URL(url);
         myUrlWithParams.searchParams.append("v", witai_version);
         if (params) {
-            for (const [key, value] in Object.entries(params)) {
+            for (const [key, value] of Object.entries(params)) {
                 myUrlWithParams.searchParams.append(key, value);
             }
         }
@@ -374,6 +374,49 @@ exports.status = async (req, res) => {
             code: "",
             error: false,
             data: result?.[0],
+            message: "",
+            success: true
+        });
+    }
+    catch (err) {
+        return res.status(500).json({
+            ...resultData,
+            message: err.message
+        });
+    }
+}
+
+exports.message = async (req, res) => {
+    let resultData = {
+        code: "error_unexpected_error",
+        error: true,
+        message: "",
+        success: false,
+    }
+    try {
+        const { corpid, orgid, message } = req.body;
+        const worker_list = await executesimpletransaction("UFN_WITAI_APP_GET", { _requestid: req._requestid, corpid, orgid });
+        if (worker_list instanceof Array && worker_list.length > 0) {
+            const worker = worker_list[0];
+            const workerid = worker?.id;
+            const token = worker?.token;
+            const url = `${witai_url}/message`;
+            const witai_response = await witai_request(`${url}`, 'get', null, {q: message}, { _requestid: req._requestid, token });
+            await executesimpletransaction("QUERY_WITAI_WORKER_USAGE_UPD", { _requestid: req._requestid, corpid, orgid, id: workerid });
+            if (witai_response?.status === 200) {
+                return res.json({
+                    code: "",
+                    error: false,
+                    data: witai_response.data,
+                    message: "",
+                    success: true
+                });
+            }
+        }
+        return res.json({
+            code: "",
+            error: false,
+            data: null,
             message: "",
             success: true
         });
