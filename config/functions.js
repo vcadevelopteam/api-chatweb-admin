@@ -2597,12 +2597,22 @@ module.exports = {
         protected: "SELECT"
     },
     QUERY_WITAI_WORKER_INTASK: {
-        query: "UPDATE witai w SET intask = $intask WHERE w.corpid = $corpid AND w.orgid = $orgid AND w.id = $id",
+        query: "UPDATE witai w SET intask = $intask, witaistatus = $witaistatus WHERE w.corpid = $corpid AND w.orgid = $orgid AND w.id = $id",
         module: "",
         protected: "SELECT"
     },
     QUERY_WITAI_WORKER_UPDATED: {
-        query: "UPDATE witai w SET intask = false, updated = true WHERE w.corpid = $corpid AND w.orgid = $orgid AND w.id = $id",
+        query: "UPDATE witai w SET intask = false, updated = true, witaistatus = $witaistatus WHERE w.corpid = $corpid AND w.orgid = $orgid AND w.id = $id",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_WITAI_WORKER_SCHEDULED_SEL: {
+        query: "SELECT w.corpid, w.orgid, w.worker, w.id, w.appid, w.token FROM witai w WHERE w.witaistatus IS NULL OR w.witaistatus IN ('scheduled', 'ongoing')",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_WITAI_WORKER_STATUS_UPD: {
+        query: "UPDATE witai w SET witaistatus = $witaistatus WHERE w.corpid = $corpid AND w.orgid = $orgid AND w.id = $id",
         module: "",
         protected: "SELECT"
     },

@@ -34,4 +34,10 @@ router.post("/train",
     witaiController.train
 )
 
+router.post("/status",
+    ip,
+    //auth,
+    witaiController.status
+)
+
 module.exports = router;
