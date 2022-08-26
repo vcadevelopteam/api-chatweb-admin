@@ -842,4 +842,27 @@ module.exports = {
             column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'HH24:MI:SS')",
         },
     },
+    voicecall: {
+        ticketdate: {
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','DD/MM/YYYY')"
+        },
+        tickettime: {
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','HH24:MI:SS')"
+        },
+        agent: {
+            column: "CONCAT(usr.firstname, ' ', usr.lastname)"
+        },
+        phone: {
+            column: "pcc.personcommunicationchannelowner"
+        },
+        name: {
+            column: "pe.name"
+        },
+        origin: {
+            column: "co.origin"
+        },
+        closetype: {
+            column: "CASE WHEN co.closetype IN ('DESCONECTADO POR ASESOR', 'DESCONECTADO POR CLIENTE') THEN 'HANDLED' WHEN co.closetype IN ('LLAMADA NO CONTESTADA') THEN 'ABANDON' WHEN co.closetype IN ('LLAMADA FALLIDA', 'NO HAY ASESORES') THEN 'LOST' ELSE co.closetype END"
+        },
+    },
 }
