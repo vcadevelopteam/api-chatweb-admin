@@ -1738,6 +1738,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_HSMHISTORY_REPORT_EXPORT: {
+        query: "SELECT * FROM ufn_hsmhistory_report_export($corpid, $orgid, $table, $offset);",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_REPORT_SENTMESSAGES_LST: {
         query: "SELECT * FROM ufn_report_sentmessages_lst($corpid, $orgid, $startdate, $enddate, $offset);",
         module: "",
@@ -2477,17 +2482,17 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_ASESOR_VS_TICKET_EXPORT: {
-        query: "SELECT * FROM ufn_report_asesor_vs_ticket_export($corpid, $orgid, $where, $order, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_asesor_vs_ticket_export($corpid, $orgid, $where, $order, $startdate, $enddate, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_ASESOR_VS_TICKET_SEL: {
-        query: "SELECT * FROM ufn_report_asesor_vs_ticket_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_asesor_vs_ticket_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_ASESOR_VS_TICKET_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_asesor_vs_ticket_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_asesor_vs_ticket_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
@@ -2559,6 +2564,31 @@ module.exports = {
     UFN_MESSAGETEMPLATE_UPD: {
         query: "SELECT * FROM ufn_messagetemplate_upd($corpid, $orgid, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $bodyobject, $footerenabled, $footer, $buttonsenabled, $buttons, $fromprovider, $externalid, $externalstatus, $communicationchannelid, $communicationchanneltype, $exampleparameters, $username)",
         module: "",
+        protected: "SELECT"
+    },
+    UFN_MESSAGETEMPLATE_RESET: {
+        query: "UPDATE messagetemplate SET status = 'ELIMINADO', changeby = $username, changedate = NOW() WHERE corpid = $corpid AND orgid = $orgid AND (communicationchannelid = $communicationchannelid OR namespace = $namespace) AND fromprovider = true;",
+        module: "",
+        protected: "UPDATE"
+    },
+    UFN_REPORT_VOICECALL_SEL: {
+        query: "SELECT * FROM ufn_report_voicecall_sel($corpid, $orgid, $startdate, $enddate, $take, $skip, $where, $order, $userid, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_VOICECALL_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_report_voicecall_totalrecords($corpid, $orgid, $startdate, $enddate, $where, $userid, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_VOICECALL_EXPORT: {
+        query: "SELECT * FROM ufn_report_voicecall_export($corpid, $orgid, $startdate, $enddate, $where, $order, $userid, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_VOICECALL_GRAPHIC: {
+        query: "SELECT * FROM ufn_report_voicecall_graphic($corpid, $orgid, $startdate, $enddate, $where, $order, $userid, $column, $summarization, $offset)",
+        module: "/reports",
         protected: "SELECT"
     },
 }
