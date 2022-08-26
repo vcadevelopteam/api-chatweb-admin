@@ -862,7 +862,7 @@ module.exports = {
             column: "co.origin"
         },
         closetype: {
-            column: "CASE WHEN co.closetype IN ('DESCONECTADO POR ASESOR', 'DESCONECTADO POR CLIENTE') THEN 'COMPLETED' WHEN co.closetype IN ('LLAMADA NO CONTESTADA') THEN 'ABANDONED' WHEN co.closetype IN ('LLAMADA FALLIDA', 'NO HAY ASESORES') THEN 'LOST' END"
+            column: "CASE WHEN co.closetype IN ('DESCONECTADO POR ASESOR', 'DESCONECTADO POR CLIENTE') THEN 'HANDLED' WHEN co.closetype IN ('LLAMADA NO CONTESTADA') THEN 'ABANDON' WHEN co.closetype IN ('LLAMADA FALLIDA', 'NO HAY ASESORES') THEN 'LOST' ELSE co.closetype END"
         },
     },
 }
