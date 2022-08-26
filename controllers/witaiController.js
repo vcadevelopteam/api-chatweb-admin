@@ -395,22 +395,30 @@ exports.message = async (req, res) => {
     }
     try {
         const { corpid, orgid, message } = req.body;
-        const worker_list = await executesimpletransaction("UFN_WITAI_APP_GET", { _requestid: req._requestid, corpid, orgid });
-        if (worker_list instanceof Array && worker_list.length > 0) {
-            const worker = worker_list[0];
-            const workerid = worker?.id;
-            const token = worker?.token;
-            const url = `${witai_url}/message`;
-            const witai_response = await witai_request(`${url}`, 'get', null, {q: message}, { _requestid: req._requestid, token });
-            await executesimpletransaction("QUERY_WITAI_WORKER_USAGE_UPD", { _requestid: req._requestid, corpid, orgid, id: workerid });
-            if (witai_response?.status === 200) {
-                return res.json({
-                    code: "",
-                    error: false,
-                    data: witai_response.data,
-                    message: "",
-                    success: true
-                });
+        if (!!message) {
+            const worker_list = await executesimpletransaction("UFN_WITAI_APP_GET", { _requestid: req._requestid, corpid, orgid });
+            if (worker_list instanceof Array && worker_list.length > 0) {
+                const worker = worker_list[0];
+                const workerid = worker?.id;
+                const token = worker?.token;
+                const url = `${witai_url}/message`;
+                const witai_response = await witai_request(`${url}`, 'get', null, {q: message}, { _requestid: req._requestid, token });
+                await executesimpletransaction("QUERY_WITAI_WORKER_USAGE_UPD", { _requestid: req._requestid, corpid, orgid, id: workerid });
+                if (witai_response?.status === 200) {
+                    return res.json({
+                        code: "",
+                        error: false,
+                        data: witai_response.data,
+                        message: "",
+                        success: true
+                    });
+                }
+                else {
+                    return res.json({
+                        ...resultData,
+                        message: witai_response?.data?.error
+                    });
+                }
             }
         }
         return res.json({
