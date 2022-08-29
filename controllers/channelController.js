@@ -884,6 +884,8 @@ exports.insertChannel = async (request, response) => {
         parameters.phone = null;
         parameters.apikey = null;
         parameters.voximplantrecording = null;
+        parameters.voximplantwelcometone = null;
+        parameters.voximplantholdtone = null;
 
         switch (request.body.type) {
             case 'CHATWEB':
@@ -1834,6 +1836,8 @@ exports.insertChannel = async (request, response) => {
                                         parameters.communicationchannelowner = voximplantEnvironment.applicationname;
                                         parameters.servicecredentials = JSON.stringify(serviceCredentials);
                                         parameters.voximplantrecording = JSON.stringify(voximplantRecording);
+                                        parameters.voximplantwelcometone = "https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/VCA%20PERU/994eacd0-4520-4aec-8f4e-fe7dcab5f5ed/intel.mp3";
+                                        parameters.voximplantholdtone = "https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/VCA%20PERU/932a8ad1-0a67-467f-aef5-e56c52e05c3f/halos-of-eternity.mp3";
                                         parameters.phone = voximplantPhoneNumber.phonenumber;
                                         parameters.type = 'VOXI';
 
@@ -2057,6 +2061,8 @@ exports.activateChannel = async (request, response) => {
         parameters.phone = null;
         parameters.apikey = null;
         parameters.voximplantrecording = null;
+        parameters.voximplantwelcometone = null;
+        parameters.voximplantholdtone = null;
 
         if (request.body.type === 'WHATSAPP') {
             const requestCreateWhatsApp = await axiosObservable({
