@@ -38,6 +38,11 @@ const properties = [
         type: 'int'
     },
     {
+        propertyname: "TIMBRERINGINGBELL",
+        key: "ringer_volume",
+        type: 'int'
+    },
+    {
         propertyname: "SEGUNDOSARESPONDERLLAMADA",
         key: "seconds_to_answer_call",
         type: 'int'
