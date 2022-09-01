@@ -1859,7 +1859,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_MESSAGETEMPLATE_LST: {
-        query: "SELECT * FROM ufn_messagetemplate_lst($corpid, $orgid, $username)",
+        query: "SELECT * FROM ufn_messagetemplate_lst($corpid, $orgid, $type, $username)",
         module: "",
         protected: "INSERT"
     },
