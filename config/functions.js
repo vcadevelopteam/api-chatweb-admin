@@ -2586,4 +2586,9 @@ module.exports = {
         module: "/reports",
         protected: "SELECT"
     },
+    UFN_CONVERSATION_CALLHOLD: {
+        query: "SELECT * FROM ufn_conversation_callhold($corpid, $orgid, $conversationid, $holdtime)",
+        module: "",
+        protected: "SELECT"
+    },
 }
