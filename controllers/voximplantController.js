@@ -9,6 +9,14 @@ const axios = require("axios");
 const voximplantParentAccountId = process.env.VOXIMPLANT_ACCOUNT_ID;
 const voximplantParentApiKey = process.env.VOXIMPLANT_APIKEY;
 
+const textOperator = [
+    "Right 00:00:00 - 00:00:02 : siempre",
+    "Right 00:00:02 - 00:00:02 : mantenga",
+    "Right 00:00:02 - 00:00:03 : mantenga",
+    "Right 00:00:02 - 00:00:03 : distancia",
+    "Right 00:00:03 - 00:00:03 : distancia",
+    "Right 00:00:02 - 00:00:03 : mantenga distancia",
+]
 exports.getChildrenAccounts = async (request, response) => {
     try {
         let requestResult = await voximplant.getChildrenAccounts({ ...request.body, requestid: request._requestid });
@@ -208,7 +216,7 @@ exports.getCallTranscription = async (request, response) => {
         let continuex = true;
         let attempts = 0;
         
-        while (continuex || attempts < 10) {
+        while (continuex && attempts < 20) {
             let requestResult = await voximplant.getCallRecord({ ...request.body, requestid: request._requestid });
         
             if (requestResult && requestResult?.result) {
@@ -219,7 +227,7 @@ exports.getCallTranscription = async (request, response) => {
                         try {
                             const record_data = await axios.get(recordX.transcription_url);
                             if (record_data.status === 200) {
-                                const interactions = record_data.data.split("\n").filter(text => !!text && text !== "Right 00:00:00 - 00:00:02 : siempre" && text !== "Right 00:00:02 - 00:00:02 : mantenga" && text !== "Right 00:00:02 - 00:00:03 : distancia" && text !== "Right 00:00:02 - 00:00:03 : mantenga distancia").map(text => ({
+                                const interactions = record_data.data.split("\n").filter(text => !!text && !textOperator.includes(text)).map(text => ({
                                     interactiontext: (text + "").substring((text + "").indexOf(" : ") + 3, (text + "").length),
                                     userid: (text + "").substring(0, 4) === "Left" ? 2 : 0,
                                     interactiontype: "text",
@@ -234,12 +242,22 @@ exports.getCallTranscription = async (request, response) => {
                             }
                         }
                         catch (exception) {
-                            console.log("exception")
                             return response.status(500).json({
                                 ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
                                 message: exception.message
                             });
                         }
+                    } else if (recordX?.transcription_status === "In progress") {
+                        await (async () => {
+                            return new Promise((res, rej) => {
+                                setTimeout(() => {
+                                    res(true)
+                                }, 2000);
+                            });
+                        })()
+                        attempts++
+                    } else {
+                        continuex = false
                     }
                 }
             } else {
