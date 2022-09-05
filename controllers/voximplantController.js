@@ -215,7 +215,10 @@ exports.getCallTranscription = async (request, response) => {
                     try {
                         const record_data = await axios.get(recordX.transcription_url);
                         if (record_data.status === 200) {
-                            const interactions = record_data.data.split("\n").filter(text => !!text).map(text => ({
+                            const interactions = record_data.data
+                            .split("\n")
+                            .filter(text => !!text && text !== "Right 00:00:00 - 00:00:02 : siempre" && text !== "Right 00:00:02 - 00:00:02 : mantenga" && text !== "Right 00:00:02 - 00:00:03 : distancia")
+                            .map(text => ({
                                 interactiontext: (text + "").substring((text + "").indexOf(" : ") + 3, (text + "").length),
                                 userid: (text + "").substring(0, 4) === "Left" ? 2 : 0,
                                 interactiontype: "text",
