@@ -205,46 +205,52 @@ exports.getCallTranscription = async (request, response) => {
             request.body['api_key'] = voxiorgdata[0].voximplantapikey;
             request.body['application_id'] = voxiorgdata[0].voximplantapplicationid;
         }
-        let requestResult = await voximplant.getCallRecord({ ...request.body, requestid: request._requestid });
+        let continuex = true;
+        let attempts = 0;
         
-        if (requestResult) {
-            if (requestResult?.result.length > 0) {
-                const recordX = requestResult?.result[0]?.records?.[0];
-                
-                if (recordX?.transcription_status === "Complete") {
-                    try {
-                        const record_data = await axios.get(recordX.transcription_url);
-                        if (record_data.status === 200) {
-                            const interactions = record_data.data
-                            .split("\n")
-                            .filter(text => !!text && text !== "Right 00:00:00 - 00:00:02 : siempre" && text !== "Right 00:00:02 - 00:00:02 : mantenga" && text !== "Right 00:00:02 - 00:00:03 : distancia")
-                            .map(text => ({
-                                interactiontext: (text + "").substring((text + "").indexOf(" : ") + 3, (text + "").length),
-                                userid: (text + "").substring(0, 4) === "Left" ? 2 : 0,
-                                interactiontype: "text",
-                                type: "NINGUNO"
-                            }))
-                            await executesimpletransaction("UFN_INTERACTION_INS_MASSIVE", {
-                                ...request.body,
-                                json: JSON.stringify(interactions)
+        while (continuex || attempts < 10) {
+            let requestResult = await voximplant.getCallRecord({ ...request.body, requestid: request._requestid });
+        
+            if (requestResult && requestResult?.result) {
+                if (requestResult?.result.length > 0) {
+                    const recordX = requestResult?.result[0]?.records?.[0];
+                    
+                    if (recordX?.transcription_status === "Complete") {
+                        try {
+                            const record_data = await axios.get(recordX.transcription_url);
+                            if (record_data.status === 200) {
+                                const interactions = record_data.data.split("\n").filter(text => !!text && text !== "Right 00:00:00 - 00:00:02 : siempre" && text !== "Right 00:00:02 - 00:00:02 : mantenga" && text !== "Right 00:00:02 - 00:00:03 : distancia" && text !== "Right 00:00:02 - 00:00:03 : mantenga distancia").map(text => ({
+                                    interactiontext: (text + "").substring((text + "").indexOf(" : ") + 3, (text + "").length),
+                                    userid: (text + "").substring(0, 4) === "Left" ? 2 : 0,
+                                    interactiontype: "text",
+                                    type: "NINGUNO"
+                                }))
+                                await executesimpletransaction("UFN_INTERACTION_INS_MASSIVE", {
+                                    ...request.body,
+                                    json: JSON.stringify(interactions)
+                                });
+                                continuex = false;
+                                
+                            }
+                        }
+                        catch (exception) {
+                            console.log("exception")
+                            return response.status(500).json({
+                                ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+                                message: exception.message
                             });
-                            response.json({
-                                interactions,
-                                data: record_data.data
-                            })
-                            
                         }
                     }
-                    catch (exception) {
-                        console.log("exception")
-                        return response.status(500).json({
-                            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-                            message: exception.message
-                        });
-                    }
                 }
+            } else {
+                attempts++
             }
         }
+
+        return response.json({
+            success: true
+        })
+        
         return response.status(400).json({
             ...resultData,
             code: "error_invalid_call",
