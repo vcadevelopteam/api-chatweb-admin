@@ -174,6 +174,88 @@ exports.getTransactionHistory = async (request, response) => {
     }
 }
 
+exports.getCallTranscription = async (request, response) => {
+    let resultData = {
+        code: "error_unexpected_error",
+        error: true,
+        message: "",
+        success: false,
+    }
+    try {
+        if (!request.body.call_session_history_id) {
+            return response.status(400).json({
+                ...resultData,
+                code: "error_invalid_call",
+                message: "Invalid call"
+            })
+        }
+
+        // setSessionParameters(request.body, request.user, request._requestid);
+
+        // Try to get information of VOXI in org table
+        const voxiorgdata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_ORG", {
+            corpid: request.body.corpid,
+            orgid: request.body.orgid,
+            _requestid: request._requestid,
+        });
+
+        // If exists info of VOXI in org
+        if (voxiorgdata instanceof Array && voxiorgdata.length > 0) {
+            request.body['account_id'] = voxiorgdata[0].voximplantaccountid;
+            request.body['api_key'] = voxiorgdata[0].voximplantapikey;
+            request.body['application_id'] = voxiorgdata[0].voximplantapplicationid;
+        }
+        let requestResult = await voximplant.getCallRecord({ ...request.body, requestid: request._requestid });
+        
+        if (requestResult) {
+            if (requestResult?.result.length > 0) {
+                const recordX = requestResult?.result[0]?.records?.[0];
+                
+                if (recordX?.transcription_status === "Complete") {
+                    try {
+                        const record_data = await axios.get(recordX.transcription_url);
+                        if (record_data.status === 200) {
+                            const interactions = record_data.data.split("\n").filter(text => !!text).map(text => ({
+                                interactiontext: (text + "").substring((text + "").indexOf(" : ") + 3, (text + "").length),
+                                userid: (text + "").substring(0, 4) === "Left" ? 2 : 0,
+                                interactiontype: "text",
+                                type: "NINGUNO"
+                            }))
+                            await executesimpletransaction("UFN_INTERACTION_INS_MASSIVE", {
+                                ...request.body,
+                                json: JSON.stringify(interactions)
+                            });
+                            response.json({
+                                interactions,
+                                data: record_data.data
+                            })
+                            
+                        }
+                    }
+                    catch (exception) {
+                        console.log("exception")
+                        return response.status(500).json({
+                            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+                            message: exception.message
+                        });
+                    }
+                }
+            }
+        }
+        return response.status(400).json({
+            ...resultData,
+            code: "error_invalid_call",
+            message: "Invalid call"
+        })
+    }
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
+    }
+}
+
 exports.getCallRecord = async (request, response) => {
     let resultData = {
         code: "error_unexpected_error",

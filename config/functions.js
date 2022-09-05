@@ -1783,6 +1783,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_INTERACTION_INS_MASSIVE: {
+        query: "select * from ufn_interaction_ins_massive($corpid, $orgid, $personid, $personcommunicationchannel, $conversationid, $communicationchannelid, $json)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_INVOICE_CORP: {
         query: "SELECT * FROM ufn_invoice_corp($corpid, $year, $month, $exchangerate)",
         module: "",

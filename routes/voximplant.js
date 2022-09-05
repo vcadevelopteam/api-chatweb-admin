@@ -56,6 +56,9 @@ router.post("/getCallRecord",
     auth,
     voximplantController.getCallRecord
 )
+router.post("/getCallTranscription",
+    voximplantController.getCallTranscription
+)
 router.post("/addUser",
     ip,
     voximplantController.addUser
