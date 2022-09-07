@@ -2612,7 +2612,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_LOCATION_EXPORT: {
-        query: "SELECT * FROM UFN_PERSON_EXPORT($corpid, $orgid, $where, $order)",
+        query: "SELECT * FROM ufn_location_export($corpid, $orgid, $where, $order)",
         module: "/extras/location",
         protected: "SELECT"
     },
