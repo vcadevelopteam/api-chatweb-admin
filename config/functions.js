@@ -2571,6 +2571,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_MESSAGETEMPLATE_RESET: {
+        query: "UPDATE messagetemplate SET status = 'ELIMINADO', changeby = $username, changedate = NOW() WHERE corpid = $corpid AND orgid = $orgid AND (communicationchannelid = $communicationchannelid OR namespace = $namespace) AND fromprovider = true;",
+        module: "",
+        protected: "UPDATE"
+    },
     UFN_REPORT_VOICECALL_SEL: {
         query: "SELECT * FROM ufn_report_voicecall_sel($corpid, $orgid, $startdate, $enddate, $take, $skip, $where, $order, $userid, $offset)",
         module: "/reports",
