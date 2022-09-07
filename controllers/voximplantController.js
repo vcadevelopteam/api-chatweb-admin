@@ -206,7 +206,6 @@ exports.getCallTranscription = async (request, response) => {
             orgid: request.body.orgid,
             _requestid: request._requestid,
         });
-
         // If exists info of VOXI in org
         if (voxiorgdata instanceof Array && voxiorgdata.length > 0) {
             request.body['account_id'] = voxiorgdata[0].voximplantaccountid;
