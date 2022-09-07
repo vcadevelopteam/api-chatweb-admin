@@ -841,7 +841,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CAMPAIGN_INS: {
-        query: "SELECT * FROM ufn_campaign_ins($corpid, $orgid, $id, $communicationchannelid, $usergroup, $type, $status, $title, $description, $subject, $message, $startdate, $enddate, $repeatable, $frecuency, $messagetemplateid, $messagetemplatename, $messagetemplatenamespace, $messagetemplateheader, $messagetemplatebuttons, $executiontype, $batchjson, $fields, $username, $operation)",
+        query: "SELECT * FROM ufn_campaign_ins($corpid, $orgid, $id, $communicationchannelid, $usergroup, $type, $status, $title, $description, $subject, $message, $startdate, $enddate, $repeatable, $frecuency, $messagetemplateid, $messagetemplatename, $messagetemplatenamespace, $messagetemplateheader, $messagetemplatebuttons, $executiontype, $batchjson, $fields, $messagetemplatefooter, $messagetemplatetype, $messagetemplateattachment, $source, $messagetemplatelanguage, $messagetemplatepriority, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -1864,7 +1864,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_MESSAGETEMPLATE_LST: {
-        query: "SELECT * FROM ufn_messagetemplate_lst($corpid, $orgid, $username)",
+        query: "SELECT * FROM ufn_messagetemplate_lst($corpid, $orgid, $type, $username)",
         module: "",
         protected: "INSERT"
     },
