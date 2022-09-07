@@ -224,7 +224,7 @@ exports.getCallTranscription = async (request, response) => {
                     
                     if (recordX?.transcription_status === "Complete") {
                         try {
-                            const record_data = await axios.get(recordX. on_url);
+                            const record_data = await axios.get(recordX.transcription_url);
                             if (record_data.status === 200) {
                                 const interactions = record_data.data.split("\n").filter(text => !!text && !textOperator.includes(text)).map(text => ({
                                     interactiontext: (text + "").substring((text + "").indexOf(" : ") + 3, (text + "").length),
