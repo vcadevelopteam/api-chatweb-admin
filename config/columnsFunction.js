@@ -865,4 +865,45 @@ module.exports = {
             column: "CASE WHEN co.closetype IN ('DESCONECTADO POR ASESOR', 'DESCONECTADO POR CLIENTE') THEN 'HANDLED' WHEN co.closetype IN ('LLAMADA NO CONTESTADA') THEN 'ABANDON' WHEN co.closetype IN ('LLAMADA FALLIDA', 'NO HAY ASESORES') THEN 'LOST' ELSE co.closetype END"
         },
     },
+    location: {
+        name: {
+            column:"lc.name"
+        },
+        address: {
+            column:"lc.address"
+        },
+        district: {
+            column:"lc.district"
+        },
+        city: {
+            column:"lc.city"
+        },
+        country: {
+            column:"lc.country"
+        },
+        schedule: {
+            column:"lc.schedule"
+        },
+        phone: {
+            column:"lc.phone"
+        },
+        alternativephone: {
+            column:"lc.alternativephone"
+        },
+        latitude: {
+            column:"lc.latitude"
+        },
+        longitude: {
+            column:"lc.longitude"
+        },
+        googleurl: {
+            column:"lc.googleurl"
+        },
+        description: {
+            column:"lc.description"
+        },
+        type: {
+            column:"lc.type"
+        },
+    },
 }
