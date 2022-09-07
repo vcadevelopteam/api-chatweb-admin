@@ -206,7 +206,6 @@ exports.getCallTranscription = async (request, response) => {
             orgid: request.body.orgid,
             _requestid: request._requestid,
         });
-
         // If exists info of VOXI in org
         if (voxiorgdata instanceof Array && voxiorgdata.length > 0) {
             request.body['account_id'] = voxiorgdata[0].voximplantaccountid;
@@ -225,7 +224,7 @@ exports.getCallTranscription = async (request, response) => {
                     
                     if (recordX?.transcription_status === "Complete") {
                         try {
-                            const record_data = await axios.get(recordX.transcription_url);
+                            const record_data = await axios.get(recordX. on_url);
                             if (record_data.status === 200) {
                                 const interactions = record_data.data.split("\n").filter(text => !!text && !textOperator.includes(text)).map(text => ({
                                     interactiontext: (text + "").substring((text + "").indexOf(" : ") + 3, (text + "").length),
