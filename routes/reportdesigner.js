@@ -18,7 +18,12 @@ router.post("/export",
 
 router.post("/exporttask",
     ip,
-    reportDesignerController.exportReportTask
+    reportDesignerController.exportTask
+)
+
+router.post("/exportdata",
+    ip,
+    reportDesignerController.exportData
 )
 
 router.post("/dashboard",
