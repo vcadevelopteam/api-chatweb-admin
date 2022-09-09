@@ -154,13 +154,23 @@ exports.dashboardDesigner = async (req, res) => {
                             ]), []).map(x => `,${x},`);
 
                             const resCleaned = resIndicator.reduce((acc, item) => {
-                                const ts = `,${item[column.replace(".", "")]},`; //column tags
+                                const columnTag = item[column.replace(".", "")];
+                                if (columnTag) {
 
-                                return tagsToSearch.reduce((acc2, item2) => ({
-                                    ...acc2,
-                                    [item2]: (acc[item2] || 0) + (ts.includes(item2) ? 1 : 0)
-                                }), acc)
+                                    const tagsCleaned = columnTag.split(',').reduce((accx, itemx) => ({
+                                        lastTag: itemx,
+                                        acc: accx.lastTag === itemx ? accx.acc : [...accx.acc, itemx]
+                                    }), { lastTag: '', acc: [] })
 
+                                    const ts = `,${tagsCleaned.acc.join(",")},`; //column tags
+
+                                    return tagsToSearch.reduce((acc2, item2) => ({
+                                        ...acc2,
+                                        [item2]: (acc[item2] || 0) + (ts.includes(item2) ? 1 : 0)
+                                    }), acc)
+                                } else {
+                                    return acc;
+                                }
                             }, tagsToSearch.reduce((acc1, item1) => ({ ...acc1, [item1]: 0 }), {}))
 
                             return Object.entries(resCleaned).map(([key, value], index) => ({
