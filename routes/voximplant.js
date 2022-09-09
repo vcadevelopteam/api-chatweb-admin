@@ -129,6 +129,11 @@ router.post("/getResourcePrice",
 )
 
 // Organization //
+router.post("/updateScenario",
+    ip,
+    auth,
+    voximplantController.updateScenario
+)
 router.post("/getMaximumConsumption",
     ip,
     auth,

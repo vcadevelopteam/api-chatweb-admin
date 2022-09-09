@@ -214,14 +214,14 @@ exports.getCallTranscription = async (request, response) => {
         }
         let continuex = true;
         let attempts = 0;
-        
+
         while (continuex && attempts < 20) {
             let requestResult = await voximplant.getCallRecord({ ...request.body, requestid: request._requestid });
-        
+
             if (requestResult && requestResult?.result) {
                 if (requestResult?.result.length > 0) {
                     const recordX = requestResult?.result[0]?.records?.[0];
-                    
+
                     if (recordX?.transcription_status === "Complete") {
                         try {
                             const record_data = await axios.get(recordX.transcription_url);
@@ -237,7 +237,7 @@ exports.getCallTranscription = async (request, response) => {
                                     json: JSON.stringify(interactions)
                                 });
                                 continuex = false;
-                                
+
                             }
                         }
                         catch (exception) {
@@ -267,7 +267,7 @@ exports.getCallTranscription = async (request, response) => {
         return response.json({
             success: true
         })
-        
+
         return response.status(400).json({
             ...resultData,
             code: "error_invalid_call",
@@ -672,6 +672,43 @@ exports.setCustomRecordStorageInfo = async (request, response) => {
         if (requestResult)
             return response.json(requestResult);
         return response.status(400).json(requestResult)
+    }
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
+    }
+}
+
+exports.updateScenario = async (request, response) => {
+    var requestCode = "error_unexpected_error";
+    var requestMessage = "error_unexpected_error";
+    var requestStatus = 400;
+    var requestSuccess = false;
+
+    try {
+        if (request.body) {
+            var orglist = await channelfunctions.voximplantManageAll(0, 0, "ALL", null, null, null, null, null, null, null, null, null, null, null, null, request._requestid);
+
+            if (orglist != null) {
+                for (let counter = 0; counter < orglist.length; counter++) {
+                    await channelfunctions.voximplantUpdateScenario(orglist[counter], request._requestid);
+                }
+            }
+
+            requestCode = "";
+            requestMessage = "";
+            requestStatus = 200;
+            requestSuccess = true;
+        }
+
+        return response.status(requestStatus).json({
+            code: requestCode,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
     }
     catch (exception) {
         return response.status(500).json({

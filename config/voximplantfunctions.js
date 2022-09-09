@@ -281,6 +281,32 @@ exports.addScenario = async ({ account_id, account_name, scenario_name, scenario
     }
 }
 
+exports.setScenarioInfo = async ({ account_id, account_name, scenario_id, scenario_script, child_apikey = null, requestid = null }) => {
+    try {
+        const data = {};
+        setChildData({ data, account_id, account_name });
+        data['scenario_id'] = scenario_id;
+        data['scenario_script'] = scenario_script;
+        if (child_apikey) {
+            data['child_apikey'] = child_apikey;
+        }
+        const result = await voximplantRequest('SetScenarioInfo', data, requestid);
+        if (result.data.error) {
+            return { error: result.data.error };
+        }
+        return result.data;
+        // {
+        //     "result": 1,
+        //     "rule_name": "myapp1.test.voximplant.com",
+        //     "application_id": 1,
+        //     "secure_record_storage": false
+        // }
+    }
+    catch (exception) {
+        return undefined;
+    }
+}
+
 exports.addRule = async ({ account_id, account_name, application_id, rule_name, rule_pattern, scenario_id, child_apikey = null, requestid = null }) => {
     try {
         const data = {};
