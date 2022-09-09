@@ -156,7 +156,7 @@ exports.dashboardDesigner = async (req, res) => {
                             const resCleaned = resIndicator.reduce((acc, item) => {
                                 const columnTag = item[column.replace(".", "")];
                                 if (columnTag) {
-
+                                    // clean tags, example t1,t2,t2,t2,t3 => t1,t2,t3
                                     const tagsCleaned = columnTag.split(',').reduce((accx, itemx) => ({
                                         lastTag: itemx,
                                         acc: accx.lastTag === itemx ? accx.acc : [...accx.acc, itemx]
