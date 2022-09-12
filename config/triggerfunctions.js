@@ -749,51 +749,15 @@ exports.getQuery = (method, data, isNotPaginated) => {
     }
 }
 
-exports.transformCSV = async (data, headerClient, _requestid, indexPart, zip) => {
-    const formatToExport = "csv";
-    const titlefile = "Part-" + indexPart + (formatToExport !== "csv" ? ".xlsx" : ".csv");
-
-    let keysHeaders;
-    const keys = Object.keys(data[0]);
-    keysHeaders = keys;
-
-    if (headerClient) {
-        keysHeaders = keys.reduce((acc, item) => {
-            const keyclientfound = headerClient.find(x => x.key === item);
-            if (!keyclientfound)
-                return acc;
-            else {
-                return {
-                    ...acc,
-                    [item]: keyclientfound.alias
-                }
-            }
-        }, {});
-        data.unshift(keysHeaders);
-    }
-
-    const profiler = logger.child({ _requestid }).startTimer();
-
-    let content =
-        (headerClient ? "" : (Object.keys(data[0]).join("|") + "\n")) +
-        data.map(item => Object.values(item).join("|").replace(/(?![\x00-\x7FáéíóúñÁÉÍÓÚÑ]|[\xC0-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF7][\x80-\xBF]{3})./g, '')).join("\n");
-
-    data = null;
-
-    profiler.done({ level: "debug", message: `Drawed csv` });
-
-    zip.file(titlefile, Buffer.from(content, 'ASCII'), { binary: true })
-}
-
-exports.uploadCSV = async (_requestid, buffer) => {
+exports.uploadBufferToCos = async (_requestid, buffer, contentType, key) => {
     var s3 = new ibm.S3(config);
 
     const params = {
         ACL: 'public-read',
-        Key: new Date().toISOString() + ".zip",
+        Key: key,
         Body: buffer,
         Bucket: COS_BUCKET_NAME,
-        ContentType: "application/zip",
+        ContentType: contentType,
     }
 
     logger.child({ _requestid }).debug(`Uploading to COS`)
