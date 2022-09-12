@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    .title {
+        color: #1374c3;
+        font-weight: bold;
+    }
+
+    tr.spaceTop>td {
+        padding-top: 1em;
+    }
+    .t-right {
+        text-align: right;
+    }
+</style>
+
+<body>
+    <div style="width: 80%; margin-left: auto; margin-right: auto; margin-top: 16px;">
+        <div style="text-align: center; font-size: 20px;" class="title">Reporte del periodo</div>
+        <div class="title" style="margin-top: 20px">
+            <div>Cliente: <%= data[0].displayname %>
+            </div>
+            <div>Plan: <%= data[0].status %>
+            </div>
+            <div>Periodo: <%= data[0].userid %>
+            </div>
+        </div>
+        <div style="margin-top: 20px">
+            <table style="width: 100%">
+                <tr style="background-color: #e1e1e1">
+                    <th style="text-align: right;"></th>
+                    <th style="padding: 10px; text-align: right; width: 100px;">Cantidad</th>
+                    <th style="padding: 10px; text-align: right; width: 100px;">Monto</th>
+                    <th style="padding: 10px; text-align: right; width: 100px;">IGV</th>
+                    <th style="padding: 10px; text-align: right; width: 100px;">Monto Total</th>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold">Costo base</td>
+                    <td class="t-right">1</td>
+                    <td class="t-right">139</td>
+                </tr>
+                <tr class="spaceTop">
+                    <td style="font-weight: bold">Agentes</td>
+                </tr>
+                <tr>
+                    <td>Contratado</td>
+                    <td class="t-right">2</td>
+                    <td class="t-right">2</td>
+                    <td class="t-right">2</td>
+                    <td class="t-right">2</td>
+                </tr>
+                <tr>
+                    <td>Adicional</td>
+                    <td class="t-right">3</td>
+                    <td class="t-right">3</td>
+                    <td class="t-right">3</td>
+                    <td class="t-right">3</td>
+                </tr>
+                <tr class="spaceTop">
+                    <td style="font-weight: bold">Canales</td>
+                </tr>
+                <tr>
+                    <td>Contratado</td>
+                    <td class="t-right">3</td>
+                    <td class="t-right">3</td>
+                    <td class="t-right">3</td>
+                    <td class="t-right">3</td>
+                </tr>
+                <tr>
+                    <td>Canales Whatsapp gratis</td>
+                    <td class="t-right">3</td>
+                    <td class="t-right">3</td>
+                    <td class="t-right">3</td>
+                    <td class="t-right">3</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
