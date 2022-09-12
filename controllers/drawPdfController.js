@@ -8,11 +8,11 @@ const { errors, setSessionParameters, getErrorCode } = require('../config/helper
 
 
 exports.draw = async (req, res) => {
-    const { parameters = {}, method, template, reportname, key } = req.body;
+    const { parameters = {}, method, template, reportname, dataonparameters = false, key } = req.body;
 
     setSessionParameters(parameters, req.user, req._requestid);
 
-    const result = await executesimpletransaction(method, parameters, req.user.menu || {});
+    const result = dataonparameters ? [parameters] : await executesimpletransaction(method, parameters, req.user.menu || {});
 
     if (result instanceof Array) {
         ejs.renderFile(path.join('./views/', template), {
