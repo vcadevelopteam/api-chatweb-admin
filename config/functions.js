@@ -2602,7 +2602,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_KPI_OPERATIVO_SEL: {
-        query: "SELECT * FROM ufn_report_kpi_operativo_sel($corpid, $orgid, $startdate, $enddate, $usergroup, $userid, $offset)",
+        query: "SELECT * FROM ufn_report_kpi_operativo_sel($corpid, $orgid, $date, $usergroup, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
