@@ -800,28 +800,28 @@ module.exports = {
             column: "coalesce(do2.domaindesc, co.closetype)"
         },
         tipo_operacion: {
-            column: "co.variablecontextjsonb->'operacion'->>'Value'"
+            column: "co.variablecontextsimple->>'operacion'"
         },
         operador: {
-            column: "co.variablecontextjsonb->'nomoperador'->>'Value'"
+            column: "co.variablecontextsimple->>'nomoperador'"
         },
         plan: {
-            column: "co.variablecontextjsonb->'tipoplandest'->>'Value'"
+            column: "co.variablecontextsimple->>'tipoplandest'"
         },
         modalidad_compra: {
-            column: "co.variablecontextjsonb->'var_compra_productos'->>'Value'"
+            column: "co.variablecontextsimple->>'var_compra_productos'"
         },
         provincia: {
-            column: "co.variablecontextjsonb->'province'->>'Value'"
+            column: "co.variablecontextsimple->>'province'"
         },
         distrito: {
-            column: "co.variablecontextjsonb->'district'->>'Value'"
+            column: "co.variablecontextsimple->>'district'"
         },
         telefono: {
-            column: "co.variablecontextjsonb->'alternativephone'->>'Value'"
+            column: "co.variablecontextsimple->>'alternativephone'"
         },
         documento: {
-            column: "co.variablecontextjsonb->'documentnumber'->>'Value'"
+            column: "co.variablecontextsimple->>'documentnumber'"
         },
         fechaprimerarespuesta: {
             column: "CASE WHEN co.userfirstreplytime = '00:00:00' THEN null ELSE to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY') END",
