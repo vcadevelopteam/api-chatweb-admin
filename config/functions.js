@@ -2647,7 +2647,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_WITAI_ENTITY_INS: {
-        query: "SELECT * FROM ufn_witai_entity_sel($corpid, $orgid, $name, $datajson, $operation, $username)",
+        query: "SELECT * FROM ufn_witai_entity_ins($corpid, $orgid, $name, $datajson, $operation, $username)",
         module: "",
         protected: "SELECT"
     },
