@@ -2626,4 +2626,19 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_WITAI_INTENT_SEL: {
+        query: "SELECT * FROM ufn_witai_intent_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_UTTERANCE_SEL: {
+        query: "SELECT * FROM ufn_witai_utterance_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_ENTITY_SEL: {
+        query: "SELECT * FROM ufn_witai_entity_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
