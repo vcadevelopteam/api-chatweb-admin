@@ -2632,12 +2632,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_WITAI_UTTERANCE_SEL: {
-        query: "SELECT * FROM ufn_witai_utterance_sel($corpid, $orgid)",
+        query: "SELECT * FROM ufn_witai_utterance_sel($corpid, $orgid, $intent)",
         module: "",
         protected: "SELECT"
     },
     UFN_WITAI_ENTITY_SEL: {
-        query: "SELECT * FROM ufn_witai_entity_sel($corpid, $orgid, $intent)",
+        query: "SELECT * FROM ufn_witai_entity_sel($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
