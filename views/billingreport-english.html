@@ -20,12 +20,12 @@
     }
 
     .general-column-first {
-        padding: 6px;
-        width: 60px;
+        padding: 4px;
+        width: 100%;
     }
 
     .general-column-last {
-        padding: 6px;
+        padding: 4px;
         width: auto;
     }
 
@@ -44,7 +44,7 @@
     }
 
     .billing-table-header {
-        padding: 10px;
+        padding: 4px;
         text-align: right;
         width: 80px;
         font-weight: bold;
@@ -52,7 +52,7 @@
     }
 
     .billing-summary-header {
-        padding: 6px;
+        padding: 4px;
         text-align: center;
         width: 60px;
         font-weight: bold;
@@ -60,19 +60,19 @@
     }
 
     .billing-table-cell-left {
-        padding: 8px;
+        padding: 4px;
         text-align: left;
         font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     }
 
     .billing-table-cell-right {
-        padding: 8px;
+        padding: 4px;
         text-align: right;
         font-family: 'Times New Roman', Times, serif;
     }
 
     .billing-table-cell-center {
-        padding: 8px;
+        padding: 4px;
         text-align: center;
         font-family: 'Times New Roman', Times, serif;
     }
@@ -83,33 +83,24 @@
 </style>
 
 <body>
-    <div style="width: 80%; margin-left: auto; margin-right: auto; margin-top: 16px;">
+    <div style="width: 80%; margin-left: auto; margin-right: auto; margin-top: 10px;">
         <div style="text-align: center; font-size: 16px;" class="blue-highlight">Period Report</div>
-        <div class="blue-highlight general-row" style="margin-top: 20px;">
+        <div class="blue-highlight general-row" style="margin-top: 16px;">
             <div class="general-column-first">
-                Client:
-            </div>
-            <div class="general-column-last">
-                <%= data[0].generalinformationclient %>
+                Client: <%= data[0].generalinformationclient %>
             </div>
         </div>
         <div class="blue-highlight general-row">
             <div class="general-column-first">
-                Plan:
-            </div>
-            <div class="general-column-last">
-                <%= data[0].generalinformationplan %>
+                Plan: <%= data[0].generalinformationplan %>
             </div>
         </div>
         <div class="blue-highlight general-row">
             <div class="general-column-first">
-                Period:
-            </div>
-            <div class="general-column-last">
-                <%= data[0].generalinformationperiod %>
+                Period: <%= data[0].generalinformationperiod %>
             </div>
         </div>
-        <div style="margin-top: 20px">
+        <div style="margin-top: 16px">
             <table class="billing-table">
                 <tr style="background-color: rgb(223, 237, 249)">
                     <th style="text-align: right; width: auto;"></th>
@@ -274,7 +265,7 @@
                         Conversations</td>
                 </tr>
                 <tr>
-                    <td class="billing-table-cell-left">WhatsApp Free Conversations</td>
+                    <td class="billing-table-cell-left">Free Conversations</td>
                     <td class="billing-table-cell-right">
                         <%= data[0].conversationwhatsappfree1 %>
                     </td>
@@ -292,7 +283,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="billing-table-cell-left">WhatsApp User-initiated Conversations</td>
+                    <td class="billing-table-cell-left">User-initiated Conversations</td>
                     <td class="billing-table-cell-right">
                         <%= data[0].conversationwhatsappclient1 %>
                     </td>
@@ -310,7 +301,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="billing-table-cell-left">WhatsApp Business-initiated Conversations</td>
+                    <td class="billing-table-cell-left">Business-initiated Conversations</td>
                     <td class="billing-table-cell-right">
                         <%= data[0].conversationwhatsappbusiness1 %>
                     </td>
@@ -655,7 +646,7 @@
                 </tr>
             </table>
         </div>
-        <div style="margin-top: 20px">
+        <div style="margin-top: 16px">
             <table class="billing-summary">
                 <tr style="background-color: rgb(223, 237, 249)">
                     <th class="billing-summary-header">Contacts</th>

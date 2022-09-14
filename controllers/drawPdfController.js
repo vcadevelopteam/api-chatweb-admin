@@ -24,14 +24,8 @@ exports.draw = async (req, res) => {
             } else {
                 let options = {
                     format: 'A4',
-                    border: {
-                        top: "10px",
-                        right: "0px",
-                        bottom: "10px",
-                        left: "0px",
-                    },
                     orientation: 'portrait',
-                    zoomFactor: "0.6",
+                    border: 0,
                 };
                 pdf.create(data, options).toBuffer(async (error1, buffer) => {
                     if (error1) {
