@@ -2637,7 +2637,17 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_WITAI_ENTITY_SEL: {
-        query: "SELECT * FROM ufn_witai_entity_sel($corpid, $orgid)",
+        query: "SELECT * FROM ufn_witai_entity_sel($corpid, $orgid, $intent)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_INTENT_UTTERANCE_INS: {
+        query: "SELECT * FROM ufn_witai_intent_utterance_ins($corpid, $orgid, $intent, $name, $description, $datajson, $utterance_datajson, $operation, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_ENTITY_INS: {
+        query: "SELECT * FROM ufn_witai_entity_sel($corpid, $orgid, $name, $datajson, $operation, $username)",
         module: "",
         protected: "SELECT"
     },
