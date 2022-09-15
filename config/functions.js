@@ -2601,4 +2601,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_INVOICECOMMENT_SEL: {
+        query: "SELECT * FROM ufn_invoicecomment_sel($corpid, $orgid, $invoiceid, $invoicecommentid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVOICECOMMENT_INS: {
+        query: "SELECT * FROM ufn_invoicecomment_ins($corpid, $orgid, $invoiceid, $invoicecommentid, $description, $status, $type, $username, $commentcontent, $commenttype, $commentcaption)",
+        module: "",
+        protected: "INSERT"
+    },
 }
