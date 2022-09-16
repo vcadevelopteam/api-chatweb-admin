@@ -2601,6 +2601,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_INVOICECOMMENT_SEL: {
+        query: "SELECT * FROM ufn_invoicecomment_sel($corpid, $orgid, $invoiceid, $invoicecommentid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVOICECOMMENT_INS: {
+        query: "SELECT * FROM ufn_invoicecomment_ins($corpid, $orgid, $invoiceid, $invoicecommentid, $description, $status, $type, $username, $commentcontent, $commenttype, $commentcaption)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_REPORT_KPI_OPERATIVO_SEL: {
         query: "SELECT * FROM ufn_report_kpi_operativo_sel($corpid, $orgid, $date, $usergroup, $userid, $offset)",
         module: "",
