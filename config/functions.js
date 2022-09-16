@@ -2671,4 +2671,64 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_WITAI_APP_CRON: {
+        query: "SELECT * FROM ufn_witai_app_cron()",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_APP_CONFIG: {
+        query: "SELECT * FROM ufn_witai_app_config($corpid, $orgid, $id, $appid, $token)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_APP_GET: {
+        query: "SELECT * FROM ufn_witai_app_get($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_TRAIN_INS: {
+        query: "SELECT * FROM ufn_witai_train_ins($corpid, $orgid, $type, $name, $datajson, $operation, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_WORKER_TRAIN_SEL: {
+        query: "SELECT * FROM ufn_witai_worker_train_sel()",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_TRAIN_SEL: {
+        query: "SELECT * FROM ufn_witai_train_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_TRAIN_UPD: {
+        query: "SELECT * FROM ufn_witai_train_upd($corpid, $orgid, $type, $name, $todelete, $w1, $w2)",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_WITAI_WORKER_INTASK: {
+        query: "UPDATE witai w SET intask = $intask, witaistatus = $witaistatus WHERE w.corpid = $corpid AND w.orgid = $orgid AND w.id = $id",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_WITAI_WORKER_UPDATED: {
+        query: "UPDATE witai w SET intask = false, updated = true, witaistatus = $witaistatus WHERE w.corpid = $corpid AND w.orgid = $orgid AND w.id = $id",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_WITAI_WORKER_SCHEDULED_SEL: {
+        query: "SELECT w.corpid, w.orgid, w.worker, w.id, w.appid, w.token FROM witai w WHERE w.witaistatus IS NULL OR w.witaistatus IN ('scheduled', 'ongoing')",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_WITAI_WORKER_STATUS_UPD: {
+        query: "UPDATE witai w SET witaistatus = $witaistatus WHERE w.corpid = $corpid AND w.orgid = $orgid AND w.id = $id",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_WITAI_WORKER_USAGE_UPD: {
+        query: "UPDATE witai w SET usage = CASE WHEN date_trunc('minute', NOW()) > date_trunc('minute', usagedate) THEN 0 + 1 ELSE COALESCE(usage, 0) + 1 END, usagedate = NOW() WHERE w.corpid = $corpid AND w.orgid = $orgid AND w.id = $id",
+        module: "",
+        protected: "SELECT"
+    },
 }
