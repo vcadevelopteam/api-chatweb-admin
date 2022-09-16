@@ -5,9 +5,6 @@ ARG CONFIGFILE=.env \
 WORKDIR /app
 COPY ["package.json", "package-lock.json*", "./"]
 RUN npm install --${NODE_ENV}
-RUN sudo apt-get update
-RUN sudo apt-get install libgdiplus
-RUN sudo apt install ffmpeg
 COPY . .
 EXPOSE ${PORT}
 COPY "${CONFIGFILE}" ./.env
