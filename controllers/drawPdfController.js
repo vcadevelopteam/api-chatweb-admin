@@ -23,8 +23,9 @@ exports.draw = async (req, res) => {
                 return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
             } else {
                 let options = {
-                    format: 'Letter',
-                    border: '1cm'
+                    format: 'A4',
+                    orientation: 'portrait',
+                    border: 0,
                 };
                 pdf.create(data, options).toBuffer(async (error1, buffer) => {
                     if (error1) {

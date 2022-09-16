@@ -22,7 +22,7 @@ app.use(cors({
                 'allow access from the specified Origin.';
             return callback(new Error(msg), false);
         }
-        return callback(null, true);amara
+        return callback(null, true); amara
     }
 }));
 
