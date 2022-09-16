@@ -93,19 +93,26 @@
 <body>
     <div style="width: 90%; margin-left: auto; margin-right: auto; margin-top: 10px;">
         <div style="text-align: center; font-size: 16px;" class="blue-highlight">Reporte del Periodo</div>
-        <div class="blue-highlight general-row" style="margin-top: 16px;">
-            <div class="general-column-first">
-                Cliente: <%= data[0].generalinformationclient %>
+        <div style="display: flex; justify-content: space-between">
+            <div>
+                <div class="blue-highlight general-row" style="margin-top: 16px;">
+                    <div class="general-column-first">
+                        Cliente: <%= data[0].generalinformationclient %>
+                    </div>
+                </div>
+                <div class="blue-highlight general-row">
+                    <div class="general-column-first">
+                        Plan: <%= data[0].generalinformationplan %>
+                    </div>
+                </div>
+                <div class="blue-highlight general-row">
+                    <div class="general-column-first">
+                        Periodo: <%= data[0].generalinformationperiod %>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="blue-highlight general-row">
-            <div class="general-column-first">
-                Plan: <%= data[0].generalinformationplan %>
-            </div>
-        </div>
-        <div class="blue-highlight general-row">
-            <div class="general-column-first">
-                Periodo: <%= data[0].generalinformationperiod %>
+            <div>
+                <img src="https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/Laraigo-logo-name.svg" width="100px">
             </div>
         </div>
         <div style="margin-top: 16px">
