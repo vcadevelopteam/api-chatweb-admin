@@ -4,7 +4,7 @@ const logger = require('../config/winston');
 
 const witai_url = 'https://api.wit.ai'
 const witai_version = '20220622'
-const witai_token = 'N4JLYN6QZJGK7CUJAKHKOCHA4WKHSKLF';
+const witai_token = process.env.WITAI_TOKEN;
 
 const witai_request = async (url, method, headers, params, data) => {
     try {
