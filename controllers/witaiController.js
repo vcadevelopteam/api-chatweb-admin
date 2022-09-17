@@ -229,25 +229,43 @@ exports.train = async (req, res) => {
                     let w_train_items = witai_train.filter(w => !w[`d${worker_n}`] && w.type === 'entity');
                     for (const item of w_train_items) { // type, name, datajson, todelete, w1, d1, w2, d2
                         if (item?.todelete) {
-                            witai_response = await witai_request(`${url}/${item.name}`, 'delete', null, null, { _requestid: req._requestid, token });
-                            if (witai_response?.status === 200) {
+                            witai_response = await witai_request(`${url}/${item.name}`, 'delete', null, null, {
+                                _requestid: req._requestid,
+                                token
+                            });
+                            if (witai_response?.status === 200 || witai_response?.data?.code === 'not-found') {
                                 await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid: req._requestid, corpid, orgid, ...item, [`w${worker_n}`]: true });
                             }
                         }
                         else {
                             // Si existe d[n] es UPDATE si no existe es INSERT
                             if (item[`d${worker_n}`]) {
-                                witai_response = await witai_request(`${url}/${item.name}`, 'put', null, null, { _requestid: req._requestid, token, data: item.datajson });
+                                witai_response = await witai_request(`${url}/${item.name}`, 'put', null, null, {
+                                    _requestid: req._requestid,
+                                    token,
+                                    data: item.datajson
+                                });
                             }
                             else {
-                                witai_response = await witai_request(url, 'post', null, null, { _requestid: req._requestid, token, data: item.datajson });
+                                witai_response = await witai_request(url, 'post', null, null, {
+                                    _requestid: req._requestid,
+                                    token,
+                                    data: {
+                                        ...item.datajson,
+                                        roles: [item.datajson.roles?.[0]?.name || item.datajson.roles[0]]
+                                    }
+                                });
                             }
 
                             if (witai_response?.status === 200) {
                                 await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid: req._requestid, corpid, orgid, ...item, [`w${worker_n}`]: true });
                             }
                             else if (witai_response?.data?.code === 'already-exists' || witai_response?.data?.error.includes('already exists')) {
-                                witai_response = await witai_request(`${url}/${item.name}`, 'put', null, null, { _requestid: req._requestid, token, data: item.datajson });
+                                witai_response = await witai_request(`${url}/${item.name}`, 'put', null, null, {
+                                    _requestid: req._requestid,
+                                    token,
+                                    data: item.datajson
+                                });
                                 await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid: req._requestid, corpid, orgid, ...item, [`w${worker_n}`]: true });
                             }
                         }
@@ -259,25 +277,40 @@ exports.train = async (req, res) => {
                     w_train_items = witai_train.filter(w => !w[`d${worker_n}`] && w.type === 'intent');
                     for (const item of w_train_items) {
                         if (item?.todelete) {
-                            witai_response = await witai_request(`${url}/${item.name}`, 'delete', null, null, { _requestid: req._requestid, token });
-                            if (witai_response?.status === 200) {
+                            witai_response = await witai_request(`${url}/${item.name}`, 'delete', null, null, {
+                                _requestid: req._requestid,
+                                token
+                            });
+                            if (witai_response?.status === 200 || witai_response?.data?.code === 'not-found') {
                                 await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid: req._requestid, corpid, orgid, ...item, [`w${worker_n}`]: true });
                             }
                         }
                         else {
                             // Si existe d[n] es UPDATE si no existe es INSERT
                             if (item[`d${worker_n}`]) {
-                                witai_response = await witai_request(`${url}/${item.name}`, 'put', null, null, { _requestid: req._requestid, token, data: item.datajson });
+                                witai_response = await witai_request(`${url}/${item.name}`, 'put', null, null, {
+                                    _requestid: req._requestid,
+                                    token,
+                                    data: item.datajson
+                                });
                             }
                             else {
-                                witai_response = await witai_request(url, 'post', null, null, { _requestid: req._requestid, token, data: item.datajson });
+                                witai_response = await witai_request(url, 'post', null, null, {
+                                    _requestid: req._requestid,
+                                    token, data:
+                                    item.datajson
+                                });
                             }
 
                             if (witai_response?.status === 200) {
                                 await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid: req._requestid, corpid, orgid, ...item, [`w${worker_n}`]: true });
                             }
                             else if (witai_response?.data?.code === 'already-exists' || witai_response?.data?.error.includes('already exists')) {
-                                witai_response = await witai_request(`${url}/${item.name}`, 'put', null, null, { _requestid: req._requestid, token, data: item.datajson });
+                                witai_response = await witai_request(`${url}/${item.name}`, 'put', null, null, {
+                                    _requestid: req._requestid,
+                                    token,
+                                    data: item.datajson
+                                });
                                 await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid: req._requestid, corpid, orgid, ...item, [`w${worker_n}`]: true });
                             }
                         }
@@ -288,7 +321,11 @@ exports.train = async (req, res) => {
                     url = `${witai_url}/utterances`;
                     w_train_items = witai_train.filter(w => !w[`d${worker_n}`] && w.type === 'utterance' && w.todelete);
                     if (w_train_items?.length > 0) {
-                        witai_response = await witai_request(url, 'delete', null, null, { _requestid: req._requestid, token, data: w_train_items.map(d => d.datajson) });
+                        witai_response = await witai_request(url, 'delete', null, null, {
+                            _requestid: req._requestid,
+                            token,
+                            data: w_train_items.map(d => d.datajson)
+                        });
                         if (witai_response?.status === 200) {
                             for (const item of w_train_items) {
                                 await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid: req._requestid, corpid, orgid, ...item, [`w${worker_n}`]: true });
@@ -299,7 +336,22 @@ exports.train = async (req, res) => {
 
                     w_train_items = witai_train.filter(w => !w[`d${worker_n}`] && w.type === 'utterance' && !w.todelete);
                     if (w_train_items?.length > 0) {
-                        witai_response = await witai_request(url, 'post', null, null, { _requestid: req._requestid, token, data: w_train_items.map(d => d.datajson) });
+                        witai_response = await witai_request(url, 'post', null, null, {
+                            _requestid: req._requestid,
+                            token,
+                            data: w_train_items.map(d => ({
+                                ...d.datajson,
+                                intent: d.datajson.intent?.name || d.datajson.intent,
+                                entities: d.datajson.entities.map(e => ({
+                                    ...e,
+                                    entity: e?.entity || `${e?.name}:${e?.role}`,
+                                    entities: e.entities.map(e2 => ({
+                                        ...e2,
+                                        entity: e2?.entity || `${e2?.name}:${e2?.role}`,
+                                    }))
+                                }))
+                            }))
+                        });
                         if (witai_response?.status === 200) {
                             for (const item of w_train_items) {
                                 await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid: req._requestid, corpid, orgid, ...item, [`w${worker_n}`]: true });
