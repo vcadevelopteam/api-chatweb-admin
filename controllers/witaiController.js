@@ -247,7 +247,7 @@ const train_entities = async ({ _requestid, corpid, orgid, workerid, token, work
         witaistatus = 'scheduled'
         result.push(witai_response?.data);
     }
-    return witaistatus, result;
+    return [witaistatus, result];
 }
 
 const train_intents = async ({ _requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train }) => {
@@ -297,7 +297,7 @@ const train_intents = async ({ _requestid, corpid, orgid, workerid, token, worke
         witaistatus = 'scheduled'
         result.push(witai_response?.data);
     }
-    return witaistatus, result;
+    return [witaistatus, result];
 }
 
 const train_utterances = async ({ _requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train }) => {
@@ -346,7 +346,7 @@ const train_utterances = async ({ _requestid, corpid, orgid, workerid, token, wo
         witaistatus = 'scheduled'
         result.push(witai_response?.data);
     }
-    return witaistatus, result;
+    return [witaistatus, result];
 }
 
 exports.train = async (req, res) => {
@@ -376,13 +376,13 @@ exports.train = async (req, res) => {
                     const witai_train = await executesimpletransaction("UFN_WITAI_TRAIN_SEL", { _requestid: req._requestid, corpid, orgid });
 
                     // Entrenar entities
-                    witaistatus, result['entity'] = await train_entities({ _requestid: req._requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train });
+                    [witaistatus, result['entity']] = await train_entities({ _requestid: req._requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train });
 
                     // Entrenar intents
-                    witaistatus, result['intent'] = await train_intents({ _requestid: req._requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train });
+                    [witaistatus, result['intent']] = await train_intents({ _requestid: req._requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train });
 
                     // Entrenar utterances
-                    witaistatus, result['utterance'] = await train_utterances({ _requestid: req._requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train });
+                    [witaistatus, result['utterance']] = await train_utterances({ _requestid: req._requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train });
 
                     await executesimpletransaction("QUERY_WITAI_WORKER_UPDATED", { _requestid: req._requestid, corpid, orgid, id: workerid, witaistatus });
                 } catch (error) {
@@ -436,13 +436,13 @@ exports.train_model = async (req, res) => {
                     const witai_train = await executesimpletransaction("UFN_WITAI_TRAIN_SEL", { _requestid: req._requestid, corpid, orgid });
 
                     // Entrenar entities
-                    witaistatus, result['entity'] = await train_entities({ _requestid: req._requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train });
+                    [witaistatus, result['entity']] = await train_entities({ _requestid: req._requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train });
 
                     // Entrenar intents
-                    witaistatus, result['intent'] = await train_intents({ _requestid: req._requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train });
+                    [witaistatus, result['intent']] = await train_intents({ _requestid: req._requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train });
 
                     // Entrenar utterances
-                    witaistatus, result['utterance'] = await train_utterances({ _requestid: req._requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train });
+                    [witaistatus, result['utterance']] = await train_utterances({ _requestid: req._requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train });
 
                     await executesimpletransaction("QUERY_WITAI_WORKER_UPDATED", { _requestid: req._requestid, corpid, orgid, id: workerid, witaistatus });
                 } catch (error) {
