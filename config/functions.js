@@ -2696,6 +2696,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_WITAI_WORKER_TRAIN_MODEL_SEL: {
+        query: "SELECT * FROM ufn_witai_worker_train_model_sel($corpid, $orgid, $model)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_WITAI_TRAIN_SEL: {
         query: "SELECT * FROM ufn_witai_train_sel($corpid, $orgid)",
         module: "",
@@ -2718,6 +2723,11 @@ module.exports = {
     },
     QUERY_WITAI_WORKER_SCHEDULED_SEL: {
         query: "SELECT w.corpid, w.orgid, w.worker, w.id, w.appid, w.token FROM witai w WHERE w.witaistatus IS NULL OR w.witaistatus IN ('scheduled', 'ongoing')",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_WITAI_MODEL_WORKER_SCHEDULED_SEL: {
+        query: "SELECT w.corpid, w.orgid, w.worker, w.id, w.appid, w.token FROM witai w WHERE w.corpid = $corpid AND w.orgid = $orgid AND w.model = $model AND w.witaistatus IS NULL OR w.witaistatus IN ('scheduled', 'ongoing')",
         module: "",
         protected: "SELECT"
     },
