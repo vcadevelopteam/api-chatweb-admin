@@ -34,10 +34,22 @@ router.post("/train",
     witaiController.train
 )
 
+router.post("/train_model",
+    ip,
+    //auth,
+    witaiController.train_model
+)
+
 router.post("/status",
     ip,
     //auth,
     witaiController.status
+)
+
+router.post("/status_model",
+    ip,
+    //auth,
+    witaiController.status_model
 )
 
 router.post("/message",
