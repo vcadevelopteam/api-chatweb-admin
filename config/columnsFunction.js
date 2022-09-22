@@ -302,6 +302,9 @@ module.exports = {
             column: "co.startdate + p_offset * INTERVAL '1hour'",
             type: "date"
         },
+        origin: {
+            column: "co.origin"
+        },
         firstusergroup: {
             column: "co.firstusergroup"
         },
