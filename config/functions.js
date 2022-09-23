@@ -2740,7 +2740,7 @@ module.exports = {
         query: "UPDATE witai w SET usage = CASE WHEN date_trunc('minute', NOW()) > date_trunc('minute', usagedate) THEN 0 + 1 ELSE COALESCE(usage, 0) + 1 END, usagedate = NOW() WHERE w.corpid = $corpid AND w.orgid = $orgid AND w.id = $id",
     },
     UFN_WITAI_INTENT_EXPORT: {
-        query: "SELECT * FROM ufn_witai_intent_export($corpid, $orgid)",
+        query: "SELECT * FROM ufn_witai_intent_export($corpid, $orgid, $name_json)",
         module: "",
         protected: "SELECT"
     },
