@@ -2641,4 +2641,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_WITAI_INTENT_EXPORT: {
+        query: "SELECT * FROM ufn_witai_intent_export($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
