@@ -2730,15 +2730,5 @@ module.exports = {
         query: "SELECT * FROM ufn_witai_intent_export($corpid, $orgid, $name_json)",
         module: "",
         protected: "SELECT"
-    },
-    UFN_CONVERSATION_LINKEDPERSON_EXECUTE: {
-        query: "SELECT * FROM ufn_conversation_linkedperson_execute($corpid, $orgid, $personidfrom, $personidto, $imageurl, $name, $firstname, $documenttype, $documentnumber, $persontype, $birthday, $gender, $phone, $alternativephone, $email, $alternativeemail, $civilstatus, $occupation, $educationlevel, $groups)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_CONVERSATION_UNLINKPERSON_EXECUTE: {
-        query: "SELECT * FROM ufn_conversation_unlinkperson_execute($corpid, $orgid, $personid, $personcommunicationchannel, $username)",
-        module: "",
-        protected: "SELECT"
-    },
+    }
 }
