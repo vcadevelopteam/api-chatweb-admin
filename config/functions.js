@@ -2740,5 +2740,10 @@ module.exports = {
         query: "SELECT * FROM ufn_witai_intent_export($corpid, $orgid, $name_json)",
         module: "",
         protected: "SELECT"
-    }
+    },
+    UFN_PERSON_INS_VALIDATION: {
+        query: "SELECT * FROM ufn_person_ins_validation($id, $corpid, $orgid, $phone, $email, $alternativephone, $alternativeemail, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
 }
