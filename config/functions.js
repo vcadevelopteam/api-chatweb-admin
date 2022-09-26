@@ -1413,6 +1413,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PERSON_LINK_SEL: {
+        query: "select * from ufn_person_link_sel($corpid, $orgid, $originpersonid, $where, $order, $take, $skip, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PERSON_LINK_TOTALRECORDS: {
+        query: "select * from ufn_person_link_totalrecords($corpid, $orgid, $originpersonid, $where, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_LEADACTIVITY_INS: {
         query: "select * from ufn_leadactivity_ins($corpid,$orgid,$leadid,$leadactivityid,$description,$duedate,$assigneduser,$assignto,$type,$status,$username,$operation, $feedback, $detailjson, $sendhsm, $communicationchannelid, $hsmtemplateid)",
         module: "",
