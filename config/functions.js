@@ -1,4 +1,4 @@
-module.exports = {
+"mmodule.exports = {
     QUERY_AUTHENTICATED: {
         query: `
         SELECT us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi
@@ -2601,6 +2601,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_INVOICECOMMENT_SEL: {
+        query: "SELECT * FROM ufn_invoicecomment_sel($corpid, $orgid, $invoiceid, $invoicecommentid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVOICECOMMENT_INS: {
+        query: "SELECT * FROM ufn_invoicecomment_ins($corpid, $orgid, $invoiceid, $invoicecommentid, $description, $status, $type, $username, $commentcontent, $commenttype, $commentcaption)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_LOCATION_TOTALRECORDS: {
         query: "SELECT * FROM ufn_location_totalrecords($corpid, $orgid, $where)",
         module: "",
@@ -2626,38 +2636,13 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_WITAI_INTENT_SEL: {
-        query: "SELECT * FROM ufn_witai_intent_sel($corpid, $orgid)",
+    UFN_CONVERSATION_LINKEDPERSON_EXECUTE: {
+        query: "SELECT * FROM ufn_conversation_linkedperson_execute($corpid, $orgid, $personidfrom, $personidto, $imageurl, $name, $firstname, $documenttype, $documentnumber, $persontype, $birthday, $gender, $phone, $alternativephone, $email, $alternativeemail, $civilstatus, $occupation, $educationlevel, $groups)",
         module: "",
         protected: "SELECT"
     },
-    UFN_WITAI_UTTERANCE_SEL: {
-        query: "SELECT * FROM ufn_witai_utterance_sel($corpid, $orgid, $intent)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_WITAI_ENTITY_SEL: {
-        query: "SELECT * FROM ufn_witai_entity_sel($corpid, $orgid)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_WITAI_INTENT_UTTERANCE_INS: {
-        query: "SELECT * FROM ufn_witai_intent_utterance_ins($corpid, $orgid, $name, $description, $datajson, $utterance_datajson, $operation, $username)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_WITAI_ENTITY_INS: {
-        query: "SELECT * FROM ufn_witai_entity_ins($corpid, $orgid, $name, $datajson, $operation, $username)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_INVOICECOMMENT_SEL: {
-        query: "SELECT * FROM ufn_invoicecomment_sel($corpid, $orgid, $invoiceid, $invoicecommentid)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_INVOICECOMMENT_INS: {
-        query: "SELECT * FROM ufn_invoicecomment_ins($corpid, $orgid, $invoiceid, $invoicecommentid, $description, $status, $type, $username, $commentcontent, $commenttype, $commentcaption)",
+    UFN_CONVERSATION_UNLINKPERSON_EXECUTE: {
+        query: "SELECT * FROM ufn_conversation_unlinkperson_execute($corpid, $orgid, $personid, $personcommunicationchannel, $username)",
         module: "",
         protected: "INSERT"
     },
@@ -2738,9 +2723,21 @@ module.exports = {
     },
     QUERY_WITAI_WORKER_USAGE_UPD: {
         query: "UPDATE witai w SET usage = CASE WHEN date_trunc('minute', NOW()) > date_trunc('minute', usagedate) THEN 0 + 1 ELSE COALESCE(usage, 0) + 1 END, usagedate = NOW() WHERE w.corpid = $corpid AND w.orgid = $orgid AND w.id = $id",
+        module: "",
+        protected: "SELECT"
     },
     UFN_WITAI_INTENT_EXPORT: {
         query: "SELECT * FROM ufn_witai_intent_export($corpid, $orgid, $name_json)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_LINKEDPERSON_EXECUTE: {
+        query: "SELECT * FROM ufn_conversation_linkedperson_execute($corpid, $orgid, $personidfrom, $personidto, $imageurl, $name, $firstname, $documenttype, $documentnumber, $persontype, $birthday, $gender, $phone, $alternativephone, $email, $alternativeemail, $civilstatus, $occupation, $educationlevel, $groups)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_UNLINKPERSON_EXECUTE: {
+        query: "SELECT * FROM ufn_conversation_unlinkperson_execute($corpid, $orgid, $personid, $personcommunicationchannel, $username)",
         module: "",
         protected: "SELECT"
     },
