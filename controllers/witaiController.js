@@ -100,7 +100,7 @@ exports.entity = async (req, res) => {
     }
     let result = null;
     try {
-        const { corpid, orgid, operation, data } = req.body;
+        const { corpid, orgid, operation, data, model = '' } = req.body;
         result = await executesimpletransaction("UFN_WITAI_TRAIN_INS", {
             _requestid: req._requestid,
             corpid: corpid,
@@ -110,6 +110,7 @@ exports.entity = async (req, res) => {
             datajson: data,
             operation: operation, // DELETE or ANY
             username: 'admin',
+            model: model
         });
         return res.json({
             code: "",
@@ -136,7 +137,7 @@ exports.intent = async (req, res) => {
     }
     let result = null;
     try {
-        const { corpid, orgid, operation, data } = req.body;
+        const { corpid, orgid, operation, data, model = '' } = req.body;
         result = await executesimpletransaction("UFN_WITAI_TRAIN_INS", {
             _requestid: req._requestid,
             corpid: corpid,
@@ -146,6 +147,7 @@ exports.intent = async (req, res) => {
             datajson: data,
             operation: operation, // DELETE or ANY
             username: 'admin',
+            model: model
         });
         return res.json({
             code: "",
@@ -172,7 +174,7 @@ exports.utterance = async (req, res) => {
     }
     let result = null;
     try {
-        const { corpid, orgid, operation, data } = req.body;
+        const { corpid, orgid, operation, data, model = '' } = req.body;
         result = await executesimpletransaction("UFN_WITAI_TRAIN_INS", {
             _requestid: req._requestid,
             corpid: corpid,
@@ -182,6 +184,7 @@ exports.utterance = async (req, res) => {
             datajson: data,
             operation: operation, // DELETE or ANY
             username: 'admin',
+            model: model
         });
         return res.json({
             code: "",
@@ -199,7 +202,7 @@ exports.utterance = async (req, res) => {
     }
 }
 
-const train_entities = async ({ _requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train }) => {
+const train_entities = async ({ _requestid, corpid, orgid, model, workerid, token, worker_n, witaistatus, witai_train }) => {
     let result = [];
     const url = `${witai_url}/entities`;
     let witai_response = null;
@@ -211,7 +214,7 @@ const train_entities = async ({ _requestid, corpid, orgid, workerid, token, work
                 token
             });
             if (witai_response?.status === 200 || witai_response?.data?.code === 'not-found') {
-                await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, ...item, [`w${worker_n}`]: true });
+                await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, model, ...item, [`w${worker_n}`]: true });
             }
         }
         else {
@@ -234,7 +237,7 @@ const train_entities = async ({ _requestid, corpid, orgid, workerid, token, work
                 });
             }
             if (witai_response?.status === 200) {
-                await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, ...item, [`w${worker_n}`]: true });
+                await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, model, ...item, [`w${worker_n}`]: true });
             }
             else if (witai_response?.data?.code === 'already-exists' || witai_response?.data?.error.includes('already exists')) {
                 witai_response = await witai_request(`${url}/${item.name}`, 'put', null, null, {
@@ -242,7 +245,7 @@ const train_entities = async ({ _requestid, corpid, orgid, workerid, token, work
                     token,
                     data: item.datajson
                 });
-                await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, ...item, [`w${worker_n}`]: true });
+                await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, model, ...item, [`w${worker_n}`]: true });
             }
         }
         witaistatus = 'scheduled'
@@ -251,7 +254,7 @@ const train_entities = async ({ _requestid, corpid, orgid, workerid, token, work
     return [witaistatus, result];
 }
 
-const train_intents = async ({ _requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train }) => {
+const train_intents = async ({ _requestid, corpid, orgid, model, workerid, token, worker_n, witaistatus, witai_train }) => {
     let result = [];
     const url = `${witai_url}/intents`;
     let witai_response = null;
@@ -263,7 +266,7 @@ const train_intents = async ({ _requestid, corpid, orgid, workerid, token, worke
                 token
             });
             if (witai_response?.status === 200 || witai_response?.data?.code === 'not-found') {
-                await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, ...item, [`w${worker_n}`]: true });
+                await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, model, ...item, [`w${worker_n}`]: true });
             }
         }
         else {
@@ -284,7 +287,7 @@ const train_intents = async ({ _requestid, corpid, orgid, workerid, token, worke
             }
 
             if (witai_response?.status === 200) {
-                await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, ...item, [`w${worker_n}`]: true });
+                await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, model, ...item, [`w${worker_n}`]: true });
             }
             else if (witai_response?.data?.code === 'already-exists' || witai_response?.data?.error.includes('already exists')) {
                 witai_response = await witai_request(`${url}/${item.name}`, 'put', null, null, {
@@ -292,7 +295,7 @@ const train_intents = async ({ _requestid, corpid, orgid, workerid, token, worke
                     token,
                     data: item.datajson
                 });
-                await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, ...item, [`w${worker_n}`]: true });
+                await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, model, ...item, [`w${worker_n}`]: true });
             }
         }
         witaistatus = 'scheduled'
@@ -301,7 +304,7 @@ const train_intents = async ({ _requestid, corpid, orgid, workerid, token, worke
     return [witaistatus, result];
 }
 
-const train_utterances = async ({ _requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train }) => {
+const train_utterances = async ({ _requestid, corpid, orgid, model, workerid, token, worker_n, witaistatus, witai_train }) => {
     let result = [];
     const url = `${witai_url}/utterances`;
     let witai_response = null;
@@ -314,7 +317,7 @@ const train_utterances = async ({ _requestid, corpid, orgid, workerid, token, wo
         });
         if (witai_response?.status === 200) {
             for (const item of w_train_items) {
-                await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, ...item, [`w${worker_n}`]: true });
+                await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, model, ...item, [`w${worker_n}`]: true });
             }
         }
         witaistatus = 'scheduled'
@@ -341,7 +344,7 @@ const train_utterances = async ({ _requestid, corpid, orgid, workerid, token, wo
         });
         if (witai_response?.status === 200) {
             for (const item of w_train_items) {
-                await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, ...item, [`w${worker_n}`]: true });
+                await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, model, ...item, [`w${worker_n}`]: true });
             }
         }
         witaistatus = 'scheduled'
@@ -360,9 +363,10 @@ exports.train = async (req, res) => {
     let result = {};
     try {
         const worker_list = await executesimpletransaction("UFN_WITAI_WORKER_TRAIN_SEL", { _requestid: req._requestid });
-        for (const worker of worker_list) { // corpid, orgid, worker, id, appid, token
+        for (const worker of worker_list) { // corpid, orgid, model, worker, id, appid, token
             const corpid = worker?.corpid;
             const orgid = worker?.orgid;
+            const model = worker?.model || '';
             const workerid = worker?.id;
             const token = worker?.token;
             const worker_n = worker?.worker;
@@ -371,24 +375,24 @@ exports.train = async (req, res) => {
                 let witai_response = null;
                 let witaistatus = 'done';
                 
-                await executesimpletransaction("QUERY_WITAI_WORKER_INTASK", { _requestid: req._requestid, corpid, orgid, id: workerid, intask: true, witaistatus });
+                await executesimpletransaction("UFN_WITAI_WORKER_INTASK", { _requestid: req._requestid, corpid, orgid, id: workerid, intask: true, witaistatus });
                 
                 try {
-                    const witai_train = await executesimpletransaction("UFN_WITAI_TRAIN_SEL", { _requestid: req._requestid, corpid, orgid });
+                    const witai_train = await executesimpletransaction("UFN_WITAI_TRAIN_SEL", { _requestid: req._requestid, corpid, orgid, model });
 
                     // Entrenar entities
-                    [witaistatus, result['entity']] = await train_entities({ _requestid: req._requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train });
+                    [witaistatus, result['entity']] = await train_entities({ _requestid: req._requestid, corpid, orgid, model, workerid, token, worker_n, witaistatus, witai_train });
 
                     // Entrenar intents
-                    [witaistatus, result['intent']] = await train_intents({ _requestid: req._requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train });
+                    [witaistatus, result['intent']] = await train_intents({ _requestid: req._requestid, corpid, orgid, model, workerid, token, worker_n, witaistatus, witai_train });
 
                     // Entrenar utterances
-                    [witaistatus, result['utterance']] = await train_utterances({ _requestid: req._requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train });
+                    [witaistatus, result['utterance']] = await train_utterances({ _requestid: req._requestid, corpid, orgid, model, workerid, token, worker_n, witaistatus, witai_train });
 
-                    await executesimpletransaction("QUERY_WITAI_WORKER_UPDATED", { _requestid: req._requestid, corpid, orgid, id: workerid, witaistatus });
+                    await executesimpletransaction("UFN_WITAI_WORKER_UPDATED", { _requestid: req._requestid, corpid, orgid, id: workerid, witaistatus });
                 } catch (error) {
                     console.log(error)
-                    await executesimpletransaction("QUERY_WITAI_WORKER_INTASK", { _requestid: req._requestid, corpid, orgid, id: workerid, intask: false, witaistatus });
+                    await executesimpletransaction("UFN_WITAI_WORKER_INTASK", { _requestid: req._requestid, corpid, orgid, id: workerid, intask: false, witaistatus });
                 }
             }
         }
@@ -431,24 +435,24 @@ exports.train_model = async (req, res) => {
             if (token) {
                 let witaistatus = 'done';
                 
-                await executesimpletransaction("QUERY_WITAI_WORKER_INTASK", { _requestid: req._requestid, corpid, orgid, id: workerid, intask: true, witaistatus });
+                await executesimpletransaction("UFN_WITAI_WORKER_INTASK", { _requestid: req._requestid, corpid, orgid, id: workerid, intask: true, witaistatus });
                 
                 try {
-                    const witai_train = await executesimpletransaction("UFN_WITAI_TRAIN_SEL", { _requestid: req._requestid, corpid, orgid });
+                    const witai_train = await executesimpletransaction("UFN_WITAI_TRAIN_SEL", { _requestid: req._requestid, corpid, orgid, model });
 
                     // Entrenar entities
-                    [witaistatus, result['entity']] = await train_entities({ _requestid: req._requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train });
+                    [witaistatus, result['entity']] = await train_entities({ _requestid: req._requestid, corpid, orgid, model, workerid, token, worker_n, witaistatus, witai_train });
 
                     // Entrenar intents
-                    [witaistatus, result['intent']] = await train_intents({ _requestid: req._requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train });
+                    [witaistatus, result['intent']] = await train_intents({ _requestid: req._requestid, corpid, orgid, model, workerid, token, worker_n, witaistatus, witai_train });
 
                     // Entrenar utterances
-                    [witaistatus, result['utterance']] = await train_utterances({ _requestid: req._requestid, corpid, orgid, workerid, token, worker_n, witaistatus, witai_train });
+                    [witaistatus, result['utterance']] = await train_utterances({ _requestid: req._requestid, corpid, orgid, model, workerid, token, worker_n, witaistatus, witai_train });
 
-                    await executesimpletransaction("QUERY_WITAI_WORKER_UPDATED", { _requestid: req._requestid, corpid, orgid, id: workerid, witaistatus });
+                    await executesimpletransaction("UFN_WITAI_WORKER_UPDATED", { _requestid: req._requestid, corpid, orgid, id: workerid, witaistatus });
                 } catch (error) {
                     console.log(error)
-                    await executesimpletransaction("QUERY_WITAI_WORKER_INTASK", { _requestid: req._requestid, corpid, orgid, id: workerid, intask: false, witaistatus });
+                    await executesimpletransaction("UFN_WITAI_WORKER_INTASK", { _requestid: req._requestid, corpid, orgid, id: workerid, intask: false, witaistatus });
                 }
             }
         }
@@ -477,7 +481,7 @@ exports.status = async (req, res) => {
     }
     let result = [];
     try {
-        const worker_list = await executesimpletransaction("QUERY_WITAI_WORKER_SCHEDULED_SEL", { _requestid: req._requestid });
+        const worker_list = await executesimpletransaction("UFN_WITAI_WORKER_SCHEDULED_SEL", { _requestid: req._requestid });
         const url = `${witai_url}/apps`;
         for (const worker of worker_list) {
             const corpid = worker?.corpid;
@@ -488,7 +492,7 @@ exports.status = async (req, res) => {
                 const witai_response = await witai_request(`${url}/${worker.appid}`, 'get', null, null, { _requestid: req._requestid, token });
                 if (witai_response?.status === 200) {
                     const witaistatus = witai_response?.data?.training_status;
-                    await executesimpletransaction("QUERY_WITAI_WORKER_STATUS_UPD", { _requestid: req._requestid, corpid, orgid, id: workerid, witaistatus });
+                    await executesimpletransaction("UFN_WITAI_WORKER_STATUS_UPD", { _requestid: req._requestid, corpid, orgid, id: workerid, witaistatus });
                 }
                 result.push(witai_response?.data)
             }
@@ -523,7 +527,7 @@ exports.status_model = async (req, res) => {
     try {
         const { corpid, orgid, model = '' } = req.body;
 
-        const worker_list = await executesimpletransaction("QUERY_WITAI_MODEL_WORKER_SCHEDULED_SEL", {
+        const worker_list = await executesimpletransaction("UFN_WITAI_MODEL_WORKER_SCHEDULED_SEL", {
             _requestid: req._requestid,
             corpid, orgid, model
         });
@@ -536,7 +540,7 @@ exports.status_model = async (req, res) => {
                 const witai_response = await witai_request(`${url}/${worker.appid}`, 'get', null, null, { _requestid: req._requestid, token });
                 if (witai_response?.status === 200) {
                     const witaistatus = witai_response?.data?.training_status;
-                    await executesimpletransaction("QUERY_WITAI_WORKER_STATUS_UPD", { _requestid: req._requestid, corpid, orgid, id: workerid, witaistatus });
+                    await executesimpletransaction("UFN_WITAI_WORKER_STATUS_UPD", { _requestid: req._requestid, corpid, orgid, id: workerid, witaistatus });
                 }
                 result = witai_response?.data
             }
@@ -568,16 +572,16 @@ exports.message = async (req, res) => {
         success: false,
     }
     try {
-        const { corpid, orgid, message } = req.body;
+        const { corpid, orgid, message, model = '' } = req.body;
         if (!!message) {
-            const worker_list = await executesimpletransaction("UFN_WITAI_APP_GET", { _requestid: req._requestid, corpid, orgid });
+            const worker_list = await executesimpletransaction("UFN_WITAI_APP_GET", { _requestid: req._requestid, corpid, orgid, model });
             if (worker_list instanceof Array && worker_list.length > 0) {
                 const worker = worker_list[0];
                 const workerid = worker?.id;
                 const token = worker?.token;
                 const url = `${witai_url}/message`;
                 const witai_response = await witai_request(`${url}`, 'get', null, {q: message}, { _requestid: req._requestid, token });
-                await executesimpletransaction("QUERY_WITAI_WORKER_USAGE_UPD", { _requestid: req._requestid, corpid, orgid, id: workerid });
+                await executesimpletransaction("UFN_WITAI_WORKER_USAGE_UPD", { _requestid: req._requestid, corpid, orgid, id: workerid });
                 if (witai_response?.status === 200) {
                     return res.json({
                         code: "",
