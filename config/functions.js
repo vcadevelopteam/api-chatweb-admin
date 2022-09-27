@@ -2682,12 +2682,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_WITAI_APP_GET: {
-        query: "SELECT * FROM ufn_witai_app_get($corpid, $orgid)",
+        query: "SELECT * FROM ufn_witai_app_get($corpid, $orgid, $model)",
         module: "",
         protected: "SELECT"
     },
     UFN_WITAI_TRAIN_INS: {
-        query: "SELECT * FROM ufn_witai_train_ins($corpid, $orgid, $type, $name, $datajson, $operation, $username)",
+        query: "SELECT * FROM ufn_witai_train_ins($corpid, $orgid, $type, $name, $datajson, $operation, $username, $model)",
         module: "",
         protected: "SELECT"
     },
@@ -2707,37 +2707,37 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_WITAI_TRAIN_UPD: {
-        query: "SELECT * FROM ufn_witai_train_upd($corpid, $orgid, $type, $name, $todelete, $w1, $w2)",
+        query: "SELECT * FROM ufn_witai_train_upd($corpid, $orgid, $type, $name, $todelete, $w1, $w2, $model)",
         module: "",
         protected: "SELECT"
     },
-    QUERY_WITAI_WORKER_INTASK: {
-        query: "UPDATE witai w SET intask = $intask, witaistatus = $witaistatus WHERE w.corpid = $corpid AND w.orgid = $orgid AND w.id = $id",
+    UFN_WITAI_WORKER_INTASK: {
+        query: "SELECT * FROM ufn_witai_worker_intask($corpid, $orgid, $id, $intask, $witaistatus)",
         module: "",
         protected: "SELECT"
     },
-    QUERY_WITAI_WORKER_UPDATED: {
-        query: "UPDATE witai w SET intask = false, updated = true, witaistatus = $witaistatus WHERE w.corpid = $corpid AND w.orgid = $orgid AND w.id = $id",
+    UFN_WITAI_WORKER_UPDATED: {
+        query: "SELECT * FROM ufn_witai_worker_updated($corpid, $orgid, $id, $witaistatus)",
         module: "",
         protected: "SELECT"
     },
-    QUERY_WITAI_WORKER_SCHEDULED_SEL: {
-        query: "SELECT w.corpid, w.orgid, w.worker, w.id, w.appid, w.token FROM witai w WHERE w.witaistatus IS NULL OR w.witaistatus IN ('scheduled', 'ongoing')",
+    UFN_WITAI_WORKER_SCHEDULED_SEL: {
+        query: "SELECT * FROM ufn_witai_worker_scheduled_sel()",
         module: "",
         protected: "SELECT"
     },
-    QUERY_WITAI_MODEL_WORKER_SCHEDULED_SEL: {
-        query: "SELECT w.corpid, w.orgid, w.worker, w.id, w.appid, w.token FROM witai w WHERE w.corpid = $corpid AND w.orgid = $orgid AND w.model = $model AND w.witaistatus IS NULL OR w.witaistatus IN ('scheduled', 'ongoing')",
+    UFN_WITAI_MODEL_WORKER_SCHEDULED_SEL: {
+        query: "SELECT * FROM ufn_witai_model_worker_scheduled_sel($corpid, $orgid, $model)",
         module: "",
         protected: "SELECT"
     },
-    QUERY_WITAI_WORKER_STATUS_UPD: {
-        query: "UPDATE witai w SET witaistatus = $witaistatus WHERE w.corpid = $corpid AND w.orgid = $orgid AND w.id = $id",
+    UFN_WITAI_WORKER_STATUS_UPD: {
+        query: "SELECT * FROM ufn_witai_worker_status_upd($corpid, $orgid, $id, $witaistatus)",
         module: "",
         protected: "SELECT"
     },
-    QUERY_WITAI_WORKER_USAGE_UPD: {
-        query: "UPDATE witai w SET usage = CASE WHEN date_trunc('minute', NOW()) > date_trunc('minute', usagedate) THEN 0 + 1 ELSE COALESCE(usage, 0) + 1 END, usagedate = NOW() WHERE w.corpid = $corpid AND w.orgid = $orgid AND w.id = $id",
+    UFN_WITAI_WORKER_USAGE_UPD: {
+        query: "SELECT * FROM ufn_witai_worker_usage_upd($corpid, $orgid, $id)",
         module: "",
         protected: "SELECT"
     },
