@@ -5,6 +5,7 @@ const logger = require('../config/winston');
 const witai_url = 'https://api.wit.ai'
 const witai_version = '20220622'
 const witai_token = process.env.WITAI_TOKEN;
+const witai_env = process.env.WITAI_ENV;
 
 const witai_request = async (url, method, headers, params, data) => {
     try {
@@ -57,7 +58,7 @@ exports.cron = async (req, res) => {
             const witai_response = await witai_request(url, 'post', null, null, {
                 _requestid: req._requestid,
                 data: {
-                    name: item.name,
+                    name: witai_env + '_' + item.name,
                     lang: item.lang || 'es',
                     timezone: item.timezone || 'America/Lima',
                     private: true,
