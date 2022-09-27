@@ -206,7 +206,7 @@ const train_entities = async ({ _requestid, corpid, orgid, model, workerid, toke
     let result = [];
     const url = `${witai_url}/entities`;
     let witai_response = null;
-    let w_train_items = witai_train.filter(w => !w[`d${worker_n}`] && w.type === 'entity');
+    let w_train_items = witai_train.filter(w => !w[`w${worker_n}`] && w.type === 'entity');
     for (const item of w_train_items) { // type, name, datajson, todelete, w1, d1, w2, d2
         if (item?.todelete) {
             witai_response = await witai_request(`${url}/${item.name}`, 'delete', null, null, {
@@ -258,7 +258,7 @@ const train_intents = async ({ _requestid, corpid, orgid, model, workerid, token
     let result = [];
     const url = `${witai_url}/intents`;
     let witai_response = null;
-    let w_train_items = witai_train.filter(w => !w[`d${worker_n}`] && w.type === 'intent');
+    let w_train_items = witai_train.filter(w => !w[`w${worker_n}`] && w.type === 'intent');
     for (const item of w_train_items) {
         if (item?.todelete) {
             witai_response = await witai_request(`${url}/${item.name}`, 'delete', null, null, {
@@ -272,7 +272,8 @@ const train_intents = async ({ _requestid, corpid, orgid, model, workerid, token
         else {
             // Si existe d[n] es UPDATE si no existe es INSERT
             if (item[`d${worker_n}`]) {
-                witai_response = await witai_request(`${url}/${item.name}`, 'put', null, null, {
+                // Not exists PUT request
+                witai_response = await witai_request(url, 'post', null, null, {
                     _requestid,
                     token,
                     data: item.datajson
@@ -281,8 +282,8 @@ const train_intents = async ({ _requestid, corpid, orgid, model, workerid, token
             else {
                 witai_response = await witai_request(url, 'post', null, null, {
                     _requestid,
-                    token, data:
-                    item.datajson
+                    token,
+                    data: item.datajson
                 });
             }
 
@@ -290,11 +291,6 @@ const train_intents = async ({ _requestid, corpid, orgid, model, workerid, token
                 await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, model, ...item, [`w${worker_n}`]: true });
             }
             else if (witai_response?.data?.code === 'already-exists' || witai_response?.data?.error.includes('already exists')) {
-                witai_response = await witai_request(`${url}/${item.name}`, 'put', null, null, {
-                    _requestid,
-                    token,
-                    data: item.datajson
-                });
                 await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, model, ...item, [`w${worker_n}`]: true });
             }
         }
@@ -308,7 +304,7 @@ const train_utterances = async ({ _requestid, corpid, orgid, model, workerid, to
     let result = [];
     const url = `${witai_url}/utterances`;
     let witai_response = null;
-    let w_train_items = witai_train.filter(w => !w[`d${worker_n}`] && w.type === 'utterance' && w.todelete);
+    let w_train_items = witai_train.filter(w => !w[`w${worker_n}`] && w.type === 'utterance' && w.todelete);
     if (w_train_items?.length > 0) {
         witai_response = await witai_request(url, 'delete', null, null, {
             _requestid,
@@ -324,7 +320,7 @@ const train_utterances = async ({ _requestid, corpid, orgid, model, workerid, to
         result.push(witai_response?.data);
     }
 
-    w_train_items = witai_train.filter(w => !w[`d${worker_n}`] && w.type === 'utterance' && !w.todelete);
+    w_train_items = witai_train.filter(w => !w[`w${worker_n}`] && w.type === 'utterance' && !w.todelete);
     if (w_train_items?.length > 0) {
         witai_response = await witai_request(url, 'post', null, null, {
             _requestid,
