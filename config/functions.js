@@ -1304,7 +1304,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PERSON_INS: {
-        query: "select * from ufn_person_ins( $id, $corpid, $orgid, $groups, $status, $type, $persontype, $personstatus, $phone, $email, $birthday, $alternativephone, $alternativeemail, $documenttype, $documentnumber, $firstname, $lastname, $sex, $gender, $civilstatus, $occupation, $educationlevel, $referringpersonid, $observation, $username, $operation)",
+        query: "select * from ufn_person_ins_v2( $id, $corpid, $orgid, $groups, $status, $type, $persontype, $personstatus, $phone, $email, $birthday, $alternativephone, $alternativeemail, $documenttype, $documentnumber, $firstname, $lastname, $sex, $gender, $civilstatus, $occupation, $educationlevel, $referringpersonid, $observation, $username, $operation)",
         module: "",
         protected: "SELECT"
     },
