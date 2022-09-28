@@ -100,7 +100,7 @@ exports.entity = async (req, res) => {
     }
     let result = null;
     try {
-        const { corpid, orgid, operation, data, model = '' } = req.body;
+        const { corpid, orgid, operation, data, model = '' } = {...req.user, ...req.body};
         result = await executesimpletransaction("UFN_WITAI_TRAIN_INS", {
             _requestid: req._requestid,
             corpid: corpid,
@@ -137,7 +137,7 @@ exports.intent = async (req, res) => {
     }
     let result = null;
     try {
-        const { corpid, orgid, operation, data, model = '' } = req.body;
+        const { corpid, orgid, operation, data, model = '' } = {...req.user, ...req.body};
         result = await executesimpletransaction("UFN_WITAI_TRAIN_INS", {
             _requestid: req._requestid,
             corpid: corpid,
@@ -174,7 +174,7 @@ exports.utterance = async (req, res) => {
     }
     let result = null;
     try {
-        const { corpid, orgid, operation, data, model = '' } = req.body;
+        const { corpid, orgid, operation, data, model = '' } = {...req.user, ...req.body};
         result = await executesimpletransaction("UFN_WITAI_TRAIN_INS", {
             _requestid: req._requestid,
             corpid: corpid,
@@ -417,7 +417,7 @@ exports.train_model = async (req, res) => {
     }
     let result = {};
     try {
-        const { corpid, orgid, model = '' } = req.body;
+        const { corpid, orgid, model = '' } = {...req.user, ...req.body};
         
         const worker_list = await executesimpletransaction("UFN_WITAI_WORKER_TRAIN_MODEL_SEL", {
             _requestid: req._requestid,
@@ -521,7 +521,7 @@ exports.status_model = async (req, res) => {
     }
     let result = null;
     try {
-        const { corpid, orgid, model = '' } = req.body;
+        const { corpid, orgid, model = '' } = {...req.user, ...req.body};
 
         const worker_list = await executesimpletransaction("UFN_WITAI_MODEL_WORKER_SCHEDULED_SEL", {
             _requestid: req._requestid,
@@ -568,7 +568,7 @@ exports.message = async (req, res) => {
         success: false,
     }
     try {
-        const { corpid, orgid, message, model = '' } = req.body;
+        const { corpid, orgid, message, model = '' } = {...req.user, ...req.body};
         if (!!message) {
             const worker_list = await executesimpletransaction("UFN_WITAI_APP_GET", { _requestid: req._requestid, corpid, orgid, model });
             if (worker_list instanceof Array && worker_list.length > 0) {
