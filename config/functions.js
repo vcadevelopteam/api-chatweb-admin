@@ -2587,7 +2587,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_WITAI_WORKER_TRAIN_MODEL_SEL: {
-        query: "SELECT * FROM ufn_witai_worker_train_model_sel($corpid, $orgid, $model)",
+        query: "SELECT * FROM ufn_witai_worker_train_model_sel($corpid, $orgid, $worker, $model)",
         module: "",
         protected: "SELECT"
     },
@@ -2618,6 +2618,11 @@ module.exports = {
     },
     UFN_WITAI_MODEL_WORKER_SCHEDULED_SEL: {
         query: "SELECT * FROM ufn_witai_model_worker_scheduled_sel($corpid, $orgid, $model)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_MODEL_STATUS_SEL: {
+        query: "SELECT * FROM ufn_witai_model_status_sel($corpid, $orgid, $worker, $model)",
         module: "",
         protected: "SELECT"
     },

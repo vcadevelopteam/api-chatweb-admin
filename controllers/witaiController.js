@@ -418,38 +418,68 @@ exports.train_model = async (req, res) => {
     let result = {};
     try {
         const { corpid, orgid, model = '' } = {...req.user, ...req.body};
-        
-        const worker_list = await executesimpletransaction("UFN_WITAI_WORKER_TRAIN_MODEL_SEL", {
+
+        const worker_status_list = await executesimpletransaction("UFN_WITAI_MODEL_STATUS_SEL", {
             _requestid: req._requestid,
-            corpid, orgid, model
+            corpid, orgid, model, worker: 1
         });
-        if (worker_list instanceof Array && worker_list.length > 0) {
-            const worker = worker_list[0];
-            const workerid = worker?.id;
-            const token = worker?.token;
-            const worker_n = worker?.worker;
-            if (token) {
-                let witaistatus = 'done';
-                
-                await executesimpletransaction("UFN_WITAI_WORKER_INTASK", { _requestid: req._requestid, corpid, orgid, id: workerid, intask: true, witaistatus });
-                
-                try {
-                    const witai_train = await executesimpletransaction("UFN_WITAI_TRAIN_SEL", { _requestid: req._requestid, corpid, orgid, model });
+        if (worker_status_list instanceof Array && worker_status_list.length > 0) {
+            const worker_status = worker_status_list[0];
+            let witaistatus = worker_status.witaistatus || 'done';
+            if (witaistatus == 'ongoing') {
+                return res.json({
+                    code: "",
+                    error: false,
+                    data: {
+                        "training_status": witaistatus,
+                    },
+                    message: "",
+                    success: true
+                });
+            }
+            else {
+                const worker_list = await executesimpletransaction("UFN_WITAI_WORKER_TRAIN_MODEL_SEL", {
+                    _requestid: req._requestid,
+                    corpid, orgid, model, worker: 1
+                });
 
-                    // Entrenar entities
-                    [witaistatus, result['entity']] = await train_entities({ _requestid: req._requestid, corpid, orgid, model, workerid, token, worker_n, witaistatus, witai_train });
-
-                    // Entrenar intents
-                    [witaistatus, result['intent']] = await train_intents({ _requestid: req._requestid, corpid, orgid, model, workerid, token, worker_n, witaistatus, witai_train });
-
-                    // Entrenar utterances
-                    [witaistatus, result['utterance']] = await train_utterances({ _requestid: req._requestid, corpid, orgid, model, workerid, token, worker_n, witaistatus, witai_train });
-
-                    await executesimpletransaction("UFN_WITAI_WORKER_UPDATED", { _requestid: req._requestid, corpid, orgid, id: workerid, witaistatus });
-                } catch (error) {
-                    console.log(error)
-                    await executesimpletransaction("UFN_WITAI_WORKER_INTASK", { _requestid: req._requestid, corpid, orgid, id: workerid, intask: false, witaistatus });
+                if (worker_list instanceof Array && worker_list.length > 0) {
+                    const worker = worker_list[0];
+                    const workerid = worker?.id;
+                    const token = worker?.token;
+                    const worker_n = worker?.worker;
+                    if (token) {
+                        await executesimpletransaction("UFN_WITAI_WORKER_INTASK", { _requestid: req._requestid, corpid, orgid, id: workerid, intask: true, witaistatus });
+                        
+                        try {
+                            const witai_train = await executesimpletransaction("UFN_WITAI_TRAIN_SEL", { _requestid: req._requestid, corpid, orgid, model });
+        
+                            // Entrenar entities
+                            [witaistatus, result['entity']] = await train_entities({ _requestid: req._requestid, corpid, orgid, model, workerid, token, worker_n, witaistatus, witai_train });
+        
+                            // Entrenar intents
+                            [witaistatus, result['intent']] = await train_intents({ _requestid: req._requestid, corpid, orgid, model, workerid, token, worker_n, witaistatus, witai_train });
+        
+                            // Entrenar utterances
+                            [witaistatus, result['utterance']] = await train_utterances({ _requestid: req._requestid, corpid, orgid, model, workerid, token, worker_n, witaistatus, witai_train });
+        
+                            await executesimpletransaction("UFN_WITAI_WORKER_UPDATED", { _requestid: req._requestid, corpid, orgid, id: workerid, witaistatus });
+                        } catch (error) {
+                            console.log(error)
+                            await executesimpletransaction("UFN_WITAI_WORKER_INTASK", { _requestid: req._requestid, corpid, orgid, id: workerid, intask: false, witaistatus });
+                        }
+                    }
                 }
+                return res.json({
+                    code: "",
+                    error: false,
+                    data: {
+                        "training_status": witaistatus,
+                        ...result
+                    },
+                    message: "",
+                    success: true
+                });
             }
         }
         return res.json({
@@ -457,7 +487,7 @@ exports.train_model = async (req, res) => {
             error: false,
             data: result,
             message: "",
-            success: true
+            success: false
         });
     }
     catch (err) {
