@@ -816,6 +816,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CAMPAIGN_PERSON_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_campaign_person_totalrecords($corpid, $orgid, $where, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CAMPAIGN_PERSON_SEL: {
+        query: "SELECT  * FROM ufn_campaign_person_sel($corpid, $orgid, $where, $order, $take, $skip, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CAMPAIGN_LST: {
         query: "SELECT * FROM ufn_campaign_lst($corpid, $orgid, $username)",
         module: "",
