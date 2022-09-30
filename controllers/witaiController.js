@@ -223,7 +223,10 @@ const train_entities = async ({ _requestid, corpid, orgid, model, workerid, toke
                 witai_response = await witai_request(`${url}/${item.name}`, 'put', null, null, {
                     _requestid,
                     token,
-                    data: item.datajson
+                    data: {
+                        ...item.datajson,
+                        roles: [item.datajson.roles?.[0]?.name || item.datajson.roles[0]]
+                    }
                 });
             }
             else {
