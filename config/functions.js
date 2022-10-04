@@ -2611,6 +2611,26 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_LOCATION_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_location_totalrecords($corpid, $orgid, $where)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LOCATION_SEL: {
+        query: "SELECT  * FROM ufn_location_sel($corpid, $orgid, $locationid, $where, $order, $take, $skip)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LOCATION_INS: {
+        query: "SELECT * FROM ufn_location_ins($corpid, $orgid, $id, $operation, $name, $address, $district, $city, $country, $schedule, $phone, $alternativephone, $email, $alternativeemail, $latitude, $longitude, $googleurl, $description, $status, $type, $username)",
+        module: "/extras/location",
+        protected: "INSERT"
+    },
+    UFN_LOCATION_EXPORT: {
+        query: "SELECT * FROM ufn_location_export($corpid, $orgid, $where, $order)",
+        module: "/extras/location",
+        protected: "SELECT"
+    },
     UFN_INVOICECOMMENT_SEL: {
         query: "SELECT * FROM ufn_invoicecomment_sel($corpid, $orgid, $invoiceid, $invoicecommentid)",
         module: "",
