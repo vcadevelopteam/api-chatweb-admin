@@ -1318,6 +1318,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PERSON_PCC_INS: {
+        query: "select * from ufn_person_pcc_ins( $id, $corpid, $orgid, $groups, $status, $type, $persontype, $personstatus, $phone, $email, $birthday, $alternativephone, $alternativeemail, $documenttype, $documentnumber, $firstname, $lastname, $sex, $gender, $civilstatus, $occupation, $educationlevel, $referringpersonid, $observation, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_LEAD_INS: {
         query: "select * from ufn_lead_ins($corpid,$orgid, $leadid, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $column_uuid, $username, $index, $phone, $email, $userid, $phase, $campaignid, $leadproduct, $operation)",
         module: "",
@@ -2693,6 +2698,11 @@ module.exports = {
     },
     UFN_CONVERSATION_UNLINKPERSON_EXECUTE: {
         query: "SELECT * FROM ufn_conversation_unlinkperson_execute($corpid, $orgid, $personid, $personcommunicationchannel, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PERSON_INS_VALIDATION: {
+        query: "SELECT * FROM ufn_person_ins_validation($id, $corpid, $orgid, $phone, $email, $alternativephone, $alternativeemail, $username, $operation)",
         module: "",
         protected: "SELECT"
     },
