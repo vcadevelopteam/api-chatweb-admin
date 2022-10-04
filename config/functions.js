@@ -2646,6 +2646,46 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_WITAI_INTENT_SEL: {
+        query: "SELECT * FROM ufn_witai_intent_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_UTTERANCE_SEL: {
+        query: "SELECT * FROM ufn_witai_utterance_sel($corpid, $orgid, $intent)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_ENTITY_SEL: {
+        query: "SELECT * FROM ufn_witai_entity_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_INTENT_UTTERANCE_INS: {
+        query: "SELECT * FROM ufn_witai_intent_utterance_ins($corpid, $orgid, $name, $description, $datajson, $utterance_datajson, $operation, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_ENTITY_INS: {
+        query: "SELECT * FROM ufn_witai_entity_ins($corpid, $orgid, $name, $datajson, $operation, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_ENTITY_DEL: {
+        query: "SELECT * FROM ufn_witai_entity_del($corpid, $orgid, $table, $model)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITUFN_WITAI_INTENT_UTTERANCE_DEL: {
+        query: "SELECT * FROM ufn_witai_intent_utterance_del($corpid, $orgid, $table, $model)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_INTENT_EXPORT: {
+        query: "SELECT * FROM ufn_witai_intent_export($corpid, $orgid, $name_json)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CONVERSATION_LINKEDPERSON_EXECUTE: {
         query: "SELECT * FROM ufn_conversation_linkedperson_execute($corpid, $orgid, $personidfrom, $personidto, $imageurl, $name, $firstname, $documenttype, $documentnumber, $persontype, $birthday, $gender, $phone, $alternativephone, $email, $alternativeemail, $civilstatus, $occupation, $educationlevel, $groups)",
         module: "",
