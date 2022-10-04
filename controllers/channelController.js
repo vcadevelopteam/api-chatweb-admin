@@ -2,7 +2,7 @@ const channelfunctions = require("../config/channelfunctions");
 const triggerfunctions = require('../config/triggerfunctions');
 const jwt = require("jsonwebtoken");
 
-const { setSessionParameters, axiosObservable } = require('../config/helpers');
+const { setSessionParameters, axiosObservable, printException } = require('../config/helpers');
 
 const logger = require('../config/winston');
 
