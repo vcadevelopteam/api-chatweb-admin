@@ -290,7 +290,7 @@ exports.sendHSM = async (req, res) => {
                             },
                             attachments: mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
                                 type: 'FILE',
-                                x: x.value
+                                value: x?.value ? x.value : x,
                             })) : []
                         }),
                         repeatflag: false,
