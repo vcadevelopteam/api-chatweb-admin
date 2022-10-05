@@ -56,6 +56,9 @@ router.post("/getCallRecord",
     auth,
     voximplantController.getCallRecord
 )
+router.post("/getCallTranscription",
+    voximplantController.getCallTranscription
+)
 router.post("/addUser",
     ip,
     voximplantController.addUser
@@ -126,6 +129,11 @@ router.post("/getResourcePrice",
 )
 
 // Organization //
+router.post("/updateScenario",
+    ip,
+    auth,
+    voximplantController.updateScenario
+)
 router.post("/getMaximumConsumption",
     ip,
     auth,

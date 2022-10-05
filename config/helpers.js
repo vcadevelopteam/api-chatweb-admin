@@ -316,6 +316,7 @@ const errorstmp = {
     "E-ZYX-50151": "CHANNELS_LIMIT",
     "E-ZYX-50152": "USERS_LIMIT",
     "E-ZYX-50100": "NOT_ALLOWED_TIME",
+    "E-ZYX-51000": "TICKET_OPEN",
 }
 exports.errors = errorstmp;
 

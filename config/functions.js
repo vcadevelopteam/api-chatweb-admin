@@ -676,7 +676,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_COMMUNICATIONCHANNEL_INS: {
-        query: "SELECT * FROM ufn_communicationchannel_ins($corpid, $orgid, $id, $description, $type, $communicationchannelsite, $communicationchannelowner, $communicationchannelcontact, $communicationchanneltoken, $customicon, $coloricon, $status, $username, $operation, $botenabled, $botconfigurationid, $chatflowenabled, $schedule, $integrationid, $appintegrationid, $country, $channelparameters, $updintegration, $resolvelithium, $color, $icons, $other, $form, $apikey, $servicecredentials, $motive, $phone, $voximplantrecording)",
+        query: "SELECT * FROM ufn_communicationchannel_ins($corpid, $orgid, $id, $description, $type, $communicationchannelsite, $communicationchannelowner, $communicationchannelcontact, $communicationchanneltoken, $customicon, $coloricon, $status, $username, $operation, $botenabled, $botconfigurationid, $chatflowenabled, $schedule, $integrationid, $appintegrationid, $country, $channelparameters, $updintegration, $resolvelithium, $color, $icons, $other, $form, $apikey, $servicecredentials, $motive, $phone, $voximplantrecording, $voximplantwelcometone, $voximplantholdtone)",
         module: "",
         protected: "INSERT"
     },
@@ -816,6 +816,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CAMPAIGN_PERSON_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_campaign_person_totalrecords($corpid, $orgid, $where, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CAMPAIGN_PERSON_SEL: {
+        query: "SELECT  * FROM ufn_campaign_person_sel($corpid, $orgid, $where, $order, $take, $skip, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CAMPAIGN_LST: {
         query: "SELECT * FROM ufn_campaign_lst($corpid, $orgid, $username)",
         module: "",
@@ -841,7 +851,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CAMPAIGN_INS: {
-        query: "SELECT * FROM ufn_campaign_ins($corpid, $orgid, $id, $communicationchannelid, $usergroup, $type, $status, $title, $description, $subject, $message, $startdate, $enddate, $repeatable, $frecuency, $messagetemplateid, $messagetemplatename, $messagetemplatenamespace, $messagetemplateheader, $messagetemplatebuttons, $executiontype, $batchjson, $fields, $username, $operation)",
+        query: "SELECT * FROM ufn_campaign_ins($corpid, $orgid, $id, $communicationchannelid, $usergroup, $type, $status, $title, $description, $subject, $message, $startdate, $enddate, $repeatable, $frecuency, $messagetemplateid, $messagetemplatename, $messagetemplatenamespace, $messagetemplateheader, $messagetemplatebuttons, $executiontype, $batchjson, $fields, $messagetemplatefooter, $messagetemplatetype, $messagetemplateattachment, $source, $messagetemplatelanguage, $messagetemplatepriority, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -1308,6 +1318,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PERSON_PCC_INS: {
+        query: "select * from ufn_person_pcc_ins( $id, $corpid, $orgid, $groups, $status, $type, $persontype, $personstatus, $phone, $email, $birthday, $alternativephone, $alternativeemail, $documenttype, $documentnumber, $firstname, $lastname, $sex, $gender, $civilstatus, $occupation, $educationlevel, $referringpersonid, $observation, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_LEAD_INS: {
         query: "select * from ufn_lead_ins($corpid,$orgid, $leadid, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $column_uuid, $username, $index, $phone, $email, $userid, $phase, $campaignid, $leadproduct, $operation)",
         module: "",
@@ -1410,6 +1425,16 @@ module.exports = {
     },
     UFN_LEADACTIVITY_SEL: {
         query: "select * from ufn_leadactivity_sel($corpid,$orgid,$leadid,$leadactivityid,$all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PERSON_LINK_SEL: {
+        query: "select * from ufn_person_link_sel($corpid, $orgid, $originpersonid, $where, $order, $take, $skip, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PERSON_LINK_TOTALRECORDS: {
+        query: "select * from ufn_person_link_totalrecords($corpid, $orgid, $originpersonid, $where, $username, $offset)",
         module: "",
         protected: "SELECT"
     },
@@ -1738,6 +1763,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_HSMHISTORY_REPORT_EXPORT: {
+        query: "SELECT * FROM ufn_hsmhistory_report_export($corpid, $orgid, $table, $offset);",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_REPORT_SENTMESSAGES_LST: {
         query: "SELECT * FROM ufn_report_sentmessages_lst($corpid, $orgid, $startdate, $enddate, $offset);",
         module: "",
@@ -1775,6 +1805,11 @@ module.exports = {
     },
     QUERY_GET_KPI: {
         query: "select target, cautionat, alertat, currentvalue from kpi where corpid = $corpid and orgid = $orgid and kpiid = $kpiid",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_INTERACTION_INS_MASSIVE: {
+        query: "select * from ufn_interaction_ins_massive($corpid, $orgid, $personid, $personcommunicationchannel, $conversationid, $communicationchannelid, $json)",
         module: "",
         protected: "INSERT"
     },
@@ -1854,7 +1889,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_MESSAGETEMPLATE_LST: {
-        query: "SELECT * FROM ufn_messagetemplate_lst($corpid, $orgid, $username)",
+        query: "SELECT * FROM ufn_messagetemplate_lst($corpid, $orgid, $type, $username)",
         module: "",
         protected: "INSERT"
     },
@@ -2477,17 +2512,17 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_ASESOR_VS_TICKET_EXPORT: {
-        query: "SELECT * FROM ufn_report_asesor_vs_ticket_export($corpid, $orgid, $where, $order, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_asesor_vs_ticket_export($corpid, $orgid, $where, $order, $startdate, $enddate, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_ASESOR_VS_TICKET_SEL: {
-        query: "SELECT * FROM ufn_report_asesor_vs_ticket_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_asesor_vs_ticket_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_ASESOR_VS_TICKET_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_asesor_vs_ticket_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_asesor_vs_ticket_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
@@ -2558,6 +2593,126 @@ module.exports = {
     },
     UFN_MESSAGETEMPLATE_UPD: {
         query: "SELECT * FROM ufn_messagetemplate_upd($corpid, $orgid, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $bodyobject, $footerenabled, $footer, $buttonsenabled, $buttons, $fromprovider, $externalid, $externalstatus, $communicationchannelid, $communicationchanneltype, $exampleparameters, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_MESSAGETEMPLATE_RESET: {
+        query: "UPDATE messagetemplate SET status = 'ELIMINADO', changeby = $username, changedate = NOW() WHERE corpid = $corpid AND orgid = $orgid AND (communicationchannelid = $communicationchannelid OR namespace = $namespace) AND fromprovider = true;",
+        module: "",
+        protected: "UPDATE"
+    },
+    UFN_REPORT_VOICECALL_SEL: {
+        query: "SELECT * FROM ufn_report_voicecall_sel($corpid, $orgid, $startdate, $enddate, $take, $skip, $where, $order, $userid, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_VOICECALL_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_report_voicecall_totalrecords($corpid, $orgid, $startdate, $enddate, $where, $userid, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_VOICECALL_EXPORT: {
+        query: "SELECT * FROM ufn_report_voicecall_export($corpid, $orgid, $startdate, $enddate, $where, $order, $userid, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_REPORT_VOICECALL_GRAPHIC: {
+        query: "SELECT * FROM ufn_report_voicecall_graphic($corpid, $orgid, $startdate, $enddate, $where, $order, $userid, $column, $summarization, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_CALLHOLD: {
+        query: "SELECT * FROM ufn_conversation_callhold($corpid, $orgid, $conversationid, $holdtime)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LOCATION_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_location_totalrecords($corpid, $orgid, $where)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LOCATION_SEL: {
+        query: "SELECT  * FROM ufn_location_sel($corpid, $orgid, $locationid, $where, $order, $take, $skip)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LOCATION_INS: {
+        query: "SELECT * FROM ufn_location_ins($corpid, $orgid, $id, $operation, $name, $address, $district, $city, $country, $schedule, $phone, $alternativephone, $email, $alternativeemail, $latitude, $longitude, $googleurl, $description, $status, $type, $username)",
+        module: "/extras/location",
+        protected: "INSERT"
+    },
+    UFN_LOCATION_EXPORT: {
+        query: "SELECT * FROM ufn_location_export($corpid, $orgid, $where, $order)",
+        module: "/extras/location",
+        protected: "SELECT"
+    },
+    UFN_INVOICECOMMENT_SEL: {
+        query: "SELECT * FROM ufn_invoicecomment_sel($corpid, $orgid, $invoiceid, $invoicecommentid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVOICECOMMENT_INS: {
+        query: "SELECT * FROM ufn_invoicecomment_ins($corpid, $orgid, $invoiceid, $invoicecommentid, $description, $status, $type, $username, $commentcontent, $commenttype, $commentcaption)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_REPORT_KPI_OPERATIVO_SEL: {
+        query: "SELECT * FROM ufn_report_kpi_operativo_sel($corpid, $orgid, $date, $usergroup, $userid, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_INTENT_SEL: {
+        query: "SELECT * FROM ufn_witai_intent_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_UTTERANCE_SEL: {
+        query: "SELECT * FROM ufn_witai_utterance_sel($corpid, $orgid, $intent)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_ENTITY_SEL: {
+        query: "SELECT * FROM ufn_witai_entity_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_INTENT_UTTERANCE_INS: {
+        query: "SELECT * FROM ufn_witai_intent_utterance_ins($corpid, $orgid, $name, $description, $datajson, $utterance_datajson, $operation, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_ENTITY_INS: {
+        query: "SELECT * FROM ufn_witai_entity_ins($corpid, $orgid, $name, $datajson, $operation, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_ENTITY_DEL: {
+        query: "SELECT * FROM ufn_witai_entity_del($corpid, $orgid, $table, $model)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITUFN_WITAI_INTENT_UTTERANCE_DEL: {
+        query: "SELECT * FROM ufn_witai_intent_utterance_del($corpid, $orgid, $table, $model)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_INTENT_EXPORT: {
+        query: "SELECT * FROM ufn_witai_intent_export($corpid, $orgid, $name_json)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_LINKEDPERSON_EXECUTE: {
+        query: "SELECT * FROM ufn_conversation_linkedperson_execute($corpid, $orgid, $personidfrom, $personidto, $imageurl, $name, $firstname, $documenttype, $documentnumber, $persontype, $birthday, $gender, $phone, $alternativephone, $email, $alternativeemail, $civilstatus, $occupation, $educationlevel, $groups)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_UNLINKPERSON_EXECUTE: {
+        query: "SELECT * FROM ufn_conversation_unlinkperson_execute($corpid, $orgid, $personid, $personcommunicationchannel, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PERSON_INS_VALIDATION: {
+        query: "SELECT * FROM ufn_person_ins_validation($id, $corpid, $orgid, $phone, $email, $alternativephone, $alternativeemail, $username, $operation)",
         module: "",
         protected: "SELECT"
     },

@@ -1,6 +1,8 @@
 const triggerfunctions = require('../config/triggerfunctions');
 const voximplant = require("../config/voximplantfunctions");
 
+const { printException } = require('../config/helpers');
+
 const voximplantAccountEnvironment = process.env.VOXIMPLANT_ENVIRONMENT;
 const voximplantPassword = process.env.VOXIMPLANT_PASSWORD;
 const voximplantRulePattern = process.env.VOXIMPLANT_RULEPATTERN;
@@ -143,6 +145,26 @@ exports.messageTemplateUpd = async (corpid, orgid, description, type, status, na
     return null;
 }
 
+exports.messageTemplateReset = async (corpid, orgid, communicationchannelid, namespace, username, requestid = null) => {
+    const queryMethod = "UFN_MESSAGETEMPLATE_RESET";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: orgid,
+        communicationchannelid: communicationchannelid,
+        namespace: namespace,
+        username: username,
+        _requestid: requestid,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        return queryResult;
+    }
+
+    return null;
+}
+
 exports.voximplantChannelSel = async (corpid, orgid, year, month, timezoneoffset, requestid = null) => {
     const queryMethod = "UFN_COMMUNICATIONCHANNEL_SEL_VOXIMPLANT";
     const queryParameters = {
@@ -218,6 +240,38 @@ exports.voximplantManageOrg = async (corpid, orgid, operation, voximplantuser = 
     if (queryResult instanceof Array) {
         if (queryResult.length > 0) {
             return queryResult[0];
+        }
+    }
+
+    return null;
+}
+
+exports.voximplantManageAll = async (corpid, orgid, operation, voximplantuser = null, voximplantmail = null, voximplantpassword = null, voximplantaccountid = null, voximplantapikey = null, voximplantapplicationid = null, voximplantruleid = null, voximplantscenarioid = null, voximplantuserid = null, voximplantapplicationname = null, voximplantruleoutid = null, voximplantscenariooutid = null, requestid = null) => {
+    const queryMethod = "UFN_ORG_VOXIMPLANT_UPD";
+    const queryParameters = {
+        corpid: corpid,
+        orgid: orgid,
+        operation: operation,
+        voximplantuser: voximplantuser,
+        voximplantmail: voximplantmail,
+        voximplantpassword: voximplantpassword,
+        voximplantaccountid: voximplantaccountid,
+        voximplantapikey: voximplantapikey,
+        voximplantapplicationid: voximplantapplicationid,
+        voximplantruleid: voximplantruleid,
+        voximplantscenarioid: voximplantscenarioid,
+        voximplantuserid: voximplantuserid,
+        voximplantapplicationname: voximplantapplicationname,
+        voximplantruleoutid: voximplantruleoutid,
+        voximplantscenariooutid: voximplantscenariooutid,
+        _requestid: requestid,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryMethod, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult;
         }
     }
 
@@ -396,6 +450,111 @@ exports.voximplantHandleEnvironment = async (corpid, orgid, originalurl, request
     }
 
     return voximplantEnvironment;
+}
+
+exports.voximplantUpdateScenario = async (org, requestid) => {
+    try {
+        if (org) {
+            const appsetting = await getAppSetting(requestid);
+
+            if (appsetting) {
+                if (org.voximplantscenarioid) {
+                    var scenarioBody = {
+                        account_id: org.voximplantaccountid,
+                        scenario_id: org.voximplantscenarioid,
+                        scenario_script: appsetting.scenarioscript,
+                        child_apikey: org.voximplantapikey,
+                    };
+
+                    await voximplant.setScenarioInfo(scenarioBody);
+                }
+                else {
+                    var scenarioBody = {
+                        account_id: org.voximplantaccountid,
+                        scenario_name: `${voximplantAccountEnvironment}sce-${org.orgid}-${org.corpid}`,
+                        scenario_script: appsetting.scenarioscript,
+                        child_apikey: org.voximplantapikey,
+                    };
+
+                    let scenarioResult = await voximplant.addScenario(scenarioBody);
+
+                    if (scenarioResult) {
+                        if (scenarioResult.result) {
+                            await voximplantManageOrg(org.corpid, org.orgid, 'SCENARIO', null, null, null, null, null, null, null, scenarioResult.scenario_id, null, null, null, null, requestid);
+
+                            if (scenarioResult.scenario_id) {
+                                var ruleBody = {
+                                    account_id: org.voximplantaccountid,
+                                    application_id: org.voximplantapplicationid,
+                                    rule_name: `${voximplantAccountEnvironment}rul-${org.orgid}-${org.corpid}`,
+                                    rule_pattern: voximplantRulePattern,
+                                    scenario_id: scenarioResult.scenario_id,
+                                    child_apikey: org.voximplantapikey,
+                                };
+
+                                let ruleResult = await voximplant.addRule(ruleBody);
+
+                                if (ruleResult) {
+                                    if (ruleResult.result) {
+                                        await voximplantManageOrg(org.corpid, org.orgid, 'RULE', null, null, null, null, null, null, ruleResult.rule_id, null, null, null, null, null, requestid);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (org.voximplantscenariooutid) {
+                    var scenarioBody = {
+                        account_id: org.voximplantaccountid,
+                        scenario_id: org.voximplantscenariooutid,
+                        scenario_script: appsetting.scenariooutscript,
+                        child_apikey: org.voximplantapikey,
+                    };
+
+                    await voximplant.setScenarioInfo(scenarioBody);
+                }
+                else {
+                    var scenarioBody = {
+                        account_id: org.voximplantaccountid,
+                        scenario_name: `${voximplantAccountEnvironment}sceout-${org.orgid}-${org.corpid}`,
+                        scenario_script: appsetting.scenariooutscript,
+                        child_apikey: org.voximplantapikey,
+                    };
+
+                    let scenarioResult = await voximplant.addScenario(scenarioBody);
+
+                    if (scenarioResult) {
+                        if (scenarioResult.result) {
+                            await voximplantManageOrg(org.corpid, org.orgid, 'SCENARIOOUT', null, null, null, null, null, null, null, null, null, null, null, scenarioResult.scenario_id, requestid);
+
+                            if (scenarioResult.scenario_id) {
+                                var ruleBody = {
+                                    account_id: org.voximplantaccountid,
+                                    application_id: org.voximplantapplicationid,
+                                    rule_name: `${voximplantAccountEnvironment}rulout-${org.orgid}-${org.corpid}`,
+                                    rule_pattern: voximplantRulePattern,
+                                    scenario_id: scenarioResult.scenario_id,
+                                    child_apikey: org.voximplantapikey,
+                                };
+
+                                let ruleResult = await voximplant.addRule(ruleBody);
+
+                                if (ruleResult) {
+                                    if (ruleResult.result) {
+                                        await voximplantManageOrg(org.corpid, org.orgid, 'RULEOUT', null, null, null, null, null, null, null, null, null, null, ruleResult.rule_id, null, requestid);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    catch (exception) {
+        printException(exception, originalurl, requestid);
+    }
 }
 
 exports.voximplantHandleScenario = async (corpid, orgid, accountid, apikey, applicationid, originalurl, requestid) => {

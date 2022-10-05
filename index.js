@@ -22,7 +22,7 @@ app.use(cors({
                 'allow access from the specified Origin.';
             return callback(new Error(msg), false);
         }
-        return callback(null, true);
+        return callback(null, true); amara
     }
 }));
 
@@ -52,6 +52,7 @@ app.use('/api/user', require('./routes/user'));
 app.use('/api/check', require('./routes/check'));
 app.use('/api/migrator', require('./routes/migrator'));
 app.use('/api/payment', require('./routes/payment'));
+app.use('/api/drawpdf', require('./routes/draw-pdf'));
 app.use('/api/billing', require('./routes/billing'));
 app.use('/api/gmaps', require('./routes/gmaps'));
 app.use('/api/voximplant', require('./routes/voximplant'));

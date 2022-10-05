@@ -29,7 +29,7 @@ exports.exportReport = async (req, res) => {
     }
 }
 
-exports.exportReportTask = async (req, res) => {
+exports.exportTask = async (req, res) => {
     const { columns, filters, summaries, parameters = {}, user = {} } = req.body;
 
     parameters.corpid = user.corpid;
@@ -40,6 +40,25 @@ exports.exportReportTask = async (req, res) => {
     const resultBD = await buildQueryDynamic2(columns, filters, parameters, summaries, true);
 
     const result = await exportData(resultBD, parameters.reportName, parameters.formatToExport, parameters.headerClient, req._requestid);
+
+    if (!result.error) {
+        return res.json(result);
+    } else {
+        return res.status(result.rescode).json(result);
+    }
+}
+
+exports.exportData = async (req, res) => {
+    const { columns, filters, summaries, parameters = {}, user = {} } = req.body;
+
+    parameters.corpid = user.corpid;
+    parameters.orgid = user.orgid;
+    parameters.username = user.usr;
+    parameters.userid = user.userid;
+
+    const resultBD = await buildQueryDynamic2(columns, filters, parameters, summaries, true);
+
+    const result = { data: resultBD };
 
     if (!result.error) {
         return res.json(result);
@@ -154,13 +173,23 @@ exports.dashboardDesigner = async (req, res) => {
                             ]), []).map(x => `,${x},`);
 
                             const resCleaned = resIndicator.reduce((acc, item) => {
-                                const ts = `,${item[column.replace(".", "")]},`; //column tags
+                                const columnTag = item[column.replace(".", "")];
+                                if (columnTag) {
+                                    // clean tags, example t1,t2,t2,t2,t3 => t1,t2,t3
+                                    const tagsCleaned = columnTag.split(',').reduce((accx, itemx) => ({
+                                        lastTag: itemx,
+                                        acc: accx.lastTag === itemx ? accx.acc : [...accx.acc, itemx]
+                                    }), { lastTag: '', acc: [] })
 
-                                return tagsToSearch.reduce((acc2, item2) => ({
-                                    ...acc2,
-                                    [item2]: (acc[item2] || 0) + (ts.includes(item2) ? 1 : 0)
-                                }), acc)
+                                    const ts = `,${tagsCleaned.acc.join(",")},`; //column tags
 
+                                    return tagsToSearch.reduce((acc2, item2) => ({
+                                        ...acc2,
+                                        [item2]: (acc[item2] || 0) + (ts.includes(item2) ? 1 : 0)
+                                    }), acc)
+                                } else {
+                                    return acc;
+                                }
                             }, tagsToSearch.reduce((acc1, item1) => ({ ...acc1, [item1]: 0 }), {}))
 
                             return Object.entries(resCleaned).map(([key, value], index) => ({

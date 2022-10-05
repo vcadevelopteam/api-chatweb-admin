@@ -302,6 +302,9 @@ module.exports = {
             column: "co.startdate + p_offset * INTERVAL '1hour'",
             type: "date"
         },
+        origin: {
+            column: "co.origin"
+        },
         firstusergroup: {
             column: "co.firstusergroup"
         },
@@ -800,28 +803,28 @@ module.exports = {
             column: "coalesce(do2.domaindesc, co.closetype)"
         },
         tipo_operacion: {
-            column: "co.variablecontextjsonb->'operacion'->>'Value'"
+            column: "co.variablecontextsimple->>'operacion'"
         },
         operador: {
-            column: "co.variablecontextjsonb->'nomoperador'->>'Value'"
+            column: "co.variablecontextsimple->>'nomoperador'"
         },
         plan: {
-            column: "co.variablecontextjsonb->'tipoplandest'->>'Value'"
+            column: "co.variablecontextsimple->>'tipoplandest'"
         },
         modalidad_compra: {
-            column: "co.variablecontextjsonb->'var_compra_productos'->>'Value'"
+            column: "co.variablecontextsimple->>'var_compra_productos'"
         },
         provincia: {
-            column: "co.variablecontextjsonb->'province'->>'Value'"
+            column: "co.variablecontextsimple->>'province'"
         },
         distrito: {
-            column: "co.variablecontextjsonb->'district'->>'Value'"
+            column: "co.variablecontextsimple->>'district'"
         },
         telefono: {
-            column: "co.variablecontextjsonb->'alternativephone'->>'Value'"
+            column: "co.variablecontextsimple->>'alternativephone'"
         },
         documento: {
-            column: "co.variablecontextjsonb->'documentnumber'->>'Value'"
+            column: "co.variablecontextsimple->>'documentnumber'"
         },
         fechaprimerarespuesta: {
             column: "CASE WHEN co.userfirstreplytime = '00:00:00' THEN null ELSE to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY') END",
@@ -840,6 +843,70 @@ module.exports = {
         },
         horacierre: {
             column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'HH24:MI:SS')",
+        },
+    },
+    voicecall: {
+        ticketdate: {
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','DD/MM/YYYY')"
+        },
+        tickettime: {
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','HH24:MI:SS')"
+        },
+        agent: {
+            column: "CONCAT(usr.firstname, ' ', usr.lastname)"
+        },
+        phone: {
+            column: "pcc.personcommunicationchannelowner"
+        },
+        name: {
+            column: "pe.name"
+        },
+        origin: {
+            column: "co.origin"
+        },
+        closetype: {
+            column: "CASE WHEN co.closetype IN ('DESCONECTADO POR ASESOR', 'DESCONECTADO POR CLIENTE') THEN 'HANDLED' WHEN co.closetype IN ('LLAMADA NO CONTESTADA') THEN 'ABANDON' WHEN co.closetype IN ('LLAMADA FALLIDA', 'NO HAY ASESORES') THEN 'LOST' ELSE co.closetype END"
+        },
+    },
+    location: {
+        name: {
+            column:"lc.name"
+        },
+        address: {
+            column:"lc.address"
+        },
+        district: {
+            column:"lc.district"
+        },
+        city: {
+            column:"lc.city"
+        },
+        country: {
+            column:"lc.country"
+        },
+        schedule: {
+            column:"lc.schedule"
+        },
+        phone: {
+            column:"lc.phone"
+        },
+        alternativephone: {
+            column:"lc.alternativephone"
+        },
+        latitude: {
+            column:"lc.latitude"
+        },
+        longitude: {
+            column:"lc.longitude"
+        },
+        googleurl: {
+            column:"lc.googleurl"
+        },
+        description: {
+            column:"lc.description"
+        },
+        type: {
+            column:"lc.type"
         },
     },
 }

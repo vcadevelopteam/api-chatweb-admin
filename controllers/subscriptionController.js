@@ -355,6 +355,8 @@ exports.createSubscription = async (request, response) => {
                         channelParameters.updintegration = null;
                         channelParameters.apikey = null;
                         channelParameters.voximplantrecording = null;
+                        channelParameters.voximplantwelcometone = null;
+                        channelParameters.voximplantholdtone = null;
                         channelParameters._requestid = request._requestid;
 
                         requestCode = channel.type;
@@ -1047,6 +1049,8 @@ exports.createSubscription = async (request, response) => {
                                                     channelParametersArray[index].communicationchannelowner = voximplantEnvironment.applicationname;
                                                     channelParametersArray[index].servicecredentials = JSON.stringify(voximplantCredentials);
                                                     channelParametersArray[index].voximplantrecording = JSON.stringify(voximplantRecording);
+                                                    channelParametersArray[index].voximplantwelcometone = "https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/VCA%20PERU/994eacd0-4520-4aec-8f4e-fe7dcab5f5ed/intel.mp3";
+                                                    channelParametersArray[index].voximplantholdtone = "https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/VCA%20PERU/932a8ad1-0a67-467f-aef5-e56c52e05c3f/halos-of-eternity.mp3";
                                                     channelParametersArray[index].phone = voximplantPhoneNumber.phonenumber;
                                                 }
                                             }
@@ -1700,6 +1704,8 @@ exports.validateChannels = async (request, response) => {
                         channelParameters.updintegration = null;
                         channelParameters.apikey = null;
                         channelParameters.voximplantrecording = null;
+                        channelParameters.voximplantwelcometone = null;
+                        channelParameters.voximplantholdtone = null;
                         channelParameters._requestid = request._requestid;
 
                         requestCode = channel.type;
@@ -2053,7 +2059,7 @@ exports.validateUserId = async (request, response) => {
 exports.validateUsername = async (request, response) => {
     try {
         logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
-        
+
         var requestCode = "error_unexpected_error";
         var requestIsValid = false;
         var requestMessage = "error_unexpected_error";

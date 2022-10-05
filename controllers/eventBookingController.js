@@ -88,7 +88,7 @@ const send = async (data, requestid) => {
                             },
                             attachments: mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
                                 type: 'FILE',
-                                x: x.value
+                                value: x?.value ? x.value : x,
                             })) : []
                         }),
                         repeatflag: false,

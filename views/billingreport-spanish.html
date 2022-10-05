@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<style>
+    .blue-highlight {
+        color: rgb(12, 124, 197);
+        font-weight: bold;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    }
+
+    .general-row {
+        display: flex;
+        font-size: 10px;
+    }
+
+    .general-column-first {
+        padding: 2px;
+        font-size: 8px;
+        width: 100%;
+    }
+
+    .general-column-last {
+        padding: 4px;
+        width: auto;
+    }
+
+    .billing-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10px;
+    }
+
+    .billing-summary {
+        width: 80%;
+        font-size: 8px;
+        border: 1px solid rgb(223, 237, 249);
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .billing-table-header {
+        padding: 2px;
+        text-align: right;
+        width: 50px;
+        max-width: 50px;
+        font-size: 8px;
+        font-weight: bold;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    }
+
+    .billing-summary-header {
+        padding: 2px;
+        text-align: center;
+        width: 60px;
+        font-weight: bold;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    }
+
+    .billing-table-cell-left {
+        font-size: 8px;
+        padding: 2px;
+        text-align: left;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    }
+
+    .billing-table-cell-right {
+        font-size: 8px;
+        padding: 2px;
+        text-align: right;
+        font-family: 'Times New Roman', Times, serif;
+        width: 50px;
+        max-width: 50px;
+    }
+
+    .billing-table-cell-center {
+        font-size: 8px;
+        padding: 2px;
+        text-align: center;
+        font-family: 'Times New Roman', Times, serif;
+    }
+
+    tr.billing-table-cell-top>td {
+        font-size: 8px;
+        padding-top: 1em;
+    }
+</style>
+
+<body>
+    <div style="width: 90%; margin-left: auto; margin-right: auto; margin-top: 10px; position: relative;">
+        <img src="https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/Laraigo-logo-name.svg" width="100px" style="position: absolute; right: 0; top: 20px">
+        <div style="text-align: center; font-size: 16px;" class="blue-highlight">Reporte del Periodo</div>
+        <div>
+            <div class="blue-highlight general-row" style="margin-top: 16px;">
+                <div class="general-column-first">
+                    Cliente: <%= data[0].generalinformationclient %>
+                </div>
+            </div>
+            <div class="blue-highlight general-row">
+                <div class="general-column-first">
+                    Plan: <%= data[0].generalinformationplan %>
+                </div>
+            </div>
+            <div class="blue-highlight general-row">
+                <div class="general-column-first">
+                    Periodo: <%= data[0].generalinformationperiod %>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top: 16px">
+            <table class="billing-table">
+                <tr style="background-color: rgb(223, 237, 249)">
+                    <th style="text-align: right; width: auto;"></th>
+                    <th class="billing-table-header">Cantidad</th>
+                    <th class="billing-table-header">Precio Unitario</th>
+                    <th class="billing-table-header">Monto</th>
+                    <th class="billing-table-header">IGV</th>
+                    <th class="billing-table-header">Monto Total</th>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left" style="font-weight: bold;">Costo Base</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].basecost1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].basecost2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].basecost3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].basecost4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].basecost5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">Agentes</td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Contratado</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].agentcontracted1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].agentcontracted2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].agentcontracted3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].agentcontracted4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].agentcontracted5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Adicional</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].agentadditional1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].agentadditional2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].agentadditional3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].agentadditional4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].agentadditional5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">Canales</td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Contratado</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelcontracted1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelcontracted2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelcontracted3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelcontracted4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelcontracted5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Canales WhatsApp Gratis</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelwhatsappfree1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelwhatsappfree2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelwhatsappfree3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelwhatsappfree4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelwhatsappfree5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Canales WhatsApp Totales</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelwhatsapptotal1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelwhatsapptotal2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelwhatsapptotal3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelwhatsapptotal4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelwhatsapptotal5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Canales WhatsApp Adicionales</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelwhatsappadditional1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelwhatsappadditional2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelwhatsappadditional3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelwhatsappadditional4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelwhatsappadditional5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Otros Canales</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelother1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelother2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelother3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelother4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelother5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">Conversaciones
+                        WhatsApp</td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Conversaciones Gratis</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].conversationwhatsappfree1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].conversationwhatsappfree2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].conversationwhatsappfree3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].conversationwhatsappfree4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].conversationwhatsappfree5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Conversaciones Iniciadas por el Usuario</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].conversationwhatsappclient1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].conversationwhatsappclient2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].conversationwhatsappclient3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].conversationwhatsappclient4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].conversationwhatsappclient5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Conversaciones Iniciadas por el Negocio</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].conversationwhatsappbusiness1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].conversationwhatsappbusiness2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].conversationwhatsappbusiness3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].conversationwhatsappbusiness4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].conversationwhatsappbusiness5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">Mensajeria</td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Cantidad Mínima de SMS</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingminimumsms1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingminimumsms2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingminimumsms3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingminimumsms4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingminimumsms5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Mensajes SMS</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingsms1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingsms2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingsms3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingsms4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingsms5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Cantidad Mínima de Correo</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingminimummail1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingminimummail2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingminimummail3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingminimummail4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingminimummail5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Mensajes Correo</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingmail1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingmail2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingmail3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingmail4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].messagingmail5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">Voz</td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Números de Teléfono</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicephone1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicephone2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicephone3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicephone4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicephone5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Llamadas de Red Pública</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicecall1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicecall2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicecall3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicecall4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicecall5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Llamadas VoIP</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicevoip1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicevoip2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicevoip3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicevoip4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicevoip5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Grabaciones de Llamadas</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicerecording1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicerecording2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicerecording3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicerecording4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voicerecording5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Otros</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voiceothers1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voiceothers2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voiceothers3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voiceothers4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].voiceothers5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">Contactos</td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Contactos Gratis</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].contactfree1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].contactfree2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].contactfree3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].contactfree4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].contactfree5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Contactos Totales</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].contacttotal1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].contacttotal2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].contacttotal3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].contacttotal4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].contacttotal5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Contactos Adicionales</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].contactadditional1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].contactadditional2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].contactadditional3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].contactadditional4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].contactadditional5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left" style="font-weight: bold;">Plan de Soporte <%=
+                            data[0].supportplan %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].supportplan1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].supportplan2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].supportplan3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].supportplan4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].supportplan5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">Otros</td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left" style="font-weight: bold;">
+                        <%= data[0].additional01service %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].additional01service1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].additional01service2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].additional01service3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].additional01service4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].additional01service5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left" style="font-weight: bold;">
+                        <%= data[0].additional02service %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].additional02service1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].additional02service2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].additional02service3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].additional02service4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].additional02service5 %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left" style="font-weight: bold;">
+                        <%= data[0].additional03service %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].additional03service1 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].additional03service2 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].additional03service3 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].additional03service4 %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].additional03service5 %>
+                    </td>
+                </tr>
+                <tr style="background-color: rgb(223, 237, 249)">
+                    <th class="billing-table-cell-left" style="font-weight: bold;">Total</th>
+                    <th class="billing-table-cell-right">
+                        <%= data[0].totalamount1 %>
+                    </th>
+                    <th class="billing-table-cell-right">
+                        <%= data[0].totalamount2 %>
+                    </th>
+                    <th class="billing-table-cell-right">
+                        <%= data[0].totalamount3 %>
+                    </th>
+                    <th class="billing-table-cell-right">
+                        <%= data[0].totalamount4 %>
+                    </th>
+                    <th class="billing-table-cell-right">
+                        <%= data[0].totalamount5 %>
+                    </th>
+                </tr>
+            </table>
+        </div>
+        <div style="margin-top: 16px">
+            <table class="billing-summary">
+                <tr style="background-color: rgb(223, 237, 249)">
+                    <th class="billing-summary-header">Contactos</th>
+                    <th class="billing-summary-header">Conversaciones</th>
+                    <th class="billing-summary-header">Interacciones</th>
+                    <th class="billing-summary-header">Asesores</th>
+                    <th class="billing-summary-header">Supervisores</th>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-center">
+                        <%= data[0].totalcontact %>
+                    </td>
+                    <td class="billing-table-cell-center">
+                        <%= data[0].totalconversation %>
+                    </td>
+                    <td class="billing-table-cell-center">
+                        <%= data[0].totalinteraction %>
+                    </td>
+                    <td class="billing-table-cell-center">
+                        <%= data[0].totalagent %>
+                    </td>
+                    <td class="billing-table-cell-center">
+                        <%= data[0].totalsupervisor %>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
