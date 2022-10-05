@@ -98,6 +98,17 @@ const train_entities = async ({
                 });
                 await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, model, ...item, [`w${worker_n}`]: true });
             }
+            else if (witai_response.data.code === 'not-found') {
+                witai_response = await witai_request(url, 'post', null, null, {
+                    _requestid,
+                    token,
+                    data: {
+                        ...item.datajson,
+                        roles: [item.datajson.roles?.[0]?.name || item.datajson.roles[0]]
+                    }
+                });
+                await executesimpletransaction("UFN_WITAI_TRAIN_UPD", { _requestid, corpid, orgid, model, ...item, [`w${worker_n}`]: true });
+            }
         }
         witaistatus = 'scheduled'
         result.push(witai_response?.data);
@@ -244,7 +255,7 @@ const train_model_task = async ({
     return [witaistatus, result];
 }
 
-const train_model_1 = async ({ _requestid, corpid, orgid, model, witaistatus = '' }) => {
+const train_model_1 = async ({ _requestid, corpid, orgid, model, witaistatus = 'done' }) => {
     let result = {};
     const worker_list = await executesimpletransaction("UFN_WITAI_WORKER_TRAIN_MODEL_SEL", {
         _requestid,
