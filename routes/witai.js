@@ -13,19 +13,25 @@ router.get("/cron",
 router.post("/entity",
     ip,
     auth,
-    witaiController.entity
+    witaiController.entity_ins
 )
 
-router.post("/intent",
+router.post("/intent_utterance",
     ip,
     auth,
-    witaiController.intent
+    witaiController.intent_utterance_ins
 )
 
-router.post("/utterance",
+router.post("/entity_del",
     ip,
     auth,
-    witaiController.utterance
+    witaiController.entity_del
+)
+
+router.post("/intent_del",
+    ip,
+    auth,
+    witaiController.intent_del
 )
 
 router.post("/train",
@@ -38,6 +44,12 @@ router.post("/train_model",
     ip,
     auth,
     witaiController.train_model
+)
+
+router.post("/train_model_prd",
+    ip,
+    auth,
+    witaiController.train_model_prd
 )
 
 router.post("/status",
