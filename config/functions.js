@@ -2791,4 +2791,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_WITAI_ENTITY_IMPORT: {
+        query: "SELECT * FROM ufn_witai_entity_import($corpid, $orgid, $datajson, $username, $model)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_INTENT_UTTERANCE_IMPORT: {
+        query: "SELECT * FROM ufn_witai_intent_utterance_import($corpid, $orgid, $datajson, $utterance_datajson, $username, $model)",
+        module: "",
+        protected: "SELECT"
+    },
 }
