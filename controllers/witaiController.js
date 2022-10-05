@@ -391,6 +391,64 @@ exports.intent_utterance_ins = async (req, res) => {
     }
 }
 
+exports.entity_import = async (req, res) => {
+    let resultData = {
+        code: "error_unexpected_error",
+        error: true,
+        message: "",
+        success: false,
+    }
+    let result = null;
+    try {
+        const parameters = { model: '', ...req.body };
+        setSessionParameters(parameters, req.user, req._requestid);
+        result = await executesimpletransaction("UFN_WITAI_ENTITY_IMPORT", parameters);
+        await train_model_1(parameters);
+        return res.json({
+            code: "",
+            error: false,
+            data: result?.[0],
+            message: "",
+            success: true
+        });
+    }
+    catch (err) {
+        return res.status(500).json({
+            ...resultData,
+            message: err.message
+        });
+    }
+}
+
+exports.intent_import = async (req, res) => {
+    let resultData = {
+        code: "error_unexpected_error",
+        error: true,
+        message: "",
+        success: false,
+    }
+    let result = null;
+    try {
+        const parameters = { model: '', ...req.body };
+        setSessionParameters(parameters, req.user, req._requestid);
+        result = await executesimpletransaction("UFN_WITAI_INTENT_UTTERANCE_IMPORT", parameters);
+        await train_model_1(parameters);
+        return res.json({
+            code: "",
+            error: false,
+            data: result?.[0],
+            message: "",
+            success: true
+        });
+    }
+    catch (err) {
+        return res.status(500).json({
+            ...resultData,
+            message: err.message
+        });
+    }
+}
+
 exports.entity_del = async (req, res) => {
     let resultData = {
         code: "error_unexpected_error",

@@ -22,6 +22,18 @@ router.post("/intent_utterance",
     witaiController.intent_utterance_ins
 )
 
+router.post("/entity_import",
+    ip,
+    auth,
+    witaiController.entity_import
+)
+
+router.post("/intent_import",
+    ip,
+    auth,
+    witaiController.intent_import
+)
+
 router.post("/entity_del",
     ip,
     auth,
