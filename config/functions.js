@@ -2711,6 +2711,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PERSON_INS_VALIDATION: {
+        query: "SELECT * FROM ufn_person_ins_validation($id, $corpid, $orgid, $phone, $email, $alternativephone, $alternativeemail, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_WITAI_APP_CRON: {
         query: "SELECT * FROM ufn_witai_app_cron()",
         module: "",
@@ -2786,8 +2791,13 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_PERSON_INS_VALIDATION: {
-        query: "SELECT * FROM ufn_person_ins_validation($id, $corpid, $orgid, $phone, $email, $alternativephone, $alternativeemail, $username, $operation)",
+    UFN_WITAI_ENTITY_IMPORT: {
+        query: "SELECT * FROM ufn_witai_entity_import($corpid, $orgid, $datajson, $username, $model)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WITAI_INTENT_UTTERANCE_IMPORT: {
+        query: "SELECT * FROM ufn_witai_intent_utterance_import($corpid, $orgid, $datajson, $utterance_datajson, $username, $model)",
         module: "",
         protected: "SELECT"
     },
