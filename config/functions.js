@@ -1678,31 +1678,6 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_BILLINGPERIODHSM_SEL: {
-        query: "SELECT * FROM ufn_billingperiodhsm_sel($corpid, $orgid, $year, $month, $userid)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_BILLINGPERIODHSM_NEWORG: {
-        query: "SELECT * FROM ufn_billingperiodhsm_neworg($corpid, $orgid, $year, $month, $billingplan)",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_BILLINGPERIODHSM_NEWMONTH: {
-        query: "SELECT * FROM ufn_billingperiodhsm_newmonth($corpid, $orgid, $year, $month)",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_BILLINGPERIODHSM_UPD: {
-        query: "SELECT * FROM ufn_billingperiodhsm_upd($corpid, $orgid, $year, $month, $hsmutilityfee, $force)",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_BILLINGPERIODHSM_CALC: {
-        query: "SELECT * FROM ufn_billingperiodhsm_calc($corpid, $orgid, $year, $month, $force)",
-        module: "",
-        protected: "INSERT"
-    },
     UFN_CONVERSATION_OUTBOUND_INS: {
         query: `select * from ufn_conversation_outbound_ins($personid, $personcommunicationchannel, $communicationchannelid, $corpid, $orgid, $userid, $closetype, $status, $finishdate, $handoff, $usergroup, $extradata, $lastreplydate, $personlastreplydate, $origin, $firstname, $lastname, $communicationchanneltype, $personcommunicationchannelowner, $interactiontype, $interactiontext, $phone)`,
         module: "",
