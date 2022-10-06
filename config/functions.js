@@ -2798,6 +2798,9 @@ module.exports = {
     },
     UFN_WITAI_INTENT_UTTERANCE_IMPORT: {
         query: "SELECT * FROM ufn_witai_intent_utterance_import($corpid, $orgid, $datajson, $utterance_datajson, $username, $model)",
+    },
+    UFN_PERSON_IMPORT_VALIDATION: {
+        query: "SELECT * FROM ufn_person_import_validation($corpid, $orgid, $table, $username)",
         module: "",
         protected: "SELECT"
     },
