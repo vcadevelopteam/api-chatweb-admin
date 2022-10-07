@@ -2716,4 +2716,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PERSON_IMPORT_VALIDATION: {
+        query: "SELECT * FROM ufn_person_import_validation($corpid, $orgid, $table, $username)",
+        module: "",
+        protected: "SELECT"
+    },
 }
