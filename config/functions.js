@@ -2801,6 +2801,9 @@ module.exports = {
     },
     UFN_PERSON_IMPORT_VALIDATION: {
         query: "SELECT * FROM ufn_person_import_validation($corpid, $orgid, $table, $username)",
+    },
+    UFN_CHATFLOW_VARIABLE_SEL: {
+        query: "SELECT * FROM ufn_chatflow_variable_sel($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
