@@ -2691,4 +2691,39 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_BILLINGCONFIGURATION_NEWMONTH: {
+        query: "SELECT * FROM ufn_billingconfiguration_newmonth($year, $month)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ARTIFICIALINTELLIGENCEPLAN_INS: {
+        query: "SELECT * FROM ufn_artificialintelligenceplan_ins($freeinteractions, $basicfee, $additionalfee, $description, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ARTIFICIALINTELLIGENCEPLAN_SEL: {
+        query: "SELECT * FROM ufn_artificialintelligenceplan_sel($description)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ARTIFICIALINTELLIGENCESERVICE_INS: {
+        query: "SELECT * FROM ufn_artificialintelligenceservice_ins($provider, $service, $type, $description, $measureunit, $charlimit, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGARTIFICIALINTELLIGENCE_SEL: {
+        query: "SELECT * FROM ufn_billingartificialintelligence_sel($year, $month, $provider, $service, $plan)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGARTIFICIALINTELLIGENCE_INS: {
+        query: "SELECT * FROM ufn_billingartificialintelligence_ins($year, $month, $id, $provider, $service, $measureunit, $charlimit, $plan, $freeinteractions, $basicfee, $additionalfee, $description, $status, $type, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ARTIFICIALINTELLIGENCESERVICE_SEL: {
+        query: "SELECT * FROM ufn_artificialintelligenceservice_sel($provider, $service)",
+        module: "",
+        protected: "SELECT"
+    },
 }
