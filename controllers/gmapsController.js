@@ -8,7 +8,7 @@ exports.geocode = async (req, res) => {
     try {
         const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${APIKEY}`;
 
-        const response = await axiosObservable.get({
+        const response = await axiosObservable({
             url: url,
             method: "get",
             _requestid: req._requestid,
