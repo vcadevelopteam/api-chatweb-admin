@@ -2721,4 +2721,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UDTT_PERSON_PCC_IMPORT: {
+        query: "SELECT * FROM udtt_person_pcc_import($corpid, $orgid, $table, $username)",
+        module: "",
+        protected: "SELECT"
+    },
 }
