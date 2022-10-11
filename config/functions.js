@@ -2731,4 +2731,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_SECURITYRULES_UPD: {
+        query: "SELECT * FROM ufn_securityrules_upd($corpid, $orgid, $id, $mincharacterspwd, $maxcharacterspwd, $specialcharacterspwd, $numericalcharacterspwd, $uppercaseletterspwd, $lowercaseletterspwd, $allowsconsecutivenumbers, $numequalconsecutivecharacterspwd, $periodvaliditypwd, $maxattemptsbeforeblocked, $pwddifferentchangelogin, $username)",
+        module: "",
+        protected: "SELECT"
+    },
 }
