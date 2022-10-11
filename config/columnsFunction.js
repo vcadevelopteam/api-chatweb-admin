@@ -587,6 +587,12 @@ module.exports = {
         phasejson: {
             column: "(pl.phasejson->>'###JVALUE###')::BIGINT > 0",
             type: "json"
+        },
+        healthprofessional: {
+            column: "pe.healthprofessional"
+        },
+        referralchannel: {
+            column: "pe.referralchannel"
         }
     },
     blacklist: {
