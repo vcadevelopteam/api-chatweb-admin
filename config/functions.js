@@ -1328,6 +1328,16 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_LEAD_PERSON_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_lead_person_totalrecords($corpid, $orgid, $where, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEAD_PERSON_SEL: {
+        query: "SELECT  * FROM ufn_lead_person_sel($corpid, $orgid, $where, $order, $take, $skip, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_LEAD_PERSON_INS: {
         query: "select * from ufn_lead_person_ins($corpid, $orgid, $id, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $username, $index, $firstname, $lastname, $email, $phone, $personid, $userid, $products)",
         module: "",
