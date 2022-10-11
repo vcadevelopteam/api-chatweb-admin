@@ -1319,7 +1319,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PERSON_PCC_INS: {
-        query: "select * from ufn_person_pcc_ins( $id, $corpid, $orgid, $groups, $status, $type, $persontype, $personstatus, $phone, $email, $birthday, $alternativephone, $alternativeemail, $documenttype, $documentnumber, $firstname, $lastname, $sex, $gender, $civilstatus, $occupation, $educationlevel, $referringpersonid, $observation, $username, $operation)",
+        query: "select * from ufn_person_pcc_ins( $id, $corpid, $orgid, $groups, $status, $type, $persontype, $personstatus, $phone, $email, $birthday, $alternativephone, $alternativeemail, $documenttype, $documentnumber, $firstname, $lastname, $sex, $gender, $civilstatus, $occupation, $educationlevel, $referringpersonid, $observation, $address, $healthprofessional, $referralchannel,   $username, $operation)",
         module: "",
         protected: "SELECT"
     },
@@ -2718,6 +2718,11 @@ module.exports = {
     },
     UFN_PERSON_IMPORT_VALIDATION: {
         query: "SELECT * FROM ufn_person_import_validation($corpid, $orgid, $table, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UDTT_PERSON_PCC_IMPORT: {
+        query: "SELECT * FROM udtt_person_pcc_import($corpid, $orgid, $table, $username)",
         module: "",
         protected: "SELECT"
     },
