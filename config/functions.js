@@ -2726,4 +2726,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_SECURITYRULES_SEL: {
+        query: "SELECT * FROM ufn_securityrules_sel($corpid, $orgid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
 }
