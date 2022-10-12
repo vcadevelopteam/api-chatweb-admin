@@ -13,6 +13,7 @@ exports.generatefilter = (filters, origin, daterange, offset) => {
             if (f) {
                 const column = columnsFunction[origin][key].column;
                 const type = columnsFunction[origin][key].type;
+                const advance_search = columnsFunction[origin][key].advance_search;
                 if (f.value !== '' || ['empty', 'isempty', 'noempty', 'isnotempty', 'isnull', 'isnotnull'].includes(f.operator)) {
                     switch (type) {
                         case "json":
@@ -212,7 +213,12 @@ exports.generatefilter = (filters, origin, daterange, offset) => {
                                     where += ` and ${column} not ilike '%${f.value}%'`;
                                     break;
                                 case 'contains':
-                                    where += ` and ${column} ilike '%${f.value}%'`;
+                                    if (advance_search) {
+                                        where += ` and ${column} ilike '%${f.value.replace(new RegExp(` `, 'g'), '%')}%'`;
+                                    }
+                                    else {
+                                        where += ` and ${column} ilike '%${f.value}%'`;
+                                    }
                                     break;
                                 case 'greater':
                                     where += ` and ${column} > ${f.value}`;
