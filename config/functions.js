@@ -2726,4 +2726,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PRODUCTCATALOG_IMPORT: {
+        query: "SELECT * FROM ufn_productcatalog_ins_array($corpid, $orgid, $username, $table)",
+        module: "",
+        protected: false
+    },
 }
