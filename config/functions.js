@@ -486,7 +486,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CORP_INS: {
-        query: "SELECT * FROM ufn_corp_ins($id, $description, $status, $type, $username, $operation, $logo, $logotype, $companysize, $paymentplanid, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $billbyorg, $credittype, $paymentmethod, $automaticpayment, $automaticperiod, $automaticinvoice)",
+        query: "SELECT * FROM ufn_corp_ins($id, $description, $status, $type, $username, $operation, $logo, $logotype, $companysize, $paymentplanid, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $billbyorg, $credittype, $paymentmethod, $automaticpayment, $automaticperiod, $automaticinvoice, $partner)",
         module: "/corporations",
         protected: "INSERT"
     },
@@ -2725,5 +2725,20 @@ module.exports = {
         query: "SELECT * FROM ufn_artificialintelligenceservice_sel($provider, $service)",
         module: "",
         protected: "SELECT"
+    },
+    UFN_BILLINGPERIODARTIFICIALINTELLIGENCE_INS: {
+        query: "SELECT * FROM ufn_billingperiodartificialintelligence_ins($id, $corpid, $orgid, $year, $month, $provider, $service, $measureunit, $charlimit, $plan, $freeinteractions, $basicfee, $additionalfee, $description, $aiquantity, $aicost, $status, $type, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIODARTIFICIALINTELLIGENCE_SEL: {
+        query: "SELECT * FROM ufn_billingperiodartificialintelligence_sel($corpid, $orgid, $year, $month, $provider, $service, $plan, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIODARTIFICIALINTELLIGENCE_INS_ARRAY: {
+        query: "SELECT * FROM ufn_billingperiodartificialintelligence_ins_array($corpid, $orgid, $username, $table)",
+        module: "",
+        protected: "INSERT"
     },
 }
