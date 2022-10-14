@@ -548,6 +548,47 @@
                         <%= data[0].contactadditional5 %>
                     </td>
                 </tr>
+                <% data[0].intelligencedetail.forEach(function(element){ %>
+                    <tr>
+                        <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">AI Service - <%= element.provider %></td>
+                    </tr>
+                    <tr>
+                        <td class="billing-table-cell-left">Minimum AI Quantity</td>
+                        <td class="billing-table-cell-right">
+                            <%= element.freeinteractions %>
+                        </td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right"></td>
+                    </tr>
+                    <tr>
+                        <td class="billing-table-cell-left">Total AI Quantity</td>
+                        <td class="billing-table-cell-right">
+                            <%= element.aiquantity %>
+                        </td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right"></td>
+                    </tr>
+                    <tr>
+                        <td class="billing-table-cell-left"><%= element.service %> - <%= element.plan %></td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right">
+                            <%= element.additionalfee %>
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.taxableamount %>
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.igv %>
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.aicost %>
+                        </td>
+                    </tr>
+                <% }); %>
                 <tr>
                     <td class="billing-table-cell-left" style="font-weight: bold;">Support Plan <%= data[0].supportplan
                             %>

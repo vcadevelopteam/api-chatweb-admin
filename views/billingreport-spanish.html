@@ -92,7 +92,8 @@
 
 <body>
     <div style="width: 90%; margin-left: auto; margin-right: auto; margin-top: 10px; position: relative;">
-        <img src="https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/Laraigo-logo-name.svg" width="100px" style="position: absolute; right: 0; top: 20px">
+        <img src="https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/Laraigo-logo-name.svg"
+            width="100px" style="position: absolute; right: 0; top: 20px">
         <div style="text-align: center; font-size: 16px;" class="blue-highlight">Reporte del Periodo</div>
         <div>
             <div class="blue-highlight general-row" style="margin-top: 16px;">
@@ -554,6 +555,47 @@
                         <%= data[0].contactadditional5 %>
                     </td>
                 </tr>
+                <% data[0].intelligencedetail.forEach(function(element){ %>
+                    <tr>
+                        <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">Servicios IA - <%= element.provider %></td>
+                    </tr>
+                    <tr>
+                        <td class="billing-table-cell-left">Cantidad Minima IA</td>
+                        <td class="billing-table-cell-right">
+                            <%= element.freeinteractions %>
+                        </td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right"></td>
+                    </tr>
+                    <tr>
+                        <td class="billing-table-cell-left">Cantidad Total IA</td>
+                        <td class="billing-table-cell-right">
+                            <%= element.aiquantity %>
+                        </td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right"></td>
+                    </tr>
+                    <tr>
+                        <td class="billing-table-cell-left"><%= element.service %> - <%= element.plan %></td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right">
+                            <%= element.additionalfee %>
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.taxableamount %>
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.igv %>
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.aicost %>
+                        </td>
+                    </tr>
+                <% }); %>
                 <tr>
                     <td class="billing-table-cell-left" style="font-weight: bold;">Plan de Soporte <%=
                             data[0].supportplan %>

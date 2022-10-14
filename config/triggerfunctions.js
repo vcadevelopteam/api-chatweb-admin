@@ -720,7 +720,7 @@ exports.getQuery = (method, data, isNotPaginated) => {
     try {
         if (functionsbd[method]) {
             let query = functionsbd[method].query;
-            
+
             if (!isNotPaginated) {
                 if (data instanceof Object) {
                     data.where = generatefilter(data.filters, data.origin, data.daterange, data.offset);
