@@ -2712,12 +2712,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGARTIFICIALINTELLIGENCE_SEL: {
-        query: "SELECT * FROM ufn_billingartificialintelligence_sel($year, $month, $provider, $service, $plan)",
+        query: "SELECT * FROM ufn_billingartificialintelligence_sel($year, $month, $provider, $type, $plan)",
         module: "",
         protected: "SELECT"
     },
     UFN_BILLINGARTIFICIALINTELLIGENCE_INS: {
-        query: "SELECT * FROM ufn_billingartificialintelligence_ins($year, $month, $id, $provider, $service, $measureunit, $charlimit, $plan, $freeinteractions, $basicfee, $additionalfee, $description, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_billingartificialintelligence_ins($year, $month, $id, $provider, $measureunit, $charlimit, $plan, $freeinteractions, $basicfee, $additionalfee, $description, $status, $type, $username, $operation)",
         module: "",
         protected: "SELECT"
     },
@@ -2727,12 +2727,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGPERIODARTIFICIALINTELLIGENCE_INS: {
-        query: "SELECT * FROM ufn_billingperiodartificialintelligence_ins($id, $corpid, $orgid, $year, $month, $provider, $service, $measureunit, $charlimit, $plan, $freeinteractions, $basicfee, $additionalfee, $description, $aiquantity, $aicost, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_billingperiodartificialintelligence_ins($id, $corpid, $orgid, $year, $month, $provider, $measureunit, $charlimit, $plan, $freeinteractions, $basicfee, $additionalfee, $description, $aiquantity, $aicost, $status, $type, $username, $operation)",
         module: "",
         protected: "SELECT"
     },
     UFN_BILLINGPERIODARTIFICIALINTELLIGENCE_SEL: {
-        query: "SELECT * FROM ufn_billingperiodartificialintelligence_sel($corpid, $orgid, $year, $month, $provider, $service, $plan, $userid)",
+        query: "SELECT * FROM ufn_billingperiodartificialintelligence_sel($corpid, $orgid, $year, $month, $provider, $type, $plan, $userid)",
         module: "",
         protected: "SELECT"
     },
