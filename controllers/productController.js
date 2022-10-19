@@ -18,10 +18,10 @@ exports.import = async (req, res) => {
         if (xml_response.status === 200) {
             var parser = require('xml2json');
             const jsondata = JSON.parse(parser.toJson(xml_response.data));
-            let simplifieddata = jsondata.rss.channel.item.map(x=>{
-                let customlabels = Object.keys(x).filter(y=>y.indexOf("custom_label")>=0)
+            let simplifieddata = jsondata.rss.channel.item.map(x => {
+                let customlabels = Object.keys(x).filter(y => y.indexOf("custom_label") >= 0)
                 return {
-                    id: parseInt(x["g:id"])||null,
+                    id: parseInt(x["g:id"]) || null,
                     title: x["g:title"],
                     description: x["g:description"],
                     link: x["g:link"],
@@ -35,12 +35,12 @@ exports.import = async (req, res) => {
                     color: x["g:color"],
                     pattern: x["g:pattern"],
                     saleprice: x["g:sale_price"],
-                    labels: customlabels.map(y=>typeof x[y] ==="object"? JSON.stringify(x[y]):x[y]).join(','),
+                    labels: customlabels.map(y => typeof x[y] === "object" ? JSON.stringify(x[y]) : x[y]).join(','),
                     category: x["g:google_product_category"],
                 }
             })
-            const productCatalog_result = await executesimpletransaction("UFN_PRODUCTCATALOG_IMPORT", {
-                corpid, orgid, username:"admin", table: JSON.stringify(simplifieddata),
+            const productCatalog_result = await executesimpletransaction("UFN_PRODUCTCATALOG_INS_ARRAY", {
+                corpid, orgid, username: "admin", table: JSON.stringify(simplifieddata),
                 _requestid: req._requestid,
             });
             res.json({ success: true, data: productCatalog_result });
