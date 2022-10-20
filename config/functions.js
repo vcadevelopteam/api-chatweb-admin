@@ -2676,6 +2676,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_REPORT_UNIQUECONTACTS_SEL: {
+        query: "SELECT * FROM ufn_report_uniquecontacts_sel($year, $channeltype, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_WITAI_INTENT_SEL: {
         query: "SELECT * FROM ufn_witai_intent_sel($corpid, $orgid)",
         module: "",
