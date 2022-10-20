@@ -2196,6 +2196,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CHATFLOW_PRODUCTCATALOG_LST: {
+        query: "SELECT * FROM ufn_chatflow_productcatalog_lst($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_PAYMENTCARD_INS: {
         query: "SELECT * FROM ufn_paymentcard_ins($corpid, $orgid, $id, $cardnumber, $cardcode, $firstname, $lastname, $mail, $favorite, $clientcode, $status, $type, $username, $operation)",
         module: "",
