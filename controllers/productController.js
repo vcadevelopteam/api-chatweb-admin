@@ -60,6 +60,6 @@ exports.import = async (req, res) => {
         res.json({ success: true, data: url });
     }
     catch (exception) {
-        res.json({ success: true, error: JSON.stringify(exception) });
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
