@@ -429,7 +429,7 @@ exports.getTransactionHistory = async ({ account_id, account_name, account_apike
             }
             data['from_date'] = from_date;
             data['to_date'] = to_date;
-            data['timezone'] = 'UTC/GMT';
+            data['timezone'] = 'auto';
             data['count'] = count;
             data['offset'] = offset;
             data['desc_order'] = 'true';
@@ -442,7 +442,7 @@ exports.getTransactionHistory = async ({ account_id, account_name, account_apike
             form.append('api_key', VOXIMPLANT_APIKEY);
             form.append('from_date', from_date);
             form.append('to_date', to_date);
-            form.append('timezone', 'UTC/GMT');
+            form.append('timezone', 'auto');
             form.append('count', count);
             form.append('offset', offset);
             form.append('desc_order', 'true');
