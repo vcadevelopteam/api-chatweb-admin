@@ -92,7 +92,8 @@
 
 <body>
     <div style="width: 90%; margin-left: auto; margin-right: auto; margin-top: 10px; position: relative;">
-        <img src="https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/Laraigo-logo-name.svg" width="100px" style="position: absolute; right: 0; top: 20px">
+        <img src="https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/Laraigo-logo-name.svg"
+            width="100px" style="position: absolute; right: 0; top: 20px">
         <div style="text-align: center; font-size: 16px;" class="blue-highlight">Reporte del Periodo</div>
         <div>
             <div class="blue-highlight general-row" style="margin-top: 16px;">
@@ -554,107 +555,130 @@
                         <%= data[0].contactadditional5 %>
                     </td>
                 </tr>
-                <tr>
-                    <td class="billing-table-cell-left" style="font-weight: bold;">Plan de Soporte <%=
-                            data[0].supportplan %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].supportplan1 %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].supportplan2 %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].supportplan3 %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].supportplan4 %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].supportplan5 %>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">Otros</td>
-                </tr>
-                <tr>
-                    <td class="billing-table-cell-left" style="font-weight: bold;">
-                        <%= data[0].additional01service %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].additional01service1 %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].additional01service2 %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].additional01service3 %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].additional01service4 %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].additional01service5 %>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="billing-table-cell-left" style="font-weight: bold;">
-                        <%= data[0].additional02service %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].additional02service1 %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].additional02service2 %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].additional02service3 %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].additional02service4 %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].additional02service5 %>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="billing-table-cell-left" style="font-weight: bold;">
-                        <%= data[0].additional03service %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].additional03service1 %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].additional03service2 %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].additional03service3 %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].additional03service4 %>
-                    </td>
-                    <td class="billing-table-cell-right">
-                        <%= data[0].additional03service5 %>
-                    </td>
-                </tr>
-                <tr style="background-color: rgb(223, 237, 249)">
-                    <th class="billing-table-cell-left" style="font-weight: bold;">Total</th>
-                    <th class="billing-table-cell-right">
-                        <%= data[0].totalamount1 %>
-                    </th>
-                    <th class="billing-table-cell-right">
-                        <%= data[0].totalamount2 %>
-                    </th>
-                    <th class="billing-table-cell-right">
-                        <%= data[0].totalamount3 %>
-                    </th>
-                    <th class="billing-table-cell-right">
-                        <%= data[0].totalamount4 %>
-                    </th>
-                    <th class="billing-table-cell-right">
-                        <%= data[0].totalamount5 %>
-                    </th>
-                </tr>
+                <% data[0].intelligencedetail.forEach(function(element){ %>
+                    <tr>
+                        <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">
+                            <%= element.service %> - <%= element.provider %> (<%= element.plan %>)
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.aiquantity %>
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.additionalfee %>
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.taxableamount %>
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.igv %>
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.aicost %>
+                        </td>
+                    </tr>
+                    <% }); %>
+                        <tr>
+                            <td class="billing-table-cell-left" style="font-weight: bold;">Plan de Soporte <%=
+                                    data[0].supportplan %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].supportplan1 %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].supportplan2 %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].supportplan3 %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].supportplan4 %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].supportplan5 %>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">Otros
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="billing-table-cell-left" style="font-weight: bold;">
+                                <%= data[0].additional01service %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].additional01service1 %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].additional01service2 %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].additional01service3 %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].additional01service4 %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].additional01service5 %>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="billing-table-cell-left" style="font-weight: bold;">
+                                <%= data[0].additional02service %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].additional02service1 %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].additional02service2 %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].additional02service3 %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].additional02service4 %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].additional02service5 %>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="billing-table-cell-left" style="font-weight: bold;">
+                                <%= data[0].additional03service %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].additional03service1 %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].additional03service2 %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].additional03service3 %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].additional03service4 %>
+                            </td>
+                            <td class="billing-table-cell-right">
+                                <%= data[0].additional03service5 %>
+                            </td>
+                        </tr>
+                        <tr style="background-color: rgb(223, 237, 249)">
+                            <th class="billing-table-cell-left" style="font-weight: bold;">Total</th>
+                            <th class="billing-table-cell-right">
+                                <%= data[0].totalamount1 %>
+                            </th>
+                            <th class="billing-table-cell-right">
+                                <%= data[0].totalamount2 %>
+                            </th>
+                            <th class="billing-table-cell-right">
+                                <%= data[0].totalamount3 %>
+                            </th>
+                            <th class="billing-table-cell-right">
+                                <%= data[0].totalamount4 %>
+                            </th>
+                            <th class="billing-table-cell-right">
+                                <%= data[0].totalamount5 %>
+                            </th>
+                        </tr>
             </table>
         </div>
         <div style="margin-top: 16px">
