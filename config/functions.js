@@ -2793,9 +2793,13 @@ module.exports = {
     },
     UFN_WITAI_INTENT_UTTERANCE_IMPORT: {
         query: "SELECT * FROM ufn_witai_intent_utterance_import($corpid, $orgid, $datajson, $utterance_datajson, $username, $model)",
+        module: "",
+        protected: "SELECT"
     },
     UFN_PERSON_IMPORT_VALIDATION: {
         query: "SELECT * FROM ufn_person_import_validation($corpid, $orgid, $table, $username)",
+        module: "",
+        protected: "SELECT"
     },
     UFN_CHATFLOW_VARIABLE_SEL: {
         query: "SELECT * FROM ufn_chatflow_variable_sel($corpid, $orgid)",
@@ -2804,6 +2808,11 @@ module.exports = {
     },
     UDTT_PERSON_PCC_IMPORT: {
         query: "SELECT * FROM udtt_person_pcc_import($corpid, $orgid, $table, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CHATFLOW_VARIABLE_SEL: {
+        query: "SELECT * FROM ufn_chatflow_variable_sel($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
