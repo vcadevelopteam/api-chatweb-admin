@@ -2868,7 +2868,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_PRODUCTCATALOG_INS_ARRAY: {
-        query: "SELECT * FROM ufn_productcatalog_ins_array($corpid, $orgid, $username, $table)",
+        query: "SELECT * FROM ufn_productcatalog_ins_array($corpid, $orgid, $catalogid, $catalogname, $username, $table)",
         module: "",
         protected: "INSERT"
     },

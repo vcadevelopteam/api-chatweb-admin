@@ -8,7 +8,7 @@ const { executesimpletransaction } = require('../config/triggerfunctions');
 
 exports.import = async (req, res) => {
     try {
-        const { corpid, orgid, url, catalogid, catalogname } = req.body;
+        const { corpid, orgid, url, catalogid, catalogname, username } = req.body;
         let xml_response = await axiosObservable({
             _requestid: req._requestid,
             method: "get",
@@ -35,11 +35,11 @@ exports.import = async (req, res) => {
                     currency: x["g:currency"] || 'PEN',
                     price: x["g:price"] || 0.00,
                     saleprice: x["g:sale_price"] || 0.00,
-                    customlabel1: x["g:custom_label_1"] || '',
-                    customlabel2: x["g:custom_label_2"] || '',
-                    customlabel3: x["g:custom_label_3"] || '',
-                    customlabel4: x["g:custom_label_4"] || '',
-                    customlabel5: x["g:custom_label_5"] || '',
+                    customlabel1: x["g:custom_label_0"] || '',
+                    customlabel2: x["g:custom_label_1"] || '',
+                    customlabel3: x["g:custom_label_2"] || '',
+                    customlabel4: x["g:custom_label_3"] || '',
+                    customlabel5: x["g:custom_label_4"] || '',
                     labels: customlabels ? customlabels.map(y => typeof x[y] === "object" ? JSON.stringify(x[y]) : x[y]).join(',') : '',
                     catalogid: catalogid || '',
                     catalogname: catalogname || '',
@@ -49,7 +49,7 @@ exports.import = async (req, res) => {
                 }
             })
             const productCatalog_result = await executesimpletransaction("UFN_PRODUCTCATALOG_INS_ARRAY", {
-                corpid, orgid, username: "admin", table: JSON.stringify(simplifieddata),
+                corpid, orgid, catalogid, catalogname, username: username || "admin", table: JSON.stringify(simplifieddata),
                 _requestid: req._requestid,
             });
             res.json({ success: true, data: productCatalog_result });
