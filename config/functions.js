@@ -2746,4 +2746,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CHATFLOW_VARIABLE_SEL: {
+        query: "SELECT * FROM ufn_chatflow_variable_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
