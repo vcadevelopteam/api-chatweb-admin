@@ -1,8 +1,7 @@
 const sequelize = require('../config/database');
-
 const { getErrorSeq } = require('../config/helpers');
-
 const { QueryTypes } = require('sequelize');
+const cache = require('../config/cache')();
 
 exports.auth = async (req, res) => {
     try {
@@ -23,4 +22,11 @@ exports.load = async (req, res) => {
     }
     else
         return res.status(result.rescode).json(result);
+}
+
+exports.version = async (_, res) => {
+    const version = (cache.get('release-version') + "").replace("releases/", "");
+    const date = cache.get('release-date');
+
+    return res.json({ error: false, success: true, data: { version, date } });
 }
