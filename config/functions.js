@@ -2696,6 +2696,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PERSON_INS_VALIDATION: {
+        query: "SELECT * FROM ufn_person_ins_validation($id, $corpid, $orgid, $phone, $email, $alternativephone, $alternativeemail, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CONVERSATION_LINKEDPERSON_EXECUTE: {
         query: "SELECT * FROM ufn_conversation_linkedperson_execute($corpid, $orgid, $personidfrom, $personidto, $imageurl, $name, $firstname, $lastname, $documenttype, $documentnumber, $persontype, $birthday, $gender, $phone, $alternativephone, $email, $alternativeemail, $civilstatus, $occupation, $educationlevel, $observation, $groups, $address, $healthprofessional, $referralchannel)",
         module: "",
@@ -2706,11 +2711,7 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_PERSON_INS_VALIDATION: {
-        query: "SELECT * FROM ufn_person_ins_validation($id, $corpid, $orgid, $phone, $email, $alternativephone, $alternativeemail, $username, $operation)",
-        module: "",
-        protected: "SELECT"
-    },
+    
     UFN_PERSON_IMPORT_VALIDATION: {
         query: "SELECT * FROM ufn_person_import_validation($corpid, $orgid, $table, $username)",
         module: "",
