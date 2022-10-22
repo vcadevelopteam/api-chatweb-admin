@@ -2907,7 +2907,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_UNIQUECONTACTS_CONVERSATION_SEL: {
-        query: "SELECT * FROM ufn_report_uniquecontacts_conversation_sel($corpid, orgid, year, month, channeltype, where, order, take, skip, offset)",
+        query: "SELECT * FROM ufn_report_uniquecontacts_conversation_sel($corpid, $orgid, $year, $month, $channeltype, $where, $order, $take, $skip, $offset)",
         module: "",
         protected: "SELECT"
     },

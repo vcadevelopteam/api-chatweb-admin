@@ -921,13 +921,13 @@ module.exports = {
             column:"pe.name"
         },
         channels: {
-            column:"(select string_agg(cc2.description,'','') from communicationchannel cc2 where cc2.corpid = co.corpid AND cc2.orgid = co.orgid and cc2.status = ''ACTIVO'')"
+            column:"(select string_agg(cc2.description,'','') from communicationchannel cc2 where cc2.corpid = co.corpid AND cc2.orgid = co.orgid and cc2.status = ''ACTIVO'')"//corregir
         },
         firstcontact: {
-            column:"pe.firstcontact + '||p_offset||' * INTERVAL ''1HOUR''"
+            column:"pe.firstcontact + '||p_offset||' * INTERVAL ''1HOUR''"//corregir
         },
         lastcontact: {
-            column:"pe.lastcontact + '||p_offset||' * INTERVAL ''1HOUR''"
+            column:"pe.lastcontact + '||p_offset||' * INTERVAL ''1HOUR''"//corregir
         },
         phone: {
             column:"pe.phone"
