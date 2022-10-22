@@ -916,4 +916,27 @@ module.exports = {
             column:"lc.type"
         },
     },
+    uniquecontacts: {
+        name: {
+            column:"pe.name"
+        },
+        channels: {
+            column:"(select string_agg(cc2.description,'','') from communicationchannel cc2 where cc2.corpid = co.corpid AND cc2.orgid = co.orgid and cc2.status = ''ACTIVO'')"
+        },
+        firstcontact: {
+            column:"pe.firstcontact + '||p_offset||' * INTERVAL ''1HOUR''"
+        },
+        lastcontact: {
+            column:"pe.lastcontact + '||p_offset||' * INTERVAL ''1HOUR''"
+        },
+        phone: {
+            column:"pe.phone"
+        },
+        email: {
+            column:"pe.email"
+        },
+        status: {
+            column:"pe.status"
+        },
+    },
 }
