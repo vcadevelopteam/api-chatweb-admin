@@ -1543,6 +1543,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CONVERSATION_LST_PERSONALIZED: {
+        query: "SELECT * FROM ufn_conversation_lst_personalized($corpid,$orgid,$startdate,$enddate)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_REPORT_HEATMAP_ASESORESCONECTADOS_SEL: {
         query: "SELECT * FROM ufn_report_heatmap_asesoresconectados_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$offset)",
         module: "",
