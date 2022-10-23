@@ -61,6 +61,7 @@ exports.processCursor = (cursor, _requestid, headerClient) => {
                         }
                     })
                     const rr = await uploadBufferToCos(_requestid, buffer, "application/zip", new Date().toISOString() + ".zip");
+                    logger.child({ _requestid }).debug(`zip to COS: ${rr.url}`)
                     resultLink.push(rr.url)
                     alreadysave = true;
                     zip = new JSZip(); //reiniciamos
