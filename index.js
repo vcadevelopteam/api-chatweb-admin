@@ -1,5 +1,4 @@
 require('dotenv').config();
-const cache = require('./config/cache')();
 const logger = require('./config/winston');
 const morganMiddleware = require("./config/morgan.middleware");
 const express = require('express');
@@ -69,21 +68,3 @@ app.listen(PORT, '0.0.0.0', () => {
 })
 
 logger.info(`System launch API-LARAIGO on port ${PORT}`);
-
-exec('git rev-parse --abbrev-ref HEAD', (err, stdout) => {
-    if (err) {
-        // handle your error
-    }
-    if (typeof stdout === 'string') {
-        cache.set('release-version', stdout.trim());
-    }
-});
-
-exec('git log -1 --format=%cd', (err, stdout) => {
-    if (err) {
-        // handle your error
-    }
-    if (typeof stdout === 'string') {
-        cache.set('release-date', stdout.trim());
-    }
-});
