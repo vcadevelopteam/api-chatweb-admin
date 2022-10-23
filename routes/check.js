@@ -14,4 +14,8 @@ router.get('/auth',
     checkController.auth
 )
 
+router.get('/version',
+    checkController.version
+)
+
 module.exports = router;
