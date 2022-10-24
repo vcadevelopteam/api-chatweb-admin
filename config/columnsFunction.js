@@ -959,7 +959,7 @@ module.exports = {
             column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'HH24:MI:SS')"
         },
         channel:{
-            column: "cc.description"//corregir
+            column: "cc.description"
         },
         origin:{
             column: "co.origin"
@@ -977,12 +977,12 @@ module.exports = {
             column: "coalesce(dom_cierre.domaindesc, co.closetype, 'Cierre automático')"
         },
         asesor:{
-            column: "concat(usr.firstname, '' '', usr.lastname)"
+            column: "concat(usr.firstname, ' ', usr.lastname)"
         },
         usergroup:{
             column: "co.usergroup"
         },
-        closetype:{
+        usertype:{
             column: "ous.type"
         },
         handoffdate:{
