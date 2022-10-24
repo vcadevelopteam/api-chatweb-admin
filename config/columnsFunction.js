@@ -995,7 +995,7 @@ module.exports = {
             column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (CASE WHEN co.status = 'CERRADO' THEN co.totalduration ELSE NOW() - co.startdate END))::text || ' seconds ')::interval, 'HH24:MI:SS'),'00:00:00')"
         },
         tmeasesor:{
-            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (CASE WHEN co.status = 'CERRADO' THEN NULL IF(GREATEST('00:00:00'::INTERVAL, co.totalduration - co.pausedurationafteruser - co.firstassignedtime - co.botduration),'00:00:00') ELSE GREATEST('00:00:00'::INTERVAL, NOW() - co.startdate - co.pausedurationafteruser - co.firstassignedtime - co.botduration)    END))::text || ' seconds ')::interval, 'HH24:MI:SS'),'00:00:00')"//corregir
+            column: "date_trunc('seconds', co.userfirstreplytime)::text"
         },
         pauseduration:{
             column: "date_trunc('seconds',co.totalpauseduration)"
