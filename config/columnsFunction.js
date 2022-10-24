@@ -921,13 +921,13 @@ module.exports = {
             column:"pe.name"
         },
         channels: {
-            column:"(select string_agg(cc2.description,'','') from communicationchannel cc2 where cc2.corpid = co.corpid AND cc2.orgid = co.orgid and cc2.status = ''ACTIVO'')"//corregir
+            column:"(select string_agg(cc2.description,'','') from communicationchannel cc2 where cc2.corpid = co.corpid AND cc2.orgid = co.orgid and cc2.status = 'ACTIVO')"//corregir
         },
         firstcontact: {
-            column:"pe.firstcontact + '||p_offset||' * INTERVAL ''1HOUR''"//corregir
+            column:"pe.firstcontact + p_offset * INTERVAL '1HOUR'"
         },
         lastcontact: {
-            column:"pe.lastcontact + '||p_offset||' * INTERVAL ''1HOUR''"//corregir
+            column:"pe.lastcontact + p_offset * INTERVAL '1HOUR'"
         },
         phone: {
             column:"pe.phone"
@@ -943,20 +943,21 @@ module.exports = {
         ticketnum:{
             column: "co.ticketnum"
         },
+        
         startdate:{
-            column: "TO_CHAR(co.startdate + '||p_offset||' * INTERVAL ''1HOUR'', ''YYYY-MM-DD'')" //corregir
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'YYYY-MM-DD')"
         },
         starttime:{
-            column: "TO_CHAR(co.startdate + '||p_offset||' * INTERVAL ''1HOUR'', ''HH24:MI:SS'')"//corregir
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'HH24:MI:SS')"
         },
         finishdate:{
-            column: "TO_CHAR(co.finishdate + '||p_offset||' * INTERVAL ''1HOUR'', ''YYYY-MM-DD'')"//corregir
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'YYYY-MM-DD')"
         },
         finishtime:{
-            column: "TO_CHAR(co.finishdate + '||p_offset||' * INTERVAL ''1HOUR'', ''HH24:MI:SS'')"//corregir
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'HH24:MI:SS')"
         },
         channel:{
-            column: "co.ticketnum"//corregir
+            column: "cc.description"//corregir
         },
         origin:{
             column: "co.origin"
@@ -970,11 +971,11 @@ module.exports = {
         phone:{
             column: "pe.phone"
         },
-        closedby:{
-            column: "pe.phone"//corregir
+        closetype:{
+            column: "coalesce(dom_cierre.domaindesc, co.closetype, 'Cierre automático')"
         },
         asesor:{
-            column: "CONCAT(usr.firstname, '' '', usr.lastname)"//corregir
+            column: "concat(usr.firstname, '' '', usr.lastname)"
         },
         usergroup:{
             column: "co.usergroup"
@@ -983,28 +984,28 @@ module.exports = {
             column: "ous.type"
         },
         handoffdate:{
-            column: "TO_CHAR(co.handoffdate + '||p_offset||' * INTERVAL ''1HOUR'', ''YYYY-MM-DD'')"//corregir
+            column: "to_char(co.handoffdate + p_offset * INTERVAL '1HOUR', 'YYYY-MM-DD')"
         },
         handoofftime:{
-            column: "TO_CHAR(co.handoffdate + '||p_offset||' * INTERVAL ''1HOUR'', ''HH24:MI:SS'')"//corregir
+            column: "to_char(co.handoffdate + p_offset * INTERVAL '1HOUR', 'HH24:MI:SS')"
         },
         tmo:{
-            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (CASE WHEN co.status = ''CERRADO''THEN co.totaldurationELSE NOW() - co.startdateEND))::text || '' seconds '')::interval, ''HH24:MI:SS''),''00:00:00'')"//corregir
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (CASE WHEN co.status = 'CERRADO' THEN co.totalduration ELSE NOW() - co.startdate END))::text || ' seconds ')::interval, 'HH24:MI:SS'),'00:00:00')"
         },
         tmeasesor:{
-            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (CASE WHEN co.status = ''CERRADO''THEN NULLIF(GREATEST(''00:00:00''::INTERVAL, co.totalduration - co.pausedurationafteruser - co.firstassignedtime - co.botduration),''00:00:00'')    ELSE GREATEST(''00:00:00''::INTERVAL, NOW() - co.startdate - co.pausedurationafteruser - co.firstassignedtime - co.botduration)    END))::text || '' seconds '')::interval, ''HH24:MI:SS''),''00:00:00'')"//corregir
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (CASE WHEN co.status = 'CERRADO' THEN NULL IF(GREATEST('00:00:00'::INTERVAL, co.totalduration - co.pausedurationafteruser - co.firstassignedtime - co.botduration),'00:00:00') ELSE GREATEST('00:00:00'::INTERVAL, NOW() - co.startdate - co.pausedurationafteruser - co.firstassignedtime - co.botduration)    END))::text || ' seconds ')::interval, 'HH24:MI:SS'),'00:00:00')"//corregir
         },
         pauseduration:{
-            column: "date_trunc(''seconds'',co.totalpauseduration)::text"//corregir
+            column: "date_trunc('seconds',co.totalpauseduration)"
         },
-        suspensiontime:{
-            column: "ous.type"//corregir
+        tdatime:{
+            column: "date_trunc('seconds',co.tdatime)"
         },
         tmrasesor:{
-            column: "date_trunc(''seconds'',co.useraveragereplytime)::text"//corregir
+            column: "date_trunc('seconds',co.useraveragereplytime)"
         },
         balancetimes:{
-            column: "COALESCE(co.balancetimes,0"//corregir
+            column: "COALESCE(co.balancetimes,0)"
         },
     },
 }
