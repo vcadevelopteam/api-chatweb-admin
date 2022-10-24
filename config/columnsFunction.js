@@ -998,13 +998,13 @@ module.exports = {
             column: "date_trunc('seconds', co.userfirstreplytime)::text"
         },
         pauseduration:{
-            column: "date_trunc('seconds',co.totalpauseduration)"
+            column: "date_trunc('seconds',co.totalpauseduration)::text"
         },
         tdatime:{
-            column: "date_trunc('seconds',co.tdatime)"
+            column: "date_trunc('seconds',co.tdatime)::text"
         },
         tmrasesor:{
-            column: "date_trunc('seconds',co.useraveragereplytime)"
+            column: "date_trunc('seconds',co.useraveragereplytime)::text"
         },
         balancetimes:{
             column: "COALESCE(co.balancetimes,0)"
