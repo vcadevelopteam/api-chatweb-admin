@@ -921,13 +921,13 @@ module.exports = {
             column:"pe.name"
         },
         channels: {
-            column:"(select string_agg(cc2.description,'','') from communicationchannel cc2 where cc2.corpid = co.corpid AND cc2.orgid = co.orgid and cc2.status = ''ACTIVO'')"//corregir
+            column:"(select string_agg(cc2.description,'','') from communicationchannel cc2 where cc2.corpid = co.corpid AND cc2.orgid = co.orgid and cc2.status = 'ACTIVO')"//corregir
         },
         firstcontact: {
-            column:"pe.firstcontact + '||p_offset||' * INTERVAL ''1HOUR''"//corregir
+            column:"pe.firstcontact + p_offset * INTERVAL '1HOUR'"
         },
         lastcontact: {
-            column:"pe.lastcontact + '||p_offset||' * INTERVAL ''1HOUR''"//corregir
+            column:"pe.lastcontact + p_offset * INTERVAL '1HOUR'"
         },
         phone: {
             column:"pe.phone"
@@ -937,6 +937,75 @@ module.exports = {
         },
         status: {
             column:"pe.status"
+        },
+    },
+    uniquecontactsconversation: {
+        ticketnum:{
+            column: "co.ticketnum"
+        },
+        
+        startdate:{
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'YYYY-MM-DD')"
+        },
+        starttime:{
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'HH24:MI:SS')"
+        },
+        finishdate:{
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'YYYY-MM-DD')"
+        },
+        finishtime:{
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'HH24:MI:SS')"
+        },
+        channel:{
+            column: "cc.description"//corregir
+        },
+        origin:{
+            column: "co.origin"
+        },
+        name:{
+            column: "pe.name"
+        },
+        email:{
+            column: "pe.email"
+        },
+        phone:{
+            column: "pe.phone"
+        },
+        closetype:{
+            column: "coalesce(dom_cierre.domaindesc, co.closetype, 'Cierre automático')"
+        },
+        asesor:{
+            column: "concat(usr.firstname, '' '', usr.lastname)"
+        },
+        usergroup:{
+            column: "co.usergroup"
+        },
+        closetype:{
+            column: "ous.type"
+        },
+        handoffdate:{
+            column: "to_char(co.handoffdate + p_offset * INTERVAL '1HOUR', 'YYYY-MM-DD')"
+        },
+        handoofftime:{
+            column: "to_char(co.handoffdate + p_offset * INTERVAL '1HOUR', 'HH24:MI:SS')"
+        },
+        tmo:{
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (CASE WHEN co.status = 'CERRADO' THEN co.totalduration ELSE NOW() - co.startdate END))::text || ' seconds ')::interval, 'HH24:MI:SS'),'00:00:00')"
+        },
+        tmeasesor:{
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (CASE WHEN co.status = 'CERRADO' THEN NULL IF(GREATEST('00:00:00'::INTERVAL, co.totalduration - co.pausedurationafteruser - co.firstassignedtime - co.botduration),'00:00:00') ELSE GREATEST('00:00:00'::INTERVAL, NOW() - co.startdate - co.pausedurationafteruser - co.firstassignedtime - co.botduration)    END))::text || ' seconds ')::interval, 'HH24:MI:SS'),'00:00:00')"//corregir
+        },
+        pauseduration:{
+            column: "date_trunc('seconds',co.totalpauseduration)"
+        },
+        tdatime:{
+            column: "date_trunc('seconds',co.tdatime)"
+        },
+        tmrasesor:{
+            column: "date_trunc('seconds',co.useraveragereplytime)"
+        },
+        balancetimes:{
+            column: "COALESCE(co.balancetimes,0)"
         },
     },
 }
