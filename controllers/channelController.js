@@ -2583,6 +2583,28 @@ exports.deleteTemplate = async (request, response) => {
                             }
                         }
                         break;
+
+                    case "WHAG":
+                        if (request.body.communicationchannelservicecredentials) {
+                            var parameters = request.body;
+
+                            parameters.corpid = request.user.corpid;
+                            parameters.orgid = request.user.orgid;
+                            parameters.username = request.user.usr;
+                            parameters.bodyobject = JSON.stringify(request.body.bodyobject);
+                            parameters.buttons = JSON.stringify(request.body.buttons);
+
+                            const queryTemplateDelete = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
+
+                            if (queryTemplateDelete instanceof Array) {
+                                deleteSuccess = true;
+                            }
+                            else {
+                                requestCode = queryTemplateDelete.code;
+                                requestMessage = queryTemplateDelete.code;
+                            }
+                        }
+                        break;
                 }
 
                 if (deleteSuccess) {
