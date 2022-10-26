@@ -99,6 +99,8 @@ exports.deleteChannel = async (request, response) => {
                         const transactionDeleteSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionDeleteSmooch instanceof Array) {
+                            await channelfunctions.clearHookCache('SmoochService', request._requestid);
+
                             return response.json({
                                 success: true
                             });
@@ -121,6 +123,8 @@ exports.deleteChannel = async (request, response) => {
                     const transactionDeleteSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteSmooch instanceof Array) {
+                        await channelfunctions.clearHookCache('SmoochService', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -170,6 +174,8 @@ exports.deleteChannel = async (request, response) => {
                 const transactionDeleteChatWeb = await triggerfunctions.executesimpletransaction(method, parameters);
 
                 if (transactionDeleteChatWeb instanceof Array) {
+                    await channelfunctions.clearHookCache('ChatWebService', request._requestid);
+
                     return response.json({
                         success: true
                     });
@@ -249,6 +255,8 @@ exports.deleteChannel = async (request, response) => {
                     const transactionDeleteFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteFacebook instanceof Array) {
+                        await channelfunctions.clearHookCache('FacebookService', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -264,6 +272,8 @@ exports.deleteChannel = async (request, response) => {
                     const transactionDeleteFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteFacebook instanceof Array) {
+                        await channelfunctions.clearHookCache('FacebookService', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -297,6 +307,8 @@ exports.deleteChannel = async (request, response) => {
                         const transactionDeleteInstagramSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionDeleteInstagramSmooch instanceof Array) {
+                            await channelfunctions.clearHookCache('SmoochService', request._requestid);
+
                             return response.json({
                                 success: true
                             });
@@ -319,6 +331,8 @@ exports.deleteChannel = async (request, response) => {
                     const transactionDeleteInstagramSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteInstagramSmooch instanceof Array) {
+                        await channelfunctions.clearHookCache('SmoochService', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -350,6 +364,8 @@ exports.deleteChannel = async (request, response) => {
                         const transactionDeleteTelegram = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionDeleteTelegram instanceof Array) {
+                            await channelfunctions.clearHookCache('TelegramService', request._requestid);
+
                             return response.json({
                                 success: true
                             });
@@ -372,6 +388,8 @@ exports.deleteChannel = async (request, response) => {
                     const transactionDeleteTelegram = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteTelegram instanceof Array) {
+                        await channelfunctions.clearHookCache('TelegramService', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -403,6 +421,8 @@ exports.deleteChannel = async (request, response) => {
                             const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
 
                             if (transactionDeleteTwitter instanceof Array) {
+                                await channelfunctions.clearHookCache('TwitterService', request._requestid);
+
                                 return response.json({
                                     success: true
                                 });
@@ -433,6 +453,8 @@ exports.deleteChannel = async (request, response) => {
                                 const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
 
                                 if (transactionDeleteTwitter instanceof Array) {
+                                    await channelfunctions.clearHookCache('TwitterService', request._requestid);
+
                                     return response.json({
                                         success: true
                                     });
@@ -463,6 +485,8 @@ exports.deleteChannel = async (request, response) => {
                     const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteTwitter instanceof Array) {
+                        await channelfunctions.clearHookCache('TwitterService', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -494,6 +518,8 @@ exports.deleteChannel = async (request, response) => {
                         const transactionDeleteWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionDeleteWhatsApp instanceof Array) {
+                            await channelfunctions.clearHookCache('Dialog360Service', request._requestid);
+
                             return response.json({
                                 success: true
                             });
@@ -516,6 +542,8 @@ exports.deleteChannel = async (request, response) => {
                     const transactionDeleteWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteWhatsApp instanceof Array) {
+                        await channelfunctions.clearHookCache('Dialog360Service', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -550,6 +578,8 @@ exports.deleteChannel = async (request, response) => {
                             const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                             if (transactionDeleteWhatsAppSmooch instanceof Array) {
+                                await channelfunctions.clearHookCache('SmoochService', request._requestid);
+
                                 return response.json({
                                     success: true
                                 });
@@ -572,6 +602,8 @@ exports.deleteChannel = async (request, response) => {
                         const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionDeleteWhatsAppSmooch instanceof Array) {
+                            await channelfunctions.clearHookCache('SmoochService', request._requestid);
+
                             return response.json({
                                 success: true
                             });
@@ -588,6 +620,8 @@ exports.deleteChannel = async (request, response) => {
                     const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteWhatsAppSmooch instanceof Array) {
+                        await channelfunctions.clearHookCache('SmoochService', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -662,6 +696,8 @@ exports.deleteChannel = async (request, response) => {
                         const transactionDeleteWhatsAppGupshup = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionDeleteWhatsAppGupshup instanceof Array) {
+                            await channelfunctions.clearHookCache('GupshupService', request._requestid);
+
                             return response.json({
                                 success: true
                             });
@@ -684,6 +720,8 @@ exports.deleteChannel = async (request, response) => {
                     const transactionDeleteWhatsAppGupshup = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteWhatsAppGupshup instanceof Array) {
+                        await channelfunctions.clearHookCache('GupshupService', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -700,6 +738,8 @@ exports.deleteChannel = async (request, response) => {
                 const transactionDeleteGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
 
                 if (transactionDeleteGeneric instanceof Array) {
+                    await channelfunctions.clearHookCache('', request._requestid);
+
                     return response.json({
                         success: true
                     });
