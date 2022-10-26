@@ -641,7 +641,7 @@ module.exports = {
         },
         lastcontact: {
             column: "pe.lastcontact",
-            type: "datetime"
+            type: "date"
         },
         agent: {
             column: "co.agent"
@@ -650,7 +650,8 @@ module.exports = {
             column: "ld.description"
         },
         birthday: {
-            column: "pe.birthday"
+            column: "pe.birthday",
+            type: "datestr"
         },
         gender: {
             column: "domgen.domaindesc"
@@ -686,7 +687,7 @@ module.exports = {
         },
         changedate: {
             column: "ld.changedate",
-            type: "datetime"
+            type: "date"
         },
         name: {
             column: "TRIM(CONCAT(pe.firstname,' ',pe.lastname))"
@@ -702,7 +703,7 @@ module.exports = {
         },
         date_deadline: {
             column: "ld.date_deadline",
-            type: "datetime"
+            type: "date"
         },
         tags: {
             column: "ld.tags"
@@ -717,7 +718,7 @@ module.exports = {
             column: "ca.title"
         },
         products: {
-            column: "ld.leadproduct"
+            column: "pc.title"
         },
         phase: {
             column: "col.description"
