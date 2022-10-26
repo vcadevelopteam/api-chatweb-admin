@@ -58,6 +58,7 @@ app.use('/api/gmaps', require('./routes/gmaps'));
 app.use('/api/voximplant', require('./routes/voximplant'));
 app.use('/api/google', require('./routes/google'));
 app.use('/api/campaign', require('./routes/campaign'));
+app.use('/api/product', require('./routes/product'));
 
 // Definir la pagina principal
 app.get('/', (req, res) => {
