@@ -1009,5 +1009,8 @@ module.exports = {
         balancetimes:{
             column: "COALESCE(co.balancetimes,0)"
         },
+        tmoasesor:{
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (CASE WHEN co.status = 'CERRADO' THEN NULLIF(GREATEST('00:00:00'::INTERVAL, co.totalduration - co.pausedurationafteruser - co.firstassignedtime - co.botduration),'00:00:00') ELSE GREATEST('00:00:00'::INTERVAL, NOW() - co.startdate - co.pausedurationafteruser - co.firstassignedtime - co.botduration) END))::text || ' seconds ')::interval, 'HH24:MI:SS'), '00:00:00')"
+        },
     },
 }
