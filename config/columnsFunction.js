@@ -608,6 +608,125 @@ module.exports = {
             type: "date"
         }
     },
+    campaignperson: {
+        firstname: {
+            column: "pe.firstname"
+        },
+        lastname: {
+            column: "pe.lastname"
+        },
+        documenttype: {
+            column: "pe.documenttype"
+        },
+        documentnumber: {
+            column: "pe.documentnumber"
+        },
+        persontype: {
+            column: "pe.persontype"
+        },
+        type: {
+            column: "pe.type"
+        },
+        phone: {
+            column: "pe.phone"
+        },
+        alternativephone: {
+            column: "pe.alternativephone"
+        },
+        email: {
+            column: "pe.email"
+        },
+        alternativeemail: {
+            column: "pe.alternativeemail"
+        },
+        lastcontact: {
+            column: "pe.lastcontact",
+            type: "date"
+        },
+        agent: {
+            column: "co.agent"
+        },
+        opportunity: {
+            column: "ld.description"
+        },
+        birthday: {
+            column: "pe.birthday",
+            type: "datestr"
+        },
+        gender: {
+            column: "domgen.domaindesc"
+        },
+        educationlevel: {
+            column: "domedu.domaindesc"
+        },
+        comments: {
+            column: "ldn.description"
+        },
+        address: {
+            column: "pe.address"
+        },
+        addressreference: {
+            column: "pe.addressreference"
+        },
+        country: {
+            column: "pe.country"
+        },
+        region: {
+            column: "pe.region"
+        },
+        province: {
+            column: "pe.province"
+        },
+        district: {
+            column: "pe.district"
+        },
+    },
+    campaignleadperson: {
+        opportunity: {
+            column: "ld.description"
+        },
+        changedate: {
+            column: "ld.changedate",
+            type: "date"
+        },
+        name: {
+            column: "TRIM(CONCAT(pe.firstname,' ',pe.lastname))"
+        },
+        email: {
+            column: "ld.email"
+        },
+        phone: {
+            column: "ld.phone"
+        },
+        expected_revenue: {
+            column: "ld.expected_revenue"
+        },
+        date_deadline: {
+            column: "ld.date_deadline",
+            type: "date"
+        },
+        tags: {
+            column: "ld.tags"
+        },
+        agent: {
+            column: "CONCAT(usr.firstname,' ',usr.lastname)"
+        },
+        priority: {
+            column: "ld.priority"
+        },
+        campaign: {
+            column: "ca.title"
+        },
+        products: {
+            column: "pc.title"
+        },
+        phase: {
+            column: "col.description"
+        },
+        comments: {
+            column: "ldn.description"
+        },
+    },
     campaignreport: {
         campaignid: {
             column: "ch.campaignid"
