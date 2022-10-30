@@ -877,43 +877,107 @@ module.exports = {
     },
     location: {
         name: {
-            column:"lc.name"
+            column: "lc.name"
         },
         address: {
-            column:"lc.address"
+            column: "lc.address"
         },
         district: {
-            column:"lc.district"
+            column: "lc.district"
         },
         city: {
-            column:"lc.city"
+            column: "lc.city"
         },
         country: {
-            column:"lc.country"
+            column: "lc.country"
         },
         schedule: {
-            column:"lc.schedule"
+            column: "lc.schedule"
         },
         phone: {
-            column:"lc.phone"
+            column: "lc.phone"
         },
         alternativephone: {
-            column:"lc.alternativephone"
+            column: "lc.alternativephone"
         },
         latitude: {
-            column:"lc.latitude"
+            column: "lc.latitude"
         },
         longitude: {
-            column:"lc.longitude"
+            column: "lc.longitude"
         },
         googleurl: {
-            column:"lc.googleurl"
+            column: "lc.googleurl"
         },
         description: {
-            column:"lc.description"
+            column: "lc.description"
         },
         type: {
-            column:"lc.type"
+            column: "lc.type"
         },
     },
+    productcatalog: {
+        productcatalogid: {
+            column: "p.productcatalogid"
+        },
+        title: {
+            column: "p.title"
+        },
+        description: {
+            column: "p.description"
+        },
+        brand: {
+            column: "p.brand"
+        },
+        availability: {
+            column: "p.availability"
+        },
+        condition: {
+            column: "p.condition"
+        },
+        website: {
+            column: "p.website"
+        },
+        image: {
+            column: "p.image"
+        },
+        currency: {
+            column: "p.currency"
+        },
+        price: {
+            column: "p.price",
+            type: "number"
+        },
+        saleprice: {
+            column: "p.saleprice",
+            type: "number"
+        },
+        catalogname: {
+            column: "p.catalogname"
+        },
+        catalogid: {
+            column: "p.catalogid"
+        },
+        productid: {
+            column: "p.productid"
+        },
+        status: {
+            column: "p.status"
+        },
+        customlabel1: {
+            column: "p.customlabel1"
+        },
+        customlabel2: {
+            column: "p.customlabel2"
+        },
+        customlabel3: {
+            column: "p.customlabel3"
+        },
+        customlabel4: {
+            column: "p.customlabel4"
+        },
+        customlabel5: {
+            column: "p.customlabel5"
+        },
+    }
 }
