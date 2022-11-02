@@ -1072,7 +1072,7 @@ exports.automaticPayment = async (request, response) => {
 
                                                         if (compareamount > appsetting.detractionminimum) {
                                                             invoicedata.CodigoDetraccion = appsetting.detractioncode;
-                                                            invoicedata.MontoTotalDetraccion = Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100;
+                                                            invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100);
                                                             invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
                                                             invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
 
@@ -1825,7 +1825,7 @@ exports.chargeInvoice = async (request, response) => {
                                                         }
 
                                                         if (compareamount > appsetting.detractionminimum) {
-                                                            invoicedata.MontoTotalDetraccion = Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100;
+                                                            invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100);
                                                             invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
                                                             invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
                                                             invoicedata.CodigoDetraccion = appsetting.detractioncode;
@@ -2411,7 +2411,7 @@ exports.createBalance = async (request, response) => {
                                                     }
 
                                                     if (compareamount > appsetting.detractionminimum) {
-                                                        invoicedata.MontoTotalDetraccion = Math.round(((invoicetotalcharge * appsetting.detraction) + Number.EPSILON) * 100) / 100;
+                                                        invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoicetotalcharge * appsetting.detraction) + Number.EPSILON) * 100) / 100);
                                                         invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
                                                         invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
                                                         invoicedata.CodigoDetraccion = appsetting.detractioncode;
@@ -2974,7 +2974,7 @@ exports.createInvoice = async (request, response) => {
                                         }
 
                                         if (compareamount > appsetting.detractionminimum) {
-                                            invoicedata.MontoTotalDetraccion = Math.round(((invoicetotalcharge * appsetting.detraction) + Number.EPSILON) * 100) / 100;
+                                            invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoicetotalcharge * appsetting.detraction) + Number.EPSILON) * 100) / 100);
                                             invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
                                             invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
                                             invoicedata.CodigoDetraccion = appsetting.detractioncode;
@@ -3330,7 +3330,7 @@ exports.emitInvoice = async (request, response) => {
                                             }
 
                                             if (compareamount > appsetting.detractionminimum) {
-                                                invoicedata.MontoTotalDetraccion = Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100;
+                                                invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100);
                                                 invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
                                                 invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
                                                 invoicedata.CodigoDetraccion = appsetting.detractioncode;
