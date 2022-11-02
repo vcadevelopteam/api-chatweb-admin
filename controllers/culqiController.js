@@ -1072,8 +1072,12 @@ exports.automaticPayment = async (request, response) => {
 
                                                         if (compareamount > appsetting.detractionminimum) {
                                                             invoicedata.CodigoDetraccion = appsetting.detractioncode;
-                                                            invoicedata.MontoTotalDetraccion = Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100;
+                                                            invoicedata.CodigoOperacionSunat = '1001';
+                                                            invoicedata.MontoPendienteDetraccion = (((invoicedata.MontoTotal - Math.round(Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100)) + Number.EPSILON) * 100) / 100;
+                                                            invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100);
+                                                            invoicedata.MontoTotalInafecto = null;
                                                             invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
+                                                            invoicedata.PaisRecepcion = null;
                                                             invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
 
                                                             var adicional02 = {
@@ -1825,10 +1829,14 @@ exports.chargeInvoice = async (request, response) => {
                                                         }
 
                                                         if (compareamount > appsetting.detractionminimum) {
-                                                            invoicedata.MontoTotalDetraccion = Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100;
-                                                            invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
-                                                            invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
                                                             invoicedata.CodigoDetraccion = appsetting.detractioncode;
+                                                            invoicedata.CodigoOperacionSunat = '1001';
+                                                            invoicedata.MontoPendienteDetraccion = (((invoicedata.MontoTotal - Math.round(Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100)) + Number.EPSILON) * 100) / 100;
+                                                            invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100);
+                                                            invoicedata.MontoTotalInafecto = null;
+                                                            invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
+                                                            invoicedata.PaisRecepcion = null;
+                                                            invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
 
                                                             var adicional02 = {
                                                                 CodigoDatoAdicional: '06',
@@ -2411,10 +2419,14 @@ exports.createBalance = async (request, response) => {
                                                     }
 
                                                     if (compareamount > appsetting.detractionminimum) {
-                                                        invoicedata.MontoTotalDetraccion = Math.round(((invoicetotalcharge * appsetting.detraction) + Number.EPSILON) * 100) / 100;
-                                                        invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
-                                                        invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
                                                         invoicedata.CodigoDetraccion = appsetting.detractioncode;
+                                                        invoicedata.CodigoOperacionSunat = '1001';
+                                                        invoicedata.MontoPendienteDetraccion = (((invoicedata.MontoTotal - Math.round(Math.round(((invoicetotalcharge * appsetting.detraction) + Number.EPSILON) * 100) / 100)) + Number.EPSILON) * 100) / 100;
+                                                        invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoicetotalcharge * appsetting.detraction) + Number.EPSILON) * 100) / 100);
+                                                        invoicedata.MontoTotalInafecto = null;
+                                                        invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
+                                                        invoicedata.PaisRecepcion = null;
+                                                        invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
 
                                                         var adicional02 = {
                                                             CodigoDatoAdicional: '06',
@@ -2974,10 +2986,14 @@ exports.createInvoice = async (request, response) => {
                                         }
 
                                         if (compareamount > appsetting.detractionminimum) {
-                                            invoicedata.MontoTotalDetraccion = Math.round(((invoicetotalcharge * appsetting.detraction) + Number.EPSILON) * 100) / 100;
-                                            invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
-                                            invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
                                             invoicedata.CodigoDetraccion = appsetting.detractioncode;
+                                            invoicedata.CodigoOperacionSunat = '1001';
+                                            invoicedata.MontoPendienteDetraccion = (((invoicedata.MontoTotal - Math.round(Math.round(((invoicetotalcharge * appsetting.detraction) + Number.EPSILON) * 100) / 100)) + Number.EPSILON) * 100) / 100;
+                                            invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoicetotalcharge * appsetting.detraction) + Number.EPSILON) * 100) / 100);
+                                            invoicedata.MontoTotalInafecto = null;
+                                            invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
+                                            invoicedata.PaisRecepcion = null;
+                                            invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
 
                                             var adicional02 = {
                                                 CodigoDatoAdicional: '06',
@@ -3330,10 +3346,14 @@ exports.emitInvoice = async (request, response) => {
                                             }
 
                                             if (compareamount > appsetting.detractionminimum) {
-                                                invoicedata.MontoTotalDetraccion = Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100;
-                                                invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
-                                                invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
                                                 invoicedata.CodigoDetraccion = appsetting.detractioncode;
+                                                invoicedata.CodigoOperacionSunat = '1001';
+                                                invoicedata.MontoPendienteDetraccion = (((invoicedata.MontoTotal - Math.round(Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100)) + Number.EPSILON) * 100) / 100;
+                                                invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100);
+                                                invoicedata.MontoTotalInafecto = null;
+                                                invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
+                                                invoicedata.PaisRecepcion = null;
+                                                invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
 
                                                 var adicional02 = {
                                                     CodigoDatoAdicional: '06',
