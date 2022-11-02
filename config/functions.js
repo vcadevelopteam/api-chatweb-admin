@@ -2172,7 +2172,17 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_PRODUCTCATALOG_SEL: {
-        query: "SELECT * FROM ufn_productcatalog_sel($corpid, $orgid, $id, $category, $username, $all)",
+        query: "SELECT * FROM ufn_productcatalog_sel($corpid, $orgid, $take, $skip, $where, $order)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PRODUCTCATALOG_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_productcatalog_totalrecords($corpid, $orgid, $where)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PRODUCTCATALOG_SEL_NORMAL: {
+        query: "SELECT * FROM ufn_productcatalog_sel_normal($corpid, $orgid, $id, $category, $username, $all)",
         module: "",
         protected: "SELECT"
     },
@@ -2806,6 +2816,7 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+
     UFN_PERSON_IMPORT_VALIDATION: {
         query: "SELECT * FROM ufn_person_import_validation($corpid, $orgid, $table, $username)",
         module: "",
@@ -2883,6 +2894,16 @@ module.exports = {
     },
     UFN_BILLINGPERIODARTIFICIALINTELLIGENCE_INS_ARRAY: {
         query: "SELECT * FROM ufn_billingperiodartificialintelligence_ins_array($corpid, $orgid, $username, $table)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PRODUCTCATALOG_INS_ARRAY: {
+        query: "SELECT * FROM ufn_productcatalog_ins_array($corpid, $orgid, $catalogid, $catalogname, $username, $table)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_PRODUCTCATALOG_UPD_ARRAY: {
+        query: "SELECT * FROM ufn_productcatalog_upd_array($corpid, $orgid, $username, $table)",
         module: "",
         protected: "INSERT"
     },
