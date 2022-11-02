@@ -1,7 +1,8 @@
 const axios = require('axios');
 const xlsx = require('xlsx');
+const xml2json = require('xml2json');
 
-exports.getFileRequest = async ({method = "post", url, data = undefined,headers = undefined, timeout}) => {
+exports.getFileRequest = async ({ method = "post", url, data = undefined, headers = undefined, timeout }) => {
     return await axios({
         method,
         url,
@@ -10,23 +11,28 @@ exports.getFileRequest = async ({method = "post", url, data = undefined,headers 
         responseType: 'arraybuffer',
         timeout: timeout || 600000
     });
-    
 }
 
-exports.extractDataFile = (isXml, data, catalogid, catalogname, isvalid) => {    
-    if(isXml){ 
-        return getXmlFile(data,catalogid, catalogname, isvalid);
+exports.extractDataFile = (isxml, data, catalogid, catalogname, override) => {
+    if (isxml) {
+        return getXmlFile(data, catalogid, catalogname, override);
     } else {
-        return getXlsxFile(data,catalogid, catalogname, isvalid);
+        return getXlsxFile(data, catalogid, catalogname, override);
     }
 }
 
-const getXmlFile = (data, catalogid, catalogname, isvalid) => {
-    var parser = require('xml2json');
-    const jsondata = JSON.parse(parser.toJson(data));
+const getXmlFile = (data, catalogid, catalogname, override) => {
+    let isvalid = true;
+
+    const jsondata = JSON.parse(xml2json.toJson(data)?.replaceAll('{}', 'null'));
+
+    if (!(jsondata.rss.channel.item instanceof Array)) {
+        jsondata.rss.channel.item = [jsondata.rss.channel.item];
+    }
+
     let simplifiedData = jsondata.rss.channel.item.map(x => {
-        let customlabels = Object.keys(x).filter(y => y.indexOf("custom_label") >= 0)
-        var table =  {
+        let customlabels = Object.keys(x).filter(y => y.indexOf("custom_label") >= 0);
+        var table = {
             productid: x["g:id"] || null,
             title: x["g:title"] || null,
             link: x["g:link"] || null,
@@ -52,30 +58,36 @@ const getXmlFile = (data, catalogid, catalogname, isvalid) => {
             catalogname: catalogname || null,
             description: x["g:description"],
             status: x["g:status"] || 'ACTIVO',
-            type: x["g:type"] || null,
+            type: x["g:type"] || '',
         }
-        if(isvalid) {
-            isvalid = (table.productid && table.title && table.description && table.link && 
+        if (isvalid) {
+            isvalid = (table.productid && table.title && table.description && table.link &&
                 table.imagelink && table.brand && table.condition && table.availability
-                && table.price && table.currency);
+                && table.price && table.currency) ? true : false;
         }
-        
-        
-            return table;
+
+        return table;
     });
 
-    return simplifiedData;
+    if (isvalid || override) {
+        return simplifiedData;
+    }
+    else {
+        return null;
+    }
 }
 
-const getXlsxFile =  (data, catalogid, catalogname, isvalid) => {
+const getXlsxFile = (data, catalogid, catalogname, override) => {
+    let isvalid = true;
+
     const workbook = xlsx.read(data);
-    
+
     const worksheetName = workbook.SheetNames[0];
     let worksheet = workbook.Sheets[worksheetName];
-    let dataRows = xlsx.utils.sheet_to_json(worksheet,{header: 2});
-    
+    let dataRows = xlsx.utils.sheet_to_json(worksheet, { header: 2 });
+
     let simplifiedData = dataRows.map((field) => {
-        let customlabels = [field.custom_label_0,field.custom_label_1,field.custom_label_2,field.custom_label_3,field.custom_label_4];
+        let customlabels = [field.custom_label_0, field.custom_label_1, field.custom_label_2, field.custom_label_3, field.custom_label_4];
         var table = {
             productid: field.id || null,
             title: field.title || null,
@@ -93,24 +105,30 @@ const getXlsxFile =  (data, catalogid, catalogname, isvalid) => {
             color: field.color || null,
             pattern: field.pattern || null,
             saleprice: field.sale_price || 0.00,
-            customlabel1: field.custom_label_0 || null,     
+            customlabel1: field.custom_label_0 || null,
             customlabel2: field.custom_label_1 || null,
             customlabel3: field.custom_label_2 || null,
             customlabel4: field.custom_label_3 || null,
             customlabel5: field.custom_label_4 || null,
             labels: customlabels ? customlabels.join(',') : null,
             catalogid: catalogid || null,
-            catalogname: catalogname || null,            
-            status: field.status || 'ACTIVO'
+            catalogname: catalogname || null,
+            status: field.status || 'ACTIVO',
+            type: field.type || '',
         }
-        if(isvalid) {
-            isvalid = (table.productid && table.title && table.description && table.link && 
+        if (isvalid) {
+            isvalid = (table.productid && table.title && table.description && table.link &&
                 table.imagelink && table.brand && table.condition && table.availability
-                && table.price && table.currency);
-        }       
+                && table.price && table.currency) ? true : false;
+        }
 
         return table;
     });
-    
-    return simplifiedData;
+
+    if (isvalid || override) {
+        return simplifiedData;
+    }
+    else {
+        return null;
+    }
 }
