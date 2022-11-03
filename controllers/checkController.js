@@ -24,3 +24,12 @@ exports.load = async (req, res) => {
     else
         return res.status(result.rescode).json(result);
 }
+
+exports.version = async (_, res) => {
+    return res.json({
+        version: process.env.RELEASE_VERSION,
+        version_android: process.env.RELEASE_VERSION,
+        version_ios: process.env.RELEASE_VERSION,
+        date: process.env.RELEASE_DATE
+    });
+}
