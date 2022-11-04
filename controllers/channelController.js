@@ -1358,7 +1358,6 @@ exports.insertChannel = async (request, response) => {
                 }
                 break;
 
-
             case 'LINKEDIN':
             case 'MICROSOFTTEAMS':
             case 'TIKTOK':
@@ -1537,6 +1536,22 @@ exports.insertChannel = async (request, response) => {
                 }
 
             case 'WHATSAPP':
+                if (!service.accesstoken && service.channelid) {
+                    const requestGetApiKey = await axiosObservable({
+                        data: {
+                            partnerId: service.partnerid,
+                            channelList: service.channelid,
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processpartner/getapikey`,
+                        _requestid: request._requestid,
+                    });
+
+                    if (requestGetApiKey.data.success) {
+                        service.accesstoken = requestGetApiKey.data.apiKey;
+                    }
+                }
+
                 const requestCreateWhatsApp = await axiosObservable({
                     data: {
                         accessToken: service.accesstoken,
