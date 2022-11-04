@@ -1208,7 +1208,7 @@ exports.createSubscription = async (request, response) => {
                         });
                     }
 
-                    await channelfunctions.clearHookCache('', request._requestid);
+                    await channelfunctions.clearHookCache('EveryService', request._requestid);
                 }
 
                 if ((typeof parameters.facebookid !== "undefined" && parameters.facebookid) || (typeof parameters.googleid !== "undefined" && parameters.googleid)) {
