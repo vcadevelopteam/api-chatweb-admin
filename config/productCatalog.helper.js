@@ -24,7 +24,7 @@ exports.extractDataFile = (isxml, data, catalogid, catalogname, override) => {
 const getXmlFile = (data, catalogid, catalogname, override) => {
     let isvalid = true;
 
-    const jsondata = JSON.parse(xml2json.toJson((data || '').replaceAll('{}', 'null')));
+    const jsondata = JSON.parse((xml2json.toJson(data) || '').split("{}").join("null"));
 
     if (!(jsondata.rss.channel.item instanceof Array)) {
         jsondata.rss.channel.item = [jsondata.rss.channel.item];
