@@ -854,6 +854,41 @@ exports.getPageList = async (request, response) => {
     }
 }
 
+exports.getPhoneList = async (request, response) => {
+    try {
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
+        const requestGetPhoneList = await axiosObservable({
+            data: {
+                partnerId: request.body.partnerId,
+                channelList: request.body.channelList,
+            },
+            method: 'post',
+            url: `${bridgeEndpoint}processpartner/getnumberlist`,
+            _requestid: request._requestid,
+        });
+
+        if (requestGetPhoneList.data.success) {
+            return response.json({
+                data: requestGetPhoneList.data.phoneList,
+                success: true
+            });
+        }
+        else {
+            return response.status(400).json({
+                msg: requestGetPhoneList.data.operationMessage,
+                success: false
+            });
+        }
+    }
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            msg: exception.message,
+        });
+    }
+}
+
 exports.insertChannel = async (request, response) => {
     try {
         logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
