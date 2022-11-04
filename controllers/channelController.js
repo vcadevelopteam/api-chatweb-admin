@@ -738,7 +738,7 @@ exports.deleteChannel = async (request, response) => {
                 const transactionDeleteGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
 
                 if (transactionDeleteGeneric instanceof Array) {
-                    await channelfunctions.clearHookCache('', request._requestid);
+                    await channelfunctions.clearHookCache('EveryService', request._requestid);
 
                     return response.json({
                         success: true
