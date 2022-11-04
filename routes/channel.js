@@ -68,4 +68,10 @@ router.post("/deletetemplate",
     channelController.deleteTemplate
 )
 
+router.post("/getphonelist",
+    ip,
+    auth,
+    channelController.getPhoneList
+)
+
 module.exports = router;
