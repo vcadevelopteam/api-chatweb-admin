@@ -1540,7 +1540,7 @@ exports.insertChannel = async (request, response) => {
                     const requestGetApiKey = await axiosObservable({
                         data: {
                             partnerId: service.partnerid,
-                            channelList: service.channelid,
+                            channelId: service.channelid,
                         },
                         method: 'post',
                         url: `${bridgeEndpoint}processpartner/getapikey`,
