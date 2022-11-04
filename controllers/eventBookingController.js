@@ -23,7 +23,7 @@ const send = async (data, requestid) => {
             })
         }
 
-        if (data.type === "MAIL") {
+        if (data.type === "MAIL" || data.type === "EMAIL") {
             let jsonconfigmail = "";
             const resBD = await Promise.all([
                 executesimpletransaction("QUERY_GET_CONFIG_MAIL", data),
