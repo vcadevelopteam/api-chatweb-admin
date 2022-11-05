@@ -2614,20 +2614,35 @@ exports.deleteTemplate = async (request, response) => {
                 switch (request.body.communicationchanneltype) {
                     case "WHAD":
                         if (request.body.communicationchannelservicecredentials) {
-                            var serviceData = JSON.parse(request.body.communicationchannelservicecredentials);
+                            var continueDelete = false;
 
-                            const requestDeleteDialog = await axiosObservable({
-                                data: {
-                                    ApiKey: serviceData.apiKey,
-                                    DeleteName: request.body.name,
-                                    Type: "DELETE",
-                                },
-                                method: 'post',
-                                url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
-                                _requestid: request._requestid,
-                            });
+                            if (request.body.rootdelete) {
+                                var serviceData = JSON.parse(request.body.communicationchannelservicecredentials);
 
-                            if (requestDeleteDialog.data.success) {
+                                const requestDeleteDialog = await axiosObservable({
+                                    data: {
+                                        ApiKey: serviceData.apiKey,
+                                        DeleteName: request.body.name,
+                                        Type: "DELETE",
+                                    },
+                                    method: 'post',
+                                    url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
+                                    _requestid: request._requestid,
+                                });
+
+                                if (requestDeleteDialog.data.success) {
+                                    continueDelete = true;
+                                }
+                                else {
+                                    requestCode = requestDeleteDialog.data.operationMessage
+                                    requestMessage = requestDeleteDialog.data.operationMessage;
+                                }
+                            }
+                            else {
+                                continueDelete = true;
+                            }
+
+                            if (continueDelete) {
                                 var parameters = request.body;
 
                                 parameters.corpid = request.user.corpid;
@@ -2645,33 +2660,44 @@ exports.deleteTemplate = async (request, response) => {
                                     requestCode = queryTemplateDelete.code;
                                     requestMessage = queryTemplateDelete.code;
                                 }
-                            }
-                            else {
-                                requestCode = requestDeleteDialog.data.operationMessage
-                                requestMessage = requestDeleteDialog.data.operationMessage;
                             }
                         }
                         break;
 
                     case "WHAT":
                         if (request.body.communicationchannelservicecredentials) {
-                            var serviceData = JSON.parse(request.body.communicationchannelservicecredentials);
+                            var continueDelete = false;
 
-                            const requestDeleteSmooch = await axiosObservable({
-                                data: {
-                                    AppId: serviceData.appId,
-                                    IntegrationId: request.body.communicationchannelintegrationid,
-                                    DeleteName: request.body.name,
-                                    Type: "DELETE",
-                                    KeyId: serviceData.apiKeyId,
-                                    KeySecret: serviceData.apiKeySecret,
-                                },
-                                method: 'post',
-                                url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
-                                _requestid: request._requestid,
-                            });
+                            if (request.body.rootdelete) {
+                                var serviceData = JSON.parse(request.body.communicationchannelservicecredentials);
 
-                            if (requestDeleteSmooch.data.success) {
+                                const requestDeleteSmooch = await axiosObservable({
+                                    data: {
+                                        AppId: serviceData.appId,
+                                        IntegrationId: request.body.communicationchannelintegrationid,
+                                        DeleteName: request.body.name,
+                                        Type: "DELETE",
+                                        KeyId: serviceData.apiKeyId,
+                                        KeySecret: serviceData.apiKeySecret,
+                                    },
+                                    method: 'post',
+                                    url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
+                                    _requestid: request._requestid,
+                                });
+
+                                if (requestDeleteSmooch.data.success) {
+                                    continueDelete = true;
+                                }
+                                else {
+                                    requestCode = requestDeleteSmooch.data.operationMessage
+                                    requestMessage = requestDeleteSmooch.data.operationMessage;
+                                }
+                            }
+                            else {
+                                continueDelete = true;
+                            }
+
+                            if (continueDelete) {
                                 var parameters = request.body;
 
                                 parameters.corpid = request.user.corpid;
@@ -2689,10 +2715,6 @@ exports.deleteTemplate = async (request, response) => {
                                     requestCode = queryTemplateDelete.code;
                                     requestMessage = queryTemplateDelete.code;
                                 }
-                            }
-                            else {
-                                requestCode = requestDeleteSmooch.data.operationMessage
-                                requestMessage = requestDeleteSmooch.data.operationMessage;
                             }
                         }
                         break;
