@@ -2990,4 +2990,34 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CALENDARBOOKING_SEL_ONE: {
+        query: "SELECT * FROM ufn_calendarbooking_sel_one($corpid, $orgid, $calendareventid, $id, $offset)",
+        module: "",
+        protected: false
+    },
+    UFN_CALENDAR_INTEGRATION_CREDENTIALS: {
+        query: "SELECT * FROM ufn_calendarintegration_credentials($corpid, $orgid, $id, $email, $type, $credentials, $timezone)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CALENDAR_INTEGRATION_CREDENTIALS_SEL: {
+        query: "SELECT * FROM ufn_calendarintegration_credentials_sel($id)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CALENDAREVENT_INTEGRATION_CREDENTIALS_SEL: {
+        query: "SELECT * FROM ufn_calendareventintegration_credentials_sel($corpid, $orgid, $id)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CALENDAR_INTEGRATION_SYNC: {
+        query: "SELECT * FROM ufn_calendarintegration_sync($id, $email, $timezone, $updated, $nextsynctoken, $table)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CALENDAR_INTEGRATION_WATCH: {
+        query: "SELECT * FROM ufn_calendarintegration_watch($id, $email, $watchid, $resourceid, $watchexpiredate)",
+        module: "",
+        protected: "INSERT"
+    },
 }
