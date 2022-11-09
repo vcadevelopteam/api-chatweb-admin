@@ -377,6 +377,7 @@ const googleCalendarSync = async ({ params, calendar, extradata = null }) => {
                     calendarId: extradata.email || 'primary',
                     maxAttendees: 1,
                     maxResults: 2500,
+                    showDeleted: true,
                     singleEvents: true,
                     timeMin: new Date().toISOString(),
                     ...(calendar_data?.nextPageToken ? {
