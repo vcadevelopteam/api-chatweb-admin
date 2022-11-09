@@ -9,6 +9,16 @@ router.post('/collection',
     eventBookingController.Collection
 )
 
+router.post('/cancelevent/:corpid/:orgid/:calendarbookingid',
+    ip,
+    eventBookingController.CancelEvent
+)
+
+router.post('/getevent',
+    ip,
+    eventBookingController.GetEventByBookingid
+)
+
 router.post("/googlelogin",
     auth,    
     ip,
