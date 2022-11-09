@@ -2990,4 +2990,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CALENDARBOOKING_SEL_ONE: {
+        query: "SELECT * FROM ufn_calendarbooking_sel_one($corpid, $orgid, $calendareventid, $id, $offset)",
+        module: "",
+        protected: false
+    },
 }
