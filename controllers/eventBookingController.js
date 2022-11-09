@@ -1,7 +1,8 @@
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { getErrorCode, errors, axiosObservable } = require('../config/helpers');
 
-const method_allowed = ["QUERY_GET_PERSON_FROM_BOOKING", "QUERY_EVENT_BY_CODE", "UFN_CALENDARYBOOKING_INS", "UFN_CALENDARYBOOKING_SEL_DATETIME"]
+const method_allowed = ["QUERY_GET_PERSON_FROM_BOOKING", "QUERY_EVENT_BY_CODE", "UFN_CALENDARYBOOKING_INS", "UFN_CALENDARYBOOKING_SEL_DATETIME","QUERY_GET_EVENTS_PER_PERSON",
+                        "QUERY_CANCEL_EVENT_BY_CALENDARBOOKINGID","QUERY_GET_EVENT_BY_BOOKINGID"]
 
 // var https = require('https');
 
@@ -23,7 +24,7 @@ const send = async (data, requestid) => {
             })
         }
 
-        if (data.type === "MAIL") {
+        if (data.type === "MAIL" || data.type === "EMAIL") {
             let jsonconfigmail = "";
             const resBD = await Promise.all([
                 executesimpletransaction("QUERY_GET_CONFIG_MAIL", data),
@@ -205,6 +206,48 @@ exports.Collection = async (req, res) => {
                 });
             }
         }
+        return res.json({ error: false, success: true, data: result, key });
+    }
+    else
+        return res.status(result.rescode).json(({ ...result, key }));
+}
+
+exports.CancelEvent = async (req,res) => {
+    const { orgid, corpid,calendarbookingid } = req.params;
+    const { parameters = {}, method, key} = req.body;
+    
+    parameters.corpid = Number(corpid);
+    parameters.orgid = Number(orgid);
+    parameters.calendarbookingid = Number(calendarbookingid);
+
+    
+    if (!method_allowed.includes(method)) {
+        const resError = getErrorCode(errors.FORBIDDEN);
+        return res.status(resError.rescode).json(resError);
+    }
+
+    parameters._requestid = req._requestid;
+
+    const result = await executesimpletransaction(method, parameters);
+
+    if (!result.error) {
+        return res.json({ error: false, success: true, data: result, key });
+    }
+    else
+        return res.status(result.rescode).json(({ ...result, key }));
+}
+
+exports.GetEventByBookingid = async (req,res) => {
+    const { parameters = {}, method, key} = req.body;
+
+    if (!method_allowed.includes(method)) {
+        const resError = getErrorCode(errors.FORBIDDEN);
+        return res.status(resError.rescode).json(resError);
+    }
+
+    const result = await executesimpletransaction(method, parameters);
+
+    if (!result.error) {
         return res.json({ error: false, success: true, data: result, key });
     }
     else

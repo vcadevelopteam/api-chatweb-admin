@@ -2249,6 +2249,44 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_GET_EVENTS_PER_PERSON: {
+        query: `SELECT  cb.calendareventid,cb.calendarbookingid, cb.description, cb.status, cb.datestart,
+                        cb.monthdate, cb.monthday, cb.weekday, cb.hourstart, cb.hourend, cb.timeduration,
+                        cb.personname, cb.personcontact
+            FROM calendarbooking cb
+            WHERE cb.personcontact IN ($email,$phone)
+                AND cb.calendareventid=$calendareventid
+                AND cb.corpid=$corpid
+                AND cb.orgid=$orgid
+                AND cb.status='ACTIVO'`,
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_GET_EVENT_BY_BOOKINGID: {
+        query: `SELECT cb.personname,ce.name , (cb.datestart - cb.timezone * INTERVAL '1HOUR' + $offset * INTERVAL '1HOUR')::date as monthdate,
+                        (cb.hourstart - cb.timezone * INTERVAL '1HOUR' + $offset * INTERVAL '1HOUR')::text as hourstart, (cb.hourend - cb.timezone * INTERVAL '1HOUR' + $offset * INTERVAL '1HOUR')::text as hourend,
+                        cb.cancelcomment
+            FROM calendarevent ce
+            JOIN calendarbooking cb ON ce.corpid = cb.corpid and ce.orgid = cb.orgid and ce.calendareventid = cb.calendareventid
+            WHERE ce.calendareventid = cb.calendareventid
+                AND ce.corpid = $corpid
+                AND cb.corpid=$corpid
+                AND cb.orgid=$orgid
+                AND cb.calendarbookingid=$calendarbookingid
+                AND cb.status='ACTIVO'`,
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_CANCEL_EVENT_BY_CALENDARBOOKINGID: {
+        query: `UPDATE calendarbooking 
+                SET status='CANCELADO', cancelcomment=$cancelcomment
+                WHERE status='ACTIVO'
+                AND corpid=$corpid
+                AND orgid=$orgid
+                AND calendarbookingid=$calendarbookingid;`,
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CALENDARYBOOKING_INS: {
         query: "SELECT * FROM ufn_calendarbooking_ins($corpid, $orgid, $calendareventid, $id, $description, $type, $status, $monthdate, $hourstart, $notes, $conversationid, $personname, $personcontact, $persontimezone, $username, $operation)",
         module: "",
