@@ -20,9 +20,21 @@ router.post('/getevent',
 )
 
 router.post("/googlelogin",
-    auth,    
+    auth,
     ip,
     eventBookingController.googleLogIn,
+)
+
+router.post("/googlerevoke",
+    auth,
+    ip,
+    eventBookingController.googleRevoke,
+)
+
+router.post("/googlevalidate",
+    auth,
+    ip,
+    eventBookingController.googleValidate,
 )
 
 router.post("/googlesync",

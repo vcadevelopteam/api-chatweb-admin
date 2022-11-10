@@ -269,6 +269,58 @@ const GOOGLE_CALENDAR_CLIENTID = process.env.GOOGLE_CALENDAR_CLIENTID
 const GOOGLE_CALENDAR_CLIENTSECRET = process.env.GOOGLE_CALENDAR_CLIENTSECRET
 const GOOGLE_CALENDAR_REDIRECTURI = process.env.GOOGLE_CALENDAR_REDIRECTURI
 const HOOK = process.env.HOOK
+const BRIDGE = process.env.BRIDGE
+
+const googleCalendarCredentialsClean = async ({ params, extradata }) => {
+    try {
+        await executesimpletransaction("UFN_CALENDAR_INTEGRATION_CREDENTIALS_CLEAN", {
+            id: extradata.calendarintegrationid,
+            email: extradata.email
+        });
+    }
+    catch (exception) {
+        logger.child({ _requestid: params._requestid, context: { ...params, extradata }}).error(exception)
+    }
+    try {
+        await axiosObservable({
+            method: "post",
+            url: `${BRIDGE}ProcessScheduler/SendMail`,
+            data: {
+                mailAddress: extradata.email,
+                mailTitle: "Laraigo - Google Calendar",
+                mailBody: "Sus permisos de Google Calendar expiraron o fueron revocados, en caso desee seguir usando el servico por favor ingrese su cuenta de google nuevamente en nuestra plataforma."
+            },
+            _requestid: params._requestid,
+        });
+    }
+    catch (exception) {
+        logger.child({ _requestid: params._requestid, context: { ...params, extradata }}).error(exception)
+    }
+}
+
+const googleExceptionHandler = async ({ exception, params, calendar, extradata }) => {
+    let invalid_credentials = false;
+    if (exception.code === 401) {
+        invalid_credentials = true
+    }
+    else {
+        switch (exception.message) {
+            case 'Invalid Credentials':
+                invalid_credentials = true
+            case 'invalid_grant':
+                switch (exception.response.data.error_description) {
+                    case 'Token has been expired or revoked.':
+                        invalid_credentials = true
+                    default:
+                        invalid_credentials = true
+                }
+        }
+    }
+    if (invalid_credentials) {
+        await googleCalendarCredentialsClean({ params, extradata })
+    }
+    return invalid_credentials
+}
 
 const googleCalendarCredentials = async ({ params, code = null }) => {
     try {
@@ -339,18 +391,57 @@ const googleCalendarCredentials = async ({ params, code = null }) => {
             }
         }
     }
-    catch (e) {
-        logger.child({ _requestid: params._requestid, context: params }).error(e)
+    catch (exception) {
+        logger.child({ _requestid: params._requestid, context: params }).error(exception)
     }
     return [null, null]
 }
 
-const googleCalendarSync = async ({ params, calendar, extradata = null }) => {
+const googleCalendarRevoke = async ({ params }) => {
     try {
-        let calendar_data;
-        let calerdar_items = [];
-        let calerdar_events;
-        let calendar_success = true;
+        const oauth2Client = new google.auth.OAuth2(
+            GOOGLE_CALENDAR_CLIENTID,
+            GOOGLE_CALENDAR_CLIENTSECRET,
+            GOOGLE_CALENDAR_REDIRECTURI
+        )
+        // Operations from App { corpid, orgid, id } = params
+        const google_data = await executesimpletransaction("UFN_CALENDAREVENT_INTEGRATION_CREDENTIALS_SEL", params);
+        if (google_data instanceof Array && google_data.length > 0) {
+            const { credentials, ...extradata } = google_data[0];
+            const success = await oauth2Client.revokeToken(credentials.access_token)
+            if (success) {
+                await googleCalendarCredentialsClean({ params, extradata })
+            }
+            return success
+        }
+    }
+    catch (exception) {
+        throw exception
+    }
+    return null
+}
+
+const googleCalendarGet = async ({ params, calendar, extradata = null }) => {
+    try {
+        const calendar_data = await calendar.calendars.get({
+            calendarId: extradata.email || 'primary',
+        })
+        if (calendar_data?.status === 200) {
+            return calendar_data.data
+        }
+        return null
+    }
+    catch (exception) {
+        throw exception;
+    }
+}
+
+const googleCalendarSync = async ({ params, calendar, extradata = null }) => {
+    let calendar_data;
+    let calerdar_items = [];
+    let calerdar_events;
+    let calendar_success = true;
+    try {
         while (!calendar_data?.nextSyncToken) {
             // Incremental sync
             if (extradata?.nextsynctoken && calendar_success) {
@@ -366,12 +457,19 @@ const googleCalendarSync = async ({ params, calendar, extradata = null }) => {
                         } : {})
                     });
                 }
-                catch (e) {
-                    // If the syncToken expires, the server will respond with a 410 GONE.
-                    calendar_success = false
+                catch (exception) {
+                    const googleError = await googleExceptionHandler({ exception, params, calendar, extradata })
+                    if (googleError) {
+                        throw exception;
+                    }
+                    else {
+                        // If the syncToken expires, the server will respond with a 410 GONE.
+                        // Should perform a full synchronization without any syncToken
+                        calendar_success = false
+                    }
                 }
             }
-            // New sync
+            // Full sync
             if (!extradata?.nextsynctoken || !calendar_success) {
                 calerdar_events = await calendar.events.list({
                     calendarId: extradata.email || 'primary',
@@ -385,14 +483,14 @@ const googleCalendarSync = async ({ params, calendar, extradata = null }) => {
                     } : {})
                 });
             }
-            if (calerdar_events.status !== 200) {
+            if (calerdar_events?.status !== 200) {
                 break;
             }
             const { items, ...ce_data } = calerdar_events.data;
             calendar_data = ce_data;
             calerdar_items = [...calerdar_items, ...items];
         }
-        if (calerdar_events.status === 200) {
+        if (calerdar_events?.status === 200) {
             if (calerdar_items.length > 0) {
                 await executesimpletransaction("UFN_CALENDAR_INTEGRATION_SYNC", {
                     id: extradata.calendarintegrationid,
@@ -413,14 +511,16 @@ const googleCalendarSync = async ({ params, calendar, extradata = null }) => {
                     })))
                 });
             }
-            return calendar_data.nextSyncToken
+            return calendar_data?.nextSyncToken
         }
         return null
     }
-    catch (e) {
-        logger.child({ _requestid: params._requestid, context: params }).error(e)
+    catch (exception) {
+        if (!calerdar_events) {
+            throw exception;
+        }
+        logger.child({ _requestid: params._requestid, context: params }).error(exception)
     }
-    return null
 }
 
 const googleCalendarWatch = async ({ params, calendar, extradata = null }) => {
@@ -434,8 +534,8 @@ const googleCalendarWatch = async ({ params, calendar, extradata = null }) => {
                         resourceId: extradata?.resourceid
                     }})
             }
-            catch (e) {
-                logger.child({ _requestid: params._requestid, context: { ...params, extradata }}).error(e)
+            catch (exception) {
+                logger.child({ _requestid: params._requestid, context: { ...params, extradata }}).error(exception)
             }
         }
         // Register new watch
@@ -462,8 +562,12 @@ const googleCalendarWatch = async ({ params, calendar, extradata = null }) => {
         }
         return calerdar_watch?.data
     }
-    catch (e) {
-        logger.child({ _requestid: params._requestid, context: { ...params, extradata }}).error(e)
+    catch (exception) {
+        const googleError = await googleExceptionHandler({ exception, params, calendar, extradata })
+        if (googleError) {
+            throw exception;
+        }
+        logger.child({ _requestid: params._requestid, context: { ...params, extradata }}).error(exception)
     }
     return null
 }
@@ -482,6 +586,63 @@ exports.googleLogIn = async (request, response) => {
             return response.status(200).json({
                 code: '',
                 data: nextSyncToken,
+                error: false,
+                message: '',
+                success: true,
+            });
+        }
+        return response.status(400).json({
+            code: 'error_unexpected_error',
+            error: true,
+            message: 'Invalid credentials',
+            success: false,
+        });
+    }
+    catch (exception) {
+        logger.child({ _requestid: request._requestid, context: request.body }).error(exception)
+        return response.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+}
+
+exports.googleRevoke = async (request, response) => {
+    try {
+        const { id } = request.body
+        const params = { id }
+        setSessionParameters(params, request.user, request._requestid);
+        const success = await googleCalendarRevoke({ params })
+        return response.status(200).json({
+            code: '',
+            data: success,
+            error: false,
+            message: '',
+            success: true,
+        });
+    }
+    catch (exception) {
+        logger.child({ _requestid: request._requestid, context: request.body }).error(exception)
+        return response.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+}
+
+exports.googleValidate = async (request, response) => {
+    try {
+        const params = { ...request.body, _requestid: request._requestid }
+        const [calendar, extradata] = await googleCalendarCredentials({ params })
+        if (calendar) {
+            const calendar_data = await googleCalendarGet({ params, calendar, extradata })
+            return response.status(200).json({
+                code: '',
+                data: calendar_data,
                 error: false,
                 message: '',
                 success: true,
