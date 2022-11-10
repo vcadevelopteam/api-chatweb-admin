@@ -348,7 +348,9 @@ const googleCalendarCredentials = async ({ params, code = null }) => {
                 });
                 return [calendar, {
                     calendarintegrationid: calendarintegration?.[0]?.calendarintegrationid,
-                    email: calendar_data.data.id
+                    email: calendar_data.data.id,
+                    watchid: calendarintegration?.[0]?.watchid,
+                    resourceid: calendarintegration?.[0]?.resourceid,
                 }]
             }
         }
@@ -369,12 +371,14 @@ const googleCalendarCredentials = async ({ params, code = null }) => {
             });
             if (google_data instanceof Array && google_data.length > 0) {
                 const { credentials, ...extradata } = google_data[0];
-                oauth2Client.setCredentials(credentials)
-                const calendar = google.calendar({
-                    version: 'v3',
-                    auth: oauth2Client
-                });
-                return [calendar, extradata]
+                if (credentials) {
+                    oauth2Client.setCredentials(credentials)
+                    const calendar = google.calendar({
+                        version: 'v3',
+                        auth: oauth2Client
+                    });
+                    return [calendar, extradata]
+                }
             }
         }
         else {
@@ -382,12 +386,14 @@ const googleCalendarCredentials = async ({ params, code = null }) => {
             const google_data = await executesimpletransaction("UFN_CALENDAREVENT_INTEGRATION_CREDENTIALS_SEL", params);
             if (google_data instanceof Array && google_data.length > 0) {
                 const { credentials, ...extradata } = google_data[0];
-                oauth2Client.setCredentials(credentials)
-                const calendar = google.calendar({
-                    version: 'v3',
-                    auth: oauth2Client
-                });
-                return [calendar, extradata]
+                if (credentials) {
+                    oauth2Client.setCredentials(credentials)
+                    const calendar = google.calendar({
+                        version: 'v3',
+                        auth: oauth2Client
+                    });
+                    return [calendar, extradata]
+                }
             }
         }
     }
@@ -408,7 +414,25 @@ const googleCalendarRevoke = async ({ params }) => {
         const google_data = await executesimpletransaction("UFN_CALENDAREVENT_INTEGRATION_CREDENTIALS_SEL", params);
         if (google_data instanceof Array && google_data.length > 0) {
             const { credentials, ...extradata } = google_data[0];
-            const success = await oauth2Client.revokeToken(credentials.access_token)
+            oauth2Client.setCredentials(credentials)
+            // Stop watch
+            try {
+                const calendar = google.calendar({
+                    version: 'v3',
+                    auth: oauth2Client
+                });
+                await calendar.channels.stop({
+                    requestBody: {
+                        id: extradata?.watchid,
+                        resourceId: extradata?.resourceid
+                    }})
+            }
+            catch (exception) {
+                logger.child({ _requestid: params._requestid, context: { ...params, extradata }}).error(exception)
+            }
+            // Revoke
+            const access_token = await oauth2Client.getAccessToken()
+            const success = await oauth2Client.revokeToken(access_token.token)
             if (success) {
                 await googleCalendarCredentialsClean({ params, extradata })
             }
@@ -701,9 +725,17 @@ exports.googleSync = async (request, response) => {
 exports.googleWebhookSync = async (request, response) => {
     try {
         const { channelId, channelToken, resourceState, resourceId } = request.body
-        const params = { ...JSON.parse(channelToken), _requestid: request._requestid }
+        const params = {
+            ...JSON.parse(channelToken),
+            watchid: channelId,
+            resourceid: resourceId,
+            _requestid: request._requestid
+        }
         const [calendar, extradata] = await googleCalendarCredentials({ params })
-        if (calendar) {
+        if (calendar
+            && params?.watchid === extradata?.watchid
+            && params?.resourceid === extradata?.resourceid
+        ) {
             const nextSyncToken = await googleCalendarSync({ params, calendar, extradata })
             return response.status(200).json({
                 code: '',
