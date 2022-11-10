@@ -403,9 +403,9 @@ const googleCalendarSync = async ({ params, calendar, extradata = null }) => {
                     table: JSON.stringify(calerdar_items.map(x => ({
                         id: x.id,
                         status: x?.status === 'cancelled' ? 'CANCELADO' : 'ACTIVO',
-                        type: x?.eventType,
-                        createdate: x?.created,
-                        changedate: x?.updated,
+                        type: x?.eventType || null,
+                        createdate: x?.created === '0000-12-31T00:00:00.000Z' ? null : x?.created,
+                        changedate: x?.updated === '0000-12-31T00:00:00.000Z' ? null : x?.updated,
                         summary: x?.summary,
                         description: x?.description,
                         startdate: x?.start?.dateTime ? x?.start?.dateTime : x?.start?.date,
@@ -445,8 +445,8 @@ const googleCalendarWatch = async ({ params, calendar, extradata = null }) => {
                 address: `${HOOK}mail/calendarwebhookasync`,
                 id: uuidv4(),
                 token: JSON.stringify({
-                    calendarintegrationid: params?.calendarintegrationid,
-                    email: params?.email,
+                    calendarintegrationid: extradata?.calendarintegrationid || params?.calendarintegrationid,
+                    email: extradata?.email || params?.email,
                 }),
                 type: 'web_hook',
             }
