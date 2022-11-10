@@ -476,7 +476,9 @@ exports.googleLogIn = async (request, response) => {
         const [calendar, extradata] = await googleCalendarCredentials({ params, code })
         if (calendar) {
             const nextSyncToken = await googleCalendarSync({ params, calendar, extradata })
-            await googleCalendarWatch({ params, calendar, extradata })
+            if (nextSyncToken) {
+                await googleCalendarWatch({ params, calendar, extradata })
+            }
             return response.status(200).json({
                 code: '',
                 data: nextSyncToken,
