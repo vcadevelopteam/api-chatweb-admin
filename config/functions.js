@@ -3000,6 +3000,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_CALENDAR_INTEGRATION_CREDENTIALS_CLEAN: {
+        query: "SELECT * FROM ufn_calendarintegration_credentials_clean($id, $email)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_CALENDAR_INTEGRATION_CREDENTIALS_SEL: {
         query: "SELECT * FROM ufn_calendarintegration_credentials_sel($id)",
         module: "",
