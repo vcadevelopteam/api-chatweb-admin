@@ -174,14 +174,14 @@ exports.Collection = async (req, res) => {
 
             const { communicationchannelid, messagetemplateid, notificationtype, messagetemplatename, communicationchanneltype, notificationmessage } = resultCalendar[0]
 
-            if (notificationtype === "EMAIL") {
+            if (notificationtype === "EMAIL" || notificationtype === "HSM") {
                 const sendmessage = {
                     corpid: parameters.corpid,
                     orgid: parameters.orgid,
                     username: parameters.username,
                     communicationchannelid: communicationchannelid,
                     hsmtemplateid: messagetemplateid,
-                    type: "EMAIL",
+                    type: notificationtype,
                     shippingreason: "BOOKING",
                     _requestid: req._requestid,
                     hsmtemplatename: messagetemplatename,
