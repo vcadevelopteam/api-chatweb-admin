@@ -2197,7 +2197,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CALENDAREVENT_INS: {
-        query: "SELECT * FROM ufn_calendarevent_ins($corpid, $orgid, $id, $description, $descriptionobject, $type, $status, $code, $name, $locationtype, $location, $eventlink, $color, $notificationtype, $communicationchannelid, $messagetemplateid, $daterange, $daysduration, $daystype, $startdate, $enddate, $timeduration, $timeunit, $availability, $timebeforeeventduration, $timebeforeeventunit, $timeaftereventduration, $timeaftereventunit, $increments, $username, $operation)",
+        query: "SELECT * FROM ufn_calendarevent_ins($corpid, $orgid, $id, $description, $descriptionobject, $type, $status, $code, $name, $locationtype, $location, $eventlink, $color, $notificationtype, $communicationchannelid, $messagetemplateid, $notificationmessage, $daterange, $daysduration, $daystype, $startdate, $enddate, $timeduration, $timeunit, $availability, $timebeforeeventduration, $timebeforeeventunit, $timeaftereventduration, $timeaftereventunit, $increments, $reminderenable, $remindertype, $reminderhsmtemplateid, $reminderhsmmessage, $remindermailtemplateid, $remindermailmessage, $reminderperiod, $reminderfrecuency, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -2268,7 +2268,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CALENDARYBOOKING_INS: {
-        query: "SELECT * FROM ufn_calendarbooking_ins($corpid, $orgid, $calendareventid, $id, $description, $type, $status, $monthdate, $hourstart, $notes, $conversationid, $personname, $personcontact, $persontimezone, $username, $operation)",
+        query: "SELECT * FROM ufn_calendarbooking_ins($corpid, $orgid, $calendareventid, $id, $description, $type, $status, $monthdate, $hourstart, $notes, $conversationid, $personname, $personcontact, $personmail, $persontimezone, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
