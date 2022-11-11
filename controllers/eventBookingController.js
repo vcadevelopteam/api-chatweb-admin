@@ -416,27 +416,29 @@ const googleCalendarRevoke = async ({ params }) => {
             const { credentials, ...extradata } = google_data[0];
             oauth2Client.setCredentials(credentials)
             // Stop watch
-            try {
-                const calendar = google.calendar({
-                    version: 'v3',
-                    auth: oauth2Client
-                });
-                await calendar.channels.stop({
-                    requestBody: {
-                        id: extradata?.watchid,
-                        resourceId: extradata?.resourceid
-                    }})
-            }
-            catch (exception) {
-                logger.child({ _requestid: params._requestid, context: { ...params, extradata }}).error(exception)
+            if (extradata?.watchid && extradata?.resourceid) {
+                try {
+                    const calendar = google.calendar({
+                        version: 'v3',
+                        auth: oauth2Client
+                    });
+                    await calendar.channels.stop({
+                        requestBody: {
+                            id: extradata?.watchid,
+                            resourceId: extradata?.resourceid
+                        }})
+                }
+                catch (exception) {
+                    logger.child({ _requestid: params._requestid, context: { ...params, extradata }}).error(exception)
+                }
             }
             // Revoke
             const access_token = await oauth2Client.getAccessToken()
-            const success = await oauth2Client.revokeToken(access_token.token)
-            if (success) {
+            const revoke_res = await oauth2Client.revokeToken(access_token.token)
+            if (revoke_res?.status === 200) {
                 await googleCalendarCredentialsClean({ params, extradata })
             }
-            return success
+            return revoke_res.data
         }
     }
     catch (exception) {
