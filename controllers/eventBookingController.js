@@ -83,7 +83,7 @@ const send = async (data, requestid) => {
                             receiver: x.email,
                             subject: mailtemplate.header,
                             priority: mailtemplate.priority,
-                            body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), mailtemplate.body),
+                            body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), (data.body || mailtemplate.body)),
                             blindreceiver: "",
                             copyreceiver: "",
                             credentials: jsonconfigmail,
@@ -96,7 +96,7 @@ const send = async (data, requestid) => {
                                 MessageTemplateId: data.hsmtemplateid,
                                 ShippingReason: data.shippingreason,
                                 HsmId: data.hsmtemplatename,
-                                Body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), mailtemplate.body)
+                                Body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), (data.body || mailtemplate.body))
                             },
                             attachments: mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
                                 type: 'FILE',
@@ -125,7 +125,7 @@ const send = async (data, requestid) => {
                             MessageTemplateId: data.hsmtemplateid,
                             ShippingReason: data.shippingreason,
                             HsmId: data.hsmtemplatename,
-                            Body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), mailtemplate.body)
+                            Body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), (data.body || mailtemplate.body))
                         }),
                     })
                 }
@@ -172,7 +172,7 @@ exports.Collection = async (req, res) => {
         if (method === "UFN_CALENDARYBOOKING_INS") {
             const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
 
-            const { communicationchannelid, messagetemplateid, notificationtype, messagetemplatename, communicationchanneltype } = resultCalendar[0]
+            const { communicationchannelid, messagetemplateid, notificationtype, messagetemplatename, communicationchanneltype, notificationmessage } = resultCalendar[0]
 
             if (notificationtype === "EMAIL") {
                 const sendmessage = {
@@ -194,7 +194,8 @@ exports.Collection = async (req, res) => {
                         email: parameters.email,
                         lastname: "",
                         parameters: parameters.parameters
-                    }]
+                    }],
+                    body: notificationmessage
                 }
 
                 await send(sendmessage, req._requestid);
