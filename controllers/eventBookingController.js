@@ -734,14 +734,19 @@ exports.googleWebhookSync = async (request, response) => {
             _requestid: request._requestid
         }
         const [calendar, extradata] = await googleCalendarCredentials({ params })
-        if (calendar
-            && params?.watchid === extradata?.watchid
-            && params?.resourceid === extradata?.resourceid
-        ) {
-            const nextSyncToken = await googleCalendarSync({ params, calendar, extradata })
+        if (calendar) {
+            if (params?.watchid === extradata?.watchid && params?.resourceid === extradata?.resourceid) {
+                const nextSyncToken = await googleCalendarSync({ params, calendar, extradata })
+                return response.status(200).json({
+                    code: '',
+                    data: nextSyncToken,
+                    error: false,
+                    message: '',
+                    success: true,
+                });
+            }
             return response.status(200).json({
                 code: '',
-                data: nextSyncToken,
                 error: false,
                 message: '',
                 success: true,
