@@ -2711,7 +2711,6 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    
     UFN_PERSON_IMPORT_VALIDATION: {
         query: "SELECT * FROM ufn_person_import_validation($corpid, $orgid, $table, $username)",
         module: "",
@@ -2786,5 +2785,25 @@ module.exports = {
         query: "SELECT * FROM ufn_billingperiodartificialintelligence_ins_array($corpid, $orgid, $username, $table)",
         module: "",
         protected: "INSERT"
+    },
+    UFN_POSTHISTORY_INS: {
+        query: "SELECT * FROM ufn_posthistory_ins($corpid, $orgid, $communicationchannelid, $communicationchanneltype, $posthistoryid, $status, $type, $publishdate, $texttitle, $textbody, $hashtag, $sentiment, $activity, $mediatype, $medialink, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CRON_POSTHISTORY_SEL: {
+        query: "SELECT * FROM ufn_cron_posthistory_sel()",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_POSTHISTORY_PUBLISH: {
+        query: "SELECT * FROM ufn_posthistory_publish($corpid, $orgid, $communicationchannelid, $posthistoryid, $status, $published, $publishstatus, $publishmessage)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_POSTHISTORY_INSIGHT: {
+        query: "SELECT * FROM ufn_posthistory_insight($corpid, $orgid, $communicationchannelid, $posthistoryid, $reach, $interactions, $reactions)",
+        module: "",
+        protected: "SELECT"
     },
 }
