@@ -67,6 +67,16 @@ const properties = [
         key: "waiting_customer_message",
         type: 'text',
     },
+    {
+        propertyname: "FILTROFECHA",
+        key: "range_date_filter",
+        type: 'int',
+    },
+    {
+        propertyname: "ETIQUETAORIGEN",
+        key: "origin_label",
+        type: 'bool',
+    },
 ];
 
 const cleanPropertyValue = (listproperty, { type, subtype }) => {
