@@ -34,7 +34,11 @@ exports.upload = async (req, res) => {
                 logger.child({ _requestid: req._requestid, error: { detail: err, message: err.toString() } }).error(`Request to ${req.originalUrl}`);
                 return res.json({ success: false, msg: 'Hubo un error #1 en la carga de archivo.', err })
             }
-            return res.json({ success: true, url: data.Location })
+
+            var height = 0;
+            var width = 0;
+
+            return res.json({ success: true, url: data.Location, filename: req.file.originalname, height: height, width: width })
         })
     }
     catch (exception) {
