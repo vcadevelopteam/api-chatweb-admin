@@ -27,7 +27,7 @@ exports.version = async (_, res) => {
     return res.json({
         version: process.env.RELEASE_VERSION,
         version_android: process.env.VERSION_APP_ANDROID,
-        version_ios: process.env.RELEASE_VERSION,
+        version_ios: process.env.VERSION_APP_IOS,
         date: process.env.RELEASE_DATE
     });
 }

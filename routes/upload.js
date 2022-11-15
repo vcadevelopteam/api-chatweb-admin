@@ -19,4 +19,11 @@ router.post("/file",
     uploadController.upload
 );
 
+router.post("/metadata",
+    ip,
+    auth,
+    upload.single('file'),
+    uploadController.uploadMetadata
+);
+
 module.exports = router;
