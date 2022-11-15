@@ -608,6 +608,125 @@ module.exports = {
             type: "date"
         }
     },
+    campaignperson: {
+        firstname: {
+            column: "pe.firstname"
+        },
+        lastname: {
+            column: "pe.lastname"
+        },
+        documenttype: {
+            column: "pe.documenttype"
+        },
+        documentnumber: {
+            column: "pe.documentnumber"
+        },
+        persontype: {
+            column: "pe.persontype"
+        },
+        type: {
+            column: "pe.type"
+        },
+        phone: {
+            column: "pe.phone"
+        },
+        alternativephone: {
+            column: "pe.alternativephone"
+        },
+        email: {
+            column: "pe.email"
+        },
+        alternativeemail: {
+            column: "pe.alternativeemail"
+        },
+        lastcontact: {
+            column: "pe.lastcontact",
+            type: "date"
+        },
+        agent: {
+            column: "co.agent"
+        },
+        opportunity: {
+            column: "ld.description"
+        },
+        birthday: {
+            column: "pe.birthday",
+            type: "datestr"
+        },
+        gender: {
+            column: "domgen.domaindesc"
+        },
+        educationlevel: {
+            column: "domedu.domaindesc"
+        },
+        comments: {
+            column: "ldn.description"
+        },
+        address: {
+            column: "pe.address"
+        },
+        addressreference: {
+            column: "pe.addressreference"
+        },
+        country: {
+            column: "pe.country"
+        },
+        region: {
+            column: "pe.region"
+        },
+        province: {
+            column: "pe.province"
+        },
+        district: {
+            column: "pe.district"
+        },
+    },
+    campaignleadperson: {
+        opportunity: {
+            column: "ld.description"
+        },
+        changedate: {
+            column: "ld.changedate",
+            type: "date"
+        },
+        name: {
+            column: "TRIM(CONCAT(pe.firstname,' ',pe.lastname))"
+        },
+        email: {
+            column: "ld.email"
+        },
+        phone: {
+            column: "ld.phone"
+        },
+        expected_revenue: {
+            column: "ld.expected_revenue"
+        },
+        date_deadline: {
+            column: "ld.date_deadline",
+            type: "date"
+        },
+        tags: {
+            column: "ld.tags"
+        },
+        agent: {
+            column: "CONCAT(usr.firstname,' ',usr.lastname)"
+        },
+        priority: {
+            column: "ld.priority"
+        },
+        campaign: {
+            column: "ca.title"
+        },
+        products: {
+            column: "pc.title"
+        },
+        phase: {
+            column: "col.description"
+        },
+        comments: {
+            column: "ldn.description"
+        },
+    },
     campaignreport: {
         campaignid: {
             column: "ch.campaignid"
@@ -914,6 +1033,103 @@ module.exports = {
         },
         type: {
             column:"lc.type"
+        },
+    },
+    uniquecontacts: {
+        name: {
+            column:"pe.name"
+        },
+        channels: {
+            column:"cc.description"
+        },
+        firstcontact: {
+            column:"pe.firstcontact + p_offset * INTERVAL '1HOUR'",
+            type: "date"
+        },
+        lastcontact: {
+            column:"pe.lastcontact + p_offset * INTERVAL '1HOUR'",
+            type: "date"
+        },
+        phone: {
+            column:"pe.phone"
+        },
+        email: {
+            column:"pe.email"
+        },
+        status: {
+            column:"pe.status"
+        },
+    },
+    uniquecontactsconversation: {
+        ticketnum:{
+            column: "co.ticketnum"
+        },
+        
+        startdate:{
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'YYYY-MM-DD')"
+        },
+        starttime:{
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'HH24:MI:SS')"
+        },
+        finishdate:{
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'YYYY-MM-DD')"
+        },
+        finishtime:{
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'HH24:MI:SS')"
+        },
+        channel:{
+            column: "cc.description"
+        },
+        origin:{
+            column: "co.origin"
+        },
+        name:{
+            column: "pe.name"
+        },
+        email:{
+            column: "pe.email"
+        },
+        phone:{
+            column: "pe.phone"
+        },
+        closetype:{
+            column: "coalesce(dom_cierre.domaindesc, co.closetype, 'Cierre automático')"
+        },
+        asesor:{
+            column: "concat(usr.firstname, ' ', usr.lastname)"
+        },
+        usergroup:{
+            column: "co.usergroup"
+        },
+        usertype:{
+            column: "ous.type"
+        },
+        handoffdate:{
+            column: "to_char(co.handoffdate + p_offset * INTERVAL '1HOUR', 'YYYY-MM-DD')"
+        },
+        handoofftime:{
+            column: "to_char(co.handoffdate + p_offset * INTERVAL '1HOUR', 'HH24:MI:SS')"
+        },
+        tmo:{
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (CASE WHEN co.status = 'CERRADO' THEN co.totalduration ELSE NOW() - co.startdate END))::text || ' seconds ')::interval, 'HH24:MI:SS'),'00:00:00')"
+        },
+        tmeasesor:{
+            column: "date_trunc('seconds', co.userfirstreplytime)::text"
+        },
+        pauseduration:{
+            column: "date_trunc('seconds',co.totalpauseduration)::text"
+        },
+        tdatime:{
+            column: "date_trunc('seconds',co.tdatime)::text"
+        },
+        tmrasesor:{
+            column: "date_trunc('seconds',co.useraveragereplytime)::text"
+        },
+        balancetimes:{
+            column: "COALESCE(co.balancetimes,0)"
+        },
+        tmoasesor:{
+            column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (CASE WHEN co.status = 'CERRADO' THEN NULLIF(GREATEST('00:00:00'::INTERVAL, co.totalduration - co.pausedurationafteruser - co.firstassignedtime - co.botduration),'00:00:00') ELSE GREATEST('00:00:00'::INTERVAL, NOW() - co.startdate - co.pausedurationafteruser - co.firstassignedtime - co.botduration) END))::text || ' seconds ')::interval, 'HH24:MI:SS'), '00:00:00')"
         },
     },
 }

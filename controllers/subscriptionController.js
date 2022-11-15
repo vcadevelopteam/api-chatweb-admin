@@ -1207,6 +1207,8 @@ exports.createSubscription = async (request, response) => {
                             success: requestSuccess,
                         });
                     }
+
+                    await channelfunctions.clearHookCache('EveryService', request._requestid);
                 }
 
                 if ((typeof parameters.facebookid !== "undefined" && parameters.facebookid) || (typeof parameters.googleid !== "undefined" && parameters.googleid)) {

@@ -1,13 +1,14 @@
 const triggerfunctions = require('../config/triggerfunctions');
 const voximplant = require("../config/voximplantfunctions");
 
-const { printException } = require('../config/helpers');
+const { printException, axiosObservable } = require('../config/helpers');
 
 const voximplantAccountEnvironment = process.env.VOXIMPLANT_ENVIRONMENT;
 const voximplantPassword = process.env.VOXIMPLANT_PASSWORD;
 const voximplantRulePattern = process.env.VOXIMPLANT_RULEPATTERN;
 const voximplantParentAccountId = process.env.VOXIMPLANT_ACCOUNT_ID;
 const voximplantParentApiKey = process.env.VOXIMPLANT_APIKEY;
+const hookEndpoint = process.env.HOOK;
 
 const voximplantManageOrg = async (corpid, orgid, operation, voximplantuser = null, voximplantmail = null, voximplantpassword = null, voximplantaccountid = null, voximplantapikey = null, voximplantapplicationid = null, voximplantruleid = null, voximplantscenarioid = null, voximplantuserid = null, voximplantapplicationname = null, voximplantruleoutid = null, voximplantscenariooutid = null, requestid = null) => {
     const queryMethod = "UFN_ORG_VOXIMPLANT_UPD";
@@ -908,4 +909,19 @@ exports.serviceTokenUpdate = async (account, accesstoken, refreshtoken, extradat
     }
 
     return null;
+}
+
+exports.clearHookCache = async (serviceType, requestId) => {
+    try {
+        const requestClearCache = await axiosObservable({
+            method: 'get',
+            url: `${hookEndpoint}communication/clearsinglecache/${serviceType}`,
+            _requestid: requestId,
+        });
+
+        return requestClearCache?.data;
+    }
+    catch (exception) {
+        return exception;
+    }
 }

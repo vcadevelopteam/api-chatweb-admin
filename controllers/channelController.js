@@ -14,7 +14,6 @@ const smoochEndpoint = process.env.SMOOCHAPI;
 const smoochVersion = process.env.SMOOCHVERSION;
 const telegramEndpoint = process.env.TELEGRAMAPI;
 const webChatApplication = process.env.CHATAPPLICATION;
-const webChatPlatformEndpoint = process.env.WEBCHATPLATFORM;
 const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
 const whatsAppEndpoint = process.env.WHATSAPPAPI;
 const googleClientId = process.env.GOOGLE_CLIENTID;
@@ -99,6 +98,8 @@ exports.deleteChannel = async (request, response) => {
                         const transactionDeleteSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionDeleteSmooch instanceof Array) {
+                            await channelfunctions.clearHookCache('SmoochService', request._requestid);
+
                             return response.json({
                                 success: true
                             });
@@ -121,6 +122,8 @@ exports.deleteChannel = async (request, response) => {
                     const transactionDeleteSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteSmooch instanceof Array) {
+                        await channelfunctions.clearHookCache('SmoochService', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -170,6 +173,8 @@ exports.deleteChannel = async (request, response) => {
                 const transactionDeleteChatWeb = await triggerfunctions.executesimpletransaction(method, parameters);
 
                 if (transactionDeleteChatWeb instanceof Array) {
+                    await channelfunctions.clearHookCache('ChatWebService', request._requestid);
+
                     return response.json({
                         success: true
                     });
@@ -249,6 +254,8 @@ exports.deleteChannel = async (request, response) => {
                     const transactionDeleteFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteFacebook instanceof Array) {
+                        await channelfunctions.clearHookCache('FacebookService', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -264,6 +271,8 @@ exports.deleteChannel = async (request, response) => {
                     const transactionDeleteFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteFacebook instanceof Array) {
+                        await channelfunctions.clearHookCache('FacebookService', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -297,6 +306,8 @@ exports.deleteChannel = async (request, response) => {
                         const transactionDeleteInstagramSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionDeleteInstagramSmooch instanceof Array) {
+                            await channelfunctions.clearHookCache('SmoochService', request._requestid);
+
                             return response.json({
                                 success: true
                             });
@@ -319,6 +330,8 @@ exports.deleteChannel = async (request, response) => {
                     const transactionDeleteInstagramSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteInstagramSmooch instanceof Array) {
+                        await channelfunctions.clearHookCache('SmoochService', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -350,6 +363,8 @@ exports.deleteChannel = async (request, response) => {
                         const transactionDeleteTelegram = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionDeleteTelegram instanceof Array) {
+                            await channelfunctions.clearHookCache('TelegramService', request._requestid);
+
                             return response.json({
                                 success: true
                             });
@@ -372,6 +387,8 @@ exports.deleteChannel = async (request, response) => {
                     const transactionDeleteTelegram = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteTelegram instanceof Array) {
+                        await channelfunctions.clearHookCache('TelegramService', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -403,6 +420,8 @@ exports.deleteChannel = async (request, response) => {
                             const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
 
                             if (transactionDeleteTwitter instanceof Array) {
+                                await channelfunctions.clearHookCache('TwitterService', request._requestid);
+
                                 return response.json({
                                     success: true
                                 });
@@ -433,6 +452,8 @@ exports.deleteChannel = async (request, response) => {
                                 const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
 
                                 if (transactionDeleteTwitter instanceof Array) {
+                                    await channelfunctions.clearHookCache('TwitterService', request._requestid);
+
                                     return response.json({
                                         success: true
                                     });
@@ -463,6 +484,8 @@ exports.deleteChannel = async (request, response) => {
                     const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteTwitter instanceof Array) {
+                        await channelfunctions.clearHookCache('TwitterService', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -494,6 +517,8 @@ exports.deleteChannel = async (request, response) => {
                         const transactionDeleteWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionDeleteWhatsApp instanceof Array) {
+                            await channelfunctions.clearHookCache('Dialog360Service', request._requestid);
+
                             return response.json({
                                 success: true
                             });
@@ -516,6 +541,8 @@ exports.deleteChannel = async (request, response) => {
                     const transactionDeleteWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteWhatsApp instanceof Array) {
+                        await channelfunctions.clearHookCache('Dialog360Service', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -550,6 +577,8 @@ exports.deleteChannel = async (request, response) => {
                             const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                             if (transactionDeleteWhatsAppSmooch instanceof Array) {
+                                await channelfunctions.clearHookCache('SmoochService', request._requestid);
+
                                 return response.json({
                                     success: true
                                 });
@@ -572,6 +601,8 @@ exports.deleteChannel = async (request, response) => {
                         const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionDeleteWhatsAppSmooch instanceof Array) {
+                            await channelfunctions.clearHookCache('SmoochService', request._requestid);
+
                             return response.json({
                                 success: true
                             });
@@ -588,6 +619,8 @@ exports.deleteChannel = async (request, response) => {
                     const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteWhatsAppSmooch instanceof Array) {
+                        await channelfunctions.clearHookCache('SmoochService', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -662,6 +695,8 @@ exports.deleteChannel = async (request, response) => {
                         const transactionDeleteWhatsAppGupshup = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionDeleteWhatsAppGupshup instanceof Array) {
+                            await channelfunctions.clearHookCache('GupshupService', request._requestid);
+
                             return response.json({
                                 success: true
                             });
@@ -684,6 +719,8 @@ exports.deleteChannel = async (request, response) => {
                     const transactionDeleteWhatsAppGupshup = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteWhatsAppGupshup instanceof Array) {
+                        await channelfunctions.clearHookCache('GupshupService', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -700,6 +737,8 @@ exports.deleteChannel = async (request, response) => {
                 const transactionDeleteGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
 
                 if (transactionDeleteGeneric instanceof Array) {
+                    await channelfunctions.clearHookCache('EveryService', request._requestid);
+
                     return response.json({
                         success: true
                     });
@@ -854,6 +893,41 @@ exports.getPageList = async (request, response) => {
     }
 }
 
+exports.getPhoneList = async (request, response) => {
+    try {
+        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+
+        const requestGetPhoneList = await axiosObservable({
+            data: {
+                partnerId: request.body.partnerId,
+                channelList: request.body.channelList,
+            },
+            method: 'post',
+            url: `${bridgeEndpoint}processpartner/getnumberlist`,
+            _requestid: request._requestid,
+        });
+
+        if (requestGetPhoneList.data.success) {
+            return response.json({
+                data: requestGetPhoneList.data.phoneList,
+                success: true
+            });
+        }
+        else {
+            return response.status(400).json({
+                msg: requestGetPhoneList.data.operationMessage,
+                success: false
+            });
+        }
+    }
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            msg: exception.message,
+        });
+    }
+}
+
 exports.insertChannel = async (request, response) => {
     try {
         logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
@@ -986,19 +1060,7 @@ exports.insertChannel = async (request, response) => {
                             const transactionCreateWebChat = await triggerfunctions.executesimpletransaction(method, parameters);
 
                             if (transactionCreateWebChat instanceof Array) {
-                                try {
-                                    if (typeof webChatPlatformEndpoint !== 'undefined' && webChatPlatformEndpoint) {
-                                        await axiosObservable({
-                                            data: parameters,
-                                            method: 'post',
-                                            url: `${webChatPlatformEndpoint}integration/addtodatabase`,
-                                            _requestid: request._requestid,
-                                        });
-                                    }
-                                }
-                                catch (exception) {
-                                    printException(exception, request.originalUrl, responsedata.id);
-                                }
+                                await channelfunctions.clearHookCache('ChatWebService', request._requestid);
 
                                 return response.json({
                                     integrationid: requestWebChatCreate.data.id,
@@ -1135,6 +1197,8 @@ exports.insertChannel = async (request, response) => {
                         const transactionCreateFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
 
                         if (transactionCreateFacebook instanceof Array) {
+                            await channelfunctions.clearHookCache('FacebookService', request._requestid);
+
                             return response.json({
                                 success: true
                             });
@@ -1191,6 +1255,8 @@ exports.insertChannel = async (request, response) => {
                     const transactionCreateSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateSmooch instanceof Array) {
+                        await channelfunctions.clearHookCache('SmoochService', request._requestid);
+
                         return response.json({
                             applicationId: requestCreateSmooch.data.applicationId,
                             integrationId: requestCreateSmooch.data.integrationId,
@@ -1235,6 +1301,13 @@ exports.insertChannel = async (request, response) => {
                     const transactionCreateInfobip = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateInfobip instanceof Array) {
+                        if (request.body.type === "INFOBIPEMAIL") {
+                            await channelfunctions.clearHookCache('InfobipMailService', request._requestid);
+                        }
+                        else {
+                            await channelfunctions.clearHookCache('InfobipService', request._requestid);
+                        }
+
                         return response.json({
                             success: true
                         });
@@ -1323,7 +1396,6 @@ exports.insertChannel = async (request, response) => {
                 }
                 break;
 
-
             case 'LINKEDIN':
             case 'MICROSOFTTEAMS':
             case 'TIKTOK':
@@ -1389,6 +1461,8 @@ exports.insertChannel = async (request, response) => {
                     const transactionCreateTelegram = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateTelegram instanceof Array) {
+                        await channelfunctions.clearHookCache('TelegramService', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -1462,6 +1536,8 @@ exports.insertChannel = async (request, response) => {
                         });
 
                         if (requestCreateTwitter.data.success) {
+                            await channelfunctions.clearHookCache('TwitterService', request._requestid);
+
                             return response.json({
                                 success: true
                             });
@@ -1502,6 +1578,22 @@ exports.insertChannel = async (request, response) => {
                 }
 
             case 'WHATSAPP':
+                if (!service.accesstoken && service.channelid) {
+                    const requestGetApiKey = await axiosObservable({
+                        data: {
+                            partnerId: service.partnerid,
+                            channelId: service.channelid,
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processpartner/getapikey`,
+                        _requestid: request._requestid,
+                    });
+
+                    if (requestGetApiKey.data.success) {
+                        service.accesstoken = requestGetApiKey.data.apiKey;
+                    }
+                }
+
                 const requestCreateWhatsApp = await axiosObservable({
                     data: {
                         accessToken: service.accesstoken,
@@ -1527,6 +1619,8 @@ exports.insertChannel = async (request, response) => {
                     const transactionCreateWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateWhatsApp instanceof Array) {
+                        await channelfunctions.clearHookCache('Dialog360Service', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -1717,6 +1811,8 @@ exports.insertChannel = async (request, response) => {
                     const transactionInsertWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionInsertWhatsApp instanceof Array) {
+                        await channelfunctions.clearHookCache('SmoochService', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -1764,6 +1860,8 @@ exports.insertChannel = async (request, response) => {
                     const transactionInsertWhatsAppGupshup = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionInsertWhatsAppGupshup instanceof Array) {
+                        await channelfunctions.clearHookCache('GupshupService', request._requestid);
+
                         return response.json({
                             success: true
                         });
@@ -1990,20 +2088,6 @@ exports.updateChannel = async (request, response) => {
             const transactionCreateWebChat = await triggerfunctions.executesimpletransaction(method, parameters);
 
             if (transactionCreateWebChat instanceof Array) {
-                try {
-                    if (typeof webChatPlatformEndpoint !== 'undefined' && webChatPlatformEndpoint) {
-                        await axiosObservable({
-                            data: parameters,
-                            method: 'post',
-                            url: `${webChatPlatformEndpoint}integration/updatetodatabase`,
-                            _requestid: request._requestid,
-                        });
-                    }
-                }
-                catch (exception) {
-                    printException(exception, request.originalUrl, responsedata.id);
-                }
-
                 return response.json({
                     integrationid: requestWebChatCreate.data.id,
                     success: true
@@ -2530,20 +2614,35 @@ exports.deleteTemplate = async (request, response) => {
                 switch (request.body.communicationchanneltype) {
                     case "WHAD":
                         if (request.body.communicationchannelservicecredentials) {
-                            var serviceData = JSON.parse(request.body.communicationchannelservicecredentials);
+                            var continueDelete = false;
 
-                            const requestDeleteDialog = await axiosObservable({
-                                data: {
-                                    ApiKey: serviceData.apiKey,
-                                    DeleteName: request.body.name,
-                                    Type: "DELETE",
-                                },
-                                method: 'post',
-                                url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
-                                _requestid: request._requestid,
-                            });
+                            if (request.body.rootdelete) {
+                                var serviceData = JSON.parse(request.body.communicationchannelservicecredentials);
 
-                            if (requestDeleteDialog.data.success) {
+                                const requestDeleteDialog = await axiosObservable({
+                                    data: {
+                                        ApiKey: serviceData.apiKey,
+                                        DeleteName: request.body.name,
+                                        Type: "DELETE",
+                                    },
+                                    method: 'post',
+                                    url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
+                                    _requestid: request._requestid,
+                                });
+
+                                if (requestDeleteDialog.data.success) {
+                                    continueDelete = true;
+                                }
+                                else {
+                                    requestCode = requestDeleteDialog.data.operationMessage
+                                    requestMessage = requestDeleteDialog.data.operationMessage;
+                                }
+                            }
+                            else {
+                                continueDelete = true;
+                            }
+
+                            if (continueDelete) {
                                 var parameters = request.body;
 
                                 parameters.corpid = request.user.corpid;
@@ -2561,33 +2660,44 @@ exports.deleteTemplate = async (request, response) => {
                                     requestCode = queryTemplateDelete.code;
                                     requestMessage = queryTemplateDelete.code;
                                 }
-                            }
-                            else {
-                                requestCode = requestDeleteDialog.data.operationMessage
-                                requestMessage = requestDeleteDialog.data.operationMessage;
                             }
                         }
                         break;
 
                     case "WHAT":
                         if (request.body.communicationchannelservicecredentials) {
-                            var serviceData = JSON.parse(request.body.communicationchannelservicecredentials);
+                            var continueDelete = false;
 
-                            const requestDeleteSmooch = await axiosObservable({
-                                data: {
-                                    AppId: serviceData.appId,
-                                    IntegrationId: request.body.communicationchannelintegrationid,
-                                    DeleteName: request.body.name,
-                                    Type: "DELETE",
-                                    KeyId: serviceData.apiKeyId,
-                                    KeySecret: serviceData.apiKeySecret,
-                                },
-                                method: 'post',
-                                url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
-                                _requestid: request._requestid,
-                            });
+                            if (request.body.rootdelete) {
+                                var serviceData = JSON.parse(request.body.communicationchannelservicecredentials);
 
-                            if (requestDeleteSmooch.data.success) {
+                                const requestDeleteSmooch = await axiosObservable({
+                                    data: {
+                                        AppId: serviceData.appId,
+                                        IntegrationId: request.body.communicationchannelintegrationid,
+                                        DeleteName: request.body.name,
+                                        Type: "DELETE",
+                                        KeyId: serviceData.apiKeyId,
+                                        KeySecret: serviceData.apiKeySecret,
+                                    },
+                                    method: 'post',
+                                    url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
+                                    _requestid: request._requestid,
+                                });
+
+                                if (requestDeleteSmooch.data.success) {
+                                    continueDelete = true;
+                                }
+                                else {
+                                    requestCode = requestDeleteSmooch.data.operationMessage
+                                    requestMessage = requestDeleteSmooch.data.operationMessage;
+                                }
+                            }
+                            else {
+                                continueDelete = true;
+                            }
+
+                            if (continueDelete) {
                                 var parameters = request.body;
 
                                 parameters.corpid = request.user.corpid;
@@ -2605,10 +2715,6 @@ exports.deleteTemplate = async (request, response) => {
                                     requestCode = queryTemplateDelete.code;
                                     requestMessage = queryTemplateDelete.code;
                                 }
-                            }
-                            else {
-                                requestCode = requestDeleteSmooch.data.operationMessage
-                                requestMessage = requestDeleteSmooch.data.operationMessage;
                             }
                         }
                         break;
