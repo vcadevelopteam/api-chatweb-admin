@@ -26,7 +26,7 @@ exports.load = async (req, res) => {
 exports.version = async (_, res) => {
     return res.json({
         version: process.env.RELEASE_VERSION,
-        version_android: process.env.RELEASE_VERSION,
+        version_android: process.env.VERSION_APP_ANDROID,
         version_ios: process.env.RELEASE_VERSION,
         date: process.env.RELEASE_DATE
     });
