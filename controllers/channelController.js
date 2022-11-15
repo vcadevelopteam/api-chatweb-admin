@@ -14,7 +14,6 @@ const smoochEndpoint = process.env.SMOOCHAPI;
 const smoochVersion = process.env.SMOOCHVERSION;
 const telegramEndpoint = process.env.TELEGRAMAPI;
 const webChatApplication = process.env.CHATAPPLICATION;
-const webChatPlatformEndpoint = process.env.WEBCHATPLATFORM;
 const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
 const whatsAppEndpoint = process.env.WHATSAPPAPI;
 const googleClientId = process.env.GOOGLE_CLIENTID;
@@ -1061,20 +1060,6 @@ exports.insertChannel = async (request, response) => {
                             const transactionCreateWebChat = await triggerfunctions.executesimpletransaction(method, parameters);
 
                             if (transactionCreateWebChat instanceof Array) {
-                                try {
-                                    if (typeof webChatPlatformEndpoint !== 'undefined' && webChatPlatformEndpoint) {
-                                        await axiosObservable({
-                                            data: parameters,
-                                            method: 'post',
-                                            url: `${webChatPlatformEndpoint}integration/addtodatabase`,
-                                            _requestid: request._requestid,
-                                        });
-                                    }
-                                }
-                                catch (exception) {
-                                    printException(exception, request.originalUrl, responsedata.id);
-                                }
-
                                 await channelfunctions.clearHookCache('ChatWebService', request._requestid);
 
                                 return response.json({
@@ -2103,20 +2088,6 @@ exports.updateChannel = async (request, response) => {
             const transactionCreateWebChat = await triggerfunctions.executesimpletransaction(method, parameters);
 
             if (transactionCreateWebChat instanceof Array) {
-                try {
-                    if (typeof webChatPlatformEndpoint !== 'undefined' && webChatPlatformEndpoint) {
-                        await axiosObservable({
-                            data: parameters,
-                            method: 'post',
-                            url: `${webChatPlatformEndpoint}integration/updatetodatabase`,
-                            _requestid: request._requestid,
-                        });
-                    }
-                }
-                catch (exception) {
-                    printException(exception, request.originalUrl, responsedata.id);
-                }
-
                 return response.json({
                     integrationid: requestWebChatCreate.data.id,
                     success: true
