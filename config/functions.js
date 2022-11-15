@@ -2802,4 +2802,39 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_ORG_LST_SIMPLE: {
+        query: "SELECT * FROM ufn_org_lst_simple($corpid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_UNIQUECONTACTS_PCC_EXPORT: {
+        query: "SELECT * FROM ufn_report_uniquecontacts_pcc_export($corpid, $orgid, $year, $month, $channeltype, $where, $order, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_UNIQUECONTACTS_PCC_SEL: {
+        query: "SELECT * FROM ufn_report_uniquecontacts_pcc_sel($corpid, $orgid, $year, $month, $channeltype, $where, $order, $take, $skip, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_UNIQUECONTACTS_PCC_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_report_uniquecontacts_pcc_totalrecords($corpid, $orgid, $year, $month, $channeltype, $where, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_UNIQUECONTACTS_CONVERSATION_EXPORT: {
+        query: "SELECT * FROM ufn_report_uniquecontacts_conversation_export($corpid, $orgid, $year, $month, $channeltype, $where, $order, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_UNIQUECONTACTS_CONVERSATION_SEL: {
+        query: "SELECT * FROM ufn_report_uniquecontacts_conversation_sel($corpid, $orgid, $year, $month, $channeltype, $where, $order, $take, $skip, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_UNIQUECONTACTS_CONVERSATION_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_report_uniquecontacts_conversation_totalrecords($corpid, $orgid, $year, $month, $channeltype, $where, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
 }
