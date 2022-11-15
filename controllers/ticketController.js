@@ -215,7 +215,12 @@ exports.sendHSM = async (req, res) => {
             data.userid = req.user.userid;
 
         data._requestid = req._requestid;
-
+        if ((data?.listmembers?.length || 0) === 0) {
+            return res.status(500).json({
+                success: false,
+                code: "EMPTY_LIST"
+            });
+        }
         if (data.listmembers.every(x => !!x.personid)) {
             await executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", undefined, false, {
                 personids: data.listmembers.map(x => x.personid),
