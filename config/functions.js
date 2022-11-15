@@ -817,12 +817,22 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CAMPAIGN_PERSON_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_campaign_person_totalrecords($corpid, $orgid, $where, $username, $offset)",
+        query: "SELECT * FROM ufn_campaign_person_totalrecords($corpid, $orgid, $startdate, $enddate, $where, $username, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_CAMPAIGN_PERSON_SEL: {
-        query: "SELECT  * FROM ufn_campaign_person_sel($corpid, $orgid, $where, $order, $take, $skip, $username, $offset)",
+        query: "SELECT  * FROM ufn_campaign_person_sel($corpid, $orgid, $startdate, $enddate, $where, $order, $take, $skip, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CAMPAIGN_LEAD_PERSON_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_campaign_lead_person_totalrecords($corpid, $orgid, $startdate, $enddate, $where, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CAMPAIGN_LEAD_PERSON_SEL: {
+        query: "SELECT  * FROM ufn_campaign_lead_person_sel($corpid, $orgid, $startdate, $enddate, $where, $order, $take, $skip, $username, $offset)",
         module: "",
         protected: "SELECT"
     },
