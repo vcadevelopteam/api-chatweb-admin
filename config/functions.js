@@ -2972,8 +2972,18 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
-    UFN_PRODUCTCATALOG_INS_ARRAY: {
-        query: "SELECT * FROM ufn_productcatalog_ins_array($corpid, $orgid, $catalogid, $catalogname, $username, $table)",
+    UFN_POSTHISTORY_PUBLISH: {
+        query: "SELECT * FROM ufn_posthistory_publish($corpid, $orgid, $communicationchannelid, $posthistoryid, $status, $externaldata, $published, $publishstatus, $publishmessage)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_POSTHISTORY_INSIGHT: {
+        query: "SELECT * FROM ufn_posthistory_insight($corpid, $orgid, $communicationchannelid, $posthistoryid, $reach, $interactions, $reactions)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_POSTHISTORY_SEL: {
+        query: "SELECT * FROM ufn_posthistory_sel($status, $type, $datestart, $dateend)",
         module: "",
         protected: "INSERT"
     },
@@ -3056,20 +3066,5 @@ module.exports = {
         query: "SELECT * FROM ufn_cron_posthistory_sel()",
         module: "",
         protected: "SELECT"
-    },
-    UFN_POSTHISTORY_PUBLISH: {
-        query: "SELECT * FROM ufn_posthistory_publish($corpid, $orgid, $communicationchannelid, $posthistoryid, $status, $published, $publishstatus, $publishmessage)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_POSTHISTORY_INSIGHT: {
-        query: "SELECT * FROM ufn_posthistory_insight($corpid, $orgid, $communicationchannelid, $posthistoryid, $reach, $interactions, $reactions)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_POSTHISTORY_SEL: {
-        query: "SELECT * FROM ufn_posthistory_sel($status, $type, $datestart, $dateend)",
-        module: "",
-        protected: "INSERT"
     },
 }
