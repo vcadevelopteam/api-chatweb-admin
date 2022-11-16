@@ -2983,7 +2983,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_POSTHISTORY_SEL: {
-        query: "SELECT * FROM ufn_posthistory_sel($status, $type, $datestart, $dateend)",
+        query: "SELECT * FROM ufn_posthistory_sel($corpid, $orgid, $status, $type, $datestart, $dateend)",
         module: "",
         protected: "INSERT"
     },
