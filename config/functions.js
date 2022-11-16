@@ -2871,4 +2871,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CRON_POSTHISTORY_INSIGHT_SEL: {
+        query: "SELECT * FROM ufn_cron_posthistory_insight_sel()",
+        module: "",
+        protected: "SELECT"
+    },
 }
