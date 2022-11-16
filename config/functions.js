@@ -2822,7 +2822,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_POSTHISTORY_PUBLISH: {
-        query: "SELECT * FROM ufn_posthistory_publish($corpid, $orgid, $communicationchannelid, $posthistoryid, $status, $published, $publishstatus, $publishmessage)",
+        query: "SELECT * FROM ufn_posthistory_publish($corpid, $orgid, $communicationchannelid, $posthistoryid, $status, $externaldata, $published, $publishstatus, $publishmessage)",
         module: "",
         protected: "SELECT"
     },
