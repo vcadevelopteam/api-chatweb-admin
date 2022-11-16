@@ -26,7 +26,7 @@ exports.schedulePost = async (request, response) => {
                             posthistoryid: 0,
                             status: request.body.type === "DRAFT" ? "" : "SCHEDULED",
                             type: request.body.publication || '',
-                            publishdate: `${scheduleDate.toISOString()?.split('T')[0]} ${scheduleTime.toISOString()?.split('T')[1]?.split('.')[0]}`,
+                            publishdate: `${scheduleDate.toISOString()?.split('T')[0]}T${scheduleTime.toISOString()?.split('T')[1]}`,
                             texttitle: request.body.data.texttitle || '',
                             textbody: request.body.data.textbody || '',
                             hashtag: request.body.data.hashtag || '',
