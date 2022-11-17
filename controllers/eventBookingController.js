@@ -171,6 +171,13 @@ exports.Collection = async (req, res) => {
 
     if (!result.error) {
         if (method === "UFN_CALENDARYBOOKING_INS") {
+            //si envia un calendarbookingid es porque quiere reprogramar, osea cancelar la antigua y crear una nueva
+            if (parameters.calendarbookingid) {
+                await executesimpletransaction("QUERY_CANCEL_EVENT_BY_CALENDARBOOKINGID", {
+                    ...parameters,
+                    cancelcomment: "RESCHEDULED BOOKING"
+                });
+            }
             const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
 
             const { communicationchannelid, messagetemplateid, notificationtype, messagetemplatename, communicationchanneltype, notificationmessage } = resultCalendar[0]
