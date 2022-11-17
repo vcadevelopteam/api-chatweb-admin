@@ -2231,7 +2231,7 @@ module.exports = {
         cb.datestart::text bookingdate
         FROM calendarevent ce 
         LEFT JOIN person p on p.corpid = ce.corpid and p.orgid = ce.orgid and p.personid = $personid 
-        LEFT JOIN calendarbooking cb ON cb.corpid = ce.corpid AND cb.orgid = ce.orgid AND cb.calendareventid = ce.calendareventid AND cb.calendarbookinguuid = $calendarbookinguuid AND cb.status = 'ACTIVO'
+        INNER JOIN calendarbooking cb ON cb.corpid = ce.corpid AND cb.orgid = ce.orgid AND cb.calendareventid = ce.calendareventid AND cb.calendarbookinguuid = $calendarbookinguuid AND cb.status = 'ACTIVO'
         WHERE ce.orgid = $orgid and ce.code = $code`,
         module: "",
         protected: "SELECT"
