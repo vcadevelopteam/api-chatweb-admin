@@ -2246,6 +2246,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_EVENT_BY_CODE_WITH_BOOKINGUUID: {
+        query: `SELECT ce.corpid, ce.orgid, ce.calendareventid, ce.description, ce.status, ce.type, ce.name, ce.locationtype, ce.location, ce.eventlink, ce.color, ce.notificationtype, ce.messagetemplateid, ce.daterange, ce.daysduration, ce.daystype, ce.startdate, ce.enddate, ce.timeduration, ce.timeunit, ce.timezone, ce.availability, ce.timebeforeeventduration, ce.timebeforeeventunit, ce.timeaftereventduration, ce.timeaftereventunit, ce.increments, cb.personname personname, cb.personcontact phone, cb.personmail email, cb.calendarbookingid,
+        cb.datestart::text bookingdate
+        FROM calendarevent ce 
+        LEFT JOIN person p on p.corpid = ce.corpid and p.orgid = ce.orgid and p.personid = $personid 
+        INNER JOIN calendarbooking cb ON cb.corpid = ce.corpid AND cb.orgid = ce.orgid AND cb.calendareventid = ce.calendareventid AND cb.calendarbookinguuid = $calendarbookinguuid AND cb.status = 'ACTIVO'
+        WHERE ce.orgid = $orgid and ce.code = $code`,
+        module: "",
+        protected: "SELECT"
+    },
     QUERY_GET_PERSON_FROM_BOOKING: {
         query: "select p.name, p.phone, p.email from person p where p.corpid = $corpid and p.orgid = $orgid and p.personid = $personid",
         module: "",
@@ -2269,7 +2279,7 @@ module.exports = {
     QUERY_GET_EVENTS_PER_PERSON: {
         query: `SELECT  cb.calendareventid,cb.calendarbookingid, cb.description, cb.status, cb.datestart,
                         cb.monthdate, cb.monthday, cb.weekday, cb.hourstart, cb.hourend, cb.timeduration,
-                        cb.personname, cb.personcontact
+                        cb.personname, cb.personcontact, cb.calendarbookinguuid
             FROM calendarbooking cb
             WHERE cb.personcontact IN ($email,$phone)
                 AND cb.calendareventid=$calendareventid
@@ -2300,7 +2310,7 @@ module.exports = {
                 WHERE status='ACTIVO'
                 AND corpid=$corpid
                 AND orgid=$orgid
-                AND calendarbookingid=$calendarbookingid;`,
+                AND calendarbookinguuid=$calendarbookinguuid;`,
         module: "",
         protected: "SELECT"
     },

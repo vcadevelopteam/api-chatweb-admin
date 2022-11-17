@@ -12,7 +12,9 @@ const method_allowed = [
     "UFN_CALENDARYBOOKING_SEL_DATETIME",
     "QUERY_GET_EVENTS_PER_PERSON",
     "QUERY_CANCEL_EVENT_BY_CALENDARBOOKINGID",
-    "QUERY_GET_EVENT_BY_BOOKINGID"
+    "QUERY_GET_EVENT_BY_BOOKINGID",
+    "QUERY_EVENT_BY_CODE_WITH_BOOKINGUUID",
+    "UFN_CALENDARBOOKING_SEL_ONE"
 ]
 
 // var https = require('https');
@@ -20,6 +22,7 @@ const method_allowed = [
 // const agent = new https.Agent({
 //     rejectUnauthorized: false
 // });
+const laraigoEndpoint = process.env.LARAIGO;
 
 const send = async (data, requestid) => {
 
@@ -169,7 +172,20 @@ exports.Collection = async (req, res) => {
     const result = await executesimpletransaction(method, parameters);
 
     if (!result.error) {
+        // if(method === "QUERY_GET_EVENTS_PER_PERSON"){
+        //     result.forEach(event => {
+        //         event.reprogramacion = `${laraigoEndpoint}/events/${parameters.orgid}/${parameters.calendareventid}?booking=${event.calendarbookinguuid}`
+        //     });
+        // }
+
         if (method === "UFN_CALENDARYBOOKING_INS") {
+            //si envia un calendarbookinguuid es porque quiere reprogramar, osea cancelar la antigua y crear una nueva
+            if (parameters.calendarbookingid) {
+                await executesimpletransaction("QUERY_CANCEL_EVENT_BY_CALENDARBOOKINGUUID", {
+                    ...parameters,
+                    cancelcomment: "RESCHEDULED BOOKING"
+                });
+            }
             const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
 
             const { communicationchannelid, messagetemplateid, notificationtype, messagetemplatename, communicationchanneltype, notificationmessage } = resultCalendar[0]
@@ -225,12 +241,12 @@ exports.Collection = async (req, res) => {
 }
 
 exports.CancelEvent = async (req,res) => {
-    const { orgid, corpid,calendarbookingid } = req.params;
+    const { orgid, corpid,calendarbookinguuid } = req.params;
     const { parameters = {}, method, key} = req.body;
     
     parameters.corpid = Number(corpid);
     parameters.orgid = Number(orgid);
-    parameters.calendarbookingid = Number(calendarbookingid);
+    parameters.calendarbookinguuid = Number(calendarbookinguuid);
 
     
     if (!method_allowed.includes(method)) {
