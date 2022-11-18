@@ -9,10 +9,12 @@ router.post('/collection',
     eventBookingController.Collection
 )
 
-router.post('/cancelevent/:corpid/:orgid/:calendarbookingid',
+router.post('/cancelevent/:corpid/:orgid/:calendarbookinguuid',
     ip,
     eventBookingController.CancelEvent
 )
+
+router.post('/eventsperperson', ip, eventBookingController.EventsPerPerson);
 
 router.post('/getevent',
     ip,

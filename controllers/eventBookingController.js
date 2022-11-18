@@ -13,7 +13,7 @@ const method_allowed = [
     "QUERY_GET_EVENTS_PER_PERSON",
     "QUERY_CANCEL_EVENT_BY_CALENDARBOOKINGID",
     "QUERY_GET_EVENT_BY_BOOKINGID",
-    "QUERY_EVENT_BY_CODE_WITH_BOOKINGUUID",
+    "QUERY_EVENT_BY_CODE_WITH_BOOKINGUUID",    
     "UFN_CALENDARBOOKING_SEL_ONE"
 ]
 
@@ -161,7 +161,7 @@ const send = async (data, requestid) => {
 
 exports.Collection = async (req, res) => {
     const { parameters = {}, method, key } = req.body;
-
+    
     if (!method_allowed.includes(method)) {
         const resError = getErrorCode(errors.FORBIDDEN);
         return res.status(resError.rescode).json(resError);
@@ -235,6 +235,43 @@ exports.Collection = async (req, res) => {
             }
         }
         return res.json({ error: false, success: true, data: result, key });
+    }
+    else
+        return res.status(result.rescode).json(({ ...result, key }));
+}
+
+exports.EventsPerPerson = async (req,res) => {
+    const { parameters = {} } = req.body;
+
+    const result = await executesimpletransaction('QUERY_GET_EVENTS_PER_PERSON', parameters);
+
+    if (!result.error) {
+        result.forEach(event => {
+            event.reprogramacion = `${laraigoEndpoint}events/${parameters.orgid}/${parameters.calendareventid}?booking=${event.calendarbookinguuid}`
+        });
+        const events = result.map(event => {
+            return {
+                code: event.code,
+                calendareventid: event.calendareventid,
+                calendarbookingid: event.calendarbookingid,
+                calendarbookinguuid: event.calendarbookinguuid,
+                description: event.description,
+                status: event.status,
+                datestart: event.datestart,
+                monthdate: event.monthdate,
+                monthday: event.monthday,
+                weekday: event.weekday,
+                hourstart: event.hourstart,
+                hourend: event.hourend,
+                timeduration: event.timeduration,
+                personname: event.personname,
+                personcontact: event.personcontact,
+                reprogramacion: `${laraigoEndpoint}events/${event.orgid}/${event.code}?booking=${event.calendarbookinguuid}`,
+                cancelar: `${laraigoEndpoint}cancelevent/${event.corpid}/${event.orgid}/${event.calendareventid}/${event.calendarbookinguuid}`,
+            }
+        });
+
+        return res.json({ error: false, success: true, data: events });
     }
     else
         return res.status(result.rescode).json(({ ...result, key }));
