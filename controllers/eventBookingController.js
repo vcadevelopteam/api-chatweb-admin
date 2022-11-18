@@ -13,7 +13,7 @@ const method_allowed = [
     "QUERY_GET_EVENTS_PER_PERSON",
     "QUERY_CANCEL_EVENT_BY_CALENDARBOOKINGID",
     "QUERY_GET_EVENT_BY_BOOKINGID",
-    "QUERY_EVENT_BY_CODE_WITH_BOOKINGUUID",
+    "QUERY_EVENT_BY_CODE_WITH_BOOKINGUUID",    
     "UFN_CALENDARBOOKING_SEL_ONE"
 ]
 
@@ -22,7 +22,7 @@ const method_allowed = [
 // const agent = new https.Agent({
 //     rejectUnauthorized: false
 // });
-const laraigoEndpoint = process.env.LARAIGO;
+//const laraigoEndpoint = process.env.LARAIGO;
 
 const send = async (data, requestid) => {
 
@@ -161,7 +161,7 @@ const send = async (data, requestid) => {
 
 exports.Collection = async (req, res) => {
     const { parameters = {}, method, key } = req.body;
-
+    
     if (!method_allowed.includes(method)) {
         const resError = getErrorCode(errors.FORBIDDEN);
         return res.status(resError.rescode).json(resError);
@@ -234,6 +234,18 @@ exports.Collection = async (req, res) => {
                 });
             }
         }
+        return res.json({ error: false, success: true, data: result, key });
+    }
+    else
+        return res.status(result.rescode).json(({ ...result, key }));
+}
+
+exports.EventsPerPerson = async (req,res) => {
+    const { parameters = {} } = req.body;
+
+    const result = await executesimpletransaction('QUERY_GET_EVENTS_PER_PERSON', parameters);
+
+    if (!result.error) {
         return res.json({ error: false, success: true, data: result, key });
     }
     else

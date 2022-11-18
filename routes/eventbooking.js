@@ -14,6 +14,8 @@ router.post('/cancelevent/:corpid/:orgid/:calendarbookingid',
     eventBookingController.CancelEvent
 )
 
+router.post('/eventsperperson', ip, eventBookingController.EventsPerPerson);
+
 router.post('/getevent',
     ip,
     eventBookingController.GetEventByBookingid
