@@ -22,7 +22,7 @@ const method_allowed = [
 // const agent = new https.Agent({
 //     rejectUnauthorized: false
 // });
-//const laraigoEndpoint = process.env.LARAIGO;
+const laraigoEndpoint = process.env.LARAIGO;
 
 const send = async (data, requestid) => {
 
@@ -246,7 +246,32 @@ exports.EventsPerPerson = async (req,res) => {
     const result = await executesimpletransaction('QUERY_GET_EVENTS_PER_PERSON', parameters);
 
     if (!result.error) {
-        return res.json({ error: false, success: true, data: result, key });
+        result.forEach(event => {
+            event.reprogramacion = `${laraigoEndpoint}events/${parameters.orgid}/${parameters.calendareventid}?booking=${event.calendarbookinguuid}`
+        });
+        const events = result.map(event => {
+            return {
+                code: event.code,
+                calendareventid: event.calendareventid,
+                calendarbookingid: event.calendarbookingid,
+                calendarbookinguuid: event.calendarbookinguuid,
+                description: event.description,
+                status: event.status,
+                datestart: event.datestart,
+                monthdate: event.monthdate,
+                monthday: event.monthday,
+                weekday: event.weekday,
+                hourstart: event.hourstart,
+                hourend: event.hourend,
+                timeduration: event.timeduration,
+                personname: event.personname,
+                personcontact: event.personcontact,
+                reprogramacion: `${laraigoEndpoint}events/${event.orgid}/${event.code}?booking=${event.calendarbookinguuid}`,
+                cancelar: `${laraigoEndpoint}cancelevent/${event.corpid}/${event.orgid}/${event.calendareventid}/${event.calendarbookinguuid}`,
+            }
+        });
+
+        return res.json({ error: false, success: true, data: events });
     }
     else
         return res.status(result.rescode).json(({ ...result, key }));
