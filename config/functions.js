@@ -1703,6 +1703,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_CONVERSATION_SUPERVISIONSTATUS: {
+        query: `select * from ufn_conversation_supervisionstatus($corpid, $orgid, $conversationid, $status, $type, $userid, $username)`,
+        module: "",
+        protected: "INSERT"
+    },
     UFN_BILLINGPERIOD_SUMMARYORG: {
         query: "SELECT * FROM ufn_billingperiod_summaryorg($corpid, $orgid, $year, $month, $userid)",
         module: "",
@@ -2976,8 +2981,18 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
-    UFN_PRODUCTCATALOG_INS_ARRAY: {
-        query: "SELECT * FROM ufn_productcatalog_ins_array($corpid, $orgid, $catalogid, $catalogname, $username, $table)",
+    UFN_POSTHISTORY_PUBLISH: {
+        query: "SELECT * FROM ufn_posthistory_publish($corpid, $orgid, $communicationchannelid, $posthistoryid, $status, $externaldata, $published, $publishstatus, $publishmessage)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_POSTHISTORY_INSIGHT: {
+        query: "SELECT * FROM ufn_posthistory_insight($corpid, $orgid, $communicationchannelid, $posthistoryid, $reach, $interactions, $reactions)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_POSTHISTORY_SEL: {
+        query: "SELECT * FROM ufn_posthistory_sel($corpid, $orgid, $status, $type, $datestart, $dateend)",
         module: "",
         protected: "INSERT"
     },
@@ -3050,5 +3065,20 @@ module.exports = {
         query: "SELECT * FROM ufn_calendarintegration_watch($id, $email, $watchid, $resourceid, $watchexpiredate)",
         module: "",
         protected: "INSERT"
+    },
+    UFN_POSTHISTORY_INS: {
+        query: "SELECT * FROM ufn_posthistory_ins($corpid, $orgid, $communicationchannelid, $communicationchanneltype, $posthistoryid, $status, $type, $publishdate, $texttitle, $textbody, $hashtag, $sentiment, $activity, $mediatype, $medialink, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CRON_POSTHISTORY_SEL: {
+        query: "SELECT * FROM ufn_cron_posthistory_sel()",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CRON_POSTHISTORY_INSIGHT_SEL: {
+        query: "SELECT * FROM ufn_cron_posthistory_insight_sel()",
+        module: "",
+        protected: "SELECT"
     },
 }

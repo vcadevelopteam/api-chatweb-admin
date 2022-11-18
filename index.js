@@ -60,6 +60,7 @@ app.use('/api/google', require('./routes/google'));
 app.use('/api/campaign', require('./routes/campaign'));
 app.use('/api/witai', require('./routes/witai'));
 app.use('/api/product', require('./routes/product'));
+app.use('/api/posthistory', require('./routes/posthistory'));
 
 // Definir la pagina principal
 app.get('/', (req, res) => {
