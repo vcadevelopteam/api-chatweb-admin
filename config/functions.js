@@ -2284,7 +2284,7 @@ module.exports = {
     QUERY_GET_EVENTS_PER_PERSON: {
         query: `SELECT  cb.calendareventid,cb.calendarbookingid, cb.description, cb.status, cb.datestart,
                         cb.monthdate, cb.monthday, cb.weekday, cb.hourstart, cb.hourend, cb.timeduration,
-                        cb.personname, cb.personcontact
+                        cb.personname, cb.personcontact, cb.calendarbookinguuid
             FROM calendarbooking cb
             WHERE cb.personcontact IN ($email,$phone)
                 AND cb.calendareventid=$calendareventid
@@ -2315,7 +2315,7 @@ module.exports = {
                 WHERE status='ACTIVO'
                 AND corpid=$corpid
                 AND orgid=$orgid
-                AND calendarbookingid=$calendarbookingid;`,
+                AND calendarbookinguuid=$calendarbookinguuid;`,
         module: "",
         protected: "SELECT"
     },
