@@ -24,7 +24,7 @@ exports.schedulePost = async (request, response) => {
                             communicationchannelid: request.body.data.channeldata[counter].communicationchannelid || 0,
                             communicationchanneltype: request.body.data.channeldata[counter].type || '',
                             posthistoryid: 0,
-                            status: request.body.type === "DRAFT" ? "" : "SCHEDULED",
+                            status: request.body.type === "DRAFT" ? "DRAFT" : "SCHEDULED",
                             type: request.body.publication || '',
                             publishdate: `${scheduleDate.toISOString()?.split('T')[0]}T${scheduleTime.toISOString()?.split('T')[1]}`,
                             texttitle: request.body.data.texttitle || '',
