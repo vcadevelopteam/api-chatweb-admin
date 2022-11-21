@@ -1704,7 +1704,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CONVERSATION_OUTBOUND_VALIDATE: {
-        query: `select * from ufn_conversation_outbound_validate($personid, $personcommunicationchannel, $communicationchannelid, $corpid, $orgid, $communicationchanneltype, $personcommunicationchannelowner, $firstname, $lastname, $phone)`,
+        query: `select * from ufn_conversation_outbound_validate($corpid, $orgid, $communicationchannelid, $personcommunicationchannel)`,
         module: "",
         protected: "INSERT"
     },
