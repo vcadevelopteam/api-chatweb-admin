@@ -271,7 +271,7 @@ exports.EventsPerPerson = async (req,res) => {
             }
         });
 
-        return res.json({ error: false, success: true, data: events });
+        return res.json({ error: false, success: true, count: events.length, data: events });
     }
     else
         return res.status(result.rescode).json(({ ...result, key }));
