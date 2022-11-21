@@ -2323,6 +2323,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_CANCEL_EVENT_BY_CALENDARBOOKINGUUID: {
+        query: `UPDATE calendarbooking 
+                SET status='CANCELADO', cancelcomment=$cancelcomment
+                WHERE status='ACTIVO'
+                AND corpid=$corpid
+                AND orgid=$orgid
+                AND calendarbookingid=$calendarbookingid;`,
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CALENDARYBOOKING_INS: {
         query: "SELECT * FROM ufn_calendarbooking_ins($corpid, $orgid, $calendareventid, $id, $description, $type, $status, $monthdate, $hourstart, $notes, $conversationid, $personname, $personcontact, $personmail, $persontimezone, $username, $operation)",
         module: "",
