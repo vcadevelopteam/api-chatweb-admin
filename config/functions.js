@@ -2279,6 +2279,7 @@ module.exports = {
                 AND cb.corpid=$corpid
                 AND cb.orgid=$orgid
                 AND cb.calendarbookingid=$calendarbookingid
+                AND cb.datestart > NOW() + cb.timezone * INTERVAL '1HOUR'
                 AND cb.status='ACTIVO'`,
         module: "",
         protected: "SELECT"
