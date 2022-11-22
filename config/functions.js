@@ -1703,6 +1703,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_CONVERSATION_OUTBOUND_VALIDATE: {
+        query: `select * from ufn_conversation_outbound_validate($corpid, $orgid, $communicationchannelid, $personcommunicationchannel)`,
+        module: "",
+        protected: "INSERT"
+    },
     UFN_CONVERSATION_SUPERVISIONSTATUS: {
         query: `select * from ufn_conversation_supervisionstatus($corpid, $orgid, $conversationid, $status, $type, $userid, $username)`,
         module: "",
