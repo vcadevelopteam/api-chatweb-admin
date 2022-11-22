@@ -717,7 +717,9 @@ exports.googleRevoke = async (request, response) => {
 
 exports.googleValidate = async (request, response) => {
     try {
-        const params = { ...request.body, _requestid: request._requestid }
+        const { id } = request.body
+        const params = { id }
+        setSessionParameters(params, request.user, request._requestid);
         const [calendar, extradata] = await googleCalendarCredentials({ params })
         if (calendar) {
             const calendar_data = await googleCalendarGet({ params, calendar, extradata })

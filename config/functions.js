@@ -2294,6 +2294,7 @@ module.exports = {
             JOIN calendarevent ce ON ce.corpid = cb.corpid AND ce.orgid = cb.orgid AND ce.calendareventid = cb.calendareventid
             WHERE cb.personcontact IN ($email,$phone)
                 AND ce.code=$code
+                AND cb.datestart > NOW() + cb.timezone * INTERVAL '1HOUR'
                 AND cb.status='ACTIVO'`,
         module: "",
         protected: "SELECT"
@@ -2308,7 +2309,7 @@ module.exports = {
                 AND ce.corpid = $corpid
                 AND cb.corpid=$corpid
                 AND cb.orgid=$orgid
-                AND cb.calendarbookingid=$calendarbookingid
+                AND cb.calendarbookingid=$calendarbookingid                
                 AND cb.status='ACTIVO'`,
         module: "",
         protected: "SELECT"
