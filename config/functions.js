@@ -3057,6 +3057,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_CALENDAR_INTEGRATION_CREDENTIALS_DISCONNECT: {
+        query: "SELECT * FROM ufn_calendarintegration_credentials_disconnect($corpid, $orgid, $id)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_CALENDAR_INTEGRATION_CREDENTIALS_CLEAN: {
         query: "SELECT * FROM ufn_calendarintegration_credentials_clean($id, $email)",
         module: "",
