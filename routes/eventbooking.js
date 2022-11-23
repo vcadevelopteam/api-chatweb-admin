@@ -27,6 +27,12 @@ router.post("/googlelogin",
     eventBookingController.googleLogIn,
 )
 
+router.post("/googledisconnect",
+    auth,
+    ip,
+    eventBookingController.googleDisconnect,
+)
+
 router.post("/googlerevoke",
     auth,
     ip,
