@@ -1035,6 +1035,7 @@ exports.createSubscription = async (request, response) => {
                                                         recording: channelServiceArray[index].recording,
                                                         sms: channelServiceArray[index].sms,
                                                         outbound: channelServiceArray[index].outbound,
+                                                        callsupervision: channelServiceArray[index].callsupervision,
                                                         recordingstorage: channelServiceArray[index].recordingstorage?.value,
                                                         recordingquality: channelServiceArray[index].recordingquality?.value,
                                                     };
