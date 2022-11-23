@@ -2631,7 +2631,7 @@ exports.createCreditNote = async (request, response) => {
                     const invoiceDate = new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0];
                     const currentDate = new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60000);
 
-                    const invoiceResponse = await createInvoice(invoice.corpid, invoice.orgid, 0, `NOTA DE CREDITO: ${invoice.description}`, invoice.status, 'CREDITNOTE', appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, null, null, `NOTA DE CREDITO: ${invoice.concept}`, invoiceDate, invoiceDate, creditnotetype === '01' ? invoice.subtotal : parseFloat(creditnotediscount), invoice.taxes, creditnotetype === '01' ? invoice.totalamount : (parseFloat(creditnotediscount) * (appsetting.igv + 1)), invoice.currency, invoice.exchangerate, 'PENDING', null, invoice.purchaseorder, null, null, null, invoice.comments, invoice.credittype, creditnotetype, creditnotemotive, parseFloat(creditnotediscount), null, null, usr, invoice.invoiceid, invoice.netamount, 'NONE', false, currentDate.getFullYear(), currentDate.getMonth(), responsedata.id);
+                    const invoiceResponse = await createInvoice(invoice.corpid, invoice.orgid, 0, `NOTA DE CREDITO: ${invoice.description}`, invoice.status, 'CREDITNOTE', appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode === "1001" ? "0101" : invoice.sunatopecode, null, null, `NOTA DE CREDITO: ${invoice.concept}`, invoiceDate, invoiceDate, creditnotetype === '01' ? invoice.subtotal : parseFloat(creditnotediscount), invoice.taxes, creditnotetype === '01' ? invoice.totalamount : (parseFloat(creditnotediscount) * (appsetting.igv + 1)), invoice.currency, invoice.exchangerate, 'PENDING', null, invoice.purchaseorder, null, null, null, invoice.comments, invoice.credittype, creditnotetype, creditnotemotive, parseFloat(creditnotediscount), null, null, usr, invoice.invoiceid, invoice.netamount, 'NONE', false, currentDate.getFullYear(), currentDate.getMonth(), responsedata.id);
 
                     if (invoiceResponse) {
                         var invoicecorrelative = null;
@@ -2656,6 +2656,7 @@ exports.createCreditNote = async (request, response) => {
                                     CodigoUbigeoEmisor: appsetting.ubigeo,
                                     EnviarSunat: invoice.sendtosunat,
                                     FechaEmision: invoiceDate,
+                                    FechaVencimiento: invoiceDate,
                                     MailEnvio: invoice.receivermail,
                                     MontoTotal: Math.round(((creditnotetype === '01' ? invoice.totalamount : parseFloat(creditnotediscount * (appsetting.igv + 1))) + Number.EPSILON) * 100) / 100,
                                     NombreComercialEmisor: appsetting.tradename,
@@ -2676,7 +2677,7 @@ exports.createCreditNote = async (request, response) => {
                                     VersionUbl: appsetting.ublversion,
                                     Endpoint: appsetting.sunaturl,
                                     PaisRecepcion: invoice.receivercountry,
-                                    CodigoOperacionSunat: invoice.sunatopecode,
+                                    CodigoOperacionSunat: invoice.sunatopecode === "1001" ? "0101" : invoice.sunatopecode,
                                     MontoTotalGravado: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((creditnotediscount + Number.EPSILON) * 100) / 100 : null),
                                     MontoTotalInafecto: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100) : (invoice.receivercountry === 'PE' ? '0' : Math.round((creditnotediscount * (appsetting.igv + 1) + Number.EPSILON) * 100) / 100),
                                     MontoTotalIgv: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((creditnotediscount * appsetting.igv + Number.EPSILON) * 100) / 100 : null),
@@ -2938,7 +2939,7 @@ exports.createInvoice = async (request, response) => {
                                     TipoRucEmisor: appsetting.emittertype,
                                     CodigoRucReceptor: clientdoctype,
                                     CodigoUbigeoEmisor: appsetting.ubigeo,
-                                    EnviarSunat: autosendinvoice || true,
+                                    EnviarSunat: autosendinvoice ? true : false,
                                     FechaEmision: invoicecreatedate,
                                     MailEnvio: clientmail,
                                     MontoTotal: Math.round((invoicetotalcharge + Number.EPSILON) * 100) / 100,
