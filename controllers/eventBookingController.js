@@ -886,6 +886,42 @@ exports.googleLogIn = async (request, response) => {
     }
 }
 
+exports.googleDisconnect = async (request, response) => {
+    try {
+        const { id } = request.body
+        const params = { id }
+        setSessionParameters(params, request.user, request._requestid);
+        
+        const bd_data = await executesimpletransaction("UFN_CALENDAR_INTEGRATION_CREDENTIALS_DISCONNECT", params);
+        if (bd_data instanceof Array && bd_data.length > 0) {
+            return response.status(200).json({
+                code: '',
+                data: bd_data[0],
+                error: false,
+                message: '',
+                success: true,
+            });
+        }
+        else {
+            return response.status(200).json({
+                code: '',
+                error: false,
+                message: '',
+                success: true,
+            });
+        }
+    }
+    catch (exception) {
+        logger.child({ _requestid: request._requestid, context: request.body }).error(exception)
+        return response.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+}
+
 exports.googleRevoke = async (request, response) => {
     try {
         const { id } = request.body
@@ -913,7 +949,9 @@ exports.googleRevoke = async (request, response) => {
 
 exports.googleValidate = async (request, response) => {
     try {
-        const params = { ...request.body, _requestid: request._requestid }
+        const { id } = request.body
+        const params = { id }
+        setSessionParameters(params, request.user, request._requestid);
         const [calendar, extradata] = await googleCalendarCredentials({ params })
         if (calendar) {
             const calendar_data = await googleCalendarGet({ params, calendar, extradata })
