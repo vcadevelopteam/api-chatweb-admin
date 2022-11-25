@@ -160,6 +160,168 @@ const send = async (data, requestid) => {
     }
 }
 
+const setReminder = async (data, requestid) => {
+    data._requestid = requestid;
+
+    try {
+        if (data.listmembers.every(x => !!x.personid)) {
+            await executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", undefined, false, {
+                personids: data.listmembers.map(x => x.personid),
+                corpid: data.corpid,
+                orgid: data.orgid,
+                _requestid: requestid,
+            })
+        }
+        switch (data.reminderperiod) {
+            case 'day':
+                data.remindertime = data.reminderfrecuency.toString() + ' days';
+                break;
+            case 'hour':
+                data.remindertime = data.reminderfrecuency.toString() + ' hours';
+                break;
+            case 'week':
+                data.remindertime = data.reminderfrecuency.toString() + ' weeks';
+                break;
+            default:
+                
+        }
+        if(data.remindertype === "EMAIL" || data.remindertype==="EMAIL/HSM"){
+            let jsonconfigmail = "";
+            const resBD = await Promise.all([
+                executesimpletransaction("QUERY_GET_CONFIG_MAIL", data),
+                executesimpletransaction("QUERY_GET_MESSAGETEMPLATE", data),
+            ]);
+            const configmail = resBD[0];
+            const mailtemplate = resBD[1][0];
+
+            if (configmail instanceof Array && configmail.length > 0) {
+                jsonconfigmail = JSON.stringify({
+                    username: configmail[0].email,
+                    password: configmail[0].pass,
+                    port: configmail[0].port,
+                    host: configmail[0].host,
+                    enableSsl: configmail[0].ssl,
+                    default_credentials: configmail[0].default_credentials,
+                })
+            }
+
+            data.listmembers.forEach(async x => {
+                const resCheck = await executesimpletransaction("UFN_BALANCE_CHECK", { ...data, receiver: x.email, communicationchannelid: 0 })
+
+                let send = false;
+                if (resCheck instanceof Array && resCheck.length > 0) {
+                    data.fee = resCheck[0].fee;
+                    const balanceid = resCheck[0].balanceid;
+
+                    if (balanceid == 0) {
+                        send = true;
+                    } else {
+                        const resValidate = await executesimpletransaction("UFN_BALANCE_OUTPUT", { ...data, receiver: x.email, communicationchannelid: 0 })
+                        if (resValidate instanceof Array) {
+                            send = true;
+                        }
+                    }
+                }
+
+                if (send) {
+                    executesimpletransaction("QUERY_INSERT_REMINDER_TASK_SCHEDULER", {
+                        corpid: data.corpid,
+                        orgid: data.orgid,
+                        tasktype: "sendmail",
+                        taskbody: JSON.stringify({
+                            messagetype: "OWNERBODY",
+                            receiver: x.email,
+                            subject: mailtemplate.header,
+                            priority: mailtemplate.priority,
+                            body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), (data.bodyMailMessage || mailtemplate.body)),
+                            blindreceiver: "",
+                            copyreceiver: "",
+                            credentials: jsonconfigmail,
+                            config: {
+                                CommunicationChannelSite: "",
+                                FirstName: x.firstname,
+                                LastName: x.lastname,
+                                HsmTo: x.email,
+                                Origin: "EXTERNAL",
+                                MessageTemplateId: data.remindermailtemplateid,
+                                ShippingReason: data.shippingreason,
+                                HsmId: data.hsmtemplatename,
+                                Body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), (data.bodyMailMessage || mailtemplate.body))
+                            },
+                            attachments: mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
+                                type: 'FILE',
+                                value: x?.value ? x.value : x,
+                            })) : []
+                        }),
+                        repeatflag: false,
+                        repeatmode: 0,
+                        repeatinterval: 0,
+                        completed: false,
+                        _requestid: requestid,
+                        monthdate: data.monthdate,
+                        hourstart: data.hourstart,
+                        remindertime: data.remindertime
+                    })
+                } else {
+                    executesimpletransaction("QUERY_INSERT_HSM_HISTORY", {
+                        ...data,
+                        status: 'FINALIZADO',
+                        success: false,
+                        message: 'no credit',
+                        messatemplateid: data.remindermailtemplateid,
+                        config: JSON.stringify({
+                            CommunicationChannelSite: "zyxme@vcaperu.com",
+                            FirstName: x.firstname,
+                            LastName: x.lastname,
+                            HsmTo: x.email,
+                            Origin: "EXTERNAL",
+                            MessageTemplateId: data.remindermailtemplateid,
+                            ShippingReason: data.shippingreason,
+                            HsmId: data.hsmtemplatename,
+                            Body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), (data.body || mailtemplate.body))
+                        }),
+                    })
+                }
+            })
+            
+        }
+        if(data.remindertype === "HSM" || data.remindertype==="EMAIL/HSM"){
+            executesimpletransaction("QUERY_INSERT_REMINDER_TASK_SCHEDULER", {
+                corpid: data.corpid,
+                orgid: data.orgid,
+                tasktype: "sendhsm",
+                taskbody: JSON.stringify({
+                    hsmtemplatename: "EVENT BOOKING",
+                    hsmtemplateid: data.reminderhsmtemplateid,
+                    communicationchannelid: data.reminderhsmcommunicationchannelid,
+                    communicationchanneltype: "",
+                    platformtype: "",
+                    type: "MAIL",
+                    shippingreason: "LEAD",
+                    listmembers: [{
+                        personid: data.listmembers[0].personid,
+                        phone: data.listmembers[0].phone,
+                        firstname: data.listmembers[0].firstname,
+                        lastname: "",                       
+                        parameters:[]
+                    }]
+                }),
+                repeatflag: false,
+                repeatmode: 1,
+                repeatinterval: 1,
+                completed: false,
+                monthdate: data.monthdate,
+                hourstart: data.hourstart,
+                remindertime: data.remindertime,
+                _requestid: requestid
+            })
+        }
+    }
+    catch (exception) {
+        getErrorCode(null, exception, `Request to ${req.originalUrl}`, data._requestid);
+    }
+}
+
 exports.Collection = async (req, res) => {
     const { parameters = {}, method, key } = req.body;
     
@@ -173,12 +335,6 @@ exports.Collection = async (req, res) => {
     const result = await executesimpletransaction(method, parameters);
 
     if (!result.error) {
-        // if(method === "QUERY_GET_EVENTS_PER_PERSON"){
-        //     result.forEach(event => {
-        //         event.reprogramacion = `${laraigoEndpoint}/events/${parameters.orgid}/${parameters.calendareventid}?booking=${event.calendarbookinguuid}`
-        //     });
-        // }
-
         if (method === "UFN_CALENDARYBOOKING_INS") {
             //si envia un calendarbookinguuid es porque quiere reprogramar, osea cancelar la antigua y crear una nueva
             if (parameters.calendarbookingid) {
@@ -187,9 +343,13 @@ exports.Collection = async (req, res) => {
                     cancelcomment: "RESCHEDULED BOOKING"
                 });
             }
+            
             const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
+            
 
-            const { communicationchannelid, messagetemplateid, notificationtype, messagetemplatename, communicationchanneltype, notificationmessage } = resultCalendar[0]
+            const { communicationchannelid, messagetemplateid, notificationtype, messagetemplatename, communicationchanneltype, notificationmessage,
+                reminderhsmcommunicationchannelid, reminderperiod, reminderfrecuency, remindermailmessage,
+                remindermailtemplateid, reminderhsmmessage, reminderhsmtemplateid, remindertype} = resultCalendar[0]
 
             if (notificationtype === "EMAIL" || notificationtype === "HSM") {
                 const sendmessage = {
@@ -217,6 +377,42 @@ exports.Collection = async (req, res) => {
 
                 await send(sendmessage, req._requestid);
             }
+
+            //Inicio - Envio de recordatorio - JR
+            const reminderData = {
+                corpid: parameters.corpid,
+                    orgid: parameters.orgid,
+                    username: parameters.username,
+                    communicationchannelid: communicationchannelid,
+                    hsmtemplateid: messagetemplateid,
+                    type: notificationtype,
+                    shippingreason: "BOOKING",
+                    _requestid: req._requestid,
+                    hsmtemplatename: messagetemplatename,
+                    communicationchanneltype: communicationchanneltype,
+                    platformtype: communicationchanneltype,
+                    userid: 0,
+                    listmembers: [{
+                        phone: parameters.phone,
+                        firstname: parameters.name,
+                        email: parameters.email,
+                        lastname: "",
+                        parameters: parameters.parameters
+                    }],
+                    bodyMailMessage: remindermailmessage,
+                    bodyHsmMessage: reminderhsmmessage,
+                    reminderhsmcommunicationchannelid: reminderhsmcommunicationchannelid,
+                    reminderperiod: reminderperiod,
+                    reminderfrecuency: reminderfrecuency,
+                    remindermailtemplateid: remindermailtemplateid,
+                    reminderhsmtemplateid: reminderhsmtemplateid,
+                    remindertype: remindertype,
+                    monthdate: parameters.monthdate,
+                    hourstart: parameters.hourstart
+            }
+
+            await setReminder(reminderData, req._requestid);
+            //Fin - Envio de recordatorio - JR
 
             if (!!parameters.conversationid && !!parameters.personid) {
                 const dataServices = {

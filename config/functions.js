@@ -1608,6 +1608,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    QUERY_INSERT_REMINDER_TASK_SCHEDULER: {
+        query: "INSERT INTO taskscheduler (corpid, orgid, tasktype, taskbody, repeatflag, repeatmode, repeatinterval, completed, datetimestart, datetimeend) values ($corpid, $orgid, $tasktype, $taskbody, $repeatflag, $repeatmode, $repeatinterval, $completed, TO_TIMESTAMP($monthdate,'YYYY-MM-DD') + $hourstart::INTERVAL - $remindertime::INTERVAL - INTERVAL '5 hours' , NOW())",
+        module: "",
+        protected: "INSERT"
+    },
     QUERY_GET_MESSAGETEMPLATE: {
         query: "select messagetemplateid, header, body, priority, attachment from messagetemplate where corpid = $corpid and orgid = $orgid and messagetemplateid = $hsmtemplateid",
         module: "",
@@ -2248,7 +2253,15 @@ module.exports = {
         ce.messagetemplateid,
         ce.communicationchannelid,
         ce.notificationtype,
-        ce.notificationmessage
+        ce.notificationmessage,
+        ce.reminderhsmcommunicationchannelid,
+        ce.reminderperiod,
+        ce.reminderfrecuency,
+        ce.remindermailmessage,
+        ce.remindermailtemplateid,
+        ce.reminderhsmmessage,
+        ce.reminderhsmtemplateid,
+        ce.remindertype
         from calendarevent ce 
         left join communicationchannel cc on cc.corpid = ce.corpid and cc.orgid = ce.orgid and cc.communicationchannelid = ce.communicationchannelid 
         left join messagetemplate mt on mt.corpid = ce.corpid and mt.orgid = ce.orgid and mt.messagetemplateid = ce.messagetemplateid 
@@ -2301,6 +2314,16 @@ module.exports = {
                 AND corpid=$corpid
                 AND orgid=$orgid
                 AND calendarbookingid=$calendarbookingid;`,
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_GET_EVENT_REMINDER: {
+        query: `SELECT * 
+                FROM calendarevent
+                WHERE status='ACTIVO'
+                AND corpid=$corpid
+                AND orgid=$orgid
+                AND calendareventid=$calendareventid;`,
         module: "",
         protected: "SELECT"
     },
