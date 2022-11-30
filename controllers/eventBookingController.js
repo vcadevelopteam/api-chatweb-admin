@@ -129,7 +129,7 @@ const send = async (data, requestid) => {
                             MessageTemplateId: data.hsmtemplateid,
                             ShippingReason: data.shippingreason,
                             HsmId: data.hsmtemplatename,
-                            Body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), (data.body || mailtemplate.body))
+                            Body: x.parameters.reduce((acc, item) => acc.replaceAll(`{{${item.name}}}`, item.text), (data.body || mailtemplate.body))
                         }),
                     })
                 }
