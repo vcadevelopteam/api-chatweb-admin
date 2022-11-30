@@ -87,7 +87,7 @@ const send = async (data, requestid) => {
                             receiver: x.email,
                             subject: mailtemplate.header,
                             priority: mailtemplate.priority,
-                            body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), (data.body || mailtemplate.body)),
+                            body: x.parameters.reduce((acc, item) => acc.replaceAll(`{{${item.name}}}`, item.text), (data.body || mailtemplate.body)),
                             blindreceiver: "",
                             copyreceiver: "",
                             credentials: jsonconfigmail,
@@ -100,7 +100,7 @@ const send = async (data, requestid) => {
                                 MessageTemplateId: data.hsmtemplateid,
                                 ShippingReason: data.shippingreason,
                                 HsmId: data.hsmtemplatename,
-                                Body: x.parameters.reduce((acc, item) => acc.replace(`{{${item.name}}}`, item.text), (data.body || mailtemplate.body))
+                                Body: x.parameters.reduce((acc, item) => acc.replaceAll(`{{${item.name}}}`, item.text), (data.body || mailtemplate.body))
                             },
                             attachments: mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
                                 type: 'FILE',
