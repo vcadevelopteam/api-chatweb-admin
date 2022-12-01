@@ -1,10 +1,11 @@
 var JSZip = require("jszip");
 const logger = require('../config/winston');
 const { uploadBufferToCos } = require('./triggerfunctions');
+const XLSX = require('xlsx');
 
 const BATCH_SIZE = 100_000;
 
-const transformCSV = async (data, headerClient, _requestid, indexPart, zip) => {
+const transformCSV = (data, headerClient, _requestid, indexPart, zip) => {
     const formatToExport = "csv";
     const titlefile = "Part-" + indexPart + (formatToExport !== "csv" ? ".xlsx" : ".csv");
 
@@ -40,8 +41,43 @@ const transformCSV = async (data, headerClient, _requestid, indexPart, zip) => {
     zip.file(titlefile, Buffer.from(content, 'ASCII'), { binary: true })
 }
 
+const transformExcel = (data, headerClient, _requestid, indexPart, zip) => {
+    const titlefile = "Part-" + indexPart + ".xlsx";
 
-exports.processCursor = (cursor, _requestid, headerClient) => {
+    const profiler = logger.child({ _requestid }).startTimer();
+    
+    let keysHeaders;
+    const keys = Object.keys(data[0]);
+    keysHeaders = keys;
+
+    if (headerClient) {
+        keysHeaders = keys.reduce((acc, item) => {
+            const keyclientfound = headerClient.find(x => x.key === item);
+            if (!keyclientfound)
+                return acc;
+            else {
+                return {
+                    ...acc,
+                    [item]: keyclientfound.alias
+                }
+            }
+        }, {});
+        data.unshift(keysHeaders);
+    }
+    
+    const ws = XLSX.utils.json_to_sheet(data, headerClient ? {
+        skipHeader: !!headerClient,
+    } : undefined);
+
+    const wb = { Sheets: { 'data': ws }, SheetNames: ['data'] };
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
+
+    profiler.done({ level: "debug", message: `Drawed excel` });
+
+    zip.file(titlefile, excelBuffer)
+}
+
+exports.processCursor = async (cursor, _requestid, headerClient, formatDownload) => {
     let indexPart = 1;
     const resultLink = [];
     let zip = null;
@@ -79,7 +115,11 @@ exports.processCursor = (cursor, _requestid, headerClient) => {
                     zip = null;
                     return resolve({ error: false, resultLink });
                 }
-                await transformCSV(rows, headerClient, _requestid, indexPart, zip);
+                if (formatDownload === "CSV") {
+                    transformCSV(rows, headerClient, _requestid, indexPart, zip);
+                } else {
+                    transformExcel(rows, headerClient, _requestid, indexPart, zip);
+                }
 
                 indexPart++;
 
