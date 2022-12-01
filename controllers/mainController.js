@@ -236,12 +236,19 @@ exports.exportWithCursor = async (req, res) => {
     try {
         setSessionParameters(parameters, req.user, req._requestid);
 
+        const resultFormatDownload = await executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN", undefined, false, {
+            propertynames: ["FORMATODESCARGA"],
+            ...parameters
+        })
+
+        const formatDownload = resultFormatDownload?.[0]?.propertyvalue || "CSV";
+
         const pool = new Pool({
             user: process.env.DBUSER,
             host: process.env.DBHOST,
             database: process.env.DBNAME,
             password: process.env.DBPASSWORD,
-            port: process.env.DBPORT,
+            port: process.env.DBPORT || "30503",
             max: 50,
             idleTimeoutMillis: 30000,
             allowExitOnIdle: true,
@@ -257,7 +264,7 @@ exports.exportWithCursor = async (req, res) => {
 
         const cursor = client.query(new Cursor(query, values));
 
-        const resCursor = await processCursor(cursor, req._requestid, parameters.headerClient);
+        const resCursor = await processCursor(cursor, req._requestid, parameters.headerClient, formatDownload);
 
         await cursor.close();
 
