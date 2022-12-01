@@ -4,6 +4,7 @@ ARG CONFIGFILE=.env \
     PORT=6065
 WORKDIR /app
 COPY ["package.json", "package-lock.json*", "./"]
+RUN apk add g++ make py3-pip
 RUN npm install --${NODE_ENV}
 COPY . .
 EXPOSE ${PORT}
