@@ -339,7 +339,10 @@ exports.sendHSM = async (req, res) => {
             const responseservices = await axiosObservable({
                 method: "post",
                 url: `${process.env.SERVICES}handler/external/sendhsm`,
-                data,
+                data: {
+                    ...data,
+                    origin: "OUTBOUND"
+                },
                 _requestid: req._requestid,
             });
 
