@@ -88,6 +88,7 @@ exports.uploadMetadata = async (req, res) => {
                         name = requestMediaMetadata.data.metadata.name;
                         thumbnail = requestMediaMetadata.data.metadata.thumbnail;
                         width = requestMediaMetadata.data.metadata.width;
+                        url = requestMediaMetadata.data.metadata.url;
                     }
                 }
             }
