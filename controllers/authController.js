@@ -2,7 +2,7 @@ const logger = require('../config/winston');
 
 const { v4: uuidv4 } = require('uuid');
 const { executesimpletransaction } = require('../config/triggerfunctions');
-const { errors, getErrorCode } = require('../config/helpers');
+const { errors, getErrorCode, cleanPropertyValue } = require('../config/helpers');
 const { addApplication } = require('./voximplantController');
 
 const bcryptjs = require("bcryptjs");
@@ -78,21 +78,6 @@ const properties = [
         type: 'bool',
     },
 ];
-
-const cleanPropertyValue = (listproperty, { type, subtype }) => {
-    if (type === "communicationchannelid") {
-        return listproperty.reduce((acc, item) => ({
-            ...acc,
-            [item.communicationchannelid]: subtype === "int" ? parseInt(item.propertyvalue || '0') : (subtype === "bool" ? item.propertyvalue === "1" : item.propertyvalue)
-        }), {})
-    } else {
-        const property = listproperty[0];
-        if (property) {
-            return type === "bool" ? property.propertyvalue === "1" : (type === "int" ? parseInt(property.propertyvalue) : property.propertyvalue);
-        }
-        return type === "bool" ? false : (type === "int" ? 0 : '');
-    }
-}
 
 const validateResProperty = (r, type) => {
     let vv;

@@ -425,6 +425,21 @@ exports.stringToMinutes = (str) => {
     return parseFloat((seconds / 60).toFixed(2));
 }
 
+exports.cleanPropertyValue = (listproperty, { type, subtype }) => {
+    if (type === "communicationchannelid") {
+        return listproperty.reduce((acc, item) => ({
+            ...acc,
+            [item.communicationchannelid]: subtype === "int" ? parseInt(item.propertyvalue || '0') : (subtype === "bool" ? item.propertyvalue === "1" : item.propertyvalue)
+        }), {})
+    } else {
+        const property = listproperty[0];
+        if (property) {
+            return type === "bool" ? property.propertyvalue === "1" : (type === "int" ? parseInt(property.propertyvalue) : property.propertyvalue);
+        }
+        return type === "bool" ? false : (type === "int" ? 0 : '');
+    }
+}
+
 exports.secondsToTime = (sec_num) => {
     sec_num = parseInt(sec_num)
     let days = Math.floor(sec_num / 86400);
