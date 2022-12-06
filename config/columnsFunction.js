@@ -441,6 +441,10 @@ module.exports = {
             column: "co.tdatime::text",
             type: "time"
         },
+        holdingwaitingtime: {
+            column: "co.holdingwaitingtime::text",
+            type: "time"
+        },
         campaign: {
             column: "ca.title"
         }
