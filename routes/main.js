@@ -43,7 +43,7 @@ router.post("/graphic",
 router.post("/export",
     ip,
     auth,
-    mainController.exportTrigger
+    mainController.exportWithCursor
 )
 
 router.post("/exportTrigger",
