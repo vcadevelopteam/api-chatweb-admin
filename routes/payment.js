@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const culqiController = require("../controllers/culqiController");
+const paymentCulqiController = require("../controllers/paymentCulqiController");
 const auth = require('../middleware/auth');
 const ip = require('../middleware/ip');
 
@@ -27,5 +28,7 @@ router.post('/emitinvoice', ip, auth, culqiController.emitInvoice)
 router.post('/getexchangerate', ip, auth, culqiController.getExchangeRate)
 
 router.post('/regularizeinvoice', ip, auth, culqiController.regularizeInvoice)
+
+router.post('/newpayment', ip, paymentCulqiController.chargeCulqui)
 
 module.exports = router;
