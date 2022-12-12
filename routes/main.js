@@ -9,6 +9,10 @@ router.post("/",
     auth,
     mainController.GetCollection
 )
+router.post("/public/paymentorder",
+    ip,
+    mainController.GetCollectionPaymentOrder
+)
 router.post("/public/domainvalues",
     ip,
     mainController.GetCollectionDomainValues

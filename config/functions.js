@@ -2299,7 +2299,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_APPSETTING_VOXIMPLANT_SEL: {
-        query: "SELECT * FROM ufn_appsetting_voximplant_sel();",
+        query: "SELECT * FROM ufn_appsetting_voximplant_sel()",
         module: "",
         protected: "SELECT"
     },
@@ -2847,6 +2847,11 @@ module.exports = {
     },
     UFN_REPORT_UNIQUECONTACTS_CONVERSATION_TOTALRECORDS: {
         query: "SELECT * FROM ufn_report_uniquecontacts_conversation_totalrecords($corpid, $orgid, $year, $month, $channeltype, $where, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PAYMENTORDER_SEL: {
+        query: "SELECT * FROM ufn_paymentorder_sel($corpid, $orgid, $conversationid, $personid, $paymentorderid, $ordercode)",
         module: "",
         protected: "SELECT"
     },
