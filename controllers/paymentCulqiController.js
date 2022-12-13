@@ -1,42 +1,56 @@
 const Culqi = require('culqi-node');
 const triggerfunctions = require('../config/triggerfunctions');
+const genericfunctions = require('../config/genericfunctions');
 
 exports.chargeCulqui = async (request, response) => {
-    console.log("here: new method")
-    const {corpid, orgid, conversationid, personid,  paymentorderid, userprofile, settings, token, metadata} = request.body;
+    console.log("here: new method",request._requestid)
+    console.log(request.body)
+
+    const {corpid, orgid, conversationid, personid,  paymentorderid, settings, token, metadata} = request.body;
+
+    var responsedata = genericfunctions.generateResponseData(request._requestid);
 
     const queryString = "UFN_PAYMENTORDER_SEL";
+    console.log(corpid, orgid, paymentorderid)
     const queryParameters = {   
-        p_corpid: 1,
-        p_orgid: 1,
-        p_conversationid: 1,
-        p_personid: 1,
-        p_paymentorderid: 2,
-        p_ordercode: ""
+        corpid: corpid,
+        orgid: orgid,
+        conversationid: 0,
+        personid: 0,
+        paymentorderid: paymentorderid,
+        ordercode: ''
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    const totalAmount = queryResult[0].totalamount;
     const paymentStatus = queryResult[0].paymentstatus;
+    const totalAmount = queryResult[0].totalamount;
+    console.log("aqui", paymentStatus)
+    console.log("query: ",queryResult);
+    /*
+    conversationid = queryResult[0].conversationid;
+    personid = queryResult[0].personid;
 
-    if (paymentStatus === 'PENDING' && ((totalAmount === settings.amount))) {
+
+
+*/
+    if (paymentStatus === 'PENDING' && totalAmount === settings.amount/100) {
        console.log("charger_culqui")
 
-       charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
+       const appsetting = await getAppSetting(request._requestid);
+        console.log("appsetting",appsetting.privatekey)
+       const charge = await createCharge(settings, token, metadata, appsetting.privatekey);
+       console.log(charge)
 
        if (charge.object === 'error') {
-           responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, null, responsedata.status, responsedata.success);
+           responsedata = genericfunctions.changeResponseData(responsedata, null, { object: charge.object, id: charge.charge_id, code: charge.code, message: charge.user_message }, charge.user_message, 400, false);
            return response.status(responsedata.status).json(responsedata);
        }
        else {
-           try {
-            const chargedata = await insertCharge(corpid, orgid, invoiceid, null, culqiamount, true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, invoice.currency, invoice.description, favoritecard.mail, 'INSERT', null, null, 'SCHEDULER', 'PAID', favoritecard.paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
-
-           } catch (error) {
-            
-           }
+            console.log("culqui ok")
+            //const chargedata = await insertCharge(corpid, orgid, paymentorderid, null,(settings.amount / 100), true, charge, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, null, 'PAID', token.id, token, charge.object, responsedata.id);
+            //console.log(chargedata);
        }
+
     }
     else{
         console.log("error")
@@ -45,33 +59,28 @@ exports.chargeCulqui = async (request, response) => {
 
 }
 
-const createCharge = async (userProfile, settings, token, metadata, privateKey) => {
-    
+const createCharge = async (settings, token, metadata, privatekey) => {
+    console.log("createCharge")
     const culqiService = new Culqi({
-        privateKey: privateKey
+        privateKey: privatekey
     });
 
     var culqiBody = {
         amount: `${settings.amount}`,
-        antifraud_details: {
-            address: `${(removeSpecialCharacter(userProfile.address || 'EMPTY')).slice(0, 100)}`,
-            address_city: `${(removeSpecialCharacter(userProfile.address_city || 'EMPTY')).slice(0, 30)}`,
-            country_code: `${((userProfile.country || token.client.ip_country_code) || 'PE')}`,
-            first_name: `${(removeSpecialCharacter(userProfile.firstname || 'EMPTY')).slice(0, 50)}`,
-            last_name: `${(removeSpecialCharacter(userProfile.lastname || 'EMPTY')).slice(0, 50)}`,
-            phone_number: `${(userProfile.phone ? userProfile.phone.replace(/[^0-9]/g, '') : '51999999999').slice(0, 15)}`,
-        },
         currency_code: `${settings.currency}`,
         description: `${(removeSpecialCharacter(settings.description || '').replace(/[^0-9A-Za-z ]/g, '')).slice(0, 80)}`,
         email: `${token.email.slice(0, 50)}`,
         metadata: metadata,
         source_id: `${token.id}`,
     }
-
-    return await culqiService.charges.createCharge(culqiBody);
+    console.log(culqiBody)
+    const result = await culqiService.charges.createCharge(culqiBody);
+    console.log("result", result)
+    return result
 }
 
-const insertCharge = async (corpId, orgId, invoiceId, id, amount, capture, chargeJson, chargeToken, currency, description, email, operation, orderId, orderJson, paidBy, status, tokenId, tokenJson, type, requestId) => {
+const insertCharge = async (corpId, orgId, paymentorderid, id, amount, capture, chargeJson, chargeToken, currency, description, email, operation, orderId, orderJson, paidBy, status, tokenId, tokenJson, type, requestId) => {
+   
     const queryString = "UFN_CHARGE_INS";
     const queryParameters = {
         amount: amount,
@@ -97,6 +106,7 @@ const insertCharge = async (corpId, orgId, invoiceId, id, amount, capture, charg
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
+ 
     if (queryResult instanceof Array) {
         if (queryResult.length > 0) {
             return queryResult[0];
@@ -104,4 +114,24 @@ const insertCharge = async (corpId, orgId, invoiceId, id, amount, capture, charg
     }
 
     return null;
+}
+
+const getAppSetting = async (requestId) => {
+    const queryString = "UFN_APPSETTING_INVOICE_SEL";
+    const queryParameters = {
+        _requestid: requestId,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult[0];
+        }
+    }
+
+    return null;
+}
+const removeSpecialCharacter = (text) => {
+    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
