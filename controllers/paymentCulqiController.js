@@ -38,23 +38,25 @@ exports.chargeCulqui = async (request, response) => {
 
        const appsetting = await getAppSetting(request._requestid);
         console.log("appsetting",appsetting.privatekey)
-       const charge = await createCharge(settings, token, metadata, appsetting.privatekey);
-       console.log(charge)
+        const charge = await createCharge(settings, token, metadata, appsetting.privatekey);
+
+       //console.log(charge.object)
 
        if (charge.object === 'error') {
-           responsedata = genericfunctions.changeResponseData(responsedata, null, { object: charge.object, id: charge.charge_id, code: charge.code, message: charge.user_message }, charge.user_message, 400, false);
-           return response.status(responsedata.status).json(responsedata);
+        console.log("error culqui")
+           //responsedata = genericfunctions.changeResponseData(responsedata, null, { object: charge.object, id: charge.charge_id, code: charge.code, message: charge.user_message }, charge.user_message, 400, false);
+           //return response.status(responsedata.status).json(responsedata);
        }
        else {
             console.log("culqui ok")
             try {
-                const chargedata = await insertCharge(corpid, orgid, paymentorderid, null,(settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, null, 'PAID', token.id, token, charge.object, responsedata.id);
-                
-                return response.status(200).json('200');
+                const chargedata = await insertCharge(corpid, orgid, paymentorderid, null,(settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, 'SCHEDULER', 'PAID', token.id, token, charge.object, responsedata.id);
+                console.log("insert ok",chargedata)
+                //return response.status(200).json('200');
             } catch (error) {
                 
                 console.log("error insertcharge")
-                return response.status(400).json('400');
+                //return response.status(400).json('400');
             }
 
        }
@@ -88,7 +90,7 @@ const createCharge = async (settings, token, metadata, privatekey) => {
 }
 
 const insertCharge = async (corpId, orgId, paymentorderid, id, amount, capture, chargeJson, chargeToken, currency, description, email, operation, orderId, orderJson, paidBy, status, tokenId, tokenJson, type, requestId) => {
-   
+    console.log("insertCharge")
     const queryString = "UFN_CHARGE_INS";
     const queryParameters = {
         amount: amount,
