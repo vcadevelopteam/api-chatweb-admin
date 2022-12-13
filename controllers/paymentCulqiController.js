@@ -47,8 +47,16 @@ exports.chargeCulqui = async (request, response) => {
        }
        else {
             console.log("culqui ok")
-            //const chargedata = await insertCharge(corpid, orgid, paymentorderid, null,(settings.amount / 100), true, charge, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, null, 'PAID', token.id, token, charge.object, responsedata.id);
-            //console.log(chargedata);
+            try {
+                const chargedata = await insertCharge(corpid, orgid, paymentorderid, null,(settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, null, 'PAID', token.id, token, charge.object, responsedata.id);
+                
+                return response.status(200).json('200');
+            } catch (error) {
+                
+                console.log("error insertcharge")
+                return response.status(400).json('400');
+            }
+
        }
 
     }
@@ -92,7 +100,7 @@ const insertCharge = async (corpId, orgId, paymentorderid, id, amount, capture, 
         description: description,
         email: email,
         id: id,
-        invoiceid: invoiceId,
+        invoiceid: paymentorderid,
         operation: operation,
         orderid: orderId,
         orderjson: orderJson,
