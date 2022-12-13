@@ -107,7 +107,6 @@ const createBalance = async (corpId, orgId, communicationChannelId, description,
 }
 
 const createCharge = async (userProfile, settings, token, metadata, privateKey) => {
-    
     const culqiService = new Culqi({
         privateKey: privateKey
     });
