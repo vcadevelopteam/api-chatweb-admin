@@ -1,4 +1,5 @@
 const Culqi = require('culqi-node');
+
 const triggerfunctions = require('../config/triggerfunctions');
 const genericfunctions = require('../config/genericfunctions');
 
