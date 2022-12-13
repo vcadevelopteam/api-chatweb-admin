@@ -3,6 +3,8 @@ const Culqi = require('culqi-node');
 const triggerfunctions = require('../config/triggerfunctions');
 const genericfunctions = require('../config/genericfunctions');
 
+const { getErrorCode } = require('../config/helpers');
+
 exports.chargeCulqui = async (request, response) => {
     var responsedata = genericfunctions.generateResponseData(request._requestid);
 
@@ -17,7 +19,7 @@ exports.chargeCulqui = async (request, response) => {
             const paymentorder = queryResult[0];
 
             if (paymentorder) {
-                if (paymentorder.paymentstatus === 'PENDING' && paymentorder.totalamount === (settings.amount / 100)) {
+                if (paymentorder.paymentstatus === 'PENDING' && paymentorder.totalamount === (settings.amount / 100) && paymentorder.expired === false) {
                     const charge = await createCharge({ address: paymentorder.useraddress, address_city: paymentorder.usercity, firstname: paymentorder.userfirstname, lastname: paymentorder.userlastname, phone: paymentorder.userphone }, settings, token, metadata, appsetting.privatekey);
 
                     if (charge.object === 'error') {
@@ -30,7 +32,7 @@ exports.chargeCulqui = async (request, response) => {
                             corpid: corpid,
                             orgid: orgid,
                             paymentorderid: paymentorderid,
-                            paymentby: paymentorder.personid,
+                            paymentby: token?.email || paymentorder.personid,
                             culqiamount: (settings.amount / 100),
                             chargeid: chargedata?.chargeid || null,
                             chargetoken: charge?.id || null,
@@ -64,10 +66,18 @@ exports.chargeCulqui = async (request, response) => {
         return response.status(responsedata.status).json(responsedata);
     }
     catch (exception) {
-        return response.status(500).json({
-            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-            message: exception.message,
-        });
+        if (exception.charge_id) {
+            return response.status(500).json({
+                ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+                message: exception.merchant_message,
+            });
+        }
+        else {
+            return response.status(500).json({
+                ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+                message: exception.message,
+            });
+        }
     }
 }
 
