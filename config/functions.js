@@ -2403,7 +2403,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_APPSETTING_VOXIMPLANT_SEL: {
-        query: "SELECT * FROM ufn_appsetting_voximplant_sel();",
+        query: "SELECT * FROM ufn_appsetting_voximplant_sel()",
         module: "",
         protected: "SELECT"
     },
@@ -3124,5 +3124,20 @@ module.exports = {
         query: "SELECT * FROM ufn_cron_posthistory_insight_sel()",
         module: "",
         protected: "SELECT"
+    },
+    UFN_PAYMENTORDER_SEL: {
+        query: "SELECT * FROM ufn_paymentorder_sel($corpid, $orgid, $conversationid, $personid, $paymentorderid, $ordercode)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PAYMENTORDER_PAYMENT: {
+        query: "SELECT * FROM ufn_paymentorder_payment($corpid, $orgid, $paymentorderid, $paymentby, $culqiamount, $chargeid, $chargetoken, $chargejson, $tokenid, $tokenjson)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CHARGE_PAYMENTORDER_INS: {
+        query: "SELECT * FROM ufn_charge_paymentorder_ins($corpid, $orgid, $id, $paymentorderid, $description, $type, $status, $amount, $currency, $paidby, $orderid, $orderjson, $email, $tokenid, $capture, $tokenjson, $chargetoken, $chargejson, $operation)",
+        module: "",
+        protected: "INSERT"
     },
 }
