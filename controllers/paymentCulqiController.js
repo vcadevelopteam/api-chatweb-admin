@@ -141,6 +141,7 @@ const getAppSetting = async (requestId) => {
 
     return null;
 }
+
 const removeSpecialCharacter = (text) => {
     return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
