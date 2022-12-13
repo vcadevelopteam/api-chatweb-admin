@@ -3,72 +3,57 @@ const triggerfunctions = require('../config/triggerfunctions');
 const genericfunctions = require('../config/genericfunctions');
 
 exports.chargeCulqui = async (request, response) => {
-    console.log("here: new method",request._requestid)
-    console.log(request.body)
-
-    const {corpid, orgid, conversationid, personid,  paymentorderid, settings, token, metadata} = request.body;
-
     var responsedata = genericfunctions.generateResponseData(request._requestid);
 
-    const queryString = "UFN_PAYMENTORDER_SEL";
-    console.log(corpid, orgid, paymentorderid)
-    const queryParameters = {   
-        corpid: corpid,
-        orgid: orgid,
-        conversationid: 0,
-        personid: 0,
-        paymentorderid: paymentorderid,
-        ordercode: ''
-    }
+    try {
+        const { corpid, orgid, paymentorderid, settings, token, metadata } = request.body;
 
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-    const paymentStatus = queryResult[0].paymentstatus;
-    const totalAmount = queryResult[0].totalamount;
-    console.log("aqui", paymentStatus)
-    console.log("query: ",queryResult);
-    /*
-    conversationid = queryResult[0].conversationid;
-    personid = queryResult[0].personid;
+        var responsedata = genericfunctions.generateResponseData(request._requestid);
 
+        const queryParameters = {
+            corpid: corpid,
+            orgid: orgid,
+            conversationid: 0,
+            personid: 0,
+            paymentorderid: paymentorderid,
+            ordercode: ''
+        }
 
+        const queryResult = await triggerfunctions.executesimpletransaction("UFN_PAYMENTORDER_SEL", queryParameters);
+        const paymentStatus = queryResult[0].paymentstatus;
+        const totalAmount = queryResult[0].totalamount;
 
-*/
-    if (paymentStatus === 'PENDING' && totalAmount === settings.amount/100) {
-       console.log("charger_culqui")
+        if (paymentStatus === 'PENDING' && totalAmount === settings.amount / 100) {
+            const appsetting = await getAppSetting(request._requestid);
+            const charge = await createCharge(settings, token, metadata, appsetting.privatekey);
+            if (charge.object === 'error') {
+                responsedata = genericfunctions.changeResponseData(responsedata, null, { object: charge.object, id: charge.charge_id, code: charge.code, message: charge.user_message }, charge.user_message, 400, false);
+                return response.status(responsedata.status).json(responsedata);
+            }
+            else {
+                try {
+                    const chargedata = await insertCharge(corpid, orgid, paymentorderid, null, (settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, null, 'PAID', token.id, token, charge.object, responsedata.id);
 
-       const appsetting = await getAppSetting(request._requestid);
-        console.log("appsetting",appsetting.privatekey)
-       const charge = await createCharge(settings, token, metadata, appsetting.privatekey);
-       console.log(charge)
+                    return response.status(200).json('200');
+                } catch (error) {
+                    return response.status(400).json('400');
+                }
 
-       if (charge.object === 'error') {
-           responsedata = genericfunctions.changeResponseData(responsedata, null, { object: charge.object, id: charge.charge_id, code: charge.code, message: charge.user_message }, charge.user_message, 400, false);
-           return response.status(responsedata.status).json(responsedata);
-       }
-       else {
-            console.log("culqui ok")
-            try {
-                const chargedata = await insertCharge(corpid, orgid, paymentorderid, null,(settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, null, 'PAID', token.id, token, charge.object, responsedata.id);
-                
-                return response.status(200).json('200');
-            } catch (error) {
-                
-                console.log("error insertcharge")
-                return response.status(400).json('400');
             }
 
-       }
-
+        }
+        else {
+        }
     }
-    else{
-        console.log("error")
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message,
+        });
     }
-
-
 }
 
 const createCharge = async (settings, token, metadata, privatekey) => {
-    console.log("createCharge")
     const culqiService = new Culqi({
         privateKey: privatekey
     });
@@ -81,15 +66,13 @@ const createCharge = async (settings, token, metadata, privatekey) => {
         metadata: metadata,
         source_id: `${token.id}`,
     }
-    console.log(culqiBody)
+
     const result = await culqiService.charges.createCharge(culqiBody);
-    console.log("result", result)
-    return result
+
+    return result;
 }
 
 const insertCharge = async (corpId, orgId, paymentorderid, id, amount, capture, chargeJson, chargeToken, currency, description, email, operation, orderId, orderJson, paidBy, status, tokenId, tokenJson, type, requestId) => {
-   
-    const queryString = "UFN_CHARGE_INS";
     const queryParameters = {
         amount: amount,
         capture: capture,
@@ -113,8 +96,8 @@ const insertCharge = async (corpId, orgId, paymentorderid, id, amount, capture, 
         _requestid: requestId,
     }
 
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
- 
+    const queryResult = await triggerfunctions.executesimpletransaction("UFN_CHARGE_INS", queryParameters);
+
     if (queryResult instanceof Array) {
         if (queryResult.length > 0) {
             return queryResult[0];
@@ -125,12 +108,7 @@ const insertCharge = async (corpId, orgId, paymentorderid, id, amount, capture, 
 }
 
 const getAppSetting = async (requestId) => {
-    const queryString = "UFN_APPSETTING_INVOICE_SEL";
-    const queryParameters = {
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
+    const queryResult = await triggerfunctions.executesimpletransaction("UFN_APPSETTING_INVOICE_SEL", { _requestid: requestId });
 
     if (queryResult instanceof Array) {
         if (queryResult.length > 0) {
