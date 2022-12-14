@@ -812,7 +812,7 @@ const googleCalendarWatch = async ({ params, calendar, extradata = null }) => {
                     }})
             }
             catch (exception) {
-                logger.child({ _requestid: params._requestid, context: { ...params, extradata }}).error(exception)
+                // logger.child({ _requestid: params._requestid, context: { ...params, extradata }}).error(exception)
             }
         }
         // Register new watch
