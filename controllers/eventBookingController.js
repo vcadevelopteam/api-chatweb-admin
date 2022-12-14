@@ -608,7 +608,11 @@ const googleCalendarCredentials = async ({ params, code = null }) => {
         else if (params.credentials) {
             // Operations from Task { credentials, calendarintegrationid, email } = params
             const { credentials, ...extradata } = params;
-            oauth2Client.setCredentials(credentials)
+            let jsoncredentials = credentials;
+            if (typeof jsoncredentials === 'string') {
+                jsoncredentials = JSON.parse(jsoncredentials)
+            }
+            oauth2Client.setCredentials(jsoncredentials)
             const calendar = google.calendar({
                 version: 'v3',
                 auth: oauth2Client
