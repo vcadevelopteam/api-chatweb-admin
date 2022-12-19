@@ -1489,17 +1489,17 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_LEADGRID_SEL: {
-        query: "SELECT * FROM ufn_leadgrid_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $asesorid, $channel, $contact, $offset)",
+        query: "SELECT * FROM ufn_leadgrid_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $asesorid, $channel, $contact, $persontype, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_LEADGRID_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_leadgrid_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $asesorid, $channel, $contact, $offset)",
+        query: "SELECT * FROM ufn_leadgrid_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $asesorid, $channel, $contact, $persontype, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_LEADGRID_EXPORT: {
-        query: "SELECT * FROM ufn_leadgrid_export($corpid, $orgid, $where, $order, $startdate, $enddate, $asesorid, $channel, $contact, $offset)",
+        query: "SELECT * FROM ufn_leadgrid_export($corpid, $orgid, $where, $order, $startdate, $enddate, $asesorid, $channel, $contact, $persontype, $offset)",
         module: "",
         protected: "SELECT"
     },
