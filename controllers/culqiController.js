@@ -780,55 +780,117 @@ exports.automaticPayment = async (request, response) => {
                                         var doctype = (org ? org.doctype : corp.doctype);
                                         var exchangerate = await getExchange(request.originalUrl, responsedata.id);
 
-                                        if (country && doctype) {
-                                            if (country === 'PE' && doctype === '6') {
-                                                var compareamount = (culqiamount || 0);
+                                        if (exchangerate) {
+                                            if (country && doctype) {
+                                                if (country === 'PE' && doctype === '6') {
+                                                    var compareamount = (culqiamount || 0);
 
-                                                if (invoice.currency === 'USD') {
-                                                    compareamount = compareamount * (exchangerate || 0);
-                                                }
+                                                    if (invoice.currency === 'USD') {
+                                                        compareamount = compareamount * (exchangerate || 0);
+                                                    }
 
-                                                if (compareamount > appsetting.detractionminimum) {
-                                                    culqiamount = (Math.round(((culqiamount || 0) - ((culqiamount || 0) * (appsetting.detraction || 0)) + Number.EPSILON) * 100) / 100);
-                                                    detractionamount = (Math.round((((appsetting.detraction || 0) * 100) + Number.EPSILON) * 100) / 100);
+                                                    if (compareamount > appsetting.detractionminimum) {
+                                                        culqiamount = (Math.round(((culqiamount || 0) - ((culqiamount || 0) * (appsetting.detraction || 0)) + Number.EPSILON) * 100) / 100);
+                                                        detractionamount = (Math.round((((appsetting.detraction || 0) * 100) + Number.EPSILON) * 100) / 100);
+                                                    }
+                                                    else {
+                                                        culqiamount = (Math.round(((culqiamount || 0) + Number.EPSILON) * 100) / 100);
+                                                    }
                                                 }
                                                 else {
                                                     culqiamount = (Math.round(((culqiamount || 0) + Number.EPSILON) * 100) / 100);
                                                 }
-                                            }
-                                            else {
-                                                culqiamount = (Math.round(((culqiamount || 0) + Number.EPSILON) * 100) / 100);
-                                            }
 
-                                            const requestCulqiCharge = await axiosObservable({
-                                                data: {
-                                                    amount: (Math.round(((culqiamount * 100) + Number.EPSILON) * 100) / 100),
-                                                    bearer: appsetting.privatekey,
-                                                    currencyCode: invoice.currency,
-                                                    description: (removeSpecialCharacter('PAYMENT: ' + (invoice.description || ''))).slice(0, 80),
-                                                    email: favoritecard.mail,
-                                                    metadata: metadata,
-                                                    operation: "CREATE",
-                                                    sourceId: favoritecard.cardcode,
-                                                    url: appsetting.culqiurlcharge,
-                                                },
-                                                method: "post",
-                                                url: `${bridgeEndpoint}processculqi/handlecharge`,
-                                                _requestid: responsedata.id,
-                                            });
+                                                const requestCulqiCharge = await axiosObservable({
+                                                    data: {
+                                                        amount: (Math.round(((culqiamount * 100) + Number.EPSILON) * 100) / 100),
+                                                        bearer: appsetting.privatekey,
+                                                        currencyCode: invoice.currency,
+                                                        description: (removeSpecialCharacter('PAYMENT: ' + (invoice.description || ''))).slice(0, 80),
+                                                        email: favoritecard.mail,
+                                                        metadata: metadata,
+                                                        operation: "CREATE",
+                                                        sourceId: favoritecard.cardcode,
+                                                        url: appsetting.culqiurlcharge,
+                                                    },
+                                                    method: "post",
+                                                    url: `${bridgeEndpoint}processculqi/handlecharge`,
+                                                    _requestid: responsedata.id,
+                                                });
 
-                                            if (requestCulqiCharge.data.success) {
-                                                responsedata = genericfunctions.changeResponseData(responsedata, null, null, 'success_automaticpayment_paymentsuccess', 200, true);
+                                                if (requestCulqiCharge.data.success) {
+                                                    responsedata = genericfunctions.changeResponseData(responsedata, null, null, 'success_automaticpayment_paymentsuccess', 200, true);
 
-                                                paymentsuccess = true;
+                                                    paymentsuccess = true;
 
-                                                const chargedata = await insertCharge(corpid, orgid, invoiceid, null, culqiamount, true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, invoice.currency, invoice.description, favoritecard.mail, 'INSERT', null, null, 'SCHEDULER', 'PAID', favoritecard.paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
+                                                    const chargedata = await insertCharge(corpid, orgid, invoiceid, null, culqiamount, true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, invoice.currency, invoice.description, favoritecard.mail, 'INSERT', null, null, 'SCHEDULER', 'PAID', favoritecard.paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
 
-                                                const invoicepayment = await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, culqiamount, favoritecard.mail, 'SCHEDULER', favoritecard.paymentcardid, null, responsedata.id);
+                                                    const invoicepayment = await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, culqiamount, favoritecard.mail, 'SCHEDULER', favoritecard.paymentcardid, null, responsedata.id);
 
-                                                if (invoicepayment) {
-                                                    const alertbody = await searchDomain(1, 0, false, 'PAYMENTALERTBODY', 'SCHEDULER', responsedata.id);
-                                                    const alertsubject = await searchDomain(1, 0, false, 'PAYMENTALERTSUBJECT', 'SCHEDULER', responsedata.id);
+                                                    if (invoicepayment) {
+                                                        const alertbody = await searchDomain(1, 0, false, 'PAYMENTALERTBODY', 'SCHEDULER', responsedata.id);
+                                                        const alertsubject = await searchDomain(1, 0, false, 'PAYMENTALERTSUBJECT', 'SCHEDULER', responsedata.id);
+
+                                                        if (alertbody && alertsubject) {
+                                                            var mailbody = alertbody.domainvalue;
+                                                            var mailsubject = alertsubject.domainvalue;
+
+                                                            mailbody = mailbody.split("{{amountdetraction}}").join(detractionamount);
+                                                            mailbody = mailbody.split("{{amountpaid}}").join(culqiamount);
+                                                            mailbody = mailbody.split("{{amounttotal}}").join(invoice.totalamount);
+                                                            mailbody = mailbody.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
+                                                            mailbody = mailbody.split("{{concept}}").join(invoice.description);
+                                                            mailbody = mailbody.split("{{contact}}").join(org ? org.contact : corp.contact);
+                                                            mailbody = mailbody.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
+                                                            mailbody = mailbody.split("{{corporg}}").join(org ? org.description : corp.description);
+                                                            mailbody = mailbody.split("{{currency}}").join(invoice.currency);
+                                                            mailbody = mailbody.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
+                                                            mailbody = mailbody.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
+                                                            mailbody = mailbody.split("{{month}}").join(invoice.month);
+                                                            mailbody = mailbody.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
+                                                            mailbody = mailbody.split("{{year}}").join(invoice.year);
+
+                                                            mailsubject = mailsubject.split("{{amountdetraction}}").join(detractionamount);
+                                                            mailsubject = mailsubject.split("{{amountpaid}}").join(culqiamount);
+                                                            mailsubject = mailsubject.split("{{amounttotal}}").join(invoice.totalamount);
+                                                            mailsubject = mailsubject.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
+                                                            mailsubject = mailsubject.split("{{concept}}").join(invoice.description);
+                                                            mailsubject = mailsubject.split("{{contact}}").join(org ? org.contact : corp.contact);
+                                                            mailsubject = mailsubject.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
+                                                            mailsubject = mailsubject.split("{{corporg}}").join(org ? org.description : corp.description);
+                                                            mailsubject = mailsubject.split("{{currency}}").join(invoice.currency);
+                                                            mailsubject = mailsubject.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
+                                                            mailsubject = mailsubject.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
+                                                            mailsubject = mailsubject.split("{{month}}").join(invoice.month);
+                                                            mailsubject = mailsubject.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
+                                                            mailsubject = mailsubject.split("{{year}}").join(invoice.year);
+
+                                                            const requestMailSend = await axiosObservable({
+                                                                data: {
+                                                                    mailAddress: (org ? org.contactemail : corp.contactemail),
+                                                                    mailBody: mailbody,
+                                                                    mailTitle: mailsubject,
+                                                                },
+                                                                method: "post",
+                                                                url: `${bridgeEndpoint}processscheduler/sendmail`,
+                                                                _requestid: responsedata.id,
+                                                            });
+
+                                                            if (!requestMailSend.data.success) {
+                                                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, requestMailSend.data.operationMessage, responsedata.status, responsedata.success);
+                                                            }
+                                                        }
+                                                        else {
+                                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticpayment_noalertdomain', responsedata.status, responsedata.success);
+                                                        }
+                                                    }
+                                                    else {
+                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticpayment_invoiceupdate', responsedata.status, responsedata.success);
+                                                    }
+                                                }
+                                                else {
+                                                    const alertbody = await searchDomain(1, 0, false, 'PAYMENTALERTERRORBODY', 'SCHEDULER', responsedata.id);
+                                                    const alertsubject = await searchDomain(1, 0, false, 'PAYMENTALERTERRORSUBJECT', 'SCHEDULER', responsedata.id);
 
                                                     if (alertbody && alertsubject) {
                                                         var mailbody = alertbody.domainvalue;
@@ -879,73 +941,16 @@ exports.automaticPayment = async (request, response) => {
                                                             responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, requestMailSend.data.operationMessage, responsedata.status, responsedata.success);
                                                         }
                                                     }
-                                                    else {
-                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticpayment_noalertdomain', responsedata.status, responsedata.success);
-                                                    }
-                                                }
-                                                else {
-                                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticpayment_invoiceupdate', responsedata.status, responsedata.success);
+
+                                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticpayment_paymenterror', responsedata.status, responsedata.success);
                                                 }
                                             }
                                             else {
-                                                const alertbody = await searchDomain(1, 0, false, 'PAYMENTALERTERRORBODY', 'SCHEDULER', responsedata.id);
-                                                const alertsubject = await searchDomain(1, 0, false, 'PAYMENTALERTERRORSUBJECT', 'SCHEDULER', responsedata.id);
-
-                                                if (alertbody && alertsubject) {
-                                                    var mailbody = alertbody.domainvalue;
-                                                    var mailsubject = alertsubject.domainvalue;
-
-                                                    mailbody = mailbody.split("{{amountdetraction}}").join(detractionamount);
-                                                    mailbody = mailbody.split("{{amountpaid}}").join(culqiamount);
-                                                    mailbody = mailbody.split("{{amounttotal}}").join(invoice.totalamount);
-                                                    mailbody = mailbody.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
-                                                    mailbody = mailbody.split("{{concept}}").join(invoice.description);
-                                                    mailbody = mailbody.split("{{contact}}").join(org ? org.contact : corp.contact);
-                                                    mailbody = mailbody.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
-                                                    mailbody = mailbody.split("{{corporg}}").join(org ? org.description : corp.description);
-                                                    mailbody = mailbody.split("{{currency}}").join(invoice.currency);
-                                                    mailbody = mailbody.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
-                                                    mailbody = mailbody.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
-                                                    mailbody = mailbody.split("{{month}}").join(invoice.month);
-                                                    mailbody = mailbody.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
-                                                    mailbody = mailbody.split("{{year}}").join(invoice.year);
-
-                                                    mailsubject = mailsubject.split("{{amountdetraction}}").join(detractionamount);
-                                                    mailsubject = mailsubject.split("{{amountpaid}}").join(culqiamount);
-                                                    mailsubject = mailsubject.split("{{amounttotal}}").join(invoice.totalamount);
-                                                    mailsubject = mailsubject.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
-                                                    mailsubject = mailsubject.split("{{concept}}").join(invoice.description);
-                                                    mailsubject = mailsubject.split("{{contact}}").join(org ? org.contact : corp.contact);
-                                                    mailsubject = mailsubject.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
-                                                    mailsubject = mailsubject.split("{{corporg}}").join(org ? org.description : corp.description);
-                                                    mailsubject = mailsubject.split("{{currency}}").join(invoice.currency);
-                                                    mailsubject = mailsubject.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
-                                                    mailsubject = mailsubject.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
-                                                    mailsubject = mailsubject.split("{{month}}").join(invoice.month);
-                                                    mailsubject = mailsubject.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
-                                                    mailsubject = mailsubject.split("{{year}}").join(invoice.year);
-
-                                                    const requestMailSend = await axiosObservable({
-                                                        data: {
-                                                            mailAddress: (org ? org.contactemail : corp.contactemail),
-                                                            mailBody: mailbody,
-                                                            mailTitle: mailsubject,
-                                                        },
-                                                        method: "post",
-                                                        url: `${bridgeEndpoint}processscheduler/sendmail`,
-                                                        _requestid: responsedata.id,
-                                                    });
-
-                                                    if (!requestMailSend.data.success) {
-                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, requestMailSend.data.operationMessage, responsedata.status, responsedata.success);
-                                                    }
-                                                }
-
-                                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticpayment_paymenterror', responsedata.status, responsedata.success);
+                                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticpayment_nocountry_nodoctype', responsedata.status, responsedata.success);
                                             }
                                         }
                                         else {
-                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticpayment_nocountry_nodoctype', responsedata.status, responsedata.success);
+                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticpayment_noexchangerate', responsedata.status, responsedata.success);
                                         }
                                     }
                                     else {
