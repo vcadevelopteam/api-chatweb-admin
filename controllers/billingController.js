@@ -1,8 +1,8 @@
 const { errors, getErrorCode, axiosObservable } = require('../config/helpers');
 const { executesimpletransaction } = require('../config/triggerfunctions');;
-const { setSessionParameters } = require('../config/helpers');
+const { setSessionParameters, printException } = require('../config/helpers');
 
-const exchangeApiEndpoint = process.env.EXCHANGEAPI;
+const exchangeEndpoint = process.env.EXCHANGE;
 
 exports.sendInvoice = async (req, res) => {
     const { parameters = {} } = req.body;
@@ -119,36 +119,48 @@ exports.exchangeRate = async (req, res) => {
 
     try {
         var exchangeRate = 0;
-        var tries = 0;
+        var retryNumber = 0;
 
-        var DateTime = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()));
+        var currentDate = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()));
 
-        while (exchangeRate === 0 && tries < 10) {
-            const requestExchangeRate = await axiosObservable({
-                method: 'get',
-                url: `${exchangeApiEndpoint}${DateTime.toISOString().substring(0, 10)}`,
-                _requestid: req._requestid,
-            });
-
-            if (requestExchangeRate.data.venta) {
-                exchangeRate = requestExchangeRate.data.venta;
-
-                return res.json({
-                    exchangeRate: exchangeRate,
-                    success: true
+        while (exchangeRate === 0 && retryNumber <= 20) {
+            try {
+                const requestGetExchange = await axiosObservable({
+                    method: 'get',
+                    url: `${exchangeEndpoint}${currentDate.toISOString().split('T')[0]}`,
+                    _requestid: req._requestid,
                 });
-            }
-            else {
-                DateTime.setDate(DateTime.getDate() - 1);
 
-                tries++;
+                if (requestGetExchange.data.venta) {
+                    exchangeRate = requestGetExchange.data.venta;
+                }
+                else {
+                    currentDate = new Date(currentDate.setDate(currentDate.getDate() - 1));
+                }
             }
+            catch (exception) {
+                printException(exception, req.originalUrl, req._requestid);
+
+                currentDate = new Date(currentDate.setDate(currentDate.getDate() - 1));
+            }
+
+            retryNumber++;
+
+            await new Promise(r => setTimeout(r, 2000));
         }
 
-        return res.status(400).json({
-            exchangeRate: exchangeRate,
-            success: false
-        });
+        if (exchangeRate) {
+            return res.json({
+                exchangeRate: exchangeRate,
+                success: true
+            });
+        }
+        else {
+            return res.status(400).json({
+                exchangeRate: exchangeRate,
+                success: false
+            });
+        }
     } catch (exception) {
         return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
