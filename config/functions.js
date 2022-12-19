@@ -47,7 +47,7 @@ module.exports = {
         INNER JOIN org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency 
         INNER JOIN corp corp on corp.corpid = ous.corpid LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid 
         INNER JOIN role role on role.roleid = ous.roleid
-        LEFT JOIN communicationchannel cc ON cc.corpid = ous.corpid AND cc.orgid = ous.orgid AND cc.type = 'VOXI' AND status = 'ACTIVO'
+        LEFT JOIN communicationchannel cc ON cc.corpid = ous.corpid AND cc.orgid = ous.orgid AND cc.type = 'VOXI' AND cc.status = 'ACTIVO'
         WHERE us.googleid = $googleid 
         AND ous.bydefault 
         AND ous.status <> 'ELIMINADO' 
