@@ -411,11 +411,12 @@ const getCorrelative = async (corpId, orgId, id, type, requestId) => {
 }
 
 const getExchange = async (origin, requestId) => {
-    var currentDate = new Date();
     var exchangeRate = 0;
     var retryNumber = 0;
 
-    while (exchangeRate === 0 && retryNumber <= 10) {
+    var currentDate = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()));
+
+    while (exchangeRate === 0 && retryNumber <= 20) {
         try {
             const requestGetExchange = await axiosObservable({
                 method: 'get',
@@ -437,6 +438,8 @@ const getExchange = async (origin, requestId) => {
         }
 
         retryNumber++;
+
+        await new Promise(r => setTimeout(r, 2000));
     }
 
     return exchangeRate;
@@ -777,55 +780,117 @@ exports.automaticPayment = async (request, response) => {
                                         var doctype = (org ? org.doctype : corp.doctype);
                                         var exchangerate = await getExchange(request.originalUrl, responsedata.id);
 
-                                        if (country && doctype) {
-                                            if (country === 'PE' && doctype === '6') {
-                                                var compareamount = (culqiamount || 0);
+                                        if (exchangerate) {
+                                            if (country && doctype) {
+                                                if (country === 'PE' && doctype === '6') {
+                                                    var compareamount = (culqiamount || 0);
 
-                                                if (invoice.currency === 'USD') {
-                                                    compareamount = compareamount * (exchangerate || 0);
-                                                }
+                                                    if (invoice.currency === 'USD') {
+                                                        compareamount = compareamount * (exchangerate || 0);
+                                                    }
 
-                                                if (compareamount > appsetting.detractionminimum) {
-                                                    culqiamount = (Math.round(((culqiamount || 0) - ((culqiamount || 0) * (appsetting.detraction || 0)) + Number.EPSILON) * 100) / 100);
-                                                    detractionamount = (Math.round((((appsetting.detraction || 0) * 100) + Number.EPSILON) * 100) / 100);
+                                                    if (compareamount > appsetting.detractionminimum) {
+                                                        culqiamount = (Math.round(((culqiamount || 0) - ((culqiamount || 0) * (appsetting.detraction || 0)) + Number.EPSILON) * 100) / 100);
+                                                        detractionamount = (Math.round((((appsetting.detraction || 0) * 100) + Number.EPSILON) * 100) / 100);
+                                                    }
+                                                    else {
+                                                        culqiamount = (Math.round(((culqiamount || 0) + Number.EPSILON) * 100) / 100);
+                                                    }
                                                 }
                                                 else {
                                                     culqiamount = (Math.round(((culqiamount || 0) + Number.EPSILON) * 100) / 100);
                                                 }
-                                            }
-                                            else {
-                                                culqiamount = (Math.round(((culqiamount || 0) + Number.EPSILON) * 100) / 100);
-                                            }
 
-                                            const requestCulqiCharge = await axiosObservable({
-                                                data: {
-                                                    amount: (Math.round(((culqiamount * 100) + Number.EPSILON) * 100) / 100),
-                                                    bearer: appsetting.privatekey,
-                                                    currencyCode: invoice.currency,
-                                                    description: (removeSpecialCharacter('PAYMENT: ' + (invoice.description || ''))).slice(0, 80),
-                                                    email: favoritecard.mail,
-                                                    metadata: metadata,
-                                                    operation: "CREATE",
-                                                    sourceId: favoritecard.cardcode,
-                                                    url: appsetting.culqiurlcharge,
-                                                },
-                                                method: "post",
-                                                url: `${bridgeEndpoint}processculqi/handlecharge`,
-                                                _requestid: responsedata.id,
-                                            });
+                                                const requestCulqiCharge = await axiosObservable({
+                                                    data: {
+                                                        amount: (Math.round(((culqiamount * 100) + Number.EPSILON) * 100) / 100),
+                                                        bearer: appsetting.privatekey,
+                                                        currencyCode: invoice.currency,
+                                                        description: (removeSpecialCharacter('PAYMENT: ' + (invoice.description || ''))).slice(0, 80),
+                                                        email: favoritecard.mail,
+                                                        metadata: metadata,
+                                                        operation: "CREATE",
+                                                        sourceId: favoritecard.cardcode,
+                                                        url: appsetting.culqiurlcharge,
+                                                    },
+                                                    method: "post",
+                                                    url: `${bridgeEndpoint}processculqi/handlecharge`,
+                                                    _requestid: responsedata.id,
+                                                });
 
-                                            if (requestCulqiCharge.data.success) {
-                                                responsedata = genericfunctions.changeResponseData(responsedata, null, null, 'success_automaticpayment_paymentsuccess', 200, true);
+                                                if (requestCulqiCharge.data.success) {
+                                                    responsedata = genericfunctions.changeResponseData(responsedata, null, null, 'success_automaticpayment_paymentsuccess', 200, true);
 
-                                                paymentsuccess = true;
+                                                    paymentsuccess = true;
 
-                                                const chargedata = await insertCharge(corpid, orgid, invoiceid, null, culqiamount, true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, invoice.currency, invoice.description, favoritecard.mail, 'INSERT', null, null, 'SCHEDULER', 'PAID', favoritecard.paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
+                                                    const chargedata = await insertCharge(corpid, orgid, invoiceid, null, culqiamount, true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, invoice.currency, invoice.description, favoritecard.mail, 'INSERT', null, null, 'SCHEDULER', 'PAID', favoritecard.paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
 
-                                                const invoicepayment = await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, culqiamount, favoritecard.mail, 'SCHEDULER', favoritecard.paymentcardid, null, responsedata.id);
+                                                    const invoicepayment = await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, culqiamount, favoritecard.mail, 'SCHEDULER', favoritecard.paymentcardid, null, responsedata.id);
 
-                                                if (invoicepayment) {
-                                                    const alertbody = await searchDomain(1, 0, false, 'PAYMENTALERTBODY', 'SCHEDULER', responsedata.id);
-                                                    const alertsubject = await searchDomain(1, 0, false, 'PAYMENTALERTSUBJECT', 'SCHEDULER', responsedata.id);
+                                                    if (invoicepayment) {
+                                                        const alertbody = await searchDomain(1, 0, false, 'PAYMENTALERTBODY', 'SCHEDULER', responsedata.id);
+                                                        const alertsubject = await searchDomain(1, 0, false, 'PAYMENTALERTSUBJECT', 'SCHEDULER', responsedata.id);
+
+                                                        if (alertbody && alertsubject) {
+                                                            var mailbody = alertbody.domainvalue;
+                                                            var mailsubject = alertsubject.domainvalue;
+
+                                                            mailbody = mailbody.split("{{amountdetraction}}").join(detractionamount);
+                                                            mailbody = mailbody.split("{{amountpaid}}").join(culqiamount);
+                                                            mailbody = mailbody.split("{{amounttotal}}").join(invoice.totalamount);
+                                                            mailbody = mailbody.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
+                                                            mailbody = mailbody.split("{{concept}}").join(invoice.description);
+                                                            mailbody = mailbody.split("{{contact}}").join(org ? org.contact : corp.contact);
+                                                            mailbody = mailbody.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
+                                                            mailbody = mailbody.split("{{corporg}}").join(org ? org.description : corp.description);
+                                                            mailbody = mailbody.split("{{currency}}").join(invoice.currency);
+                                                            mailbody = mailbody.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
+                                                            mailbody = mailbody.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
+                                                            mailbody = mailbody.split("{{month}}").join(invoice.month);
+                                                            mailbody = mailbody.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
+                                                            mailbody = mailbody.split("{{year}}").join(invoice.year);
+
+                                                            mailsubject = mailsubject.split("{{amountdetraction}}").join(detractionamount);
+                                                            mailsubject = mailsubject.split("{{amountpaid}}").join(culqiamount);
+                                                            mailsubject = mailsubject.split("{{amounttotal}}").join(invoice.totalamount);
+                                                            mailsubject = mailsubject.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
+                                                            mailsubject = mailsubject.split("{{concept}}").join(invoice.description);
+                                                            mailsubject = mailsubject.split("{{contact}}").join(org ? org.contact : corp.contact);
+                                                            mailsubject = mailsubject.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
+                                                            mailsubject = mailsubject.split("{{corporg}}").join(org ? org.description : corp.description);
+                                                            mailsubject = mailsubject.split("{{currency}}").join(invoice.currency);
+                                                            mailsubject = mailsubject.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
+                                                            mailsubject = mailsubject.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
+                                                            mailsubject = mailsubject.split("{{month}}").join(invoice.month);
+                                                            mailsubject = mailsubject.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
+                                                            mailsubject = mailsubject.split("{{year}}").join(invoice.year);
+
+                                                            const requestMailSend = await axiosObservable({
+                                                                data: {
+                                                                    mailAddress: (org ? org.contactemail : corp.contactemail),
+                                                                    mailBody: mailbody,
+                                                                    mailTitle: mailsubject,
+                                                                },
+                                                                method: "post",
+                                                                url: `${bridgeEndpoint}processscheduler/sendmail`,
+                                                                _requestid: responsedata.id,
+                                                            });
+
+                                                            if (!requestMailSend.data.success) {
+                                                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, requestMailSend.data.operationMessage, responsedata.status, responsedata.success);
+                                                            }
+                                                        }
+                                                        else {
+                                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticpayment_noalertdomain', responsedata.status, responsedata.success);
+                                                        }
+                                                    }
+                                                    else {
+                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticpayment_invoiceupdate', responsedata.status, responsedata.success);
+                                                    }
+                                                }
+                                                else {
+                                                    const alertbody = await searchDomain(1, 0, false, 'PAYMENTALERTERRORBODY', 'SCHEDULER', responsedata.id);
+                                                    const alertsubject = await searchDomain(1, 0, false, 'PAYMENTALERTERRORSUBJECT', 'SCHEDULER', responsedata.id);
 
                                                     if (alertbody && alertsubject) {
                                                         var mailbody = alertbody.domainvalue;
@@ -876,73 +941,16 @@ exports.automaticPayment = async (request, response) => {
                                                             responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, requestMailSend.data.operationMessage, responsedata.status, responsedata.success);
                                                         }
                                                     }
-                                                    else {
-                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticpayment_noalertdomain', responsedata.status, responsedata.success);
-                                                    }
-                                                }
-                                                else {
-                                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticpayment_invoiceupdate', responsedata.status, responsedata.success);
+
+                                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticpayment_paymenterror', responsedata.status, responsedata.success);
                                                 }
                                             }
                                             else {
-                                                const alertbody = await searchDomain(1, 0, false, 'PAYMENTALERTERRORBODY', 'SCHEDULER', responsedata.id);
-                                                const alertsubject = await searchDomain(1, 0, false, 'PAYMENTALERTERRORSUBJECT', 'SCHEDULER', responsedata.id);
-
-                                                if (alertbody && alertsubject) {
-                                                    var mailbody = alertbody.domainvalue;
-                                                    var mailsubject = alertsubject.domainvalue;
-
-                                                    mailbody = mailbody.split("{{amountdetraction}}").join(detractionamount);
-                                                    mailbody = mailbody.split("{{amountpaid}}").join(culqiamount);
-                                                    mailbody = mailbody.split("{{amounttotal}}").join(invoice.totalamount);
-                                                    mailbody = mailbody.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
-                                                    mailbody = mailbody.split("{{concept}}").join(invoice.description);
-                                                    mailbody = mailbody.split("{{contact}}").join(org ? org.contact : corp.contact);
-                                                    mailbody = mailbody.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
-                                                    mailbody = mailbody.split("{{corporg}}").join(org ? org.description : corp.description);
-                                                    mailbody = mailbody.split("{{currency}}").join(invoice.currency);
-                                                    mailbody = mailbody.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
-                                                    mailbody = mailbody.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
-                                                    mailbody = mailbody.split("{{month}}").join(invoice.month);
-                                                    mailbody = mailbody.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
-                                                    mailbody = mailbody.split("{{year}}").join(invoice.year);
-
-                                                    mailsubject = mailsubject.split("{{amountdetraction}}").join(detractionamount);
-                                                    mailsubject = mailsubject.split("{{amountpaid}}").join(culqiamount);
-                                                    mailsubject = mailsubject.split("{{amounttotal}}").join(invoice.totalamount);
-                                                    mailsubject = mailsubject.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
-                                                    mailsubject = mailsubject.split("{{concept}}").join(invoice.description);
-                                                    mailsubject = mailsubject.split("{{contact}}").join(org ? org.contact : corp.contact);
-                                                    mailsubject = mailsubject.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
-                                                    mailsubject = mailsubject.split("{{corporg}}").join(org ? org.description : corp.description);
-                                                    mailsubject = mailsubject.split("{{currency}}").join(invoice.currency);
-                                                    mailsubject = mailsubject.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
-                                                    mailsubject = mailsubject.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
-                                                    mailsubject = mailsubject.split("{{month}}").join(invoice.month);
-                                                    mailsubject = mailsubject.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
-                                                    mailsubject = mailsubject.split("{{year}}").join(invoice.year);
-
-                                                    const requestMailSend = await axiosObservable({
-                                                        data: {
-                                                            mailAddress: (org ? org.contactemail : corp.contactemail),
-                                                            mailBody: mailbody,
-                                                            mailTitle: mailsubject,
-                                                        },
-                                                        method: "post",
-                                                        url: `${bridgeEndpoint}processscheduler/sendmail`,
-                                                        _requestid: responsedata.id,
-                                                    });
-
-                                                    if (!requestMailSend.data.success) {
-                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, requestMailSend.data.operationMessage, responsedata.status, responsedata.success);
-                                                    }
-                                                }
-
-                                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticpayment_paymenterror', responsedata.status, responsedata.success);
+                                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticpayment_nocountry_nodoctype', responsedata.status, responsedata.success);
                                             }
                                         }
                                         else {
-                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticpayment_nocountry_nodoctype', responsedata.status, responsedata.success);
+                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticpayment_noexchangerate', responsedata.status, responsedata.success);
                                         }
                                     }
                                     else {
@@ -2631,7 +2639,7 @@ exports.createCreditNote = async (request, response) => {
                     const invoiceDate = new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0];
                     const currentDate = new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60000);
 
-                    const invoiceResponse = await createInvoice(invoice.corpid, invoice.orgid, 0, `NOTA DE CREDITO: ${invoice.description}`, invoice.status, 'CREDITNOTE', appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, null, null, `NOTA DE CREDITO: ${invoice.concept}`, invoiceDate, invoiceDate, creditnotetype === '01' ? invoice.subtotal : parseFloat(creditnotediscount), invoice.taxes, creditnotetype === '01' ? invoice.totalamount : (parseFloat(creditnotediscount) * (appsetting.igv + 1)), invoice.currency, invoice.exchangerate, 'PENDING', null, invoice.purchaseorder, null, null, null, invoice.comments, invoice.credittype, creditnotetype, creditnotemotive, parseFloat(creditnotediscount), null, null, usr, invoice.invoiceid, invoice.netamount, 'NONE', false, currentDate.getFullYear(), currentDate.getMonth(), responsedata.id);
+                    const invoiceResponse = await createInvoice(invoice.corpid, invoice.orgid, 0, `NOTA DE CREDITO: ${invoice.description}`, invoice.status, 'CREDITNOTE', appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode === "1001" ? "0101" : invoice.sunatopecode, null, null, `NOTA DE CREDITO: ${invoice.concept}`, invoiceDate, invoiceDate, creditnotetype === '01' ? invoice.subtotal : parseFloat(creditnotediscount), invoice.taxes, creditnotetype === '01' ? invoice.totalamount : (parseFloat(creditnotediscount) * (appsetting.igv + 1)), invoice.currency, invoice.exchangerate, 'PENDING', null, invoice.purchaseorder, null, null, null, invoice.comments, invoice.credittype, creditnotetype, creditnotemotive, parseFloat(creditnotediscount), null, null, usr, invoice.invoiceid, invoice.netamount, 'NONE', false, currentDate.getFullYear(), currentDate.getMonth(), responsedata.id);
 
                     if (invoiceResponse) {
                         var invoicecorrelative = null;
@@ -2656,6 +2664,7 @@ exports.createCreditNote = async (request, response) => {
                                     CodigoUbigeoEmisor: appsetting.ubigeo,
                                     EnviarSunat: invoice.sendtosunat,
                                     FechaEmision: invoiceDate,
+                                    FechaVencimiento: invoiceDate,
                                     MailEnvio: invoice.receivermail,
                                     MontoTotal: Math.round(((creditnotetype === '01' ? invoice.totalamount : parseFloat(creditnotediscount * (appsetting.igv + 1))) + Number.EPSILON) * 100) / 100,
                                     NombreComercialEmisor: appsetting.tradename,
@@ -2676,7 +2685,7 @@ exports.createCreditNote = async (request, response) => {
                                     VersionUbl: appsetting.ublversion,
                                     Endpoint: appsetting.sunaturl,
                                     PaisRecepcion: invoice.receivercountry,
-                                    CodigoOperacionSunat: invoice.sunatopecode,
+                                    CodigoOperacionSunat: invoice.sunatopecode === "1001" ? "0101" : invoice.sunatopecode,
                                     MontoTotalGravado: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((creditnotediscount + Number.EPSILON) * 100) / 100 : null),
                                     MontoTotalInafecto: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100) : (invoice.receivercountry === 'PE' ? '0' : Math.round((creditnotediscount * (appsetting.igv + 1) + Number.EPSILON) * 100) / 100),
                                     MontoTotalIgv: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((creditnotediscount * appsetting.igv + Number.EPSILON) * 100) / 100 : null),
@@ -2938,7 +2947,7 @@ exports.createInvoice = async (request, response) => {
                                     TipoRucEmisor: appsetting.emittertype,
                                     CodigoRucReceptor: clientdoctype,
                                     CodigoUbigeoEmisor: appsetting.ubigeo,
-                                    EnviarSunat: autosendinvoice || true,
+                                    EnviarSunat: autosendinvoice ? true : false,
                                     FechaEmision: invoicecreatedate,
                                     MailEnvio: clientmail,
                                     MontoTotal: Math.round((invoicetotalcharge + Number.EPSILON) * 100) / 100,
@@ -3531,8 +3540,6 @@ exports.emitInvoice = async (request, response) => {
 }
 
 exports.getExchangeRate = async (request, response) => {
-    const { userid, usr } = request.user;
-
     try {
         logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
 
@@ -3540,8 +3547,14 @@ exports.getExchangeRate = async (request, response) => {
 
         var lastExchange = await getExchange(request.originalUrl, responsedata.id);
 
-        responsedata = genericfunctions.changeResponseData(responsedata, null, {}, 'success', 200, true);
-        responsedata.exchangerate = lastExchange;
+        if (lastExchange) {
+            responsedata = genericfunctions.changeResponseData(responsedata, null, {}, 'success', 200, true);
+            responsedata.exchangerate = lastExchange;
+        }
+        else {
+            responsedata = genericfunctions.changeResponseData(responsedata, null, {}, 'error', 400, false);
+            responsedata.exchangerate = lastExchange;
+        }
 
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
