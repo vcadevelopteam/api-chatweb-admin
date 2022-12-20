@@ -2271,6 +2271,15 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    /*QUERY_EVENT_BY_CODE_WITH_BOOKINGUUID: {
+        query: `SELECT ce.corpid, ce.orgid, ce.calendareventid, ce.description, ce.status, ce.type, ce.name, ce.locationtype, ce.location, ce.eventlink, ce.color, ce.notificationtype, ce.messagetemplateid, ce.daterange, ce.daysduration, ce.daystype, ce.startdate, ce.enddate, ce.timeduration, ce.timeunit, ce.timezone, ce.availability, ce.timebeforeeventduration, ce.timebeforeeventunit, ce.timeaftereventduration, ce.timeaftereventunit, ce.increments, p.name personname, p.phone, p.email, cb.calendarbookingid
+        FROM calendarevent ce 
+        LEFT JOIN person p on p.corpid = ce.corpid and p.orgid = ce.orgid and p.personid = $personid 
+        LEFT JOIN calendarbooking cb ON cb.corpid = ce.corpid AND cb.orgid = ce.orgid AND cb.calendareventid = ce.calendareventid AND cb.calendarbookinguuid = $calendarbookinguuid
+        WHERE ce.orgid = $orgid and ce.code = $code`,
+        module: "",
+        protected: "SELECT"
+    },*/
     QUERY_GET_PERSON_FROM_BOOKING: {
         query: "select p.name, p.phone, p.email from person p where p.corpid = $corpid and p.orgid = $orgid and p.personid = $personid",
         module: "",
