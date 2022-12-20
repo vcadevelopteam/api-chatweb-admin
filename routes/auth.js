@@ -6,6 +6,9 @@ const authController = require("../controllers/authController")
 router.post("/",
     authController.authenticate
 )
+router.post("/mobile",
+    authController.authenticateMobile
+)
 
 router.post("/logout",
     auth,
