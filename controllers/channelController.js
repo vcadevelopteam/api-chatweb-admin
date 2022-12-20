@@ -1920,6 +1920,7 @@ exports.insertChannel = async (request, response) => {
                                             recording: service.recording,
                                             sms: service.sms,
                                             outbound: service.outbound,
+                                            callsupervision: service.callsupervision,
                                             recordingstorage: service.recordingstorage?.value,
                                             recordingquality: service.recordingquality?.value,
                                             additionalperchannel: voximplantEnvironment.additionalperchannel,
