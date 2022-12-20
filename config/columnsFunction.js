@@ -429,7 +429,7 @@ module.exports = {
             column: "pe.documentnumber"
         },
         abandoned: {
-            column: "CASE WHEN propaba.propertyvalue = 'SUNAT' THEN CASE WHEN (coalesce(co.abandoned, false) = true and coalesce(co.startdate + co.botduration + co.firstassignedtime > co.closetabdate, false)) THEN 'SI' ELSE 'NO' END ELSE CASE WHEN co.abandoned = true THEN 'SI' ELSE 'NO' END END"
+            column: "CASE WHEN propaba.propertyvalue = 'SUNAT' THEN CASE WHEN (coalesce(co.abandoned, false) = true and coalesce(co.startdate + co.botduration + co.firstassignedtime > co.closetabdate, false)) THEN 'SI' ELSE 'NO' END WHEN propaba.propertyvalue = 'CLARO' THEN CASE WHEN co.firstassignedtime IS NULL AND co.handoffdate IS NOT NULL THEN 'SI' ELSE 'NO' END ELSE CASE WHEN co.abandoned = true THEN 'SI' ELSE 'NO' END END"
         },
         enquiries: {
             column: "co.enquiries"
