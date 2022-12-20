@@ -1334,7 +1334,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_INS: {
-        query: "select * from ufn_lead_ins($corpid,$orgid, $leadid, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $column_uuid, $username, $index, $phone, $email, $userid, $phase, $campaignid, $leadproduct, $operation)",
+        query: "select * from ufn_lead_ins($corpid,$orgid, $leadid, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $column_uuid, $username, $index, $phone, $email, $userid, $phase, $campaignid, $leadproduct, $operation, $personid, $persontype)",
         module: "",
         protected: "INSERT"
     },
@@ -1349,7 +1349,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_PERSON_INS: {
-        query: "select * from ufn_lead_person_ins($corpid, $orgid, $id, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $username, $index, $firstname, $lastname, $email, $phone, $personid, $userid, $products)",
+        query: "select * from ufn_lead_person_ins($corpid, $orgid, $id, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $username, $index, $firstname, $lastname, $email, $phone, $personid, $userid, $persontype, $products)",
         module: "",
         protected: "SELECT"
     },
@@ -1364,7 +1364,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_SEL: {
-        query: "select * from ufn_lead_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $campaignid, $tags, $userid, $supervisorid, $all)",
+        query: "select * from ufn_lead_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $campaignid, $tags, $userid, $supervisorid, $persontype, $all)",
         module: "",
         protected: "SELECT"
     },
@@ -1489,17 +1489,17 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_LEADGRID_SEL: {
-        query: "SELECT * FROM ufn_leadgrid_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $asesorid, $channel, $contact, $offset)",
+        query: "SELECT * FROM ufn_leadgrid_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $asesorid, $channel, $contact, $persontype, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_LEADGRID_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_leadgrid_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $asesorid, $channel, $contact, $offset)",
+        query: "SELECT * FROM ufn_leadgrid_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $asesorid, $channel, $contact, $persontype, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_LEADGRID_EXPORT: {
-        query: "SELECT * FROM ufn_leadgrid_export($corpid, $orgid, $where, $order, $startdate, $enddate, $asesorid, $channel, $contact, $offset)",
+        query: "SELECT * FROM ufn_leadgrid_export($corpid, $orgid, $where, $order, $startdate, $enddate, $asesorid, $channel, $contact, $persontype, $offset)",
         module: "",
         protected: "SELECT"
     },
