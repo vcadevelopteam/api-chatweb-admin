@@ -19,12 +19,12 @@
   },
   "homepage": "https://github.com/cfarro09/apis-sysintelogis#readme",
   "devDependencies": {
-    "nodemon": "^2.0.4"
+    "nodemon": "^2.0.20"
   },
   "dependencies": {
     "@logdna/logger": "^2.5.0",
     "adm-zip": "^0.5.9",
-    "axios": "^0.21.1",
+    "axios": "^0.21.4",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "crypto-js": "^4.1.1",
@@ -32,6 +32,7 @@
     "dotenv": "^8.2.0",
     "ejs": "^3.1.8",
     "express": "^4.17.1",
+    "googleapis": "^109.0.1",
     "html-pdf": "^3.0.1",
     "ibm-cos-sdk": "^1.8.0",
     "jsonwebtoken": "^8.5.1",
