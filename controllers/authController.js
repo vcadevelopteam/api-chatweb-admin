@@ -7,6 +7,7 @@ const { addApplication } = require('./voximplantController');
 
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const SECONDS_EXPIRE_IN = 60 * 60 * 12;
 
 //type: int|string|bool
 const properties = [
@@ -191,6 +192,97 @@ exports.authenticate = async (req, res) => {
         }
     } catch (exception) {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+    }
+}
+
+exports.authenticateMobile = async (req, res) => {
+    const { username, password, token } = req.body;
+
+    try {
+
+        const result = await executesimpletransaction("QUERY_AUTHENTICATED", { usr: username });
+        
+        if (!result instanceof Array || result.length === 0) {
+            return res.status(401).json({ code: "LOGIN_USER_INCORRECT", msg: 'Usuario o contraseña incorrecta.' })
+        }
+
+        
+        const user = result[0];
+        const ispasswordmatch = await bcryptjs.compare(password, user.pwd)
+        if (!ispasswordmatch)
+            return res.status(401).json({ code: "LOGIN_USER_INCORRECT", msg: 'Usuario o contraseña incorrecta.' })
+
+        // const tokenzyx = uuidv4();
+
+        const dataSesion = {
+            userid: user.userid,
+            orgid: user.orgid,
+            corpid: user.corpid,
+            usr: user.usr,
+            username: user.usr,
+            status: 'ACTIVO',
+            roleid: user.roleid,
+            motive: null,
+            token,
+            fullname: user.firstname + " " + user.lastname,
+            origin: 'MOVIL',
+            type: 'LOGIN',
+            description: null,
+        };
+
+        await Promise.all([
+            executesimpletransaction("UFN_USERTOKEN_INS", dataSesion),
+            executesimpletransaction("UFN_USERSTATUS_UPDATE", dataSesion),
+        ]);
+        delete user.pwd;
+        
+        const properties = {
+            flagtipification: false,
+            flagmotivedesconection: false,
+            tmobycommunicationchannelid: {}
+        };
+        console.time("get properties");
+
+        await Promise.all([
+            executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...dataSesion, propertyname: "TIPIFICACION" }).then(r => properties.flagtipification = validateResProperty(r, "bool")),
+            executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...dataSesion, propertyname: "MOTIVODESCONEXION" }).then(r => properties.flagmotivedesconection = validateResProperty(r, "bool")),
+            executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...dataSesion, propertyname: "ASESORASIGNACIONGRUPO" }).then(r => properties.flagdelegationgroup = validateResProperty(r, "bool")),
+            executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...dataSesion, propertyname: "ASESORDELEGACION" }).then(r => properties.flagdelegationagent = validateResProperty(r, "bool")),
+            executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...dataSesion, propertyname: "EXPIRACIONSESIONASESOR" }).then(r => properties.minutes_to_expire = validateResProperty(r, "int")),
+            executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...dataSesion, propertyname: "ALERTATMO" }).then(r => properties.tmobycommunicationchannelid = r instanceof Array ? r.reduce((ob, i) => ({ ...ob, [i.communicationchannelid]: parseInt(i.propertyvalue) }), {}) : {}),
+        ]);
+        console.timeEnd("get properties");
+
+        const usertt = {
+            usr: user.username,
+            defaultsort: false,
+            orgdesc: user.orgdesc,
+            corpdesc: user.corpdesc,
+            fullname: dataSesion.fullname,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            docnum: user.docnum,
+            doctype: user.doctype,
+            email: user.email,
+            userid: user.userid,
+            pwdchangefirstlogin: false,
+            properties
+        }
+
+        jwt.sign({ usertoken: dataSesion }, process.env.SECRETA, {
+            // expiresIn: SECONDS_EXPIRE_IN
+        }, (error, token) => {
+             if (error) throw error;
+             const dateExpire = new Date(new Date().getTime() + SECONDS_EXPIRE_IN);
+             return res.json({ token, user: usertt, dateExpire });
+        })
+
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            msg: "Hubo un problema, intentelo más tarde"
+        });
     }
 }
 
