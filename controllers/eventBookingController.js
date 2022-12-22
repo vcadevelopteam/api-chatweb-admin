@@ -318,6 +318,8 @@ const setReminder = async (data, requestid) => {
 
             // Balance validation is done in services
 
+            const variables_keys = data.variables.reduce((ac, x) => ({...ac, [x.name]: x.text }), {})
+
             const taskResult = await executesimpletransaction("QUERY_INSERT_REMINDER_TASK_SCHEDULER", {
                 corpid: data.corpid,
                 orgid: data.orgid,
@@ -337,7 +339,9 @@ const setReminder = async (data, requestid) => {
                         phone: data.listmembers[0].phone,
                         firstname: data.listmembers[0].firstname,
                         lastname: "",
-                        parameters: data.variables
+                        parameters: data.bodyHsmMessage.match(/({{)(.*?)(}})/g)
+                            .map(x => x.substring(x.indexOf("{{") + 2, x.indexOf("}}")))
+                            .map(x => ({ text: variables_keys[x] }))
                     }]
                 }),
                 repeatflag: false,
