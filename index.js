@@ -68,6 +68,6 @@ app.get('/', (req, res) => {
 });
 // Arrancar la app
 app.listen(PORT, '0.0.0.0', () => {
-})
+});
 
 logger.info(`System launch API-LARAIGO on port ${PORT}`);
