@@ -369,8 +369,9 @@ exports.getErrorSeq = (err, profiler, method) => {
     //profiler es el contorl de tiempo
     const messageerror = err.toString().replace("SequelizeDatabaseError: ", "");
     const errorcode = messageerror.includes("Named bind parameter") ? "PARAMETER_IS_MISSING" : err?.parent?.code;
-
-    profiler && profiler.done({ message: `Executed ${method}`, level: "error", error: { message: messageerror, code: errorcode, detail: err } });
+    if (errorcode !== "P0001") {
+        profiler && profiler.done({ message: `Executed ${method}`, level: "error", error: { message: messageerror, code: errorcode, detail: err } });
+    }
 
     const codeError = (errorcode === 'P0001') ? messageerror : errorcode;
 
