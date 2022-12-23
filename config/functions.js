@@ -1614,12 +1614,17 @@ module.exports = {
         protected: "INSERT"
     },
     QUERY_INSERT_TASK_SCHEDULER: {
-        query: "INSERT INTO taskscheduler (corpid, orgid, tasktype, taskbody, repeatflag, repeatmode, repeatinterval, completed, datetimestart, datetimeend) values ($corpid, $orgid, $tasktype, $taskbody, $repeatflag, $repeatmode, $repeatinterval, $completed, NOW() - INTERVAL '5 hours', NOW())",
+        query: "INSERT INTO taskscheduler (corpid, orgid, tasktype, taskbody, repeatflag, repeatmode, repeatinterval, completed, datetimestart, datetimeend) values ($corpid, $orgid, $tasktype, $taskbody, $repeatflag, $repeatmode, $repeatinterval, $completed, NOW(), NOW() + INTERVAL '10 year')",
         module: "",
         protected: "INSERT"
     },
     QUERY_INSERT_REMINDER_TASK_SCHEDULER: {
-        query: "INSERT INTO taskscheduler (corpid, orgid, tasktype, taskbody, repeatflag, repeatmode, repeatinterval, completed, datetimestart, datetimeend) values ($corpid, $orgid, $tasktype, $taskbody, $repeatflag, $repeatmode, $repeatinterval, $completed, TO_TIMESTAMP($monthdate,'YYYY-MM-DD') + $hourstart::INTERVAL - $remindertime::INTERVAL - INTERVAL '5 hours' , NOW())",
+        query: "INSERT INTO taskscheduler (corpid, orgid, tasktype, taskbody, repeatflag, repeatmode, repeatinterval, completed, datetimestart, datetimeend) values ($corpid, $orgid, $tasktype, $taskbody, $repeatflag, $repeatmode, $repeatinterval, $completed, TO_TIMESTAMP($monthdate,'YYYY-MM-DD') + $hourstart::INTERVAL - $remindertime::INTERVAL - $offset * INTERVAL '1 hours', NOW() + INTERVAL '10 year') RETURNING taskschedulerid",
+        module: "",
+        protected: "INSERT"
+    },
+    QUERY_UPDATE_CALENDARBOOKING_TASKID: {
+        query: "UPDATE calendarbooking SET taskid = $taskid WHERE corpid = $corpid AND orgid = $orgid AND calendareventid = $calendareventid AND calendarbookingid = $calendarbookingid",
         module: "",
         protected: "INSERT"
     },
@@ -2257,7 +2262,9 @@ module.exports = {
         p.name personname, p.phone, p.email
         FROM calendarevent ce
         left JOIN person p on p.corpid = ce.corpid and p.orgid = ce.orgid and p.personid = $personid
-        WHERE ce.orgid = $orgid and ce.code = $code`,
+        WHERE ce.orgid = $orgid
+        and ce.code = $code
+        and ce.status = 'ACTIVO'`,
         module: "",
         protected: "SELECT"
     },
@@ -2267,7 +2274,9 @@ module.exports = {
         FROM calendarevent ce 
         LEFT JOIN person p on p.corpid = ce.corpid and p.orgid = ce.orgid and p.personid = $personid 
         INNER JOIN calendarbooking cb ON cb.corpid = ce.corpid AND cb.orgid = ce.orgid AND cb.calendareventid = ce.calendareventid AND cb.calendarbookinguuid = $calendarbookinguuid AND cb.status = 'ACTIVO'
-        WHERE ce.orgid = $orgid and ce.code = $code`,
+        WHERE ce.orgid = $orgid
+        and ce.code = $code
+        and ce.status = 'ACTIVO'`,
         module: "",
         protected: "SELECT"
     },
@@ -2276,7 +2285,7 @@ module.exports = {
         FROM calendarevent ce 
         LEFT JOIN person p on p.corpid = ce.corpid and p.orgid = ce.orgid and p.personid = $personid 
         LEFT JOIN calendarbooking cb ON cb.corpid = ce.corpid AND cb.orgid = ce.orgid AND cb.calendareventid = ce.calendareventid AND cb.calendarbookinguuid = $calendarbookinguuid
-        WHERE ce.orgid = $orgid and ce.code = $code`,
+        WHERE ce.orgid = $orgid and ce.code = $code and ce.status = 'ACTIVO'`,
         module: "",
         protected: "SELECT"
     },*/
@@ -2287,23 +2296,27 @@ module.exports = {
     },
     QUERY_EVENT_BY_CALENDAR_EVENT_ID: {
         query: `SELECT
-        mt.name messagetemplatename,
-        cc.type communicationchanneltype,
+        mt1.name messagetemplatename,
+        cc1.type communicationchanneltype,
         ce.messagetemplateid,
         ce.communicationchannelid,
         ce.notificationtype,
         ce.notificationmessage,
         ce.reminderhsmcommunicationchannelid,
+        cc2.type reminderhsmcommunicationchanneltype,
         ce.reminderperiod,
         ce.reminderfrecuency,
         ce.remindermailmessage,
         ce.remindermailtemplateid,
         ce.reminderhsmmessage,
         ce.reminderhsmtemplateid,
+        mt2.name reminderhsmtemplatename,
         ce.remindertype
         from calendarevent ce 
-        left join communicationchannel cc on cc.corpid = ce.corpid and cc.orgid = ce.orgid and cc.communicationchannelid = ce.communicationchannelid 
-        left join messagetemplate mt on mt.corpid = ce.corpid and mt.orgid = ce.orgid and mt.messagetemplateid = ce.messagetemplateid 
+        left join communicationchannel cc1 on cc1.corpid = ce.corpid and cc1.orgid = ce.orgid and cc1.communicationchannelid = ce.communicationchannelid
+        left join communicationchannel cc2 on cc2.corpid = ce.corpid and cc2.orgid = ce.orgid and cc2.communicationchannelid = ce.reminderhsmcommunicationchannelid
+        left join messagetemplate mt1 on mt1.corpid = ce.corpid and mt1.orgid = ce.orgid and mt1.messagetemplateid = ce.messagetemplateid 
+        left join messagetemplate mt2 on mt2.corpid = ce.corpid and mt2.orgid = ce.orgid and mt2.messagetemplateid = ce.reminderhsmtemplateid 
         where ce.corpid = $corpid and ce.orgid = $orgid and ce.calendareventid = $calendareventid`,
         module: "",
         protected: "SELECT"
@@ -2343,6 +2356,21 @@ module.exports = {
                 AND corpid=$corpid
                 AND orgid=$orgid
                 AND calendarbookinguuid=$calendarbookinguuid;`,
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_CANCEL_TASK_BY_CALENDARBOOKINGUUID: {
+        query: `UPDATE taskscheduler ts
+                SET
+                completed = true
+                WHERE ts.taskschedulerid IN (
+                    SELECT unnest(string_to_array(cb.taskid, ',')::BIGINT[])
+                    FROM calendarbooking cb
+                    WHERE cb.corpid = $corpid
+                    AND cb.orgid = $orgid
+                    AND cb.calendareventid = $calendareventid
+                    AND cb.calendarbookingid = $calendarbookingid
+                );`,
         module: "",
         protected: "SELECT"
     },
