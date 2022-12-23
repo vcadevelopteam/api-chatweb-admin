@@ -341,7 +341,26 @@ exports.axiosObservable = async ({ method = "post", url, data = undefined, heade
             return r;
         })
         .catch(r => {
-            profiler.done({ level: "warn", _requestid, message: `Request to ${url}`, status: r.response?.status, input: data, output: r.data });
+            const errorLog = {
+                level: "warn",
+                _requestid,
+                message: `Request to ${url}`,
+                input: data
+            }
+            if (r.response) {
+                errorLog.detail = {
+                    data: r.response?.data,
+                    status: r.response?.status,
+                    headers: r.response?.headers,
+                }
+            } else if (r.request) {
+                // The request was made but no response was received
+                errorLog.detail = r.request;
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                errorLog.detail = r.message
+            }
+            profiler.done(errorLog);
             throw { ...r, notLog: true }
         });
 }
