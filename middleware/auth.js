@@ -5,10 +5,17 @@ const { getErrorCode } = require('../config/helpers');;
 module.exports = async function (req, res, next) {
     let token = "";
 
-    const authHeader = String(req.headers['authorization'] || '');
+    //web
+    if(req.headers['authorization'] ){
+        const authHeader = String(req.headers['authorization'] || '');
+        if (authHeader.startsWith('Bearer ')) {
+            token = authHeader.substring(7, authHeader.length);
+        }
+    }
 
-    if (authHeader.startsWith('Bearer ')) {
-        token = authHeader.substring(7, authHeader.length);
+    //mobile
+    if(req.headers['x-auth-token']){
+         token = String(req.headers['x-auth-token'] || '');
     }
 
     if (!token)
@@ -16,9 +23,20 @@ module.exports = async function (req, res, next) {
 
     try {
         const cifrado = jwt.verify(token, process.env.SECRETA);
-        req.user = cifrado.user;
+        let cifradoUser = "";
 
-        const result = await tf.executesimpletransaction("UFN_USERTOKEN_SEL", cifrado.user);
+        //web
+        req.user = cifrado.user;
+        cifradoUser = cifrado.user
+
+        //mobile
+        if (!cifradoUser) {
+            req.user = cifrado.usertoken;
+            cifradoUser = cifrado.usertoken
+        }
+        
+
+        const result = await tf.executesimpletransaction("UFN_USERTOKEN_SEL", cifradoUser);
 
         if (result && result instanceof Array && result.length > 0) {
             if (result[0].status !== 'ACTIVO') {
