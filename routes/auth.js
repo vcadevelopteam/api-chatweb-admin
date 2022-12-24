@@ -2,12 +2,10 @@ const express = require("express");
 const router = express.Router();
 const auth = require('../middleware/auth');
 const authController = require("../controllers/authController")
+const authMobileController = require("../controllers/mobile/authMobileController")
 
 router.post("/",
     authController.authenticate
-)
-router.post("/mobile",
-    authController.authenticateMobile
 )
 
 router.post("/logout",
