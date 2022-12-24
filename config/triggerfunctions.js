@@ -776,3 +776,52 @@ exports.uploadBufferToCos = async (_requestid, buffer, contentType, key) => {
         });
     });
 }
+
+exports.exportMobile = async (method, data) => {
+    const response = {
+        success: false,
+        msg: null,
+        result: null
+    }
+    try {
+        if (functionsbd[method]) {
+            let query = functionsbd[method];
+            if (data instanceof Object) {
+
+                data.where = '';
+
+                for (const [key, value] of Object.entries(data.filters)) {
+                    if (value) {
+                        const column = columnsFunction[data.origin][key].column;
+                        const type = columnsFunction[data.origin][key].type;
+
+                        if (type === 'string') {
+                            data.where += ` and ${column} like '%${value}%'`;
+                        } else if (type === 'int') {
+                            if (!isNaN(value))
+                                data.where += ` and ${column} = ${value}`;
+                            else
+                                data.where += ` and 1 = 0`;
+                        }
+                    }
+                }
+                data.order = '';
+                const result = await sequelize.query(query, {
+                    type: QueryTypes.SELECT,
+                    bind: data
+                });
+                return result;
+
+            } else {
+                response.msg = "Mal formato";
+            }
+        } else {
+            response.msg = "No existe el método";
+        }
+    } catch (e) {
+        console.log(e);
+        response.msg = "Hubo un error, vuelva a intentarlo";
+    }
+
+    return response;
+}
