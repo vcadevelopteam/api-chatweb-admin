@@ -58,6 +58,12 @@ app.use('/api/gmaps', require('./routes/gmaps'));
 app.use('/api/voximplant', require('./routes/voximplant'));
 app.use('/api/google', require('./routes/google'));
 app.use('/api/campaign', require('./routes/campaign'));
+//mobile
+app.use('/api/mobile/auth', require('./routes/mobile/auth'));
+app.use('/api/mobile/main', require('./routes/mobile/main'));
+app.use('/api/mobile/ticket', require('./routes/mobile/ticket'));
+app.use('/api/mobile/notification', require('./routes/mobile/notification'));
+app.use('/api/mobile/upload', require('./routes/mobile/upload'));
 
 // Definir la pagina principal
 app.get('/', (req, res) => {
