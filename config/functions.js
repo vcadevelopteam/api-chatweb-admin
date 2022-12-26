@@ -3177,4 +3177,9 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_PERSON_SEL_ONE: {
+        query: "SELECT * FROM ufn_person_sel_one($corpid, $orgid, $personid)",
+        module: "",
+        protected: "INSERT"
+    },
 }
