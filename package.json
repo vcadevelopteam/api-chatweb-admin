@@ -22,7 +22,6 @@
     "nodemon": "^2.0.4"
   },
   "dependencies": {
-    "firebase-admin": "^9.6.0",
     "@logdna/logger": "^2.5.0",
     "adm-zip": "^0.5.9",
     "axios": "^0.21.1",
