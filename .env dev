@@ -27,3 +27,6 @@ ZYXMEDBPORT=5432
 ZYXMEHOOK=https://zyxmedev.com/zyxme/hook/api/
 ADDRESSES_ALLOWED=http://localhost:3000,https://localhost:3000,http://52.116.128.51:5040,https://test-laraigo.s3-web.us-south.cloud-object-storage.appdomain.cloud,https://scanvirus-cos-static-web-hosting-w26.s3-web.us-south.cloud-object-storage.appdomain.cloud,https://app.laraigo.com,https://socket.laraigo.com,https://testsocket.laraigo.com,https://socket.laraigo.com,https://zyxmelinux.zyxmeapp.com,https://backend.laraigo.com,https://chatflow.s3-web.us-east.cloud-object-storage.appdomain.cloud,http://52.116.136.253,http://52.117.9.143
 IPS_ALLOWED=127.0.0.1,52.116.136.253,52.117.9.143
+LOGDNA_APIKEY=c5741e56fbfaca0efbe617438fa8efee
+LOGDNA_HOSTNAME=LARAIGO-DEVELOP
+LOGDNA_PREFIX=develop

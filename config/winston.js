@@ -15,8 +15,9 @@ const logDisk = process.env.LOG_DISK === "true";
 
 //options to logDNA
 const options = {
-    key: "c5741e56fbfaca0efbe617438fa8efee",
-    app: `api_laraigo_${env}`,
+    key: process.env.LOGDNA_APIKEY || "c5741e56fbfaca0efbe617438fa8efee",
+    hostname: process.env.LOGDNA_HOSTNAME || "LARAIGO",
+    app: `api_laraigo_${process.env.LOGDNA_PREFIX || ""}`,
     env: env,
     level: logLevel, // Default to debug, maximum level of log, doc: https://github.com/winstonjs/winston#logging-levels
     indexMeta: true // Defaults to false, when true ensures meta object will be searchable
