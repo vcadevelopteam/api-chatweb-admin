@@ -417,6 +417,8 @@ const getExchange = async (origin, requestId) => {
 
     var currentDate = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()));
 
+    currentDate = new Date(currentDate.setDate(currentDate.getDate() + 1));
+
     while (exchangeRate === 0 && retryNumber <= 20) {
         try {
             const requestGetExchange = await axiosObservable({
@@ -433,17 +435,19 @@ const getExchange = async (origin, requestId) => {
             }
         }
         catch (exception) {
-            printException(exception, origin, requestId);
-
             currentDate = new Date(currentDate.setDate(currentDate.getDate() - 1));
         }
 
         retryNumber++;
 
-        await new Promise(r => setTimeout(r, 2000));
+        await sleep(4000);
     }
 
     return exchangeRate;
+}
+
+async function sleep(msec) {
+    return new Promise(resolve => setTimeout(resolve, msec));
 }
 
 const getInvoice = async (corpId, orgId, userId, id, requestId) => {
