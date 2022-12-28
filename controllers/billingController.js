@@ -123,6 +123,8 @@ exports.exchangeRate = async (req, res) => {
 
         var currentDate = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()));
 
+        currentDate = new Date(currentDate.setDate(currentDate.getDate() + 1));
+
         while (exchangeRate === 0 && retryNumber <= 20) {
             try {
                 const requestGetExchange = await axiosObservable({
@@ -139,14 +141,12 @@ exports.exchangeRate = async (req, res) => {
                 }
             }
             catch (exception) {
-                printException(exception, req.originalUrl, req._requestid);
-
                 currentDate = new Date(currentDate.setDate(currentDate.getDate() - 1));
             }
 
             retryNumber++;
 
-            await new Promise(r => setTimeout(r, 2000));
+            await sleep(4000);
         }
 
         if (exchangeRate) {
@@ -164,4 +164,8 @@ exports.exchangeRate = async (req, res) => {
     } catch (exception) {
         return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
+}
+
+async function sleep(msec) {
+    return new Promise(resolve => setTimeout(resolve, msec));
 }
