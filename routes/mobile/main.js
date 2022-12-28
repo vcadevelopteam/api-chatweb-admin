@@ -21,6 +21,7 @@ router.post("/multi",
     mainMobileController.multiTransaction
 )
 
+/*
 router.post("/getclient",
     mainMobileController.GetCient
 )
@@ -36,7 +37,7 @@ router.post("/guardarpedido",
 router.post("/managesplit",
     mainMobileController.SplitFirst
 )
-
+*/
 
 
 // router.post("/fix",
