@@ -1,6 +1,6 @@
 const logger = require('../../config/winston');
 const { v4: uuidv4 } = require('uuid');
-const { executesimpletransaction } = require('../../config/triggerfunctions');
+const { executesimpletransaction } = require('../../config/mobile/triggerMobileFunction');
 const { errors, getErrorCode, cleanPropertyValue } = require('../../config/helpers');
 const { addApplication } = require('../voximplantController');
 const axios = require('axios')

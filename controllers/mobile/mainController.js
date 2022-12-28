@@ -1,4 +1,4 @@
-const { executesimpletransaction, exportMobile } = require('../../config/triggerfunctions');
+const { executesimpletransaction, exportMobile } = require('../../config/mobile/triggerMobileFunction');
 const { setSessionParameters } = require('../../config/helpers');
 const fs = require('fs');
 
