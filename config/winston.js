@@ -29,7 +29,7 @@ const logger = createLogger({
     level: logLevel,
     format: format.combine(format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }), format.json()),
     transports: [
-        ...(process.env.LOGDNA_CONSOLE ? new transports.Console() : []),
+        ...(process.env.LOGDNA_CONSOLE ? [new transports.Console()] : []),
         ...(logDisk ? [
             new transports.DailyRotateFile({ dirname: './logs', filename: "all-%DATE%.log", datePattern: 'YYYY-MM-DD' }),
             new transports.DailyRotateFile({ dirname: './logs', filename: "err-%DATE%.log", datePattern: 'YYYY-MM-DD', level: "error" }),
