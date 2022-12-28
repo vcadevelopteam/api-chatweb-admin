@@ -238,7 +238,7 @@ const createInvoiceDetail = async (corpId, orgId, invoiceId, description, status
     return null;
 }
 
-const createPaymentCard = async (corpId, orgId, id, cardNumber, cardCode, firstName, lastName, mail, favorite, clientCode, status, type, username, requestId) => {
+const createPaymentCard = async (corpId, orgId, id, cardNumber, cardCode, firstName, lastName, mail, favorite, clientCode, status, phone, type, username, requestId) => {
     const queryString = "UFN_PAYMENTCARD_INS";
     const queryParameters = {
         cardcode: cardCode,
@@ -253,6 +253,7 @@ const createPaymentCard = async (corpId, orgId, id, cardNumber, cardCode, firstN
         operation: id ? "UPDATE" : "INSERT",
         orgid: orgId,
         status: status,
+        phone: phone,
         type: type,
         username: username,
         _requestid: requestId,
@@ -416,6 +417,8 @@ const getExchange = async (origin, requestId) => {
 
     var currentDate = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()));
 
+    currentDate = new Date(currentDate.setDate(currentDate.getDate() + 1));
+
     while (exchangeRate === 0 && retryNumber <= 20) {
         try {
             const requestGetExchange = await axiosObservable({
@@ -432,17 +435,19 @@ const getExchange = async (origin, requestId) => {
             }
         }
         catch (exception) {
-            printException(exception, origin, requestId);
-
             currentDate = new Date(currentDate.setDate(currentDate.getDate() - 1));
         }
 
         retryNumber++;
 
-        await new Promise(r => setTimeout(r, 2000));
+        await sleep(4000);
     }
 
     return exchangeRate;
+}
+
+async function sleep(msec) {
+    return new Promise(resolve => setTimeout(resolve, msec));
 }
 
 const getInvoice = async (corpId, orgId, userId, id, requestId) => {
@@ -1318,7 +1323,7 @@ exports.cardCreate = async (request, response) => {
         }
 
         if (request.body) {
-            const { firstname, lastname, mail, cardnumber, securitycode, expirationmonth, expirationyear, favorite } = request.body;
+            const { firstname, lastname, mail, cardnumber, securitycode, expirationmonth, expirationyear, favorite, phone } = request.body;
             const { corpid, orgid, userid, usr } = request.user;
 
             const appsetting = await getAppSetting(responsedata.id);
@@ -1348,7 +1353,7 @@ exports.cardCreate = async (request, response) => {
                                 firstName: firstname,
                                 lastName: lastname,
                                 operation: "CREATE",
-                                phoneNumber: (user.phone || "").split("+").join("").split(" ").join("").split("(").join("").split(")").join(""),
+                                phoneNumber: ((phone || user.phone) || "").split("+").join("").split(" ").join("").split("(").join("").split(")").join(""),
                                 url: appsetting.culqiurlclient,
                             },
                             method: "post",
@@ -1379,7 +1384,7 @@ exports.cardCreate = async (request, response) => {
                             if (requestCulqiCard.data.success) {
                                 cardData = requestCulqiCard.data.result;
 
-                                const queryPaymentCardInsert = await createPaymentCard(corpid, orgid, 0, cardData.source.cardNumber, cardData.id, firstname, lastname, mail, favorite, cardData.customerId, "ACTIVO", "", usr, responsedata.id);
+                                const queryPaymentCardInsert = await createPaymentCard(corpid, orgid, 0, cardData.source.cardNumber, cardData.id, firstname, lastname, mail, favorite, cardData.customerId, "ACTIVO", phone, "", usr, responsedata.id);
 
                                 if (queryPaymentCardInsert instanceof Array) {
                                     responsedata = genericfunctions.changeResponseData(responsedata, null, null, null, 200, true);
@@ -1433,7 +1438,7 @@ exports.cardDelete = async (request, response) => {
         }
 
         if (request.body) {
-            const { corpid, orgid, paymentcardid, cardnumber, cardcode, firstname, lastname, mail, favorite, clientcode, type } = request.body;
+            const { corpid, orgid, paymentcardid, cardnumber, cardcode, firstname, lastname, mail, favorite, clientcode, type, phone } = request.body;
             const { usr } = request.user;
 
             const appsetting = await getAppSetting(responsedata.id);
@@ -1452,7 +1457,7 @@ exports.cardDelete = async (request, response) => {
                 });
 
                 if (requestCulqiCard.data.success) {
-                    const queryPaymentCardUpdate = await createPaymentCard(corpid, orgid, paymentcardid, cardnumber, cardcode, firstname, lastname, mail, favorite, clientcode, "ELIMINADO", type, usr, responsedata.id);
+                    const queryPaymentCardUpdate = await createPaymentCard(corpid, orgid, paymentcardid, cardnumber, cardcode, firstname, lastname, mail, favorite, clientcode, "ELIMINADO", phone, type, usr, responsedata.id);
 
                     if (queryPaymentCardUpdate instanceof Array) {
                         responsedata = genericfunctions.changeResponseData(responsedata, null, null, null, 200, true);
