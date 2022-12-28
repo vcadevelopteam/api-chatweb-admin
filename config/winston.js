@@ -19,6 +19,7 @@ const options = {
     hostname: process.env.LOGDNA_HOSTNAME || "LARAIGO",
     app: `api_laraigo_${process.env.LOGDNA_PREFIX || ""}`,
     env: env,
+    url: process.env.LOGDNA_INGESTURL || "https://logs.logdna.com/logs/ingest",
     level: logLevel, // Default to debug, maximum level of log, doc: https://github.com/winstonjs/winston#logging-levels
     indexMeta: true // Defaults to false, when true ensures meta object will be searchable
 }
