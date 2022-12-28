@@ -1,6 +1,6 @@
 require('dotenv').config({ path: 'variables.env' });
 const axios = require('axios')
-const { executesimpletransaction } = require('../../config/triggerfunctions');
+const { executesimpletransaction } = require('../../config/mobile/triggerMobileFunction');
 const { errors, getErrorCode, cleanPropertyValue } = require('../../config/helpers');
 const { pushNotification } = require('../mobile/notificationMobileController')
 
