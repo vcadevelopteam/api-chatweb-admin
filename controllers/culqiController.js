@@ -423,7 +423,7 @@ const getExchange = async (origin, requestId) => {
         try {
             const requestGetExchange = await axiosObservable({
                 method: 'get',
-                url: `${exchangeEndpoint}${currentDate.toISOString().split('T')[0]}`,
+                url: `${retryNumber === 0 ? exchangeEndpoint.split('?')[0] : (exchangeEndpoint + currentDate.toISOString().split('T')[0])}`,
                 _requestid: requestId,
             });
 
