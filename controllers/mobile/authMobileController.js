@@ -216,7 +216,7 @@ exports.connectMobile = async (req, res) => {
         await Promise.all([
             executesimpletransaction(method, data),
             axios({
-                url: `${process.env.APP}inbox/ConnUserHub`,
+                url: `${process.env.APP_MOBILE_SOCKET}inbox/ConnUserHub`,
                 method: 'post',
                 data: { corpid: data.corpid, orgid: data.orgid, userid: data.userid, isconnected: connected }
             })
