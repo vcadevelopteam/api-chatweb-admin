@@ -1,5 +1,5 @@
 const { executesimpletransaction, exportMobile } = require('../../config/mobile/triggerMobileFunction');
-const { setSessionParameters } = require('../../config/helpers');
+const { setSessionParameters, getErrorCode, errors } = require('../../config/helpers');
 const fs = require('fs');
 
 exports.GetCollection = async (req, res) => {
@@ -14,11 +14,8 @@ exports.GetCollection = async (req, res) => {
         else
             return res.status(400).json(result);
     }
-    catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -40,11 +37,8 @@ exports.multiTransaction = async (req, res) => {
 
         return res.json(result);
     }
-    catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -64,11 +58,8 @@ exports.getCollectionPagination = async (req, res) => {
         const result = await getCollectionPagination(methodcollection, methodcount, data, consultcount);
         res.json(result);
     }
-    catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 exports.export = async (req, res) => {
@@ -85,10 +76,7 @@ exports.export = async (req, res) => {
         const result = await exportMobile(method, data);
         res.json(result);
     }
-    catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }

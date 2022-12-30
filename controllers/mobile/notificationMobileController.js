@@ -1,5 +1,6 @@
 var admin = require("firebase-admin");
 var serviceAccount = require("../../zyxmeapp.json");
+const { getErrorCode } = require('../../config/helpers');
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -65,11 +66,8 @@ exports.messagein = async (req, res) => {
 
         res.json(result);
     }
-    catch (ee) {
-        console.log(ee);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -122,7 +120,7 @@ exports.pushNotification = (datatmp) => {
                 })
         ])
     }
-    catch (ee) {
-        console.log(ee);
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
