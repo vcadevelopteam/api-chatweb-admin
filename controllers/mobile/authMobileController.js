@@ -102,8 +102,6 @@ exports.authenticateMobile = async (req, res) => {
 
         const result = await executesimpletransaction("QUERY_AUTHENTICATED", { usr: username });
         
-        throw new Error('Mensaje de error');
-        
         if (!result instanceof Array || result.length === 0) {
             return res.status(401).json({ code: errors.LOGIN_USER_INCORRECT, msg: 'Usuario o contraseña incorrecta.' })
         }
