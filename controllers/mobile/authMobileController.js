@@ -102,15 +102,17 @@ exports.authenticateMobile = async (req, res) => {
 
         const result = await executesimpletransaction("QUERY_AUTHENTICATED", { usr: username });
         
+        throw new Error('Mensaje de error');
+        
         if (!result instanceof Array || result.length === 0) {
-            return res.status(401).json({ code: "LOGIN_USER_INCORRECT", msg: 'Usuario o contraseña incorrecta.' })
+            return res.status(401).json({ code: errors.LOGIN_USER_INCORRECT, msg: 'Usuario o contraseña incorrecta.' })
         }
 
         
         const user = result[0];
         const ispasswordmatch = await bcryptjs.compare(password, user.pwd)
         if (!ispasswordmatch)
-            return res.status(401).json({ code: "LOGIN_USER_INCORRECT", msg: 'Usuario o contraseña incorrecta.' })
+            return res.status(401).json({ ccode: errors.LOGIN_USER_INCORRECT, msg: 'Usuario o contraseña incorrecta.' })
 
         // const tokenzyx = uuidv4();
 
@@ -178,22 +180,16 @@ exports.authenticateMobile = async (req, res) => {
         })
 
 
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
 exports.getUser = async (req, res) => {
     try {
         res.json({ user: req.user })
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -223,11 +219,8 @@ exports.connectMobile = async (req, res) => {
         ]);
 
         res.json({ success: true })
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -258,11 +251,8 @@ exports.changeOrganization = async (req, res) => {
             return res.json({ success: true, token });
         })
 
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -296,10 +286,7 @@ exports.changePassword = async (req, res) => {
         else
             return res.status(400).json(result);
 
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }

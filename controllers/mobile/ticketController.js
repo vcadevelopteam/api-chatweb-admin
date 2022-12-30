@@ -55,11 +55,8 @@ exports.reply = async (req, res) => {
 
         res.json({ success: true });
     }
-    catch (ee) {
-        console.log(ee);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -80,11 +77,8 @@ exports.triggerBlock = async (req, res) => {
 
         res.json({ success: true });
     }
-    catch (ee) {
-        console.log(ee);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -140,11 +134,8 @@ exports.close = async (req, res) => {
 
         res.json({ success: true });
     }
-    catch (ee) {
-        console.log(ee);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -206,11 +197,8 @@ exports.reasign = async (req, res) => {
 
         res.json({ success: true, msg: '' });;
     }
-    catch (ee) {
-        console.log(ee);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
@@ -280,10 +268,7 @@ exports.sendhsm = async (req, res) => {
 
         res.json({ success: true, msg: '' });;
     }
-    catch (ee) {
-        console.log(ee);
-        return res.status(500).json({
-            msg: "Hubo un problema, intentelo más tarde"
-        });
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
