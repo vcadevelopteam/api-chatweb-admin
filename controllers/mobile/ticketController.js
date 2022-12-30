@@ -47,7 +47,8 @@ exports.reply = async (req, res) => {
             corpid: data.p_corpid,
             orgid: data.p_orgid,
             ticketWasAnswered: data.newanswered,
-            wasanswered: data.newanswered
+            wasanswered: data.newanswered,
+            status: data.status || "ASIGNADO"
             
         }
         axios.post(`${process.env.APP_MOBILE_SOCKET}inbox/sendMessageFromBotHub`, ticket);
