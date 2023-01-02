@@ -7,10 +7,10 @@ const Cursor = require('pg-cursor')
 const { processCursor } = require("../config/pg-cursor");
 
 exports.GetCollection = async (req, res) => {
-    const { data = {}, parameters = {} } = req.body;
+    let parameters = req.body.parameters || req.body.data || {};
     const {method, key } = req.body;
 
-    setSessionParameters(parameters, req.user, req._requestid);
+    setSessionParameters(parameters || data, req.user, req._requestid);
 
     const result = await executesimpletransaction(method, parameters, req.user.menu || {});
 
@@ -21,7 +21,7 @@ exports.GetCollection = async (req, res) => {
 }
 
 exports.GetCollectionPaymentOrder = async (req, res) => {
-    const { data = {}, parameters = {} } = req.body;
+    let parameters = req.body.parameters || req.body.data || {};
     parameters._requestid = req._requestid;
 
     const result = await executesimpletransaction("UFN_PAYMENTORDER_SEL", parameters);
@@ -33,7 +33,7 @@ exports.GetCollectionPaymentOrder = async (req, res) => {
 }
 
 exports.GetCollectionDomainValues = async (req, res) => {
-    const { data = {}, parameters = {} } = req.body;
+    let parameters = req.body.parameters || req.body.data || {};
 
     parameters.orgid = 1;
     parameters.corpid = 1;
@@ -49,7 +49,7 @@ exports.GetCollectionDomainValues = async (req, res) => {
 
 exports.GetMultiDomainsValue = async (req, res) => {
     try {
-        const { data = {}, parameters = {} } = req.body;
+        let parameters = req.body.parameters || req.body.data || {};
         parameters._requestid = req._requestid;
 
         if (parameters.domains && parameters.domains instanceof Array) {
