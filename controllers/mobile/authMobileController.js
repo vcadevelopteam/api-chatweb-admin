@@ -71,7 +71,6 @@ exports.authenticateMobile = async (req, res) => {
             flagmotivedesconection: false,
             tmobycommunicationchannelid: {}
         };
-        console.time("get properties");
 
         await Promise.all([
             executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...dataSesion, propertyname: "TIPIFICACION" }).then(r => properties.flagtipification = validateResProperty(r, "bool")),
@@ -81,8 +80,6 @@ exports.authenticateMobile = async (req, res) => {
             executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...dataSesion, propertyname: "EXPIRACIONSESIONASESOR" }).then(r => properties.minutes_to_expire = validateResProperty(r, "int")),
             executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...dataSesion, propertyname: "ALERTATMO" }).then(r => properties.tmobycommunicationchannelid = r instanceof Array ? r.reduce((ob, i) => ({ ...ob, [i.communicationchannelid]: parseInt(i.propertyvalue) }), {}) : {}),
         ]);
-        console.timeEnd("get properties");
-
         const usertt = {
             usr: user.username,
             defaultsort: false,
