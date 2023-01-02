@@ -10,7 +10,7 @@ exports.GetCollection = async (req, res) => {
     let parameters = req.body.parameters || req.body.data || {};
     const {method, key } = req.body;
 
-    setSessionParameters(parameters || data, req.user, req._requestid);
+    setSessionParameters(parameters, req.user, req._requestid);
 
     const result = await executesimpletransaction(method, parameters, req.user.menu || {});
 
