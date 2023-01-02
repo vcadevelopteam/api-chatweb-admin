@@ -16,6 +16,7 @@ const apns = {
 exports.messagein = async (req, res) => {
     try {
         const { data, notification } = req.body;
+        console.log("body-notification", { data, notification })
 
         const token = data.token;
         delete data.token;

@@ -9,6 +9,77 @@ const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const SECONDS_EXPIRE_IN = 60 * 60 * 12;
 
+//type: int|string|bool
+const properties = [
+    {
+        propertyname: "SONIDOPORTICKETNUEVO",
+        key: "alertTicketNew",
+        type: 'int'
+    },
+    {
+        propertyname: "SONIDOPORMENSAJEENTRANTE",
+        key: "alertMessageIn",
+        type: 'int'
+    },
+    {
+        propertyname: "CIERREAUTOMATICOHOLDING",
+        key: "auto_close_holding",
+        type: 'communicationchannelid',
+        subtype: 'int'
+    },
+    {
+        propertyname: "CIERREAUTOMATICO",
+        key: "auto_close",
+        type: 'communicationchannelid',
+        subtype: 'int'
+    },
+    {
+        propertyname: "TIEMPOBALANCEOLLAMADA",
+        key: "time_reassign_call",
+        type: 'int'
+    },
+    {
+        propertyname: "TIMBRERINGINGBELL",
+        key: "ringer_volume",
+        type: 'int'
+    },
+    {
+        propertyname: "SEGUNDOSARESPONDERLLAMADA",
+        key: "seconds_to_answer_call",
+        type: 'int'
+    },
+    {
+        propertyname: "HOLDINGBYSUPERVISOR",
+        key: "holding_by_supervisor",
+        type: 'text'
+    },
+    {
+        propertyname: "OCULTARLOGCONVERSACION",
+        key: "hide_log_conversation",
+        type: 'bool',
+    },
+    {
+        propertyname: "LIMITARREASIGNACIONGRUPO",
+        key: "limit_reassign_group",
+        type: 'bool',
+    },
+    {
+        propertyname: "WAITINGTIMECUSTOMERMESSAGE",
+        key: "waiting_customer_message",
+        type: 'text',
+    },
+    {
+        propertyname: "FILTROFECHA",
+        key: "range_date_filter",
+        type: 'int',
+    },
+    {
+        propertyname: "ETIQUETAORIGEN",
+        key: "origin_label",
+        type: 'bool',
+    },
+];
+
 const validateResProperty = (r, type) => {
     let vv;
     if (r instanceof Array && r.length > 0)
@@ -165,6 +236,7 @@ exports.changeOrganization = async (req, res) => {
         }
 
         const ff = await executesimpletransaction(method, data);
+        console.log("changeorganizaiton", ff)
 
         const dataSesion = {
             ...req.user,
