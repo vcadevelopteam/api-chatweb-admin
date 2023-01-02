@@ -64,7 +64,7 @@ exports.reply = async (req, res) => {
 exports.triggerBlock = async (req, res) => {
     try {
         const data = req.body;
-        console.log("triggerBlock", data)
+
         data.p_corpid = req.user.corpid;
         data.p_orgid = req.user.orgid;
         data.username = req.user.usr;
@@ -144,7 +144,6 @@ exports.close = async (req, res) => {
 exports.reasign = async (req, res) => {
     try {
         const { data } = req.body;
-        console.log("data-reassign", data);
 
         if (!data.corpid)
             data.corpid = req.user.corpid ? req.user.corpid : 1;
@@ -207,7 +206,6 @@ exports.reasign = async (req, res) => {
 exports.sendhsm = async (req, res) => {
     try {
         const { data } = req.body;
-        console.log("data-reassign", data);
 
         if (!data.corpid)
             data.corpid = req.user.corpid ? req.user.corpid : 1;
