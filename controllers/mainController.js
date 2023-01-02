@@ -7,9 +7,10 @@ const Cursor = require('pg-cursor')
 const { processCursor } = require("../config/pg-cursor");
 
 exports.GetCollection = async (req, res) => {
-    const { parameters = {}, method, key } = req.body;
+    let parameters = req.body.parameters || req.body.data || {};
+    const {method, key } = req.body;
 
-    setSessionParameters(parameters, req.user, req._requestid);
+    setSessionParameters(parameters || data, req.user, req._requestid);
 
     const result = await executesimpletransaction(method, parameters, req.user.menu || {});
 
@@ -20,7 +21,7 @@ exports.GetCollection = async (req, res) => {
 }
 
 exports.GetCollectionPaymentOrder = async (req, res) => {
-    const { parameters = {} } = req.body;
+    let parameters = req.body.parameters || req.body.data || {};
     parameters._requestid = req._requestid;
 
     const result = await executesimpletransaction("UFN_PAYMENTORDER_SEL", parameters);
@@ -32,7 +33,8 @@ exports.GetCollectionPaymentOrder = async (req, res) => {
 }
 
 exports.GetCollectionDomainValues = async (req, res) => {
-    const { parameters = {} } = req.body;
+    let parameters = req.body.parameters || req.body.data || {};
+
     parameters.orgid = 1;
     parameters.corpid = 1;
     parameters._requestid = req._requestid;
@@ -47,7 +49,7 @@ exports.GetCollectionDomainValues = async (req, res) => {
 
 exports.GetMultiDomainsValue = async (req, res) => {
     try {
-        const { parameters = {} } = req.body;
+        let parameters = req.body.parameters || req.body.data || {};
         parameters._requestid = req._requestid;
 
         if (parameters.domains && parameters.domains instanceof Array) {
@@ -99,7 +101,8 @@ exports.executeTransaction = async (req, res) => {
 }
 
 exports.getCollectionPagination = async (req, res) => {
-    const { parameters, methodCollection, methodCount } = req.body;
+    let parameters  = req.body.parameters || req.body.data; 
+    const { methodCollection, methodCount } = req.body;
 
     setSessionParameters(parameters, req.user, req._requestid);
 
@@ -112,7 +115,8 @@ exports.getCollectionPagination = async (req, res) => {
 }
 
 exports.getGraphic = async (req, res) => {
-    const { parameters, method } = req.body;
+    let parameters  = req.body.parameters || req.body.data; 
+    const { method } = req.body;
 
     setSessionParameters(parameters, req.user, req._requestid);
 
@@ -126,7 +130,8 @@ exports.getGraphic = async (req, res) => {
 }
 
 exports.exportTrigger = async (req, res) => {
-    const { parameters, method } = req.body;
+    let parameters  = req.body.parameters || req.body.data; 
+    const { method } = req.body;
 
     const authHeader = String(req.headers['authorization'] || '');
 
@@ -185,7 +190,8 @@ exports.multiCollection = async (req, res) => {
 }
 
 exports.getToken = async (req, res) => {
-    const { data } = req.body;
+    let data  = req.body.parameters || req.body.data; 
+    //const { data } = req.body;
 
     const result = await executesimpletransaction("UFN_GET_TOKEN_LOGGED_MOVIL", { ...data, _requestid: req._requestid });
 
@@ -243,7 +249,8 @@ exports.validateConversationWhatsapp = async (req, res) => {
 }
 
 exports.exportWithCursor = async (req, res) => {
-    const { parameters, method } = req.body;
+    let parameters  = req.body.parameters || req.body.data; 
+    const { method } = req.body;
 
     try {
         setSessionParameters(parameters, req.user, req._requestid);
