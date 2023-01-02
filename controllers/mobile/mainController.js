@@ -46,14 +46,7 @@ exports.getCollectionPagination = async (req, res) => {
     try {
         const { data, methodcollection, methodcount, consultcount } = req.body;
 
-        if (!data.corpid)
-            data.corpid = req.user.corpid;
-        if (!data.orgid)
-            data.orgid = req.user.orgid;
-        if (!data.username)
-            data.username = req.user.usr;
-        if (!data.userid)
-            data.userid = req.user.userid;
+        setSessionParameters(data, req.user, req._requestid);
 
         const result = await getCollectionPagination(methodcollection, methodcount, data, consultcount);
         res.json(result);
@@ -66,13 +59,7 @@ exports.export = async (req, res) => {
     try {
         const { data, method } = req.body;
 
-        if (!data.corpid)
-            data.corpid = req.user.corpid ? req.user.corpid : 1;
-        if (!data.orgid)
-            data.orgid = req.user.orgid ? req.user.orgid : 1;
-        if (!data.username)
-            data.username = req.user.usr;
-
+        setSessionParameters(data, req.user, req._requestid);
         const result = await exportMobile(method, data);
         res.json(result);
     }

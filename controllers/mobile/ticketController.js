@@ -1,7 +1,7 @@
 require('dotenv').config({ path: 'variables.env' });
 const axios = require('axios')
 const { executesimpletransaction } = require('../../config/mobile/triggerMobileFunction');
-const { errors, getErrorCode, cleanPropertyValue } = require('../../config/helpers');
+const { errors, getErrorCode, setSessionParameters } = require('../../config/helpers');
 const { pushNotification } = require('../mobile/notificationMobileController')
 
 exports.reply = async (req, res) => {
@@ -14,7 +14,8 @@ exports.reply = async (req, res) => {
         }
 
         data.fromasesor = "fromasesor";
-
+        setSessionParameters(data, req.user, req._requestid);
+        /*
         if (!data.corpid)
             data.p_corpid = req.user.corpid ? req.user.corpid : 1;
         if (!data.orgid)
@@ -23,7 +24,7 @@ exports.reply = async (req, res) => {
             data.username = req.user.usr;
         if (!data.userid)
             data.p_userid = req.user.userid;
-
+*/
         data.agentName = req.user.fullname;
 
         const responseservices = await axios.post(
@@ -92,7 +93,8 @@ exports.close = async (req, res) => {
         }
 
         data.fromasesor = "fromasesor";
-
+        setSessionParameters(data, req.user, req._requestid);
+        /*
         if (!data.corpid)
             data.p_corpid = req.user.corpid ? req.user.corpid : 1;
         if (!data.orgid)
@@ -101,7 +103,7 @@ exports.close = async (req, res) => {
             data.p_username = req.user.usr;
         if (!data.userid)
             data.p_userid = req.user.userid;
-
+        */
         data.closeby = "USER";
         data.p_status = "CERRADO";
 
