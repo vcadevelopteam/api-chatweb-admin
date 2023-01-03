@@ -2853,6 +2853,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CONVERSATION_LINKEDPERSON_EXECUTE: {
+        query: "SELECT * FROM ufn_conversation_linkedperson_execute($corpid, $orgid, $personidfrom, $personidto, $imageurl, $name, $firstname, $lastname, $documenttype, $documentnumber, $persontype, $birthday, $gender, $phone, $alternativephone, $email, $alternativeemail, $civilstatus, $occupation, $educationlevel, $observation, $groups, $address, $healthprofessional, $referralchannel)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_UNLINKPERSON_EXECUTE: {
+        query: "SELECT * FROM ufn_conversation_unlinkperson_execute($corpid, $orgid, $personid, $personcommunicationchannel, $username)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_PERSON_IMPORT_VALIDATION: {
         query: "SELECT * FROM ufn_person_import_validation($corpid, $orgid, $table, $username)",
         module: "",
@@ -2935,6 +2945,31 @@ module.exports = {
     },
     UFN_PRODUCTCATALOG_UPD_ARRAY: {
         query: "SELECT * FROM ufn_productcatalog_upd_array($corpid, $orgid, $username, $table)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_POSTHISTORY_INS: {
+        query: "SELECT * FROM ufn_posthistory_ins($corpid, $orgid, $communicationchannelid, $communicationchanneltype, $posthistoryid, $status, $type, $publishdate, $texttitle, $textbody, $hashtag, $sentiment, $activity, $mediatype, $medialink, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CRON_POSTHISTORY_SEL: {
+        query: "SELECT * FROM ufn_cron_posthistory_sel()",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_POSTHISTORY_PUBLISH: {
+        query: "SELECT * FROM ufn_posthistory_publish($corpid, $orgid, $communicationchannelid, $posthistoryid, $status, $externaldata, $published, $publishstatus, $publishmessage)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_POSTHISTORY_INSIGHT: {
+        query: "SELECT * FROM ufn_posthistory_insight($corpid, $orgid, $communicationchannelid, $posthistoryid, $reach, $interactions, $reactions)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_POSTHISTORY_SEL: {
+        query: "SELECT * FROM ufn_posthistory_sel($corpid, $orgid, $communicationchannelid, $status, $type, $publishtatus, $datestart, $dateend)",
         module: "",
         protected: "INSERT"
     },
@@ -3027,5 +3062,10 @@ module.exports = {
         query: "SELECT * FROM ufn_charge_paymentorder_ins($corpid, $orgid, $id, $paymentorderid, $description, $type, $status, $amount, $currency, $paidby, $orderid, $orderjson, $email, $tokenid, $capture, $tokenjson, $chargetoken, $chargejson, $operation)",
         module: "",
         protected: "INSERT"
+    },
+    UFN_CRON_POSTHISTORY_INSIGHT_SEL: {
+        query: "SELECT * FROM ufn_cron_posthistory_insight_sel()",
+        module: "",
+        protected: "SELECT"
     },
 }
