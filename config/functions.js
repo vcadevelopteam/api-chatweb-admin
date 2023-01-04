@@ -3068,4 +3068,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_ORDER_SEL: {
+        query: "SELECT * FROM ufn_order_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ORDERLINE_SEL: {
+        query: "SELECT * FROM ufn_orderline_sel($corpid, $orgid, $orderid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
