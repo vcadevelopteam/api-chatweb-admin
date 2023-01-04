@@ -1,7 +1,14 @@
-const express = require("express");
-const router = express.Router();
 const auth = require('../middleware/auth');
-const catalogController = require("../controllers/catalogControllers")
+const catalogController = require("../controllers/catalogControllers");
+const express = require("express");
+const ip = require('../middleware/ip');
+const router = express.Router();
+
+router.post("/getbusinesslist",
+    ip,
+    auth,
+    catalogController.getBusinessList
+)
 
 router.post("/",
     catalogController.createCatalog

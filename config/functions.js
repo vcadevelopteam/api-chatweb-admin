@@ -3068,4 +3068,24 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_METACATALOG_INS: {
+        query: "SELECT * FROM ufn_metacatalog_ins($corpid, $orgid, $metabusinessid, $id, $catalogid, $catalogname, $catalogdescription, $catalogtype, $description, $status, $type, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_METACATALOG_SEL: {
+        query: "SELECT * FROM ufn_metacatalog_sel($corpid, $orgid, $metabusinessid, $id)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_METABUSINESS_INS: {
+        query: "SELECT * FROM ufn_metabusiness_ins($corpid, $orgid, $id, $businessid, $businessname, $accesstoken, $userid, $userfullname, $graphdomain, $description, $status, $type, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_METABUSINESS_SEL: {
+        query: "SELECT * FROM ufn_metabusiness_sel($corpid, $orgid, $id)",
+        module: "",
+        protected: "SELECT"
+    },
 }
