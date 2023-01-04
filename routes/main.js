@@ -9,6 +9,10 @@ router.post("/",
     auth,
     mainController.GetCollection
 )
+router.post("/public/paymentorder",
+    ip,
+    mainController.GetCollectionPaymentOrder
+)
 router.post("/public/domainvalues",
     ip,
     mainController.GetCollectionDomainValues
@@ -43,7 +47,7 @@ router.post("/graphic",
 router.post("/export",
     ip,
     auth,
-    mainController.exportTrigger
+    mainController.exportWithCursor
 )
 
 router.post("/exportTrigger",

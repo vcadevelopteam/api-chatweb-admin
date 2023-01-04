@@ -15,9 +15,11 @@ const logDisk = process.env.LOG_DISK === "true";
 
 //options to logDNA
 const options = {
-    key: "c5741e56fbfaca0efbe617438fa8efee",
-    app: `api_laraigo_${env}`,
+    key: process.env.LOGDNA_APIKEY || "c5741e56fbfaca0efbe617438fa8efee",
+    hostname: process.env.LOGDNA_HOSTNAME || "LARAIGO",
+    app: `api_laraigo_${process.env.LOGDNA_PREFIX || ""}`,
     env: env,
+    url: process.env.LOGDNA_INGESTURL || "https://logs.logdna.com/logs/ingest",
     level: logLevel, // Default to debug, maximum level of log, doc: https://github.com/winstonjs/winston#logging-levels
     indexMeta: true // Defaults to false, when true ensures meta object will be searchable
 }
@@ -27,7 +29,7 @@ const logger = createLogger({
     level: logLevel,
     format: format.combine(format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }), format.json()),
     transports: [
-        new transports.Console(),
+        ...(process.env.LOGDNA_CONSOLE ? [new transports.Console()] : []),
         ...(logDisk ? [
             new transports.DailyRotateFile({ dirname: './logs', filename: "all-%DATE%.log", datePattern: 'YYYY-MM-DD' }),
             new transports.DailyRotateFile({ dirname: './logs', filename: "err-%DATE%.log", datePattern: 'YYYY-MM-DD', level: "error" }),

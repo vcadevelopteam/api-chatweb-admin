@@ -267,7 +267,7 @@ exports.createSubscription = async (request, response) => {
                             firstName: card.firstname,
                             lastName: card.lastname,
                             operation: "CREATE",
-                            phoneNumber: parameters.phone.split("+").join("").split(" ").join("").split("(").join("").split(")").join(""),
+                            phoneNumber: ((card.phone || parameters.phone) || "").split("+").join("").split(" ").join("").split("(").join("").split(")").join(""),
                             url: appsetting.culqiurlclient,
                         },
                         method: "post",
@@ -1035,6 +1035,7 @@ exports.createSubscription = async (request, response) => {
                                                         recording: channelServiceArray[index].recording,
                                                         sms: channelServiceArray[index].sms,
                                                         outbound: channelServiceArray[index].outbound,
+                                                        callsupervision: channelServiceArray[index].callsupervision,
                                                         recordingstorage: channelServiceArray[index].recordingstorage?.value,
                                                         recordingquality: channelServiceArray[index].recordingquality?.value,
                                                     };

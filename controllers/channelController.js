@@ -19,6 +19,7 @@ const whatsAppEndpoint = process.env.WHATSAPPAPI;
 const googleClientId = process.env.GOOGLE_CLIENTID;
 const googleClientSecret = process.env.GOOGLE_CLIENTSECRET;
 const googleTopicName = process.env.GOOGLE_TOPICNAME;
+const rootDelete = process.env.ROOT_DELETE;
 
 exports.checkPaymentPlan = async (request, response) => {
     try {
@@ -1919,6 +1920,7 @@ exports.insertChannel = async (request, response) => {
                                             recording: service.recording,
                                             sms: service.sms,
                                             outbound: service.outbound,
+                                            callsupervision: service.callsupervision,
                                             recordingstorage: service.recordingstorage?.value,
                                             recordingquality: service.recordingquality?.value,
                                             additionalperchannel: voximplantEnvironment.additionalperchannel,
@@ -2616,7 +2618,7 @@ exports.deleteTemplate = async (request, response) => {
                         if (request.body.communicationchannelservicecredentials) {
                             var continueDelete = false;
 
-                            if (request.body.rootdelete) {
+                            if (rootDelete ? true : false) {
                                 var serviceData = JSON.parse(request.body.communicationchannelservicecredentials);
 
                                 const requestDeleteDialog = await axiosObservable({
@@ -2668,7 +2670,7 @@ exports.deleteTemplate = async (request, response) => {
                         if (request.body.communicationchannelservicecredentials) {
                             var continueDelete = false;
 
-                            if (request.body.rootdelete) {
+                            if (rootDelete ? true : false) {
                                 var serviceData = JSON.parse(request.body.communicationchannelservicecredentials);
 
                                 const requestDeleteSmooch = await axiosObservable({

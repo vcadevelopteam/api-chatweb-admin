@@ -1,7 +1,7 @@
 module.exports = {
     QUERY_AUTHENTICATED: {
         query: `
-        SELECT us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi
+        SELECT us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision
         FROM usr us 
         INNER JOIN orguser ous ON ous.userid = us.userid 
         INNER JOIN org org ON org.orgid = ous.orgid 
@@ -23,7 +23,7 @@ module.exports = {
     },
     QUERY_AUTHENTICATED_BY_FACEBOOKID: {
         query: `
-        SELECT us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi
+        SELECT us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision
         from usr us 
         INNER JOIN orguser ous on ous.userid = us.userid 
         INNER JOIN org org on org.orgid = ous.orgid 
@@ -41,13 +41,13 @@ module.exports = {
     },
     QUERY_AUTHENTICATED_BY_GOOGLEID: {
         query: `
-        SELECT us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, c.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi
+        SELECT us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision
         from usr us 
         INNER JOIN orguser ous on ous.userid = us.userid 
         INNER JOIN org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency 
         INNER JOIN corp corp on corp.corpid = ous.corpid LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid 
         INNER JOIN role role on role.roleid = ous.roleid
-        LEFT JOIN communicationchannel cc ON cc.corpid = ous.corpid AND cc.orgid = ous.orgid AND cc.type = 'VOXI' AND status = 'ACTIVO'
+        LEFT JOIN communicationchannel cc ON cc.corpid = ous.corpid AND cc.orgid = ous.orgid AND cc.type = 'VOXI' AND cc.status = 'ACTIVO'
         WHERE us.googleid = $googleid 
         AND ous.bydefault 
         AND ous.status <> 'ELIMINADO' 
@@ -1334,7 +1334,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_INS: {
-        query: "select * from ufn_lead_ins($corpid,$orgid, $leadid, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $column_uuid, $username, $index, $phone, $email, $userid, $phase, $campaignid, $leadproduct, $operation)",
+        query: "select * from ufn_lead_ins($corpid,$orgid, $leadid, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $column_uuid, $username, $index, $phone, $email, $userid, $phase, $campaignid, $leadproduct, $operation, $personid, $persontype)",
         module: "",
         protected: "INSERT"
     },
@@ -1349,7 +1349,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_PERSON_INS: {
-        query: "select * from ufn_lead_person_ins($corpid, $orgid, $id, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $username, $index, $firstname, $lastname, $email, $phone, $personid, $userid, $products)",
+        query: "select * from ufn_lead_person_ins($corpid, $orgid, $id, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $username, $index, $firstname, $lastname, $email, $phone, $personid, $userid, $persontype, $products)",
         module: "",
         protected: "SELECT"
     },
@@ -1364,7 +1364,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_SEL: {
-        query: "select * from ufn_lead_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $campaignid, $tags, $userid, $supervisorid, $all)",
+        query: "select * from ufn_lead_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $campaignid, $tags, $userid, $supervisorid, $persontype, $all)",
         module: "",
         protected: "SELECT"
     },
@@ -1489,17 +1489,17 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_LEADGRID_SEL: {
-        query: "SELECT * FROM ufn_leadgrid_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $asesorid, $channel, $contact, $offset)",
+        query: "SELECT * FROM ufn_leadgrid_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $asesorid, $channel, $contact, $persontype, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_LEADGRID_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_leadgrid_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $asesorid, $channel, $contact, $offset)",
+        query: "SELECT * FROM ufn_leadgrid_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $asesorid, $channel, $contact, $persontype, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_LEADGRID_EXPORT: {
-        query: "SELECT * FROM ufn_leadgrid_export($corpid, $orgid, $where, $order, $startdate, $enddate, $asesorid, $channel, $contact, $offset)",
+        query: "SELECT * FROM ufn_leadgrid_export($corpid, $orgid, $where, $order, $startdate, $enddate, $asesorid, $channel, $contact, $persontype, $offset)",
         module: "",
         protected: "SELECT"
     },
@@ -1615,6 +1615,11 @@ module.exports = {
     },
     QUERY_INSERT_TASK_SCHEDULER: {
         query: "INSERT INTO taskscheduler (corpid, orgid, tasktype, taskbody, repeatflag, repeatmode, repeatinterval, completed, datetimestart, datetimeend) values ($corpid, $orgid, $tasktype, $taskbody, $repeatflag, $repeatmode, $repeatinterval, $completed, NOW() - INTERVAL '5 hours', NOW())",
+        module: "",
+        protected: "INSERT"
+    },
+    QUERY_INSERT_REMINDER_TASK_SCHEDULER: {
+        query: "INSERT INTO taskscheduler (corpid, orgid, tasktype, taskbody, repeatflag, repeatmode, repeatinterval, completed, datetimestart, datetimeend) values ($corpid, $orgid, $tasktype, $taskbody, $repeatflag, $repeatmode, $repeatinterval, $completed, TO_TIMESTAMP($monthdate,'YYYY-MM-DD') + $hourstart::INTERVAL - $remindertime::INTERVAL - INTERVAL '5 hours' , NOW())",
         module: "",
         protected: "INSERT"
     },
@@ -2177,12 +2182,22 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PRODUCTCATALOG_INS: {
-        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $id, $code, $description, $descriptiontext, $category, $status, $type, $imagereference, $notes, $title, $website, $currency, $condition, $contentid, $facebookcatalogid, $facebookproductid, $facebookcatalogname, $unitprice, $username, $operation)",
+        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $id, $productid, $title, $link, $imagelink, $additionalimagelink, $brand, $condition, $availability, $category, $material, $color, $pattern, $currency, $price, $saleprice, $customlabel1, $customlabel2, $customlabel3, $customlabel4, $customlabel5, $labels, $catalogid, $catalogname, $description, $status, $type, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
     UFN_PRODUCTCATALOG_SEL: {
-        query: "SELECT * FROM ufn_productcatalog_sel($corpid, $orgid, $id, $category, $username, $all)",
+        query: "SELECT * FROM ufn_productcatalog_sel($corpid, $orgid, $take, $skip, $where, $order)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PRODUCTCATALOG_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_productcatalog_totalrecords($corpid, $orgid, $where)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PRODUCTCATALOG_SEL_NORMAL: {
+        query: "SELECT * FROM ufn_productcatalog_sel_normal($corpid, $orgid, $id, $category, $username, $all)",
         module: "",
         protected: "SELECT"
     },
@@ -2197,7 +2212,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PAYMENTCARD_INS: {
-        query: "SELECT * FROM ufn_paymentcard_ins($corpid, $orgid, $id, $cardnumber, $cardcode, $firstname, $lastname, $mail, $favorite, $clientcode, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_paymentcard_ins($corpid, $orgid, $id, $cardnumber, $cardcode, $firstname, $lastname, $mail, $favorite, $clientcode, $status, $type, $phone, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -2217,7 +2232,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CALENDAREVENT_INS: {
-        query: "SELECT * FROM ufn_calendarevent_ins($corpid, $orgid, $id, $description, $descriptionobject, $type, $status, $code, $name, $locationtype, $location, $eventlink, $color, $notificationtype, $communicationchannelid, $messagetemplateid, $daterange, $daysduration, $daystype, $startdate, $enddate, $timeduration, $timeunit, $availability, $timebeforeeventduration, $timebeforeeventunit, $timeaftereventduration, $timeaftereventunit, $increments, $username, $operation)",
+        query: "SELECT * FROM ufn_calendarevent_ins($corpid, $orgid, $id, $description, $descriptionobject, $type, $status, $code, $name, $locationtype, $location, $eventlink, $color, $notificationtype, $communicationchannelid, $messagetemplateid, $notificationmessage, $daterange, $daysduration, $daystype, $startdate, $enddate, $timeduration, $timeunit, $availability, $timebeforeeventduration, $timebeforeeventunit, $timeaftereventduration, $timeaftereventunit, $increments, $reminderenable, $remindertype, $reminderhsmtemplateid, $reminderhsmcommunicationchannelid , $reminderhsmmessage, $remindermailtemplateid, $remindermailmessage, $reminderperiod, $reminderfrecuency, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -2232,11 +2247,31 @@ module.exports = {
         protected: "SELECT"
     },
     QUERY_EVENT_BY_CODE: {
-        query: "SELECT ce.corpid, ce.orgid, ce.calendareventid, ce.description, ce.status, ce.type, ce.name, ce.locationtype, ce.location, ce.eventlink, ce.color, ce.notificationtype, ce.messagetemplateid, ce.daterange, ce.daysduration, ce.daystype, ce.startdate, ce.enddate, ce.timeduration, ce.timeunit, ce.timezone, ce.availability, ce.timebeforeeventduration, ce.timebeforeeventunit, ce.timeaftereventduration, ce.timeaftereventunit, ce.increments, p.name personname, p.phone, p.email FROM calendarevent ce left JOIN person p on p.corpid = ce.corpid and p.orgid = ce.orgid and p.personid = $personid WHERE ce.orgid = $orgid and ce.code = $code",
+        query: `SELECT
+        ce.corpid, ce.orgid, ce.calendareventid,
+        ce.description, ce.status, ce.type,
+        ce.name, ce.locationtype, ce.location, ce.eventlink,
+        ce.color, ce.notificationtype, ce.messagetemplateid,
+        ce.daterange, ce.daysduration, ce.daystype, ce.startdate, ce.enddate, ce.timeduration, ce.timeunit, ce.timezone,
+        ce.availability, ce.timebeforeeventduration, ce.timebeforeeventunit, ce.timeaftereventduration, ce.timeaftereventunit, ce.increments,
+        p.name personname, p.phone, p.email
+        FROM calendarevent ce
+        left JOIN person p on p.corpid = ce.corpid and p.orgid = ce.orgid and p.personid = $personid
+        WHERE ce.orgid = $orgid and ce.code = $code`,
         module: "",
         protected: "SELECT"
     },
     QUERY_EVENT_BY_CODE_WITH_BOOKINGUUID: {
+        query: `SELECT ce.corpid, ce.orgid, ce.calendareventid, ce.description, ce.status, ce.type, ce.name, ce.locationtype, ce.location, ce.eventlink, ce.color, ce.notificationtype, ce.messagetemplateid, ce.daterange, ce.daysduration, ce.daystype, ce.startdate, ce.enddate, ce.timeduration, ce.timeunit, ce.timezone, ce.availability, ce.timebeforeeventduration, ce.timebeforeeventunit, ce.timeaftereventduration, ce.timeaftereventunit, ce.increments, cb.personname personname, cb.personcontact phone, cb.personmail email, cb.calendarbookingid,
+        cb.datestart::text bookingdate
+        FROM calendarevent ce 
+        LEFT JOIN person p on p.corpid = ce.corpid and p.orgid = ce.orgid and p.personid = $personid 
+        INNER JOIN calendarbooking cb ON cb.corpid = ce.corpid AND cb.orgid = ce.orgid AND cb.calendareventid = ce.calendareventid AND cb.calendarbookinguuid = $calendarbookinguuid AND cb.status = 'ACTIVO'
+        WHERE ce.orgid = $orgid and ce.code = $code`,
+        module: "",
+        protected: "SELECT"
+    },
+    /*QUERY_EVENT_BY_CODE_WITH_BOOKINGUUID: {
         query: `SELECT ce.corpid, ce.orgid, ce.calendareventid, ce.description, ce.status, ce.type, ce.name, ce.locationtype, ce.location, ce.eventlink, ce.color, ce.notificationtype, ce.messagetemplateid, ce.daterange, ce.daysduration, ce.daystype, ce.startdate, ce.enddate, ce.timeduration, ce.timeunit, ce.timezone, ce.availability, ce.timebeforeeventduration, ce.timebeforeeventunit, ce.timeaftereventduration, ce.timeaftereventunit, ce.increments, p.name personname, p.phone, p.email, cb.calendarbookingid
         FROM calendarevent ce 
         LEFT JOIN person p on p.corpid = ce.corpid and p.orgid = ce.orgid and p.personid = $personid 
@@ -2244,22 +2279,95 @@ module.exports = {
         WHERE ce.orgid = $orgid and ce.code = $code`,
         module: "",
         protected: "SELECT"
-    },
+    },*/
     QUERY_GET_PERSON_FROM_BOOKING: {
         query: "select p.name, p.phone, p.email from person p where p.corpid = $corpid and p.orgid = $orgid and p.personid = $personid",
         module: "",
         protected: "SELECT"
     },
     QUERY_EVENT_BY_CALENDAR_EVENT_ID: {
-        query: `SELECT mt.name messagetemplatename, cc.type communicationchanneltype, ce.messagetemplateid, ce.communicationchannelid, ce.notificationtype from calendarevent ce 
+        query: `SELECT
+        mt.name messagetemplatename,
+        cc.type communicationchanneltype,
+        ce.messagetemplateid,
+        ce.communicationchannelid,
+        ce.notificationtype,
+        ce.notificationmessage,
+        ce.reminderhsmcommunicationchannelid,
+        ce.reminderperiod,
+        ce.reminderfrecuency,
+        ce.remindermailmessage,
+        ce.remindermailtemplateid,
+        ce.reminderhsmmessage,
+        ce.reminderhsmtemplateid,
+        ce.remindertype
+        from calendarevent ce 
         left join communicationchannel cc on cc.corpid = ce.corpid and cc.orgid = ce.orgid and cc.communicationchannelid = ce.communicationchannelid 
         left join messagetemplate mt on mt.corpid = ce.corpid and mt.orgid = ce.orgid and mt.messagetemplateid = ce.messagetemplateid 
         where ce.corpid = $corpid and ce.orgid = $orgid and ce.calendareventid = $calendareventid`,
         module: "",
         protected: "SELECT"
     },
+    QUERY_GET_EVENTS_PER_PERSON: {
+        query: `SELECT  cb.calendareventid,cb.calendarbookingid, cb.description, cb.status, cb.datestart,
+                        cb.monthdate, cb.monthday, cb.weekday, cb.hourstart::text, cb.hourend::text, cb.timeduration,
+                        cb.personname, cb.personcontact, cb.calendarbookinguuid,cb.corpid,cb.orgid, ce.code
+            FROM calendarbooking cb
+            JOIN calendarevent ce ON ce.corpid = cb.corpid AND ce.orgid = cb.orgid AND ce.calendareventid = cb.calendareventid
+            WHERE cb.personcontact IN ($email,$phone)
+                AND ce.code=$code
+                AND cb.datestart > NOW() + cb.timezone * INTERVAL '1HOUR'
+                AND cb.status='ACTIVO'`,
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_GET_EVENT_BY_BOOKINGID: {
+        query: `SELECT cb.personname,ce.name , (cb.datestart - cb.timezone * INTERVAL '1HOUR' + $offset * INTERVAL '1HOUR')::date as monthdate,
+                        (cb.hourstart - cb.timezone * INTERVAL '1HOUR' + $offset * INTERVAL '1HOUR')::text as hourstart, (cb.hourend - cb.timezone * INTERVAL '1HOUR' + $offset * INTERVAL '1HOUR')::text as hourend,
+                        cb.cancelcomment
+            FROM calendarevent ce
+            JOIN calendarbooking cb ON ce.corpid = cb.corpid and ce.orgid = cb.orgid and ce.calendareventid = cb.calendareventid
+            WHERE ce.calendareventid = cb.calendareventid
+                AND ce.corpid = $corpid
+                AND cb.corpid=$corpid
+                AND cb.orgid=$orgid
+                AND cb.calendarbookingid=$calendarbookingid                
+                AND cb.status='ACTIVO'`,
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_CANCEL_EVENT_BY_CALENDARBOOKINGID: {
+        query: `UPDATE calendarbooking 
+                SET status='CANCELADO', cancelcomment=$cancelcomment
+                WHERE status='ACTIVO'
+                AND corpid=$corpid
+                AND orgid=$orgid
+                AND calendarbookinguuid=$calendarbookinguuid;`,
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_CANCEL_EVENT_BY_CALENDARBOOKINGUUID: {
+        query: `UPDATE calendarbooking 
+                SET status='CANCELADO', cancelcomment=$cancelcomment
+                WHERE status='ACTIVO'
+                AND corpid=$corpid
+                AND orgid=$orgid
+                AND calendarbookingid=$calendarbookingid;`,
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_GET_EVENT_REMINDER: {
+        query: `SELECT * 
+                FROM calendarevent
+                WHERE status='ACTIVO'
+                AND corpid=$corpid
+                AND orgid=$orgid
+                AND calendareventid=$calendareventid;`,
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CALENDARYBOOKING_INS: {
-        query: "SELECT * FROM ufn_calendarbooking_ins($corpid, $orgid, $calendareventid, $id, $description, $type, $status, $monthdate, $hourstart, $notes, $conversationid, $personname, $personcontact, $persontimezone, $username, $operation)",
+        query: "SELECT * FROM ufn_calendarbooking_ins($corpid, $orgid, $calendareventid, $id, $description, $type, $status, $monthdate, $hourstart, $notes, $conversationid, $personname, $personcontact, $personmail, $persontimezone, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -2283,6 +2391,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CALENDARBOOKING_CANCEL: {
+        query: "SELECT * FROM ufn_calendarbooking_cancel($corpid, $orgid, $calendareventid, $id, $cancelcomment, $username)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_INVOICE_IMPORT: {
         query: "SELECT * FROM ufn_invoice_import($corpid, $orgid, $year, $month, $description, $status, $receiverdoctype, $receiverdocnum, $receiverbusinessname, $receiverfiscaladdress, $receivercountry, $receivermail, $invoicetype, $serie, $correlative, $invoicedate, $expirationdate, $invoicestatus, $paymentstatus, $paymentdate, $paidby, $paymenttype, $totalamount, $exchangerate, $currency, $urlcdr, $urlpdf, $urlxml, $purchaseorder, $comments, $credittype, $username)",
         module: "",
@@ -2299,7 +2412,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_APPSETTING_VOXIMPLANT_SEL: {
-        query: "SELECT * FROM ufn_appsetting_voximplant_sel();",
+        query: "SELECT * FROM ufn_appsetting_voximplant_sel()",
         module: "",
         protected: "SELECT"
     },
@@ -2740,6 +2853,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CONVERSATION_LINKEDPERSON_EXECUTE: {
+        query: "SELECT * FROM ufn_conversation_linkedperson_execute($corpid, $orgid, $personidfrom, $personidto, $imageurl, $name, $firstname, $lastname, $documenttype, $documentnumber, $persontype, $birthday, $gender, $phone, $alternativephone, $email, $alternativeemail, $civilstatus, $occupation, $educationlevel, $observation, $groups, $address, $healthprofessional, $referralchannel)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_UNLINKPERSON_EXECUTE: {
+        query: "SELECT * FROM ufn_conversation_unlinkperson_execute($corpid, $orgid, $personid, $personcommunicationchannel, $username)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_PERSON_IMPORT_VALIDATION: {
         query: "SELECT * FROM ufn_person_import_validation($corpid, $orgid, $table, $username)",
         module: "",
@@ -2813,6 +2936,41 @@ module.exports = {
     UFN_BILLINGPERIODARTIFICIALINTELLIGENCE_INS_ARRAY: {
         query: "SELECT * FROM ufn_billingperiodartificialintelligence_ins_array($corpid, $orgid, $username, $table)",
         module: "",
+        protected: "SELECT"
+    },
+    UFN_PRODUCTCATALOG_INS_ARRAY: {
+        query: "SELECT * FROM ufn_productcatalog_ins_array($corpid, $orgid, $catalogid, $catalogname, $username, $table)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_PRODUCTCATALOG_UPD_ARRAY: {
+        query: "SELECT * FROM ufn_productcatalog_upd_array($corpid, $orgid, $username, $table)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_POSTHISTORY_INS: {
+        query: "SELECT * FROM ufn_posthistory_ins($corpid, $orgid, $communicationchannelid, $communicationchanneltype, $posthistoryid, $status, $type, $publishdate, $texttitle, $textbody, $hashtag, $sentiment, $activity, $mediatype, $medialink, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CRON_POSTHISTORY_SEL: {
+        query: "SELECT * FROM ufn_cron_posthistory_sel()",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_POSTHISTORY_PUBLISH: {
+        query: "SELECT * FROM ufn_posthistory_publish($corpid, $orgid, $communicationchannelid, $posthistoryid, $status, $externaldata, $published, $publishstatus, $publishmessage)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_POSTHISTORY_INSIGHT: {
+        query: "SELECT * FROM ufn_posthistory_insight($corpid, $orgid, $communicationchannelid, $posthistoryid, $reach, $interactions, $reactions)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_POSTHISTORY_SEL: {
+        query: "SELECT * FROM ufn_posthistory_sel($corpid, $orgid, $communicationchannelid, $status, $type, $publishtatus, $datestart, $dateend)",
+        module: "",
         protected: "INSERT"
     },
     UFN_ORG_LST_SIMPLE: {
@@ -2847,6 +3005,66 @@ module.exports = {
     },
     UFN_REPORT_UNIQUECONTACTS_CONVERSATION_TOTALRECORDS: {
         query: "SELECT * FROM ufn_report_uniquecontacts_conversation_totalrecords($corpid, $orgid, $year, $month, $channeltype, $where, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CALENDARBOOKING_SEL_ONE: {
+        query: "SELECT * FROM ufn_calendarbooking_sel_one($corpid, $orgid, $calendareventid, $id, $offset)",
+        module: "",
+        protected: false
+    },
+    UFN_CALENDAR_INTEGRATION_CREDENTIALS: {
+        query: "SELECT * FROM ufn_calendarintegration_credentials($corpid, $orgid, $id, $email, $type, $credentials, $timezone)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CALENDAR_INTEGRATION_CREDENTIALS_DISCONNECT: {
+        query: "SELECT * FROM ufn_calendarintegration_credentials_disconnect($corpid, $orgid, $id)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CALENDAR_INTEGRATION_CREDENTIALS_CLEAN: {
+        query: "SELECT * FROM ufn_calendarintegration_credentials_clean($id, $email)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CALENDAR_INTEGRATION_CREDENTIALS_SEL: {
+        query: "SELECT * FROM ufn_calendarintegration_credentials_sel($id)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CALENDAREVENT_INTEGRATION_CREDENTIALS_SEL: {
+        query: "SELECT * FROM ufn_calendareventintegration_credentials_sel($corpid, $orgid, $id)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CALENDAR_INTEGRATION_SYNC: {
+        query: "SELECT * FROM ufn_calendarintegration_sync($id, $email, $timezone, $updated, $nextsynctoken, $table)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CALENDAR_INTEGRATION_WATCH: {
+        query: "SELECT * FROM ufn_calendarintegration_watch($id, $email, $watchid, $resourceid, $watchexpiredate)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_PAYMENTORDER_SEL: {
+        query: "SELECT * FROM ufn_paymentorder_sel($corpid, $orgid, $conversationid, $personid, $paymentorderid, $ordercode)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PAYMENTORDER_PAYMENT: {
+        query: "SELECT * FROM ufn_paymentorder_payment($corpid, $orgid, $paymentorderid, $paymentby, $culqiamount, $chargeid, $chargetoken, $chargejson, $tokenid, $tokenjson)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CHARGE_PAYMENTORDER_INS: {
+        query: "SELECT * FROM ufn_charge_paymentorder_ins($corpid, $orgid, $id, $paymentorderid, $description, $type, $status, $amount, $currency, $paidby, $orderid, $orderjson, $email, $tokenid, $capture, $tokenjson, $chargetoken, $chargejson, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CRON_POSTHISTORY_INSIGHT_SEL: {
+        query: "SELECT * FROM ufn_cron_posthistory_insight_sel()",
         module: "",
         protected: "SELECT"
     },
