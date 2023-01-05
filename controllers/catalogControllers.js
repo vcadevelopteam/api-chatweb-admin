@@ -33,18 +33,17 @@ const metaBusinessIns = async (corpid, orgid, id, businessid, businessname, acce
 }
 
 const metaBusinessSel = async (corpid, orgid, id, requestid) => {
-    const queryResult = await triggerfunctions.executesimpletransaction("UFN_METABUSINESS_SEL", {
-        corpid: corpid,
-        orgid: orgid,
-        id: id,
-        _requestid: requestid,
-    });
-
-    if (queryResult instanceof Array) {
-        return queryResult;
-    }
-
-    return null;
+        const queryResult = await triggerfunctions.executesimpletransaction("UFN_METABUSINESS_SEL", {
+            corpid: corpid,
+            orgid: orgid,
+            id: id,
+            _requestid: requestid,
+        });
+        if (queryResult instanceof Array) {
+            return queryResult;
+        }
+    
+        return null;
 }
 
 exports.getBusinessList = async (request, response) => {
@@ -97,39 +96,82 @@ exports.getBusinessList = async (request, response) => {
     }
 }
 
-exports.createCatalog = async (req, res) => {
-    try {
-        const { name, businessid } = req.body;
+exports.managmentCatalog = async (request, response) => {
+     //const { corpid, orgid } = request.user;
+    const {operation, metabusinessid } = request.body;
+    var responsedata = genericfunctions.generateResponseData(request._requestid);
 
-        const data = { "name": name }
+    let businessresponse = await metaBusinessSel(1, 1, metabusinessid, request._requestid);
+    let accessToken = businessresponse[0].accesstoken;
+    let businessid = businessresponse[0].businessid;
+    const config = { headers: { Authorization: 'Bearer ' + accessToken, } };
 
-        const token = "EAAeSP9wcsHQBAFZB58CnwsX31r8tHOA1nd6ZBr1aZAmZBqZCldYt6RjrEOlnLiJkZAZCwtYJpiySMB4Q5ohqglNb4rBAZBI48OzTAsMMizlEEwq98FZCHDkeNQbrcp5XwwvxyEKSjvgHs0GJokXroA1Ielp0MQ0x1H3DWMmbool3AVDKleJ3lXZAKt";
-        const url = `https://graph.facebook.com/${businessid}/owned_product_catalogs`;
-        const config = { headers: { Authorization: 'Bearer ' + token, } };
+    switch (operation) {
+        case "CREATE":
+            try {
+                const {namecatalog} = request.body;
+        
+                const url = `https://graph.facebook.com/${businessid}/owned_product_catalogs`;
+        
+                const result = await axios.post(url, {name: namecatalog}, config);
+                console.log(result.data)
+                responsedata = genericfunctions.changeResponseData(responsedata, null, result.data, null, 200, true);
 
-        const result = await axios.post(url, data, config);
-        console.log(result.data);
-        return res.status(200).json(result.data);
+                return response.status(responsedata.status).json(responsedata);
+                
+            } catch (error) {
+                return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+                
+            }
+            break;
+        case "EDIT":
+            try {
+                const { catalogid } = req.body;
 
-    } catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+                const url = `https://graph.facebook.com/${catalogid}`;
+        
+                const result = await axios.get(url, config);
+                responsedata = genericfunctions.changeResponseData(responsedata, null, result.data, null, 200, true);
+
+                return response.status(responsedata.status).json(responsedata);
+                
+            } catch (error) {
+                return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+            }
+        break;
+        case "DELETE":
+            try {
+                const { catalogid } = req.body;
+
+                const url = `https://graph.facebook.com/${catalogid}`;
+        
+                const result = await axios.delete(url, config);
+
+                responsedata = genericfunctions.changeResponseData(responsedata, null, result.data, null, 200, true);
+                return response.status(responsedata.status).json(responsedata);
+                
+            } catch (error) {
+                return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+            }
+        break;
+        case "ALL":
+            try {
+
+                const url = `https://graph.facebook.com/${businessid}/owned_product_catalogs`;
+        
+                const result = await axios.get(url, config);
+
+                responsedata = genericfunctions.changeResponseData(responsedata, null, result.data, null, 200, true);
+                return response.status(responsedata.status).json(responsedata);
+                
+            } catch (error) {
+                return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+            }
+        break;
+        default:
+            break;
     }
 
-}
-exports.getAllCatalog = async (req, res) => {
-    try {
-        const { businessid } = req.body;
-
-        const token = "EAAeSP9wcsHQBAFZB58CnwsX31r8tHOA1nd6ZBr1aZAmZBqZCldYt6RjrEOlnLiJkZAZCwtYJpiySMB4Q5ohqglNb4rBAZBI48OzTAsMMizlEEwq98FZCHDkeNQbrcp5XwwvxyEKSjvgHs0GJokXroA1Ielp0MQ0x1H3DWMmbool3AVDKleJ3lXZAKt";
-        const url = `https://graph.facebook.com/${businessid}/owned_product_catalogs`;
-        const config = { headers: { Authorization: 'Bearer ' + token, } };
-
-        const result = await axios.get(url, config);
-        console.log(result.data);
-        return res.status(200).json(result.data);
-    } catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
-    }
 }
 
 exports.getAllBusiness = async (req, res) => {
@@ -146,22 +188,4 @@ exports.getAllBusiness = async (req, res) => {
     } catch (exception) {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
-}
-
-exports.deleteCatalog = async (req, res) => {
-    try {
-        const { catalogid } = req.body;
-
-        const token = "EAAeSP9wcsHQBAFZB58CnwsX31r8tHOA1nd6ZBr1aZAmZBqZCldYt6RjrEOlnLiJkZAZCwtYJpiySMB4Q5ohqglNb4rBAZBI48OzTAsMMizlEEwq98FZCHDkeNQbrcp5XwwvxyEKSjvgHs0GJokXroA1Ielp0MQ0x1H3DWMmbool3AVDKleJ3lXZAKt";
-        const url = `https://graph.facebook.com/${catalogid}`;
-        const config = { headers: { Authorization: 'Bearer ' + token, } };
-
-        const result = await axios.delete(url, config);
-        console.log(result.data);
-        return res.status(200).json(result.data);
-
-    } catch (error) {
-        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
-    }
-
 }
