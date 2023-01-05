@@ -28,5 +28,10 @@ router.get("/business",
     catalogController.getAllBusiness
 )
 
+router.post("/managment",
+    catalogController.managmentCatalog
+)
+
+
 
 module.exports = router;
