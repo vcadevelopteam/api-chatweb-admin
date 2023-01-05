@@ -14,8 +14,8 @@ exports.reply = async (req, res) => {
         }
 
         data.fromasesor = "fromasesor";
-        setSessionParameters(data, req.user, req._requestid);
-        /*
+        //setSessionParameters(data, req.user, req._requestid);
+        
         if (!data.corpid)
             data.p_corpid = req.user.corpid ? req.user.corpid : 1;
         if (!data.orgid)
@@ -24,7 +24,7 @@ exports.reply = async (req, res) => {
             data.username = req.user.usr;
         if (!data.userid)
             data.p_userid = req.user.userid;
-*/
+
         data.agentName = req.user.fullname;
 
         const responseservices = await axios.post(
@@ -93,8 +93,8 @@ exports.close = async (req, res) => {
         }
 
         data.fromasesor = "fromasesor";
-        setSessionParameters(data, req.user, req._requestid);
-        /*
+        //setSessionParameters(data, req.user, req._requestid);
+        
         if (!data.corpid)
             data.p_corpid = req.user.corpid ? req.user.corpid : 1;
         if (!data.orgid)
@@ -103,7 +103,7 @@ exports.close = async (req, res) => {
             data.p_username = req.user.usr;
         if (!data.userid)
             data.p_userid = req.user.userid;
-        */
+        
         data.closeby = "USER";
         data.p_status = "CERRADO";
 
