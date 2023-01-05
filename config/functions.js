@@ -2206,6 +2206,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CHATFLOW_METACATALOG_LST: {
+        query: "SELECT * FROM ufn_chatflow_metacatalog_lst($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CHATFLOW_PRODUCTCATALOG_LST: {
         query: "SELECT * FROM ufn_chatflow_productcatalog_lst($corpid, $orgid)",
         module: "",
