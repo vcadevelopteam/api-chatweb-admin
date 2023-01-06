@@ -33,7 +33,7 @@ const getXmlFile = (data, metacatalogid, override) => {
     let simplifiedData = jsondata.rss.channel.item.map(x => {
         let customlabels = Object.keys(x).filter(y => y.indexOf("custom_label") >= 0);
         var table = {
-            metacatalogcatalogid: metacatalogcatalogid || 0,
+            metacatalogid: metacatalogid || 0,
             productid: x["g:id"] || null,
             title: x["g:title"] || null,
             link: x["g:link"] || null,
