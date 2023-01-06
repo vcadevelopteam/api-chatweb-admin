@@ -46,6 +46,30 @@ const metaBusinessSel = async (corpid, orgid, id, requestid) => {
         return null;
 }
 
+const metacatalogins = async (corpid, orgid, metabusinessid, id, catalogid, catalogname, catalogdescription, catalogtype, description, status, type, username, operation) => {
+    const queryResult = await triggerfunctions.executesimpletransaction("UFN_METACATALOG_INS", {
+        corpid: corpid,
+        orgid: orgid,
+        metabusinessid: metabusinessid,
+        id: id,
+        catalogid: catalogid,
+        catalogname: catalogname,
+        catalogdescription: catalogdescription,
+        catalogtype: catalogtype,
+        description: description,
+        status: status,
+        type: type, 
+        username: username,
+        operation: operation,
+      
+    });
+    if (queryResult instanceof Array) {
+        return queryResult;
+    }
+
+    return null;
+}
+
 exports.getBusinessList = async (request, response) => {
     try {
         const { corpid, orgid, usr } = request.user;
@@ -96,81 +120,96 @@ exports.getBusinessList = async (request, response) => {
     }
 }
 
-exports.managmentCatalog = async (request, response) => {
-     //const { corpid, orgid } = request.user;
-    const {operation, metabusinessid } = request.body;
-    var responsedata = genericfunctions.generateResponseData(request._requestid);
 
-    let businessresponse = await metaBusinessSel(1, 1, metabusinessid, request._requestid);
-    let accessToken = businessresponse[0].accesstoken;
-    let businessid = businessresponse[0].businessid;
-    const config = { headers: { Authorization: 'Bearer ' + accessToken, } };
+exports.managecatalog = async (request, response) => {
+    
+    //const { corpid, orgid } = request.user;
+    
+   console.log(request.body)
+    
+   const {operation, metabusinessid } = request.body;
+   var responsedata = genericfunctions.generateResponseData(request._requestid);
 
-    switch (operation) {
-        case "CREATE":
-            try {
-                const {namecatalog} = request.body;
-        
-                const url = `https://graph.facebook.com/${businessid}/owned_product_catalogs`;
-        
-                const result = await axios.post(url, {name: namecatalog}, config);
-                console.log(result.data)
-                responsedata = genericfunctions.changeResponseData(responsedata, null, result.data, null, 200, true);
+   let businessresponse = await metaBusinessSel(1, 1, metabusinessid, request._requestid);
+   let accessToken = businessresponse[0].accesstoken;
+   let businessid = businessresponse[0].businessid;
+   const config = { headers: { Authorization: 'Bearer ' + accessToken, } };
 
-                return response.status(responsedata.status).json(responsedata);
-                
-            } catch (error) {
-                return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
-                
-            }
-            break;
-        case "EDIT":
-            try {
-                const { catalogid } = req.body;
 
-                const url = `https://graph.facebook.com/${catalogid}`;
-        
-                const result = await axios.get(url, config);
-                responsedata = genericfunctions.changeResponseData(responsedata, null, result.data, null, 200, true);
+   switch (operation) {
+       case "CREATE":
+           try {
+               const {catalogdescription, catalogname , catalogtype, description, id, operation, status, type} = request.body;
+       
+               const url = `https://graph.facebook.com/${businessid}/owned_product_catalogs`;
+       
+               const result = await axios.post(url, {name: catalogname}, config);
 
-                return response.status(responsedata.status).json(responsedata);
-                
-            } catch (error) {
-                return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
-            }
-        break;
-        case "DELETE":
-            try {
-                const { catalogid } = req.body;
+               const metacatalogid = result.data.id
 
-                const url = `https://graph.facebook.com/${catalogid}`;
-        
-                const result = await axios.delete(url, config);
+               let catalogResponse = await metacatalogins(1,1,metabusinessid,id,metacatalogid,catalogname,catalogdescription,catalogtype,description,status,type,'KEVIN',operation);
 
-                responsedata = genericfunctions.changeResponseData(responsedata, null, result.data, null, 200, true);
-                return response.status(responsedata.status).json(responsedata);
-                
-            } catch (error) {
-                return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
-            }
-        break;
-        case "ALL":
-            try {
+               responsedata = genericfunctions.changeResponseData(responsedata, catalogResponse, result.data, null, 200, true);
 
-                const url = `https://graph.facebook.com/${businessid}/owned_product_catalogs`;
-        
-                const result = await axios.get(url, config);
+               return response.status(responsedata.status).json(responsedata);
+               
+           } catch (exception) {
+               console.log(exception)
+               return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+               
+           }
+           break;
+       case "EDIT":
+           try {
+               const { catalogid } = req.body;
 
-                responsedata = genericfunctions.changeResponseData(responsedata, null, result.data, null, 200, true);
-                return response.status(responsedata.status).json(responsedata);
-                
-            } catch (error) {
-                return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
-            }
-        break;
-        default:
-            break;
-    }
+               const url = `https://graph.facebook.com/${catalogid}`;
+       
+               const result = await axios.get(url, config);
+               responsedata = genericfunctions.changeResponseData(responsedata, null, result.data, null, 200, true);
+
+               return response.status(responsedata.status).json(responsedata);
+               
+           } catch (error) {
+               return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+           }
+       break;
+       case "DELETE":
+           try {
+               const { catalogid } = request.body;
+
+               const url = `https://graph.facebook.com/${catalogid}`;
+       
+               //const result = await axios.delete(url, config);
+
+               let catalogResponse = await metacatalogins(1,1,metabusinessid,3,catalogid,'sdadasdasdasd','catalogdescription','catalogtype','','ELIMINADO','','KEVIN','DELETE');
+
+
+               responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
+               return response.status(responsedata.status).json(responsedata);
+               
+           } catch (exception) {
+               console.log(exception)
+               return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+           }
+       break;
+       case "ALL":
+           try {
+
+               const url = `https://graph.facebook.com/${businessid}/owned_product_catalogs`;
+       
+               const result = await axios.get(url, config);
+
+               responsedata = genericfunctions.changeResponseData(responsedata, null, result.data, null, 200, true);
+               return response.status(responsedata.status).json(responsedata);
+               
+           } catch (error) {
+               return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+           }
+       break;
+       default:
+           break;
+   }
 
 }
 
