@@ -13,15 +13,15 @@ exports.getFileRequest = async ({ method = "post", url, data = undefined, header
     });
 }
 
-exports.extractDataFile = (isxml, data, catalogid, catalogname, override) => {
+exports.extractDataFile = (isxml, data, metacatalogid, override) => {
     if (isxml) {
-        return getXmlFile(data, catalogid, catalogname, override);
+        return getXmlFile(data, metacatalogid, override);
     } else {
-        return getXlsxFile(data, catalogid, catalogname, override);
+        return getXlsxFile(data, metacatalogid, override);
     }
 }
 
-const getXmlFile = (data, catalogid, catalogname, override) => {
+const getXmlFile = (data, metacatalogid, override) => {
     let isvalid = true;
 
     const jsondata = JSON.parse((xml2json.toJson(data) || '').split("{}").join("null"));
@@ -33,6 +33,7 @@ const getXmlFile = (data, catalogid, catalogname, override) => {
     let simplifiedData = jsondata.rss.channel.item.map(x => {
         let customlabels = Object.keys(x).filter(y => y.indexOf("custom_label") >= 0);
         var table = {
+            metacatalogcatalogid: metacatalogcatalogid || 0,
             productid: x["g:id"] || null,
             title: x["g:title"] || null,
             link: x["g:link"] || null,
@@ -54,8 +55,6 @@ const getXmlFile = (data, catalogid, catalogname, override) => {
             customlabel4: x["g:custom_label_3"] || null,
             customlabel5: x["g:custom_label_4"] || null,
             labels: customlabels ? customlabels.map(y => typeof x[y] === "object" ? JSON.stringify(x[y]) : x[y]).join(',') : null,
-            catalogid: catalogid || null,
-            catalogname: catalogname || null,
             description: x["g:description"],
             status: x["g:status"] || 'ACTIVO',
             type: x["g:type"] || '',
@@ -77,7 +76,7 @@ const getXmlFile = (data, catalogid, catalogname, override) => {
     }
 }
 
-const getXlsxFile = (data, catalogid, catalogname, override) => {
+const getXlsxFile = (data, metacatalogid, override) => {
     let isvalid = true;
 
     const workbook = xlsx.read(data);
@@ -89,6 +88,7 @@ const getXlsxFile = (data, catalogid, catalogname, override) => {
     let simplifiedData = dataRows.map((field) => {
         let customlabels = [field.custom_label_0, field.custom_label_1, field.custom_label_2, field.custom_label_3, field.custom_label_4];
         var table = {
+            metacatalogid: metacatalogid || null,
             productid: field.id || null,
             title: field.title || null,
             description: field.description,
@@ -111,8 +111,6 @@ const getXlsxFile = (data, catalogid, catalogname, override) => {
             customlabel4: field.custom_label_3 || null,
             customlabel5: field.custom_label_4 || null,
             labels: customlabels ? customlabels.join(',') : null,
-            catalogid: catalogid || null,
-            catalogname: catalogname || null,
             status: field.status || 'ACTIVO',
             type: field.type || '',
         }

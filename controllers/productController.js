@@ -9,7 +9,7 @@ const { getFileRequest, extractDataFile } = require('../config/productCatalog.he
 
 exports.import = async (req, res) => {
     try {
-        const { corpid, orgid, url, catalogid, catalogname, username, isxml, override } = req.body;
+        const { corpid, orgid, metacatalogid, url, username, isxml, override } = req.body;
 
         let isvalid = true;
 
@@ -19,12 +19,12 @@ exports.import = async (req, res) => {
         });
 
         if (file_response_request.status === 200) {
-            let dataToInsert = extractDataFile(isxml, file_response_request.data, catalogid, catalogname, override);
+            let dataToInsert = extractDataFile(isxml, file_response_request.data, metacatalogid, override);
 
             if (dataToInsert) {
                 if (isvalid || override) {
                     const productCatalog_result = await executesimpletransaction("UFN_PRODUCTCATALOG_INS_ARRAY", {
-                        corpid, orgid, catalogid, catalogname, username: username || "admin", table: JSON.stringify(dataToInsert),
+                        corpid, orgid, metacatalogid, username: username || "admin", table: JSON.stringify(dataToInsert),
                         _requestid: req._requestid,
                     });
 
