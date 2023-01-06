@@ -144,7 +144,7 @@ exports.managecatalog = async (request, response) => {
    let businessresponse = await metaBusinessSel(corpid, orgid, metabusinessid, request._requestid);
    let accessToken = businessresponse[0].accesstoken;
    let businessid = businessresponse[0].businessid;
-   const config = { headers: { Authorization: 'Bearer ' + accessToken, } };
+   const config = { Authorization: 'Bearer ' + accessToken };
 
    switch (operation) {
        case "CREATE":
@@ -153,7 +153,17 @@ exports.managecatalog = async (request, response) => {
        
                const url = `https://graph.facebook.com/${businessid}/owned_product_catalogs?fields=name,vertical`;
        
-               const result = await axios.post(url, {name: catalogname, vertical: catalogtype}, config);
+               //const result = await axios.post(url, {name: catalogname, vertical: catalogtype}, config);
+               const result = await axiosObservable({
+                    data: {
+                        name: catalogname,
+                        vertical: catalogtype
+                    },
+                    url:url,
+                    headers:config,
+                    method: 'post',
+                    _requestid: request._requestid,
+                });
 
                const metacatalogid = result.data.id
 
@@ -181,11 +191,19 @@ exports.managecatalog = async (request, response) => {
                console.log(catalagoresponse)
                let metacatalogid = catalagoresponse[0].catalogid;
        */
-               const config = { headers: { Authorization: 'Bearer ' + accessToken, } };
-       
 
                const url = `https://graph.facebook.com/${catalogid}`;
-               const result = await axios.post(url,{name: catalogname, vertical: catalogtype}, config);
+               //const result = await axios.post(url,{name: catalogname, vertical: catalogtype}, config);
+               const result = await axiosObservable({
+                    data: {
+                        name: catalogname,
+                        vertical: catalogtype
+                    },
+                    url:url,
+                    headers:config,
+                    method: 'post',
+                    _requestid: request._requestid,
+                });
 
                let catalogResponse = await metacatalogins(corpid, orgid ,metabusinessid,id,catalogid,catalogname,catalogdescription,catalogtype,description,status,type,usr,operation);
 
@@ -205,10 +223,15 @@ exports.managecatalog = async (request, response) => {
 
                const url = `https://graph.facebook.com/${catalogid}`;
 
-               const result = await axios.delete(url, config);
+               //const result = await axios.delete(url, config);
+               const result = await axiosObservable({
+                    url:url,
+                    headers:config,
+                    method: 'delete',
+                    _requestid: request._requestid,
+                });
 
                let catalogResponse = await metacatalogins(corpid,orgid,metabusinessid,metacatalogid,catalogid,catalogname,catalogdescription,catalogtype, description ,status,type,usr,operation);
-
 
                responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                return response.status(responsedata.status).json(responsedata);
