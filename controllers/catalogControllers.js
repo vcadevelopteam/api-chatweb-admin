@@ -137,7 +137,7 @@ exports.getBusinessList = async (request, response) => {
 
 exports.managecatalog = async (request, response) => {
     const { corpid, orgid, usr } = request.user;
-    
+
    const {operation, metabusinessid } = request.body;
    var responsedata = genericfunctions.generateResponseData(request._requestid);
 
@@ -145,7 +145,6 @@ exports.managecatalog = async (request, response) => {
    let accessToken = businessresponse[0].accesstoken;
    let businessid = businessresponse[0].businessid;
    const config = { headers: { Authorization: 'Bearer ' + accessToken, } };
-
 
    switch (operation) {
        case "CREATE":
@@ -172,12 +171,8 @@ exports.managecatalog = async (request, response) => {
            break;
        case "EDIT":
            try {
-               //const {metabusinessid , catalogname , catalogtype, description, operation, status,} = request.body;
-               console.log(request.body)
                const {catalogdescription , catalogid , catalogname, catalogtype, description, id, metabusinessid, operation, status, type} = request.body;
                
-               const { corpid, orgid, usr } = request.user;
-  
                var responsedata = genericfunctions.generateResponseData(request._requestid);
           
 /*
@@ -204,14 +199,15 @@ exports.managecatalog = async (request, response) => {
            }
        break;
        case "DELETE":
+
            try {
-               const { catalogid } = request.body;
+               const { metabusinessid, metacatalogid ,catalogid, catalogname, catalogdescription, catalogtype, description, status, type} = request.body;
 
                const url = `https://graph.facebook.com/${catalogid}`;
 
-               //const result = await axios.delete(url, config);
+               const result = await axios.delete(url, config);
 
-               let catalogResponse = await metacatalogins(1,1,metabusinessid,3,catalogid,'sdadasdasdasd','catalogdescription','catalogtype','','ELIMINADO','','KEVIN','DELETE');
+               let catalogResponse = await metacatalogins(corpid,orgid,metabusinessid,metacatalogid,catalogid,catalogname,catalogdescription,catalogtype, description ,status,type,usr,operation);
 
 
                responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
@@ -221,6 +217,7 @@ exports.managecatalog = async (request, response) => {
                console.log(exception)
                return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
            }
+           
        break;
 
        default:
