@@ -10,14 +10,16 @@ router.post("/getbusinesslist",
     catalogController.getBusinessList
 )
 
-router.get("/business",
-    catalogController.getAllBusiness
+router.post("/synchrocatalog",
+    ip,
+    auth,
+    catalogController.synchrocatalog
 )
 
 router.post("/managecatalog",
+    ip,
+    auth,
     catalogController.managecatalog
 )
-
-
 
 module.exports = router;

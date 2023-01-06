@@ -1041,98 +1041,98 @@ module.exports = {
     },
     uniquecontacts: {
         name: {
-            column:"pe.name"
+            column: "pe.name"
         },
         channels: {
-            column:"cc.description"
+            column: "cc.description"
         },
         firstcontact: {
-            column:"pe.firstcontact + p_offset * INTERVAL '1HOUR'",
+            column: "pe.firstcontact + p_offset * INTERVAL '1HOUR'",
             type: "date"
         },
         lastcontact: {
-            column:"pe.lastcontact + p_offset * INTERVAL '1HOUR'",
+            column: "pe.lastcontact + p_offset * INTERVAL '1HOUR'",
             type: "date"
         },
         phone: {
-            column:"pe.phone"
+            column: "pe.phone"
         },
         email: {
-            column:"pe.email"
+            column: "pe.email"
         },
         status: {
-            column:"pe.status"
+            column: "pe.status"
         },
     },
     uniquecontactsconversation: {
-        ticketnum:{
+        ticketnum: {
             column: "co.ticketnum"
         },
-        
-        startdate:{
+
+        startdate: {
             column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'YYYY-MM-DD')"
         },
-        starttime:{
+        starttime: {
             column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'HH24:MI:SS')"
         },
-        finishdate:{
+        finishdate: {
             column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'YYYY-MM-DD')"
         },
-        finishtime:{
+        finishtime: {
             column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'HH24:MI:SS')"
         },
-        channel:{
+        channel: {
             column: "cc.description"
         },
-        origin:{
+        origin: {
             column: "co.origin"
         },
-        name:{
+        name: {
             column: "pe.name"
         },
-        email:{
+        email: {
             column: "pe.email"
         },
-        phone:{
+        phone: {
             column: "pe.phone"
         },
-        closetype:{
+        closetype: {
             column: "coalesce(dom_cierre.domaindesc, co.closetype, 'Cierre automático')"
         },
-        asesor:{
+        asesor: {
             column: "concat(usr.firstname, ' ', usr.lastname)"
         },
-        usergroup:{
+        usergroup: {
             column: "co.usergroup"
         },
-        usertype:{
+        usertype: {
             column: "ous.type"
         },
-        handoffdate:{
+        handoffdate: {
             column: "to_char(co.handoffdate + p_offset * INTERVAL '1HOUR', 'YYYY-MM-DD')"
         },
-        handoofftime:{
+        handoofftime: {
             column: "to_char(co.handoffdate + p_offset * INTERVAL '1HOUR', 'HH24:MI:SS')"
         },
-        tmo:{
+        tmo: {
             column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (CASE WHEN co.status = 'CERRADO' THEN co.totalduration ELSE NOW() - co.startdate END))::text || ' seconds ')::interval, 'HH24:MI:SS'),'00:00:00')"
         },
-        tmeasesor:{
+        tmeasesor: {
             column: "date_trunc('seconds', co.userfirstreplytime)::text"
         },
-        pauseduration:{
+        pauseduration: {
             column: "date_trunc('seconds',co.totalpauseduration)::text"
         },
-        tdatime:{
+        tdatime: {
             column: "date_trunc('seconds',co.tdatime)::text"
         },
-        tmrasesor:{
+        tmrasesor: {
             column: "date_trunc('seconds',co.useraveragereplytime)::text"
         },
-        balancetimes:{
+        balancetimes: {
             column: "COALESCE(co.balancetimes,0)"
         },
-        tmoasesor:{
+        tmoasesor: {
             column: "COALESCE(TO_CHAR((EXTRACT(EPOCH FROM (CASE WHEN co.status = 'CERRADO' THEN NULLIF(GREATEST('00:00:00'::INTERVAL, co.totalduration - co.pausedurationafteruser - co.firstassignedtime - co.botduration),'00:00:00') ELSE GREATEST('00:00:00'::INTERVAL, NOW() - co.startdate - co.pausedurationafteruser - co.firstassignedtime - co.botduration) END))::text || ' seconds ')::interval, 'HH24:MI:SS'), '00:00:00')"
         },
     },
@@ -1173,31 +1173,37 @@ module.exports = {
             type: "number"
         },
         catalogname: {
-            column: "p.catalogname"
+            column: "mc.catalogname"
         },
         catalogid: {
-            column: "p.catalogid"
+            column: "mc.catalogid"
         },
         productid: {
             column: "p.productid"
+        },
+        gender: {
+            column: "p.gender"
+        },
+        condition: {
+            column: "p.condition"
         },
         status: {
             column: "p.status"
         },
         customlabel1: {
-            column: "p.customlabel1"
+            column: "p.customlabel0"
         },
         customlabel2: {
-            column: "p.customlabel2"
+            column: "p.customlabel1"
         },
         customlabel3: {
-            column: "p.customlabel3"
+            column: "p.customlabel2"
         },
         customlabel4: {
-            column: "p.customlabel4"
+            column: "p.customlabel3"
         },
         customlabel5: {
-            column: "p.customlabel5"
+            column: "p.customlabel4"
         },
     }
 }
