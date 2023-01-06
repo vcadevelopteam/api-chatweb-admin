@@ -88,7 +88,7 @@ const getXlsxFile = (data, metacatalogid, override) => {
     let simplifiedData = dataRows.map((field) => {
         let customlabels = [field.custom_label_0, field.custom_label_1, field.custom_label_2, field.custom_label_3, field.custom_label_4];
         var table = {
-            metacatalogid: metacatalogid || null,
+            metacatalogid: metacatalogid || 0,
             productid: field.id || null,
             title: field.title || null,
             description: field.description,
