@@ -10,26 +10,12 @@ router.post("/getbusinesslist",
     catalogController.getBusinessList
 )
 
-// router.post("/",
-//     catalogController.createCatalog
-// )
-
-// // all catalog
-// router.get("/",
-//     catalogController.getAllCatalog
-// )
-
-// router.delete("/",
-//     catalogController.deleteCatalog
-// )
-
-
 router.get("/business",
     catalogController.getAllBusiness
 )
 
-router.post("/managment",
-    catalogController.managmentCatalog
+router.post("/managecatalog",
+    catalogController.managecatalog
 )
 
 
