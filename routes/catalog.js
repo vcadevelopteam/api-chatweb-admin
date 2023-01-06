@@ -11,8 +11,8 @@ router.post("/getbusinesslist",
 )
 
 router.post("/synchrocatalog",
-ip,
-auth,
+    ip,
+    auth,
     catalogController.synchrocatalog
 )
 
