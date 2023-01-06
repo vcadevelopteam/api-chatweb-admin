@@ -2182,7 +2182,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PRODUCTCATALOG_INS: {
-        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $id, $productid, $title, $link, $imagelink, $additionalimagelink, $brand, $condition, $availability, $category, $material, $color, $pattern, $currency, $price, $saleprice, $customlabel1, $customlabel2, $customlabel3, $customlabel4, $customlabel5, $labels, $catalogid, $catalogname, $description, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $metacatalogid, $id, $productid, $title, $link, $imagelink, $additionalimagelink, $brand, $condition, $availability, $category, $material, $color, $pattern, $currency, $price, $saleprice, $customlabel1, $customlabel2, $customlabel3, $customlabel4, $customlabel5, $labels, $description, $status, $type, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -2944,7 +2944,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PRODUCTCATALOG_INS_ARRAY: {
-        query: "SELECT * FROM ufn_productcatalog_ins_array($corpid, $orgid, $catalogid, $catalogname, $username, $table)",
+        query: "SELECT * FROM ufn_productcatalog_ins_array($corpid, $orgid, $metacatalogid, $username, $table)",
         module: "",
         protected: "INSERT"
     },
