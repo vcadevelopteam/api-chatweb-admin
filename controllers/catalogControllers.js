@@ -33,20 +33,37 @@ const metaBusinessIns = async (corpid, orgid, id, businessid, businessname, acce
 }
 
 const metaBusinessSel = async (corpid, orgid, id, requestid) => {
-        const queryResult = await triggerfunctions.executesimpletransaction("UFN_METABUSINESS_SEL", {
-            corpid: corpid,
-            orgid: orgid,
-            id: id,
-            _requestid: requestid,
-        });
-        if (queryResult instanceof Array) {
-            return queryResult;
-        }
-    
-        return null;
+    const queryResult = await triggerfunctions.executesimpletransaction("UFN_METABUSINESS_SEL", {
+        corpid: corpid,
+        orgid: orgid,
+        id: id,
+        _requestid: requestid,
+    });
+
+    if (queryResult instanceof Array) {
+        return queryResult;
+    }
+
+    return null;
 }
 
-const metacatalogins = async (corpid, orgid, metabusinessid, id, catalogid, catalogname, catalogdescription, catalogtype, description, status, type, username, operation) => {
+const metaCatalogSel = async (corpid, orgid, metabusinessid, metacatalogid, requestid) => {
+    const queryResult = await triggerfunctions.executesimpletransaction("UFN_METACATALOG_SEL", {
+        corpid: corpid,
+        orgid: orgid,
+        metabusinessid: metabusinessid,
+        id: metacatalogid,
+        _requestid: requestid,
+    });
+
+    if (queryResult instanceof Array) {
+        return queryResult;
+    }
+
+    return null;
+}
+
+const metaCatalogIns = async (corpid, orgid, metabusinessid, id, catalogid, catalogname, catalogdescription, catalogtype, description, status, type, username, operation, requestid) => {
     const queryResult = await triggerfunctions.executesimpletransaction("UFN_METACATALOG_INS", {
         corpid: corpid,
         orgid: orgid,
@@ -58,11 +75,12 @@ const metacatalogins = async (corpid, orgid, metabusinessid, id, catalogid, cata
         catalogtype: catalogtype,
         description: description,
         status: status,
-        type: type, 
+        type: type,
         username: username,
         operation: operation,
-      
+        _requestid: requestid,
     });
+
     if (queryResult instanceof Array) {
         return queryResult;
     }
@@ -122,108 +140,145 @@ exports.getBusinessList = async (request, response) => {
 
 
 exports.managecatalog = async (request, response) => {
-    
-    //const { corpid, orgid } = request.user;
-    
-   console.log(request.body)
-    
-   const {operation, metabusinessid } = request.body;
-   var responsedata = genericfunctions.generateResponseData(request._requestid);
+    try {
+        const { corpid, orgid, usr } = request.user;
+        const { operation, metabusinessid } = request.body;
 
-   let businessresponse = await metaBusinessSel(1, 1, metabusinessid, request._requestid);
-   let accessToken = businessresponse[0].accesstoken;
-   let businessid = businessresponse[0].businessid;
-   const config = { headers: { Authorization: 'Bearer ' + accessToken, } };
+        var responsedata = genericfunctions.generateResponseData(request._requestid);
 
+        const businessresponse = await metaBusinessSel(corpid, orgid, metabusinessid, request._requestid);
 
-   switch (operation) {
-       case "CREATE":
-           try {
-               const {catalogdescription, catalogname , catalogtype, description, id, operation, status, type} = request.body;
-       
-               const url = `https://graph.facebook.com/${businessid}/owned_product_catalogs`;
-       
-               const result = await axios.post(url, {name: catalogname}, config);
+        if (businessresponse) {
+            let accessToken = businessresponse[0].accesstoken;
+            let businessid = businessresponse[0].businessid;
 
-               const metacatalogid = result.data.id
+            const config = { Authorization: 'Bearer ' + accessToken };
 
-               let catalogResponse = await metacatalogins(1,1,metabusinessid,id,metacatalogid,catalogname,catalogdescription,catalogtype,description,status,type,'KEVIN',operation);
+            switch (operation) {
+                case "CREATE":
+                    if (accessToken) {
+                        const { catalogdescription, catalogname, catalogtype, description, id, operation, status, type } = request.body;
 
-               responsedata = genericfunctions.changeResponseData(responsedata, catalogResponse, result.data, null, 200, true);
+                        const result = await axiosObservable({
+                            data: {
+                                description: catalogdescription,
+                                name: catalogname,
+                                vertical: catalogtype,
+                            },
+                            headers: config,
+                            method: 'post',
+                            url: `https://graph.facebook.com/${businessid}/owned_product_catalogs?fields=name,vertical`,
+                            _requestid: request._requestid,
+                        });
 
-               return response.status(responsedata.status).json(responsedata);
-               
-           } catch (exception) {
-               console.log(exception)
-               return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
-               
-           }
-           break;
-       case "EDIT":
-           try {
-               const { catalogid } = req.body;
+                        if (result?.data?.id) {
+                            const metacatalogid = result.data.id
 
-               const url = `https://graph.facebook.com/${catalogid}`;
-       
-               const result = await axios.get(url, config);
-               responsedata = genericfunctions.changeResponseData(responsedata, null, result.data, null, 200, true);
+                            let catalogResponse = await metaCatalogIns(corpid, orgid, metabusinessid, id, metacatalogid, catalogname, catalogdescription, catalogtype, description, status, type, usr, operation);
 
-               return response.status(responsedata.status).json(responsedata);
-               
-           } catch (error) {
-               return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
-           }
-       break;
-       case "DELETE":
-           try {
-               const { catalogid } = request.body;
+                            responsedata = genericfunctions.changeResponseData(responsedata, catalogResponse, result.data, null, 200, true);
+                        }
+                        else {
+                            responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_catalogcreate', result?.data, 'Error creating catalog', 400, false);
+                        }
+                    }
+                    break;
 
-               const url = `https://graph.facebook.com/${catalogid}`;
-       
-               //const result = await axios.delete(url, config);
+                case "EDIT":
+                    if (accessToken) {
+                        const { catalogdescription, catalogid, catalogname, catalogtype, description, id, metabusinessid, operation, status, type } = request.body;
 
-               let catalogResponse = await metacatalogins(1,1,metabusinessid,3,catalogid,'sdadasdasdasd','catalogdescription','catalogtype','','ELIMINADO','','KEVIN','DELETE');
+                        const result = await axiosObservable({
+                            data: {
+                                name: catalogname,
+                                vertical: catalogtype
+                            },
+                            headers: config,
+                            method: 'post',
+                            url: `https://graph.facebook.com/${catalogid}`,
+                            _requestid: request._requestid,
+                        });
 
+                        if (result?.data) {
+                            let catalogResponse = await metaCatalogIns(corpid, orgid, metabusinessid, id, catalogid, catalogname, catalogdescription, catalogtype, description, status, type, usr, operation);
 
-               responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
-               return response.status(responsedata.status).json(responsedata);
-               
-           } catch (exception) {
-               console.log(exception)
-               return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
-           }
-       break;
-       case "ALL":
-           try {
+                            responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
+                        }
+                        else {
+                            responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_catalogedit', result?.data, 'Error updating catalog', 400, false);
+                        }
+                    }
+                    break;
 
-               const url = `https://graph.facebook.com/${businessid}/owned_product_catalogs`;
-       
-               const result = await axios.get(url, config);
+                case "DELETE":
+                    if (accessToken) {
+                        const { metabusinessid, metacatalogid, catalogid, catalogname, catalogdescription, catalogtype, description, status, type } = request.body;
 
-               responsedata = genericfunctions.changeResponseData(responsedata, null, result.data, null, 200, true);
-               return response.status(responsedata.status).json(responsedata);
-               
-           } catch (error) {
-               return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
-           }
-       break;
-       default:
-           break;
-   }
+                        const result = await axiosObservable({
+                            url: `https://graph.facebook.com/${catalogid}`,
+                            headers: config,
+                            method: 'delete',
+                            _requestid: request._requestid,
+                        });
 
+                        if (result?.data) {
+                            let catalogResponse = await metaCatalogIns(corpid, orgid, metabusinessid, metacatalogid, catalogid, catalogname, catalogdescription, catalogtype, description, status, type, usr, operation);
+
+                            responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
+                        }
+                        else {
+                            responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_catalogdelete', result?.data, 'Error deleting catalog', 400, false);
+                        }
+                    }
+                    break;
+            }
+        }
+        else {
+            responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_nobusiness', null, 'Business not found', 400, false);
+        }
+
+        return response.status(responsedata.status).json(responsedata);
+    }
+    catch (exception) {
+        return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+    }
 }
 
-exports.getAllBusiness = async (req, res) => {
+exports.synchrocatalog = async (request, response) => {
     try {
+        const { corpid, orgid, usr } = request.user;
+        const { metabusinessid } = request.body;
 
-        const token = "EAAeSP9wcsHQBAFZB58CnwsX31r8tHOA1nd6ZBr1aZAmZBqZCldYt6RjrEOlnLiJkZAZCwtYJpiySMB4Q5ohqglNb4rBAZBI48OzTAsMMizlEEwq98FZCHDkeNQbrcp5XwwvxyEKSjvgHs0GJokXroA1Ielp0MQ0x1H3DWMmbool3AVDKleJ3lXZAKt";
-        const url = `https://graph.facebook.com/me/businesses`;
-        const config = { headers: { Authorization: 'Bearer ' + token, } };
+        var responsedata = genericfunctions.generateResponseData(request._requestid);
 
-        const result = await axios.get(url, config);
-        console.log(result.data);
-        return res.status(200).json(result.data);
+        const businessresponse = await metaBusinessSel(corpid, orgid, metabusinessid, request._requestid);
 
+        if (businessresponse) {
+            let accessToken = businessresponse[0].accesstoken;
+            let businessid = businessresponse[0].businessid;
+
+            const config = { headers: { Authorization: 'Bearer ' + accessToken } };
+
+            const result = await axios.get(`https://graph.facebook.com/${businessid}/owned_product_catalogs?limit=100&fields=name,description,vertical`, config);
+
+            if (result.data) {
+                const listCatalog = result.data.data;
+
+                listCatalog.forEach(async (catalog) => {
+                    await metaCatalogIns(corpid, orgid, metabusinessid, businessid, catalog.id, catalog.name, catalog.description || "", catalog.vertical, "", "ACTIVO", "", usr, "CREATE");
+                });
+
+                responsedata = genericfunctions.changeResponseData(responsedata, null, listCatalog, null, 200, true);
+            }
+            else {
+                responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_catalogget', result?.data, 'Error obtaining catalog list', 400, false);
+            }
+        }
+        else {
+            responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_nobusiness', null, 'Business not found', 400, false);
+        }
+
+        return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
