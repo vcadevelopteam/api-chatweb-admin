@@ -2,7 +2,7 @@ require('dotenv').config({ path: 'variables.env' });
 const { executesimpletransaction } = require('../../config/mobile/triggerMobileFunction');
 const { errors, getErrorCode, setSessionParameters, axiosObservable } = require('../../config/helpers');
 const { pushNotification } = require('../mobile/notificationMobileController');
-const { post } = require('moongose/routes');
+//const { post } = require('moongose/routes');
 
 exports.reply = async (req, res) => {
     try {
