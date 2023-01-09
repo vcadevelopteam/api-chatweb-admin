@@ -31,7 +31,7 @@ exports.reply = async (req, res) => {
             url: `${process.env.SERVICES}ServiceLogicHook/ProcessMessageOut`,
             method: 'post',
             data: { method: "", parameters: data },
-            _requestid: request._requestid,
+            _requestid: req._requestid,
         })
 
         if (!responseservices.data || !responseservices.data instanceof Object)
@@ -59,7 +59,7 @@ exports.reply = async (req, res) => {
             url: `${process.env.APP_MOBILE_SOCKET}inbox/sendMessageFromBotHub`,
             method: 'post',
             data: ticket,
-            _requestid: request._requestid,
+            _requestid: req._requestid,
         })
 
         res.json({ success: true });
@@ -84,7 +84,7 @@ exports.triggerBlock = async (req, res) => {
             url: `${process.env.SERVICES}handler/triggerblock`,
             method: 'post',
             data: data,
-            _requestid: request._requestid,
+            _requestid: req._requestid,
         })
 
         if (!responseservices.data || !responseservices.data instanceof Object)
@@ -125,7 +125,7 @@ exports.close = async (req, res) => {
                 url: `${process.env.SERVICES}ServiceLogicHook/closeticket`,
                 method: 'post',
                 data:  { method: "", parameters: data },
-                _requestid: request._requestid,
+                _requestid: req._requestid,
             })
             
         if (!responseservices.data || !responseservices.data instanceof Object)
@@ -151,7 +151,7 @@ exports.close = async (req, res) => {
             url: `${process.env.APP_MOBILE_SOCKET}inbox/DeleteTicketHub`,
             method: 'post',
             data:  body,
-            _requestid: request._requestid,
+            _requestid: req._requestid,
         })
         // if (!responseapp.data || !responseapp.data instanceof Object)
         //     return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
@@ -218,7 +218,7 @@ exports.reasign = async (req, res) => {
             url: `${process.env.APP_MOBILE_SOCKET}inbox/ReassignedTicketHub`,
             method: 'post',
             data:  data,
-            _requestid: request._requestid,
+            _requestid: req._requestid,
         })
 
         if (!responseapp.data || !responseapp.data instanceof Object)
@@ -257,7 +257,7 @@ exports.sendhsm = async (req, res) => {
             url: `${process.env.SERVICES}handler/external/sendhsm`,
             method: 'post',
             data:  data,
-            _requestid: request._requestid,
+            _requestid: req._requestid,
         })
 
         if (!responseservices.data.Success) {
@@ -281,7 +281,7 @@ exports.sendhsm = async (req, res) => {
             url: `${process.env.APP_MOBILE_SOCKET}inbox/sendMessageFromBotHub`,
             method: 'post',
             data:  ticket,
-            _requestid: request._requestid,
+            _requestid: req._requestid,
         })
 
         const ticketToGive = {
