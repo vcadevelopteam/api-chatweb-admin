@@ -1,8 +1,8 @@
 require('dotenv').config({ path: 'variables.env' });
-const axios = require('axios')
 const { executesimpletransaction } = require('../../config/mobile/triggerMobileFunction');
-const { errors, getErrorCode, setSessionParameters } = require('../../config/helpers');
-const { pushNotification } = require('../mobile/notificationMobileController')
+const { errors, getErrorCode, setSessionParameters, axiosObservable } = require('../../config/helpers');
+const { pushNotification } = require('../mobile/notificationMobileController');
+const { post } = require('moongose/routes');
 
 exports.reply = async (req, res) => {
     try {
@@ -27,9 +27,12 @@ exports.reply = async (req, res) => {
 
         data.agentName = req.user.fullname;
 
-        const responseservices = await axios.post(
-            `${process.env.SERVICES}ServiceLogicHook/ProcessMessageOut`,
-            { method: "", parameters: data });
+        const responseservices = await axiosObservable({
+            url: `${process.env.SERVICES}ServiceLogicHook/ProcessMessageOut`,
+            method: 'post',
+            data: { method: "", parameters: data },
+            _requestid: request._requestid,
+        })
 
         if (!responseservices.data || !responseservices.data instanceof Object)
             return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
@@ -52,7 +55,12 @@ exports.reply = async (req, res) => {
             status: data.status || "ASIGNADO"
             
         }
-        axios.post(`${process.env.APP_MOBILE_SOCKET}inbox/sendMessageFromBotHub`, ticket);
+        axiosObservable({
+            url: `${process.env.APP_MOBILE_SOCKET}inbox/sendMessageFromBotHub`,
+            method: 'post',
+            data: ticket,
+            _requestid: request._requestid,
+        })
 
         res.json({ success: true });
     }
@@ -71,7 +79,13 @@ exports.triggerBlock = async (req, res) => {
         data.p_userid = req.user.userid;
         data.tokenmovil = req.user.token;
 
-        const responseservices = await axios.post(`${process.env.SERVICES}handler/triggerblock`, data);
+        //const responseservic = await axios.post(`${process.env.SERVICES}handler/triggerblock`, data);
+        const responseservices = await axiosObservable({
+            url: `${process.env.SERVICES}handler/triggerblock`,
+            method: 'post',
+            data: data,
+            _requestid: request._requestid,
+        })
 
         if (!responseservices.data || !responseservices.data instanceof Object)
             return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
@@ -107,10 +121,13 @@ exports.close = async (req, res) => {
         data.closeby = "USER";
         data.p_status = "CERRADO";
 
-        const responseservices = await axios.post(
-            `${process.env.SERVICES}ServiceLogicHook/closeticket`,
-            { method: "", parameters: data });
-
+        const responseservices = await axiosObservable({
+                url: `${process.env.SERVICES}ServiceLogicHook/closeticket`,
+                method: 'post',
+                data:  { method: "", parameters: data },
+                _requestid: request._requestid,
+            })
+            
         if (!responseservices.data || !responseservices.data instanceof Object)
             return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
 
@@ -129,8 +146,13 @@ exports.close = async (req, res) => {
             isanswered: data.isanswered.toString()
         });
 
-        const responseapp = await axios.post(`${process.env.APP_MOBILE_SOCKET}inbox/DeleteTicketHub`, body);
-
+        //const responseapp = await axios.post(`${process.env.APP_MOBILE_SOCKET}inbox/DeleteTicketHub`, body); 
+        const responseapp = await axiosObservable({
+            url: `${process.env.APP_MOBILE_SOCKET}inbox/DeleteTicketHub`,
+            method: 'post',
+            data:  body,
+            _requestid: request._requestid,
+        })
         // if (!responseapp.data || !responseapp.data instanceof Object)
         //     return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
 
@@ -192,7 +214,13 @@ exports.reasign = async (req, res) => {
 
         await executesimpletransaction("UFN_CONVERSATION_REASSIGNTICKET", data);
 
-        const responseapp = await axios.post(`${process.env.APP_MOBILE_SOCKET}inbox/ReassignedTicketHub`, data);
+        //const responseapp2 = await axios.post(`${process.env.APP_MOBILE_SOCKET}inbox/ReassignedTicketHub`, data);
+        const responseapp = await axiosObservable({
+            url: `${process.env.APP_MOBILE_SOCKET}inbox/ReassignedTicketHub`,
+            method: 'post',
+            data:  data,
+            _requestid: request._requestid,
+        })
 
         if (!responseapp.data || !responseapp.data instanceof Object)
             return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
@@ -226,7 +254,13 @@ exports.sendhsm = async (req, res) => {
 
         await executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", { ...data, personid: data.listmembers[0].personid });
 
-        const responseservices = await axios.post(`${process.env.SERVICES}handler/external/sendhsm`, data);
+        //const responseservices1 = await axios.post(`${process.env.SERVICES}handler/external/sendhsm`, data);
+        const responseservices = await axiosObservable({
+            url: `${process.env.SERVICES}handler/external/sendhsm`,
+            method: 'post',
+            data:  data,
+            _requestid: request._requestid,
+        })
 
         if (!responseservices.data.Success) {
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
@@ -244,7 +278,13 @@ exports.sendhsm = async (req, res) => {
             corpid: data.corpid,
             orgid: data.orgid,
         }
-        axios.post(`${process.env.APP_MOBILE_SOCKET}inbox/sendMessageFromBotHub`, ticket);
+        //axios.post(`${process.env.APP_MOBILE_SOCKET}inbox/sendMessageFromBotHub`, ticket);
+        axiosObservable({
+            url: `${process.env.APP_MOBILE_SOCKET}inbox/sendMessageFromBotHub`,
+            method: 'post',
+            data:  ticket,
+            _requestid: request._requestid,
+        })
 
         const ticketToGive = {
             data: {
