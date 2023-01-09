@@ -5,6 +5,7 @@ const genericfunctions = require('../config/genericfunctions');
 const triggerfunctions = require('../config/triggerfunctions');
 
 const bridgeEndpoint = process.env.BRIDGE;
+const facebookEndpoint = process.env.FACEBOOKAPI;
 
 const metaBusinessIns = async (corpid, orgid, id, businessid, businessname, accesstoken, userid, userfullname, graphdomain, description, status, type, username, operation, requestid) => {
     const queryResult = await triggerfunctions.executesimpletransaction("UFN_METABUSINESS_INS", {
@@ -166,7 +167,7 @@ exports.manageCatalog = async (request, response) => {
                             },
                             headers: config,
                             method: 'post',
-                            url: `https://graph.facebook.com/${businessid}/owned_product_catalogs?fields=name,vertical`,
+                            url: `${facebookEndpoint}${businessid}/owned_product_catalogs?fields=name,vertical`,
                             _requestid: request._requestid,
                         });
 
@@ -194,7 +195,7 @@ exports.manageCatalog = async (request, response) => {
                             },
                             headers: config,
                             method: 'post',
-                            url: `https://graph.facebook.com/${catalogid}`,
+                            url: `${facebookEndpoint}${catalogid}`,
                             _requestid: request._requestid,
                         });
 
@@ -214,7 +215,7 @@ exports.manageCatalog = async (request, response) => {
                         const { metabusinessid, metacatalogid, catalogid, catalogname, catalogdescription, catalogtype, description, status, type } = request.body;
 
                         const result = await axiosObservable({
-                            url: `https://graph.facebook.com/${catalogid}`,
+                            url: `${facebookEndpoint}${catalogid}`,
                             headers: config,
                             method: 'delete',
                             _requestid: request._requestid,
@@ -258,7 +259,7 @@ exports.synchroCatalog = async (request, response) => {
 
             const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
-            const result = await axios.get(`https://graph.facebook.com/${businessid}/owned_product_catalogs?limit=100&fields=name,description,vertical`, config);
+            const result = await axios.get(`${facebookEndpoint}${businessid}/owned_product_catalogs?limit=100&fields=name,description,vertical`, config);
 
             if (result.data) {
                 const listCatalog = result.data.data;
