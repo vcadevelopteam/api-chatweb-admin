@@ -3187,7 +3187,6 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
-    //mobile - api
         //mobile
     UFN_FACEBOOKPOST_SEL_MOVIL: {
         query: "select * from ufn_facebookpost_sel($take, $skip, $where, $order, $corporation);",
