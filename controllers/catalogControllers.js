@@ -5,6 +5,7 @@ const genericfunctions = require('../config/genericfunctions');
 const triggerfunctions = require('../config/triggerfunctions');
 
 const bridgeEndpoint = process.env.BRIDGE;
+const facebookEndpoint = process.env.FACEBOOKAPI;
 
 const metaBusinessIns = async (corpid, orgid, id, businessid, businessname, accesstoken, userid, userfullname, graphdomain, description, status, type, username, operation, requestid) => {
     const queryResult = await triggerfunctions.executesimpletransaction("UFN_METABUSINESS_INS", {
@@ -47,12 +48,29 @@ const metaBusinessSel = async (corpid, orgid, id, requestid) => {
     return null;
 }
 
-const metaCatalogSel = async (corpid, orgid, metabusinessid, metacatalogid, requestid) => {
+const metaCatalogSel = async (corpid, orgid, metabusinessid, id, requestid) => {
     const queryResult = await triggerfunctions.executesimpletransaction("UFN_METACATALOG_SEL", {
         corpid: corpid,
         orgid: orgid,
         metabusinessid: metabusinessid,
-        id: metacatalogid,
+        id: id,
+        _requestid: requestid,
+    });
+
+    if (queryResult instanceof Array) {
+        return queryResult;
+    }
+
+    return null;
+}
+
+const productCatalogInsArray = async (corpid, orgid, metacatalogid, username, table, requestid) => {
+    const queryResult = await triggerfunctions.executesimpletransaction("UFN_PRODUCTCATALOG_INS_ARRAY", {
+        corpid: corpid,
+        metacatalogid: metacatalogid,
+        orgid: orgid,
+        table: table,
+        username: username,
         _requestid: requestid,
     });
 
@@ -166,7 +184,7 @@ exports.manageCatalog = async (request, response) => {
                             },
                             headers: config,
                             method: 'post',
-                            url: `https://graph.facebook.com/${businessid}/owned_product_catalogs?fields=name,vertical`,
+                            url: `${facebookEndpoint}${businessid}/owned_product_catalogs?fields=name,vertical`,
                             _requestid: request._requestid,
                         });
 
@@ -194,7 +212,7 @@ exports.manageCatalog = async (request, response) => {
                             },
                             headers: config,
                             method: 'post',
-                            url: `https://graph.facebook.com/${catalogid}`,
+                            url: `${facebookEndpoint}${catalogid}`,
                             _requestid: request._requestid,
                         });
 
@@ -214,7 +232,7 @@ exports.manageCatalog = async (request, response) => {
                         const { metabusinessid, metacatalogid, catalogid, catalogname, catalogdescription, catalogtype, description, status, type } = request.body;
 
                         const result = await axiosObservable({
-                            url: `https://graph.facebook.com/${catalogid}`,
+                            url: `${facebookEndpoint}${catalogid}`,
                             headers: config,
                             method: 'delete',
                             _requestid: request._requestid,
@@ -258,7 +276,7 @@ exports.synchroCatalog = async (request, response) => {
 
             const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
-            const result = await axios.get(`https://graph.facebook.com/${businessid}/owned_product_catalogs?limit=100&fields=name,description,vertical`, config);
+            const result = await axios.get(`${facebookEndpoint}${businessid}/owned_product_catalogs?limit=100&fields=name,description,vertical`, config);
 
             if (result.data) {
                 const listCatalog = result.data.data;
@@ -285,7 +303,80 @@ exports.synchroCatalog = async (request, response) => {
 
 exports.synchroProduct = async (request, response) => {
     try {
+        const { corpid, orgid, usr } = request.user;
+        const { metacatalogid } = request.body;
+
         var responsedata = genericfunctions.generateResponseData(request._requestid);
+
+        const catalogresponse = await metaCatalogSel(corpid, orgid, 0, metacatalogid, request._requestid);
+
+        if (catalogresponse) {
+            const businessresponse = await metaBusinessSel(corpid, orgid, catalogresponse[0].metabusinessid, request._requestid);
+
+            if (businessresponse) {
+                let accessToken = businessresponse[0].accesstoken;
+                let catalogid = catalogresponse[0].catalogid;
+
+                const config = { headers: { Authorization: 'Bearer ' + accessToken } };
+
+                const result = await axios.get(`${facebookEndpoint}${catalogid}/products?fields=additional_image_urls,availability,brand,category,color,condition,currency,custom_label_0,custom_label_1,custom_label_2,custom_label_3,custom_label_4,description,expiration_date,start_date,gender,id,image_url,material,name,pattern,price,retailer_id,review_status,sale_price,short_description,size,url&limit=100`, config);
+
+                if (result.data) {
+                    const listCatalog = result.data.data;
+
+                    const insertData = listCatalog?.map(data => {
+                        return {
+                            metacatalogid: metacatalogid,
+                            productid: data?.retailer_id || '',
+                            retailerid: data?.id || '',
+                            title: data?.name || '',
+                            description: data?.description || '',
+                            descriptionshort: data?.short_description || '',
+                            availability: data?.availability || '',
+                            category: data?.category || '',
+                            condition: data?.condition || '',
+                            currency: data?.currency || '',
+                            price: parseFloat(data?.price?.substring(1) || 0),
+                            saleprice: parseFloat(data?.sale_price?.substring(1) || 0),
+                            link: data?.url || '',
+                            imagelink: data?.image_url || '',
+                            additionalimagelink: (data?.additional_image_urls ? data?.additional_image_urls[0] : '') || '',
+                            brand: data?.brand || '',
+                            color: data?.color || '',
+                            gender: data?.gender || '',
+                            material: data?.material || '',
+                            pattern: data?.pattern || '',
+                            size: data?.size || '',
+                            datestart: data?.start_date || null,
+                            datelaunch: data?.launch_date || null,
+                            dateexpiration: data?.expiration_date || null,
+                            labels: `${data?.custom_label_0},${data?.custom_label_1},${data?.custom_label_2},${data?.custom_label_3},${data?.custom_label_4},`,
+                            customlabel0: data?.custom_label_0 || '',
+                            customlabel1: data?.custom_label_1 || '',
+                            customlabel2: data?.custom_label_2 || '',
+                            customlabel3: data?.custom_label_3 || '',
+                            customlabel4: data?.custom_label_4 || '',
+                            reviewstatus: data?.review_status || 'approved',
+                            status: 'ACTIVO',
+                            type: '',
+                        };
+                    })
+
+                    const productresponse = await productCatalogInsArray(corpid, orgid, metacatalogid, usr, JSON.stringify(insertData), request._requestid);
+
+                    responsedata = genericfunctions.changeResponseData(responsedata, null, productresponse, null, 200, true);
+                }
+                else {
+                    responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_productget', result?.data, 'Error obtaining product list', 400, false);
+                }
+            }
+            else {
+                responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_nobusiness', null, 'Business not found', 400, false);
+            }
+        }
+        else {
+            responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_nocatalog', null, 'Catalog not found', 400, false);
+        }
 
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
