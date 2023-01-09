@@ -138,8 +138,7 @@ exports.getBusinessList = async (request, response) => {
     }
 }
 
-
-exports.managecatalog = async (request, response) => {
+exports.manageCatalog = async (request, response) => {
     try {
         const { corpid, orgid, usr } = request.user;
         const { operation, metabusinessid } = request.body;
@@ -244,7 +243,7 @@ exports.managecatalog = async (request, response) => {
     }
 }
 
-exports.synchrocatalog = async (request, response) => {
+exports.synchroCatalog = async (request, response) => {
     try {
         const { corpid, orgid, usr } = request.user;
         const { metabusinessid } = request.body;
@@ -277,6 +276,56 @@ exports.synchrocatalog = async (request, response) => {
         else {
             responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_nobusiness', null, 'Business not found', 400, false);
         }
+
+        return response.status(responsedata.status).json(responsedata);
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+    }
+}
+
+exports.synchroProduct = async (request, response) => {
+    try {
+        var responsedata = genericfunctions.generateResponseData(request._requestid);
+
+        return response.status(responsedata.status).json(responsedata);
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+    }
+}
+
+exports.importProduct = async (request, response) => {
+    try {
+        var responsedata = genericfunctions.generateResponseData(request._requestid);
+
+        return response.status(responsedata.status).json(responsedata);
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+    }
+}
+
+exports.manageProduct = async (request, response) => {
+    try {
+        var responsedata = genericfunctions.generateResponseData(request._requestid);
+
+        return response.status(responsedata.status).json(responsedata);
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+    }
+}
+
+exports.deleteProduct = async (request, response) => {
+    try {
+        var responsedata = genericfunctions.generateResponseData(request._requestid);
+
+        return response.status(responsedata.status).json(responsedata);
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+    }
+}
+
+exports.downloadProduct = async (request, response) => {
+    try {
+        var responsedata = genericfunctions.generateResponseData(request._requestid);
 
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {

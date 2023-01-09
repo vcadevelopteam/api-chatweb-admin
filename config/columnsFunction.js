@@ -1137,8 +1137,33 @@ module.exports = {
         },
     },
     productcatalog: {
+        catalogname: {
+            column: "mc.catalogname"
+        },
+        catalogid: {
+            column: "mc.catalogid"
+        },
+        corpid: {
+            column: "p.corpid",
+            type: "number"
+        },
+        orgid: {
+            column: "p.orgid",
+            type: "number"
+        },
+        metacatalogid: {
+            column: "p.metacatalogid",
+            type: "number"
+        },
         productcatalogid: {
-            column: "p.productcatalogid"
+            column: "p.productcatalogid",
+            type: "number"
+        },
+        productid: {
+            column: "p.productid"
+        },
+        retailerid: {
+            column: "p.retailerid"
         },
         title: {
             column: "p.title"
@@ -1146,20 +1171,17 @@ module.exports = {
         description: {
             column: "p.description"
         },
-        brand: {
-            column: "p.brand"
+        descriptionshort: {
+            column: "p.descriptionshort"
         },
         availability: {
             column: "p.availability"
         },
+        category: {
+            column: "p.category"
+        },
         condition: {
             column: "p.condition"
-        },
-        website: {
-            column: "p.website"
-        },
-        image: {
-            column: "p.image"
         },
         currency: {
             column: "p.currency"
@@ -1172,38 +1194,68 @@ module.exports = {
             column: "p.saleprice",
             type: "number"
         },
-        catalogname: {
-            column: "mc.catalogname"
+        link: {
+            column: "p.link"
         },
-        catalogid: {
-            column: "mc.catalogid"
+        imagelink: {
+            column: "p.imagelink"
         },
-        productid: {
-            column: "p.productid"
+        additionalimagelink: {
+            column: "p.additionalimagelink"
+        },
+        brand: {
+            column: "p.brand"
+        },
+        color: {
+            column: "p.color"
         },
         gender: {
             column: "p.gender"
         },
-        condition: {
-            column: "p.condition"
+        material: {
+            column: "p.material"
+        },
+        pattern: {
+            column: "p.pattern"
+        },
+        size: {
+            column: "p.size"
+        },
+        datestart: {
+            column: "to_char(p.datestart + p_offset * INTERVAL '1hour', 'YYYY-MM-DD')"
+        },
+        datelaunch: {
+            column: "to_char(p.datelaunch + p_offset * INTERVAL '1hour', 'YYYY-MM-DD')"
+        },
+        dateexpiration: {
+            column: "to_char(p.dateexpiration + p_offset * INTERVAL '1hour', 'YYYY-MM-DD')"
+        },
+        labels: {
+            column: "p.labels"
+        },
+        customlabel0: {
+            column: "p.customlabel0"
+        },
+        customlabel1: {
+            column: "p.customlabel1"
+        },
+        customlabel2: {
+            column: "p.customlabel2"
+        },
+        customlabel3: {
+            column: "p.customlabel3"
+        },
+        customlabel4: {
+            column: "p.customlabel4"
+        },
+        reviewstatus: {
+            column: "p.reviewstatus"
         },
         status: {
             column: "p.status"
         },
-        customlabel1: {
-            column: "p.customlabel0"
-        },
-        customlabel2: {
-            column: "p.customlabel1"
-        },
-        customlabel3: {
-            column: "p.customlabel2"
-        },
-        customlabel4: {
-            column: "p.customlabel3"
-        },
-        customlabel5: {
-            column: "p.customlabel4"
+        type: {
+            column: "p.type"
         },
     }
 }
