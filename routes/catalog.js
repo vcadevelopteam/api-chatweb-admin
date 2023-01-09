@@ -13,13 +13,37 @@ router.post("/getbusinesslist",
 router.post("/synchrocatalog",
     ip,
     auth,
-    catalogController.synchrocatalog
+    catalogController.synchroCatalog
 )
 
 router.post("/managecatalog",
     ip,
     auth,
-    catalogController.managecatalog
+    catalogController.manageCatalog
+)
+
+router.post("/synchroproduct",
+    ip,
+    auth,
+    catalogController.synchroProduct
+)
+
+router.post("/importproduct",
+    ip,
+    auth,
+    catalogController.importProduct
+)
+
+router.post("/manageproduct",
+    ip,
+    auth,
+    catalogController.manageProduct
+)
+
+router.post("/deleteproduct",
+    ip,
+    auth,
+    catalogController.deleteProduct
 )
 
 module.exports = router;
