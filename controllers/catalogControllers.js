@@ -322,3 +322,13 @@ exports.deleteProduct = async (request, response) => {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
+
+exports.downloadProduct = async (request, response) => {
+    try {
+        var responsedata = genericfunctions.generateResponseData(request._requestid);
+
+        return response.status(responsedata.status).json(responsedata);
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+    }
+}

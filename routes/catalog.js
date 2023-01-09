@@ -46,4 +46,10 @@ router.post("/deleteproduct",
     catalogController.deleteProduct
 )
 
+router.post("/downloadproduct",
+    ip,
+    auth,
+    catalogController.downloadProduct
+)
+
 module.exports = router;
