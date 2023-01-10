@@ -243,7 +243,7 @@ exports.manageCatalog = async (request, response) => {
 
                             let catalogResponse = await metaCatalogIns(corpid, orgid, metabusinessid, id, metacatalogid, catalogname, catalogdescription, catalogtype, description, status, type, usr, operation);
 
-                            responsedata = genericfunctions.changeResponseData(responsedata, catalogResponse, result.data, null, 200, true);
+                            responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                         }
                         else {
                             responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_catalogcreate', result?.data, 'Error creating catalog', 400, false);
@@ -374,9 +374,9 @@ exports.synchroCatalog = async (request, response) => {
             }
 
             if (listCatalog) {
-                listCatalog.forEach(async (catalog) => {
+                for (const catalog of listCatalog) {
                     await metaCatalogIns(corpid, orgid, metabusinessid, businessid, catalog.id, catalog.name, catalog.description || "", catalog.vertical, "", "ACTIVO", "", usr, "CREATE");
-                });
+                };
 
                 responsedata = genericfunctions.changeResponseData(responsedata, null, listCatalog, null, 200, true);
             }
@@ -404,8 +404,6 @@ exports.manageProduct = async (request, response) => {
     try {
         const { corpid, orgid, usr } = request.user;
         const { operation, metacatalogid, id } = request.body;
-
-        var responsedata = genericfunctions.generateResponseData(request._requestid);
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
@@ -440,7 +438,7 @@ exports.manageProduct = async (request, response) => {
                                     sale_price: (saleprice * 100) || null,
                                     url: link || null,
                                     image_url: imagelink || null,
-                                    additional_image_urls: additionalimagelink || null,
+                                    additional_image_urls: additionalimagelink ? [additionalimagelink] : null,
                                     brand: brand || null,
                                     color: color || null,
                                     gender: gender || null,
@@ -467,7 +465,7 @@ exports.manageProduct = async (request, response) => {
 
                                 let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, 0, productid, productcatalogid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, status, type, usr, operation, request._requestid);
 
-                                responsedata = genericfunctions.changeResponseData(responsedata, catalogResponse, result.data, null, 200, true);
+                                responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                             }
                             else {
                                 responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_productcreate', result?.data, 'Error creating product', 400, false);
@@ -544,7 +542,7 @@ exports.manageProduct = async (request, response) => {
                                         sale_price: (saleprice * 100) || null,
                                         url: link || null,
                                         image_url: imagelink || null,
-                                        additional_image_urls: additionalimagelink || null,
+                                        additional_image_urls: additionalimagelink ? [additionalimagelink] : null,
                                         brand: brand || null,
                                         color: color || null,
                                         gender: gender || null,
@@ -569,7 +567,7 @@ exports.manageProduct = async (request, response) => {
                                 if (result?.data) {
                                     let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, status, type, usr, operation, request._requestid);
 
-                                    responsedata = genericfunctions.changeResponseData(responsedata, catalogResponse, result.data, null, 200, true);
+                                    responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                                 }
                                 else {
                                     responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_productedit', result?.data, 'Error updating product', 400, false);
@@ -647,7 +645,7 @@ exports.manageProduct = async (request, response) => {
                                 if (result?.data) {
                                     let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, status, type, usr, operation, request._requestid);
 
-                                    responsedata = genericfunctions.changeResponseData(responsedata, catalogResponse, result.data, null, 200, true);
+                                    responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                                 }
                                 else {
                                     responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_productedit', result?.data, 'Error updating product', 400, false);
@@ -809,7 +807,103 @@ exports.synchroProduct = async (request, response) => {
 
 exports.deleteProduct = async (request, response) => {
     try {
+        const { corpid, orgid, usr } = request.user;
+        const { product } = request.body;
+
         var responsedata = genericfunctions.generateResponseData(request._requestid);
+
+        if (product) {
+            for (const productdata of product) {
+                const catalogresponse = await metaCatalogSel(corpid, orgid, 0, productdata.metacatalogid, request._requestid);
+
+                if (catalogresponse) {
+                    const businessresponse = await metaBusinessSel(corpid, orgid, catalogresponse[0].metabusinessid, request._requestid);
+
+                    if (businessresponse) {
+                        let accessToken = businessresponse[0].accesstoken;
+                        let catalogid = catalogresponse[0].catalogid;
+
+                        const config = { headers: { Authorization: 'Bearer ' + accessToken } };
+
+                        let facebookretailerid = productdata.retailerid;
+
+                        if (!facebookretailerid) {
+                            let requestUrl = `${facebookEndpoint}${catalogid}/products?access_token=${accessToken}`;
+                            let continueLoop = true;
+
+                            while (continueLoop) {
+                                const result = await axiosObservable({
+                                    headers: config,
+                                    method: 'get',
+                                    url: requestUrl,
+                                    _requestid: request._requestid,
+                                });
+
+                                if (result.data) {
+                                    if (result.data.data) {
+                                        if (result.data.data.length > 0) {
+                                            facebookretailerid = result.data.data.find(x => x.retailer_id === productid)?.id;
+
+                                            if (facebookretailerid) {
+                                                continueLoop = false;
+                                            }
+                                        }
+                                        else {
+                                            continueLoop = false;
+                                        }
+
+                                        if (result.data.paging) {
+                                            if (result.data.paging.next) {
+                                                requestUrl = result.data.paging.next;
+                                            }
+                                            else {
+                                                continueLoop = false;
+                                            }
+                                        }
+                                        else {
+                                            continueLoop = false;
+                                        }
+                                    }
+                                    else {
+                                        continueLoop = false;
+                                    }
+                                }
+                                else {
+                                    continueLoop = false;
+                                }
+                            }
+                        }
+
+                        if (facebookretailerid) {
+                            const result = await axiosObservable({
+                                headers: config,
+                                method: 'delete',
+                                url: `${facebookEndpoint}${facebookretailerid}?access_token=${accessToken}`,
+                                _requestid: request._requestid,
+                            });
+
+                            if (result?.data) {
+                                let catalogResponse = await productCatalogIns(corpid, orgid, productdata.metacatalogid, productdata.productcatalogid, productdata.productid, facebookretailerid, productdata.title, productdata.description, productdata.descriptionshort, productdata.availability, productdata.category, productdata.condition, productdata.currency, productdata.price, productdata.saleprice, productdata.link, productdata.imagelink, productdata.additionalimagelink, productdata.brand, productdata.color, productdata.gender, productdata.material, productdata.pattern, productdata.size, productdata.datestart, productdata.datelaunch, productdata.dateexpiration, productdata.labels, productdata.customlabel0, productdata.customlabel1, productdata.customlabel2, productdata.customlabel3, productdata.customlabel4, productdata.reviewstatus, productdata.status, productdata.type, usr, 'DELETE', request._requestid);
+
+                                responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
+                            }
+                            else {
+                                responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_productedit', result?.data, 'Error updating product', 400, false);
+                            }
+                        }
+                    }
+                    else {
+                        responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_nobusiness', null, 'Business not found', 400, false);
+                    }
+                }
+                else {
+                    responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_nocatalog', null, 'Catalog not found', 400, false);
+                }
+            };
+        }
+        else {
+            responsedata = genericfunctions.changeResponseData(responsedata, null, null, null, 200, true);
+        }
 
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
@@ -842,6 +936,10 @@ exports.importProduct = async (request, response) => {
 exports.downloadProduct = async (request, response) => {
     try {
         var responsedata = genericfunctions.generateResponseData(request._requestid);
+
+        if (request.body) {
+            responsedata = genericfunctions.changeResponseData(responsedata, null, { url: 'https://www.africau.edu/images/default/sample.pdf' }, null, 200, true);
+        }
 
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
