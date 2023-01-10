@@ -200,8 +200,7 @@ exports.getBusinessList = async (request, response) => {
         }
 
         return response.status(responsedata.status).json(responsedata);
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
     }
 }
@@ -306,9 +305,14 @@ exports.manageCatalog = async (request, response) => {
         }
 
         return response.status(responsedata.status).json(responsedata);
-    }
-    catch (exception) {
-        return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+    } catch (exception) {
+        if (exception?.response?.data?.error?.message) {
+            var errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        }
+        else {
+            return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        }
     }
 }
 
@@ -330,7 +334,7 @@ exports.synchroCatalog = async (request, response) => {
             const result = await axiosObservable({
                 headers: config,
                 method: 'get',
-                url: `${facebookEndpoint}${businessid}/owned_product_catalogs?limit=100&fields=name,description,vertical&access_token=${accessToken}`,
+                url: `${facebookEndpoint}${businessid}/owned_product_catalogs?limit=500&fields=name,description,vertical&access_token=${accessToken}`,
                 _requestid: request._requestid,
             });
 
@@ -353,7 +357,13 @@ exports.synchroCatalog = async (request, response) => {
 
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
-        return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        if (exception?.response?.data?.error?.message) {
+            var errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        }
+        else {
+            return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        }
     }
 }
 
@@ -453,7 +463,13 @@ exports.manageProduct = async (request, response) => {
 
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
-        return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        if (exception?.response?.data?.error?.message) {
+            var errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        }
+        else {
+            return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        }
     }
 }
 
@@ -478,7 +494,7 @@ exports.synchroProduct = async (request, response) => {
                 const result = await axiosObservable({
                     headers: config,
                     method: 'get',
-                    url: `${facebookEndpoint}${catalogid}/products?fields=additional_image_urls,availability,brand,category,color,condition,currency,custom_label_0,custom_label_1,custom_label_2,custom_label_3,custom_label_4,description,expiration_date,start_date,gender,id,image_url,material,name,pattern,price,retailer_id,review_status,sale_price,short_description,size,url&limit=100&access_token=${accessToken}`,
+                    url: `${facebookEndpoint}${catalogid}/products?fields=additional_image_urls,availability,brand,category,color,condition,currency,custom_label_0,custom_label_1,custom_label_2,custom_label_3,custom_label_4,description,expiration_date,start_date,gender,id,image_url,material,name,pattern,price,retailer_id,review_status,sale_price,short_description,size,url&limit=500&access_token=${accessToken}`,
                     _requestid: request._requestid,
                 });
 
@@ -541,7 +557,13 @@ exports.synchroProduct = async (request, response) => {
 
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
-        return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        if (exception?.response?.data?.error?.message) {
+            var errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        }
+        else {
+            return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        }
     }
 }
 
@@ -551,7 +573,13 @@ exports.deleteProduct = async (request, response) => {
 
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
-        return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        if (exception?.response?.data?.error?.message) {
+            var errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        }
+        else {
+            return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        }
     }
 }
 
@@ -561,7 +589,13 @@ exports.importProduct = async (request, response) => {
 
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
-        return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        if (exception?.response?.data?.error?.message) {
+            var errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        }
+        else {
+            return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        }
     }
 }
 
@@ -571,6 +605,12 @@ exports.downloadProduct = async (request, response) => {
 
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
-        return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        if (exception?.response?.data?.error?.message) {
+            var errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        }
+        else {
+            return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        }
     }
 }
