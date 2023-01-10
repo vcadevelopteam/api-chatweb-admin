@@ -64,6 +64,31 @@ const metaCatalogSel = async (corpid, orgid, metabusinessid, id, requestid) => {
     return null;
 }
 
+const metaCatalogIns = async (corpid, orgid, metabusinessid, id, catalogid, catalogname, catalogdescription, catalogtype, description, status, type, username, operation, requestid) => {
+    const queryResult = await triggerfunctions.executesimpletransaction("UFN_METACATALOG_INS", {
+        corpid: corpid,
+        orgid: orgid,
+        metabusinessid: metabusinessid,
+        id: id,
+        catalogid: catalogid,
+        catalogname: catalogname,
+        catalogdescription: catalogdescription,
+        catalogtype: catalogtype,
+        description: description,
+        status: status,
+        type: type,
+        username: username,
+        operation: operation,
+        _requestid: requestid,
+    });
+
+    if (queryResult instanceof Array) {
+        return queryResult;
+    }
+
+    return null;
+}
+
 const productCatalogInsArray = async (corpid, orgid, metacatalogid, username, table, requestid) => {
     const queryResult = await triggerfunctions.executesimpletransaction("UFN_PRODUCTCATALOG_INS_ARRAY", {
         corpid: corpid,
@@ -81,17 +106,42 @@ const productCatalogInsArray = async (corpid, orgid, metacatalogid, username, ta
     return null;
 }
 
-const metaCatalogIns = async (corpid, orgid, metabusinessid, id, catalogid, catalogname, catalogdescription, catalogtype, description, status, type, username, operation, requestid) => {
-    const queryResult = await triggerfunctions.executesimpletransaction("UFN_METACATALOG_INS", {
+const productCatalogIns = async (corpid, orgid, metacatalogid, id, productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, status, type, username, operation, requestid) => {
+    const queryResult = await triggerfunctions.executesimpletransaction("UFN_PRODUCTCATALOG_INS", {
         corpid: corpid,
         orgid: orgid,
-        metabusinessid: metabusinessid,
+        metacatalogid: metacatalogid,
         id: id,
-        catalogid: catalogid,
-        catalogname: catalogname,
-        catalogdescription: catalogdescription,
-        catalogtype: catalogtype,
+        productid: productid,
+        retailerid: retailerid,
+        title: title,
         description: description,
+        descriptionshort: descriptionshort,
+        availability: availability,
+        category: category,
+        condition: condition,
+        currency: currency,
+        price: price,
+        saleprice: saleprice,
+        link: link,
+        imagelink: imagelink,
+        additionalimagelink: additionalimagelink,
+        brand: brand,
+        color: color,
+        gender: gender,
+        material: material,
+        pattern: pattern,
+        size: size,
+        datestart: datestart,
+        datelaunch: datelaunch,
+        dateexpiration: dateexpiration,
+        labels: labels,
+        customlabel0: customlabel0,
+        customlabel1: customlabel1,
+        customlabel2: customlabel2,
+        customlabel3: customlabel3,
+        customlabel4: customlabel4,
+        reviewstatus: reviewstatus,
         status: status,
         type: type,
         username: username,
@@ -173,6 +223,7 @@ exports.manageCatalog = async (request, response) => {
 
             switch (operation) {
                 case "CREATE":
+                case "INSERT":
                     if (accessToken) {
                         const { catalogdescription, catalogname, catalogtype, description, id, operation, status, type } = request.body;
 
@@ -184,7 +235,7 @@ exports.manageCatalog = async (request, response) => {
                             },
                             headers: config,
                             method: 'post',
-                            url: `${facebookEndpoint}${businessid}/owned_product_catalogs?fields=name,vertical`,
+                            url: `${facebookEndpoint}${businessid}/owned_product_catalogs?access_token=${accessToken}`,
                             _requestid: request._requestid,
                         });
 
@@ -212,7 +263,7 @@ exports.manageCatalog = async (request, response) => {
                             },
                             headers: config,
                             method: 'post',
-                            url: `${facebookEndpoint}${catalogid}`,
+                            url: `${facebookEndpoint}${catalogid}?access_token=${accessToken}`,
                             _requestid: request._requestid,
                         });
 
@@ -232,7 +283,7 @@ exports.manageCatalog = async (request, response) => {
                         const { metabusinessid, metacatalogid, catalogid, catalogname, catalogdescription, catalogtype, description, status, type } = request.body;
 
                         const result = await axiosObservable({
-                            url: `${facebookEndpoint}${catalogid}`,
+                            url: `${facebookEndpoint}${catalogid}?access_token=${accessToken}`,
                             headers: config,
                             method: 'delete',
                             _requestid: request._requestid,
@@ -276,7 +327,12 @@ exports.synchroCatalog = async (request, response) => {
 
             const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
-            const result = await axios.get(`${facebookEndpoint}${businessid}/owned_product_catalogs?limit=100&fields=name,description,vertical`, config);
+            const result = await axiosObservable({
+                headers: config,
+                method: 'get',
+                url: `${facebookEndpoint}${businessid}/owned_product_catalogs?limit=100&fields=name,description,vertical&access_token=${accessToken}`,
+                _requestid: request._requestid,
+            });
 
             if (result.data) {
                 const listCatalog = result.data.data;
@@ -297,7 +353,107 @@ exports.synchroCatalog = async (request, response) => {
 
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+        return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+    }
+}
+
+exports.manageProduct = async (request, response) => {
+    try {
+        const { corpid, orgid, usr } = request.user;
+        const { operation, metacatalogid } = request.body;
+
+        var responsedata = genericfunctions.generateResponseData(request._requestid);
+
+        var responsedata = genericfunctions.generateResponseData(request._requestid);
+
+        const catalogresponse = await metaCatalogSel(corpid, orgid, 0, metacatalogid, request._requestid);
+
+        if (catalogresponse) {
+            const businessresponse = await metaBusinessSel(corpid, orgid, catalogresponse[0].metabusinessid, request._requestid);
+
+            if (businessresponse) {
+                let accessToken = businessresponse[0].accesstoken;
+                let catalogid = catalogresponse[0].catalogid;
+
+                switch (operation) {
+                    case "CREATE":
+                    case "INSERT":
+                        if (accessToken) {
+                            const { productid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, status, type } = request.body;
+
+                            const config = { headers: { Authorization: 'Bearer ' + accessToken } };
+
+                            const result = await axiosObservable({
+                                data: JSON.parse(JSON.stringify({
+                                    retailer_id: productid || null,
+                                    name: title || null,
+                                    description: description || null,
+                                    short_description: descriptionshort || null,
+                                    availability: availability || null,
+                                    category: category || null,
+                                    condition: condition || null,
+                                    currency: currency || null,
+                                    price: (price * 100) || null,
+                                    sale_price: (saleprice * 100) || null,
+                                    url: link || null,
+                                    image_url: imagelink || null,
+                                    additional_image_urls: additionalimagelink || null,
+                                    brand: brand || null,
+                                    color: color || null,
+                                    gender: gender || null,
+                                    material: material || null,
+                                    pattern: pattern || null,
+                                    size: size || null,
+                                    start_date: datestart || null,
+                                    launch_date: datelaunch || null,
+                                    expiration_date: dateexpiration || null,
+                                    custom_label_0: customlabel0 || null,
+                                    custom_label_1: customlabel1 || null,
+                                    custom_label_2: customlabel2 || null,
+                                    custom_label_3: customlabel3 || null,
+                                    custom_label_4: customlabel4 || null,
+                                }, (k, v) => v ?? undefined)),
+                                headers: config,
+                                method: 'post',
+                                url: `${facebookEndpoint}${catalogid}/products?access_token=${accessToken}`,
+                                _requestid: request._requestid,
+                            });
+
+                            if (result?.data?.id) {
+                                const productcatalogid = result.data.id
+
+                                let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, 0, productid, productcatalogid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, status, type, usr, operation, request._requestid);
+
+                                responsedata = genericfunctions.changeResponseData(responsedata, catalogResponse, result.data, null, 200, true);
+                            }
+                            else {
+                                responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_productcreate', result?.data, 'Error creating product', 400, false);
+                            }
+                        }
+                        break;
+
+                    case "EDIT":
+                        if (accessToken) {
+                        }
+                        break;
+
+                    case "DELETE":
+                        if (accessToken) {
+                        }
+                        break;
+                }
+            }
+            else {
+                responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_nobusiness', null, 'Business not found', 400, false);
+            }
+        }
+        else {
+            responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_nocatalog', null, 'Catalog not found', 400, false);
+        }
+
+        return response.status(responsedata.status).json(responsedata);
+    } catch (exception) {
+        return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
     }
 }
 
@@ -319,14 +475,19 @@ exports.synchroProduct = async (request, response) => {
 
                 const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
-                const result = await axios.get(`${facebookEndpoint}${catalogid}/products?fields=additional_image_urls,availability,brand,category,color,condition,currency,custom_label_0,custom_label_1,custom_label_2,custom_label_3,custom_label_4,description,expiration_date,start_date,gender,id,image_url,material,name,pattern,price,retailer_id,review_status,sale_price,short_description,size,url&limit=100`, config);
+                const result = await axiosObservable({
+                    headers: config,
+                    method: 'get',
+                    url: `${facebookEndpoint}${catalogid}/products?fields=additional_image_urls,availability,brand,category,color,condition,currency,custom_label_0,custom_label_1,custom_label_2,custom_label_3,custom_label_4,description,expiration_date,start_date,gender,id,image_url,material,name,pattern,price,retailer_id,review_status,sale_price,short_description,size,url&limit=100&access_token=${accessToken}`,
+                    _requestid: request._requestid,
+                });
 
                 if (result.data) {
                     const listCatalog = result.data.data;
 
                     const insertData = listCatalog?.map(data => {
                         return {
-                            metacatalogid: metacatalogid,
+                            metacatalogid: metacatalogid || 0,
                             productid: data?.retailer_id || '',
                             retailerid: data?.id || '',
                             title: data?.name || '',
@@ -336,8 +497,8 @@ exports.synchroProduct = async (request, response) => {
                             category: data?.category || '',
                             condition: data?.condition || '',
                             currency: data?.currency || '',
-                            price: parseFloat(data?.price?.substring(1) || 0),
-                            saleprice: parseFloat(data?.sale_price?.substring(1) || 0),
+                            price: parseFloat(data?.price?.substring(1) || 0.00),
+                            saleprice: parseFloat(data?.sale_price?.substring(1) || 0.00),
                             link: data?.url || '',
                             imagelink: data?.image_url || '',
                             additionalimagelink: (data?.additional_image_urls ? data?.additional_image_urls[0] : '') || '',
@@ -350,7 +511,7 @@ exports.synchroProduct = async (request, response) => {
                             datestart: data?.start_date || null,
                             datelaunch: data?.launch_date || null,
                             dateexpiration: data?.expiration_date || null,
-                            labels: `${data?.custom_label_0},${data?.custom_label_1},${data?.custom_label_2},${data?.custom_label_3},${data?.custom_label_4},`,
+                            labels: `${data?.custom_label_0},${data?.custom_label_1},${data?.custom_label_2},${data?.custom_label_3},${data?.custom_label_4}`,
                             customlabel0: data?.custom_label_0 || '',
                             customlabel1: data?.custom_label_1 || '',
                             customlabel2: data?.custom_label_2 || '',
@@ -380,27 +541,7 @@ exports.synchroProduct = async (request, response) => {
 
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
-    }
-}
-
-exports.importProduct = async (request, response) => {
-    try {
-        var responsedata = genericfunctions.generateResponseData(request._requestid);
-
-        return response.status(responsedata.status).json(responsedata);
-    } catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
-    }
-}
-
-exports.manageProduct = async (request, response) => {
-    try {
-        var responsedata = genericfunctions.generateResponseData(request._requestid);
-
-        return response.status(responsedata.status).json(responsedata);
-    } catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+        return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
     }
 }
 
@@ -410,7 +551,17 @@ exports.deleteProduct = async (request, response) => {
 
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+        return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+    }
+}
+
+exports.importProduct = async (request, response) => {
+    try {
+        var responsedata = genericfunctions.generateResponseData(request._requestid);
+
+        return response.status(responsedata.status).json(responsedata);
+    } catch (exception) {
+        return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
     }
 }
 
@@ -420,6 +571,6 @@ exports.downloadProduct = async (request, response) => {
 
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+        return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
     }
 }
