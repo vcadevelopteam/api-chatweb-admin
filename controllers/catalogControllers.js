@@ -331,16 +331,49 @@ exports.synchroCatalog = async (request, response) => {
 
             const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
-            const result = await axiosObservable({
-                headers: config,
-                method: 'get',
-                url: `${facebookEndpoint}${businessid}/owned_product_catalogs?limit=500&fields=name,description,vertical&access_token=${accessToken}`,
-                _requestid: request._requestid,
-            });
+            let requestUrl = `${facebookEndpoint}${businessid}/owned_product_catalogs?limit=500&fields=name,description,vertical&access_token=${accessToken}`;
+            let continueLoop = true;
+            let listCatalog = [];
 
-            if (result.data) {
-                const listCatalog = result.data.data;
+            while (continueLoop) {
+                const result = await axiosObservable({
+                    headers: config,
+                    method: 'get',
+                    url: requestUrl,
+                    _requestid: request._requestid,
+                });
 
+                if (result.data) {
+                    if (result.data.data) {
+                        if (result.data.data.length > 0) {
+                            listCatalog = [...listCatalog, ...result.data.data];
+                        }
+                        else {
+                            continueLoop = false;
+                        }
+
+                        if (result.data.paging) {
+                            if (result.data.paging.next) {
+                                requestUrl = result.data.paging.next;
+                            }
+                            else {
+                                continueLoop = false;
+                            }
+                        }
+                        else {
+                            continueLoop = false;
+                        }
+                    }
+                    else {
+                        continueLoop = false;
+                    }
+                }
+                else {
+                    continueLoop = false;
+                }
+            }
+
+            if (listCatalog) {
                 listCatalog.forEach(async (catalog) => {
                     await metaCatalogIns(corpid, orgid, metabusinessid, businessid, catalog.id, catalog.name, catalog.description || "", catalog.vertical, "", "ACTIVO", "", usr, "CREATE");
                 });
@@ -491,17 +524,50 @@ exports.synchroProduct = async (request, response) => {
 
                 const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
-                const result = await axiosObservable({
-                    headers: config,
-                    method: 'get',
-                    url: `${facebookEndpoint}${catalogid}/products?fields=additional_image_urls,availability,brand,category,color,condition,currency,custom_label_0,custom_label_1,custom_label_2,custom_label_3,custom_label_4,description,expiration_date,start_date,gender,id,image_url,material,name,pattern,price,retailer_id,review_status,sale_price,short_description,size,url&limit=500&access_token=${accessToken}`,
-                    _requestid: request._requestid,
-                });
+                let requestUrl = `${facebookEndpoint}${catalogid}/products?fields=additional_image_urls,availability,brand,category,color,condition,currency,custom_label_0,custom_label_1,custom_label_2,custom_label_3,custom_label_4,description,expiration_date,start_date,gender,id,image_url,material,name,pattern,price,retailer_id,review_status,sale_price,short_description,size,url&limit=500&access_token=${accessToken}`;
+                let continueLoop = true;
+                let listProduct = [];
 
-                if (result.data) {
-                    const listCatalog = result.data.data;
+                while (continueLoop) {
+                    const result = await axiosObservable({
+                        headers: config,
+                        method: 'get',
+                        url: requestUrl,
+                        _requestid: request._requestid,
+                    });
 
-                    const insertData = listCatalog?.map(data => {
+                    if (result.data) {
+                        if (result.data.data) {
+                            if (result.data.data.length > 0) {
+                                listProduct = [...listProduct, ...result.data.data];
+                            }
+                            else {
+                                continueLoop = false;
+                            }
+
+                            if (result.data.paging) {
+                                if (result.data.paging.next) {
+                                    requestUrl = result.data.paging.next;
+                                }
+                                else {
+                                    continueLoop = false;
+                                }
+                            }
+                            else {
+                                continueLoop = false;
+                            }
+                        }
+                        else {
+                            continueLoop = false;
+                        }
+                    }
+                    else {
+                        continueLoop = false;
+                    }
+                }
+
+                if (listProduct) {
+                    const insertData = listProduct?.map(data => {
                         return {
                             metacatalogid: metacatalogid || 0,
                             productid: data?.retailer_id || '',
@@ -544,7 +610,7 @@ exports.synchroProduct = async (request, response) => {
                     responsedata = genericfunctions.changeResponseData(responsedata, null, productresponse, null, 200, true);
                 }
                 else {
-                    responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_productget', result?.data, 'Error obtaining product list', 400, false);
+                    responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_productget', listProduct, 'Error obtaining product list', 400, false);
                 }
             }
             else {
