@@ -1,6 +1,6 @@
 const { getErrorCode, axiosObservable } = require('../config/helpers');
+const { getFileRequest, extractDataFile } = require('../config/productCatalog.helper');
 
-const axios = require('axios');
 const genericfunctions = require('../config/genericfunctions');
 const triggerfunctions = require('../config/triggerfunctions');
 
@@ -933,7 +933,85 @@ exports.deleteProduct = async (request, response) => {
 
 exports.importProduct = async (request, response) => {
     try {
+        const { corpid, orgid } = request.user;
+        const { metacatalogid, url } = request.body;
+
         var responsedata = genericfunctions.generateResponseData(request._requestid);
+
+        let fileResponseData = await getFileRequest({
+            method: 'get',
+            url: url,
+        });
+
+        if (fileResponseData.status === 200) {
+            const catalogresponse = await metaCatalogSel(corpid, orgid, 0, metacatalogid, request._requestid);
+
+            if (catalogresponse) {
+                const businessresponse = await metaBusinessSel(corpid, orgid, catalogresponse[0].metabusinessid, request._requestid);
+
+                if (businessresponse) {
+                    let datatoimport = extractDataFile(true, fileResponseData.data, metacatalogid, false);
+
+                    if (datatoimport) {
+                        let accessToken = businessresponse[0].accesstoken;
+                        let catalogid = catalogresponse[0].catalogid;
+
+                        const config = { headers: { Authorization: 'Bearer ' + accessToken } };
+
+                        const result = await axiosObservable({
+                            data: JSON.parse(JSON.stringify({
+                                name: new Date().toISOString(),
+                            })),
+                            headers: config,
+                            method: 'post',
+                            url: `${facebookEndpoint}${catalogid}/product_feeds?access_token=${accessToken}`,
+                            _requestid: request._requestid,
+                        });
+
+                        if (result.data) {
+                            let metafeedid = result.data.id;
+
+                            if (metafeedid) {
+                                const resultUpload = await axiosObservable({
+                                    data: JSON.parse(JSON.stringify({
+                                        url: url,
+                                    })),
+                                    headers: config,
+                                    method: 'post',
+                                    url: `${facebookEndpoint}${metafeedid}/uploads?access_token=${accessToken}`,
+                                    _requestid: request._requestid,
+                                });
+
+                                if (resultUpload.data) {
+                                    responsedata = genericfunctions.changeResponseData(responsedata, null, resultUpload.data, null, 200, true);
+                                }
+                                else {
+                                    responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_productupload', resultUpload?.data, 'Error uploading product feed', 400, false);
+                                }
+                            }
+                            else {
+                                responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_productfeed', result?.data, 'Error creating product feed', 400, false);
+                            }
+                        }
+                        else {
+                            responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_productfeed', result?.data, 'Error creating product feed', 400, false);
+                        }
+                    }
+                    else {
+                        responsedata = genericfunctions.changeResponseData(responsedata, 'productimportmissing', null, 'File not found', 400, false);
+                    }
+                }
+                else {
+                    responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_nobusiness', null, 'Business not found', 400, false);
+                }
+            }
+            else {
+                responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_nocatalog', null, 'Catalog not found', 400, false);
+            }
+        }
+        else {
+            responsedata = genericfunctions.changeResponseData(responsedata, 'productimportalert', null, 'File not found', 400, false);
+        }
 
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {

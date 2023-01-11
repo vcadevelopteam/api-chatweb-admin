@@ -68,9 +68,7 @@ const getXmlFile = (data, metacatalogid, override) => {
             type: x["g:type"] || '',
         }
         if (isvalid) {
-            isvalid = (table.productid && table.title && table.description && table.link &&
-                table.imagelink && table.brand && table.condition && table.availability
-                && table.price && table.currency) ? true : false;
+            isvalid = (table.productid && table.title && table.description && table.availability && table.category && table.condition && table.currency && table.price && table.link && table.imagelink && table.brand) ? true : false;
         }
 
         return table;
