@@ -2206,6 +2206,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PRODUCTCATALOG_SEL_EXPORT: {
+        query: "SELECT * FROM ufn_productcatalog_sel_export($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_PRODUCTCATALOG_LST: {
         query: "SELECT * FROM ufn_productcatalog_lst($corpid, $orgid)",
         module: "",

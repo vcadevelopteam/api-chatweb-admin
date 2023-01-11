@@ -156,6 +156,20 @@ const productCatalogIns = async (corpid, orgid, metacatalogid, id, productid, re
     return null;
 }
 
+const productCatalogSel = async (corpid, orgid, requestid) => {
+    const queryResult = await triggerfunctions.executesimpletransaction("UFN_PRODUCTCATALOG_SEL_EXPORT", {
+        corpid: corpid,
+        orgid: orgid,
+        _requestid: requestid,
+    });
+
+    if (queryResult instanceof Array) {
+        return queryResult;
+    }
+
+    return null;
+}
+
 exports.getBusinessList = async (request, response) => {
     try {
         const { corpid, orgid, usr } = request.user;
@@ -935,10 +949,24 @@ exports.importProduct = async (request, response) => {
 
 exports.downloadProduct = async (request, response) => {
     try {
+        const { corpid, orgid } = request.user;
+
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
-        if (request.body) {
-            responsedata = genericfunctions.changeResponseData(responsedata, null, { url: 'https://www.africau.edu/images/default/sample.pdf' }, null, 200, true);
+        const productlist = await productCatalogSel(corpid, orgid, request._requestid);
+
+        if (productlist) {
+            const csvresult = await triggerfunctions.exportData(productlist, 'productcatalog', 'csv', null, request._requestid);
+
+            if (!csvresult.error) {
+                responsedata = genericfunctions.changeResponseData(responsedata, null, { url: csvresult?.url }, null, 200, true);
+            }
+            else {
+                responsedata = genericfunctions.changeResponseData(responsedata, csvresult.code, null, csvresult.code, csvresult.rescode, false);
+            }
+        }
+        else {
+            responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_noproductlist', null, 'Product list not found', 400, false);
         }
 
         return response.status(responsedata.status).json(responsedata);
