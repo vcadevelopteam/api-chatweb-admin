@@ -710,7 +710,7 @@ exports.synchroProduct = async (request, response) => {
 
                 const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
-                let requestUrl = `${facebookEndpoint}${catalogid}/products?fields=additional_image_urls,availability,brand,category,color,condition,currency,custom_label_0,custom_label_1,custom_label_2,custom_label_3,custom_label_4,description,expiration_date,start_date,gender,id,image_url,material,name,pattern,price,retailer_id,review_status,sale_price,short_description,size,url&limit=500&access_token=${accessToken}`;
+                let requestUrl = `${facebookEndpoint}${catalogid}/products?fields=additional_image_urls,availability,brand,category,color,condition,currency,custom_label_0,custom_label_1,custom_label_2,custom_label_3,custom_label_4,description,expiration_date,start_date,gender,id,image_url,material,name,pattern,price,retailer_id,review_status,sale_price,short_description,size,url&limit=500&bulk_pagination=true&access_token=${accessToken}`;
                 let continueLoop = true;
                 let listProduct = [];
 
@@ -842,7 +842,7 @@ exports.deleteProduct = async (request, response) => {
                         let facebookretailerid = productdata.retailerid;
 
                         if (!facebookretailerid) {
-                            let requestUrl = `${facebookEndpoint}${catalogid}/products?access_token=${accessToken}`;
+                            let requestUrl = `${facebookEndpoint}${catalogid}/products?bulk_pagination=true&access_token=${accessToken}`;
                             let continueLoop = true;
 
                             while (continueLoop) {
