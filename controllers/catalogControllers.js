@@ -242,13 +242,17 @@ exports.manageCatalog = async (request, response) => {
 
                         const result = await axiosObservable({
                             data: {
-                                description: catalogdescription,
-                                name: catalogname,
-                                vertical: catalogtype,
+                                data: {
+                                    description: catalogdescription,
+                                    name: catalogname,
+                                    vertical: catalogtype,
+                                },
+                                config: config,
+                                method: 'post',
+                                url: `${facebookEndpoint}${businessid}/owned_product_catalogs?access_token=${accessToken}`,
                             },
-                            headers: config,
                             method: 'post',
-                            url: `${facebookEndpoint}${businessid}/owned_product_catalogs?access_token=${accessToken}`,
+                            url: `${bridgeEndpoint}processlaraigo/sendrequest`,
                             _requestid: request._requestid,
                         });
 
@@ -271,12 +275,16 @@ exports.manageCatalog = async (request, response) => {
 
                         const result = await axiosObservable({
                             data: {
-                                name: catalogname,
-                                vertical: catalogtype
+                                data: {
+                                    name: catalogname,
+                                    vertical: catalogtype
+                                },
+                                config: config,
+                                method: 'post',
+                                url: `${facebookEndpoint}${catalogid}?access_token=${accessToken}`,
                             },
-                            headers: config,
                             method: 'post',
-                            url: `${facebookEndpoint}${catalogid}?access_token=${accessToken}`,
+                            url: `${bridgeEndpoint}processlaraigo/sendrequest`,
                             _requestid: request._requestid,
                         });
 
@@ -296,9 +304,13 @@ exports.manageCatalog = async (request, response) => {
                         const { metabusinessid, metacatalogid, catalogid, catalogname, catalogdescription, catalogtype, description, status, type } = request.body;
 
                         const result = await axiosObservable({
-                            url: `${facebookEndpoint}${catalogid}?access_token=${accessToken}`,
-                            headers: config,
-                            method: 'delete',
+                            data: {
+                                config: config,
+                                method: 'delete',
+                                url: `${facebookEndpoint}${catalogid}?access_token=${accessToken}`,
+                            },
+                            method: 'post',
+                            url: `${bridgeEndpoint}processlaraigo/sendrequest`,
                             _requestid: request._requestid,
                         });
 
@@ -351,9 +363,13 @@ exports.synchroCatalog = async (request, response) => {
 
             while (continueLoop) {
                 const result = await axiosObservable({
-                    headers: config,
-                    method: 'get',
-                    url: requestUrl,
+                    data: {
+                        config: config,
+                        method: 'get',
+                        url: requestUrl,
+                    },
+                    method: 'post',
+                    url: `${bridgeEndpoint}processlaraigo/sendrequest`,
                     _requestid: request._requestid,
                 });
 
@@ -439,38 +455,42 @@ exports.manageProduct = async (request, response) => {
                             const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
                             const result = await axiosObservable({
-                                data: JSON.parse(JSON.stringify({
-                                    retailer_id: productid || null,
-                                    name: title || null,
-                                    description: description || null,
-                                    short_description: descriptionshort || null,
-                                    availability: availability || null,
-                                    category: category || null,
-                                    condition: condition || null,
-                                    currency: currency || null,
-                                    price: (price * 100) || null,
-                                    sale_price: (saleprice * 100) || null,
-                                    url: link || null,
-                                    image_url: imagelink || null,
-                                    additional_image_urls: additionalimagelink ? [additionalimagelink] : null,
-                                    brand: brand || null,
-                                    color: color || null,
-                                    gender: gender || null,
-                                    material: material || null,
-                                    pattern: pattern || null,
-                                    size: size || null,
-                                    start_date: datestart || null,
-                                    launch_date: datelaunch || null,
-                                    expiration_date: dateexpiration || null,
-                                    custom_label_0: customlabel0 || null,
-                                    custom_label_1: customlabel1 || null,
-                                    custom_label_2: customlabel2 || null,
-                                    custom_label_3: customlabel3 || null,
-                                    custom_label_4: customlabel4 || null,
-                                }, (k, v) => v ?? undefined)),
-                                headers: config,
+                                data: {
+                                    data: JSON.parse(JSON.stringify({
+                                        retailer_id: productid || null,
+                                        name: title || null,
+                                        description: description || null,
+                                        short_description: descriptionshort || null,
+                                        availability: availability || null,
+                                        category: category || null,
+                                        condition: condition || null,
+                                        currency: currency || null,
+                                        price: (price * 100) || null,
+                                        sale_price: (saleprice * 100) || null,
+                                        url: link || null,
+                                        image_url: imagelink || null,
+                                        additional_image_urls: additionalimagelink ? [additionalimagelink] : null,
+                                        brand: brand || null,
+                                        color: color || null,
+                                        gender: gender || null,
+                                        material: material || null,
+                                        pattern: pattern || null,
+                                        size: size || null,
+                                        start_date: datestart || null,
+                                        launch_date: datelaunch || null,
+                                        expiration_date: dateexpiration || null,
+                                        custom_label_0: customlabel0 || null,
+                                        custom_label_1: customlabel1 || null,
+                                        custom_label_2: customlabel2 || null,
+                                        custom_label_3: customlabel3 || null,
+                                        custom_label_4: customlabel4 || null,
+                                    }, (k, v) => v ?? undefined)),
+                                    config: config,
+                                    method: 'post',
+                                    url: `${facebookEndpoint}${catalogid}/products?access_token=${accessToken}`,
+                                },
                                 method: 'post',
-                                url: `${facebookEndpoint}${catalogid}/products?access_token=${accessToken}`,
+                                url: `${bridgeEndpoint}processlaraigo/sendrequest`,
                                 _requestid: request._requestid,
                             });
 
@@ -501,9 +521,13 @@ exports.manageProduct = async (request, response) => {
 
                                 while (continueLoop) {
                                     const result = await axiosObservable({
-                                        headers: config,
-                                        method: 'get',
-                                        url: requestUrl,
+                                        data: {
+                                            config: config,
+                                            method: 'get',
+                                            url: requestUrl,
+                                        },
+                                        method: 'post',
+                                        url: `${bridgeEndpoint}processlaraigo/sendrequest`,
                                         _requestid: request._requestid,
                                     });
 
@@ -544,37 +568,41 @@ exports.manageProduct = async (request, response) => {
 
                             if (facebookretailerid) {
                                 const result = await axiosObservable({
-                                    data: JSON.parse(JSON.stringify({
-                                        name: title || null,
-                                        description: description || null,
-                                        short_description: descriptionshort || null,
-                                        availability: availability || null,
-                                        category: category || null,
-                                        condition: condition || null,
-                                        currency: currency || null,
-                                        price: (price * 100) || null,
-                                        sale_price: (saleprice * 100) || null,
-                                        url: link || null,
-                                        image_url: imagelink || null,
-                                        additional_image_urls: additionalimagelink ? [additionalimagelink] : null,
-                                        brand: brand || null,
-                                        color: color || null,
-                                        gender: gender || null,
-                                        material: material || null,
-                                        pattern: pattern || null,
-                                        size: size || null,
-                                        start_date: datestart || null,
-                                        launch_date: datelaunch || null,
-                                        expiration_date: dateexpiration || null,
-                                        custom_label_0: customlabel0 || null,
-                                        custom_label_1: customlabel1 || null,
-                                        custom_label_2: customlabel2 || null,
-                                        custom_label_3: customlabel3 || null,
-                                        custom_label_4: customlabel4 || null,
-                                    })),
-                                    headers: config,
+                                    data: {
+                                        data: JSON.parse(JSON.stringify({
+                                            name: title || null,
+                                            description: description || null,
+                                            short_description: descriptionshort || null,
+                                            availability: availability || null,
+                                            category: category || null,
+                                            condition: condition || null,
+                                            currency: currency || null,
+                                            price: (price * 100) || null,
+                                            sale_price: (saleprice * 100) || null,
+                                            url: link || null,
+                                            image_url: imagelink || null,
+                                            additional_image_urls: additionalimagelink ? [additionalimagelink] : null,
+                                            brand: brand || null,
+                                            color: color || null,
+                                            gender: gender || null,
+                                            material: material || null,
+                                            pattern: pattern || null,
+                                            size: size || null,
+                                            start_date: datestart || null,
+                                            launch_date: datelaunch || null,
+                                            expiration_date: dateexpiration || null,
+                                            custom_label_0: customlabel0 || null,
+                                            custom_label_1: customlabel1 || null,
+                                            custom_label_2: customlabel2 || null,
+                                            custom_label_3: customlabel3 || null,
+                                            custom_label_4: customlabel4 || null,
+                                        })),
+                                        config: config,
+                                        method: 'post',
+                                        url: `${facebookEndpoint}${facebookretailerid}?access_token=${accessToken}`,
+                                    },
                                     method: 'post',
-                                    url: `${facebookEndpoint}${facebookretailerid}?access_token=${accessToken}`,
+                                    url: `${bridgeEndpoint}processlaraigo/sendrequest`,
                                     _requestid: request._requestid,
                                 });
 
@@ -607,9 +635,13 @@ exports.manageProduct = async (request, response) => {
 
                                 while (continueLoop) {
                                     const result = await axiosObservable({
-                                        headers: config,
-                                        method: 'get',
-                                        url: requestUrl,
+                                        data: {
+                                            config: config,
+                                            method: 'get',
+                                            url: requestUrl,
+                                        },
+                                        method: 'post',
+                                        url: `${bridgeEndpoint}processlaraigo/sendrequest`,
                                         _requestid: request._requestid,
                                     });
 
@@ -650,9 +682,13 @@ exports.manageProduct = async (request, response) => {
 
                             if (facebookretailerid) {
                                 const result = await axiosObservable({
-                                    headers: config,
-                                    method: 'delete',
-                                    url: `${facebookEndpoint}${facebookretailerid}?access_token=${accessToken}`,
+                                    data: {
+                                        config: config,
+                                        method: 'delete',
+                                        url: `${facebookEndpoint}${facebookretailerid}?access_token=${accessToken}`,
+                                    },
+                                    method: 'post',
+                                    url: `${bridgeEndpoint}processlaraigo/sendrequest`,
                                     _requestid: request._requestid,
                                 });
 
@@ -716,9 +752,13 @@ exports.synchroProduct = async (request, response) => {
 
                 while (continueLoop) {
                     const result = await axiosObservable({
-                        headers: config,
-                        method: 'get',
-                        url: requestUrl,
+                        data: {
+                            config: config,
+                            method: 'get',
+                            url: requestUrl,
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processlaraigo/sendrequest`,
                         _requestid: request._requestid,
                     });
 
@@ -847,9 +887,13 @@ exports.deleteProduct = async (request, response) => {
 
                             while (continueLoop) {
                                 const result = await axiosObservable({
-                                    headers: config,
-                                    method: 'get',
-                                    url: requestUrl,
+                                    data: {
+                                        config: config,
+                                        method: 'get',
+                                        url: requestUrl,
+                                    },
+                                    method: 'post',
+                                    url: `${bridgeEndpoint}processlaraigo/sendrequest`,
                                     _requestid: request._requestid,
                                 });
 
@@ -890,9 +934,13 @@ exports.deleteProduct = async (request, response) => {
 
                         if (facebookretailerid) {
                             const result = await axiosObservable({
-                                headers: config,
-                                method: 'delete',
-                                url: `${facebookEndpoint}${facebookretailerid}?access_token=${accessToken}`,
+                                data: {
+                                    config: config,
+                                    method: 'delete',
+                                    url: `${facebookEndpoint}${facebookretailerid}?access_token=${accessToken}`,
+                                },
+                                method: 'post',
+                                url: `${bridgeEndpoint}processlaraigo/sendrequest`,
                                 _requestid: request._requestid,
                             });
 
@@ -959,12 +1007,16 @@ exports.importProduct = async (request, response) => {
                         const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
                         const result = await axiosObservable({
-                            data: JSON.parse(JSON.stringify({
-                                name: new Date().toISOString(),
-                            })),
-                            headers: config,
+                            data: {
+                                data: JSON.parse(JSON.stringify({
+                                    name: new Date().toISOString(),
+                                })),
+                                config: config,
+                                method: 'post',
+                                url: `${facebookEndpoint}${catalogid}/product_feeds?access_token=${accessToken}`,
+                            },
                             method: 'post',
-                            url: `${facebookEndpoint}${catalogid}/product_feeds?access_token=${accessToken}`,
+                            url: `${bridgeEndpoint}processlaraigo/sendrequest`,
                             _requestid: request._requestid,
                         });
 
@@ -973,12 +1025,16 @@ exports.importProduct = async (request, response) => {
 
                             if (metafeedid) {
                                 const resultUpload = await axiosObservable({
-                                    data: JSON.parse(JSON.stringify({
-                                        url: url,
-                                    })),
-                                    headers: config,
+                                    data: {
+                                        data: JSON.parse(JSON.stringify({
+                                            url: url,
+                                        })),
+                                        config: config,
+                                        method: 'post',
+                                        url: `${facebookEndpoint}${metafeedid}/uploads?access_token=${accessToken}`,
+                                    },
                                     method: 'post',
-                                    url: `${facebookEndpoint}${metafeedid}/uploads?access_token=${accessToken}`,
+                                    url: `${bridgeEndpoint}processlaraigo/sendrequest`,
                                     _requestid: request._requestid,
                                 });
 
