@@ -151,8 +151,6 @@ exports.close = async (req, res) => {
             data:  body,
             _requestid: req._requestid,
         })
-
-        console.log("#875478878798898954454412114",responseapp)
         
         if (!responseapp.data || !responseapp.data instanceof Object){
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
