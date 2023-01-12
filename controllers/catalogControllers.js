@@ -747,7 +747,7 @@ exports.synchroProduct = async (request, response) => {
 
                 const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
-                let requestUrl = `${facebookEndpoint}${catalogid}/products?fields=additional_image_urls,availability,brand,category,color,condition,currency,custom_label_0,custom_label_1,custom_label_2,custom_label_3,custom_label_4,description,expiration_date,start_date,gender,id,image_url,material,name,pattern,price,retailer_id,review_status,sale_price,short_description,size,url&limit=500&bulk_pagination=true&access_token=${accessToken}`;
+                let requestUrl = `${facebookEndpoint}${catalogid}/products?fields=additional_image_urls,availability,brand,category,color,condition,currency,custom_label_0,custom_label_1,custom_label_2,custom_label_3,custom_label_4,description,expiration_date,start_date,gender,id,image_url,material,name,pattern,price,retailer_id,review_status,sale_price,short_description,size,url,channels_to_integrity_status{rejection_information}&limit=500&bulk_pagination=true&access_token=${accessToken}`;
                 let continueLoop = true;
                 let listProduct = [];
 
@@ -826,7 +826,7 @@ exports.synchroProduct = async (request, response) => {
                             customlabel2: data?.custom_label_2 || '',
                             customlabel3: data?.custom_label_3 || '',
                             customlabel4: data?.custom_label_4 || '',
-                            reviewstatus: data?.review_status || 'approved',
+                            reviewstatus: (data?.review_status || (data?.channels_to_integrity_status?.data[0]?.rejection_information ? 'rejected' : null)) || 'approved',
                             status: 'ACTIVO',
                             type: '',
                         };
