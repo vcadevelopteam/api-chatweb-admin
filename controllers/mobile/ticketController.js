@@ -2,7 +2,6 @@ require('dotenv').config({ path: 'variables.env' });
 const { executesimpletransaction } = require('../../config/mobile/triggerMobileFunction');
 const { errors, getErrorCode, setSessionParameters, axiosObservable } = require('../../config/helpers');
 const { pushNotification } = require('../mobile/notificationMobileController');
-//const { post } = require('moongose/routes');
 
 exports.reply = async (req, res) => {
     try {
@@ -14,7 +13,6 @@ exports.reply = async (req, res) => {
         }
 
         data.fromasesor = "fromasesor";
-        //setSessionParameters(data, req.user, req._requestid);
         
         if (!data.corpid)
             data.p_corpid = req.user.corpid ? req.user.corpid : 1;
@@ -79,7 +77,6 @@ exports.triggerBlock = async (req, res) => {
         data.p_userid = req.user.userid;
         data.tokenmovil = req.user.token;
 
-        //const responseservic = await axios.post(`${process.env.SERVICES}handler/triggerblock`, data);
         const responseservices = await axiosObservable({
             url: `${process.env.SERVICES}handler/triggerblock`,
             method: 'post',
@@ -107,8 +104,7 @@ exports.close = async (req, res) => {
         }
 
         data.fromasesor = "fromasesor";
-        //setSessionParameters(data, req.user, req._requestid);
-        
+
         if (!data.corpid)
             data.p_corpid = req.user.corpid ? req.user.corpid : 1;
         if (!data.orgid)
@@ -127,13 +123,15 @@ exports.close = async (req, res) => {
                 data:  { method: "", parameters: data },
                 _requestid: req._requestid,
             })
-            
+
+
         if (!responseservices.data || !responseservices.data instanceof Object)
-            return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
+            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
 
         if (!responseservices.data.Success) {
-            return res.status(500).json({ msg: responseservices.data.Msg });
+            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
         }
+        
         data.isanswered = data.isanswered.toString();
 
         const body = new URLSearchParams({
@@ -146,7 +144,6 @@ exports.close = async (req, res) => {
             isanswered: data.isanswered.toString()
         });
 
-        //const responseapp = await axios.post(`${process.env.APP_MOBILE_SOCKET}inbox/DeleteTicketHub`, body); 
         const responseapp = await axiosObservable({
             url: `${process.env.APP_MOBILE_SOCKET}inbox/DeleteTicketHub`,
             method: 'post',
@@ -213,7 +210,6 @@ exports.reasign = async (req, res) => {
 
         await executesimpletransaction("UFN_CONVERSATION_REASSIGNTICKET", data);
 
-        //const responseapp2 = await axios.post(`${process.env.APP_MOBILE_SOCKET}inbox/ReassignedTicketHub`, data);
         const responseapp = await axiosObservable({
             url: `${process.env.APP_MOBILE_SOCKET}inbox/ReassignedTicketHub`,
             method: 'post',
@@ -252,7 +248,6 @@ exports.sendhsm = async (req, res) => {
 
         await executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", { ...data, personid: data.listmembers[0].personid });
 
-        //const responseservices1 = await axios.post(`${process.env.SERVICES}handler/external/sendhsm`, data);
         const responseservices = await axiosObservable({
             url: `${process.env.SERVICES}handler/external/sendhsm`,
             method: 'post',
@@ -276,7 +271,6 @@ exports.sendhsm = async (req, res) => {
             corpid: data.corpid,
             orgid: data.orgid,
         }
-        //axios.post(`${process.env.APP_MOBILE_SOCKET}inbox/sendMessageFromBotHub`, ticket);
         axiosObservable({
             url: `${process.env.APP_MOBILE_SOCKET}inbox/sendMessageFromBotHub`,
             method: 'post',
