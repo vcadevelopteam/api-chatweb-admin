@@ -144,6 +144,7 @@ exports.close = async (req, res) => {
             isanswered: data.isanswered.toString()
         });
 
+
         const responseapp = await axiosObservable({
             url: `${process.env.APP_MOBILE_SOCKET}inbox/DeleteTicketHub`,
             method: 'post',
@@ -151,8 +152,9 @@ exports.close = async (req, res) => {
             _requestid: req._requestid,
         })
 
-        if (!responseapp.data || !responseapp.data instanceof Object)
-        return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+        if (!responseapp.data || !responseapp.data instanceof Object){
+            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+        }
 
         // if (!responseapp.data || !responseapp.data instanceof Object)
         //     return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
