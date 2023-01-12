@@ -5,6 +5,7 @@ const genericfunctions = require('../config/genericfunctions');
 const triggerfunctions = require('../config/triggerfunctions');
 
 const bridgeEndpoint = process.env.BRIDGE;
+const bridgeCloudEndpoint = process.env.BRIDGECLOUD;
 const facebookEndpoint = process.env.FACEBOOKAPI;
 
 const metaBusinessIns = async (corpid, orgid, id, businessid, businessname, accesstoken, userid, userfullname, graphdomain, description, status, type, username, operation, requestid) => {
@@ -252,7 +253,7 @@ exports.manageCatalog = async (request, response) => {
                                 url: `${facebookEndpoint}${businessid}/owned_product_catalogs?access_token=${accessToken}`,
                             },
                             method: 'post',
-                            url: `${bridgeEndpoint}processlaraigo/sendrequest`,
+                            url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
                             _requestid: request._requestid,
                         });
 
@@ -284,7 +285,7 @@ exports.manageCatalog = async (request, response) => {
                                 url: `${facebookEndpoint}${catalogid}?access_token=${accessToken}`,
                             },
                             method: 'post',
-                            url: `${bridgeEndpoint}processlaraigo/sendrequest`,
+                            url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
                             _requestid: request._requestid,
                         });
 
@@ -310,7 +311,7 @@ exports.manageCatalog = async (request, response) => {
                                 url: `${facebookEndpoint}${catalogid}?access_token=${accessToken}`,
                             },
                             method: 'post',
-                            url: `${bridgeEndpoint}processlaraigo/sendrequest`,
+                            url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
                             _requestid: request._requestid,
                         });
 
@@ -369,7 +370,7 @@ exports.synchroCatalog = async (request, response) => {
                         url: requestUrl,
                     },
                     method: 'post',
-                    url: `${bridgeEndpoint}processlaraigo/sendrequest`,
+                    url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
                     _requestid: request._requestid,
                 });
 
@@ -490,7 +491,7 @@ exports.manageProduct = async (request, response) => {
                                     url: `${facebookEndpoint}${catalogid}/products?access_token=${accessToken}`,
                                 },
                                 method: 'post',
-                                url: `${bridgeEndpoint}processlaraigo/sendrequest`,
+                                url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
                                 _requestid: request._requestid,
                             });
 
@@ -527,7 +528,7 @@ exports.manageProduct = async (request, response) => {
                                             url: requestUrl,
                                         },
                                         method: 'post',
-                                        url: `${bridgeEndpoint}processlaraigo/sendrequest`,
+                                        url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
                                         _requestid: request._requestid,
                                     });
 
@@ -602,7 +603,7 @@ exports.manageProduct = async (request, response) => {
                                         url: `${facebookEndpoint}${facebookretailerid}?access_token=${accessToken}`,
                                     },
                                     method: 'post',
-                                    url: `${bridgeEndpoint}processlaraigo/sendrequest`,
+                                    url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
                                     _requestid: request._requestid,
                                 });
 
@@ -641,7 +642,7 @@ exports.manageProduct = async (request, response) => {
                                             url: requestUrl,
                                         },
                                         method: 'post',
-                                        url: `${bridgeEndpoint}processlaraigo/sendrequest`,
+                                        url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
                                         _requestid: request._requestid,
                                     });
 
@@ -688,7 +689,7 @@ exports.manageProduct = async (request, response) => {
                                         url: `${facebookEndpoint}${facebookretailerid}?access_token=${accessToken}`,
                                     },
                                     method: 'post',
-                                    url: `${bridgeEndpoint}processlaraigo/sendrequest`,
+                                    url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
                                     _requestid: request._requestid,
                                 });
 
@@ -758,7 +759,7 @@ exports.synchroProduct = async (request, response) => {
                             url: requestUrl,
                         },
                         method: 'post',
-                        url: `${bridgeEndpoint}processlaraigo/sendrequest`,
+                        url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
                         _requestid: request._requestid,
                     });
 
@@ -893,7 +894,7 @@ exports.deleteProduct = async (request, response) => {
                                         url: requestUrl,
                                     },
                                     method: 'post',
-                                    url: `${bridgeEndpoint}processlaraigo/sendrequest`,
+                                    url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
                                     _requestid: request._requestid,
                                 });
 
@@ -940,7 +941,7 @@ exports.deleteProduct = async (request, response) => {
                                     url: `${facebookEndpoint}${facebookretailerid}?access_token=${accessToken}`,
                                 },
                                 method: 'post',
-                                url: `${bridgeEndpoint}processlaraigo/sendrequest`,
+                                url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
                                 _requestid: request._requestid,
                             });
 
@@ -1016,7 +1017,7 @@ exports.importProduct = async (request, response) => {
                                 url: `${facebookEndpoint}${catalogid}/product_feeds?access_token=${accessToken}`,
                             },
                             method: 'post',
-                            url: `${bridgeEndpoint}processlaraigo/sendrequest`,
+                            url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
                             _requestid: request._requestid,
                         });
 
@@ -1034,7 +1035,7 @@ exports.importProduct = async (request, response) => {
                                         url: `${facebookEndpoint}${metafeedid}/uploads?access_token=${accessToken}`,
                                     },
                                     method: 'post',
-                                    url: `${bridgeEndpoint}processlaraigo/sendrequest`,
+                                    url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
                                     _requestid: request._requestid,
                                 });
 
