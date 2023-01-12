@@ -150,6 +150,10 @@ exports.close = async (req, res) => {
             data:  body,
             _requestid: req._requestid,
         })
+
+        if (!responseapp.data || !responseapp.data instanceof Object)
+        return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+
         // if (!responseapp.data || !responseapp.data instanceof Object)
         //     return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
 
