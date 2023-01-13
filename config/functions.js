@@ -2192,12 +2192,12 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_PRODUCTCATALOG_SEL: {
-        query: "SELECT * FROM ufn_productcatalog_sel($corpid, $orgid, $take, $skip, $where, $order)",
+        query: "SELECT * FROM ufn_productcatalog_sel($corpid, $orgid, $metacatalogid, $take, $skip, $where, $order)",
         module: "",
         protected: "SELECT"
     },
     UFN_PRODUCTCATALOG_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_productcatalog_totalrecords($corpid, $orgid, $where)",
+        query: "SELECT * FROM ufn_productcatalog_totalrecords($corpid, $orgid, $metacatalogid, $where)",
         module: "",
         protected: "SELECT"
     },
