@@ -17,7 +17,8 @@ exports.extractDataFile = (isxml, data, metacatalogid, override) => {
     if (isxml) {
         return getXmlFile(data, metacatalogid, override);
     } else {
-        return getXlsxFile(data, metacatalogid, override);
+        return getCsvFile(data?.toString('utf8'), metacatalogid, override);
+        //return getXlsxFile(data, metacatalogid, override);
     }
 }
 
@@ -32,6 +33,7 @@ const getXmlFile = (data, metacatalogid, override) => {
 
     let simplifiedData = jsondata.rss.channel.item.map(x => {
         let customlabels = Object.keys(x).filter(y => y.indexOf("custom_label") >= 0);
+
         var table = {
             metacatalogid: metacatalogid || 0,
             productid: x["g:id"] || '',
@@ -64,9 +66,11 @@ const getXmlFile = (data, metacatalogid, override) => {
             customlabel3: x["g:custom_label_3"] || '',
             customlabel4: x["g:custom_label_4"] || '',
             reviewstatus: x["g:review_status"] || 'approved',
+            reviewdescription: x["g:review_description"] || '',
             status: x["g:status"] || 'ACTIVO',
             type: x["g:type"] || '',
         }
+
         if (isvalid) {
             isvalid = (table.productid && table.title && table.description && table.availability && table.category && table.condition && table.currency && table.price && table.link && table.imagelink && table.brand) ? true : false;
         }
@@ -82,17 +86,51 @@ const getXmlFile = (data, metacatalogid, override) => {
     }
 }
 
+const getCsvFile = (data, metacatalogid, override) => {
+    let isvalid = true;
+
+    var dataLines = data.split(/\r\n|\n/);
+    var headers = dataLines[0].split(',');
+    var lines = [];
+
+    for (var counter = 1; counter < dataLines.length; counter++) {
+        var dataLine = dataLines[counter].split(',');
+
+        if (dataLine.length == headers.length) {
+            var targetData = {};
+
+            for (var counterTwo = 0; counterTwo < headers.length; counterTwo++) {
+                targetData[headers[counterTwo]] = dataLine[counterTwo];
+            }
+
+            lines.push(targetData);
+
+            if (isvalid) {
+                isvalid = (table.id && table.title && table.description && table.availability && table.google_product_category && table.condition && table.currency && table.price && table.link && table.image_link && table.brand) ? true : false;
+            }
+        }
+    }
+
+    if (isvalid || override) {
+        return lines;
+    }
+    else {
+        return null;
+    }
+}
+
 const getXlsxFile = (data, metacatalogid, override) => {
     let isvalid = true;
 
     const workbook = xlsx.read(data);
 
-    const worksheetName = workbook.SheetNames[0];
-    let worksheet = workbook.Sheets[worksheetName];
+    let worksheet = workbook.Sheets[workbook.SheetNames[0]];
+
     let dataRows = xlsx.utils.sheet_to_json(worksheet, { header: 2 });
 
     let simplifiedData = dataRows.map((field) => {
         let customlabels = [field.custom_label_0, field.custom_label_1, field.custom_label_2, field.custom_label_3, field.custom_label_4];
+
         var table = {
             metacatalogid: metacatalogid || 0,
             productid: field.id || '',
@@ -125,13 +163,13 @@ const getXlsxFile = (data, metacatalogid, override) => {
             customlabel3: field.custom_label_3 || '',
             customlabel4: field.custom_label_4 || '',
             reviewstatus: field.review_status || 'approved',
+            reviewdescription: field.review_description || '',
             status: field.status || 'ACTIVO',
             type: field.type || '',
         }
+
         if (isvalid) {
-            isvalid = (table.productid && table.title && table.description && table.link &&
-                table.imagelink && table.brand && table.condition && table.availability
-                && table.price && table.currency) ? true : false;
+            isvalid = (table.productid && table.title && table.description && table.link && table.imagelink && table.brand && table.condition && table.availability && table.price && table.currency) ? true : false;
         }
 
         return table;

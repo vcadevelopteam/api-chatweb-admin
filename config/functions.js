@@ -2187,7 +2187,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PRODUCTCATALOG_INS: {
-        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $metacatalogid, $id, $productid, $retailerid, $title, $description, $descriptionshort, $availability, $category, $condition, $currency, $price, $saleprice, $link, $imagelink, $additionalimagelink, $brand, $color, $gender, $material, $pattern, $size, $datestart, $datelaunch, $dateexpiration, $labels, $customlabel0, $customlabel1, $customlabel2, $customlabel3, $customlabel4, $reviewstatus, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $metacatalogid, $id, $productid, $retailerid, $title, $description, $descriptionshort, $availability, $category, $condition, $currency, $price, $saleprice, $link, $imagelink, $additionalimagelink, $brand, $color, $gender, $material, $pattern, $size, $datestart, $datelaunch, $dateexpiration, $labels, $customlabel0, $customlabel1, $customlabel2, $customlabel3, $customlabel4, $reviewstatus, $reviewdescription, $status, $type, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -2207,7 +2207,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PRODUCTCATALOG_SEL_EXPORT: {
-        query: "SELECT * FROM ufn_productcatalog_sel_export($corpid, $orgid)",
+        query: "SELECT * FROM ufn_productcatalog_sel_export($corpid, $orgid, $metacatalogid)",
         module: "",
         protected: "SELECT"
     },
@@ -3203,32 +3203,32 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_FACEBOOKPOST_EXPORT_MOVIL: 
-    { 
+    UFN_FACEBOOKPOST_EXPORT_MOVIL:
+    {
         query: "select * from ufn_facebookpost_export($where, $order, $corporation);",
         module: "",
         protected: "SELECT"
     },
-    QUERY_AUTH_MOVIL: 
-    { 
+    QUERY_AUTH_MOVIL:
+    {
         query: "select us.doctype, us.docnumber, ous.roleid, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.lastname, us.email, us.status, ous.redirect, role.description roledesc from usr us inner join orguser ous on ous.userid = us.userid inner join org org on org.orgid = ous.orgid inner join corp corp on corp.corpid = ous.corpid inner join role role on role.roleid = ous.roleid where us.usr = $usr and ous.bydefault limit 1",
         module: "",
         protected: "SELECT"
     },
-    USN_USER_INS_MOVIL: 
+    USN_USER_INS_MOVIL:
     {
-        query:"SELECT * FROM ufn_user_ins($id, $usr, $doctype, $docnum, $pwd, $firstname, $lastname, $email, $pwdchangefirstlogin, $type, $status, $username, $operation, $redirect, $company)",
+        query: "SELECT * FROM ufn_user_ins($id, $usr, $doctype, $docnum, $pwd, $firstname, $lastname, $email, $pwdchangefirstlogin, $type, $status, $username, $operation, $redirect, $company)",
         module: "",
         protected: "SELECT"
     },
-    UFN_USERS_SEL_MOVIL: 
+    UFN_USERS_SEL_MOVIL:
     {
         query: "select * from ufn_users_sel($classification, $startdate, $enddate, $corporation);",
         module: "",
         protected: "SELECT"
     },
     UFN_USER_SEL_MOVIL: {
-        query:"select * from ufn_user_sel($facebookuserid);",
+        query: "select * from ufn_user_sel($facebookuserid);",
         module: "",
         protected: "SELECT"
     },
@@ -3248,7 +3248,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_USERZYX_SEL_MOVIL: {
-        query:"select * from ufn_user_sel($corpid, $orgid, $id, $username, $applicationid, $all)",
+        query: "select * from ufn_user_sel($corpid, $orgid, $id, $username, $applicationid, $all)",
         module: "",
         protected: "SELECT"
     },
@@ -3262,23 +3262,23 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_COMMUNICATIONCHANNEL_LST_MOVIL: { 
-        query:"SELECT * FROM ufn_communicationchannel_lst($corpid, $orgid)",
+    UFN_COMMUNICATIONCHANNEL_LST_MOVIL: {
+        query: "SELECT * FROM ufn_communicationchannel_lst($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
     UFN_USER_SUPERVISOR_LST_MOVIL: {
-        query:"SELECT * FROM ufn_user_supervisor_lst($corpid, $orgid, $userid)",
+        query: "SELECT * FROM ufn_user_supervisor_lst($corpid, $orgid, $userid)",
         module: "",
         protected: "SELECT"
     },
     UFN_APPS_DATA_SEL_MOVIL: {
-        query:"SELECT * FROM UFN_APPS_DATA_SEL($roleid)",
+        query: "SELECT * FROM UFN_APPS_DATA_SEL($roleid)",
         module: "",
         protected: "SELECT"
     },
     UFN_ORGUSER_SEL_MOVIL: {
-        query:"SELECT * FROM ufn_orguser_sel($corpid, $orgid, $userid, $username, $applicationid, $all)",
+        query: "SELECT * FROM ufn_orguser_sel($corpid, $orgid, $userid, $username, $applicationid, $all)",
         module: "",
         protected: "SELECT"
     },
@@ -3293,7 +3293,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CONVERSATION_SEL_INTERACTION_MOVIL: {
-        query:"SELECT * FROM ufn_conversation_sel_interaction_movil($conversationid, $lock, $conversationold, true, $userid)",
+        query: "SELECT * FROM ufn_conversation_sel_interaction_movil($conversationid, $lock, $conversationold, true, $userid)",
         module: "",
         protected: "SELECT"
     },
@@ -3318,7 +3318,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_DOMAIN_LST_VALORES_MOVIL: {
-        query:"SELECT * FROM ufn_domain_lst_valores($corpid, $orgid, $domainname)",
+        query: "SELECT * FROM ufn_domain_lst_valores($corpid, $orgid, $domainname)",
         module: "",
         protected: "SELECT"
     },
@@ -3402,18 +3402,18 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_QUICKREPLY_SEL_MOVIL:  {
+    UFN_QUICKREPLY_SEL_MOVIL: {
         query: "SELECT * FROM ufn_quickreply_sel($corpid,$orgid,0,$username,$applicationid, true)",
         module: "",
         protected: "SELECT"
     },
     UFN_SECURITYRULES_ACTIVE_MOVIL: {
-        query:"SELECT * FROM ufn_securityrules_active($corpid)",
+        query: "SELECT * FROM ufn_securityrules_active($corpid)",
         module: "",
         protected: "SELECT"
     },
     UFN_USR_UPDATEPWD_MOVIL: {
-        query:"SELECT * FROM ufn_usr_updatepwd($userid ,$pwd,$username)",
+        query: "SELECT * FROM ufn_usr_updatepwd($userid ,$pwd,$username)",
         module: "",
         protected: "SELECT"
     },
@@ -3518,7 +3518,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_USERTOKEN_INS_MOVIL: {
-        query:"select * from ufn_usertoken_ins($userid, $token, $origin)",
+        query: "select * from ufn_usertoken_ins($userid, $token, $origin)",
         module: "",
         protected: "SELECT"
     },
@@ -3574,6 +3574,11 @@ module.exports = {
     },
     UFN_ORDERLINE_SEL: {
         query: "SELECT * FROM ufn_orderline_sel($corpid, $orgid, $orderid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_METACATALOG_CLEAN: {
+        query: "SELECT * FROM ufn_metacatalog_clean($corpid, $orgid, $metabusinessid, $username)",
         module: "",
         protected: "SELECT"
     },
