@@ -90,6 +90,22 @@ const metaCatalogIns = async (corpid, orgid, metabusinessid, id, catalogid, cata
     return null;
 }
 
+const metaCatalogClean = async (corpid, orgid, metabusinessid, username, requestid) => {
+    const queryResult = await triggerfunctions.executesimpletransaction("UFN_METACATALOG_CLEAN", {
+        corpid: corpid,
+        orgid: orgid,
+        metabusinessid: metabusinessid,
+        username: username,
+        _requestid: requestid,
+    });
+
+    if (queryResult instanceof Array) {
+        return queryResult;
+    }
+
+    return null;
+}
+
 const productCatalogInsArray = async (corpid, orgid, metacatalogid, username, table, requestid) => {
     const queryResult = await triggerfunctions.executesimpletransaction("UFN_PRODUCTCATALOG_INS_ARRAY", {
         corpid: corpid,
@@ -107,7 +123,7 @@ const productCatalogInsArray = async (corpid, orgid, metacatalogid, username, ta
     return null;
 }
 
-const productCatalogIns = async (corpid, orgid, metacatalogid, id, productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, status, type, username, operation, requestid) => {
+const productCatalogIns = async (corpid, orgid, metacatalogid, id, productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, reviewdescription, status, type, username, operation, requestid) => {
     const queryResult = await triggerfunctions.executesimpletransaction("UFN_PRODUCTCATALOG_INS", {
         corpid: corpid,
         orgid: orgid,
@@ -143,6 +159,7 @@ const productCatalogIns = async (corpid, orgid, metacatalogid, id, productid, re
         customlabel3: customlabel3,
         customlabel4: customlabel4,
         reviewstatus: reviewstatus,
+        reviewdescription: reviewdescription,
         status: status,
         type: type,
         username: username,
@@ -157,10 +174,11 @@ const productCatalogIns = async (corpid, orgid, metacatalogid, id, productid, re
     return null;
 }
 
-const productCatalogSel = async (corpid, orgid, requestid) => {
+const productCatalogSel = async (corpid, orgid, metacatalogid, requestid) => {
     const queryResult = await triggerfunctions.executesimpletransaction("UFN_PRODUCTCATALOG_SEL_EXPORT", {
         corpid: corpid,
         orgid: orgid,
+        metacatalogid: metacatalogid,
         _requestid: requestid,
     });
 
@@ -405,6 +423,8 @@ exports.synchroCatalog = async (request, response) => {
             }
 
             if (listCatalog) {
+                await metaCatalogClean(corpid, orgid, metabusinessid, usr);
+
                 for (const catalog of listCatalog) {
                     await metaCatalogIns(corpid, orgid, metabusinessid, businessid, catalog.id, catalog.name, catalog.description || "", catalog.vertical, "", "ACTIVO", "", usr, "CREATE");
                 };
@@ -451,7 +471,7 @@ exports.manageProduct = async (request, response) => {
                     case "CREATE":
                     case "INSERT":
                         if (accessToken) {
-                            const { productid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, status, type } = request.body;
+                            const { productid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, reviewdescription, status, type } = request.body;
 
                             const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
@@ -498,7 +518,7 @@ exports.manageProduct = async (request, response) => {
                             if (result?.data?.id) {
                                 const productcatalogid = result.data.id
 
-                                let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, 0, productid, productcatalogid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, status, type, usr, operation, request._requestid);
+                                let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, 0, productid, productcatalogid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, reviewdescription, status, type, usr, operation, request._requestid);
 
                                 responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                             }
@@ -510,7 +530,7 @@ exports.manageProduct = async (request, response) => {
 
                     case "EDIT":
                         if (accessToken) {
-                            const { productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, status, type } = request.body;
+                            const { productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, reviewdescription, status, type } = request.body;
 
                             const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
@@ -608,7 +628,7 @@ exports.manageProduct = async (request, response) => {
                                 });
 
                                 if (result?.data) {
-                                    let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, status, type, usr, operation, request._requestid);
+                                    let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, reviewdescription, status, type, usr, operation, request._requestid);
 
                                     responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                                 }
@@ -624,7 +644,7 @@ exports.manageProduct = async (request, response) => {
 
                     case "DELETE":
                         if (accessToken) {
-                            const { productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, status, type } = request.body;
+                            const { productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, reviewdescription, status, type } = request.body;
 
                             const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
@@ -694,7 +714,7 @@ exports.manageProduct = async (request, response) => {
                                 });
 
                                 if (result?.data) {
-                                    let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, status, type, usr, operation, request._requestid);
+                                    let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, reviewdescription, status, type, usr, operation, request._requestid);
 
                                     responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                                 }
@@ -827,6 +847,7 @@ exports.synchroProduct = async (request, response) => {
                             customlabel3: data?.custom_label_3 || '',
                             customlabel4: data?.custom_label_4 || '',
                             reviewstatus: (data?.review_status || (data?.channels_to_integrity_status?.data[0]?.rejection_information ? 'rejected' : null)) || 'approved',
+                            reviewdescription: (data?.review_status || (data?.channels_to_integrity_status?.data[0]?.rejection_information?.message || null)) || '',
                             status: 'ACTIVO',
                             type: '',
                         };
@@ -946,7 +967,7 @@ exports.deleteProduct = async (request, response) => {
                             });
 
                             if (result?.data) {
-                                let catalogResponse = await productCatalogIns(corpid, orgid, productdata.metacatalogid, productdata.productcatalogid, productdata.productid, facebookretailerid, productdata.title, productdata.description, productdata.descriptionshort, productdata.availability, productdata.category, productdata.condition, productdata.currency, productdata.price, productdata.saleprice, productdata.link, productdata.imagelink, productdata.additionalimagelink, productdata.brand, productdata.color, productdata.gender, productdata.material, productdata.pattern, productdata.size, productdata.datestart, productdata.datelaunch, productdata.dateexpiration, productdata.labels, productdata.customlabel0, productdata.customlabel1, productdata.customlabel2, productdata.customlabel3, productdata.customlabel4, productdata.reviewstatus, productdata.status, productdata.type, usr, 'DELETE', request._requestid);
+                                let catalogResponse = await productCatalogIns(corpid, orgid, productdata.metacatalogid, productdata.productcatalogid, productdata.productid, facebookretailerid, productdata.title, productdata.description, productdata.descriptionshort, productdata.availability, productdata.category, productdata.condition, productdata.currency, productdata.price, productdata.saleprice, productdata.link, productdata.imagelink, productdata.additionalimagelink, productdata.brand, productdata.color, productdata.gender, productdata.material, productdata.pattern, productdata.size, productdata.datestart, productdata.datelaunch, productdata.dateexpiration, productdata.labels, productdata.customlabel0, productdata.customlabel1, productdata.customlabel2, productdata.customlabel3, productdata.customlabel4, productdata.reviewstatus, productdata.reviewdescription, productdata.status, productdata.type, usr, 'DELETE', request._requestid);
 
                                 responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                             }
@@ -993,57 +1014,62 @@ exports.importProduct = async (request, response) => {
         });
 
         if (fileResponseData.status === 200) {
-            const catalogresponse = await metaCatalogSel(corpid, orgid, 0, metacatalogid, request._requestid);
+            if (fileResponseData.headers["content-type"] === 'text/xml' || fileResponseData.headers["content-type"] === 'text/csv') {
+                const catalogresponse = await metaCatalogSel(corpid, orgid, 0, metacatalogid, request._requestid);
 
-            if (catalogresponse) {
-                const businessresponse = await metaBusinessSel(corpid, orgid, catalogresponse[0].metabusinessid, request._requestid);
+                if (catalogresponse) {
+                    const businessresponse = await metaBusinessSel(corpid, orgid, catalogresponse[0].metabusinessid, request._requestid);
 
-                if (businessresponse) {
-                    let datatoimport = extractDataFile(true, fileResponseData.data, metacatalogid, false);
+                    if (businessresponse) {
+                        let datatoimport = extractDataFile(fileResponseData.headers["content-type"] === 'text/xml' ? true : false, fileResponseData.data, metacatalogid, false);
 
-                    if (datatoimport) {
-                        let accessToken = businessresponse[0].accesstoken;
-                        let catalogid = catalogresponse[0].catalogid;
+                        if (datatoimport) {
+                            let accessToken = businessresponse[0].accesstoken;
+                            let catalogid = catalogresponse[0].catalogid;
 
-                        const config = { headers: { Authorization: 'Bearer ' + accessToken } };
+                            const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
-                        const result = await axiosObservable({
-                            data: {
-                                data: JSON.parse(JSON.stringify({
-                                    name: new Date().toISOString(),
-                                })),
-                                config: config,
-                                method: 'post',
-                                url: `${facebookEndpoint}${catalogid}/product_feeds?access_token=${accessToken}`,
-                            },
-                            method: 'post',
-                            url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
-                            _requestid: request._requestid,
-                        });
-
-                        if (result.data) {
-                            let metafeedid = result.data.id;
-
-                            if (metafeedid) {
-                                const resultUpload = await axiosObservable({
-                                    data: {
-                                        data: JSON.parse(JSON.stringify({
-                                            url: url,
-                                        })),
-                                        config: config,
-                                        method: 'post',
-                                        url: `${facebookEndpoint}${metafeedid}/uploads?access_token=${accessToken}`,
-                                    },
+                            const result = await axiosObservable({
+                                data: {
+                                    data: JSON.parse(JSON.stringify({
+                                        name: new Date().toISOString(),
+                                    })),
+                                    config: config,
                                     method: 'post',
-                                    url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
-                                    _requestid: request._requestid,
-                                });
+                                    url: `${facebookEndpoint}${catalogid}/product_feeds?access_token=${accessToken}`,
+                                },
+                                method: 'post',
+                                url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
+                                _requestid: request._requestid,
+                            });
 
-                                if (resultUpload.data) {
-                                    responsedata = genericfunctions.changeResponseData(responsedata, null, resultUpload.data, null, 200, true);
+                            if (result.data) {
+                                let metafeedid = result.data.id;
+
+                                if (metafeedid) {
+                                    const resultUpload = await axiosObservable({
+                                        data: {
+                                            data: JSON.parse(JSON.stringify({
+                                                url: url,
+                                            })),
+                                            config: config,
+                                            method: 'post',
+                                            url: `${facebookEndpoint}${metafeedid}/uploads?access_token=${accessToken}`,
+                                        },
+                                        method: 'post',
+                                        url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
+                                        _requestid: request._requestid,
+                                    });
+
+                                    if (resultUpload.data) {
+                                        responsedata = genericfunctions.changeResponseData(responsedata, null, resultUpload.data, null, 200, true);
+                                    }
+                                    else {
+                                        responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_productupload', resultUpload?.data, 'Error uploading product feed', 400, false);
+                                    }
                                 }
                                 else {
-                                    responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_productupload', resultUpload?.data, 'Error uploading product feed', 400, false);
+                                    responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_productfeed', result?.data, 'Error creating product feed', 400, false);
                                 }
                             }
                             else {
@@ -1051,19 +1077,19 @@ exports.importProduct = async (request, response) => {
                             }
                         }
                         else {
-                            responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_productfeed', result?.data, 'Error creating product feed', 400, false);
+                            responsedata = genericfunctions.changeResponseData(responsedata, 'productimportmissing', null, 'File not found', 400, false);
                         }
                     }
                     else {
-                        responsedata = genericfunctions.changeResponseData(responsedata, 'productimportmissing', null, 'File not found', 400, false);
+                        responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_nobusiness', null, 'Business not found', 400, false);
                     }
                 }
                 else {
-                    responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_nobusiness', null, 'Business not found', 400, false);
+                    responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_nocatalog', null, 'Catalog not found', 400, false);
                 }
             }
             else {
-                responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_nocatalog', null, 'Catalog not found', 400, false);
+                responsedata = genericfunctions.changeResponseData(responsedata, 'productimportalert', null, 'File not found', 400, false);
             }
         }
         else {
@@ -1085,10 +1111,11 @@ exports.importProduct = async (request, response) => {
 exports.downloadProduct = async (request, response) => {
     try {
         const { corpid, orgid } = request.user;
+        const { metacatalogid } = request.body;
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
-        const productlist = await productCatalogSel(corpid, orgid, request._requestid);
+        const productlist = await productCatalogSel(corpid, orgid, metacatalogid, request._requestid);
 
         if (productlist) {
             const csvresult = await triggerfunctions.exportData(productlist, 'productcatalog', 'csv', null, request._requestid);

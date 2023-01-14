@@ -2182,7 +2182,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PRODUCTCATALOG_INS: {
-        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $metacatalogid, $id, $productid, $retailerid, $title, $description, $descriptionshort, $availability, $category, $condition, $currency, $price, $saleprice, $link, $imagelink, $additionalimagelink, $brand, $color, $gender, $material, $pattern, $size, $datestart, $datelaunch, $dateexpiration, $labels, $customlabel0, $customlabel1, $customlabel2, $customlabel3, $customlabel4, $reviewstatus, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $metacatalogid, $id, $productid, $retailerid, $title, $description, $descriptionshort, $availability, $category, $condition, $currency, $price, $saleprice, $link, $imagelink, $additionalimagelink, $brand, $color, $gender, $material, $pattern, $size, $datestart, $datelaunch, $dateexpiration, $labels, $customlabel0, $customlabel1, $customlabel2, $customlabel3, $customlabel4, $reviewstatus, $reviewdescription, $status, $type, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -2202,7 +2202,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PRODUCTCATALOG_SEL_EXPORT: {
-        query: "SELECT * FROM ufn_productcatalog_sel_export($corpid, $orgid)",
+        query: "SELECT * FROM ufn_productcatalog_sel_export($corpid, $orgid, $metacatalogid)",
         module: "",
         protected: "SELECT"
     },
@@ -3095,6 +3095,11 @@ module.exports = {
     },
     UFN_METABUSINESS_SEL: {
         query: "SELECT * FROM ufn_metabusiness_sel($corpid, $orgid, $id)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_METACATALOG_CLEAN: {
+        query: "SELECT * FROM ufn_metacatalog_clean($corpid, $orgid, $metabusinessid, $username)",
         module: "",
         protected: "SELECT"
     },

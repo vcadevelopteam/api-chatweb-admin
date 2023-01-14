@@ -1251,6 +1251,9 @@ module.exports = {
         reviewstatus: {
             column: "p.reviewstatus"
         },
+        reviewdescription: {
+            column: "p.reviewdescription"
+        },
         status: {
             column: "p.status"
         },
