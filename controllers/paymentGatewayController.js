@@ -45,7 +45,7 @@ exports.getPaymentOrder = async(request, response) => {
     try {
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
-        const { corpid, orgid, conversationid, paymentid } = request.body;
+        const { corpid, orgid, conversationid, paymentid } = request.params;
 
         const queryResult = await triggerfunctions.executesimpletransaction("UFN_PAYMENT_SEL", { corpid: corpid, orgid: orgid, conversationid: conversationid, paymentid: paymentid });
         const paymentorder = queryResult[0];

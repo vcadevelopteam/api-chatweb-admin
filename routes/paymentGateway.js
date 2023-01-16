@@ -4,7 +4,7 @@ const paymentGateway = require("../controllers/paymentGatewayController");
 const auth = require('../middleware/auth');
 const ip = require('../middleware/ip');
 
-router.post("/get",
+router.post("/get/:orgid:corpid:conversationid:paymentid",
     paymentGateway.getPaymentOrder
 )
 router.post("/execute",
