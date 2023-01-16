@@ -67,7 +67,10 @@ exports.load = async (req, res) => {
 
     if (result instanceof Array) {
         result = (action === 'find_one') ? result[0] : result;
-        return res.json({ error: false, success: true, data: result });
+        return res.json({
+            error: !result ? true : false,
+            success: result ? true : false,
+            data: result });
     }
     else
         return res.status(result.rescode).json(result);
