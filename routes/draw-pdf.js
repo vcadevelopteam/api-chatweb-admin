@@ -9,7 +9,6 @@ router.post("/",
 )
 
 router.post("/drawOrderCard",
-    auth,
     drawPdfController.drawCardOrder
 )
 
