@@ -46,30 +46,35 @@ exports.drawCardOrder = async (req, res) => {
     const { reportname, parameters } = req.body;
 
     const result = await executesimpletransaction("QUERY_ORDER_DETAIL_CARD", parameters);
-    
+
     if (result instanceof Array) {
         if (result.length === 0) {
             return res.json({ error: false, success: true, url: "", code: "WITHOUT-ORDERS" });
         } else {
             const ff = result.reduce((acc, item) => ({
                 ...acc,
-                productmetaid: undefined,
-                producttitle: undefined,
-                quantity: undefined,
-                unitprice: undefined,
-                detailamount: undefined,
-                [`item${item.orderid}`]: [
-                    ...(acc[`item${item.orderid}`] || []),
-                    item
-                ]
+                [`item${item.orderid}`]: {
+                    ...item,
+                    productmetaid: undefined,
+                    producttitle: undefined,
+                    quantity: undefined,
+                    unitprice: undefined,
+                    detailamount: undefined,
+                    orderid: `${item.orderid}`.padStart(2, "7"),
+                    createdate: new Date(item.createdate).toLocaleString(),
+                    orderamount: `${item.currency} ${item.orderamount.toFixed(2)}`,
+                    detail: [
+                        ...(acc[`item${item.orderid}`]?.detail || []),
+                        { ...item, subtotal: `${item.currency} ${item.detailamount.toFixed(2)}` },
+                    ]
+                }
             }), {});
-            
+
             const aa = Object.values(ff)
-            return res.json({ error: false, success: true, aa });
+            // return res.json({ error: false, success: true, aa });
 
-
-            ejs.renderFile(path.join('./views/', template), {
-                data: result
+            ejs.renderFile(path.join('./views/', "card-order.html"), {
+                data: aa
             }, (error, data) => {
                 if (error) {
                     logger.child({ _requestid: req._requestid, error: { detail: error.stack, message: error.message } }).error(`Request to ${req.originalUrl}: ${error.message}`);

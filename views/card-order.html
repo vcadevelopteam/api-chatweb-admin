@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+</head>
+<style>
+    span, td, div {
+        font-family: sans-serif;
+    }
+</style>
+
+<body>
+    <div style="width: 90%; margin-left: auto; margin-right: auto; margin-top: 10px;">
+        <% data.forEach(function(order){ %>
+            <div style="margin-top: 30px; padding-bottom: 30px; border-bottom: 1px solid #e1e1e1">
+                <div style="text-align: center; font-weight: 800;">N° PEDIDO <%= order.orderid %></div>
+                <div style="margin-top: 20px; display: table; width: 100%;">
+                    <div style="display: table-cell; width: 50%;">
+                        <span style="display: table; width: 100%">
+                            <span style="display: table-cell; width: 25%">Cliente</span>
+                            <span style="display: table-cell; width: 75%"><%= order.name %></span>
+                        </span>
+                        <span style="display: table; width: 100%;">
+                            <span style="display: table-cell; width: 25%">Correo</span>
+                            <span style="display: table-cell; width: 75%"><%= order.email %></span>
+                        </span>
+                        <span style="display: table; width: 100%;">
+                            <span style="display: table-cell; width: 25%">Teléfono</span>
+                            <span style="display: table-cell; width: 75%"><%= order.phone %></span>
+                        </span>
+                    </div>
+                    <div style="display: table-cell; width: 50%;">
+                        <span style="display: table; width: 100%">
+                            <span style="display: table-cell; width: 30%">Fecha pedido</span>
+                            <span style="display: table-cell; width: 75%"><%= order.createdate %></span>
+                        </span>
+                    </div>
+                </div>
+                <div style="margin-top:20px">
+                    <table style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <tr style="background-color: rgb(223, 237, 249)">
+                                    <th class="billing-table-header">Cod producto</th>
+                                    <th class="billing-table-header">Descripcion</th>
+                                    <th class="billing-table-header">Cantidad</th>
+                                    <th class="billing-table-header">Importe</th>
+                                </tr>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% order.detail.forEach(function(product){ %>
+                                <tr>
+                                    <td><%= product.productid %></td>
+                                    <td><%= product.producttitle %></td>
+                                    <td style="text-align: right;"><%= product.quantity %></td>
+                                    <td style="text-align: right;"><%= product.subtotal %></td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" style="font-weight: 800; text-align: right; margin-right: 10px;">Total pedido</td>
+                                <td style="font-weight: 800; text-align: right;"><%= order.orderamount %></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+</body>
+
+</html>
