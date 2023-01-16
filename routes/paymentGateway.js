@@ -8,7 +8,7 @@ router.post("/get/:orgid:corpid:conversationid:paymentid",
     paymentGateway.getPaymentOrder
 )
 router.post("/execute",
-    paymentGateway.createCharge
+    paymentGateway.chargeCulqui
 )
 
 module.exports = router;
