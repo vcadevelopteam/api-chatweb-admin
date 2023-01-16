@@ -3594,4 +3594,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PAYMENT_SEL: {
+        query: "SELECT * FROM ufn_payment_sel($corpid, $orgid, $conversationid, $paymentid)",
+        module: "",
+        protected: "INSERT"
+    },
 }
