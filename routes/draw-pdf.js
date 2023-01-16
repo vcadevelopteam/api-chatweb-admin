@@ -8,4 +8,10 @@ router.post("/",
     drawPdfController.draw
 )
 
+router.post("/drawOrderCard",
+    auth,
+    drawPdfController.drawCardOrder
+)
+
+
 module.exports = router;
