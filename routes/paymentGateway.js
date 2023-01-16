@@ -4,9 +4,11 @@ const paymentGateway = require("../controllers/paymentGatewayController");
 const auth = require('../middleware/auth');
 const ip = require('../middleware/ip');
 
+router.post("/get",
+    paymentGateway.getPaymentOrder
+)
 router.post("/execute",
     paymentGateway.createCharge
 )
-
 
 module.exports = router;
