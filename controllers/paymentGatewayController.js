@@ -5,7 +5,7 @@ const genericfunctions = require('../config/genericfunctions');
 
 const { getErrorCode } = require('../config/helpers');
 
-const createCharge = async (user,amount, tokenculqi) => {
+const createCharge = async (user,amount, tokenculqi, email) => {
     try {
 
         const culqi = new Culqi({
@@ -18,21 +18,10 @@ const createCharge = async (user,amount, tokenculqi) => {
             email: email,
             source_id: tokenculqi,
             capture: true,
-            description: 'Prueba',
-            installments: 2,
-            metadata: { dni: '70202170' },
-            antifraud_details: {
-                address: user.address,
-                address_city: user.address_city,
-                country_code: 'PE',
-                first_name: user.firstname,
-                last_name: user.lastname,
-                phone_number: user.phone
-            }
         };
 
-        console.log(charge);
-        return await Culqi.charges.createCharge(culqiBody);
+        console.log(culqiBody);
+        return await culqi.charges.createCharge(culqiBody);
 
     } catch (error) {
         console.log(error)
@@ -44,49 +33,33 @@ exports.chargeCulqui = async (request, response) => {
     var responsedata = genericfunctions.generateResponseData(request._requestid);
 
     try {
-        const { corpid, orgid, conversationid, paymentid, tokenculqi,amount } = request.body;
+        const { corpid, orgid, conversationid, paymentid, tokenculqi,amount, email } = request.body;
 
         const queryResult = await triggerfunctions.executesimpletransaction("UFN_PAYMENT_SEL", { corpid: corpid, orgid: orgid, conversationid: conversationid, paymentid: paymentid });
         const paymentorder = queryResult[0];
 
         if (paymentorder) {
             if (paymentorder.status === 'PENDIENTE' && paymentorder.amount === (amount / 100)) {
-                const charge = await createCharge({ address: paymentorder.address, address_city: paymentorder.city, firstname: paymentorder.firstname, lastname: paymentorder.lastname, phone: paymentorder.phone }, paymentorder.amount , tokenculqi);
+                const charge = await createCharge({ address: paymentorder.address, address_city: paymentorder.city, firstname: paymentorder.firstname, lastname: paymentorder.lastname, phone: paymentorder.phone }, amount , tokenculqi, email);
 
                 if (charge.object === 'error') {
                     responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, null, responsedata.status, responsedata.success);
                 }
                 else {
-                  /*
-                    const chargedata = await insertCharge(corpid, orgid, paymentorderid, null, (settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, 'API', 'PAID', token.id, token, charge.object, responsedata.id);
-
-                    const queryParameters = {
-                        corpid: corpid,
-                        orgid: orgid,
-                        paymentorderid: paymentorderid,
-                        paymentby: token?.email || paymentorder.personid,
-                        culqiamount: (settings.amount / 100),
-                        chargeid: chargedata?.chargeid || null,
-                        chargetoken: charge?.id || null,
-                        chargejson: charge || null,
-                        tokenid: token?.id || null,
-                        tokenjson: token || null,
-                    };
-
-                    const paymentResult = await triggerfunctions.executesimpletransaction("UFN_PAYMENTORDER_PAYMENT", queryParameters);
-
-                    if (paymentResult instanceof Array) {
+                  
+                    const ResultUpdateCharge = await updateCharge(corpid, orgid, paymentid, tokenculqi, paymentorder, charge, 'admin');
+                    console.log(ResultUpdateCharge)
+                    if (ResultUpdateCharge) {
                         responsedata = genericfunctions.changeResponseData(responsedata, null, { message: 'success' }, 'success', 200, true);
                     }
                     else {
-                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Insert failure', responsedata.status, responsedata.success);
+                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Charge failure', responsedata.status, responsedata.success);
                     }
 
-                    */
                 }
             }
             else {
-                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Amount does not match', responsedata.status, responsedata.success);
+                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Amount does not match or status does not pending', responsedata.status, responsedata.success);
             }
         }
         return response.status(responsedata.status).json(responsedata);
@@ -127,4 +100,27 @@ exports.getPaymentOrder = async (request, response) => {
     } catch (exception) {
         return response.status(500).json(getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid));
     }
+}
+
+
+const updateCharge = async (corpid, orgid, paymentid, tokenid, tokenjson, chargejson, username) => {
+    const queryParameters = {
+        corpid: corpid,
+        orgid: orgid,
+        paymentid: paymentid,
+        tokenid: tokenid,
+        tokenjson: tokenjson,
+        chargejson: chargejson,
+        username: username
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction("UFN_PAYMENT_CHARGE", queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult[0];
+        }
+    }
+
+    return null;
 }
