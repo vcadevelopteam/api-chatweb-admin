@@ -106,7 +106,7 @@ const getCsvFile = (data, metacatalogid, override) => {
             lines.push(targetData);
 
             if (isvalid) {
-                isvalid = (table.id && table.title && table.description && table.availability && table.google_product_category && table.condition && table.currency && table.price && table.link && table.image_link && table.brand) ? true : false;
+                isvalid = (targetData.id && targetData.title && targetData.description && targetData.availability && targetData.google_product_category && targetData.condition && targetData.currency && targetData.price && targetData.link && targetData.image_link && targetData.brand) ? true : false;
             }
         }
     }
