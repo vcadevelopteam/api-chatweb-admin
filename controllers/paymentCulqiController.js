@@ -3,7 +3,9 @@ const Culqi = require('culqi-node');
 const triggerfunctions = require('../config/triggerfunctions');
 const genericfunctions = require('../config/genericfunctions');
 
-const { getErrorCode } = require('../config/helpers');
+const { getErrorCode, axiosObservable } = require('../config/helpers');
+
+const servicesEndpoint = process.env.SERVICES;
 
 exports.chargeCulqui = async (request, response) => {
     var responsedata = genericfunctions.generateResponseData(request._requestid);
@@ -45,6 +47,25 @@ exports.chargeCulqui = async (request, response) => {
 
                         if (paymentResult instanceof Array) {
                             responsedata = genericfunctions.changeResponseData(responsedata, null, { message: 'success' }, 'success', 200, true);
+
+                            const requestContinueFlow = await axiosObservable({
+                                data: {
+                                    conversationid: paymentorder.conversationid,
+                                    corpid: paymentorder.corpid,
+                                    orgid: paymentorder.orgid,
+                                    personid: paymentorder.personid,
+                                },
+                                method: 'post',
+                                url: `${servicesEndpoint}handler/continueflow`,
+                                _requestid: responsedata.id,
+                            });
+
+                            if (requestContinueFlow.data) {
+                                responsedata = genericfunctions.changeResponseData(responsedata, null, requestContinueFlow.data, 'success', 200, true);
+                            }
+                            else {
+                                responsedata = genericfunctions.changeResponseData(responsedata, null, requestContinueFlow.data, 'success', 200, true);
+                            }
                         }
                         else {
                             responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Insert failure', responsedata.status, responsedata.success);
