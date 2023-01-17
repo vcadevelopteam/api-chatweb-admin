@@ -5,7 +5,7 @@ const genericfunctions = require('../config/genericfunctions');
 
 const { getErrorCode } = require('../config/helpers');
 
-const createCharge = async (user,amount, tokenculqi) => {
+const createCharge = async (user,amount, tokenculqi, email) => {
     try {
 
         const culqi = new Culqi({
@@ -18,21 +18,10 @@ const createCharge = async (user,amount, tokenculqi) => {
             email: email,
             source_id: tokenculqi,
             capture: true,
-            description: 'Prueba',
-            installments: 2,
-            metadata: { dni: '70202170' },
-            antifraud_details: {
-                address: user.address,
-                address_city: user.address_city,
-                country_code: 'PE',
-                first_name: user.firstname,
-                last_name: user.lastname,
-                phone_number: user.phone
-            }
         };
 
-        console.log(charge);
-        return await Culqi.charges.createCharge(culqiBody);
+        console.log(culqiBody);
+        return await culqi.charges.createCharge(culqiBody);
 
     } catch (error) {
         console.log(error)
@@ -44,23 +33,23 @@ exports.chargeCulqui = async (request, response) => {
     var responsedata = genericfunctions.generateResponseData(request._requestid);
 
     try {
-        const { corpid, orgid, conversationid, paymentid, tokenculqi,amount } = request.body;
+        const { corpid, orgid, conversationid, paymentid, tokenculqi,amount, email } = request.body;
 
         const queryResult = await triggerfunctions.executesimpletransaction("UFN_PAYMENT_SEL", { corpid: corpid, orgid: orgid, conversationid: conversationid, paymentid: paymentid });
         const paymentorder = queryResult[0];
 
         if (paymentorder) {
             if (paymentorder.status === 'PENDIENTE' && paymentorder.amount === (amount / 100)) {
-                const charge = await createCharge({ address: paymentorder.address, address_city: paymentorder.city, firstname: paymentorder.firstname, lastname: paymentorder.lastname, phone: paymentorder.phone }, paymentorder.amount , tokenculqi);
+                const charge = await createCharge({ address: paymentorder.address, address_city: paymentorder.city, firstname: paymentorder.firstname, lastname: paymentorder.lastname, phone: paymentorder.phone }, amount , tokenculqi, email);
 
                 if (charge.object === 'error') {
                     responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, null, responsedata.status, responsedata.success);
                 }
                 else {
                   
-                    const updateCharge = await updateCharge(corpid, orgid, paymentid, tokenculqi, paymentorder, charge);
-
-                    if (updateCharge instanceof Array) {
+                    const ResultUpdateCharge = await updateCharge(corpid, orgid, paymentid, tokenculqi, paymentorder, charge, 'admin');
+                    console.log(ResultUpdateCharge)
+                    if (ResultUpdateCharge) {
                         responsedata = genericfunctions.changeResponseData(responsedata, null, { message: 'success' }, 'success', 200, true);
                     }
                     else {
