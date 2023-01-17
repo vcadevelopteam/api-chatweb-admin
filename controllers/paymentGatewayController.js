@@ -57,36 +57,20 @@ exports.chargeCulqui = async (request, response) => {
                     responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, null, responsedata.status, responsedata.success);
                 }
                 else {
-                  /*
-                    const chargedata = await insertCharge(corpid, orgid, paymentorderid, null, (settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, 'API', 'PAID', token.id, token, charge.object, responsedata.id);
+                  
+                    const updateCharge = await updateCharge(corpid, orgid, paymentid, tokenculqi, paymentorder, charge);
 
-                    const queryParameters = {
-                        corpid: corpid,
-                        orgid: orgid,
-                        paymentorderid: paymentorderid,
-                        paymentby: token?.email || paymentorder.personid,
-                        culqiamount: (settings.amount / 100),
-                        chargeid: chargedata?.chargeid || null,
-                        chargetoken: charge?.id || null,
-                        chargejson: charge || null,
-                        tokenid: token?.id || null,
-                        tokenjson: token || null,
-                    };
-
-                    const paymentResult = await triggerfunctions.executesimpletransaction("UFN_PAYMENTORDER_PAYMENT", queryParameters);
-
-                    if (paymentResult instanceof Array) {
+                    if (updateCharge instanceof Array) {
                         responsedata = genericfunctions.changeResponseData(responsedata, null, { message: 'success' }, 'success', 200, true);
                     }
                     else {
-                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Insert failure', responsedata.status, responsedata.success);
+                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Charge failure', responsedata.status, responsedata.success);
                     }
 
-                    */
                 }
             }
             else {
-                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Amount does not match', responsedata.status, responsedata.success);
+                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Amount does not match or status does not pending', responsedata.status, responsedata.success);
             }
         }
         return response.status(responsedata.status).json(responsedata);
@@ -127,4 +111,27 @@ exports.getPaymentOrder = async (request, response) => {
     } catch (exception) {
         return response.status(500).json(getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid));
     }
+}
+
+
+const updateCharge = async (corpid, orgid, paymentid, tokenid, tokenjson, chargejson, username) => {
+    const queryParameters = {
+        corpid: corpid,
+        orgid: orgid,
+        paymentid: paymentid,
+        tokenid: tokenid,
+        tokenjson: tokenjson,
+        chargejson: chargejson,
+        username: username
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction("UFN_PAYMENT_CHARGE", queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult[0];
+        }
+    }
+
+    return null;
 }

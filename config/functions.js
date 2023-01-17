@@ -3078,4 +3078,9 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_PAYMENT_CHARGE: {
+        query: "SELECT * FROM ufn_payment_charge($corpid, $orgid, $paymentid, $tokenid, $tokenjson, $chargejson, $username)",
+        module: "",
+        protected: "INSERT"
+    },
 }
