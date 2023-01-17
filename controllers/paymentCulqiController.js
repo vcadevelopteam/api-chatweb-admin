@@ -21,7 +21,7 @@ exports.chargeCulqui = async (request, response) => {
             const paymentorder = queryResult[0];
 
             if (paymentorder) {
-                if (paymentorder.paymentstatus === 'PENDING' && paymentorder.totalamount === (settings.amount / 100) && paymentorder.expired === false) {
+                if (paymentorder.paymentstatus === 'PENDING' && paymentorder.totalamount === (settings.amount / 100)) {
                     const charge = await createCharge({ address: paymentorder.useraddress, address_city: paymentorder.usercity, firstname: paymentorder.userfirstname, lastname: paymentorder.userlastname, phone: paymentorder.userphone }, settings, token, metadata, appsetting.privatekey);
 
                     if (charge.object === 'error') {
