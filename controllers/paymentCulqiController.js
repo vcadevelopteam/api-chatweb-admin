@@ -118,7 +118,7 @@ const createCharge = async (userprofile, settings, token, metadata, privatekey) 
             phone_number: userprofile.phone ? (userprofile.phone.replace(/[^0-9]/g, '')).slice(0, 15) : null,
         },
         currency_code: `${settings.currency}`,
-        description: `${(removeSpecialCharacter(settings.description || '').replace(/[^0-9A-Za-z ]/g, '')).slice(0, 80)}`,
+        description: `${(removeSpecialCharacter(settings.description || 'EMPTY').replace(/[^0-9A-Za-z ]/g, '')).slice(0, 80)}`,
         email: `${token.email.slice(0, 50)}`,
         metadata: metadata,
         source_id: `${token.id}`,
