@@ -128,7 +128,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                 }
                                 const updateResult = await laraigoQuery(`
                                 UPDATE ${k} xupd
-                                SET ${columns.split(', ').map(c => `${c} = dt.${c}`).join(', ')}
+                                SET ${columns.split(', ').map(c => `"${c}" = dt.${c}`).join(', ')}
                                 FROM json_populate_recordset(null::record, $datatable)
                                 AS dt (${dt})
                                 WHERE xupd.${q.id} = dt.${q.id}
@@ -167,7 +167,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                 }
                                 const updateResult = await laraigoQuery(`
                                 UPDATE ${k} xupd
-                                SET ${columns.split(', ').map(c => `${c} = dt.${c}`).join(', ')}
+                                SET ${columns.split(', ').map(c => `"${c}" = dt.${c}`).join(', ')}
                                 FROM json_populate_recordset(null::record, $datatable)
                                 AS dt (${dt})
                                 WHERE ${q.xupd}
@@ -205,7 +205,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                 }
                                 const updateResult = await laraigoQuery(`
                                 UPDATE ${k} xupd
-                                SET ${columns.split(', ').map(c => `${c} = dt.${c}`).join(', ')}
+                                SET ${columns.split(', ').map(c => `"${c}" = dt.${c}`).join(', ')}
                                 FROM json_populate_recordset(null::record, $datatable)
                                 AS dt (${dt})
                                 WHERE ${q.xupd}
@@ -317,7 +317,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                             SELECT dt.*
                             FROM json_populate_recordset(null::record, $datatable)
                             AS dt (${dt})
-                            WHERE NOT EXISTS(SELECT 1 FROM ${k} xins WHERE ${q.where_ins})
+                            WHERE NOT EXISTS(SELECT 1 FROM "${k}" xins WHERE ${q.where_ins})
                             `.replace('\n', ' '),
                             {
                                 datatable: JSON.stringify(selectResult)
@@ -352,7 +352,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                     SELECT dt.*
                                     FROM json_populate_recordset(null::record, $datatable)
                                     AS dt (${dt})
-                                    WHERE NOT EXISTS(SELECT 1 FROM ${k} xins WHERE ${q.where_ins})
+                                    WHERE NOT EXISTS(SELECT 1 FROM "${k}" xins WHERE ${q.where_ins})
                                     `.replace('\n', ' '),
                                     {
                                         datatable: JSON.stringify([elem])
@@ -441,50 +441,50 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
 }
 
 const queryCore = {
-    org: {
-        id: 'orgid',
-        sequence: 'orgseq',
-        update: 'changedate',
-        insert: 'id',
-    },
-    domain: {
-        id: 'domainid',
-        sequence: 'domainseq',
-        update: 'changedate',
-        insert: 'id',
-    },
-    inputvalidation: {
-        id: 'inputvalidationid',
-        sequence: 'inputvalidationseq',
-        update: 'changedate',
-        insert: 'id',
-    },
-    /* appintegrationid is required for communicationchannel but no values seen */
-    appintegration: {
-        id: 'appintegrationid',
-        sequence: 'appintegrationseq',
-        update: 'changedate',
-        insert: 'id',
-    },
-    /* botconfiguration is required for communicationchannel */
-    botconfiguration: {
-        id: 'botconfigurationid',
-        sequence: 'botconfigurationseq',
-        update: 'changedate',
-        insert: 'id',
-    },
-    communicationchannel: {
-        id: 'communicationchannelid',
-        sequence: 'communicationchannelseq',
-        update: 'changedate',
-        insert: 'id',
-    },
-    communicationchannelstatus: {
-        id: 'communicationchannelstatusid',
-        sequence: 'communicationchannelstatusseq',
-        update: 'changedate',
-        insert: 'id',
-    },
+    // org: {
+    //     id: 'orgid',
+    //     sequence: 'orgseq',
+    //     update: 'changedate',
+    //     insert: 'id',
+    // },
+    // domain: {
+    //     id: 'domainid',
+    //     sequence: 'domainseq',
+    //     update: 'changedate',
+    //     insert: 'id',
+    // },
+    // inputvalidation: {
+    //     id: 'inputvalidationid',
+    //     sequence: 'inputvalidationseq',
+    //     update: 'changedate',
+    //     insert: 'id',
+    // },
+    // /* appintegrationid is required for communicationchannel but no values seen */
+    // appintegration: {
+    //     id: 'appintegrationid',
+    //     sequence: 'appintegrationseq',
+    //     update: 'changedate',
+    //     insert: 'id',
+    // },
+    // /* botconfiguration is required for communicationchannel */
+    // botconfiguration: {
+    //     id: 'botconfigurationid',
+    //     sequence: 'botconfigurationseq',
+    //     update: 'changedate',
+    //     insert: 'id',
+    // },
+    // communicationchannel: {
+    //     id: 'communicationchannelid',
+    //     sequence: 'communicationchannelseq',
+    //     update: 'changedate',
+    //     insert: 'id',
+    // },
+    // communicationchannelstatus: {
+    //     id: 'communicationchannelstatusid',
+    //     sequence: 'communicationchannelstatusseq',
+    //     update: 'changedate',
+    //     insert: 'id',
+    // },
     property: {
         id: 'propertyid',
         sequence: 'propertyseq',
