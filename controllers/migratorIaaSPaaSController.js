@@ -344,7 +344,22 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                             executeResult[k].success = false;
                             executeResult[k].errors.push({ insert: insertResult });
                             for (const elem of selectResult) {
-                                const eleminsertResult = await laraigoQuery(`
+                                let eleminsertResult = []
+                                if (q.insert === 'createdate' && q.where_ins) {
+                                    eleminsertResult = await laraigoQuery(`
+                                    INSERT INTO ${k}
+                                    OVERRIDING SYSTEM VALUE
+                                    SELECT dt.*
+                                    FROM json_populate_recordset(null::record, $datatable)
+                                    AS dt (${dt})
+                                    WHERE NOT EXISTS(SELECT 1 FROM ${k} xins WHERE ${q.where_ins})
+                                    `.replace('\n', ' '),
+                                    {
+                                        datatable: JSON.stringify([elem])
+                                    });
+                                }
+                                else {
+                                    eleminsertResult = await laraigoQuery(`
                                     INSERT INTO ${k}
                                     OVERRIDING SYSTEM VALUE
                                     SELECT dt.*
@@ -354,6 +369,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                     {
                                         datatable: JSON.stringify([elem])
                                     });
+                                }
                                 if (eleminsertResult instanceof Array) {
                                 }
                                 else {
