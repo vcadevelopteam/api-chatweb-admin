@@ -302,7 +302,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 const selectElapsedSeconds = parseHrtimeToSeconds(process.hrtime(selectStartTime));
                 
                 if (selectResult instanceof Array) {
-                    if (selectResult.length === 0 || lastloopid === selectResult?.[0]?.[`{q.id}`]) {
+                    if (selectResult.length === 0 || lastloopid === selectResult?.[0]?.[`${q.id}`]) {
                         break;
                     }
                     
@@ -441,50 +441,50 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
 }
 
 const queryCore = {
-    // org: {
-    //     id: 'orgid',
-    //     sequence: 'orgseq',
-    //     update: 'changedate',
-    //     insert: 'id',
-    // },
-    // domain: {
-    //     id: 'domainid',
-    //     sequence: 'domainseq',
-    //     update: 'changedate',
-    //     insert: 'id',
-    // },
-    // inputvalidation: {
-    //     id: 'inputvalidationid',
-    //     sequence: 'inputvalidationseq',
-    //     update: 'changedate',
-    //     insert: 'id',
-    // },
-    // /* appintegrationid is required for communicationchannel but no values seen */
-    // appintegration: {
-    //     id: 'appintegrationid',
-    //     sequence: 'appintegrationseq',
-    //     update: 'changedate',
-    //     insert: 'id',
-    // },
-    // /* botconfiguration is required for communicationchannel */
-    // botconfiguration: {
-    //     id: 'botconfigurationid',
-    //     sequence: 'botconfigurationseq',
-    //     update: 'changedate',
-    //     insert: 'id',
-    // },
-    // communicationchannel: {
-    //     id: 'communicationchannelid',
-    //     sequence: 'communicationchannelseq',
-    //     update: 'changedate',
-    //     insert: 'id',
-    // },
-    // communicationchannelstatus: {
-    //     id: 'communicationchannelstatusid',
-    //     sequence: 'communicationchannelstatusseq',
-    //     update: 'changedate',
-    //     insert: 'id',
-    // },
+    org: {
+        id: 'orgid',
+        sequence: 'orgseq',
+        update: 'changedate',
+        insert: 'id',
+    },
+    domain: {
+        id: 'domainid',
+        sequence: 'domainseq',
+        update: 'changedate',
+        insert: 'id',
+    },
+    inputvalidation: {
+        id: 'inputvalidationid',
+        sequence: 'inputvalidationseq',
+        update: 'changedate',
+        insert: 'id',
+    },
+    /* appintegrationid is required for communicationchannel but no values seen */
+    appintegration: {
+        id: 'appintegrationid',
+        sequence: 'appintegrationseq',
+        update: 'changedate',
+        insert: 'id',
+    },
+    /* botconfiguration is required for communicationchannel */
+    botconfiguration: {
+        id: 'botconfigurationid',
+        sequence: 'botconfigurationseq',
+        update: 'changedate',
+        insert: 'id',
+    },
+    communicationchannel: {
+        id: 'communicationchannelid',
+        sequence: 'communicationchannelseq',
+        update: 'changedate',
+        insert: 'id',
+    },
+    communicationchannelstatus: {
+        id: 'communicationchannelstatusid',
+        sequence: 'communicationchannelstatusseq',
+        update: 'changedate',
+        insert: 'id',
+    },
     property: {
         id: 'propertyid',
         sequence: 'propertyseq',
