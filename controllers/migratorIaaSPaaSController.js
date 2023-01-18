@@ -242,7 +242,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 if (q.id) {
                     let max = []
                     if (corpidBind['fixdate'] && columns.includes('createdate')) {
-                        max = await laraigoQuery(`SELECT MAX(${q.id}) FROM "${k}" WHERE createdate >= $fixdate::timestamp`, {
+                        max = await laraigoQuery(`SELECT MAX(${q.id}) FROM "${k}" WHERE createdate < $fixdate::timestamp`, {
                             fixdate: corpidBind['fixdate']
                         });
                     }
@@ -332,16 +332,31 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                             });
                         }
                         else {
-                            insertResult = await laraigoQuery(`
-                            INSERT INTO ${k}
-                            OVERRIDING SYSTEM VALUE
-                            SELECT dt.*
-                            FROM json_populate_recordset(null::record, $datatable)
-                            AS dt (${dt})
-                            `.replace('\n', ' '),
-                            {
-                                datatable: JSON.stringify(selectResult)
-                            });
+                            if (corpidBind['fixdate'] && q.id) {
+                                insertResult = await laraigoQuery(`
+                                INSERT INTO ${k}
+                                OVERRIDING SYSTEM VALUE
+                                SELECT dt.*
+                                FROM json_populate_recordset(null::record, $datatable)
+                                AS dt (${dt})
+                                WHERE NOT EXISTS(SELECT 1 FROM "${k}" xins WHERE xins.${q.id} = dt.${q.id})
+                                `.replace('\n', ' '),
+                                {
+                                    datatable: JSON.stringify(selectResult)
+                                });
+                            }
+                            else {
+                                insertResult = await laraigoQuery(`
+                                INSERT INTO ${k}
+                                OVERRIDING SYSTEM VALUE
+                                SELECT dt.*
+                                FROM json_populate_recordset(null::record, $datatable)
+                                AS dt (${dt})
+                                `.replace('\n', ' '),
+                                {
+                                    datatable: JSON.stringify(selectResult)
+                                });
+                            }
                         }
                         let insertElapsedSeconds = parseHrtimeToSeconds(process.hrtime(insertStartTime));
                         
