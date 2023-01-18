@@ -576,7 +576,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CLASSIFICATION_INS: {
-        query: "SELECT * FROM ufn_classification_ins( $id, $corpid, $orgid, $description, $parent, $communicationchannel, $status, $type, $username, $operation, $tags,$title, $jobplan, $usergroup, $schedule)",
+        query: "SELECT * FROM ufn_classification_ins( $id, $corpid, $orgid, $description, $parent, $communicationchannel, $status, $type, $username, $operation, $tags,$title, $jobplan, $usergroup, $schedule, $metacatalogid)",
         module: "",
         protected: "INSERT"
     },
@@ -3102,5 +3102,10 @@ module.exports = {
         query: "SELECT * FROM ufn_metacatalog_clean($corpid, $orgid, $metabusinessid, $username)",
         module: "",
         protected: "SELECT"
+    },
+    UFN_PERSON_SEL_ONE: {
+        query: "SELECT * FROM ufn_person_sel_one($corpid, $orgid, $personid)",
+        module: "",
+        protected: "INSERT"
     },
 }
