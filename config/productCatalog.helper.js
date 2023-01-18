@@ -90,14 +90,16 @@ const getCsvFile = (data, metacatalogid, override) => {
     let isvalid = true;
 
     var dataLines = data.split(/\r\n|\n/);
-    var headers = dataLines[0].split(',');
+    var headers = dataLines[0].split(';');
     var lines = [];
 
     for (var counter = 1; counter < dataLines.length; counter++) {
-        var dataLine = dataLines[counter].split(',');
+        var dataLine = dataLines[counter].split(';');
 
         if (dataLine.length == headers.length) {
-            var targetData = {};
+            var targetData = {
+                metacatalogid: metacatalogid || 0,
+            };
 
             for (var counterTwo = 0; counterTwo < headers.length; counterTwo++) {
                 targetData[headers[counterTwo]] = dataLine[counterTwo];
