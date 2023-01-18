@@ -67,7 +67,6 @@ app.use('/api/mobile/auth', require('./routes/mobile/auth'));
 app.use('/api/mobile/ticket', require('./routes/mobile/ticket'));
 app.use('/api/mobile/notification', require('./routes/mobile/notification'));
 
-app.use('/api/paymentgateway', require('./routes/paymentGateway'));
 
 // Definir la pagina principal
 app.get('/', (req, res) => {
