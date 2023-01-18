@@ -240,7 +240,15 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
             while (true) {
                 // Último registro en la bd destino
                 if (q.id) {
-                    const max = await laraigoQuery(`SELECT MAX(${q.id}) FROM "${k}"`);
+                    let max = []
+                    if (corpidBind['fixdate'] && columns.includes('createdate')) {
+                        max = await laraigoQuery(`SELECT MAX(${q.id}) FROM "${k}" WHERE createdate >= $fixdate::timestamp`, {
+                            fixdate: corpidBind['fixdate']
+                        });
+                    }
+                    else {
+                        max = await laraigoQuery(`SELECT MAX(${q.id}) FROM "${k}"`);
+                    }
                     if (!(max instanceof Array)) {
                         executeResult[k].errors.push({ max: max });
                         logger.child({ _requestid: corpidBind._requestid }).info(max);
@@ -1019,12 +1027,13 @@ const queryBilling = {
 const queryCorpSel = `SELECT corpid, description FROM corp WHERE status = 'ACTIVO'`;
 
 exports.executeMigration = async (req, res) => {
-    let { corpid, modules, backupdate } = req.body;
+    let { corpid, modules, backupdate, fixdate } = req.body;
     if (!!corpid && !!modules && !!backupdate) {
         const corpidBind = {
             _requestid: req._requestid,
             corpid: corpid,
             backupdate: backupdate,
+            fixdate: fixdate,
         }
         let queryResult = { core: {}, subcore: {}, extras: {}, billing: {} };
         // await zyxmeQuery(`CREATE TABLE IF NOT EXISTS migration (corpid bigint, run boolean, params jsonb, result jsonb, startdate timestamp without time zone, enddate timestamp without time zone)`, bind = {
