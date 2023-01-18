@@ -61,7 +61,6 @@ app.use('/api/campaign', require('./routes/campaign'));
 app.use('/api/product', require('./routes/product'));
 app.use('/api/posthistory', require('./routes/posthistory'));
 
-app.use('/api/paymentgateway', require('./routes/paymentGateway'));
 
 // Definir la pagina principal
 app.get('/', (req, res) => {
