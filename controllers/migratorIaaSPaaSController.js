@@ -48,7 +48,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
             corpidBind['maxid'] = 0;
             let lastloopid = 0;
             let counter = 0;
-            const limit = 100; // PRUEBAS 100
+            const limit = 10000; // PRUEBAS 100
 
             // DELETE
             if (q.delete && q.delete === 'all') {
@@ -228,7 +228,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                             break;
                         }
                         // PRUEBAS Break solo para pruebas de 1 loop
-                        break;
+                        // break;
                     }
                 } catch (error) {
                     logger.child({ _requestid: corpidBind._requestid }).error(error);
@@ -376,7 +376,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                         lastloopid = selectResult[0][`${q.id}`];
                     }
                     // PRUEBAS Break solo para pruebas de 1 loop
-                    break;
+                    // break;
                 }
                 else {
                     logger.child({ _requestid: corpidBind._requestid }).info(selectResult);
