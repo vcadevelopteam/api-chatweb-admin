@@ -46,7 +46,7 @@
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr>
-                            <tr style="border-bottom: 1px solid black;">
+                            <tr style="border-bottom: 1px solid #adadad;">
                                 <th style="text-align: left;" class="billing-table-header">Cod producto</th>
                                 <th style="text-align: left;" class="billing-table-header">Descripcion</th>
                                 <th style="text-align: left;" class="billing-table-header">Cantidad</th>
@@ -54,7 +54,7 @@
                             </tr>
                         </tr>
                     </thead>
-                    <tbody style="border-bottom: 1px solid black;">
+                    <tbody style="border-bottom: 1px solid #adadad;">
                         <% order.detail.forEach(function(product){ %>
                             <tr>
                                 <td style="padding-top: 5px; padding-bottom: 5px;"><%= product.productid %></td>
@@ -66,8 +66,8 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="3" style="font-weight: 800; text-align: right; margin-right: 10px;">Total pedido</td>
-                            <td style="font-weight: 800; text-align: right;"><%= order.orderamount %></td>
+                            <td colspan="3" style="padding-top: 10px; font-weight: 800; text-align: right; margin-right: 10px;">Total pedido</td>
+                            <td style="padding-top: 10px; font-weight: 800; text-align: right;"><%= order.orderamount %></td>
                         </tr>
                     </tfoot>
                 </table>
