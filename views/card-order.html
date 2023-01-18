@@ -54,13 +54,13 @@
                             </tr>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody style="border-bottom: 1px solid black;">
                         <% order.detail.forEach(function(product){ %>
                             <tr>
-                                <td><%= product.productid %></td>
-                                <td><%= product.producttitle %></td>
-                                <td style="text-align: right;"><%= product.quantity %></td>
-                                <td style="text-align: right;"><%= product.subtotal %></td>
+                                <td style="padding-top: 5px; padding-bottom: 5px;"><%= product.productid %></td>
+                                <td style="padding-top: 5px; padding-bottom: 5px;"><%= product.producttitle %></td>
+                                <td style="text-align: right; padding-top: 5px; padding-bottom: 5px;"><%= product.quantity %></td>
+                                <td style="text-align: right; padding-top: 5px; padding-bottom: 5px;"><%= product.subtotal %></td>
                             </tr>
                         <% }); %>
                     </tbody>
