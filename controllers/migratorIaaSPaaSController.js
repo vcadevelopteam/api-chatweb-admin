@@ -273,7 +273,6 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     WHERE ${q.id} > $maxid
                     ORDER BY ${q.id}
                     LIMIT $limit
-                    OFFSET $offset
                     `, {
                         ...corpidBind,
                         offset: counter * limit,
@@ -550,7 +549,7 @@ const queryCore = {
     }
 }
 
-const querySubcoreClassification = {
+const querySubcore = {
     classification: {
         id: 'classificationid',
         sequence: 'classificationseq',
@@ -563,9 +562,6 @@ const querySubcoreClassification = {
         update: 'changedate',
         insert: 'id',
     },
-}
-
-const querySubcorePerson = {
     person: {
         id: 'personid',
         sequence: 'personseq',
@@ -589,9 +585,6 @@ const querySubcorePerson = {
         update: 'changedate',
         insert: 'id',
     },
-}
-
-const querySubcoreConversation = {
     post: {
         id: 'postid',
         sequence: 'postseq',
@@ -683,9 +676,6 @@ const querySubcoreConversation = {
         update: 'changedate',
         insert: 'id',
     },
-}
-
-const querySubcoreCampaign = {
     messagetemplate: {
         id: 'messagetemplateid',
         sequence: 'messagetemplateseq',
@@ -709,9 +699,6 @@ const querySubcoreCampaign = {
         update: 'changedate',
         insert: 'id',
     },
-}
-
-const querySubcoreOthers = {
     taskscheduler: {
         id: 'taskschedulerid',
         sequence: 'taskscheduler_taskschedulerid_seq',
@@ -1082,32 +1069,28 @@ exports.executeMigration = async (req, res) => {
         // }
         try {
             if (modules.includes('core')) {
-                queryResult.core = await migrationExecute(corpidBind, queryCore);
+                for (const [k,q] of Object.entries(queryCore)) {
+                    queryResult.core[k] = await migrationExecute(corpidBind, { [k]: q });
+                }
+            }
+            if (!modules.includes('core')) {
+                for (const [k,q] of Object.entries(queryCore)) {
+                    if (modules.includes(`core.${k}`)) {
+                        queryResult.core[k] = await migrationExecute(corpidBind, { [k]: q });
+                    }
+                } 
             }
             if (modules.includes('subcore')) {
-                queryResult.subcore.classification = await migrationExecute(corpidBind, querySubcoreClassification);
-                queryResult.subcore.person = await migrationExecute(corpidBind, querySubcorePerson);
-                queryResult.subcore.conversation = await migrationExecute(corpidBind, querySubcoreConversation);
-                queryResult.subcore.campaign = await migrationExecute(corpidBind, querySubcoreCampaign);
-                queryResult.subcore.others = await migrationExecute(corpidBind, querySubcoreOthers);
+                for (const [k,q] of Object.entries(querySubcore)) {
+                    queryResult.subcore[k] = await migrationExecute(corpidBind, { [k]: q });
+                }
             }
-            if (!modules.includes('subcore') && modules.includes('subcore.classification')) {
-                queryResult.subcore.classification = await migrationExecute(corpidBind, querySubcoreClassification);
-            }
-            if (!modules.includes('subcore') && modules.includes('subcore.person')) {
-                queryResult.subcore.person = await migrationExecute(corpidBind, querySubcorePerson);
-            }
-            if (!modules.includes('subcore') && modules.includes('subcore.conversation')) {
-                queryResult.subcore.conversation = await migrationExecute(corpidBind, querySubcoreConversation);
-            }
-            if (!modules.includes('subcore') && !modules.includes('subcore.conversation') && modules.includes('subcore.surveyanswered')) {
-                queryResult.subcore.surveyanswered = await migrationExecute(corpidBind, { surveyanswered: querySubcoreConversation.surveyanswered });
-            }
-            if (!modules.includes('subcore') && modules.includes('subcore.campaign')) {
-                queryResult.subcore.campaign = await migrationExecute(corpidBind, querySubcoreCampaign);
-            }
-            if (!modules.includes('subcore') && modules.includes('subcore.others')) {
-                queryResult.subcore.others = await migrationExecute(corpidBind, querySubcoreOthers);
+            if (!modules.includes('subcore')) {
+                for (const [k,q] of Object.entries(querySubcore)) {
+                    if (modules.includes(`subcore.${k}`)) {
+                        queryResult.subcore[k] = await migrationExecute(corpidBind, { [k]: q });
+                    }
+                } 
             }
             if (modules.includes('extras')) {
                 for (const [k,q] of Object.entries(queryExtras)) {
@@ -1127,7 +1110,7 @@ exports.executeMigration = async (req, res) => {
                 }
             }
             if (!modules.includes('billing')) {
-                for (const [k,q] of Object.entries(queryExqueryBillingtras)) {
+                for (const [k,q] of Object.entries(queryBilling)) {
                     if (modules.includes(`billing.${k}`)) {
                         queryResult.billing[k] = await migrationExecute(corpidBind, { [k]: q });
                     }
