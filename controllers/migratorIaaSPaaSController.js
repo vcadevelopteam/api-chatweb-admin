@@ -48,7 +48,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
             corpidBind['maxid'] = 0;
             let lastloopid = 0;
             let counter = 0;
-            const limit = 10000; // PRUEBAS 100
+            const limit = (k === 'conversation') ? 5000 : 10000; // PRUEBAS 100
 
             // DELETE
             if (q.delete && q.delete === 'all') {
@@ -235,7 +235,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 }
             }
 
-            // INSERT
+            // Ide 10 k NSERT
             counter = 0;
             while (true) {
                 // Último registro en la bd destino
