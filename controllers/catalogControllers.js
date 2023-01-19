@@ -1032,6 +1032,7 @@ exports.importProduct = async (request, response) => {
                             const result = await axiosObservable({
                                 data: {
                                     data: JSON.parse(JSON.stringify({
+                                        default_currency: datatoimport[0]?.currency || 'PEN',
                                         name: new Date().toISOString(),
                                     })),
                                     config: config,
