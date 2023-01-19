@@ -1718,6 +1718,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_CONVERSATION_TRANSFERSTATUS: {
+        query: `select * from ufn_conversation_transferstatus($corpid, $orgid, $conversationid, $status, $type, $userid, $username)`,
+        module: "",
+        protected: "INSERT"
+    },
     UFN_BILLINGPERIOD_SUMMARYORG: {
         query: "SELECT * FROM ufn_billingperiod_summaryorg($corpid, $orgid, $year, $month, $userid)",
         module: "",
