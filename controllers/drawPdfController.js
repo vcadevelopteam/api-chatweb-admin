@@ -51,6 +51,7 @@ exports.drawCardOrder = async (req, res) => {
         if (result.length === 0) {
             return res.json({ error: false, success: true, url: "", code: "WITHOUT-ORDERS" });
         } else {
+            console.log(result)
             const ff = result.reduce((acc, item) => ({
                 ...acc,
                 [`item${item.orderid}`]: {
@@ -60,6 +61,10 @@ exports.drawCardOrder = async (req, res) => {
                     quantity: undefined,
                     unitprice: undefined,
                     detailamount: undefined,
+                    x: () => {
+                        console.log(item.createdate)
+                        return "dd"
+                    },
                     orderid: `${item.orderid}`.padStart(2, "7"),
                     createdate: new Date(item.createdate).toLocaleString(),
                     orderamount: `${item.currency} ${item.orderamount.toFixed(2)}`,

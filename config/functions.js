@@ -493,7 +493,9 @@ module.exports = {
             order by orderid desc
             limit $limit
         ) o2
-        join orderline ol on ol.corpid = o2.corpid and ol.orgid = o2.orgid and ol.orderid = o2.orderid`,
+        join orderline ol on ol.corpid = o2.corpid and ol.orgid = o2.orgid and ol.orderid = o2.orderid
+        order by o2.orderid desc
+        `,
         module: "",
         protected: "SELECT"
     },
