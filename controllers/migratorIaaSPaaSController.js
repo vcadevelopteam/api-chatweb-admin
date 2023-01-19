@@ -266,7 +266,21 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 // Select de la bd origen para INSERT
                 const selectStartTime = process.hrtime();
                 let selectResult = [];
-                if (q.id) {
+                if (corpidBind['fixdate'] && q.id) {
+                    selectResult = await zyxmeQuery(`
+                    SELECT ${fixsel}
+                    FROM "${k}"
+                    WHERE ${q.id} > $maxid
+                    ORDER BY ${q.id}
+                    LIMIT $limit
+                    OFFSET $offset
+                    `, {
+                        ...corpidBind,
+                        offset: counter * limit,
+                        limit
+                    });
+                }
+                else if (q.id) {
                     selectResult = await zyxmeQuery(`
                     SELECT ${fixsel}
                     FROM "${k}"
@@ -331,7 +345,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                             });
                         }
                         else {
-                            if (corpidBind['fixdate'] && q.id) {
+                            if (q.id) {
                                 insertResult = await laraigoQuery(`
                                 INSERT INTO ${k}
                                 OVERRIDING SYSTEM VALUE
