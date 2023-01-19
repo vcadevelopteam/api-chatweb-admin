@@ -102,7 +102,7 @@ const getCsvFile = (data, metacatalogid, override) => {
             };
 
             for (var counterTwo = 0; counterTwo < headers.length; counterTwo++) {
-                targetData[headers[counterTwo]] = dataLine[counterTwo];
+                targetData[headers[counterTwo]?.split('﻿').join('')] = dataLine[counterTwo];
             }
 
             lines.push(targetData);
