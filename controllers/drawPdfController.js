@@ -69,8 +69,11 @@ exports.drawCardOrder = async (req, res) => {
                     ]
                 }
             }), {});
-
-            const aa = Object.values(ff)
+            const listx = Object.values(ff);
+            const aa = listx.map((x, i) => ({
+                ...x,
+                heightContainer: listx.length === i + 1 ? "750px" : "812px"
+            }))
             // return res.json({ error: false, success: true, aa });
 
             ejs.renderFile(path.join('./views/', "card-order.html"), {
@@ -85,9 +88,10 @@ exports.drawCardOrder = async (req, res) => {
                         orientation: 'portrait',
                         border: 0,
                     };
-                    const newdata = data.replace(/812px$/, "750px")
-                    console.log("daata", data)
-                    pdf.create(data, options).toBuffer(async (error1, buffer) => {
+
+                    const newdata = data.replace(/(\bdefaultheight\b)(?!.*[\r\n]*.*\1)/, "750px");
+                    console.log("newdata", newdata)
+                    pdf.create(newdata, options).toBuffer(async (error1, buffer) => {
                         if (error1) {
                             logger.child({ _requestid: req._requestid, error: { detail: error1.stack, message: error1.message } }).error(`Request to ${req.originalUrl}: ${error1.message}`);
                             return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
