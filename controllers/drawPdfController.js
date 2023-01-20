@@ -4,7 +4,7 @@ const pdf = require('html-pdf')
 const { uploadBufferToCos } = require('../config/triggerfunctions');
 const logger = require('../config/winston');
 const { executesimpletransaction } = require('../config/triggerfunctions');
-const { errors, setSessionParameters, getErrorCode } = require('../config/helpers');
+const { errors, setSessionParameters, getErrorCode, formatDecimals } = require('../config/helpers');
 
 
 exports.draw = async (req, res) => {
@@ -62,11 +62,11 @@ exports.drawCardOrder = async (req, res) => {
                     unitprice: undefined,
                     detailamount: undefined,
                     orderid: `${item.orderid}`.padStart(2, "7"),
-                    createdate: new Date(item.createdate).toLocaleString("es-PE"),
-                    orderamount: `${item.currency} ${item.orderamount.toFixed(2)}`,
+                    createdate: new Date(item.createdate).toLocaleString("es-PE""es-PE"),
+                    orderamount: `${item.currency} ${formatDecimals(item.orderamount.toFixed(2))}`,
                     detail: [
                         ...(acc[`item${item.orderid}`]?.detail || []),
-                        { ...item, subtotal: `${item.currency} ${item.detailamount.toFixed(2)}` },
+                        { ...item, subtotal: `${item.currency} ${formatDecimals(item.detailamount.toFixed(2))}` },
                     ]
                 }
             }), {});
