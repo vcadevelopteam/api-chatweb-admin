@@ -62,7 +62,7 @@ exports.drawCardOrder = async (req, res) => {
                     unitprice: undefined,
                     detailamount: undefined,
                     orderid: `${item.orderid}`.padStart(2, "7"),
-                    createdate: new Date(item.createdate).toLocaleString("es-PE""es-PE"),
+                    createdate: new Date(item.createdate).toLocaleString("es-PE"),
                     orderamount: `${item.currency} ${formatDecimals(item.orderamount.toFixed(2))}`,
                     detail: [
                         ...(acc[`item${item.orderid}`]?.detail || []),
