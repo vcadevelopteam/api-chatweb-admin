@@ -86,6 +86,8 @@ exports.drawCardOrder = async (req, res) => {
                         orientation: 'portrait',
                         border: 0,
                     };
+                    const newdata = data.replace(/812px$/, "750px")
+                    console.log("daata", data)
                     pdf.create(data, options).toBuffer(async (error1, buffer) => {
                         if (error1) {
                             logger.child({ _requestid: req._requestid, error: { detail: error1.stack, message: error1.message } }).error(`Request to ${req.originalUrl}: ${error1.message}`);
