@@ -117,7 +117,7 @@ exports.drawCardDynamic = async (req, res) => {
 
                 const data = ejs.render(template, {});
 
-                pdf.create(data, { ...options, type: "png" }).toBuffer(async (error1, buffer) => {
+                pdf.create(data, { ...options, type: "jpeg" }).toBuffer(async (error1, buffer) => {
                     if (error1) {
                         logger.child({ _requestid: req._requestid, error: { detail: error1.stack, message: error1.message } }).error(`Request to ${req.originalUrl}: ${error1.message}`);
                         return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
