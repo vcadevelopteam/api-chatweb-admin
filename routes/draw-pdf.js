@@ -13,7 +13,7 @@ router.post("/drawOrderCard",
 )
 
 router.post("/drawCardDynamic",
-    drawPdfController.drawCardOrder
+    drawPdfController.drawCardDynamic
 )
 
 module.exports = router;
