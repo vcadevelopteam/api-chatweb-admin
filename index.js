@@ -59,9 +59,13 @@ app.use('/api/voximplant', require('./routes/voximplant'));
 app.use('/api/google', require('./routes/google'));
 app.use('/api/campaign', require('./routes/campaign'));
 app.use('/api/catalog', require('./routes/catalog'));
+app.use('/api/witai', require('./routes/witai'));
 app.use('/api/product', require('./routes/product'));
 app.use('/api/posthistory', require('./routes/posthistory'));
-
+//mobile
+app.use('/api/mobile/auth', require('./routes/mobile/auth'));
+app.use('/api/mobile/ticket', require('./routes/mobile/ticket'));
+app.use('/api/mobile/notification', require('./routes/mobile/notification'));
 
 // Definir la pagina principal
 app.get('/', (req, res) => {
@@ -69,6 +73,6 @@ app.get('/', (req, res) => {
 });
 // Arrancar la app
 app.listen(PORT, '0.0.0.0', () => {
-})
+});
 
 logger.info(`System launch API-LARAIGO on port ${PORT}`);

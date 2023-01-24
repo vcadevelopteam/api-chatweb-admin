@@ -255,6 +255,8 @@ const setReminder = async (data, requestid) => {
                     orgid: data.orgid,
                     tasktype: "sendmail",
                     taskbody: JSON.stringify({
+                        shippingreason: data.shippingreason,
+                        calendareventid: data.calendareventid,
                         messagetype: "OWNERBODY",
                         receiver: data.listmembers[0].email,
                         subject: mailtemplate.header,
@@ -323,7 +325,7 @@ const setReminder = async (data, requestid) => {
             const taskResult = await executesimpletransaction("QUERY_INSERT_REMINDER_TASK_SCHEDULER", {
                 corpid: data.corpid,
                 orgid: data.orgid,
-                tasktype: "sendhsm",
+                tasktype: "sendhsmexternal",
                 taskbody: JSON.stringify({
                     corpid: data.corpid,
                     orgid: data.orgid,
@@ -334,6 +336,7 @@ const setReminder = async (data, requestid) => {
                     platformtype: data.reminderhsmcommunicationchanneltype,
                     type: "HSM",
                     shippingreason: data.shippingreason,
+                    calendareventid: data.calendareventid,
                     listmembers: [{
                         personid: data.listmembers[0].personid,
                         phone: data.listmembers[0].phone,

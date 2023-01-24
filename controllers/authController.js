@@ -4,9 +4,11 @@ const { v4: uuidv4 } = require('uuid');
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { errors, getErrorCode, cleanPropertyValue } = require('../config/helpers');
 const { addApplication } = require('./voximplantController');
+const axios = require('axios')
 
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const SECONDS_EXPIRE_IN = 60 * 60 * 12;
 
 //type: int|string|bool
 const properties = [
