@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+</head>
+<style>
+    span, td, div {
+        font-family: sans-serif;
+    }
+    * {
+        font-size: 10px!important;
+    }
+</style>
+
+<body>
+    <% data.forEach(function(order){ %>
+        <div style="width: 90%; margin-left: auto; margin-right: auto; padding-top: 30px; height: <%= order.heightContainer %>">
+            <div style="text-align: center; font-weight: 800;">N° PEDIDO <%= order.orderid %></div>
+            <div style="margin-top: 20px; display: table; width: 100%;">
+                <div style="display: table-cell; width: 50%;">
+                    <span style="display: table; width: 100%">
+                        <span style="display: table-cell; width: 25%">Cliente</span>
+                        <span style="display: table-cell; width: 75%"><%= order.name %></span>
+                    </span>
+                    <span style="display: table; width: 100%;">
+                        <span style="display: table-cell; width: 25%">Correo</span>
+                        <span style="display: table-cell; width: 75%"><%= order.email %></span>
+                    </span>
+                    <span style="display: table; width: 100%;">
+                        <span style="display: table-cell; width: 25%">Teléfono</span>
+                        <span style="display: table-cell; width: 75%"><%= order.phone %></span>
+                    </span>
+                </div>
+                <div style="display: table-cell; width: 50%;">
+                    <span style="display: table; width: 100%">
+                        <span style="display: table-cell; width: 30%">Fecha pedido</span>
+                        <span style="display: table-cell; width: 75%"><%= order.createdate %></span>
+                    </span>
+                </div>
+            </div>
+            <div style="margin-top:20px">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <tr style="border-bottom: 1px solid #adadad;">
+                                <th style="padding-bottom: 5px; text-align: left;" class="billing-table-header">Cod producto</th>
+                                <th style="padding-bottom: 5px; text-align: left;" class="billing-table-header">Descripción</th>
+                                <th style="padding-bottom: 5px; text-align: right;" class="billing-table-header">Cantidad</th>
+                                <th style="padding-bottom: 5px; text-align: right;" class="billing-table-header">Importe</th>
+                            </tr>
+                        </tr>
+                    </thead>
+                    <tbody style="border-bottom: 1px solid #adadad;">
+                        <% order.detail.forEach(function(product){ %>
+                            <tr>
+                                <td style="padding-top: 5px; padding-bottom: 5px;"><%= product.productid %></td>
+                                <td style="padding-top: 5px; padding-bottom: 5px;"><%= product.producttitle %></td>
+                                <td style="text-align: right; padding-top: 5px; padding-bottom: 5px;"><%= product.quantity %></td>
+                                <td style="text-align: right; padding-top: 5px; padding-bottom: 5px;"><%= product.subtotal %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" style="padding-top: 10px; font-weight: 800; text-align: right; margin-right: 10px;">Total pedido</td>
+                            <td style="padding-top: 10px; font-weight: 800; text-align: right;"><%= order.orderamount %></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    <% }); %>
+</body>
+
+</html>

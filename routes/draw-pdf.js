@@ -8,4 +8,12 @@ router.post("/",
     drawPdfController.draw
 )
 
+router.post("/drawOrderCard",
+    drawPdfController.drawCardOrder
+)
+
+router.post("/drawCardDynamic",
+    drawPdfController.drawCardDynamic
+)
+
 module.exports = router;
