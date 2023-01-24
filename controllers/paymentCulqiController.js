@@ -8,7 +8,6 @@ const { getErrorCode, axiosObservable } = require('../config/helpers');
 const servicesEndpoint = process.env.SERVICES;
 
 exports.chargeCulqui = async (request, response) => {
-    console.log("#############")
     var responsedata = genericfunctions.generateResponseData(request._requestid);
 
     try {
@@ -47,8 +46,6 @@ exports.chargeCulqui = async (request, response) => {
                         const paymentResult = await triggerfunctions.executesimpletransaction("UFN_PAYMENTORDER_PAYMENT", queryParameters);
 
                         if (paymentResult instanceof Array) {
-                            responsedata = genericfunctions.changeResponseData(responsedata, null, { message: 'success' }, 'success', 200, true);
-
                             const requestContinueFlow = await axiosObservable({
                                 data: {
                                     conversationid: paymentorder.conversationid,
@@ -60,13 +57,12 @@ exports.chargeCulqui = async (request, response) => {
                                 url: `${servicesEndpoint}handler/continueflow`,
                                 _requestid: responsedata.id,
                             });
-                            console.log("###################",requestContinueFlow)
 
                             if (requestContinueFlow.data) {
                                 responsedata = genericfunctions.changeResponseData(responsedata, null, requestContinueFlow.data, 'success', 200, true);
                             }
                             else {
-                                responsedata = genericfunctions.changeResponseData(responsedata, null, requestContinueFlow.data, 'success', 200, true);
+                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Flow failure', responsedata.status, responsedata.success);
                             }
                         }
                         else {
