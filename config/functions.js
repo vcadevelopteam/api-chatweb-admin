@@ -2187,7 +2187,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PRODUCTCATALOG_INS: {
-        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $id, $productid, $title, $link, $imagelink, $additionalimagelink, $brand, $condition, $availability, $category, $material, $color, $pattern, $currency, $price, $saleprice, $customlabel1, $customlabel2, $customlabel3, $customlabel4, $customlabel5, $labels, $catalogid, $catalogname, $description, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $metacatalogid, $id, $productid, $title, $link, $imagelink, $additionalimagelink, $brand, $condition, $availability, $category, $material, $color, $pattern, $currency, $price, $saleprice, $customlabel1, $customlabel2, $customlabel3, $customlabel4, $customlabel5, $labels, $description, $status, $type, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -2208,6 +2208,11 @@ module.exports = {
     },
     UFN_PRODUCTCATALOG_LST: {
         query: "SELECT * FROM ufn_productcatalog_lst($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CHATFLOW_METACATALOG_LST: {
+        query: "SELECT * FROM ufn_chatflow_metacatalog_lst($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
@@ -2963,7 +2968,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PRODUCTCATALOG_INS_ARRAY: {
-        query: "SELECT * FROM ufn_productcatalog_ins_array($corpid, $orgid, $catalogid, $catalogname, $username, $table)",
+        query: "SELECT * FROM ufn_productcatalog_ins_array($corpid, $orgid, $metacatalogid, $username, $table)",
         module: "",
         protected: "INSERT"
     },
@@ -3089,6 +3094,26 @@ module.exports = {
     },
     UFN_CRON_POSTHISTORY_INSIGHT_SEL: {
         query: "SELECT * FROM ufn_cron_posthistory_insight_sel()",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_METACATALOG_INS: {
+        query: "SELECT * FROM ufn_metacatalog_ins($corpid, $orgid, $metabusinessid, $id, $catalogid, $catalogname, $catalogdescription, $catalogtype, $description, $status, $type, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_METACATALOG_SEL: {
+        query: "SELECT * FROM ufn_metacatalog_sel($corpid, $orgid, $metabusinessid, $id)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_METABUSINESS_INS: {
+        query: "SELECT * FROM ufn_metabusiness_ins($corpid, $orgid, $id, $businessid, $businessname, $accesstoken, $userid, $userfullname, $graphdomain, $description, $status, $type, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_METABUSINESS_SEL: {
+        query: "SELECT * FROM ufn_metabusiness_sel($corpid, $orgid, $id)",
         module: "",
         protected: "SELECT"
     },
