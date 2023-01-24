@@ -576,7 +576,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CLASSIFICATION_INS: {
-        query: "SELECT * FROM ufn_classification_ins( $id, $corpid, $orgid, $description, $parent, $communicationchannel, $status, $type, $username, $operation, $tags,$title, $jobplan, $usergroup, $schedule, $metacatalogid)",
+        query: "SELECT * FROM ufn_classification_ins( $id, $corpid, $orgid, $description, $parent, $communicationchannel, $status, $type, $username, $operation, $tags,$title, $jobplan, $usergroup, $schedule, $order, $metacatalogid)",
         module: "",
         protected: "INSERT"
     },
