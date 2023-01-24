@@ -3,6 +3,8 @@ const genericfunctions = require('../config/genericfunctions');
 
 const { axiosObservable, getErrorCode } = require('../config/helpers');
 
+const laraigoEndpoint = process.env.LARAIGO;
+const servicesEndpoint = process.env.SERVICES;
 const niubizEndpoint = process.env.NIUBIZ_ENDPOINT;
 const niubizMerchantId = process.env.NIUBIZ_MERCHANTID;
 const niubizPassword = process.env.NIUBIZ_PASSWORD;
@@ -18,7 +20,7 @@ exports.createSessionToken = async (request, response) => {
 
         if (paymentorder) {
             if (paymentorder[0]) {
-                if (paymentorder[0].paymentstatus === 'PENDING' && paymentorder[0].expired === false) {
+                if (paymentorder[0].paymentstatus === 'PENDING') {
                     const buff = Buffer.from(`${niubizUsername}:${niubizPassword}`, 'utf-8');
 
                     const requestAccessToken = await axiosObservable({
@@ -63,7 +65,7 @@ exports.createSessionToken = async (request, response) => {
                     }
                 }
                 else {
-                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Payment order expired', responsedata.status, responsedata.success);
+                    responsedata = genericfunctions.changeResponseData(responsedata, null, paymentorder[0], 'success', 200, true);
                 }
             }
             else {
@@ -96,7 +98,7 @@ exports.authorizeTransaction = async (request, response) => {
 
             if (paymentorder) {
                 if (paymentorder[0]) {
-                    if (paymentorder[0].paymentstatus === 'PENDING' && paymentorder[0].expired === false && paymentorder[0].totalamount === parseFloat(totalamount || 0)) {
+                    if (paymentorder[0].paymentstatus === 'PENDING' && paymentorder[0].totalamount === parseFloat(totalamount || 0)) {
                         const buff = Buffer.from(`${niubizUsername}:${niubizPassword}`, 'utf-8');
 
                         const requestAccessToken = await axiosObservable({
@@ -145,7 +147,24 @@ exports.authorizeTransaction = async (request, response) => {
                                 const paymentResult = await triggerfunctions.executesimpletransaction("UFN_PAYMENTORDER_PAYMENT", queryParameters);
 
                                 if (paymentResult instanceof Array) {
-                                    responsedata = genericfunctions.changeResponseData(responsedata, null, { message: 'success' }, 'success', 200, true);
+                                    const requestContinueFlow = await axiosObservable({
+                                        data: {
+                                            conversationid: paymentorder[0].conversationid,
+                                            corpid: corpid,
+                                            orgid: orgid,
+                                            personid: paymentorder[0].personid,
+                                        },
+                                        method: 'post',
+                                        url: `${servicesEndpoint}handler/continueflow`,
+                                        _requestid: responsedata.id,
+                                    });
+
+                                    if (requestContinueFlow.data) {
+                                        responsedata = genericfunctions.changeResponseData(responsedata, null, requestContinueFlow.data, 'success', 200, true);
+                                    }
+                                    else {
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Flow failure', responsedata.status, responsedata.success);
+                                    }
                                 }
                                 else {
                                     responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Insert failure', responsedata.status, responsedata.success);
@@ -175,7 +194,24 @@ exports.authorizeTransaction = async (request, response) => {
             responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Transaction token not found', responsedata.status, responsedata.success);
         }
 
-        return response.status(responsedata.status).json(responsedata);
+        if (responsedata.status === 200) {
+            return response.status(responsedata.status).send(`
+            <html>
+                <head>
+                    <script>
+                        function onload() {
+                            window.location.href = '${laraigoEndpoint}paymentorderniubiz/${corpid}/${orgid}/${ordercode}';
+                        }
+                    </script>
+                </head>
+                <body onload="onload();">
+                </body>
+            </html>
+            `);
+        }
+        else {
+            return response.status(responsedata.status).json(responsedata);
+        }
     }
     catch (exception) {
         return response.status(500).json({
