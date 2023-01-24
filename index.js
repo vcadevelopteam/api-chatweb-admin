@@ -62,6 +62,7 @@ app.use('/api/catalog', require('./routes/catalog'));
 app.use('/api/product', require('./routes/product'));
 app.use('/api/posthistory', require('./routes/posthistory'));
 
+
 // Definir la pagina principal
 app.get('/', (req, res) => {
     res.send('Welcome to Laraigo API ');

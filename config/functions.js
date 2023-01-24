@@ -3154,4 +3154,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PAYMENT_SEL: {
+        query: "SELECT * FROM ufn_payment_sel($corpid, $orgid, $conversationid, $paymentid)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_PAYMENT_CHARGE: {
+        query: "SELECT * FROM ufn_payment_charge($corpid, $orgid, $paymentid, $tokenid, $tokenjson, $chargejson, $username)",
+        module: "",
+        protected: "INSERT"
+    },
 }

@@ -3,7 +3,9 @@ const Culqi = require('culqi-node');
 const triggerfunctions = require('../config/triggerfunctions');
 const genericfunctions = require('../config/genericfunctions');
 
-const { getErrorCode } = require('../config/helpers');
+const { getErrorCode, axiosObservable } = require('../config/helpers');
+
+const servicesEndpoint = process.env.SERVICES;
 
 exports.chargeCulqui = async (request, response) => {
     var responsedata = genericfunctions.generateResponseData(request._requestid);
@@ -19,7 +21,7 @@ exports.chargeCulqui = async (request, response) => {
             const paymentorder = queryResult[0];
 
             if (paymentorder) {
-                if (paymentorder.paymentstatus === 'PENDING' && paymentorder.totalamount === (settings.amount / 100) && paymentorder.expired === false) {
+                if (paymentorder.paymentstatus === 'PENDING' && paymentorder.totalamount === (settings.amount / 100)) {
                     const charge = await createCharge({ address: paymentorder.useraddress, address_city: paymentorder.usercity, firstname: paymentorder.userfirstname, lastname: paymentorder.userlastname, phone: paymentorder.userphone }, settings, token, metadata, appsetting.privatekey);
 
                     if (charge.object === 'error') {
@@ -44,7 +46,24 @@ exports.chargeCulqui = async (request, response) => {
                         const paymentResult = await triggerfunctions.executesimpletransaction("UFN_PAYMENTORDER_PAYMENT", queryParameters);
 
                         if (paymentResult instanceof Array) {
-                            responsedata = genericfunctions.changeResponseData(responsedata, null, { message: 'success' }, 'success', 200, true);
+                            const requestContinueFlow = await axiosObservable({
+                                data: {
+                                    conversationid: paymentorder.conversationid,
+                                    corpid: paymentorder.corpid,
+                                    orgid: paymentorder.orgid,
+                                    personid: paymentorder.personid,
+                                },
+                                method: 'post',
+                                url: `${servicesEndpoint}handler/continueflow`,
+                                _requestid: responsedata.id,
+                            });
+
+                            if (requestContinueFlow.data) {
+                                responsedata = genericfunctions.changeResponseData(responsedata, null, requestContinueFlow.data, 'success', 200, true);
+                            }
+                            else {
+                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Flow failure', responsedata.status, responsedata.success);
+                            }
                         }
                         else {
                             responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Insert failure', responsedata.status, responsedata.success);
@@ -92,12 +111,12 @@ const createCharge = async (userprofile, settings, token, metadata, privatekey) 
             address: userprofile.address ? (removeSpecialCharacter(userprofile.address)).slice(0, 100) : null,
             address_city: userprofile.address_city ? (removeSpecialCharacter(userprofile.address_city)).slice(0, 30) : null,
             country_code: token?.client?.ip_country_code ? token.client.ip_country_code : 'PE',
-            first_name: userprofile.firstname ? (removeSpecialCharacter(userprofile.firstname)).slice(0, 50) : null,
-            last_name: userprofile.lastname ? (removeSpecialCharacter(userprofile.lastname)).slice(0, 50) : null,
+            first_name: userprofile.firstname ? (removeSpecialCharacter(userprofile.firstname.replace(/[0-9]/g, ''))).slice(0, 50) : null,
+            last_name: userprofile.lastname ? (removeSpecialCharacter(userprofile.lastname.replace(/[0-9]/g, ''))).slice(0, 50) : null,
             phone_number: userprofile.phone ? (userprofile.phone.replace(/[^0-9]/g, '')).slice(0, 15) : null,
         },
         currency_code: `${settings.currency}`,
-        description: `${(removeSpecialCharacter(settings.description || '').replace(/[^0-9A-Za-z ]/g, '')).slice(0, 80)}`,
+        description: `${(removeSpecialCharacter(settings.description || 'EMPTY').replace(/[^0-9A-Za-z ]/g, '')).slice(0, 80)}`,
         email: `${token.email.slice(0, 50)}`,
         metadata: metadata,
         source_id: `${token.id}`,
