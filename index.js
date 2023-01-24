@@ -10,6 +10,10 @@ const allowedOrigins = process.env.ADDRESSES_ALLOWED?.split(",") || [];
 
 const app = express();
 
+app.use(express.urlencoded({
+    extended: true
+}))
+
 app.use(morganMiddleware);
 
 app.use(cors({
@@ -18,8 +22,7 @@ app.use(cors({
         if (!origin) return callback(null, true);
         if (allowedOrigins.indexOf(origin) === -1) {
             // console.log(`${dateRequest}: not allowed from ${origin}`)
-            var msg = 'The CORS policy for this site does not ' +
-                'allow access from the specified Origin.';
+            var msg = `The CORS policy for this site does not allow access from the specified Origin (${origin}).`;
             return callback(new Error(msg), false);
         }
         return callback(null, true); amara
@@ -52,6 +55,7 @@ app.use('/api/user', require('./routes/user'));
 app.use('/api/check', require('./routes/check'));
 app.use('/api/migrator', require('./routes/migrator'));
 app.use('/api/payment', require('./routes/payment'));
+app.use('/api/paymentniubiz', require('./routes/paymentniubiz'));
 app.use('/api/drawpdf', require('./routes/draw-pdf'));
 app.use('/api/billing', require('./routes/billing'));
 app.use('/api/gmaps', require('./routes/gmaps'));
