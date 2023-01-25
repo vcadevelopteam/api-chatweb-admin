@@ -26,7 +26,7 @@ const googleTopicName = process.env.GOOGLE_TOPICNAME;
 
 exports.activateUser = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var requestCode = "error_unexpected_error";
         var requestMessage = "error_unexpected_error";
@@ -96,7 +96,7 @@ exports.activateUser = async (request, response) => {
 
 exports.changePassword = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var requestCode = "error_unexpected_error";
         var requestMessage = "error_unexpected_error";
@@ -169,7 +169,7 @@ exports.changePassword = async (request, response) => {
 
 exports.countryList = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var requestData = null;
         var requestCode = "error_unexpected_error";
@@ -219,7 +219,7 @@ exports.countryList = async (request, response) => {
 
 exports.createSubscription = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var requestCode = "error_unexpected_error";
         var requestMessage = "error_unexpected_error";
@@ -1337,7 +1337,7 @@ exports.createSubscription = async (request, response) => {
 
 exports.currencyList = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var requestCode = "error_unexpected_error";
         var requestData = null;
@@ -1388,7 +1388,7 @@ exports.currencyList = async (request, response) => {
 
 exports.getContract = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var requestCode = "error_unexpected_error";
         var requestData = null;
@@ -1447,7 +1447,7 @@ exports.getContract = async (request, response) => {
 
 exports.getPageList = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var requestCode = "error_unexpected_error";
         var requestData = null;
@@ -1509,7 +1509,7 @@ exports.getPageList = async (request, response) => {
 
 exports.recoverPassword = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var requestCode = "error_unexpected_error";
         var requestMessage = "error_unexpected_error";
@@ -1654,7 +1654,7 @@ exports.recoverPassword = async (request, response) => {
 
 exports.validateChannels = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var requestCode = "error_unexpected_error";
         var requestMessage = "error_unexpected_error";
@@ -1991,7 +1991,7 @@ exports.validateChannels = async (request, response) => {
 
 exports.validateUserId = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var requestCode = "error_unexpected_error";
         var requestMessage = "error_unexpected_error";
@@ -2061,7 +2061,7 @@ exports.validateUserId = async (request, response) => {
 
 exports.validateUsername = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var requestCode = "error_unexpected_error";
         var requestIsValid = false;

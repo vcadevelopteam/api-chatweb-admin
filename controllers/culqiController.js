@@ -712,7 +712,7 @@ const removeSpecialCharacter = (text) => {
 
 exports.automaticPayment = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
@@ -1311,7 +1311,7 @@ exports.automaticPayment = async (request, response) => {
 
 exports.cardCreate = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
@@ -1426,7 +1426,7 @@ exports.cardCreate = async (request, response) => {
 
 exports.cardDelete = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
@@ -1487,7 +1487,7 @@ exports.cardDelete = async (request, response) => {
 
 exports.cardGet = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
@@ -1543,7 +1543,7 @@ exports.charge = async (request, response) => {
     const { settings, token, metadata = {} } = request.body;
 
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
@@ -1592,7 +1592,7 @@ exports.chargeInvoice = async (request, response) => {
     const { invoiceid, settings, token, metadata = {}, purchaseorder, comments, corpid, orgid, override, paymentcardid, paymentcardcode, iscard } = request.body;
 
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
@@ -2131,7 +2131,7 @@ exports.createBalance = async (request, response) => {
     var { buyamount, totalamount, totalpay } = request.body;
 
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
@@ -2628,7 +2628,7 @@ exports.createCreditNote = async (request, response) => {
     var { creditnotediscount } = request.body;
 
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
@@ -2833,7 +2833,7 @@ exports.createInvoice = async (request, response) => {
     var { invoicetotalamount } = request.body;
 
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
@@ -3167,7 +3167,7 @@ exports.emitInvoice = async (request, response) => {
     const { corpid, orgid, invoiceid } = request.body;
 
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
@@ -3546,7 +3546,7 @@ exports.emitInvoice = async (request, response) => {
 
 exports.getExchangeRate = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
@@ -3575,7 +3575,7 @@ exports.regularizeInvoice = async (request, response) => {
     const { corpid, orgid, invoiceid, invoicereferencefile, invoicepaymentnote, invoicepaymentcommentary } = request.body;
 
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 

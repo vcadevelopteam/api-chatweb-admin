@@ -600,7 +600,7 @@ const googleCalendarCredentialsClean = async ({ params, extradata }) => {
         });
     }
     catch (exception) {
-        logger.child({ _requestid: params._requestid, context: { ...params, extradata } }).error(exception)
+        logger.child({ _requestid: params._requestid, ctx: { ...params, extradata } }).error(exception)
     }
     try {
         await axiosObservable({
@@ -615,7 +615,7 @@ const googleCalendarCredentialsClean = async ({ params, extradata }) => {
         });
     }
     catch (exception) {
-        logger.child({ _requestid: params._requestid, context: { ...params, extradata } }).error(exception)
+        logger.child({ _requestid: params._requestid, ctx: { ...params, extradata } }).error(exception)
     }
 }
 
@@ -723,7 +723,7 @@ const googleCalendarCredentials = async ({ params, code = null }) => {
         }
     }
     catch (exception) {
-        logger.child({ _requestid: params._requestid, context: params }).error(exception)
+        logger.child({ _requestid: params._requestid, ctx: params }).error(exception)
     }
     return [null, null]
 }
@@ -755,7 +755,7 @@ const googleCalendarRevoke = async ({ params }) => {
                     })
                 }
                 catch (exception) {
-                    logger.child({ _requestid: params._requestid, context: { ...params, extradata } }).error(exception)
+                    logger.child({ _requestid: params._requestid, ctx: { ...params, extradata } }).error(exception)
                 }
             }
             // Revoke
@@ -871,7 +871,7 @@ const googleCalendarSync = async ({ params, calendar, extradata = null }) => {
         if (!calerdar_events) {
             throw exception;
         }
-        logger.child({ _requestid: params._requestid, context: params }).error(exception)
+        logger.child({ _requestid: params._requestid, ctx: params }).error(exception)
     }
 }
 
@@ -888,7 +888,7 @@ const googleCalendarWatch = async ({ params, calendar, extradata = null }) => {
                 })
             }
             catch (exception) {
-                // logger.child({ _requestid: params._requestid, context: { ...params, extradata }}).error(exception)
+                // logger.child({ _requestid: params._requestid, ctx: { ...params, extradata }}).error(exception)
             }
         }
         // Register new watch
@@ -920,7 +920,7 @@ const googleCalendarWatch = async ({ params, calendar, extradata = null }) => {
         if (googleError) {
             throw exception;
         }
-        logger.child({ _requestid: params._requestid, context: { ...params, extradata } }).error(exception)
+        logger.child({ _requestid: params._requestid, ctx: { ...params, extradata } }).error(exception)
     }
     return null
 }
@@ -952,7 +952,7 @@ exports.googleLogIn = async (request, response) => {
         });
     }
     catch (exception) {
-        logger.child({ _requestid: request._requestid, context: request.body }).error(exception)
+        logger.child({ _requestid: request._requestid, ctx: request.body }).error(exception)
         return response.status(500).json({
             code: "error_unexpected_error",
             error: true,
@@ -988,7 +988,7 @@ exports.googleDisconnect = async (request, response) => {
         }
     }
     catch (exception) {
-        logger.child({ _requestid: request._requestid, context: request.body }).error(exception)
+        logger.child({ _requestid: request._requestid, ctx: request.body }).error(exception)
         return response.status(500).json({
             code: "error_unexpected_error",
             error: true,
@@ -1013,7 +1013,7 @@ exports.googleRevoke = async (request, response) => {
         });
     }
     catch (exception) {
-        logger.child({ _requestid: request._requestid, context: request.body }).error(exception)
+        logger.child({ _requestid: request._requestid, ctx: request.body }).error(exception)
         return response.status(500).json({
             code: "error_unexpected_error",
             error: true,
@@ -1047,7 +1047,7 @@ exports.googleValidate = async (request, response) => {
         });
     }
     catch (exception) {
-        logger.child({ _requestid: request._requestid, context: request.body }).error(exception)
+        logger.child({ _requestid: request._requestid, ctx: request.body }).error(exception)
         return response.status(500).json({
             code: "error_unexpected_error",
             error: true,
@@ -1079,7 +1079,7 @@ exports.googleSync = async (request, response) => {
         });
     }
     catch (exception) {
-        logger.child({ _requestid: request._requestid, context: request.body }).error(exception)
+        logger.child({ _requestid: request._requestid, ctx: request.body }).error(exception)
         return response.status(500).json({
             code: "error_unexpected_error",
             error: true,
@@ -1125,7 +1125,7 @@ exports.googleWebhookSync = async (request, response) => {
         });
     }
     catch (exception) {
-        logger.child({ _requestid: request._requestid, context: request.body }).error(exception)
+        logger.child({ _requestid: request._requestid, ctx: request.body }).error(exception)
         return response.status(500).json({
             code: "error_unexpected_error",
             error: true,
@@ -1157,7 +1157,7 @@ exports.googleWatch = async (request, response) => {
         });
     }
     catch (exception) {
-        logger.child({ _requestid: request._requestid, context: request.body }).error(exception)
+        logger.child({ _requestid: request._requestid, ctx: request.body }).error(exception)
         return response.status(500).json({
             code: "error_unexpected_error",
             error: true,
@@ -1195,7 +1195,7 @@ exports.googleWatchStop = async (request, response) => {
         });
     }
     catch (exception) {
-        logger.child({ _requestid: request._requestid, context: request.body }).error(exception)
+        logger.child({ _requestid: request._requestid, ctx: request.body }).error(exception)
         return response.status(500).json({
             code: "error_unexpected_error",
             error: true,

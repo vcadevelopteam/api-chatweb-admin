@@ -19,7 +19,7 @@ const REPLACEFILTERS = "###FILTERS###";
 const REPLACESEL = "###REPLACESEL###";
 
 const executeQuery = async (query, bind, _requestid) => {
-    const profiler = logger.child({ context: bind || {}, _requestid }).startTimer();
+    const profiler = logger.child({ ctx: bind || {}, _requestid }).startTimer();
 
     return await sequelize.query(query, {
         type: QueryTypes.SELECT,
@@ -40,7 +40,7 @@ exports.executesimpletransaction = async (method, data, permissions = false, rep
         const query = functionMethod.query;
 
         if (data instanceof Object || data === undefined) {
-            const profiler = logger.child({ context: { ...data, menu: undefined }, _requestid: data?._requestid || replacements?._requestid }).startTimer();
+            const profiler = logger.child({ ctx: { ...data, menu: undefined }, _requestid: data?._requestid || replacements?._requestid }).startTimer();
 
             return await sequelize.query(query, {
                 type: QueryTypes.SELECT,
@@ -79,7 +79,7 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
                 const queryCollectionCleaned = querycollection.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
                 const queryCountCleaned = querycount.replace("###WHERE###", data.where || "");
 
-                const profiler = logger.child({ context: data, _requestid: data._requestid }).startTimer();
+                const profiler = logger.child({ ctx: data, _requestid: data._requestid }).startTimer();
 
                 const results = await Promise.all([
                     sequelize.query(queryCollectionCleaned, {
@@ -126,9 +126,9 @@ exports.buildQueryWithFilterAndSort = async (method, data) => {
 
                 const queryCollectionCleaned = query.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
 
-                const profiler = logger.child({ context: data, _requestid: data._requestid }).startTimer();
+                const profiler = logger.child({ ctx: data, _requestid: data._requestid }).startTimer();
 
-                logger.child({ context: data, _requestid: data._requestid }).debug(`executing ${queryCollectionCleaned}`)
+                logger.child({ ctx: data, _requestid: data._requestid }).debug(`executing ${queryCollectionCleaned}`)
 
                 return await sequelize.query(queryCollectionCleaned, {
                     type: QueryTypes.SELECT,
@@ -157,7 +157,7 @@ exports.GetMultiCollection = async (detail, permissions, _requestid) => {
                     return getErrorCode(errors.FORBIDDEN);
                 }
             }
-            const profiler = logger.child({ context: item.parameters, _requestid }).startTimer();
+            const profiler = logger.child({ ctx: item.parameters, _requestid }).startTimer();
 
             const r = await sequelize.query(functionMethod.query, {
                 type: QueryTypes.SELECT,
@@ -197,7 +197,7 @@ exports.executeTransaction = async (header, detail, permissions, _requestid) => 
             }
 
             if (parameters instanceof Object) {
-                const profiler = logger.child({ context: parameters, _requestid }).startTimer();
+                const profiler = logger.child({ ctx: parameters, _requestid }).startTimer();
 
                 const result = await sequelize.query(functionMethod.query, {
                     type: QueryTypes.SELECT,
@@ -232,7 +232,7 @@ exports.executeTransaction = async (header, detail, permissions, _requestid) => 
     try {
         await Promise.all(detailtmp.map(async (item) => {
             if (functionsbd[item.method]) {
-                const profiler = logger.child({ context: item.parameters, _requestid }).startTimer();
+                const profiler = logger.child({ ctx: item.parameters, _requestid }).startTimer();
 
                 const query = functionsbd[item.method];
                 await sequelize.query(query, {
