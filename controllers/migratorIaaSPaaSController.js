@@ -596,6 +596,7 @@ const querySubcore = {
     },
     personextradata: {
         id: 'personextradataid',
+        sequence: 'personextradata_personextradataid_seq',
         update: 'changedate',
         insert: 'id',
     },
@@ -610,7 +611,7 @@ const querySubcore = {
         insert: 'all',
     },
     conversation: {
-        delete: '10',
+        delete: '3',
         id: 'conversationid',
         sequence: 'conversationseq',
         // update: 'finishdate',
