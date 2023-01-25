@@ -19,7 +19,6 @@ exports.executeMultiTransactions = async (detail) => {
         //}
         //loop over the array in paralel executing with sequelize.query.
         return await Promise.all(detail.map(async (item) => {
-            console.log("executing");
             //have to validate method on functionsbd, the value is the query tu use on sequelize.query and return the result.
             if (functionsbd[item.method]) {
                 const query = functionsbd[item.method];
@@ -27,7 +26,6 @@ exports.executeMultiTransactions = async (detail) => {
                     type: QueryTypes.SELECT,
                     bind: item.data
                 }).catch(function (err) {
-                    console.log("Error: " + err)
                     return {
                         msg: err.toString(),
                         success: false,
@@ -52,7 +50,6 @@ exports.executeMultiTransactions = async (detail) => {
         }))
 
     } catch (e) {
-        console.log(e);
         response.msg = "Hubo un error, vuelva a intentarlo";
     }
 
@@ -73,7 +70,6 @@ exports.executesimpletransaction = async (method, data) => {
                     type: QueryTypes.SELECT,
                     bind: data
                 }).catch(function (err) {
-                    console.log("Error: " + method + " - " + err)
                     return {
                         msg: "Hubo un error, vuelva a intentarlo.",
                         success: false,
@@ -89,7 +85,6 @@ exports.executesimpletransaction = async (method, data) => {
             response.msg = "No existe el método";
         }
     } catch (e) {
-        console.log(e);
         response.msg = "Hubo un error, vuelva a intentarlo";
     }
 
@@ -179,7 +174,6 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, co
         } else
             response.msg = "No existe el método";
     } catch (e) {
-        console.log(e);
         response.msg = "Hubo un error, vuelva a intentarlo";
     }
 
@@ -228,7 +222,6 @@ exports.export = async (method, data) => {
             response.msg = "No existe el método";
         }
     } catch (e) {
-        console.log(e);
         response.msg = "Hubo un error, vuelva a intentarlo";
     }
 

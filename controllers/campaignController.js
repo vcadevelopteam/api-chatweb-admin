@@ -14,7 +14,7 @@ exports.voxiTrigger = async (req, res) => {
     try {
         const { corpid, orgid, data, campaignid, communicationchannelid } = req.body;
 
-        logger.child({ context: { corpid, orgid, communicationchannelid, data, campaignid }, _requestid: req._requestid }).debug(`Request from ${req.originalUrl}`)
+        logger.child({ ctx: { corpid, orgid, communicationchannelid, data, campaignid }, _requestid: req._requestid }).debug(`Request from ${req.originalUrl}`)
 
         const voxinumber = await executesimpletransaction("QUERY_GET_NUMBER_FROM_COMMUNICATIONCHANNEL", { corpid, orgid, communicationchannelid });
 
@@ -76,7 +76,7 @@ exports.voxiTriggerHSM = async (req, res) => {
         const voxinumber = await executesimpletransaction("QUERY_GET_NUMBER_FROM_COMMUNICATIONCHANNEL", parameters);
 
         if (voxinumber.length > 0) {
-            logger.child({ context: parameters, _requestid: req._requestid }).debug(`Request from ${req.originalUrl}`)
+            logger.child({ ctx: parameters, _requestid: req._requestid }).debug(`Request from ${req.originalUrl}`)
 
             const resHSMHistory = await executesimpletransaction("QUERY_INSERT_HSM_HISTORY", {
                 ...parameters,
@@ -333,7 +333,7 @@ exports.stop = async (req, res) => {
                     }
 
                     let callListResult = await voximplant.stopCallListProcessing(req.body)
-                    console.log(callListResult);
+                    
                     result = await executesimpletransaction("QUERY_CAMPAIGN_STOP", {
                         corpid: req.body.corpid,
                         orgid: req.body.orgid,
