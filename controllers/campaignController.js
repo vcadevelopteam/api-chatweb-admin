@@ -333,7 +333,7 @@ exports.stop = async (req, res) => {
                     }
 
                     let callListResult = await voximplant.stopCallListProcessing(req.body)
-                    console.log(callListResult);
+                    
                     result = await executesimpletransaction("QUERY_CAMPAIGN_STOP", {
                         corpid: req.body.corpid,
                         orgid: req.body.orgid,

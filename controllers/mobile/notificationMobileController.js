@@ -1,5 +1,5 @@
-var admin = require("firebase-admin");
-var serviceAccount = require("../../zyxmeapp.json");
+const admin = require("firebase-admin");
+const serviceAccount = require("../../zyxmeapp.json");
 const { getErrorCode } = require('../../config/helpers');
 
 admin.initializeApp({
@@ -16,7 +16,6 @@ const apns = {
 exports.messagein = async (req, res) => {
     try {
         const { data, notification } = req.body;
-        console.log("body-notification", { data, notification })
 
         const token = data.token;
         delete data.token;
@@ -26,7 +25,6 @@ exports.messagein = async (req, res) => {
 
         data.click_action = "FLUTTER_NOTIFICATION_CLICK";
 
-        const result = [];
 
         await Promise.all[
             admin.messaging().send({
@@ -46,21 +44,13 @@ exports.messagein = async (req, res) => {
                 }),
             admin.messaging().send({
                 token,
-                // apns,
-                // content_available: true,
                 data,
-                // android: {
-                //     priority: "high"
-                // },
-                // priority: 10,
             })
                 .then(r => {
                     console.log('notification 2 send', r);
-                    result.push({ ...r, success: true })
                 })
                 .catch(r => {
                     console.log("error catch 2: ", r);
-                    result.push({ ...r, success: false })
                 })
         ]
 
@@ -74,7 +64,6 @@ exports.messagein = async (req, res) => {
 exports.pushNotification = (datatmp) => {
     try {
         const { data, notification } = datatmp;
-        console.log("body-notification", { data, notification })
 
         const token = data.token;
         delete data.token;
@@ -83,8 +72,6 @@ exports.pushNotification = (datatmp) => {
             data[key] = value === null ? "" : value + "";
 
         data.click_action = "FLUTTER_NOTIFICATION_CLICK";
-
-        const result = [];
 
         Promise.all([
             admin.messaging().send({
@@ -98,7 +85,6 @@ exports.pushNotification = (datatmp) => {
             })
                 .then(r => {
                     console.log('notification 11 send', r);
-                    result.push({ ...r, success: true })
                 })
                 .catch(r => {
                     console.log("error catch 1: ", r);
@@ -111,11 +97,9 @@ exports.pushNotification = (datatmp) => {
             })
                 .then(r => {
                     console.log('notification 22 send', r);
-                    result.push({ ...r, success: true })
                 })
                 .catch(r => {
                     console.log("error catch 2: ", r);
-                    result.push({ ...r, success: false })
 
                 })
         ])

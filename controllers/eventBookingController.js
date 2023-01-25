@@ -18,12 +18,6 @@ const method_allowed = [
     "UFN_CALENDARBOOKING_CANCEL"
 ]
 
-// var https = require('https');
-
-// const agent = new https.Agent({
-//     rejectUnauthorized: false
-// });
-
 const laraigoEndpoint = process.env.LARAIGO;
 
 const send = async (data, requestid) => {
@@ -162,7 +156,7 @@ const send = async (data, requestid) => {
                 _requestid: requestid,
             });
 
-            if (!responseservices.data || !responseservices.data instanceof Object) {
+            if (!responseservices.data || !(responseservices.data instanceof Object)) {
                 return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
             }
         }

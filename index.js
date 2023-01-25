@@ -3,7 +3,6 @@ const logger = require('./config/winston');
 const morganMiddleware = require("./config/morgan.middleware");
 const express = require('express');
 const cors = require('cors');
-const { exec } = require('child_process');
 const { v4: uuidv4 } = require('uuid');
 
 const allowedOrigins = process.env.ADDRESSES_ALLOWED?.split(",") || [];
@@ -14,15 +13,13 @@ app.use(morganMiddleware);
 
 app.use(cors({
     origin: function (origin, callback) {
-        // const dateRequest = new Date().toISOString();
         if (!origin) return callback(null, true);
         if (allowedOrigins.indexOf(origin) === -1) {
-            // console.log(`${dateRequest}: not allowed from ${origin}`)
-            var msg = 'The CORS policy for this site does not ' +
+            const msg = 'The CORS policy for this site does not ' +
                 'allow access from the specified Origin.';
             return callback(new Error(msg), false);
         }
-        return callback(null, true); amara
+        return callback(null, true);
     }
 }));
 
@@ -34,8 +31,6 @@ app.use(function (req, res, next) {
     req._requestid = uuidv4();
     next();
 });
-
-// app.use(require('morgan')({ "stream": logger.stream }));
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/person', require('./routes/person'));

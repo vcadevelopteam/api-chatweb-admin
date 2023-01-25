@@ -6,9 +6,9 @@ const { generatefilter, generateSort, errors, getErrorSeq, getErrorCode, stringT
 const { QueryTypes } = require('sequelize');
 require('pg').defaults.parseInt8 = true;
 
-var ibm = require('ibm-cos-sdk');
+const ibm = require('ibm-cos-sdk');
 
-var config = {
+const config = {
     endpoint: 's3.us-east.cloud-object-storage.appdomain.cloud',
     ibmAuthEndpoint: 'https://iam.cloud.ibm.com/identity/token',
     apiKeyId: 'LwD1YXNXSp8ZYMGIUWD2D3-wmHkmWRVcFm-5a1Wz_7G1', //'GyvV7NE7QiuAMLkWLXRiDJKJ0esS-R5a6gc8VEnFo0r5',
@@ -18,8 +18,8 @@ const COS_BUCKET_NAME = "staticfileszyxme"
 const REPLACEFILTERS = "###FILTERS###";
 const REPLACESEL = "###REPLACESEL###";
 
-const executeQuery = async (query, bind = {}, _requestid) => {
-    const profiler = logger.child({ context: bind, _requestid }).startTimer();
+const executeQuery = async (query, bind, _requestid) => {
+    const profiler = logger.child({ context: bind || {}, _requestid }).startTimer();
 
     return await sequelize.query(query, {
         type: QueryTypes.SELECT,
@@ -147,7 +147,7 @@ exports.buildQueryWithFilterAndSort = async (method, data) => {
     }
 }
 
-exports.GetMultiCollection = async (detail, permissions = false, _requestid) => {
+exports.GetMultiCollection = async (detail, permissions, _requestid) => {
     return await Promise.all(detail.map(async (item, index) => {
         let functionMethod = functionsbd[item.method];
         if (functionMethod) {
@@ -179,7 +179,7 @@ exports.GetMultiCollection = async (detail, permissions = false, _requestid) => 
     }))
 }
 
-exports.executeTransaction = async (header, detail, permissions = false, _requestid) => {
+exports.executeTransaction = async (header, detail, permissions, _requestid) => {
     let detailtmp = detail;
     const transaction = await sequelize.transaction();
     let resultHeader = null;
@@ -242,12 +242,12 @@ exports.executeTransaction = async (header, detail, permissions = false, _reques
                 })
                     .catch(err => {
                         lasterror = getErrorSeq(err, profiler, `transaction detail ${item.method}`);
-                        throw 'error'
+                        throw new Error('error')
 
                     });
             } else {
                 lasterror = getErrorCode(errors.NOT_FUNCTION_ERROR);
-                throw 'error'
+                throw new Error('error')
             }
         }))
         await transaction.commit();
@@ -377,7 +377,8 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                     acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + Array.from(new Set(tmpdata.map(x => x[columnname] || ""))).length;
                 } else if (item.function === "total") {
                     const auxq = item.function.toUpperCase() + ": " + tmpdata.reduce((a, b) => a + b[columnname], 0);
-                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.type === "interval" ? secondsToTime(auxq) : auxq;
+                    const aux2 = acc[columnnameonly] ? " - " : "";
+                    acc[columnnameonly] += aux2 + item.type === "interval" ? secondsToTime(auxq) : auxq;
                 } else if (item.function === "average") {
                     const auxq = tmpdata.map(x => x[columnname]).reduce((a, b) => a + b, 0) / tmpdata.length;
                     acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
@@ -420,11 +421,12 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
             return acc + `\nLEFT JOIN ${join_table} ${join_alias} ${join_on}`;
         }, "");
 
-        const firstSelect = interval === "day" ?
-            `to_char(${dataorigin}.createdate + $offset * INTERVAL '1hour', 'MM-DD') "interval"` : (interval === "month" ?
+        const aux = interval === "month" ?
                 `to_char(${dataorigin}.createdate + $offset * INTERVAL '1hour', 'YYYY-MM') "interval"` :
                 `date_part('${interval}', ${dataorigin}.createdate + $offset * INTERVAL '1hour') "interval"`
-            )
+
+        const firstSelect = interval === "day" ?
+            `to_char(${dataorigin}.createdate + $offset * INTERVAL '1hour', 'MM-DD') "interval"` : aux;
 
         const COLUMNESSELECT = columns.reduce((acc, item, index) => {
             let selcol = item.columnname;
@@ -433,7 +435,6 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
 
             if (item.type === "interval") {
                 coalescedefault = "'00:00:00'"
-                // selcol = `date_trunc('seconds', ${item.columnname})`;
             } else if (item.type === "variable") {
                 selcol = `conversation.variablecontextsimple->>'${item.columnname}'`;
             } else if (DATES.includes(item.type)) {
@@ -615,12 +616,12 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
     }
 }
 
-exports.exportData = (dataToExport, reportName, formatToExport, headerClient = null, _requestid) => {
-    formatToExport = "csv";
+exports.exportData = (dataToExport, reportName, formatToExportx, headerClient, _requestid) => {
+    const formatToExport = "csv";
     try {
         const titlefile = (reportName || "report") + new Date().toISOString() + (formatToExport !== "csv" ? ".xlsx" : ".csv");
         if (dataToExport instanceof Array && dataToExport.length > 0) {
-            var s3 = new ibm.S3(config);
+            const s3 = new ibm.S3(config);
             let keysHeaders;
             const keys = Object.keys(dataToExport[0]);
             keysHeaders = keys;
@@ -657,7 +658,6 @@ exports.exportData = (dataToExport, reportName, formatToExport, headerClient = n
                     ContentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
                 }
                 const profiler = logger.child({ _requestid }).startTimer();
-                // console.time(`uploadcos`);
                 return new Promise((res, rej) => {
                     s3.upload(params, (err, data) => {
                         if (err) {
@@ -750,7 +750,7 @@ exports.getQuery = (method, data, isNotPaginated) => {
 }
 
 exports.uploadBufferToCos = async (_requestid, buffer, contentType, key) => {
-    var s3 = new ibm.S3(config);
+    const s3 = new ibm.S3(config);
 
     const params = {
         ACL: 'public-read',
@@ -819,7 +819,6 @@ exports.exportMobile = async (method, data) => {
             response.msg = "No existe el método";
         }
     } catch (e) {
-        console.log(e);
         response.msg = "Hubo un error, vuelva a intentarlo";
     }
 
