@@ -5,11 +5,6 @@ const logger = require('../config/winston');
 
 /* ESTE MIGRADOR SOLO ES PARA AÑADIR DATA DE LARAIGO A LARAIGO, MISMO ESQUEMA*/
 
-const parseHrtimeToSeconds = (hrtime) => {
-    var seconds = (hrtime[0] + (hrtime[1] / 1e9)).toFixed(3);
-    return seconds;
-}
-
 const errorSeq = (err, bind) => {
     const messageerror = err.toString().replace("SequelizeDatabaseError: ", "");
     const errorcode = messageerror.includes("Named bind parameter") ? "PARAMETER_IS_MISSING" : err.parent.code;
@@ -112,8 +107,10 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                             SELECT ${fixsel}
                             FROM "${k}"
                             WHERE ${q.id} <= $maxid
-                            AND ${q.update} > $backupdate::TIMESTAMP
-                            ${q.where || ''}
+                            AND (
+                                ${q.update} > $backupdate::TIMESTAMP
+                                ${q.where || ''}
+                            )
                             ORDER BY ${q.id}
                             LIMIT $limit
                             OFFSET $offset
@@ -264,7 +261,6 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                 // }
 
                 // Select de la bd origen para INSERT
-                const selectStartTime = process.hrtime();
                 let selectResult = [];
                 if (corpidBind['fixdate'] && q.id) {
                     selectResult = await zyxmeQuery(`
@@ -320,7 +316,6 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                         limit
                     });
                 }
-                const selectElapsedSeconds = parseHrtimeToSeconds(process.hrtime(selectStartTime));
                 
                 if (selectResult instanceof Array) {
                     if (selectResult.length === 0 || lastloopid === selectResult?.[0]?.[`${q.id}`]) {
@@ -328,7 +323,6 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     }
                     
                     // Insert a la bd destino
-                    const insertStartTime = process.hrtime();
                     try {
                         let insertResult = [];
                         if (q.insert === 'createdate' && q.where_ins) {
@@ -371,11 +365,8 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                 });
                             }
                         }
-                        let insertElapsedSeconds = parseHrtimeToSeconds(process.hrtime(insertStartTime));
                         
-                        if (insertResult instanceof Array) {
-                        }
-                        else {
+                        if (!(insertResult instanceof Array)) {
                             logger.child({ _requestid: corpidBind._requestid }).info(insertResult);
                             executeResult[k].success = false;
                             executeResult[k].errors.push({ insert: insertResult });
@@ -406,17 +397,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                         datatable: JSON.stringify([elem])
                                     });
                                 }
-                                if (eleminsertResult instanceof Array) {
-                                }
-                                else {
+                                if (!(eleminsertResult instanceof Array)) {
                                     logger.child({ _requestid: corpidBind._requestid }).error(eleminsertResult);
                                     executeResult[k].errors.push({ insert: eleminsertResult });
                                 }
                             }
-                            insertElapsedSeconds = parseHrtimeToSeconds(process.hrtime(insertStartTime));
                         }
                     } catch (error) {
-                        let insertElapsedSeconds = parseHrtimeToSeconds(process.hrtime(insertStartTime));
                         logger.child({ _requestid: corpidBind._requestid }).error(error);
                         executeResult[k].errors.push({ insert: error });
                     }
@@ -445,6 +432,21 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
             //     break;
             // }
 
+            // Acciones post insert
+            if (q.finally) {
+                try {
+                    let finallyResult = await laraigoQuery(q.finally.replace('\n', ' '));
+                    if (!(finallyResult instanceof Array)) {
+                        logger.child({ _requestid: corpidBind._requestid }).info(finallyResult);
+                        executeResult[k].success = false;
+                        executeResult[k].errors.push({ finally: finallyResult });
+                    }
+                } catch (error) {
+                    logger.child({ _requestid: corpidBind._requestid }).error(error);
+                    executeResult[k].errors.push({ finally: error });
+                }
+            }
+
             if (q.id && q.sequence) {
                 // Actualizar secuencia
                 const max = await laraigoQuery(`SELECT MAX(${q.id}) FROM "${k}"`);
@@ -459,7 +461,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                         executeResult[k].errors.push({ alter_seq: alter_seq });
                         logger.child({ _requestid: corpidBind._requestid }).info(alter_seq);
                     }
-                    seq = await laraigoQuery(`ALTER SEQUENCE ${q.sequence} RESTART`);
+                    alter_seq = await laraigoQuery(`ALTER SEQUENCE ${q.sequence} RESTART`);
                     if (!(alter_seq instanceof Array)) {
                         executeResult[k].errors.push({ alter_seq: alter_seq });
                         logger.child({ _requestid: corpidBind._requestid }).info(alter_seq);
@@ -580,6 +582,7 @@ const querySubcore = {
         id: 'personid',
         sequence: 'personseq',
         update: 'changedate',
+        where: 'OR lastcontact > $backupdate::TIMESTAMP',
         insert: 'id',
     },
     personaddinfo: {
@@ -616,10 +619,7 @@ const querySubcore = {
         sequence: 'conversationseq',
         // update: 'finishdate',
         insert: 'id',
-        finally: `SELECT ufn_ticketnum_ins(orgid)
-        FROM org
-        WHERE zyxmecorpid = $corpid
-        AND zyxmeorgid IN (SELECT org.orgid FROM org WHERE org.corpid = $corpid)`
+        finally: `SELECT ufn_ticketnum_ins(orgid) FROM org`
     },
     conversationclassification: {
         update: 'changedate',
@@ -636,7 +636,7 @@ const querySubcore = {
     conversationpause: {
         id: 'conversationpauseid',
         sequence: 'conversationpauseseq',
-        update: 'changedate',
+        update: 'stoppause',
         insert: 'id',
     },
     conversationpending: {
@@ -701,6 +701,7 @@ const querySubcore = {
         id: 'campaignid',
         sequence: 'campaignseq',
         update: 'changedate',
+        where: 'OR lastrundate > $backupdate::TIMESTAMP',
         insert: 'id',
     },
     campaignmember: {
@@ -960,12 +961,6 @@ const queryExtras = {
         update: 'changedate',
         insert: 'id'
     },
-    paymentpending: {
-        id: 'paymentpendingid',
-        sequence: 'paymentpendingseq',
-        update: 'changedate',
-        insert: 'id'
-    },
     productcatalog: {
         id: 'productcatalogid',
         sequence: 'productcatalogseq',
@@ -1053,35 +1048,6 @@ exports.executeMigration = async (req, res) => {
             fixdate: fixdate,
         }
         let queryResult = { core: {}, subcore: {}, extras: {}, billing: {} };
-        // await zyxmeQuery(`CREATE TABLE IF NOT EXISTS migration (corpid bigint, run boolean, params jsonb, result jsonb, startdate timestamp without time zone, enddate timestamp without time zone)`, bind = {
-        //     _requestid: req._requestid,
-        // });
-        // let migrationstatus = await zyxmeQuery(`SELECT corpid FROM migration WHERE corpid = $corpid`, bind = {
-        //     _requestid: req._requestid,
-        //     corpid: corpid,
-        // });
-        // if (migrationstatus.length > 0) {
-        //     await zyxmeQuery(`UPDATE migration SET run = $run, params = $params, startdate = NOW() WHERE corpid = $corpid`, bind = {
-        //         _requestid: req._requestid,
-        //         corpid: corpid,
-        //         run: true,
-        //         params: {
-        //             ...req.body,
-        //             corpidBind: corpidBind
-        //         }
-        //     });
-        // }
-        // else {
-        //     await zyxmeQuery(`INSERT INTO migration (corpid, run, params, startdate) SELECT $corpid, $run, $params, NOW()`, bind = {
-        //         _requestid: req._requestid,
-        //         corpid: corpid,
-        //         run: true,
-        //         params: {
-        //             ...req.body,
-        //             corpidBind: corpidBind
-        //         }
-        //     });
-        // }
         try {
             if (modules.includes('core')) {
                 for (const [k,q] of Object.entries(queryCore)) {
@@ -1131,12 +1097,6 @@ exports.executeMigration = async (req, res) => {
                     }
                 } 
             }
-            // await zyxmeQuery(`UPDATE migration SET run = $run, result = $result, enddate = NOW() WHERE corpid = $corpid`, bind = {
-            //     _requestid: req._requestid,
-            //     corpid: corpid,
-            //     run: false,
-            //     result: queryResult,
-            // });
             return res.status(200).json({ error: false, success: true, data: queryResult });
         }
         catch (error) {
