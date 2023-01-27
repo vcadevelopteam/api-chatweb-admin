@@ -961,6 +961,18 @@ const queryExtras = {
         update: 'changedate',
         insert: 'id'
     },
+    metabusiness: {
+        id: 'metabusinessid',
+        sequence: 'metabusinessseq',
+        update: 'changedate',
+        insert: 'id'
+    },
+    metacatalog: {
+        id: 'metacatalogid',
+        sequence: 'metacatalogseq',
+        update: 'changedate',
+        insert: 'id'
+    },
     productcatalog: {
         id: 'productcatalogid',
         sequence: 'productcatalogseq',
