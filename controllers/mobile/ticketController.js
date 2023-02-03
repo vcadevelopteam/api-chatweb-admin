@@ -32,7 +32,7 @@ exports.reply = async (req, res) => {
             _requestid: req._requestid,
         })
 
-        if (!responseservices.data || !responseservices.data instanceof Object)
+        if (!responseservices.data || !(responseservices.data instanceof Object))
             return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
 
         if (!responseservices.data.Success) {
@@ -84,7 +84,7 @@ exports.triggerBlock = async (req, res) => {
             _requestid: req._requestid,
         })
 
-        if (!responseservices.data || !responseservices.data instanceof Object)
+        if (!responseservices.data || !(responseservices.data instanceof Object))
             return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
 
         res.json({ success: true });
@@ -125,7 +125,7 @@ exports.close = async (req, res) => {
             })
 
 
-        if (!responseservices.data || !responseservices.data instanceof Object)
+        if (!responseservices.data || !(responseservices.data instanceof Object))
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
 
         if (!responseservices.data.Success) {
@@ -152,12 +152,9 @@ exports.close = async (req, res) => {
             _requestid: req._requestid,
         })
         
-        if (!responseapp.data || !responseapp.data instanceof Object){
+        if (!responseapp.data || !(responseapp.data instanceof Object)){
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
         }
-
-        // if (!responseapp.data || !responseapp.data instanceof Object)
-        //     return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
 
         res.json({ success: true });
     }
@@ -224,7 +221,7 @@ exports.reasign = async (req, res) => {
             _requestid: req._requestid,
         })
 
-        if (!responseapp.data || !responseapp.data instanceof Object)
+        if (!responseapp.data || !(responseapp.data instanceof Object))
             return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
 
         res.json({ success: true, msg: '' });;

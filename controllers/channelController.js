@@ -23,7 +23,7 @@ const rootDelete = process.env.ROOT_DELETE;
 
 exports.checkPaymentPlan = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var { method, parameters } = request.body;
 
@@ -66,7 +66,7 @@ exports.checkPaymentPlan = async (request, response) => {
 
 exports.deleteChannel = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var { method, parameters = {} } = request.body;
 
@@ -762,7 +762,7 @@ exports.deleteChannel = async (request, response) => {
 
 exports.getChannelService = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var method = null;
         var parameters = null;
@@ -824,7 +824,7 @@ exports.getChannelService = async (request, response) => {
 
 exports.getLongToken = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         const requestGetLongToken = await axiosObservable({
             data: {
@@ -860,7 +860,7 @@ exports.getLongToken = async (request, response) => {
 
 exports.getPageList = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         const requestGetPageList = await axiosObservable({
             data: {
@@ -896,7 +896,7 @@ exports.getPageList = async (request, response) => {
 
 exports.getPhoneList = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         const requestGetPhoneList = await axiosObservable({
             data: {
@@ -931,7 +931,7 @@ exports.getPhoneList = async (request, response) => {
 
 exports.insertChannel = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var { method, parameters = {}, service = {} } = request.body;
 
@@ -2015,7 +2015,7 @@ exports.insertChannel = async (request, response) => {
 
 exports.updateChannel = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var { method, parameters = {}, service = {} } = request.body;
 
@@ -2120,7 +2120,7 @@ exports.updateChannel = async (request, response) => {
 
 exports.activateChannel = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, context: request.body }).debug(`Request to ${request.originalUrl}`);
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
         var { method, parameters = {}, service = {} } = request.body;
 

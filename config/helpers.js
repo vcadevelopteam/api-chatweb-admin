@@ -404,10 +404,8 @@ exports.printException = (error = false, origin = "", _requestid = "") => {
 exports.stringToSeconds = (str) => {
     let seconds = 0;
     let days = 0;
-    let newstr = str;
     if (str.includes("day")) {
         days = parseInt(str.split(" day")[0]);
-        newstr = str.split(" day")[1];
     }
 
     let parts = str.split(":");
@@ -427,10 +425,8 @@ exports.stringToSeconds = (str) => {
 exports.stringToMinutes = (str) => {
     let seconds = 0;
     let days = 0;
-    let newstr = str;
     if (str.includes("day")) {
         days = parseInt(str.split(" day")[0]);
-        newstr = str.split(" day")[1];
     }
 
     let parts = str.split(":");
