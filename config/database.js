@@ -1,8 +1,11 @@
 const pg = require('pg');
+const Sequelize = require('sequelize');
+
+const { ConnectionError, ConnectionRefusedError, HostNotFoundError, HostNotReachableError, ConnectionTimedOutError, TimeoutError } = require('sequelize');
+
 pg.types.setTypeParser(1114, str => str + 'Z');
 
 require('dotenv').config();
-const Sequelize = require('sequelize');
 
 const DBNAME = process.env.DBNAME
 const DBUSER = process.env.DBUSER
@@ -33,5 +36,9 @@ module.exports = new Sequelize(DBNAME, DBUSER, DBPASSWORD, {
         min: 0,
         acquire: 30000,
         idle: 10000
+    },
+    retry: {
+        match: [ConnectionError, ConnectionRefusedError, HostNotFoundError, HostNotReachableError, ConnectionTimedOutError, TimeoutError],
+        max: 3,
     }
 });
