@@ -278,7 +278,7 @@ exports.setSessionParameters = (parameters, user, id) => {
         parameters.username = user.usr;
     if (parameters.userid === null || parameters.userid === undefined)
         parameters.userid = user.userid;
-    if(parameters.agentid === null || parameters.agentid === undefined)
+    if (parameters.agentid === null || parameters.agentid === undefined)
         parameters.agentid = user.userid
 
     return parameters;
@@ -328,43 +328,66 @@ const errorstmp = {
 }
 exports.errors = errorstmp;
 
+function runTimeout(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+const statusAllowed = [400, 200, 401, 404, 500];
+
 exports.axiosObservable = async ({ method = "post", url, data = undefined, headers = undefined, _requestid = undefined, timeout }) => {
     const profiler = logger.startTimer();
 
-    return await axios({
-        method,
-        url,
-        data,
-        headers,
-        timeout: timeout || 600000
-    })
-        .then(r => {
-            profiler.done({ _requestid, message: `Request to ${url}`, status: r.status, input: data, output: r.data });
-            return r;
-        })
-        .catch(r => {
+    let rr = null
+    let retry = 3;
+    retry = retry - 1;
+
+    while (true) {
+        try {
+            rr = await axios({ method, url, data, headers, timeout: timeout || 600000 });
+
+            profiler.done({ _requestid, message: `Request to ${url}`, status: rr.status, input: data, output: rr.data });
+        } catch (error) {
             const errorLog = {
                 level: "warn",
                 _requestid,
                 message: `Request to ${url}`,
                 input: data
             }
-            if (r.response) {
-                errorLog.detail = {
-                    data: r.response?.data,
-                    status: r.response?.status,
-                    headers: r.response?.headers,
+
+            if (error?.response) {
+                if (!statusAllowed.includes(error?.response?.status) && retry !== 0) {
+                    retry = retry - 1;
+                    await runTimeout(3000);
+                    continue;
                 }
-            } else if (r.request) {
-                // The request was made but no response was received
-                errorLog.detail = r.request;
+
+                errorLog.detail = {
+                    data: error.response?.data,
+                    status: error.response?.status,
+                    headers: error.response?.headers,
+                }
+
+                profiler.done(errorLog);
+
+                throw { ...error, notLog: true }
             } else {
-                // Something happened in setting up the request that triggered an Error
-                errorLog.detail = r.message
+                if (retry !== 0) {
+                    retry = retry - 1;
+                    await runTimeout(3000);
+                    continue;
+                }
+
+                errorLog.detail = error.request || error.message;
+
+                profiler.done(errorLog);
+
+                throw { ...error, notLog: true }
             }
-            profiler.done(errorLog);
-            throw { ...r, notLog: true }
-        });
+        }
+        break;
+    }
+
+    return rr;
 }
 
 exports.getErrorSeq = (err, profiler, method) => {
