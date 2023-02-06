@@ -25,7 +25,7 @@ exports.upload = async (req, res) => {
 
         const params = {
             ACL: 'public-read',
-            Key: `${req.user?.orgdesc || "anonymous"}/${uuidv4()}/${req.file.originalname}`,
+            Key: `${req.user?.orgdesc || "anonymous"}/${req.body.random ? uuidv4() : ""}/${req.file.originalname}`,
             Body: req.file.buffer,
             Bucket: COS_BUCKET_NAME,
             ContentType: req.file.mimetype,
