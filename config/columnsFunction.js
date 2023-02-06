@@ -314,6 +314,9 @@ module.exports = {
         ticketgroup: {
             column: "co.usergroup"
         },
+        rolasesor: {
+            column: "r.description"
+        },
         communicationchanneldescription: {
             column: "cc.description"
         },
