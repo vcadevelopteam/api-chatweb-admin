@@ -20,7 +20,7 @@ exports.createSessionToken = async (request, response) => {
 
         if (paymentorder) {
             if (paymentorder[0]) {
-                if (paymentorder[0].paymentstatus === 'PENDING' || onlydata) {
+                if (paymentorder[0].paymentstatus === 'PENDING' && !onlydata) {
                     try {
                         const authCredentials = JSON.parse(paymentorder[0].authcredentials || {});
 
