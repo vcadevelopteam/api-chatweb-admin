@@ -191,7 +191,7 @@ exports.authorizeTransaction = async (request, response) => {
                             }
                         }
                         catch (error) {
-                            await paymentOrderError(corpid, orgid, paymentorder[0].paymentorderid, 'admin', 'NIUBIZ', (error?.response?.data?.errorMessage || error?.response?.statusText) || null, error?.response?.data || null);
+                            await paymentOrderError(corpid, orgid, paymentorder[0].paymentorderid, customerEmail || paymentorder[0].personid, 'NIUBIZ', (error?.response?.data?.errorMessage || error?.response?.statusText) || null, error?.response?.data || null);
 
                             responsedata = genericfunctions.changeResponseData(responsedata, null, { ...paymentorder[0], ...{ laststatus: (error?.response?.data?.errorMessage || error?.response?.statusText) || null, lastdata: error?.response?.data || null } }, 'success', 200, true);
                         }
