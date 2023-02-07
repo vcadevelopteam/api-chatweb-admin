@@ -3058,6 +3058,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PAYMENTORDER_ERROR: {
+        query: "SELECT * FROM ufn_paymentorder_error($corpid, $orgid, $paymentorderid, $paymentby, $lastprovider, $laststatus, $lastdata)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CHARGE_PAYMENTORDER_INS: {
         query: "SELECT * FROM ufn_charge_paymentorder_ins($corpid, $orgid, $id, $paymentorderid, $description, $type, $status, $amount, $currency, $paidby, $orderid, $orderjson, $email, $tokenid, $capture, $tokenjson, $chargetoken, $chargejson, $operation)",
         module: "",
