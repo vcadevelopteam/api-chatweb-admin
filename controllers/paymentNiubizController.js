@@ -44,7 +44,7 @@ exports.createSessionToken = async (request, response) => {
                                         merchantDefineData: {
                                             MDD4: paymentorder[0].usermail,
                                             MDD21: 0,
-                                            MDD32: paymentorder[0].ordercode,
+                                            MDD32: `${paymentorder[0].corpid}-${paymentorder[0].orgid}-${paymentorder[0].paymentorderid}`,
                                             MDD75: "Invitado",
                                             MDD77: 1,
                                         }
