@@ -1149,7 +1149,7 @@ exports.insertChannel = async (request, response) => {
                 if (typeof requestWebChatCreate1.data.id !== 'undefined' && requestWebChatCreate1.data.id) {
                     parameters.apikey = "";
                     parameters.appintegrationid = webChatApplication;
-                    parameters.channelparameters = JSON.stringify(webChatData);
+                    parameters.channelparameters = JSON.stringify(webChatData1);
                     parameters.communicationchannelcontact = "";
                     parameters.communicationchannelowner = "";
                     parameters.communicationchannelsite = requestWebChatCreate.data.id;
