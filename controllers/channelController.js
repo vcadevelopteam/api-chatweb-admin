@@ -1152,8 +1152,8 @@ exports.insertChannel = async (request, response) => {
                     parameters.channelparameters = JSON.stringify(webChatData1);
                     parameters.communicationchannelcontact = "";
                     parameters.communicationchannelowner = "";
-                    parameters.communicationchannelsite = requestWebChatCreate.data.id;
-                    parameters.integrationid = requestWebChatCreate.data.id;
+                    parameters.communicationchannelsite = requestWebChatCreate1.data.id;
+                    parameters.integrationid = requestWebChatCreate1.data.id;
                     parameters.servicecredentials = JSON.stringify(service);
                     parameters.type = 'FORM';
 
@@ -1163,7 +1163,7 @@ exports.insertChannel = async (request, response) => {
                         await channelfunctions.clearHookCache('ChatWebService', request._requestid);
 
                         return response.json({
-                            integrationid: requestWebChatCreate.data.id,
+                            integrationid: requestWebChatCreate1.data.id,
                             success: true
                         });
                     } else {
