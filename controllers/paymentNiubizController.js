@@ -57,7 +57,7 @@ exports.createSessionToken = async (request, response) => {
                             });
 
                             if (requestSessionToken.data) {
-                                responsedata = genericfunctions.changeResponseData(responsedata, null, { ...paymentorder[0], ...{ sessiontoken: requestSessionToken.data.sessionKey, merchantid: niubizMerchantId } }, 'success', 200, true);
+                                responsedata = genericfunctions.changeResponseData(responsedata, null, { ...paymentorder[0], ...{ sessiontoken: requestSessionToken.data.sessionKey, merchantid: (authCredentials?.merchantId || niubizMerchantId) } }, 'success', 200, true);
                             }
                             else {
                                 responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, requestSessionToken.data, 'Error creating session token', responsedata.status, responsedata.success);
