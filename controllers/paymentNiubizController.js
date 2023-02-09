@@ -44,7 +44,7 @@ exports.createSessionToken = async (request, response) => {
                                         merchantDefineData: {
                                             MDD4: paymentorder[0].usermail,
                                             MDD21: 0,
-                                            MDD32: paymentorder[0].ordercode,
+                                            MDD32: `${paymentorder[0].corpid}-${paymentorder[0].orgid}-${paymentorder[0].paymentorderid}`,
                                             MDD75: "Invitado",
                                             MDD77: 1,
                                         }
@@ -57,7 +57,7 @@ exports.createSessionToken = async (request, response) => {
                             });
 
                             if (requestSessionToken.data) {
-                                responsedata = genericfunctions.changeResponseData(responsedata, null, { ...paymentorder[0], ...{ sessiontoken: requestSessionToken.data.sessionKey, merchantid: niubizMerchantId } }, 'success', 200, true);
+                                responsedata = genericfunctions.changeResponseData(responsedata, null, { ...paymentorder[0], ...{ sessiontoken: requestSessionToken.data.sessionKey, merchantid: (authCredentials?.merchantId || niubizMerchantId) } }, 'success', 200, true);
                             }
                             else {
                                 responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, requestSessionToken.data, 'Error creating session token', responsedata.status, responsedata.success);
