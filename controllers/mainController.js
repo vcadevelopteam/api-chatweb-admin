@@ -189,6 +189,14 @@ exports.multiCollection = async (req, res) => {
     }
 }
 
+exports.SplitFirst = async (req, res) => {
+    const { text, split, index } = req.body;
+    return res.json({
+        success: true,
+        result: text.split(split)[index]
+    });
+}
+
 exports.getToken = async (req, res) => {
     let data  = req.body.parameters || req.body.data; 
     //const { data } = req.body;
