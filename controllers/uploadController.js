@@ -22,10 +22,10 @@ exports.upload = async (req, res) => {
         if (req.file.size > 999999999) {
             return res.status(500).json({ success: false, msg: 'Archivo demasiado grande.' });
         }
-
+        console.log("req.body", req.body)
         const params = {
             ACL: 'public-read',
-            Key: `${req.user?.orgdesc || "anonymous"}/${uuidv4()}/${req.file.originalname}`,
+            Key: `${req.user?.orgdesc || "anonymous"}/${!req.body.random ? uuidv4() : "static"}/${req.file.originalname}`,
             Body: req.file.buffer,
             Bucket: COS_BUCKET_NAME,
             ContentType: req.file.mimetype,

@@ -1,11 +1,6 @@
 const { errors, getErrorCode, axiosObservable } = require('../config/helpers');
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { uploadToCOS, unrar, unzip, xlsxToJSON } = require('../config/filefunctions');
-// var https = require('https');
-
-// const agent = new https.Agent({
-//     rejectUnauthorized: false
-// });
 
 exports.reply = async (req, res) => {
     try {
@@ -36,7 +31,7 @@ exports.reply = async (req, res) => {
             _requestid: req._requestid,
         });
 
-        if (!responseservices.data || !responseservices.data instanceof Object)
+        if (!responseservices.data || !(responseservices.data instanceof Object))
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
 
         if (!responseservices.data.Success) {
@@ -80,7 +75,7 @@ exports.replyListMessages = async (req, res) => {
                 _requestid: req._requestid,
             });
 
-            if (!responseservices.data || !responseservices.data instanceof Object)
+            if (!responseservices.data || !(responseservices.data instanceof Object))
                 return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
 
             if (!responseservices.data.Success) {
@@ -124,7 +119,7 @@ exports.close = async (req, res) => {
             _requestid: req._requestid,
         });
 
-        if (!responseservices.data || !responseservices.data instanceof Object)
+        if (!responseservices.data || !(responseservices.data instanceof Object))
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
 
         if (!responseservices.data.Success) {
@@ -188,7 +183,7 @@ exports.massiveClose = async (req, res) => {
             _requestid: req._requestid,
         });
 
-        if (!responseservices.data || !responseservices.data instanceof Object) {
+        if (!responseservices.data || !(responseservices.data instanceof Object)) {
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
         }
 
