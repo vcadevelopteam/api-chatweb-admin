@@ -1266,5 +1266,58 @@ module.exports = {
         type: {
             column: "p.type"
         },
+    },
+    reportvoicecall: {
+        ticketnum: {
+            column: "co.ticketnum"
+        },
+        channel: {
+            column: "cc.description"
+        },
+        ticketdate: {
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','DD/MM/YYYY')"
+        },
+        tickettime: {
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','HH24:MI:SS')"
+        },
+        finishtime: {
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour','HH24:MI:SS')"
+        },
+        handoffdate: {
+            column: "to_char(co.handoffdate + p_offset * INTERVAL '1hour','HH24:MI:SS')"
+        },
+        agent: {
+            column: "CONCAT(usr.firstname, ' ', usr.lastname)"
+        },
+        name: {
+            column: "pe.name"
+        },
+        phone: {
+            column: "pcc.personcommunicationchannelowner"
+        },
+        origin: {
+            column: "co.origin"
+        },
+        closetype: {
+            column: "coalesce(dom_cierre.domaindesc, co.closetype, 'Cierre automático')"
+        },
+        classification: {
+            column: "cla.description"
+        },
+        totalduration: {
+            column: "date_trunc('seconds', co.totalduration)"
+        },
+        agentduration: {
+            column: "date_trunc('seconds', co.realduration - co.botduration)"
+        },
+        customerwaitingduration: {
+            column: "date_trunc('seconds', co.callanswereddate - co.startdate + co.transferduration)"
+        },
+        holdingtime: {
+            column: "date_trunc('seconds', co.callholdtime)"
+        },
+        transferduration: {
+            column: "date_trunc('seconds', co.transferduration)"
+        },
     }
 }
