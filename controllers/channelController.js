@@ -2108,7 +2108,7 @@ exports.updateChannel = async (request, response) => {
         parameters.username = request.user.usr;
         parameters.phone = null;
 
-        if (type === "CHAZ") {
+        if (type === "CHATWEB") {
             const webChatData = {
                 applicationId: webChatApplication,
                 name: parameters.description,
