@@ -1,5 +1,6 @@
 const channelfunctions = require("../config/channelfunctions");
 const triggerfunctions = require('../config/triggerfunctions');
+const { getErrorCode } = require('../config/helpers');
 const jwt = require("jsonwebtoken");
 
 const { setSessionParameters, axiosObservable, printException } = require('../config/helpers');
@@ -1148,11 +1149,11 @@ exports.insertChannel = async (request, response) => {
                 if (typeof requestWebChatCreate1.data.id !== 'undefined' && requestWebChatCreate1.data.id) {
                     parameters.apikey = "";
                     parameters.appintegrationid = webChatApplication;
-                    parameters.channelparameters = JSON.stringify(webChatData);
+                    parameters.channelparameters = JSON.stringify(webChatData1);
                     parameters.communicationchannelcontact = "";
                     parameters.communicationchannelowner = "";
-                    parameters.communicationchannelsite = requestWebChatCreate.data.id;
-                    parameters.integrationid = requestWebChatCreate.data.id;
+                    parameters.communicationchannelsite = requestWebChatCreate1.data.id;
+                    parameters.integrationid = requestWebChatCreate1.data.id;
                     parameters.servicecredentials = JSON.stringify(service);
                     parameters.type = 'FORM';
 
@@ -1162,7 +1163,7 @@ exports.insertChannel = async (request, response) => {
                         await channelfunctions.clearHookCache('ChatWebService', request._requestid);
 
                         return response.json({
-                            integrationid: requestWebChatCreate.data.id,
+                            integrationid: requestWebChatCreate1.data.id,
                             success: true
                         });
                     } else {
