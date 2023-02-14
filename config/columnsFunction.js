@@ -1232,7 +1232,7 @@ module.exports = {
             column: "co.origin"
         },
         closetype: {
-            column: "coalesce(dom_cierre.domaindesc, co.closetype, 'Cierre automático')"
+            column: "CASE WHEN co.closetype IN ('DESCONECTADO POR ASESOR', 'DESCONECTADO POR CLIENTE') THEN 'HANDLED' WHEN co.closetype IN ('LLAMADA NO CONTESTADA') THEN 'ABANDON' WHEN co.closetype IN ('LLAMADA FALLIDA', 'NO HAY ASESORES') THEN 'LOST' ELSE co.closetype END"
         },
         classification: {
             column: "cla.description"
