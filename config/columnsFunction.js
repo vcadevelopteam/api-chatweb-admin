@@ -1239,19 +1239,19 @@ module.exports = {
             column: "cla.description"
         },
         totalduration: {
-            column: "to_char(date_trunc('seconds', co.totalduration), HH24:MI:SS)"
+            column: "date_trunc('seconds', co.totalduration)::text"
         },
         agentduration: {
-            column: "to_char(date_trunc('seconds', co.realduration - co.botduration), HH24:MI:SS)"
+            column: "date_trunc('seconds', co.realduration - co.botduration)::text"
         },
         customerwaitingduration: {
-            column: "to_char(date_trunc('seconds', co.callanswereddate - co.startdate + co.transferduration), HH24:MI:SS)"
+            column: "date_trunc('seconds', co.callanswereddate - co.startdate + co.transferduration)::text"
         },
         holdingtime: {
             column: "date_trunc('seconds', co.callholdtime)::text"
         },
         transferduration: {
-            column: "to_char(date_trunc('seconds', co.transferduration), HH24:MI:SS)"
+            column: "date_trunc('seconds', co.transferduration)::text"
         },
     }
 }
