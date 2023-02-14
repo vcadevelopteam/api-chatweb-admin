@@ -1275,7 +1275,7 @@ module.exports = {
             column: "cc.description"
         },
         ticketdate: {
-            column: "co.startdate + p_offset * INTERVAL '1hour','YYYY-MM-DD'",
+            column: "co.startdate + p_offset * INTERVAL '1hour'",
             type: "date"
         },
         tickettime: {
@@ -1306,19 +1306,19 @@ module.exports = {
             column: "cla.description"
         },
         totalduration: {
-            column: "to_char(date_trunc('seconds', co.totalduration))"
+            column: "to_char(date_trunc('seconds', co.totalduration), HH24:MI:SS)"
         },
         agentduration: {
-            column: "to_char(date_trunc('seconds', co.realduration - co.botduration))"
+            column: "to_char(date_trunc('seconds', co.realduration - co.botduration), HH24:MI:SS)"
         },
         customerwaitingduration: {
-            column: "to_char(date_trunc('seconds', co.callanswereddate - co.startdate + co.transferduration))"
+            column: "to_char(date_trunc('seconds', co.callanswereddate - co.startdate + co.transferduration), HH24:MI:SS)"
         },
         holdingtime: {
-            column: "to_char(date_trunc('seconds', co.callholdtime))"
+            column: "to_char(date_trunc('seconds', co.callholdtime), HH24:MI:SS)"
         },
         transferduration: {
-            column: "to_char(date_trunc('seconds', co.transferduration))"
+            column: "to_char(date_trunc('seconds', co.transferduration), HH24:MI:SS)"
         },
     }
 }
