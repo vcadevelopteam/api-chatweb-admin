@@ -1275,7 +1275,7 @@ module.exports = {
             column: "cc.description"
         },
         ticketdate: {
-            column: "co.startdate + p_offset * INTERVAL '1hour','DD/MM/YYYY'",
+            column: "co.startdate + p_offset * INTERVAL '1hour','YYYY-MM-DD'",
             type: "date"
         },
         tickettime: {
