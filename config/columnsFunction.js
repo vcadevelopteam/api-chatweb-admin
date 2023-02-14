@@ -1315,7 +1315,7 @@ module.exports = {
             column: "to_char(date_trunc('seconds', co.callanswereddate - co.startdate + co.transferduration), HH24:MI:SS)"
         },
         holdingtime: {
-            column: "to_char(date_trunc('seconds', co.callholdtime), HH24:MI:SS)"
+            column: "date_trunc('seconds', co.callholdtime)::text"
         },
         transferduration: {
             column: "to_char(date_trunc('seconds', co.transferduration), HH24:MI:SS)"
