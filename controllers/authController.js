@@ -4,11 +4,9 @@ const { v4: uuidv4 } = require('uuid');
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { errors, getErrorCode, cleanPropertyValue } = require('../config/helpers');
 const { addApplication } = require('./voximplantController');
-const axios = require('axios')
 
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const SECONDS_EXPIRE_IN = 60 * 60 * 12;
 
 //type: int|string|bool
 const properties = [
@@ -116,8 +114,10 @@ exports.authenticate = async (req, res) => {
         if (integration && !(result instanceof Array))
             return res.status(401).json({ code: errors.LOGIN_NO_INTEGRATION });
 
-        if (!result instanceof Array || result.length === 0)
+        if (!(result instanceof Array) || result.length === 0) {
+            logger.info(`auth fail: ${usr}`);
             return res.status(401).json({ code: errors.LOGIN_USER_INCORRECT });
+        }
 
         const user = result[0];
 
@@ -145,6 +145,8 @@ exports.authenticate = async (req, res) => {
         let notifications = [];
 
         if (user.status === 'ACTIVO') {
+            logger.info(`auth success: ${usr}`);
+
             const resConnection = await executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...user, ...prevdata, propertyname: 'CONEXIONAUTOMATICAINBOX' })
 
             const automaticConnection = validateResProperty(resConnection, 'bool');
@@ -219,7 +221,7 @@ exports.getUser = async (req, res) => {
         const resultBDProperties = resultBD[3];
         const propertyEnv = resultBD[5] instanceof Array  && resultBD[5].length > 0 ? resultBD[5][0].propertyvalue : "";
 
-        if (!resultBD[0] instanceof Array) {
+        if (!(resultBD[0] instanceof Array)) {
             return res.status(500).json(getErrorCode());
         }
 

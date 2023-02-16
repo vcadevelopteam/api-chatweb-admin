@@ -1,6 +1,6 @@
 const bcryptjs = require("bcryptjs");
 const logger = require('../config/winston');
-const { executesimpletransaction, executeTransaction, getCollectionPagination, exportData, buildQueryWithFilterAndSort, GetMultiCollection, getQuery } = require('../config/triggerfunctions');
+const { executesimpletransaction, executeTransaction, getCollectionPagination, buildQueryWithFilterAndSort, GetMultiCollection, getQuery } = require('../config/triggerfunctions');
 const { setSessionParameters, getErrorCode, axiosObservable } = require('../config/helpers');
 const { Pool } = require('pg')
 const Cursor = require('pg-cursor')
@@ -11,6 +11,8 @@ exports.GetCollection = async (req, res) => {
     const {method, key } = req.body;
 
     setSessionParameters(parameters, req.user, req._requestid);
+
+    logger.child({ _requestid: req._requestid, ctx: parameters }).info(`${method}: ${parameters.username}`);
 
     const result = await executesimpletransaction(method, parameters, req.user.menu || {});
 
@@ -92,6 +94,8 @@ exports.executeTransaction = async (req, res) => {
         return x;
     })
 
+    logger.child({ _requestid: req._requestid, ctx: parameters }).info(`TRANSACTION ${header.method}: ${header.parameters.username}`);
+
     const result = await executeTransaction(header, detail, req.user.menu || {}, req._requestid);
 
     if (!result.error)
@@ -106,7 +110,10 @@ exports.getCollectionPagination = async (req, res) => {
 
     setSessionParameters(parameters, req.user, req._requestid);
 
-    const result = await getCollectionPagination(methodCollection, methodCount, parameters, req.user.menu || {});
+    logger.child({ _requestid: req._requestid, ctx: parameters }).info(`${methodCollection}: ${parameters.username}`);
+
+    const result = await getCollectionPagination(methodCollection, methodCount, parameters, req.user.menu || {}, req._requestid);
+    
     if (!result.error) {
         res.json(result);
     } else {
@@ -126,35 +133,6 @@ exports.getGraphic = async (req, res) => {
         res.json(result);
     } else {
         return res.status(result.rescode).json(result);
-    }
-}
-
-exports.exportTrigger = async (req, res) => {
-    let parameters  = req.body.parameters || req.body.data; 
-    const { method } = req.body;
-
-    const authHeader = String(req.headers['authorization'] || '');
-
-    try {
-        const responseservices = await axiosObservable({
-            method: "post",
-            url: `${process.env.API2}main/exportTrigger`,
-            data: { parameters, method },
-            headers: {
-                "Authorization": authHeader
-            },
-            _requestid: req._requestid,
-            timeout: 600000 * 3
-        });
-
-        logger.child({ _requestid: req._requestid, response: responseservices.data }).debug(`executing excel`)
-
-        if (!responseservices.data || !responseservices.data instanceof Object)
-            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
-
-        return res.json(responseservices.data);
-    } catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
 
