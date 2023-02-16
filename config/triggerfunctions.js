@@ -25,7 +25,7 @@ const executeQuery = async (query, bind, _requestid) => {
         type: QueryTypes.SELECT,
         bind
     })
-        .catch(err => getErrorSeq(err, profiler, query));
+        .catch(err => getErrorSeq(err, profiler, query, _requestid));
 }
 //no se puede usar bind y replace en el mismo query 
 exports.executesimpletransaction = async (method, data, permissions = false, replacements = undefined) => {
@@ -56,7 +56,7 @@ exports.executesimpletransaction = async (method, data, permissions = false, rep
     }
 }
 
-exports.getCollectionPagination = async (methodcollection, methodcount, data, permissions = false) => {
+exports.getCollectionPagination = async (methodcollection, methodcount, data, permissions, _requestid) => {
     try {
         let functionMethod = functionsbd[methodcollection];
 
@@ -91,7 +91,7 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
                         bind: data
                     })
                 ])
-                    .catch(err => getErrorSeq(err, profiler, `paginated ${methodcollection}`))
+                    .catch(err => getErrorSeq(err, profiler, `paginated ${methodcollection}`, _requestid))
 
                 if (!(results instanceof Array)) {
                     return results
@@ -111,7 +111,7 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
             return getErrorCode(errors.NOT_FUNCTION_ERROR);
         }
     } catch (exception) {
-        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing getCollectionPagination");
+        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing getCollectionPagination", _requestid);
     }
 }
 
@@ -163,7 +163,7 @@ exports.GetMultiCollection = async (detail, permissions, _requestid) => {
                 type: QueryTypes.SELECT,
                 bind: item.parameters
             })
-                .catch(err => getErrorSeq(err, profiler, `multi ${item.method}`));
+                .catch(err => getErrorSeq(err, profiler, `multi ${item.method}`, _requestid));
 
             if (!(r instanceof Array))
                 return r;
@@ -204,7 +204,7 @@ exports.executeTransaction = async (header, detail, permissions, _requestid) => 
                     bind: parameters,
                     transaction
                 })
-                    .catch(err => getErrorSeq(err, profiler, `transaction header ${method}`));
+                    .catch(err => getErrorSeq(err, profiler, `transaction header ${method}`, _requestid));
 
                 if (!(result instanceof Array)) {
                     await transaction.rollback();
@@ -241,7 +241,7 @@ exports.executeTransaction = async (header, detail, permissions, _requestid) => 
                     transaction
                 })
                     .catch(err => {
-                        lasterror = getErrorSeq(err, profiler, `transaction detail ${item.method}`);
+                        lasterror = getErrorSeq(err, profiler, `transaction detail ${item.method}`, _requestid);
                         throw new Error('error')
 
                     });
