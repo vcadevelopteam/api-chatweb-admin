@@ -1251,6 +1251,21 @@ module.exports = {
         customlabel4: {
             column: "p.customlabel4"
         },
+        customnumber0: {
+            column: "p.customnumber0"
+        },
+        customnumber1: {
+            column: "p.customnumber1"
+        },
+        customnumber2: {
+            column: "p.customnumber2"
+        },
+        customnumber3: {
+            column: "p.customnumber3"
+        },
+        customnumber4: {
+            column: "p.customnumber4"
+        },
         reviewstatus: {
             column: "p.reviewstatus"
         },
