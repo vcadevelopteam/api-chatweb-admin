@@ -304,6 +304,7 @@ const errorstmp = {
     REQUEST_SERVICES: "REQUEST_SERVICES",
     REQUEST_BRIDGE: "REQUEST_BRIDGE",
     LIMIT_EXCEEDED: "LIMIT_EXCEEDED",
+    COS_UNEXPECTED_ERROR: "COS_UNEXPECTED_ERROR",
 
     "23505": "ALREADY_EXISTS_RECORD",
     "E-ZYX-23505": "ALREADY_EXISTS_RECORD",
@@ -348,7 +349,7 @@ exports.axiosObservable = async ({ method = "post", url, data = undefined, heade
             profiler.done({ _requestid, message: `Request to ${url}`, status: rr.status, input: data, output: rr.data });
         } catch (error) {
             const errorLog = {
-                level: "warn",
+                level: "error",
                 _requestid,
                 message: `Request to ${url}`,
                 input: data
@@ -360,7 +361,7 @@ exports.axiosObservable = async ({ method = "post", url, data = undefined, heade
                     await runTimeout(3000);
                     continue;
                 }
-
+                errorLog.message += " " + error.response?.status;
                 errorLog.detail = {
                     data: error.response?.data,
                     status: error.response?.status,
@@ -369,7 +370,7 @@ exports.axiosObservable = async ({ method = "post", url, data = undefined, heade
 
                 profiler.done(errorLog);
 
-                throw { ...error, notLog: true }
+                throw new Error({ ...error, notLog: true })
             } else {
                 if (retry !== 0) {
                     retry = retry - 1;
@@ -381,7 +382,7 @@ exports.axiosObservable = async ({ method = "post", url, data = undefined, heade
 
                 profiler.done(errorLog);
 
-                throw { ...error, notLog: true }
+                throw new Error({ ...error, notLog: true })
             }
         }
         break;
