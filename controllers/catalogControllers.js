@@ -123,7 +123,7 @@ const productCatalogInsArray = async (corpid, orgid, metacatalogid, username, ta
     return null;
 }
 
-const productCatalogIns = async (corpid, orgid, metacatalogid, id, productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, reviewdescription, status, type, username, operation, requestid) => {
+const productCatalogIns = async (corpid, orgid, metacatalogid, id, productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, reviewstatus, reviewdescription, status, type, username, operation, requestid) => {
     const queryResult = await triggerfunctions.executesimpletransaction("UFN_PRODUCTCATALOG_INS", {
         corpid: corpid,
         orgid: orgid,
@@ -158,6 +158,11 @@ const productCatalogIns = async (corpid, orgid, metacatalogid, id, productid, re
         customlabel2: customlabel2,
         customlabel3: customlabel3,
         customlabel4: customlabel4,
+        customnumber0: customnumber0,
+        customnumber1: customnumber1,
+        customnumber2: customnumber2,
+        customnumber3: customnumber3,
+        customnumber4: customnumber4,
         reviewstatus: reviewstatus,
         reviewdescription: reviewdescription,
         status: status,
@@ -471,7 +476,7 @@ exports.manageProduct = async (request, response) => {
                     case "CREATE":
                     case "INSERT":
                         if (accessToken) {
-                            const { productid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, reviewdescription, status, type } = request.body;
+                            const { productid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, reviewstatus, reviewdescription, status, type } = request.body;
 
                             const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
@@ -505,6 +510,11 @@ exports.manageProduct = async (request, response) => {
                                         custom_label_2: customlabel2 || null,
                                         custom_label_3: customlabel3 || null,
                                         custom_label_4: customlabel4 || null,
+                                        custom_number_0: customnumber0 || null,
+                                        custom_number_1: customnumber1 || null,
+                                        custom_number_2: customnumber2 || null,
+                                        custom_number_3: customnumber3 || null,
+                                        custom_number_4: customnumber4 || null,
                                     }, (k, v) => v ?? undefined)),
                                     config: config,
                                     method: 'post',
@@ -518,7 +528,7 @@ exports.manageProduct = async (request, response) => {
                             if (result?.data?.id) {
                                 const productcatalogid = result.data.id
 
-                                let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, 0, productid, productcatalogid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, reviewdescription, status, type, usr, operation, request._requestid);
+                                let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, 0, productid, productcatalogid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, reviewstatus, reviewdescription, status, type, usr, operation, request._requestid);
 
                                 responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                             }
@@ -530,7 +540,7 @@ exports.manageProduct = async (request, response) => {
 
                     case "EDIT":
                         if (accessToken) {
-                            const { productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, reviewdescription, status, type } = request.body;
+                            const { productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, reviewstatus, reviewdescription, status, type } = request.body;
 
                             const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
@@ -617,6 +627,11 @@ exports.manageProduct = async (request, response) => {
                                             custom_label_2: customlabel2 || null,
                                             custom_label_3: customlabel3 || null,
                                             custom_label_4: customlabel4 || null,
+                                            custom_number_0: customnumber0 || null,
+                                            custom_number_1: customnumber1 || null,
+                                            custom_number_2: customnumber2 || null,
+                                            custom_number_3: customnumber3 || null,
+                                            custom_number_4: customnumber4 || null,
                                         })),
                                         config: config,
                                         method: 'post',
@@ -628,7 +643,7 @@ exports.manageProduct = async (request, response) => {
                                 });
 
                                 if (result?.data) {
-                                    let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, reviewdescription, status, type, usr, operation, request._requestid);
+                                    let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, reviewstatus, reviewdescription, status, type, usr, operation, request._requestid);
 
                                     responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                                 }
@@ -644,7 +659,7 @@ exports.manageProduct = async (request, response) => {
 
                     case "DELETE":
                         if (accessToken) {
-                            const { productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, reviewdescription, status, type } = request.body;
+                            const { productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, reviewstatus, reviewdescription, status, type } = request.body;
 
                             const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
@@ -714,7 +729,7 @@ exports.manageProduct = async (request, response) => {
                                 });
 
                                 if (result?.data) {
-                                    let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, reviewstatus, reviewdescription, status, type, usr, operation, request._requestid);
+                                    let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, reviewstatus, reviewdescription, status, type, usr, operation, request._requestid);
 
                                     responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                                 }
@@ -767,7 +782,7 @@ exports.synchroProduct = async (request, response) => {
 
                 const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
-                let requestUrl = `${facebookEndpoint}${catalogid}/products?fields=additional_image_urls,availability,brand,category,color,condition,currency,custom_label_0,custom_label_1,custom_label_2,custom_label_3,custom_label_4,description,expiration_date,start_date,gender,id,image_url,material,name,pattern,price,retailer_id,review_status,sale_price,short_description,size,url,channels_to_integrity_status{rejection_information}&limit=500&bulk_pagination=true&access_token=${accessToken}`;
+                let requestUrl = `${facebookEndpoint}${catalogid}/products?fields=additional_image_urls,availability,brand,category,color,condition,currency,custom_label_0,custom_label_1,custom_label_2,custom_label_3,custom_label_4,custom_number_0,custom_number_1,custom_number_2,custom_number_3,custom_number_4,description,expiration_date,start_date,gender,id,image_url,material,name,pattern,price,retailer_id,review_status,sale_price,short_description,size,url,channels_to_integrity_status{rejection_information}&limit=500&bulk_pagination=true&access_token=${accessToken}`;
                 let continueLoop = true;
                 let listProduct = [];
 
@@ -846,6 +861,11 @@ exports.synchroProduct = async (request, response) => {
                             customlabel2: data?.custom_label_2 || '',
                             customlabel3: data?.custom_label_3 || '',
                             customlabel4: data?.custom_label_4 || '',
+                            customnumber0: data?.custom_number_0 || '',
+                            customnumber1: data?.custom_number_1 || '',
+                            customnumber2: data?.custom_number_2 || '',
+                            customnumber3: data?.custom_number_3 || '',
+                            customnumber4: data?.custom_number_4 || '',
                             reviewstatus: (data?.review_status || (data?.channels_to_integrity_status?.data[0]?.rejection_information ? 'rejected' : null)) || 'approved',
                             reviewdescription: (data?.review_status || (data?.channels_to_integrity_status?.data[0]?.rejection_information?.message || null)) || '',
                             status: 'ACTIVO',
@@ -967,7 +987,7 @@ exports.deleteProduct = async (request, response) => {
                             });
 
                             if (result?.data) {
-                                let catalogResponse = await productCatalogIns(corpid, orgid, productdata.metacatalogid, productdata.productcatalogid, productdata.productid, facebookretailerid, productdata.title, productdata.description, productdata.descriptionshort, productdata.availability, productdata.category, productdata.condition, productdata.currency, productdata.price, productdata.saleprice, productdata.link, productdata.imagelink, productdata.additionalimagelink, productdata.brand, productdata.color, productdata.gender, productdata.material, productdata.pattern, productdata.size, productdata.datestart, productdata.datelaunch, productdata.dateexpiration, productdata.labels, productdata.customlabel0, productdata.customlabel1, productdata.customlabel2, productdata.customlabel3, productdata.customlabel4, productdata.reviewstatus, productdata.reviewdescription, productdata.status, productdata.type, usr, 'DELETE', request._requestid);
+                                let catalogResponse = await productCatalogIns(corpid, orgid, productdata.metacatalogid, productdata.productcatalogid, productdata.productid, facebookretailerid, productdata.title, productdata.description, productdata.descriptionshort, productdata.availability, productdata.category, productdata.condition, productdata.currency, productdata.price, productdata.saleprice, productdata.link, productdata.imagelink, productdata.additionalimagelink, productdata.brand, productdata.color, productdata.gender, productdata.material, productdata.pattern, productdata.size, productdata.datestart, productdata.datelaunch, productdata.dateexpiration, productdata.labels, productdata.customlabel0, productdata.customlabel1, productdata.customlabel2, productdata.customlabel3, productdata.customlabel4, productdata.customnumber0, productdata.customnumber1, productdata.customnumber2, productdata.customnumber3, productdata.customnumber4, productdata.reviewstatus, productdata.reviewdescription, productdata.status, productdata.type, usr, 'DELETE', request._requestid);
 
                                 responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                             }
