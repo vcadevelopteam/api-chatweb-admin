@@ -1003,7 +1003,8 @@ exports.insertChannel = async (request, response) => {
                             chatBorderColor: service.color ? service.color.border : '',
                             chatHeaderColor: service.color ? service.color.header : '',
                             messageBotColor: service.color ? service.color.bot : '',
-                            messageClientColor: service.color ? service.color.client : ''
+                            messageClientColor: service.color ? service.color.client : '',
+                            iconscolor: service.color ? service.color.iconscolor : ''
                         },
                         extra: {
                             abandonendpoint: `${webChatScriptEndpoint}smooch`,
@@ -2121,7 +2122,8 @@ exports.updateChannel = async (request, response) => {
                         chatBorderColor: service.color ? service.color.border : '',
                         chatHeaderColor: service.color ? service.color.header : '',
                         messageBotColor: service.color ? service.color.bot : '',
-                        messageClientColor: service.color ? service.color.client : ''
+                        messageClientColor: service.color ? service.color.client : '',
+                        iconscolor: service.color ? service.color.iconscolor : ''
                     },
                     extra: {
                         abandonendpoint: `${webChatScriptEndpoint}smooch`,
