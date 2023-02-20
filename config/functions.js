@@ -471,7 +471,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CLASSIFICATION_SEL: {
-        query: "SELECT * FROM ufn_classification_sel($corpid ,$orgid ,$id  ,$username ,$all)",
+        query: "SELECT * FROM ufn_classification_sel($corpid, $orgid, $id, $username, $all)",
         module: "",
         protected: "SELECT"
     },
@@ -583,11 +583,6 @@ module.exports = {
         query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $bodyobject, $footerenabled, $footer, $buttonsenabled, $buttons, $priority, $attachment, $fromprovider, $externalid, $externalstatus, $communicationchannelid, $communicationchanneltype, $exampleparameters, $username, $operation)",
         module: "",
         protected: "INSERT"
-    },
-    UFN_CLASSIFICATION_SEL: {
-        query: "SELECT * FROM ufn_classification_sel($corpid,$orgid,$id,$username, $all)",
-        module: "",
-        protected: "SELECT"
     },
     UFN_CLASSIFICATION_INS: {
         query: "SELECT * FROM ufn_classification_ins( $id, $corpid, $orgid, $description, $parent, $communicationchannel, $status, $type, $username, $operation, $tags,$title, $jobplan, $usergroup, $schedule, $order, $metacatalogid)",
@@ -1025,11 +1020,6 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_COMMUNICATIONCHANNELBYORG_LST: {
-        query: "select * from ufn_communicationchannelbyorg_lst($orgid)",
-        module: "",
-        protected: "SELECT"
-    },
     UFN_INTELLIGENTMODELSCONFIGURATION_INS: {
         query: "SELECT * FROM ufn_intelligentmodelsconfiguration_ins($corpid, $orgid, $communicationchannelid, $username, $intelligentmodelsconfigurationid, $operation, $description, $type, $status, $color, $icontype, $parameters)",
         module: "",
@@ -1207,7 +1197,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_DASHBOARD_OPERATIVO_ENCUESTA3_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_encuesta3_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$question,$closedby,$target,$supervisorid,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_operativo_encuesta3_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $question, $closedby, $target, $supervisorid, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
@@ -1492,11 +1482,6 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
-    UFN_LEADNOTES_SEL: {
-        query: "select * from ufn_leadnotes_sel($corpid,$orgid,$leadid,$leadnotesid,$all)",
-        module: "",
-        protected: "SELECT"
-    },
     UFN_LEADNOTES_INS: {
         query: "select * from ufn_leadnotes_ins($corpid,$orgid,$leadid,$leadnotesid,$description,$type,$status,$username,$media,$operation)",
         module: "",
@@ -1552,11 +1537,6 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_USER_ASESORBYORGID_LST: {
-        query: "SELECT * FROM ufn_user_asesorbyorgid_lst($corpid,$orgid,$userid)",
-        module: "",
-        protected: "SELECT"
-    },
     UFN_USER_REPORT_HEATMAP_ASESOR_LST: {
         query: "SELECT * FROM ufn_report_heatmap_asesor_lst($corpid,$orgid,$bot)",
         module: "",
@@ -1584,11 +1564,6 @@ module.exports = {
     },
     UFN_REPORT_HEATMAP_TIPIFICACION_SEL: {
         query: "SELECT * FROM ufn_report_heatmap_tipificacion_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$userid,$offset)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_USER_ASESORBYORGID_LST: {
-        query: "SELECT * FROM ufn_user_asesorbyorgid_lst($corpid, $orgid, $userid)",
         module: "",
         protected: "SELECT"
     },
@@ -1954,11 +1929,6 @@ module.exports = {
     },
     UFN_DASHBOARD_GERENCIAL_CONVERSATIONXHOUR_SEL: {
         query: "select * from ufn_dashboard_gerencial_conversationxhour_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $skipdown, $skipup, $userid, $offset)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_DASHBOARD_OPERATIVO_ENCUESTA3_SEL: {
-        query: "select * from ufn_dashboard_operativo_encuesta3_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $question, $closedby, $target, $supervisorid, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
@@ -3006,11 +2976,6 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_CHATFLOW_VARIABLE_SEL: {
-        query: "SELECT * FROM ufn_chatflow_variable_sel($corpid, $orgid)",
-        module: "",
-        protected: "SELECT"
-    },
     UFN_SECURITYRULES_SEL: {
         query: "SELECT * FROM ufn_securityrules_sel($corpid, $orgid, $username)",
         module: "",
@@ -3018,6 +2983,16 @@ module.exports = {
     },
     UFN_SECURITYRULES_UPD: {
         query: "SELECT * FROM ufn_securityrules_upd($corpid, $orgid, $id, $mincharacterspwd, $maxcharacterspwd, $specialcharacterspwd, $numericalcharacterspwd, $uppercaseletterspwd, $lowercaseletterspwd, $allowsconsecutivenumbers, $numequalconsecutivecharacterspwd, $periodvaliditypwd, $maxattemptsbeforeblocked, $pwddifferentchangelogin, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_SELECT_ATTACHMENT: {
+        query: `select intt.interactiontext, intt.interactiontype, CONCAT(u.firstname, ' ', u.lastname), intt.userid, intt.createdate from interaction intt
+        left join usr u on u.userid = intt.userid
+        where intt.personid = $personid
+        and intt.corpid = $corpid
+        and intt.orgid = $orgid
+        and intt.interactiontype IN ('file', 'video') order by intt.createdate desc`,
         module: "",
         protected: "SELECT"
     },
@@ -3441,11 +3416,6 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_PERSONADDINFO_SEL_MOVIL: {
-        query: "SELECT * FROM ufn_personaddinfo_sel($personid)",
-        module: "",
-        protected: "SELECT"
-    },
     UFN_PROPERTY_SELBYNAME_MOVIL: {
         query: "SELECT * FROM ufn_property_selbyname($corpid, $orgid, $propertyname)",
         module: "",
@@ -3526,11 +3496,6 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_PERSONADDINFO_SEL_MOVIL: {
-        query: "SELECT * FROM ufn_personaddinfo_sel($personid)",
-        module: "",
-        protected: "SELECT"
-    },
     UFN_TABLEVARIABLECONFIGURATIONBYCHANNEL_SEL_MOVIL: {
         query: "select * from ufn_tablevariableconfigurationbychannel_sel($corpid, $orgid, $communicationchannelid, $userid)",
         module: "",
@@ -3551,18 +3516,8 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_DOMAIN_LST_VALORES_MOVIL: {
-        query: "SELECT * FROM ufn_domain_lst_valores($corpid, $orgid, $domainname)",
-        module: "",
-        protected: "SELECT"
-    },
     UFN_CONVERSATION_SEL_TICKETSBYUSER_FILTER_MOVIL: {
         query: "SELECT * FROM ufn_conversation_sel_ticketsbyuser_filter_movil($corpid, $orgid, $start_createticket, $end_createticket, $channels, $conversationstatus, $displayname, $phone, $offset)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_COMMUNICATIONCHANNEL_LST_MOVIL: {
-        query: "SELECT * FROM ufn_communicationchannel_lst($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
@@ -3578,11 +3533,6 @@ module.exports = {
     },
     UFN_USERTOKEN_INS_MOVIL: {
         query: "select * from ufn_usertoken_ins($userid, $token, $origin)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_USERSTATUS_UPDATE_MOVIL: {
-        query: "select * from ufn_userstatus_update($userid, $orgid, $type, $username, $status, $motive, $description)",
         module: "",
         protected: "SELECT"
     },
