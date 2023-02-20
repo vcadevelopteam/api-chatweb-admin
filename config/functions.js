@@ -3010,7 +3010,7 @@ module.exports = {
         query: `select l.leadid, l.description "lead", l.expected_revenue, l.priority, c.description "column" from "lead" l
         join "column" c on c.columnid = l.columnid
         where l.personid = $personid
-        where l.userid = $userid
+        and l.userid = $userid
         and l.corpid = $corpid
         and l.orgid = $orgid`,
         module: "",
