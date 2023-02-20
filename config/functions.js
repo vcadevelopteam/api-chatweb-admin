@@ -3006,6 +3006,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_SELECT_LEADS_BY_USER_PERSON: {
+        query: `select l.leadid, l.description "lead", l.expected_revenue, l.priority, c.description "column" from "lead" l
+        join "column" c on c.columnid = l.columnid
+        where l.personid = $personid
+        where l.userid = $userid
+        and l.corpid = $corpid
+        and l.orgid = $orgid`,
+        module: "",
+        protected: "SELECT"
+    },
     UFN_BILLINGCONFIGURATION_NEWMONTH: {
         query: "SELECT * FROM ufn_billingconfiguration_newmonth($year, $month)",
         module: "",
