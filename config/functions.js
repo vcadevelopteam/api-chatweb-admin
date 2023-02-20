@@ -2987,7 +2987,7 @@ module.exports = {
         protected: "SELECT"
     },
     QUERY_SELECT_ATTACHMENT: {
-        query: `select intt.interactionid, intt.interactiontext, intt.interactiontype, CONCAT(u.firstname, ' ', u.lastname), intt.userid, intt.createdate from interaction intt
+        query: `select intt.interactionid, intt.interactiontext, intt.interactiontype, CONCAT(u.firstname, ' ', u.lastname) user, intt.userid, intt.createdate from interaction intt
         left join usr u on u.userid = intt.userid
         where intt.personid = $personid
         and intt.corpid = $corpid
