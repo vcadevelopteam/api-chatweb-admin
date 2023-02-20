@@ -3011,7 +3011,8 @@ module.exports = {
         where l.personid = $personid
         and l.userid = $userid
         and l.corpid = $corpid
-        and l.orgid = $orgid`,
+        and l.orgid = $orgid
+        and l.status = 'ACTIVO'`,
         module: "",
         protected: "SELECT"
     },
