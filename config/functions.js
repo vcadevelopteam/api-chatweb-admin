@@ -3007,8 +3007,7 @@ module.exports = {
         protected: "SELECT"
     },
     QUERY_SELECT_LEADS_BY_USER_PERSON: {
-        query: `select l.leadid, l.description "lead", l.expected_revenue, l.priority, c.description "column" from "lead" l
-        join "column" c on c.columnid = l.columnid
+        query: `select l.leadid, l.description "lead", l.expected_revenue, l.priority, (select c.description from "column" c where c.columnid = l.columnid and c.status = 'ACTIVO' limit 1) "column" from "lead" l
         where l.personid = $personid
         and l.userid = $userid
         and l.corpid = $corpid
