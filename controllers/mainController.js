@@ -94,7 +94,7 @@ exports.executeTransaction = async (req, res) => {
         return x;
     })
 
-    logger.child({ _requestid: req._requestid, ctx: header?.parameters }).info(`TRANSACTION ${header?.method}: ${header?.parameter.username}`);
+    logger.child({ _requestid: req._requestid, ctx: header?.parameters }).info(`TRANSACTION ${header?.method}: ${header?.parameter?.username}`);
 
     const result = await executeTransaction(header, detail, req.user.menu || {}, req._requestid);
 
