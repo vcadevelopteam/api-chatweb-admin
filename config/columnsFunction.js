@@ -320,6 +320,9 @@ module.exports = {
         communicationchanneldescription: {
             column: "cc.description"
         },
+        rolasesor: {
+            column: "r.description"
+        },
         name: {
             column: "pe.name"
         },
