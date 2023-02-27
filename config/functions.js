@@ -1538,7 +1538,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_USER_REPORT_HEATMAP_ASESOR_LST: {
-        query: "SELECT * FROM ufn_report_heatmap_asesor_lst($corpid,$orgid,$bot)",
+        query: "SELECT * FROM ufn_report_heatmap_asesor_lst($corpid,$orgid, $communicationchannel,$bot)",
         module: "",
         protected: "SELECT"
     },
