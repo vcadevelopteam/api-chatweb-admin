@@ -482,8 +482,15 @@ exports.cleanPropertyValue = (listproperty, { type, subtype }) => {
     }
 }
 
-exports.secondsToTime = (sec_num) => {
+exports.secondsToTime = (sec_num, format = "time") => {
     sec_num = parseInt(sec_num)
+    if (format === "seconds") {
+        return sec_num
+    } else if (format === "minutes") {
+        return parseInt((sec_num / 60).toFixed())
+    } else if (format === "hours") {
+        return parseInt((sec_num / 3600).toFixed())
+    }
     let days = Math.floor(sec_num / 86400);
     let hours = Math.floor((sec_num - (days * 86400)) / 3600);
     let minutes = Math.floor((sec_num - (days * 86400) - (hours * 3600)) / 60);

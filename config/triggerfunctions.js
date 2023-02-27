@@ -297,7 +297,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             let selcol = item.columnname;
 
             if (item.type === "interval") {
-                selcol = `date_trunc('seconds', ${item.columnname})::text`;
+                selcol = `cast(EXTRACT(epoch FROM ${item.columnname}) as integer)`;
             } else if (item.type === "variable") {
                 selcol = `conversation.variablecontextsimple->>'${item.columnname}'`;
             } else if (DATES.includes(item.type) && fromExport) {
@@ -363,14 +363,6 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 const columnnameonly = item.columnname.replace(".", "");
                 let tmpdata = [...resultbd];
 
-                if (item.type === "interval") {
-                    tmpdata = tmpdata.map(x => ({
-                        ...x,
-                        [columnname + "seconds"]: stringToSeconds(x[columnname] || "00:00:00")
-                    }))
-                    columnname = columnname + "seconds";
-                }
-
                 if (item.function === "count") {
                     acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + tmpdata.filter(x => !!x[columnname]).length;
                 } else if (item.function === "count_unique") {
@@ -378,27 +370,27 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 } else if (item.function === "total") {
                     const auxq = item.function.toUpperCase() + ": " + tmpdata.reduce((a, b) => a + b[columnname], 0);
                     const aux2 = acc[columnnameonly] ? " - " : "";
-                    acc[columnnameonly] += aux2 + item.type === "interval" ? secondsToTime(auxq) : auxq;
+                    acc[columnnameonly] += aux2 + item.type === "interval" ? secondsToTime(auxq, item.format) : auxq;
                 } else if (item.function === "average") {
                     const auxq = tmpdata.map(x => x[columnname]).reduce((a, b) => a + b, 0) / tmpdata.length;
-                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
+                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq, item.format) : auxq);
                 } else if (item.function === "minimum") {
                     const auxq = tmpdata.reduce((a, b) => a < b[columnname] ? a : b[columnname], tmpdata[0][columnname]);
-                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
+                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq, item.format) : auxq);
                 } else if (item.function === "maximum") {
                     const auxq = tmpdata.reduce((a, b) => a > b[columnname] ? a : b[columnname], tmpdata[0][columnname]);
-                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
+                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq, item.format) : auxq);
                 } else if (item.function === "median") {
                     const mid = Math.floor(tmpdata.length / 2);
                     const numbs = tmpdata.map(x => x[columnname]).sort((a, b) => a - b);
                     const auxq = tmpdata.length % 2 !== 0 ? numbs[mid] : (numbs[mid - 1] + numbs[mid]) / 2;
-                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
+                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq, item.format) : auxq);
                 } else if (item.function === "mode") {
                     const auxq = tmpdata.map(x => x[columnname]).sort((a, b) =>
                         tmpdata.filter(v => v === a).length
                         - tmpdata.filter(v => v === b).length
                     ).pop();
-                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq) : auxq);
+                    acc[columnnameonly] += (acc[columnnameonly] ? " - " : "") + item.function.toUpperCase() + ": " + (item.type === "interval" ? secondsToTime(auxq, item.format) : auxq);
                 }
                 return acc;
             }, firstColumn)
@@ -422,8 +414,8 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
         }, "");
 
         const aux = interval === "month" ?
-                `to_char(${dataorigin}.createdate + $offset * INTERVAL '1hour', 'YYYY-MM') "interval"` :
-                `date_part('${interval}', ${dataorigin}.createdate + $offset * INTERVAL '1hour') "interval"`
+            `to_char(${dataorigin}.createdate + $offset * INTERVAL '1hour', 'YYYY-MM') "interval"` :
+            `date_part('${interval}', ${dataorigin}.createdate + $offset * INTERVAL '1hour') "interval"`
 
         const firstSelect = interval === "day" ?
             `to_char(${dataorigin}.createdate + $offset * INTERVAL '1hour', 'MM-DD') "interval"` : aux;

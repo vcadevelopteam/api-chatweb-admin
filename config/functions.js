@@ -699,6 +699,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CHATFLOW_COMMUNICATIONCHANNEL_LST: {
+        query: "SELECT * FROM ufn_chatflow_communicationchannel_lst($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CHATFLOW_BLOCK_LST_BYTYPE: {
         query: "SELECT * FROM ufn_chatflow_block_lst_bytype($corpid, $orgid, $userid, $type)",
         module: "",
@@ -2176,7 +2181,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PRODUCTCATALOG_INS: {
-        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $metacatalogid, $id, $productid, $retailerid, $title, $description, $descriptionshort, $availability, $category, $condition, $currency, $price, $saleprice, $link, $imagelink, $additionalimagelink, $brand, $color, $gender, $material, $pattern, $size, $datestart, $datelaunch, $dateexpiration, $labels, $customlabel0, $customlabel1, $customlabel2, $customlabel3, $customlabel4, $customnumber0, $customnumber1, $customnumber2, $customnumber3, $customnumber4, $reviewstatus, $reviewdescription, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $metacatalogid, $id, $productid, $retailerid, $title, $description, $descriptionshort, $availability, $category, $condition, $currency, $price, $saleprice, $link, $imagelink, $additionalimagelink, $brand, $color, $gender, $material, $pattern, $size, $datestart, $datelaunch, $dateexpiration, $labels, $customlabel0, $customlabel1, $customlabel2, $customlabel3, $customlabel4, $reviewstatus, $reviewdescription, $status, $type, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -2236,7 +2241,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CALENDAREVENT_INS: {
-        query: "SELECT * FROM ufn_calendarevent_ins($corpid, $orgid, $id, $description, $descriptionobject, $type, $status, $code, $name, $locationtype, $location, $eventlink, $color, $notificationtype, $communicationchannelid, $messagetemplateid, $notificationmessage, $daterange, $daysduration, $daystype, $startdate, $enddate, $timeduration, $timeunit, $availability, $timebeforeeventduration, $timebeforeeventunit, $timeaftereventduration, $timeaftereventunit, $increments, $reminderenable, $remindertype, $reminderhsmtemplateid, $reminderhsmcommunicationchannelid , $reminderhsmmessage, $remindermailtemplateid, $remindermailmessage, $reminderperiod, $reminderfrecuency, $username, $operation)",
+        query: "SELECT * FROM ufn_calendarevent_ins($corpid, $orgid, $id, $description, $descriptionobject, $type, $status, $code, $name, $locationtype, $location, $eventlink, $color, $notificationtype, $communicationchannelid, $messagetemplateid, $notificationmessage, $daterange, $daysduration, $daystype, $startdate, $enddate, $timeduration, $timeunit, $availability, $timebeforeeventduration, $timebeforeeventunit, $timeaftereventduration, $timeaftereventunit, $increments, $reminderenable, $remindertype, $reminderhsmtemplateid, $reminderhsmcommunicationchannelid , $reminderhsmmessage, $remindermailtemplateid, $remindermailmessage, $reminderperiod, $reminderfrecuency, $username, $operation, $maximumcapacity)",
         module: "",
         protected: "INSERT"
     },
@@ -3193,58 +3198,18 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PAYMENTORDER_ERROR: {
+        query: "SELECT * FROM ufn_paymentorder_error($corpid, $orgid, $paymentorderid, $paymentby, $lastprovider, $laststatus, $lastdata)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CHARGE_PAYMENTORDER_INS: {
         query: "SELECT * FROM ufn_charge_paymentorder_ins($corpid, $orgid, $id, $paymentorderid, $description, $type, $status, $amount, $currency, $paidby, $orderid, $orderjson, $email, $tokenid, $capture, $tokenjson, $chargetoken, $chargejson, $operation)",
         module: "",
         protected: "INSERT"
     },
-    UFN_METACATALOG_INS: {
-        query: "SELECT * FROM ufn_metacatalog_ins($corpid, $orgid, $metabusinessid, $id, $catalogid, $catalogname, $catalogdescription, $catalogtype, $description, $status, $type, $username, $operation)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_METACATALOG_SEL: {
-        query: "SELECT * FROM ufn_metacatalog_sel($corpid, $orgid, $metabusinessid, $id)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_METABUSINESS_INS: {
-        query: "SELECT * FROM ufn_metabusiness_ins($corpid, $orgid, $id, $businessid, $businessname, $accesstoken, $userid, $userfullname, $graphdomain, $description, $status, $type, $username, $operation)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_METABUSINESS_SEL: {
-        query: "SELECT * FROM ufn_metabusiness_sel($corpid, $orgid, $id)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_METACATALOG_CLEAN: {
-        query: "SELECT * FROM ufn_metacatalog_clean($corpid, $orgid, $metabusinessid, $username)",
-        module: "",
-        protected: "SELECT"
-    },
     UFN_PERSON_SEL_ONE: {
         query: "SELECT * FROM ufn_person_sel_one($corpid, $orgid, $personid)",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_ORDER_SEL: {
-        query: "SELECT * FROM ufn_order_sel($corpid, $orgid)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_ORDERLINE_SEL: {
-        query: "SELECT * FROM ufn_orderline_sel($corpid, $orgid, $orderid)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_PAYMENT_SEL: {
-        query: "SELECT * FROM ufn_payment_sel($corpid, $orgid, $conversationid, $paymentid)",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_PAYMENT_CHARGE: {
-        query: "SELECT * FROM ufn_payment_charge($corpid, $orgid, $paymentid, $tokenid, $tokenjson, $chargejson, $username)",
         module: "",
         protected: "INSERT"
     },
@@ -3573,4 +3538,65 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CRON_POSTHISTORY_INSIGHT_SEL: {
+        query: "SELECT * FROM ufn_cron_posthistory_insight_sel()",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_METACATALOG_INS: {
+        query: "SELECT * FROM ufn_metacatalog_ins($corpid, $orgid, $metabusinessid, $id, $catalogid, $catalogname, $catalogdescription, $catalogtype, $description, $status, $type, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_METACATALOG_SEL: {
+        query: "SELECT * FROM ufn_metacatalog_sel($corpid, $orgid, $metabusinessid, $id)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_METABUSINESS_INS: {
+        query: "SELECT * FROM ufn_metabusiness_ins($corpid, $orgid, $id, $businessid, $businessname, $accesstoken, $userid, $userfullname, $graphdomain, $description, $status, $type, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_METABUSINESS_SEL: {
+        query: "SELECT * FROM ufn_metabusiness_sel($corpid, $orgid, $id)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ORDER_SEL: {
+        query: "SELECT * FROM ufn_order_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ORDERLINE_SEL: {
+        query: "SELECT * FROM ufn_orderline_sel($corpid, $orgid, $orderid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_METACATALOG_CLEAN: {
+        query: "SELECT * FROM ufn_metacatalog_clean($corpid, $orgid, $metabusinessid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PAYMENT_SEL: {
+        query: "SELECT * FROM ufn_payment_sel($corpid, $orgid, $conversationid, $paymentid)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_PAYMENT_CHARGE: {
+        query: "SELECT * FROM ufn_payment_charge($corpid, $orgid, $paymentid, $tokenid, $tokenjson, $chargejson, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_DASHBOARD_KPI_SUMMARY_SEL: {
+        query: "SELECT * FROM ufn_dashboard_kpi_summary_sel($corpid, $orgid, $date, $origin, $usergroup, $supervisorid, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_KPI_SUMMARY_GRAPH_SEL: {
+        query: "SELECT * FROM ufn_dashboard_kpi_graph_sel($corpid, $orgid, $date, $origin, $usergroup, $supervisorid, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    
 }

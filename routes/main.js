@@ -67,4 +67,8 @@ router.post("/validateConversationWhatsapp",
     mainController.validateConversationWhatsapp
 )
 
+router.post("/managesplit",
+    mainController.SplitFirst
+)
+
 module.exports = router;

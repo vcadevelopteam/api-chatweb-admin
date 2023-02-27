@@ -380,7 +380,7 @@ exports.Collection = async (req, res) => {
 
     const result = await executesimpletransaction(method, parameters);
     const newcalendarbookingid = result?.[0]?.calendarbookingid;
-
+    let resultCalendarx = {}
     if (!result.error) {
         if (method === "UFN_CALENDARYBOOKING_INS") {
             //si envia un calendarbookinguuid es porque quiere reprogramar, osea cancelar la antigua y crear una nueva
@@ -395,7 +395,7 @@ exports.Collection = async (req, res) => {
             }
 
             const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
-
+            resultCalendarx = resultCalendar;
             const {
                 messagetemplateid,
                 messagetemplatename,
@@ -501,7 +501,7 @@ exports.Collection = async (req, res) => {
                 });
             }
         }
-        return res.json({ error: false, success: true, data: result, key });
+        return res.json({ error: false, success: true, data: result, key, resultCalendarx });
     }
     else
         return res.status(result.rescode).json(({ ...result, key }));

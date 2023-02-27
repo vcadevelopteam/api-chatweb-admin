@@ -249,22 +249,25 @@ module.exports = {
             column: "pr.hoursrange"
         },
         worktime: {
-            column: "date_trunc('seconds', COALESCE(pr.worktime::text,'00:00:00'))"
+            column: "date_trunc('seconds', COALESCE(pr.worktime,'00:00:00'))"
         },
         busytimewithinwork: {
-            column: "date_trunc('seconds', COALESCE(pr.busytimewithinwork::text,'00:00:00'))"
+            column: "date_trunc('seconds', COALESCE(pr.busytimewithinwork,'00:00:00'))"
         },
         freetimewithinwork: {
-            column: "date_trunc('seconds', COALESCE(pr.freetimewithinwork::text,'00:00:00'))"
+            column: "date_trunc('seconds', COALESCE(pr.freetimewithinwork,'00:00:00'))"
         },
         busytimeoutsidework: {
-            column: "date_trunc('seconds', COALESCE(pr.busytimeoutsidework::text,'00:00:00'))"
+            column: "date_trunc('seconds', COALESCE(pr.busytimeoutsidework,'00:00:00'))"
         },
         onlinetime: {
-            column: "date_trunc('seconds', COALESCE(pr.onlinetime::text,'00:00:00'))"
+            column: "date_trunc('seconds', COALESCE(pr.onlinetime,'00:00:00'))"
         },
         idletime: {
-            column: "date_trunc('seconds', COALESCE(pr.idletime::text,'00:00:00'))"
+            column: "date_trunc('seconds', COALESCE(pr.idletime,'00:00:00'))"
+        },
+        availabletime: {
+            column: "date_trunc('seconds', GREATEST('00:00:00'::INTERVAL, COALESCE(pr.onlinetime - pr.busytimewithinwork,'00:00:00')))"
         },
         qtytickets: {
             column: "COALESCE(pr.qtytickets,0)"
