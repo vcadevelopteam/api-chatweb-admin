@@ -1263,5 +1263,43 @@ module.exports = {
         type: {
             column: "p.type"
         },
+    },
+    messagetemplate: {
+        id: {
+            column: "mt.messagetemplateid",
+            type: "number"
+        },
+        createdate: {
+            column: "to_char(mt.createdate + 0 * INTERVAL '1hour', 'YYYY-MM-DD')"
+        },
+        templateid: {
+            column: "mt.messagetemplateid",
+            type: "number"
+        },
+        type: {
+            column: "mt.type"
+        },
+        templatetype: {
+            column: "mt.templatetype"
+        },
+        name: {
+            column: "mt.name"
+        },
+        namespace: {
+            column: "mt.namespace"
+        },
+        status: {
+            column: "mt.status"
+        },
+        fromprovider: {
+            column: "mt.fromprovider",
+            type: "boolean"
+        },
+        externalstatus: {
+            column: "mt.externalstatus"
+        },
+        communicationchanneldesc: {
+            column: "cc.description"
+        },
     }
 }

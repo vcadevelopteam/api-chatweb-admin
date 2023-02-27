@@ -2,7 +2,7 @@ const channelfunctions = require("../config/channelfunctions");
 const triggerfunctions = require('../config/triggerfunctions');
 const jwt = require("jsonwebtoken");
 
-const { setSessionParameters, axiosObservable, printException } = require('../config/helpers');
+const { setSessionParameters, axiosObservable, getErrorCode } = require('../config/helpers');
 
 const logger = require('../config/winston');
 
@@ -19,7 +19,6 @@ const whatsAppEndpoint = process.env.WHATSAPPAPI;
 const googleClientId = process.env.GOOGLE_CLIENTID;
 const googleClientSecret = process.env.GOOGLE_CLIENTSECRET;
 const googleTopicName = process.env.GOOGLE_TOPICNAME;
-const rootDelete = process.env.ROOT_DELETE;
 
 exports.checkPaymentPlan = async (request, response) => {
     try {
@@ -2255,10 +2254,10 @@ exports.activateChannel = async (request, response) => {
 
 exports.synchronizeTemplate = async (request, response) => {
     try {
-        var requestCode = "error_unexpected_error";
-        var requestMessage = "error_unexpected_error";
-        var requestStatus = 400;
-        var requestSuccess = false;
+        let requestCode = "error_unexpected_error";
+        let requestMessage = "error_unexpected_error";
+        let requestStatus = 400;
+        let requestSuccess = false;
 
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
@@ -2272,140 +2271,329 @@ exports.synchronizeTemplate = async (request, response) => {
         }
 
         if (request.body) {
-            if (request.body.type) {
-                var templateList = null;
+            let { messagetemplatelist, communicationchannel } = request.body;
 
-                switch (request.body.type) {
-                    case "WHAD":
-                        if (request.body.servicecredentials) {
-                            var serviceData = JSON.parse(request.body.servicecredentials);
-
-                            const requestListDialog = await axiosObservable({
-                                data: {
-                                    ApiKey: serviceData.apiKey,
-                                    Type: "LIST",
-                                },
-                                method: 'post',
-                                url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
-                                _requestid: request._requestid,
-                            });
-
-                            if (requestListDialog.data.success) {
-                                templateList = requestListDialog.data.result;
+            if (communicationchannel) {
+                if (communicationchannel.type) {
+                    let templateList = null;
+    
+                    switch (communicationchannel.type) {
+                        case "WHAD":
+                            if (communicationchannel.servicecredentials) {
+                                let serviceData = JSON.parse(communicationchannel.servicecredentials);
+    
+                                const requestListDialog = await axiosObservable({
+                                    data: {
+                                        ApiKey: serviceData.apiKey,
+                                        Type: "LIST",
+                                    },
+                                    method: 'post',
+                                    url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
+                                    _requestid: request._requestid,
+                                });
+    
+                                if (requestListDialog.data.success) {
+                                    templateList = requestListDialog.data.result;
+                                }
+                                else {
+                                    requestCode = requestListDialog.data.operationMessage
+                                    requestMessage = requestListDialog.data.operationMessage;
+                                }
                             }
-                            else {
-                                requestCode = requestListDialog.data.operationMessage
-                                requestMessage = requestListDialog.data.operationMessage;
+                            break;
+    
+                        case "WHAG":
+                            if (communicationchannel.servicecredentials) {
+                                let serviceData = JSON.parse(communicationchannel.servicecredentials);
+    
+                                const requestListGupshup = await axiosObservable({
+                                    data: {
+                                        AppName: serviceData.app,
+                                        ApiKey: serviceData.apiKey,
+                                        Type: "LIST",
+                                    },
+                                    method: 'post',
+                                    url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
+                                    _requestid: request._requestid,
+                                });
+    
+                                if (requestListGupshup.data.success) {
+                                    templateList = requestListGupshup.data.result;
+                                }
+                                else {
+                                    requestCode = requestListGupshup.data.operationMessage
+                                    requestMessage = requestListGupshup.data.operationMessage;
+                                }
                             }
-                        }
-                        break;
-
-                    case "WHAG":
-                        if (request.body.servicecredentials) {
-                            var serviceData = JSON.parse(request.body.servicecredentials);
-
-                            const requestListGupshup = await axiosObservable({
-                                data: {
-                                    AppName: serviceData.app,
-                                    ApiKey: serviceData.apiKey,
-                                    Type: "LIST",
-                                },
-                                method: 'post',
-                                url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
-                                _requestid: request._requestid,
-                            });
-
-                            if (requestListGupshup.data.success) {
-                                templateList = requestListGupshup.data.result;
+                            break;
+    
+                        case "WHAT":
+                            if (communicationchannel.servicecredentials) {
+                                let serviceData = JSON.parse(communicationchannel.servicecredentials);
+    
+                                const requestListSmooch = await axiosObservable({
+                                    data: {
+                                        AppId: serviceData.appId,
+                                        IntegrationId: communicationchannel.integrationid,
+                                        Type: "LIST",
+                                        KeyId: serviceData.apiKeyId,
+                                        KeySecret: serviceData.apiKeySecret,
+                                    },
+                                    method: 'post',
+                                    url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
+                                    _requestid: request._requestid,
+                                });
+    
+                                if (requestListSmooch.data.success) {
+                                    templateList = requestListSmooch.data.result;
+                                }
+                                else {
+                                    requestCode = requestListSmooch.data.operationMessage
+                                    requestMessage = requestListSmooch.data.operationMessage;
+                                }
                             }
-                            else {
-                                requestCode = requestListGupshup.data.operationMessage
-                                requestMessage = requestListGupshup.data.operationMessage;
-                            }
-                        }
-                        break;
-
-                    case "WHAT":
-                        if (request.body.servicecredentials) {
-                            var serviceData = JSON.parse(request.body.servicecredentials);
-
-                            const requestListSmooch = await axiosObservable({
-                                data: {
-                                    AppId: serviceData.appId,
-                                    IntegrationId: request.body.integrationid,
-                                    Type: "LIST",
-                                    KeyId: serviceData.apiKeyId,
-                                    KeySecret: serviceData.apiKeySecret,
-                                },
-                                method: 'post',
-                                url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
-                                _requestid: request._requestid,
-                            });
-
-                            if (requestListSmooch.data.success) {
-                                templateList = requestListSmooch.data.result;
-                            }
-                            else {
-                                requestCode = requestListSmooch.data.operationMessage
-                                requestMessage = requestListSmooch.data.operationMessage;
-                            }
-                        }
-                        break;
-                }
-
-                if (templateList) {
-                    await channelfunctions.messageTemplateReset(request.body.corpid, request.body.orgid, request.body.communicationchannelid, (request.body.type === "WHAD" || request.body.type === "WHAG") ? templateList[0]?.id || null : null, request.user.usr, request._requestid);
-
-                    for (const templateData of templateList) {
-                        var buttonObject = [];
-
-                        if (templateData.buttons) {
-                            for (const buttonData of templateData.buttons) {
-                                var buttonInformation = {
-                                    type: (buttonData.type || '').toLowerCase(),
-                                    title: buttonData.text || '',
-                                    payload: (buttonData.data || buttonData.text) || '',
-                                };
-
-                                buttonObject.push(buttonInformation);
-                            }
-                        }
-
-                        await channelfunctions.messageTemplateUpd(
-                            request.body.corpid,
-                            request.body.orgid,
-                            request.body.communicationchanneldesc,
-                            'HSM',
-                            'ACTIVO',
-                            templateData.name,
-                            (request.body.type === "WHAD" || request.body.type === "WHAG") ? templateData.id : null,
-                            templateData.category,
-                            templateData.language,
-                            (templateData.header || templateData.footer || templateData.buttons) ? "MULTIMEDIA" : "STANDARD",
-                            (templateData.header) ? true : false,
-                            templateData.header?.type ? templateData.header?.type.toLowerCase() : null,
-                            templateData.header?.text || null,
-                            templateData.body?.text || null,
-                            null,
-                            (templateData.footer) ? true : false,
-                            templateData.footer?.text || null,
-                            (templateData.buttons) ? true : false,
-                            (templateData.buttons) ? JSON.stringify(buttonObject) : null,
-                            true,
-                            templateData.id,
-                            templateData.status,
-                            request.body.communicationchannelid,
-                            request.body.type,
-                            null,
-                            request.user.usr,
-                            request._requestid,
-                        );
+                            break;
                     }
+    
+                    if (templateList) {
+                        await channelfunctions.messageTemplateReset(communicationchannel.corpid, communicationchannel.orgid, communicationchannel.communicationchannelid, (communicationchannel.type === "WHAD" || communicationchannel.type === "WHAG") ? templateList[0]?.id || null : null, request.user.usr, request._requestid);
+    
+                        for (const templateData of templateList) {
+                            let buttonObject = [];
+    
+                            if (templateData.buttons) {
+                                for (const buttonData of templateData.buttons) {
+                                    let buttonInformation = {
+                                        type: (buttonData.type || '').toLowerCase(),
+                                        title: buttonData.text || '',
+                                        payload: (buttonData.data || buttonData.text) || '',
+                                    };
+    
+                                    buttonObject.push(buttonInformation);
+                                }
+                            }
+    
+                            await channelfunctions.messageTemplateUpd(
+                                communicationchannel.corpid,
+                                communicationchannel.orgid,
+                                communicationchannel.communicationchanneldesc,
+                                'HSM',
+                                'ACTIVO',
+                                templateData.name,
+                                (communicationchannel.type === "WHAD" || communicationchannel.type === "WHAG") ? templateData.id : null,
+                                templateData.category,
+                                templateData.language,
+                                (templateData.header || templateData.footer || templateData.buttons) ? "MULTIMEDIA" : "STANDARD",
+                                (templateData.header) ? true : false,
+                                templateData.header?.type ? templateData.header?.type.toLowerCase() : null,
+                                templateData.header?.text || null,
+                                templateData.body?.text || null,
+                                null,
+                                (templateData.footer) ? true : false,
+                                templateData.footer?.text || null,
+                                (templateData.buttons) ? true : false,
+                                (templateData.buttons) ? JSON.stringify(buttonObject) : null,
+                                true,
+                                templateData.id,
+                                templateData.status,
+                                communicationchannel.communicationchannelid,
+                                communicationchannel.type,
+                                null,
+                                request.user.usr,
+                                request._requestid,
+                            );
+                        }
+    
+                        requestCode = "";
+                        requestMessage = "";
+                        requestStatus = 200;
+                        requestSuccess = true;
+                    }
+                }
+            }
+            else {
+                if (messagetemplatelist) {
+                    messagetemplatelist = messagetemplatelist.sort((a, b) => a.communicationchannelservicecredentials > b.communicationchannelservicecredentials ? 1 : -1);
 
-                    requestCode = "";
-                    requestMessage = "";
-                    requestStatus = 200;
-                    requestSuccess = true;
+                    let servicecredentials = null;
+                    let templatelist = null;
+
+                    for (const messagetemplate of messagetemplatelist) {
+                        if (messagetemplate.communicationchannelservicecredentials && messagetemplate.fromprovider) {
+                            if (messagetemplate.communicationchannelservicecredentials != servicecredentials) {
+                                servicecredentials = messagetemplate.communicationchannelservicecredentials;
+
+                                switch (messagetemplate.communicationchanneltype) {
+                                    case "WHAD":
+                                        if (servicecredentials) {
+                                            let serviceData = JSON.parse(servicecredentials);
+                
+                                            const requestListDialog = await axiosObservable({
+                                                data: {
+                                                    ApiKey: serviceData.apiKey,
+                                                    Type: "LIST",
+                                                },
+                                                method: 'post',
+                                                url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
+                                                _requestid: request._requestid,
+                                            });
+                
+                                            if (requestListDialog.data.success) {
+                                                templatelist = requestListDialog.data.result;
+                                            }
+                                            else {
+                                                requestCode = requestListDialog.data.operationMessage
+                                                requestMessage = requestListDialog.data.operationMessage;
+                                            }
+                                        }
+                                        break;
+                
+                                    case "WHAG":
+                                        if (servicecredentials) {
+                                            let serviceData = JSON.parse(servicecredentials);
+                
+                                            const requestListGupshup = await axiosObservable({
+                                                data: {
+                                                    AppName: serviceData.app,
+                                                    ApiKey: serviceData.apiKey,
+                                                    Type: "LIST",
+                                                },
+                                                method: 'post',
+                                                url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
+                                                _requestid: request._requestid,
+                                            });
+                
+                                            if (requestListGupshup.data.success) {
+                                                templatelist = requestListGupshup.data.result;
+                                            }
+                                            else {
+                                                requestCode = requestListGupshup.data.operationMessage
+                                                requestMessage = requestListGupshup.data.operationMessage;
+                                            }
+                                        }
+                                        break;
+                
+                                    case "WHAT":
+                                        if (servicecredentials) {
+                                            let serviceData = JSON.parse(servicecredentials);
+                
+                                            const requestListSmooch = await axiosObservable({
+                                                data: {
+                                                    AppId: serviceData.appId,
+                                                    IntegrationId: messagetemplate.communicationchannelintegrationid,
+                                                    Type: "LIST",
+                                                    KeyId: serviceData.apiKeyId,
+                                                    KeySecret: serviceData.apiKeySecret,
+                                                },
+                                                method: 'post',
+                                                url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
+                                                _requestid: request._requestid,
+                                            });
+                
+                                            if (requestListSmooch.data.success) {
+                                                templatelist = requestListSmooch.data.result;
+                                            }
+                                            else {
+                                                requestCode = requestListSmooch.data.operationMessage
+                                                requestMessage = requestListSmooch.data.operationMessage;
+                                            }
+                                        }
+                                        break;
+                                }
+                            }
+
+                            if (templatelist) {
+                                const templatefound = templatelist.find(x => x.name === messagetemplate.name);
+
+                                if (templatefound) {
+                                    let buttonObject = [];
+
+                                    if (templatefound.buttons) {
+                                        for (const buttonData of templatefound.buttons) {
+                                            let buttonInformation = {
+                                                type: (buttonData.type || '').toLowerCase(),
+                                                title: buttonData.text || '',
+                                                payload: (buttonData.data || buttonData.text) || '',
+                                            };
+
+                                            buttonObject.push(buttonInformation);
+                                        }
+                                    }
+
+                                    await channelfunctions.messageTemplateUpd(
+                                        messagetemplate.corpid,
+                                        messagetemplate.orgid,
+                                        messagetemplate.description,
+                                        'HSM',
+                                        'ACTIVO',
+                                        templatefound.name,
+                                        (messagetemplate.communicationchanneltype === "WHAD" || messagetemplate.communicationchanneltype === "WHAG") ? templatefound.id : messagetemplate.namespace,
+                                        templatefound.category,
+                                        templatefound.language,
+                                        (templatefound.header || templatefound.footer || templatefound.buttons) ? "MULTIMEDIA" : "STANDARD",
+                                        (templatefound.header) ? true : false,
+                                        templatefound.header?.type ? templatefound.header?.type.toLowerCase() : null,
+                                        templatefound.header?.text || null,
+                                        templatefound.body?.text || null,
+                                        null,
+                                        (templatefound.footer) ? true : false,
+                                        templatefound.footer?.text || null,
+                                        (templatefound.buttons) ? true : false,
+                                        (templatefound.buttons) ? JSON.stringify(buttonObject) : null,
+                                        true,
+                                        templatefound.id,
+                                        templatefound.status,
+                                        messagetemplate.communicationchannelid,
+                                        messagetemplate.communicationchanneltype,
+                                        null,
+                                        request.user.usr,
+                                        request._requestid,
+                                    );
+
+                                    requestCode = "";
+                                    requestMessage = "";
+                                    requestStatus = 200;
+                                    requestSuccess = true;
+                                }
+                                else {
+                                    await channelfunctions.messageTemplateUpd(
+                                        messagetemplate.corpid,
+                                        messagetemplate.orgid,
+                                        messagetemplate.description,
+                                        messagetemplate.type,
+                                        messagetemplate.status,
+                                        messagetemplate.name,
+                                        messagetemplate.namespace,
+                                        messagetemplate.category,
+                                        messagetemplate.language,
+                                        messagetemplate.templatetype,
+                                        messagetemplate.headerenabled,
+                                        messagetemplate.headertype,
+                                        messagetemplate.header,
+                                        messagetemplate.body,
+                                        messagetemplate.bodyobject,
+                                        messagetemplate.footerenabled,
+                                        messagetemplate.footer,
+                                        messagetemplate.buttonsenabled,
+                                        messagetemplate.buttons,
+                                        messagetemplate.fromprovider,
+                                        messagetemplate.externalid,
+                                        'DELETED',
+                                        messagetemplate.communicationchannelid,
+                                        messagetemplate.communicationchanneltype,
+                                        messagetemplate.exampleparameters,
+                                        request.user.usr,
+                                        request._requestid,
+                                    );
+
+                                    requestCode = "";
+                                    requestMessage = "";
+                                    requestStatus = 200;
+                                    requestSuccess = true;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -2593,10 +2781,10 @@ exports.addTemplate = async (request, response) => {
 
 exports.deleteTemplate = async (request, response) => {
     try {
-        var requestCode = "error_unexpected_error";
-        var requestMessage = "error_unexpected_error";
-        var requestStatus = 400;
-        var requestSuccess = false;
+        let requestCode = "error_unexpected_error";
+        let requestMessage = "error_unexpected_error";
+        let requestStatus = 400;
+        let requestSuccess = false;
 
         if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
@@ -2610,145 +2798,100 @@ exports.deleteTemplate = async (request, response) => {
         }
 
         if (request.body) {
-            if (request.body.communicationchanneltype) {
-                var deleteSuccess = false;
+            let { messagetemplatelist } = request.body;
 
-                switch (request.body.communicationchanneltype) {
-                    case "WHAD":
-                        if (request.body.communicationchannelservicecredentials) {
-                            var continueDelete = false;
+            if (messagetemplatelist) {
+                for (const messagetemplate of messagetemplatelist) {
+                    let deleteSuccess = false;
 
-                            if (rootDelete ? true : false) {
-                                var serviceData = JSON.parse(request.body.communicationchannelservicecredentials);
-
-                                const requestDeleteDialog = await axiosObservable({
-                                    data: {
-                                        ApiKey: serviceData.apiKey,
-                                        DeleteName: request.body.name,
-                                        Type: "DELETE",
-                                    },
-                                    method: 'post',
-                                    url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
-                                    _requestid: request._requestid,
-                                });
-
-                                if (requestDeleteDialog.data.success) {
-                                    continueDelete = true;
+                    if (messagetemplate.deleteprovider) {
+                        switch (messagetemplate.communicationchanneltype) {
+                            case "WHAD":
+                                if (messagetemplate.communicationchannelservicecredentials) {
+                                    let serviceData = JSON.parse(messagetemplate.communicationchannelservicecredentials);
+        
+                                    const requestDeleteDialog = await axiosObservable({
+                                        data: {
+                                            ApiKey: serviceData.apiKey,
+                                            DeleteName: messagetemplate.name,
+                                            Type: "DELETE",
+                                        },
+                                        method: 'post',
+                                        url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
+                                        _requestid: request._requestid,
+                                    });
+    
+                                    if (requestDeleteDialog.data.success) {
+                                        deleteSuccess = true;
+                                    }
+                                    else {
+                                        requestCode = requestDeleteDialog.data.operationMessage
+                                        requestMessage = requestDeleteDialog.data.operationMessage;
+                                    }
                                 }
-                                else {
-                                    requestCode = requestDeleteDialog.data.operationMessage
-                                    requestMessage = requestDeleteDialog.data.operationMessage;
+                                break;
+        
+                            case "WHAT":
+                                if (messagetemplate.communicationchannelservicecredentials) {
+                                    let serviceData = JSON.parse(messagetemplate.communicationchannelservicecredentials);
+
+                                    const requestDeleteSmooch = await axiosObservable({
+                                        data: {
+                                            AppId: serviceData.appId,
+                                            IntegrationId: messagetemplate.communicationchannelintegrationid,
+                                            DeleteName: messagetemplate.name,
+                                            Type: "DELETE",
+                                            KeyId: serviceData.apiKeyId,
+                                            KeySecret: serviceData.apiKeySecret,
+                                        },
+                                        method: 'post',
+                                        url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
+                                        _requestid: request._requestid,
+                                    });
+        
+                                    if (requestDeleteSmooch.data.success) {
+                                        deleteSuccess = true;
+                                    }
+                                    else {
+                                        requestCode = requestDeleteSmooch.data.operationMessage
+                                        requestMessage = requestDeleteSmooch.data.operationMessage;
+                                    }
                                 }
-                            }
-                            else {
-                                continueDelete = true;
-                            }
-
-                            if (continueDelete) {
-                                var parameters = request.body;
-
-                                parameters.corpid = request.user.corpid;
-                                parameters.orgid = request.user.orgid;
-                                parameters.username = request.user.usr;
-                                parameters.bodyobject = JSON.stringify(request.body.bodyobject);
-                                parameters.buttons = JSON.stringify(request.body.buttons);
-
-                                const queryTemplateDelete = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
-
-                                if (queryTemplateDelete instanceof Array) {
+                                break;
+        
+                            case "WHAG":
+                                if (messagetemplate.communicationchannelservicecredentials) {
                                     deleteSuccess = true;
                                 }
-                                else {
-                                    requestCode = queryTemplateDelete.code;
-                                    requestMessage = queryTemplateDelete.code;
-                                }
-                            }
+                                break;
                         }
-                        break;
+                    }
+                    else {
+                        deleteSuccess = true;
+                    }
 
-                    case "WHAT":
-                        if (request.body.communicationchannelservicecredentials) {
-                            var continueDelete = false;
+                    if (deleteSuccess) {
+                        let parameters = messagetemplate;
 
-                            if (rootDelete ? true : false) {
-                                var serviceData = JSON.parse(request.body.communicationchannelservicecredentials);
-
-                                const requestDeleteSmooch = await axiosObservable({
-                                    data: {
-                                        AppId: serviceData.appId,
-                                        IntegrationId: request.body.communicationchannelintegrationid,
-                                        DeleteName: request.body.name,
-                                        Type: "DELETE",
-                                        KeyId: serviceData.apiKeyId,
-                                        KeySecret: serviceData.apiKeySecret,
-                                    },
-                                    method: 'post',
-                                    url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
-                                    _requestid: request._requestid,
-                                });
-
-                                if (requestDeleteSmooch.data.success) {
-                                    continueDelete = true;
-                                }
-                                else {
-                                    requestCode = requestDeleteSmooch.data.operationMessage
-                                    requestMessage = requestDeleteSmooch.data.operationMessage;
-                                }
-                            }
-                            else {
-                                continueDelete = true;
-                            }
-
-                            if (continueDelete) {
-                                var parameters = request.body;
-
-                                parameters.corpid = request.user.corpid;
-                                parameters.orgid = request.user.orgid;
-                                parameters.username = request.user.usr;
-                                parameters.bodyobject = JSON.stringify(request.body.bodyobject);
-                                parameters.buttons = JSON.stringify(request.body.buttons);
-
-                                const queryTemplateDelete = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
-
-                                if (queryTemplateDelete instanceof Array) {
-                                    deleteSuccess = true;
-                                }
-                                else {
-                                    requestCode = queryTemplateDelete.code;
-                                    requestMessage = queryTemplateDelete.code;
-                                }
-                            }
+                        parameters.bodyobject = JSON.stringify(messagetemplate.bodyobject);
+                        parameters.buttons = JSON.stringify(messagetemplate.buttons);
+                        parameters.corpid = request.user.corpid;
+                        parameters.orgid = request.user.orgid;
+                        parameters.username = request.user.usr;
+        
+                        const queryTemplateDelete = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
+        
+                        if (queryTemplateDelete instanceof Array) {
+                            requestCode = "";
+                            requestMessage = "";
+                            requestStatus = 200;
+                            requestSuccess = true;
                         }
-                        break;
-
-                    case "WHAG":
-                        if (request.body.communicationchannelservicecredentials) {
-                            var parameters = request.body;
-
-                            parameters.corpid = request.user.corpid;
-                            parameters.orgid = request.user.orgid;
-                            parameters.username = request.user.usr;
-                            parameters.bodyobject = JSON.stringify(request.body.bodyobject);
-                            parameters.buttons = JSON.stringify(request.body.buttons);
-
-                            const queryTemplateDelete = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
-
-                            if (queryTemplateDelete instanceof Array) {
-                                deleteSuccess = true;
-                            }
-                            else {
-                                requestCode = queryTemplateDelete.code;
-                                requestMessage = queryTemplateDelete.code;
-                            }
+                        else {
+                            requestCode = queryTemplateDelete.code;
+                            requestMessage = queryTemplateDelete.code;
                         }
-                        break;
-                }
-
-                if (deleteSuccess) {
-                    requestCode = "";
-                    requestMessage = "";
-                    requestStatus = 200;
-                    requestSuccess = true;
+                    }
                 }
             }
         }
