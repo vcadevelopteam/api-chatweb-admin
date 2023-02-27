@@ -1263,5 +1263,59 @@ module.exports = {
         type: {
             column: "p.type"
         },
+    },
+    reportvoicecall: {
+        ticketnum: {
+            column: "co.ticketnum"
+        },
+        channel: {
+            column: "cc.description"
+        },
+        ticketdate: {
+            column: "co.startdate + p_offset * INTERVAL '1hour'",
+            type: "date"
+        },
+        tickettime: {
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','HH24:MI:SS')"
+        },
+        finishtime: {
+            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour','HH24:MI:SS')"
+        },
+        handoffdate: {
+            column: "to_char(co.handoffdate + p_offset * INTERVAL '1hour','HH24:MI:SS')"
+        },
+        agent: {
+            column: "CONCAT(usr.firstname, ' ', usr.lastname)"
+        },
+        name: {
+            column: "pe.name"
+        },
+        phone: {
+            column: "pcc.personcommunicationchannelowner"
+        },
+        origin: {
+            column: "co.origin"
+        },
+        closetype: {
+            column: "CASE WHEN co.closetype IN ('DESCONECTADO POR ASESOR', 'DESCONECTADO POR CLIENTE') THEN 'HANDLED' WHEN co.closetype IN ('LLAMADA NO CONTESTADA') THEN 'ABANDON' WHEN co.closetype IN ('LLAMADA FALLIDA', 'NO HAY ASESORES') THEN 'LOST' ELSE co.closetype END"
+        },
+        classification: {
+            column: "cla.description"
+        },
+        totalduration: {
+            column: "date_trunc('seconds', co.totalduration)::text"
+        },
+        agentduration: {
+            column: "date_trunc('seconds', co.realduration - co.botduration)::text"
+        },
+        customerwaitingduration: {
+            column: "date_trunc('seconds', co.callanswereddate - co.startdate + co.transferduration)::text"
+        },
+        holdingtime: {
+            column: "date_trunc('seconds', co.callholdtime)::text"
+        },
+        transferduration: {
+            column: "date_trunc('seconds', co.transferduration)::text"
+        },
     }
 }
