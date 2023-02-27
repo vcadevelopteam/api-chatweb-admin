@@ -1,5 +1,6 @@
 const channelfunctions = require("../config/channelfunctions");
 const triggerfunctions = require('../config/triggerfunctions');
+const { getErrorCode } = require('../config/helpers');
 const jwt = require("jsonwebtoken");
 
 const { setSessionParameters, axiosObservable, printException } = require('../config/helpers');
@@ -183,6 +184,33 @@ exports.deleteChannel = async (request, response) => {
                 else {
                     return response.status(400).json({
                         msg: transactionDeleteChatWeb.code,
+                        success: false
+                    });
+                }
+            case 'FORM':
+                if (typeof parameters.integrationid !== 'undefined' && parameters.integrationid) {
+                    await axiosObservable({
+                        data: {
+                            status: 'ELIMINADO'
+                        },
+                        method: 'put',
+                        url: `${brokerEndpoint}integrations/update/${parameters.integrationid}`,
+                        _requestid: request._requestid,
+                    });
+                }
+
+                const transactionDeleteChatWeb1 = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                if (transactionDeleteChatWeb1 instanceof Array) {
+                    await channelfunctions.clearHookCache('ChatWebService', request._requestid);
+
+                    return response.json({
+                        success: true
+                    });
+                }
+                else {
+                    return response.status(400).json({
+                        msg: transactionDeleteChatWeb1.code,
                         success: false
                     });
                 }
@@ -975,7 +1003,8 @@ exports.insertChannel = async (request, response) => {
                             chatBorderColor: service.color ? service.color.border : '',
                             chatHeaderColor: service.color ? service.color.header : '',
                             messageBotColor: service.color ? service.color.bot : '',
-                            messageClientColor: service.color ? service.color.client : ''
+                            messageClientColor: service.color ? service.color.client : '',
+                            iconscolor: service.color ? service.color.iconscolor : ''
                         },
                         extra: {
                             abandonendpoint: `${webChatScriptEndpoint}smooch`,
@@ -1095,7 +1124,62 @@ exports.insertChannel = async (request, response) => {
                         success: false
                     });
                 }
+            case 'FORM':
+                const webChatData1 = {
+                    applicationId: webChatApplication,
+                    name: parameters.description,
+                    status: 'ACTIVO',
+                    type: 'FORM',
+                    metadata: {
+                        extra: {
+                            ...(service.extra || {}),
+                            corpid: request.user.corpid,
+                            orgid: request.user.orgid,
+                        },
+                        form: service.form ? service.form : null,
+                    }
+                }
 
+                const requestWebChatCreate1 = await axiosObservable({
+                    data: webChatData1,
+                    method: 'post',
+                    url: `${brokerEndpoint}integrations/save`,
+                    _requestid: request._requestid,
+                });
+
+                if (typeof requestWebChatCreate1.data.id !== 'undefined' && requestWebChatCreate1.data.id) {
+                    parameters.apikey = "";
+                    parameters.appintegrationid = webChatApplication;
+                    parameters.channelparameters = JSON.stringify(webChatData1);
+                    parameters.communicationchannelcontact = "";
+                    parameters.communicationchannelowner = "";
+                    parameters.communicationchannelsite = requestWebChatCreate1.data.id;
+                    parameters.integrationid = requestWebChatCreate1.data.id;
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.type = 'FORM';
+
+                    const transactionCreateWebChat = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateWebChat instanceof Array) {
+                        await channelfunctions.clearHookCache('ChatWebService', request._requestid);
+
+                        return response.json({
+                            integrationid: requestWebChatCreate1.data.id,
+                            success: true
+                        });
+                    } else {
+                        return response.status(400).json({
+                            msg: 'Could not create integration',
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    return response.status(400).json({
+                        msg: 'Could not create integration',
+                        success: false
+                    });
+                }
             case 'FACEBOOK':
             case 'INSTAGRAM':
             case 'INSTAMESSENGER':
@@ -2017,7 +2101,7 @@ exports.updateChannel = async (request, response) => {
     try {
         logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
-        var { method, parameters = {}, service = {} } = request.body;
+        var { method, parameters = {}, service = {}, type } = request.body;
 
         setSessionParameters(parameters, request.user, request._requestid);
 
@@ -2026,89 +2110,139 @@ exports.updateChannel = async (request, response) => {
         parameters.username = request.user.usr;
         parameters.phone = null;
 
-        const webChatData = {
-            applicationId: webChatApplication,
-            name: parameters.description,
-            status: 'ACTIVO',
-            type: 'CHAZ',
-            metadata: {
-                color: {
-                    chatBackgroundColor: service.color ? service.color.background : '',
-                    chatBorderColor: service.color ? service.color.border : '',
-                    chatHeaderColor: service.color ? service.color.header : '',
-                    messageBotColor: service.color ? service.color.bot : '',
-                    messageClientColor: service.color ? service.color.client : ''
-                },
-                extra: {
-                    abandonendpoint: `${webChatScriptEndpoint}smooch`,
-                    cssbody: '',
-                    enableabandon: service.extra ? service.extra.abandonevent : false,
-                    enableformhistory: service.extra ? service.extra.formhistory : false,
-                    enableidlemessage: service.bubble ? service.bubble.active : false,
-                    headermessage: service.extra ? service.extra.botnametext : '',
-                    inputalwaysactive: service.extra ? service.extra.persistentinput : false,
-                    jsscript: service.extra ? service.extra.customjs : '',
-                    playalertsound: service.extra ? service.extra.alertsound : false,
-                    sendmetadata: service.extra ? service.extra.enablemetadata : false,
-                    showchatrestart: service.extra ? service.extra.reloadchat : false,
-                    showmessageheader: service.extra ? service.extra.botnameenabled : false,
-                    showlaraigologo: service.extra ? service.extra.poweredby : false,
-                    showplatformlogo: false,
-                    uploadaudio: service.extra ? service.extra.uploadaudio : false,
-                    uploadfile: service.extra ? service.extra.uploadfile : false,
-                    uploadimage: service.extra ? service.extra.uploadimage : false,
-                    uploadlocation: service.extra ? service.extra.uploadlocation : false,
-                    uploadvideo: service.extra ? service.extra.uploadvideo : false
-                },
-                form: service.form ? service.form : null,
-                icons: {
-                    chatBotImage: service.interface ? service.interface.iconbot : '',
-                    chatHeaderImage: service.interface ? service.interface.iconheader : '',
-                    chatIdleImage: service.bubble ? service.bubble.iconbubble : '',
-                    chatOpenImage: service.interface ? service.interface.iconbutton : ''
-                },
-                personalization: {
-                    headerMessage: service.extra ? service.extra.botnametext : '',
-                    headerSubTitle: service.interface ? service.interface.chatsubtitle : '',
-                    headerTitle: service.interface ? service.interface.chattitle : '',
-                    idleMessage: service.bubble ? service.bubble.messagebubble : ''
+        if (type === "CHATWEB") {
+            const webChatData = {
+                applicationId: webChatApplication,
+                name: parameters.description,
+                status: 'ACTIVO',
+                type: 'CHAZ',
+                metadata: {
+                    color: {
+                        chatBackgroundColor: service.color ? service.color.background : '',
+                        chatBorderColor: service.color ? service.color.border : '',
+                        chatHeaderColor: service.color ? service.color.header : '',
+                        messageBotColor: service.color ? service.color.bot : '',
+                        messageClientColor: service.color ? service.color.client : '',
+                        iconscolor: service.color ? service.color.iconscolor : ''
+                    },
+                    extra: {
+                        abandonendpoint: `${webChatScriptEndpoint}smooch`,
+                        cssbody: '',
+                        enableabandon: service.extra ? service.extra.abandonevent : false,
+                        enableformhistory: service.extra ? service.extra.formhistory : false,
+                        enableidlemessage: service.bubble ? service.bubble.active : false,
+                        headermessage: service.extra ? service.extra.botnametext : '',
+                        inputalwaysactive: service.extra ? service.extra.persistentinput : false,
+                        jsscript: service.extra ? service.extra.customjs : '',
+                        playalertsound: service.extra ? service.extra.alertsound : false,
+                        sendmetadata: service.extra ? service.extra.enablemetadata : false,
+                        showchatrestart: service.extra ? service.extra.reloadchat : false,
+                        showmessageheader: service.extra ? service.extra.botnameenabled : false,
+                        showlaraigologo: service.extra ? service.extra.poweredby : false,
+                        showplatformlogo: false,
+                        uploadaudio: service.extra ? service.extra.uploadaudio : false,
+                        uploadfile: service.extra ? service.extra.uploadfile : false,
+                        uploadimage: service.extra ? service.extra.uploadimage : false,
+                        uploadlocation: service.extra ? service.extra.uploadlocation : false,
+                        uploadvideo: service.extra ? service.extra.uploadvideo : false
+                    },
+                    form: service.form ? service.form : null,
+                    icons: {
+                        chatBotImage: service.interface ? service.interface.iconbot : '',
+                        chatHeaderImage: service.interface ? service.interface.iconheader : '',
+                        chatIdleImage: service.bubble ? service.bubble.iconbubble : '',
+                        chatOpenImage: service.interface ? service.interface.iconbutton : ''
+                    },
+                    personalization: {
+                        headerMessage: service.extra ? service.extra.botnametext : '',
+                        headerSubTitle: service.interface ? service.interface.chatsubtitle : '',
+                        headerTitle: service.interface ? service.interface.chattitle : '',
+                        idleMessage: service.bubble ? service.bubble.messagebubble : ''
+                    }
                 }
             }
-        }
 
-        const requestWebChatCreate = await axiosObservable({
-            data: webChatData,
-            method: 'put',
-            url: `${brokerEndpoint}integrations/update/${parameters.communicationchannelsite}`,
-            _requestid: request._requestid,
-        });
+            const requestWebChatCreate = await axiosObservable({
+                data: webChatData,
+                method: 'put',
+                url: `${brokerEndpoint}integrations/update/${parameters.communicationchannelsite}`,
+                _requestid: request._requestid,
+            });
 
-        if (typeof requestWebChatCreate.data.id !== 'undefined' && requestWebChatCreate.data.id) {
-            parameters.channelparameters = JSON.stringify(webChatData);
-            parameters.servicecredentials = JSON.stringify(service);
+            if (typeof requestWebChatCreate.data.id !== 'undefined' && requestWebChatCreate.data.id) {
+                parameters.channelparameters = JSON.stringify(webChatData);
+                parameters.servicecredentials = JSON.stringify(service);
 
-            const transactionCreateWebChat = await triggerfunctions.executesimpletransaction(method, parameters);
+                const transactionCreateWebChat = await triggerfunctions.executesimpletransaction(method, parameters);
 
-            if (transactionCreateWebChat instanceof Array) {
-                return response.json({
-                    integrationid: requestWebChatCreate.data.id,
-                    success: true
-                });
+                if (transactionCreateWebChat instanceof Array) {
+                    return response.json({
+                        integrationid: requestWebChatCreate.data.id,
+                        success: true
+                    });
+                }
+                else {
+                    return response.status(400).json({
+                        msg: transactionCreateWebChat.code,
+                        success: false
+                    });
+                }
             }
             else {
                 return response.status(400).json({
-                    msg: transactionCreateWebChat.code,
+                    msg: 'Could not update integration',
+                    success: false
+                });
+            }
+        } else {
+            const webChatData = {
+                applicationId: webChatApplication,
+                name: parameters.description,
+                status: 'ACTIVO',
+                type: 'FORM',
+                metadata: {
+                    extra: {
+                        ...(service.extra || {}),
+                        corpid: request.user.corpid,
+                        orgid: request.user.orgid,
+                    },
+                    form: service.form || null,
+                }
+            }
+
+            const requestWebChatCreate = await axiosObservable({
+                data: webChatData,
+                method: 'put',
+                url: `${brokerEndpoint}integrations/update/${parameters.communicationchannelsite}`,
+                _requestid: request._requestid,
+            });
+
+            if (typeof requestWebChatCreate.data.id !== 'undefined' && requestWebChatCreate.data.id) {
+                parameters.channelparameters = JSON.stringify(webChatData);
+                parameters.servicecredentials = JSON.stringify(service);
+
+                const transactionCreateWebChat = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                if (transactionCreateWebChat instanceof Array) {
+                    return response.json({
+                        integrationid: requestWebChatCreate.data.id,
+                        success: true
+                    });
+                }
+                else {
+                    return response.status(400).json({
+                        msg: transactionCreateWebChat.code,
+                        success: false
+                    });
+                }
+            }
+            else {
+                return response.status(400).json({
+                    msg: 'Could not update integration',
                     success: false
                 });
             }
         }
-        else {
-            return response.status(400).json({
-                msg: 'Could not update integration',
-                success: false
-            });
-        }
-
     }
     catch (exception) {
         return response.status(500).json({
