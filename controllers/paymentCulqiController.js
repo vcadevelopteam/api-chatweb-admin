@@ -8,78 +8,83 @@ const { getErrorCode, axiosObservable } = require('../config/helpers');
 const servicesEndpoint = process.env.SERVICES;
 
 exports.chargeCulqui = async (request, response) => {
-    var responsedata = genericfunctions.generateResponseData(request._requestid);
+    let responsedata = genericfunctions.generateResponseData(request._requestid);
 
     try {
         const { corpid, orgid, paymentorderid, settings, token, metadata } = request.body;
 
-        const appsetting = await getAppSetting(responsedata.id);
+        const queryResult = await triggerfunctions.executesimpletransaction("UFN_PAYMENTORDER_SEL", { corpid: corpid, orgid: orgid, conversationid: 0, personid: 0, paymentorderid: paymentorderid, ordercode: '' });
 
-        if (appsetting) {
-            const queryResult = await triggerfunctions.executesimpletransaction("UFN_PAYMENTORDER_SEL", { corpid: corpid, orgid: orgid, conversationid: 0, personid: 0, paymentorderid: paymentorderid, ordercode: '' });
+        const paymentorder = queryResult[0];
 
-            const paymentorder = queryResult[0];
+        if (paymentorder) {
+            if (paymentorder.paymentstatus === 'PENDING' && paymentorder.totalamount === (settings.amount / 100)) {
+                const authcredentials = JSON.parse(paymentorder.authcredentials || {});
 
-            if (paymentorder) {
-                if (paymentorder.paymentstatus === 'PENDING' && paymentorder.totalamount === (settings.amount / 100)) {
-                    const charge = await createCharge({ address: paymentorder.useraddress, address_city: paymentorder.usercity, firstname: paymentorder.userfirstname, lastname: paymentorder.userlastname, phone: paymentorder.userphone }, settings, token, metadata, appsetting.privatekey);
+                if (authcredentials) {
+                    if (authcredentials.privateKey) {
+                        const charge = await createCharge({ address: paymentorder.useraddress, address_city: paymentorder.usercity, firstname: paymentorder.userfirstname, lastname: paymentorder.userlastname, phone: paymentorder.userphone }, settings, token, metadata, authcredentials.privateKey);
 
-                    if (charge.object === 'error') {
-                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, null, responsedata.status, responsedata.success);
-                    }
-                    else {
-                        const chargedata = await insertCharge(corpid, orgid, paymentorderid, null, (settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, 'API', 'PAID', token.id, token, charge.object, responsedata.id);
-
-                        const queryParameters = {
-                            corpid: corpid,
-                            orgid: orgid,
-                            paymentorderid: paymentorderid,
-                            paymentby: token?.email || paymentorder.personid,
-                            culqiamount: (settings.amount / 100),
-                            chargeid: chargedata?.chargeid || null,
-                            chargetoken: charge?.id || null,
-                            chargejson: charge || null,
-                            tokenid: token?.id || null,
-                            tokenjson: token || null,
-                        };
-
-                        const paymentResult = await triggerfunctions.executesimpletransaction("UFN_PAYMENTORDER_PAYMENT", queryParameters);
-
-                        if (paymentResult instanceof Array) {
-                            const requestContinueFlow = await axiosObservable({
-                                data: {
-                                    conversationid: paymentorder.conversationid,
-                                    corpid: paymentorder.corpid,
-                                    orgid: paymentorder.orgid,
-                                    personid: paymentorder.personid,
-                                },
-                                method: 'post',
-                                url: `${servicesEndpoint}handler/continueflow`,
-                                _requestid: responsedata.id,
-                            });
-
-                            if (requestContinueFlow.data) {
-                                responsedata = genericfunctions.changeResponseData(responsedata, null, requestContinueFlow.data, 'success', 200, true);
-                            }
-                            else {
-                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Flow failure', responsedata.status, responsedata.success);
-                            }
+                        if (charge.object === 'error') {
+                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, null, responsedata.status, responsedata.success);
                         }
                         else {
-                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Insert failure', responsedata.status, responsedata.success);
+                            const chargedata = await insertCharge(corpid, orgid, paymentorderid, null, (settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, 'API', 'PAID', token.id, token, charge.object, responsedata.id);
+
+                            const queryParameters = {
+                                corpid: corpid,
+                                orgid: orgid,
+                                paymentorderid: paymentorderid,
+                                paymentby: token?.email || paymentorder.personid,
+                                culqiamount: (settings.amount / 100),
+                                chargeid: chargedata?.chargeid || null,
+                                chargetoken: charge?.id || null,
+                                chargejson: charge || null,
+                                tokenid: token?.id || null,
+                                tokenjson: token || null,
+                            };
+
+                            const paymentResult = await triggerfunctions.executesimpletransaction("UFN_PAYMENTORDER_PAYMENT", queryParameters);
+
+                            if (paymentResult instanceof Array) {
+                                const requestContinueFlow = await axiosObservable({
+                                    data: {
+                                        conversationid: paymentorder.conversationid,
+                                        corpid: paymentorder.corpid,
+                                        orgid: paymentorder.orgid,
+                                        personid: paymentorder.personid,
+                                    },
+                                    method: 'post',
+                                    url: `${servicesEndpoint}handler/continueflow`,
+                                    _requestid: responsedata.id,
+                                });
+
+                                if (requestContinueFlow.data) {
+                                    responsedata = genericfunctions.changeResponseData(responsedata, null, requestContinueFlow.data, 'success', 200, true);
+                                }
+                                else {
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Flow failure', responsedata.status, responsedata.success);
+                                }
+                            }
+                            else {
+                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Insert failure', responsedata.status, responsedata.success);
+                            }
                         }
+                    }
+                    else {
+                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Amount does not match', responsedata.status, responsedata.success);
                     }
                 }
                 else {
-                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Amount does not match', responsedata.status, responsedata.success);
+                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Culqi data not found', responsedata.status, responsedata.success);
                 }
             }
             else {
-                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Payment order not found', responsedata.status, responsedata.success);
+                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Culqi data not found', responsedata.status, responsedata.success);
             }
         }
         else {
-            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Culqi data not found', responsedata.status, responsedata.success);
+            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Payment order not found', responsedata.status, responsedata.success);
         }
 
         return response.status(responsedata.status).json(responsedata);
