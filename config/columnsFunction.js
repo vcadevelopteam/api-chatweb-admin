@@ -112,7 +112,7 @@ module.exports = {
             column: "inter.intent"
         },
         ticketgroup: {
-            column: "dogr.domaindesc"
+            column: "co.usergroup"
         },
         email: {
             column: "pe.email"
