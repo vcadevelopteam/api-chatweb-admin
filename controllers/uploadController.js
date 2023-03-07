@@ -7,22 +7,21 @@ const logger = require('../config/winston');
 
 const hookEndpoint = process.env.HOOK;
 
-var config = {
+const config = {
     endpoint: 's3.us-east.cloud-object-storage.appdomain.cloud',
     ibmAuthEndpoint: 'https://iam.cloud.ibm.com/identity/token',
     apiKeyId: 'LwD1YXNXSp8ZYMGIUWD2D3-wmHkmWRVcFm-5a1Wz_7G1', //'GyvV7NE7QiuAMLkWLXRiDJKJ0esS-R5a6gc8VEnFo0r5',
     serviceInstanceId: '0268699b-7d23-4e1d-9d17-e950b6804633' //'9720d58a-1b9b-42ed-a246-f2e9d7409b18',
 };
 
-var s3 = new ibm.S3(config);
 const COS_BUCKET_NAME = "staticfileszyxme"
 
 exports.upload = async (req, res) => {
     try {
+        const s3 = new ibm.S3(config);
         if (req.file.size > 999999999) {
             return res.status(500).json({ success: false, msg: 'Archivo demasiado grande.' });
         }
-        console.log("req.body", req.body)
         const params = {
             ACL: 'public-read',
             Key: `${req.user?.orgdesc || "anonymous"}/${!req.body.random ? uuidv4() : "static"}/${req.file.originalname}`,
@@ -47,6 +46,8 @@ exports.upload = async (req, res) => {
 
 exports.uploadMetadata = async (req, res) => {
     try {
+        const s3 = new ibm.S3(config);
+        
         if (req.file.size > 999999999) {
             return res.status(500).json({ success: false, msg: 'Archivo demasiado grande.' });
         }
