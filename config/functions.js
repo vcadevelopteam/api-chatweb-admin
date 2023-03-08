@@ -1377,6 +1377,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_COLUMN_SD_SEL: {
+        query: "select * from ufn_column_sd_sel($corpid, $orgid, $id, $lost, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEAD_SD_SEL: {
+        query: "select * from ufn_lead_sd_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $tags, $userid, $supervisorid, $all, $company, $groups)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_COLUMN_INS: {
         query: "select * from ufn_column_ins($corpid, $orgid, $id, $description, $type, $status, $edit, $username, $index, $operation, $delete_all)",
         module: "",
