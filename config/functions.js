@@ -1352,6 +1352,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_LEAD_SD_INS: {
+        query: "select * from ufn_lead_sd_ins($corpid, $orgid, $id, $description, $ticketnum, $type, $personid, $company, $email, $phone, $urgency, $impact, $priority, $first_contact_date, $resolution_date, $tags, $leadgroups, $userid, $columnid, $index, $status, $column_uuid, $operation, $username)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_LEAD_PERSON_TOTALRECORDS: {
         query: "SELECT * FROM ufn_lead_person_totalrecords($corpid, $orgid, $where, $username, $offset)",
         module: "",
