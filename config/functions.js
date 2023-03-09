@@ -1353,7 +1353,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_LEAD_SD_INS: {
-        query: "select * from ufn_lead_sd_ins($corpid, $orgid, $id, $description, $ticketnum, $type, $personid, $company, $email, $phone, $urgency, $impact, $priority, $first_contact_date, $resolution_date, $tags, $leadgroups, $userid, $columnid, $index, $status, $column_uuid, $operation, $username)",
+        query: "select * from ufn_lead_sd_ins($corpid, $orgid, $id, $description, $ticketnum, $type, $personid, $company, $email, $phone, $urgency, $impact, $priority, $tags, $leadgroups, $userid, $columnid, $index, $status, $column_uuid, $operation, $username)",
         module: "",
         protected: "INSERT"
     },
