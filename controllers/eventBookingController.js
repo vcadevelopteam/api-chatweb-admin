@@ -22,7 +22,6 @@ const laraigoEndpoint = process.env.LARAIGO;
 
 const send = async (data, requestid) => {
     data._requestid = requestid;
-
     try {
         if (data.listmembers.every(x => !!x.personid)) {
             await executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", undefined, false, {
@@ -155,6 +154,121 @@ const send = async (data, requestid) => {
                 method: "post",
                 _requestid: requestid,
             });
+            if (!responseservices.data || !(responseservices.data instanceof Object)) {
+                return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+            }
+        }
+        // nuevo metodo HSM/EMAIL
+        else if(data.type === 'HSMEMAIL'){
+            let jsonconfigmail = "";
+            const resBD = await Promise.all([
+                executesimpletransaction("QUERY_GET_CONFIG_MAIL", data),
+                executesimpletransaction("QUERY_GET_MESSAGETEMPLATE", data),
+            ]);
+            const configmail = resBD[0];
+            const mailtemplate = resBD[1][0];
+
+            if (configmail instanceof Array && configmail.length > 0) {
+                jsonconfigmail = JSON.stringify({
+                    username: configmail[0].email,
+                    password: configmail[0].pass,
+                    port: configmail[0].port,
+                    host: configmail[0].host,
+                    enableSsl: configmail[0].ssl,
+                    default_credentials: configmail[0].default_credentials,
+                })
+            }
+
+            const resCheck = await executesimpletransaction("UFN_BALANCE_CHECK", {
+                ...data,
+                receiver: data.listmembers[0].email,
+                communicationchannelid: 0
+            })
+
+            let send = false;
+            if (resCheck instanceof Array && resCheck.length > 0) {
+                data.fee = resCheck[0].fee;
+                const balanceid = resCheck[0].balanceid;
+
+                if (balanceid == 0) {
+                    send = true;
+                }
+                else {
+                    const resValidate = await executesimpletransaction("UFN_BALANCE_OUTPUT", {
+                        ...data,
+                        receiver: data.listmembers[0].email,
+                        communicationchannelid: 0
+                    })
+                    if (resValidate instanceof Array) {
+                        send = true;
+                    }
+                }
+            }
+
+            if (send) {
+                executesimpletransaction("QUERY_INSERT_TASK_SCHEDULER", {
+                    corpid: data.corpid,
+                    orgid: data.orgid,
+                    tasktype: "sendmail",
+                    taskbody: JSON.stringify({
+                        messagetype: "OWNERBODY",
+                        receiver: data.listmembers[0].email,
+                        subject: mailtemplate.header,
+                        priority: mailtemplate.priority,
+                        body: data.listmembers[0].parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (data.body || mailtemplate.body)),
+                        blindreceiver: "",
+                        copyreceiver: "",
+                        credentials: jsonconfigmail,
+                        config: {
+                            CommunicationChannelSite: "",
+                            FirstName: data.listmembers[0].firstname,
+                            LastName: data.listmembers[0].lastname,
+                            HsmTo: data.listmembers[0].email,
+                            Origin: "EXTERNAL",
+                            MessageTemplateId: data.hsmtemplateid,
+                            ShippingReason: data.shippingreason,
+                            HsmId: data.hsmtemplatename,
+                            Body: data.listmembers[0].parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (data.body || mailtemplate.body))
+                        },
+                        attachments: mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
+                            type: 'FILE',
+                            value: x?.value ? x.value : x,
+                        })) : []
+                    }),
+                    repeatflag: false,
+                    repeatmode: 0,
+                    repeatinterval: 0,
+                    completed: false,
+                    _requestid: requestid,
+                })
+            }
+            else {
+                executesimpletransaction("QUERY_INSERT_HSM_HISTORY", {
+                    ...data,
+                    status: 'FINALIZADO',
+                    success: false,
+                    message: 'no credit',
+                    messatemplateid: data.hsmtemplateid,
+                    config: JSON.stringify({
+                        CommunicationChannelSite: "zyxme@vcaperu.com",
+                        FirstName: data.listmembers[0].firstname,
+                        LastName: data.listmembers[0].lastname,
+                        HsmTo: data.listmembers[0].email,
+                        Origin: "EXTERNAL",
+                        MessageTemplateId: data.hsmtemplateid,
+                        ShippingReason: data.shippingreason,
+                        HsmId: data.hsmtemplatename,
+                        Body: data.listmembers[0].parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (data.body || mailtemplate.body))
+                    }),
+                })
+            }
+
+            const responseservices = await axiosObservable({
+                url: `${process.env.SERVICES}handler/external/sendhsm`,
+                data,
+                method: "post",
+                _requestid: requestid,
+            });
 
             if (!responseservices.data || !(responseservices.data instanceof Object)) {
                 return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
@@ -162,7 +276,7 @@ const send = async (data, requestid) => {
         }
     }
     catch (exception) {
-        getErrorCode(null, exception, `Request to ${req.originalUrl}`, data._requestid);
+        getErrorCode(null, exception, `Request to ${requestid.originalUrl}`, data._requestid);
     }
 }
 
@@ -370,7 +484,7 @@ const setReminder = async (data, requestid) => {
 
 exports.Collection = async (req, res) => {
     const { parameters = {}, method, key } = req.body;
-
+    console.log("parameters", parameters)
     if (!method_allowed.includes(method)) {
         const resError = getErrorCode(errors.FORBIDDEN);
         return res.status(resError.rescode).json(resError);
@@ -415,7 +529,7 @@ exports.Collection = async (req, res) => {
                 remindertype
             } = resultCalendar[0]
 
-            if (notificationtype === "EMAIL" || notificationtype === "HSM") {
+            if (notificationtype === "EMAIL" || notificationtype === "HSM" || "HSM EMAIL") {
                 const sendmessage = {
                     corpid: parameters.corpid,
                     orgid: parameters.orgid,
