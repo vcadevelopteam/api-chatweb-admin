@@ -32,17 +32,14 @@ exports.authenticateMobile = async (req, res) => {
 
         const result = await executesimpletransaction("QUERY_AUTHENTICATED", { usr: username });
         
-        if (!result instanceof Array || result.length === 0) {
+        if (!(result instanceof Array) || result.length === 0) {
             return res.status(401).json({ code: errors.LOGIN_USER_INCORRECT, msg: 'Usuario o contraseña incorrecta.' })
         }
 
-        
         const user = result[0];
         const ispasswordmatch = await bcryptjs.compare(password, user.pwd)
         if (!ispasswordmatch)
             return res.status(401).json({ ccode: errors.LOGIN_USER_INCORRECT, msg: 'Usuario o contraseña incorrecta.' })
-
-        // const tokenzyx = uuidv4();
 
         const dataSesion = {
             userid: user.userid,
@@ -187,14 +184,6 @@ exports.changePassword = async (req, res) => {
 
         if (!password)
             return res.status(400).json({ msg: "La contraseña no puede ser vacia." });
-
-        // const response = await axios({
-        //     url: `${process.env.APISERVICES}main/encrypt`,
-        //     method: 'post',
-        //     data: { text: password }
-        // });
-        // if (!response.data || !response.data instanceof Object || !response.data.success)
-        //     return res.status(400).json({ msg: "Hubo un problema, vuelva a intentarlo" });
 
         const salt = await bcryptjs.genSalt(10);
         const newpassword = await bcryptjs.hash(password, salt);
