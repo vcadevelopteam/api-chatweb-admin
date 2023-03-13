@@ -1627,6 +1627,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    QUERY_GET_MESSAGETEMPLATE_EMAIL_CAL: {
+        query: "select messagetemplateid, header, body, priority, attachment from messagetemplate where corpid = $corpid and orgid = $orgid and messagetemplateid = $messagetemplateidemail",
+        module: "",
+        protected: "INSERT"
+    },
     QUERY_GET_MESSAGETEMPLATE_BYNAMESPACE: {
         query: "select messagetemplateid, header, body, priority, attachment from messagetemplate where corpid = $corpid and orgid = $orgid and namespace = $namespace",
         module: "",
@@ -2315,7 +2320,9 @@ module.exports = {
         ce.reminderhsmmessage,
         ce.reminderhsmtemplateid,
         mt2.name reminderhsmtemplatename,
-        ce.remindertype
+        ce.remindertype,
+        ce.notificationmessageemail, 
+        ce.messagetemplateidemail
         from calendarevent ce 
         left join communicationchannel cc1 on cc1.corpid = ce.corpid and cc1.orgid = ce.orgid and cc1.communicationchannelid = ce.communicationchannelid
         left join communicationchannel cc2 on cc2.corpid = ce.corpid and cc2.orgid = ce.orgid and cc2.communicationchannelid = ce.reminderhsmcommunicationchannelid
