@@ -1517,6 +1517,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_LEADGRID_SD_SEL: {
+        query: "SELECT * FROM ufn_leadgrid_sd_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $fullname, $leadproduct, $tags, $supervisorid, $company, $groups, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEADGRID_SD_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_leadgrid_sd_totalrecords($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $fullname, $leadproduct, $tags, $supervisorid, $company, $groups, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_LEADGRID_EXPORT: {
         query: "SELECT * FROM ufn_leadgrid_export($corpid, $orgid, $where, $order, $startdate, $enddate, $asesorid, $channel, $contact, $persontype, $offset)",
         module: "",
