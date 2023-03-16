@@ -34,6 +34,7 @@ const send = async (data, requestid) => {
 
         if (data.type === "MAIL" || data.type === "EMAIL") {
             let jsonconfigmail = "";
+       
             const resBD = await Promise.all([
                 executesimpletransaction("QUERY_GET_CONFIG_MAIL", data),
                 executesimpletransaction("QUERY_GET_MESSAGETEMPLATE", data),
@@ -158,12 +159,12 @@ const send = async (data, requestid) => {
                 return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
             }
         }
-        // nuevo metodo HSM/EMAIL
+        // HSM/EMAIL
         else if(data.type === 'HSMEMAIL'){
             let jsonconfigmail = "";
             const resBD = await Promise.all([
                 executesimpletransaction("QUERY_GET_CONFIG_MAIL", data),
-                executesimpletransaction("QUERY_GET_MESSAGETEMPLATE", data),
+                executesimpletransaction("QUERY_GET_MESSAGETEMPLATE_EMAIL_CAL", data),
             ]);
             const configmail = resBD[0];
             const mailtemplate = resBD[1][0];
@@ -215,7 +216,7 @@ const send = async (data, requestid) => {
                         receiver: data.listmembers[0].email,
                         subject: mailtemplate.header,
                         priority: mailtemplate.priority,
-                        body: data.listmembers[0].parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (data.body || mailtemplate.body)),
+                        body: data.listmembers[0].parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (mailtemplate.body)),
                         blindreceiver: "",
                         copyreceiver: "",
                         credentials: jsonconfigmail,
@@ -262,6 +263,7 @@ const send = async (data, requestid) => {
                     }),
                 })
             }
+        
 
             const responseservices = await axiosObservable({
                 url: `${process.env.SERVICES}handler/external/sendhsm`,
@@ -273,6 +275,7 @@ const send = async (data, requestid) => {
             if (!responseservices.data || !(responseservices.data instanceof Object)) {
                 return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
             }
+            
         }
     }
     catch (exception) {
@@ -484,7 +487,7 @@ const setReminder = async (data, requestid) => {
 
 exports.Collection = async (req, res) => {
     const { parameters = {}, method, key } = req.body;
-    console.log("parameters", parameters)
+
     if (!method_allowed.includes(method)) {
         const resError = getErrorCode(errors.FORBIDDEN);
         return res.status(resError.rescode).json(resError);
@@ -526,7 +529,9 @@ exports.Collection = async (req, res) => {
                 reminderhsmmessage,
                 reminderhsmtemplateid,
                 reminderhsmtemplatename,
-                remindertype
+                remindertype,
+                notificationmessageemail,
+                messagetemplateidemail
             } = resultCalendar[0]
 
             if (notificationtype === "EMAIL" || notificationtype === "HSM" || "HSM EMAIL") {
@@ -550,7 +555,9 @@ exports.Collection = async (req, res) => {
                         lastname: "",
                         parameters: parameters.parameters
                     }],
-                    body: notificationmessage
+                    body: notificationmessage,
+                    messagetemplateidemail: messagetemplateidemail,
+                    notificationmessageemail: notificationmessageemail
                 }
 
                 await send(sendmessage, req._requestid);
