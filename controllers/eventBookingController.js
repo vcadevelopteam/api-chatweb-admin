@@ -148,7 +148,7 @@ const send = async (data, requestid) => {
             }
 
             // Balance validation is done in services
-
+            
             const responseservices = await axiosObservable({
                 url: `${process.env.SERVICES}handler/external/sendhsm`,
                 data,
@@ -229,7 +229,7 @@ const send = async (data, requestid) => {
                             MessageTemplateId: data.hsmtemplateid,
                             ShippingReason: data.shippingreason,
                             HsmId: data.hsmtemplatename,
-                            Body: data.listmembers[0].parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (data.body || mailtemplate.body))
+                            Body: data.listmembers[0].parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (mailtemplate.body))
                         },
                         attachments: mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
                             type: 'FILE',
@@ -534,7 +534,7 @@ exports.Collection = async (req, res) => {
                 messagetemplateidemail
             } = resultCalendar[0]
 
-            if (notificationtype === "EMAIL" || notificationtype === "HSM" || "HSM EMAIL") {
+            if (notificationtype === "EMAIL" || notificationtype === "HSM" || "HSMEMAIL") {
                 const sendmessage = {
                     corpid: parameters.corpid,
                     orgid: parameters.orgid,
@@ -559,7 +559,6 @@ exports.Collection = async (req, res) => {
                     messagetemplateidemail: messagetemplateidemail,
                     notificationmessageemail: notificationmessageemail
                 }
-
                 await send(sendmessage, req._requestid);
             }
 
@@ -1352,4 +1351,179 @@ exports.googleWebhook = async (request, response) => {
             success: false,
         });
     }
+}
+exports.cancelEventLaraigo = async (request, response) => {
+    try {
+            console.log("se ejecuto")
+        let parameters = request.body.parameters || request.body.data || {};
+        const {method, key } = request.body;
+
+        setSessionParameters(parameters, request.user, request._requestid);
+
+        if (parameters.canceltype === 'EMAIL') {
+
+            const result = await executesimpletransaction(method, parameters, null || {});
+            if (result instanceof Array)
+                return response.json({ error: false, success: true, data: result, key });
+            else
+                return response.status(result.rescode).json({ ...result, key });
+
+        } else if(parameters.canceltype === 'HSM'){
+            //CHANGE STATUS EVENT
+            const result = await executesimpletransaction(method, parameters, null || {});
+            if (result instanceof Array){
+                console.log({ error: false, success: true, data: result, key })
+            }
+            //SEND HSM
+            let resultCalendarx = {}
+            const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
+            resultCalendarx = resultCalendar;
+            const {
+                messagetemplateid,
+                messagetemplatename,
+                communicationchannelid,
+                communicationchanneltype,
+                notificationtype,
+                notificationmessage,
+                reminderhsmcommunicationchannelid,
+                reminderhsmcommunicationchanneltype,
+                reminderperiod,
+                reminderfrecuency,
+                remindermailmessage,
+                remindermailtemplateid,
+                reminderhsmmessage,
+                reminderhsmtemplateid,
+                reminderhsmtemplatename,
+                remindertype,
+                notificationmessageemail,
+                messagetemplateidemail
+            } = resultCalendar[0]
+              const data = {
+                corpid: parameters.corpid,
+                orgid: parameters.orgid,
+                username: parameters.username,
+                communicationchannelid: communicationchannelid,
+                hsmtemplateid: messagetemplateid,
+                type: notificationtype,
+                shippingreason: "BOOKING",
+                _requestid: request._requestid,
+                hsmtemplatename: messagetemplatename,
+                communicationchanneltype: communicationchanneltype,
+                platformtype: communicationchanneltype,
+                userid: 0,
+                listmembers: [{
+                    phone: "51929091384",
+                    firstname: "none",
+                    email: "kevramos95@gmail.com",
+                    lastname: "",
+                    parameters: parameters.otros
+                }],
+                body: notificationmessage,
+                messagetemplateidemail: messagetemplateidemail,
+                notificationmessageemail: notificationmessageemail
+            }
+      
+            const responseservices = await axiosObservable({
+                url: `${process.env.SERVICES}handler/external/sendhsm`,
+                data,
+                method: "post",
+                _requestid: request._requestid,
+            });
+       
+            if (!responseservices.data || !(responseservices.data instanceof Object)) {
+                return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+            }
+
+        }else if(parameters.canceltype === 'HSMEMAIL'){
+            //HSM
+            let resultCalendarx = {}
+            const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
+            resultCalendarx = resultCalendar;
+            const {
+                messagetemplateid,
+                messagetemplatename,
+                communicationchannelid,
+                communicationchanneltype,
+                notificationtype,
+                notificationmessage,
+                reminderhsmcommunicationchannelid,
+                reminderhsmcommunicationchanneltype,
+                reminderperiod,
+                reminderfrecuency,
+                remindermailmessage,
+                remindermailtemplateid,
+                reminderhsmmessage,
+                reminderhsmtemplateid,
+                reminderhsmtemplatename,
+                remindertype,
+                notificationmessageemail,
+                messagetemplateidemail
+            } = resultCalendar[0]
+              const data = {
+                corpid: parameters.corpid,
+                orgid: parameters.orgid,
+                username: parameters.username,
+                communicationchannelid: communicationchannelid,
+                hsmtemplateid: messagetemplateid,
+                type: notificationtype,
+                shippingreason: "BOOKING",
+                _requestid: request._requestid,
+                hsmtemplatename: messagetemplatename,
+                communicationchanneltype: communicationchanneltype,
+                platformtype: communicationchanneltype,
+                userid: 0,
+                listmembers: [{
+                    phone: "51929091384",
+                    firstname: "none",
+                    email: "kevramos95@gmail.com",
+                    lastname: "",
+                    parameters: parameters.otros
+                }],
+                body: notificationmessage,
+                messagetemplateidemail: messagetemplateidemail,
+                notificationmessageemail: notificationmessageemail
+            }
+
+            const responseservices = await axiosObservable({
+                url: `${process.env.SERVICES}handler/external/sendhsm`,
+                data,
+                method: "post",
+                _requestid: request._requestid,
+            });
+       
+            if (!responseservices.data || !(responseservices.data instanceof Object)) {
+                return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+            }
+
+
+            //EMAIL
+            const result = await executesimpletransaction(method, parameters, null || {});
+            console.log("result",result)
+            if (result instanceof Array)
+                return response.json({ error: false, success: true, data: result, key });
+            else
+                return response.status(result.rescode).json({ ...result, key });
+
+
+        }
+
+        //logger.child({ _requestid: request._requestid }).info(data)
+        return response.status(200).json({
+            code: '',
+            error: false,
+            message: '',
+            success: true,
+        });
+        
+    }
+    catch (exception) {
+        logger.child({ _requestid: request._requestid }).error(exception)
+        return response.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+    
 }

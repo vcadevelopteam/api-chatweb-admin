@@ -4,6 +4,12 @@ const router = express.Router();
 const eventBookingController = require("../controllers/eventBookingController");
 const ip = require('../middleware/ip');
 
+router.post('/canceleventlaraigo',
+    ip,
+    eventBookingController.cancelEventLaraigo
+)
+
+
 router.post('/collection',
     ip,
     eventBookingController.Collection
