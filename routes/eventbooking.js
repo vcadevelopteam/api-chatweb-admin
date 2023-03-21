@@ -6,7 +6,6 @@ const ip = require('../middleware/ip');
 
 router.post('/canceleventlaraigo',
     ip,
-    auth,
     eventBookingController.cancelEventLaraigo
 )
 
