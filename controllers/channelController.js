@@ -1025,7 +1025,15 @@ exports.insertChannel = async (request, response) => {
                             uploadfile: service.extra ? service.extra.uploadfile : false,
                             uploadimage: service.extra ? service.extra.uploadimage : false,
                             uploadlocation: service.extra ? service.extra.uploadlocation : false,
-                            uploadvideo: service.extra ? service.extra.uploadvideo : false
+                            uploadvideo: service.extra ? service.extra.uploadvideo : false,
+                            withBorder: service.extra?.withBorder || false,
+                            withHour: service.extra?.withHour || false,
+                            iconColorActive: service.extra?.iconColorActive || "",
+                            iconColorDisabled: service.extra?.iconColorDisabled || "",
+                            inputTextSize: service.extra?.inputTextSize || 0,
+                            inputTextWeight: service.extra?.inputTextWeight || 0,
+                            chatTextSize: service.extra?.chatTextSize || 0,
+                            chatTextWeight: service.extra?.chatTextWeight || 0,
                         },
                         form: service.form ? service.form : null,
                         icons: {
@@ -2144,7 +2152,15 @@ exports.updateChannel = async (request, response) => {
                         uploadfile: service.extra ? service.extra.uploadfile : false,
                         uploadimage: service.extra ? service.extra.uploadimage : false,
                         uploadlocation: service.extra ? service.extra.uploadlocation : false,
-                        uploadvideo: service.extra ? service.extra.uploadvideo : false
+                        uploadvideo: service.extra ? service.extra.uploadvideo : false,
+                        withBorder: service.extra?.withBorder || false,
+                        withHour: service.extra?.withHour || false,
+                        iconColorActive: service.extra?.iconColorActive || "",
+                        iconColorDisabled: service.extra?.iconColorDisabled || "",
+                        inputTextSize: service.extra?.inputTextSize || 0,
+                        inputTextWeight: service.extra?.inputTextWeight || 0,
+                        chatTextSize: service.extra?.chatTextSize || 0,
+                        chatTextWeight: service.extra?.chatTextWeight || 0,
                     },
                     form: service.form ? service.form : null,
                     icons: {
