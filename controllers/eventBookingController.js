@@ -1505,7 +1505,14 @@ exports.cancelEventLaraigo = async (request, response) => {
                 return response.status(result.rescode).json({ ...result, key });
 
 
+        }else if(parameters.canceltype === ''){
+        const result = await executesimpletransaction(method, parameters, null || {});
+        if (result instanceof Array)
+            return response.json({ error: false, success: true, data: result, key });
+        else
+            return response.status(result.rescode).json({ ...result, key });
         }
+
 
         //logger.child({ _requestid: request._requestid }).info(data)
         return response.status(200).json({
