@@ -468,7 +468,7 @@ exports.Collection = async (req, res) => {
                
             }
 
-            if (["EMAIL", "HSM", "HSMEMAIL"].includes(notificationtype)) {
+            if (["EMAIL", "HSM", "HSMEMAIL"].includes(notificationtype) && parameters.calendarbookingid) {
                 const sendmessage = {
                     corpid: parameters.corpid,
                     orgid: parameters.orgid,
