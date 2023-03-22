@@ -1251,6 +1251,17 @@ exports.cancelEventLaraigo = async (request, response) => {
             return response.status(result.rescode).json({ ...result, key });
 
         if (["HSM", "HSMEMAIL"].includes(parameters.canceltype)) {
+
+            const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
+            
+            const {
+                messagetemplatename,
+                communicationchanneltype,
+                canceltemplateidhsm,
+                cancelnotificationhsm,
+                cancelcommunicationchannelid
+            } = resultCalendar[0]
+
             const sendmessage = {
                 type: "HSM",
                 corpid: parameters.corpid,
