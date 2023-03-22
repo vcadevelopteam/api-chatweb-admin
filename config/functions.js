@@ -2305,6 +2305,8 @@ module.exports = {
     },
     QUERY_EVENT_BY_CALENDAR_EVENT_ID: {
         query: `SELECT
+        ce.canceltemplateidemail,
+        ce.cancelnotificationemail,
         mt1.name messagetemplatename,
         cc1.type communicationchanneltype,
         ce.messagetemplateid,

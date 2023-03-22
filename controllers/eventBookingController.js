@@ -32,7 +32,7 @@ const send = async (data, requestid) => {
             })
         }
 
-        if (["MAIL", "EMAIL", "HSMEMAIL"].includes(data.type)) {
+        if (["MAIL", "EMAIL"].includes(data.type)) {
             let jsonconfigmail = "";
 
             const resBD = await Promise.all([
@@ -101,7 +101,7 @@ const send = async (data, requestid) => {
                             Origin: "EXTERNAL",
                             MessageTemplateId: data.hsmtemplateid,
                             ShippingReason: data.shippingreason,
-                            HsmId: data.hsmtemplatename,
+                            // HsmId: data.hsmtemplatename,
                             Body: data.listmembers[0].parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (data.body || mailtemplate.body))
                         },
                         attachments: mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
@@ -131,14 +131,12 @@ const send = async (data, requestid) => {
                         Origin: "EXTERNAL",
                         MessageTemplateId: data.hsmtemplateid,
                         ShippingReason: data.shippingreason,
-                        HsmId: data.hsmtemplatename,
+                        // HsmId: data.hsmtemplatename,
                         Body: data.listmembers[0].parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (data.body || mailtemplate.body))
                     }),
                 })
             }
-        }
-
-        if (["HSMEMAIL", "SMS", "HSM"].includes(data.type)) {
+        } else if (["SMS", "HSM"].includes(data.type)) {
             if (data.type === "SMS") {
                 const smschannel = await executesimpletransaction("QUERY_GET_SMS_DEFAULT_BY_ORG", data);
                 if (smschannel[0] && smschannel) {
@@ -267,7 +265,7 @@ const setReminder = async (data, requestid) => {
                             Origin: "EXTERNAL",
                             MessageTemplateId: data.remindermailtemplateid,
                             ShippingReason: data.shippingreason,
-                            HsmId: data.hsmtemplatename,
+                            // HsmId: data.hsmtemplatename,
                             Body: data.listmembers[0].parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (data.bodyMailMessage || mailtemplate.body))
                         },
                         attachments: mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
@@ -304,7 +302,7 @@ const setReminder = async (data, requestid) => {
                         Origin: "EXTERNAL",
                         MessageTemplateId: data.remindermailtemplateid,
                         ShippingReason: data.shippingreason,
-                        HsmId: data.hsmtemplatename,
+                        // HsmId: data.hsmtemplatename,
                         Body: data.listmembers[0].parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (data.body || mailtemplate.body))
                     }),
                 })
@@ -323,7 +321,7 @@ const setReminder = async (data, requestid) => {
                 taskbody: JSON.stringify({
                     corpid: data.corpid,
                     orgid: data.orgid,
-                    hsmtemplatename: data.reminderhsmtemplatename,
+                    // hsmtemplatename: data.reminderhsmtemplatename,
                     hsmtemplateid: data.reminderhsmtemplateid,
                     communicationchannelid: data.reminderhsmcommunicationchannelid,
                     communicationchanneltype: data.reminderhsmcommunicationchanneltype,
@@ -379,28 +377,13 @@ exports.Collection = async (req, res) => {
     parameters._requestid = req._requestid;
 
     const result = await executesimpletransaction(method, parameters);
-    console.log("result: ", result)
     const newcalendarbookingid = result?.[0]?.calendarbookingid;
-    console.log("calendarbookingid:   ", newcalendarbookingid)
-    let resultCalendarx = {}
+
     if (!result.error) {
         if (method === "UFN_CALENDARYBOOKING_INS") {
-            //si envia un calendarbookinguuid es porque quiere reprogramar, osea cancelar la antigua y crear una nueva
-            if (parameters.calendarbookingid) {
-                await executesimpletransaction("QUERY_CANCEL_EVENT_BY_CALENDARBOOKINGUUID", {
-                    ...parameters,
-                    cancelcomment: "RESCHEDULED BOOKING"
-                });
-                await executesimpletransaction("QUERY_CANCEL_TASK_BY_CALENDARBOOKINGUUID", {
-                    ...parameters,
-                });
-            }
-
             const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
-            resultCalendarx = resultCalendar;
             const {
                 messagetemplateid,
-                messagetemplatename,
                 communicationchannelid,
                 communicationchanneltype,
                 notificationtype,
@@ -413,11 +396,21 @@ exports.Collection = async (req, res) => {
                 remindermailtemplateid,
                 reminderhsmmessage,
                 reminderhsmtemplateid,
-                reminderhsmtemplatename,
                 remindertype,
                 notificationmessageemail,
                 messagetemplateidemail
             } = resultCalendar[0]
+
+            //si envia un calendarbookinguuid es porque quiere reprogramar, osea cancelar la antigua y crear una nueva
+            if (parameters.calendarbookingid) {
+                await executesimpletransaction("QUERY_CANCEL_EVENT_BY_CALENDARBOOKINGUUID", {
+                    ...parameters,
+                    cancelcomment: "RESCHEDULED BOOKING"
+                });
+                await executesimpletransaction("QUERY_CANCEL_TASK_BY_CALENDARBOOKINGUUID", {
+                    ...parameters,
+                });
+            }
 
             if (["EMAIL", "HSM", "HSMEMAIL"].includes(notificationtype)) {
                 const sendmessage = {
@@ -429,7 +422,7 @@ exports.Collection = async (req, res) => {
                     type: notificationtype,
                     shippingreason: "BOOKING",
                     _requestid: req._requestid,
-                    hsmtemplatename: messagetemplatename,
+                    // hsmtemplatename: messagetemplatename,
                     communicationchanneltype: communicationchanneltype,
                     platformtype: communicationchanneltype,
                     userid: 0,
@@ -457,7 +450,7 @@ exports.Collection = async (req, res) => {
                 type: notificationtype,
                 shippingreason: "BOOKING",
                 _requestid: req._requestid,
-                hsmtemplatename: messagetemplatename,
+                // hsmtemplatename: messagetemplatename,
                 communicationchanneltype: communicationchanneltype,
                 platformtype: communicationchanneltype,
                 userid: 0,
@@ -476,7 +469,7 @@ exports.Collection = async (req, res) => {
                 reminderfrecuency: reminderfrecuency,
                 remindermailtemplateid: remindermailtemplateid,
                 reminderhsmtemplateid: reminderhsmtemplateid,
-                reminderhsmtemplatename: reminderhsmtemplatename,
+                // reminderhsmtemplatename: reminderhsmtemplatename,
                 remindertype: remindertype,
                 monthdate: parameters.monthdate,
                 hourstart: parameters.hourstart,
@@ -506,7 +499,7 @@ exports.Collection = async (req, res) => {
                 });
             }
         }
-        return res.json({ error: false, success: true, data: result, key, resultCalendarx });
+        return res.json({ error: false, success: true, data: result, key });
     }
     else
         return res.status(result.rescode).json(({ ...result, key }));
@@ -540,31 +533,6 @@ exports.EventsPerPerson = async (req, res) => {
         }));
 
         return res.json({ error: false, success: true, count: events.length, data: events });
-    }
-    else
-        return res.status(result.rescode).json(({ ...result, key }));
-}
-
-exports.CancelEvent = async (req, res) => {
-    const { orgid, corpid, calendarbookinguuid } = req.params;
-    const { parameters = {}, method, key } = req.body;
-
-    parameters.corpid = Number(corpid);
-    parameters.orgid = Number(orgid);
-    parameters.calendarbookinguuid = Number(calendarbookinguuid);
-
-
-    if (!method_allowed.includes(method)) {
-        const resError = getErrorCode(errors.FORBIDDEN);
-        return res.status(resError.rescode).json(resError);
-    }
-
-    parameters._requestid = req._requestid;
-
-    const result = await executesimpletransaction(method, parameters);
-
-    if (!result.error) {
-        return res.json({ error: false, success: true, data: result, key });
     }
     else
         return res.status(result.rescode).json(({ ...result, key }));
@@ -1245,16 +1213,17 @@ exports.cancelEventLaraigo = async (request, response) => {
         if (!(result instanceof Array))
             return response.status(result.rescode).json({ ...result, key });
 
-        if (["HSM", "HSMEMAIL"].includes(parameters.canceltype)) {
+        if (["HSM", "HSMEMAIL", "EMAIL"].includes(parameters.canceltype)) {
 
             const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
-            
+
             const {
-                messagetemplatename,
                 communicationchanneltype,
                 canceltemplateidhsm,
                 cancelnotificationhsm,
-                cancelcommunicationchannelid
+                cancelcommunicationchannelid,
+                canceltemplateidemail,
+                cancelnotificationemail,
             } = resultCalendar[0]
 
             const sendmessage = {
@@ -1266,11 +1235,9 @@ exports.cancelEventLaraigo = async (request, response) => {
                 hsmtemplateid: canceltemplateidhsm,
                 shippingreason: "BOOKING",
                 _requestid: request._requestid,
-                hsmtemplatename: messagetemplatename,
                 communicationchanneltype: communicationchanneltype,
                 platformtype: communicationchanneltype,
                 userid: 0,
-
                 listmembers: [{
                     phone: phone,
                     firstname: name,
@@ -1280,7 +1247,14 @@ exports.cancelEventLaraigo = async (request, response) => {
                 }],
                 body: cancelnotificationhsm,
             }
-            await send(sendmessage, req._requestid);
+            if ("HSMEMAIL" === parameters.canceltype) {
+                await send(sendmessage, req._requestid);
+                await send({ ...sendmessage, type: "MAIL", body: cancelnotificationemail, hsmtemplateid: canceltemplateidemail }, request._requestuestid);
+            } else if ("EMAIL" === parameters.canceltype) {
+                await send({ ...sendmessage, type: "MAIL", body: cancelnotificationemail, hsmtemplateid: canceltemplateidemail }, request._requestuestid);
+            } else {
+                await send(sendmessage, req._requestid);
+            }
         }
 
         return response.status(200).json({
