@@ -129,6 +129,8 @@ exports.authenticate = async (req, res) => {
 
         const tokenzyx = uuidv4();
 
+        user.companyuser = user.company; //para evitar chancar los company enviado desde la web
+
         const dataSesion = {
             userid: user.userid,
             orgid: user.orgid,
@@ -299,6 +301,7 @@ exports.changeOrganization = async (req, res) => {
     if (!resultBD.error) {
         const newusertoken = {
             ...req.user,
+            companyuser: req.user.companyuser,
             orgid: parameters.neworgid,
             corpid: parameters.newcorpid,
             corpdesc: parameters.corpdesc,
