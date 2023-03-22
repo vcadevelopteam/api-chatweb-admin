@@ -2335,6 +2335,8 @@ module.exports = {
     },
     QUERY_EVENT_BY_CALENDAR_EVENT_ID: {
         query: `SELECT
+        ce.canceltemplateidemail,
+        ce.cancelnotificationemail,
         mt1.name messagetemplatename,
         cc1.type communicationchanneltype,
         ce.messagetemplateid,
@@ -2352,7 +2354,10 @@ module.exports = {
         mt2.name reminderhsmtemplatename,
         ce.remindertype,
         ce.notificationmessageemail, 
-        ce.messagetemplateidemail
+        ce.messagetemplateidemail,
+        ce.canceltemplateidhsm,
+        ce.cancelnotificationhsm,
+        ce.cancelcommunicationchannelid
         from calendarevent ce 
         left join communicationchannel cc1 on cc1.corpid = ce.corpid and cc1.orgid = ce.orgid and cc1.communicationchannelid = ce.communicationchannelid
         left join communicationchannel cc2 on cc2.corpid = ce.corpid and cc2.orgid = ce.orgid and cc2.communicationchannelid = ce.reminderhsmcommunicationchannelid
