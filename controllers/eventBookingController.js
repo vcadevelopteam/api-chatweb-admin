@@ -21,6 +21,7 @@ const method_allowed = [
 const laraigoEndpoint = process.env.LARAIGO;
 
 const send = async (data, requestid) => {
+
     data._requestid = requestid;
     try {
         if (data.listmembers.every(x => !!x.personid)) {
@@ -154,13 +155,14 @@ const send = async (data, requestid) => {
                 method: "post",
                 _requestid: requestid,
             });
+
             if (!responseservices.data || !(responseservices.data instanceof Object)) {
                 return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
             }
         }
     }
     catch (exception) {
-        getErrorCode(null, exception, `Request to ${requestid.originalUrl}`, data._requestid);
+        getErrorCode(null, exception, `Request to ${requestid}`, data._requestid);
     }
 }
 
@@ -398,11 +400,18 @@ exports.Collection = async (req, res) => {
                 reminderhsmtemplateid,
                 remindertype,
                 notificationmessageemail,
-                messagetemplateidemail
+                messagetemplateidemail,
+                rescheduletemplateidhsm,
+                reschedulenotificationhsm,
+                reschedulecommunicationchannelid,
+                rescheduletemplateidemail,
+                reschedulenotificationemail,
+                rescheduletype
             } = resultCalendar[0]
 
             //si envia un calendarbookinguuid es porque quiere reprogramar, osea cancelar la antigua y crear una nueva
             if (parameters.calendarbookingid) {
+            
                 await executesimpletransaction("QUERY_CANCEL_EVENT_BY_CALENDARBOOKINGUUID", {
                     ...parameters,
                     cancelcomment: "RESCHEDULED BOOKING"
@@ -410,9 +419,56 @@ exports.Collection = async (req, res) => {
                 await executesimpletransaction("QUERY_CANCEL_TASK_BY_CALENDARBOOKINGUUID", {
                     ...parameters,
                 });
+                try {
+           
+                    //Reschedulde start
+                    if (["HSM", "HSMEMAIL", "EMAIL"].includes(rescheduletype)) {
+                        const sendmessage = {
+                            type: "HSM",
+                            corpid: parameters.corpid,
+                            orgid: parameters.orgid,
+                            username: parameters.username,
+                            communicationchannelid: reschedulecommunicationchannelid,
+                            hsmtemplateid: rescheduletemplateidhsm,
+                            shippingreason: "BOOKING",
+                            _requestid: req._requestid,
+                            communicationchanneltype: communicationchanneltype,
+                            platformtype: communicationchanneltype,
+                            userid: 0,
+                            listmembers: [{
+                                phone: parameters.phone,
+                                firstname: parameters.name,
+                                email: parameters.email,
+                                lastname: "",
+                                parameters: parameters.parameters
+                            }],
+                            body: reschedulenotificationhsm
+                        }
+                
+                        if ("HSMEMAIL" === rescheduletype) {
+                            await send(sendmessage, req._requestid);
+                            await send({ ...sendmessage, type: "MAIL", body: reschedulenotificationemail, hsmtemplateid: rescheduletemplateidemail }, req._requestuestid);
+                        } else if ("EMAIL" === rescheduletype) {
+                            await send({ ...sendmessage, type: "MAIL", body: reschedulenotificationemail, hsmtemplateid: rescheduletemplateidemail }, req._requestuestid);
+                        } else {
+                            await send(sendmessage, req._requestid);
+                        }
+                    }
+                    //Reschedule end
+                    
+                } catch (exception) {
+                    logger.child({ _requestid: req._requestid }).error(exception)
+                    return res.status(500).json({
+                        code: "error_unexpected_error",
+                        error: true,
+                        message: exception.message,
+                        success: false,
+                    });
+                }
+               
             }
 
-            if (["EMAIL", "HSM", "HSMEMAIL"].includes(notificationtype)) {
+            if (["EMAIL", "HSM", "HSMEMAIL"].includes(notificationtype) && parameters.calendarbookingid) {
                 const sendmessage = {
                     corpid: parameters.corpid,
                     orgid: parameters.orgid,
@@ -1253,7 +1309,7 @@ exports.cancelEventLaraigo = async (request, response) => {
             } else if ("EMAIL" === parameters.canceltype) {
                 await send({ ...sendmessage, type: "MAIL", body: cancelnotificationemail, hsmtemplateid: canceltemplateidemail }, request._requestuestid);
             } else {
-                await send(sendmessage, req._requestid);
+                await send(sendmessage, request._requestid);
             }
         }
 
@@ -1278,7 +1334,6 @@ exports.cancelEventLaraigo = async (request, response) => {
 }
 exports.rescheduleEventLaraigo = async (req, res) => {
     try {
-        console.log("askdjaskdas")
         const { parameters = {}, method, key } = req.body;
 
         if (!method_allowed.includes(method)) {

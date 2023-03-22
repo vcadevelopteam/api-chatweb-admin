@@ -2357,7 +2357,13 @@ module.exports = {
         ce.messagetemplateidemail,
         ce.canceltemplateidhsm,
         ce.cancelnotificationhsm,
-        ce.cancelcommunicationchannelid
+        ce.cancelcommunicationchannelid,
+        ce.rescheduletemplateidhsm,
+        ce.reschedulenotificationhsm,
+        ce.reschedulecommunicationchannelid,
+        ce.rescheduletemplateidemail,
+        ce.reschedulenotificationemail,
+        ce.rescheduletype
         from calendarevent ce 
         left join communicationchannel cc1 on cc1.corpid = ce.corpid and cc1.orgid = ce.orgid and cc1.communicationchannelid = ce.communicationchannelid
         left join communicationchannel cc2 on cc2.corpid = ce.corpid and cc2.orgid = ce.orgid and cc2.communicationchannelid = ce.reminderhsmcommunicationchannelid
