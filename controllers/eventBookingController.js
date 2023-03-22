@@ -496,7 +496,9 @@ exports.Collection = async (req, res) => {
     parameters._requestid = req._requestid;
 
     const result = await executesimpletransaction(method, parameters);
+    console.log("result: ", result)
     const newcalendarbookingid = result?.[0]?.calendarbookingid;
+    console.log("calendarbookingid:   ",newcalendarbookingid)
     let resultCalendarx = {}
     if (!result.error) {
         if (method === "UFN_CALENDARYBOOKING_INS") {
@@ -534,7 +536,7 @@ exports.Collection = async (req, res) => {
                 messagetemplateidemail
             } = resultCalendar[0]
 
-            if (notificationtype === "EMAIL" || notificationtype === "HSM" || "HSMEMAIL") {
+            if (notificationtype === "EMAIL" || notificationtype === "HSM") {
                 const sendmessage = {
                     corpid: parameters.corpid,
                     orgid: parameters.orgid,
@@ -625,6 +627,7 @@ exports.Collection = async (req, res) => {
     }
     else
         return res.status(result.rescode).json(({ ...result, key }));
+        
 }
 
 exports.EventsPerPerson = async (req, res) => {
@@ -1354,9 +1357,8 @@ exports.googleWebhook = async (request, response) => {
 }
 exports.cancelEventLaraigo = async (request, response) => {
     try {
-            console.log("se ejecuto")
         let parameters = request.body.parameters || request.body.data || {};
-        const {method, key } = request.body;
+        const {method, key, phone,name,email } = request.body;
 
         setSessionParameters(parameters, request.user, request._requestid);
 
@@ -1369,6 +1371,8 @@ exports.cancelEventLaraigo = async (request, response) => {
                 return response.status(result.rescode).json({ ...result, key });
 
         } else if(parameters.canceltype === 'HSM'){
+            console.log("parameters: ",parameters)
+
             //CHANGE STATUS EVENT
             const result = await executesimpletransaction(method, parameters, null || {});
             if (result instanceof Array){
@@ -1396,14 +1400,17 @@ exports.cancelEventLaraigo = async (request, response) => {
                 reminderhsmtemplatename,
                 remindertype,
                 notificationmessageemail,
-                messagetemplateidemail
+                messagetemplateidemail,
+                canceltemplateidhsm,
+                cancelnotificationhsm,
+                cancelcommunicationchannelid
             } = resultCalendar[0]
               const data = {
                 corpid: parameters.corpid,
                 orgid: parameters.orgid,
                 username: parameters.username,
-                communicationchannelid: communicationchannelid,
-                hsmtemplateid: messagetemplateid,
+                communicationchannelid: cancelcommunicationchannelid,
+                hsmtemplateid: canceltemplateidhsm,
                 type: notificationtype,
                 shippingreason: "BOOKING",
                 _requestid: request._requestid,
@@ -1412,13 +1419,13 @@ exports.cancelEventLaraigo = async (request, response) => {
                 platformtype: communicationchanneltype,
                 userid: 0,
                 listmembers: [{
-                    phone: "51929091384",
-                    firstname: "none",
-                    email: "kevramos95@gmail.com",
+                    phone: phone,
+                    firstname: name,
+                    email: email,
                     lastname: "",
                     parameters: parameters.otros
                 }],
-                body: notificationmessage,
+                body: cancelnotificationhsm,
                 messagetemplateidemail: messagetemplateidemail,
                 notificationmessageemail: notificationmessageemail
             }
@@ -1429,13 +1436,14 @@ exports.cancelEventLaraigo = async (request, response) => {
                 method: "post",
                 _requestid: request._requestid,
             });
+
        
             if (!responseservices.data || !(responseservices.data instanceof Object)) {
                 return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
             }
 
         }else if(parameters.canceltype === 'HSMEMAIL'){
-            //HSM
+            //SEND HSM
             let resultCalendarx = {}
             const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
             resultCalendarx = resultCalendar;
@@ -1457,14 +1465,17 @@ exports.cancelEventLaraigo = async (request, response) => {
                 reminderhsmtemplatename,
                 remindertype,
                 notificationmessageemail,
-                messagetemplateidemail
+                messagetemplateidemail,
+                canceltemplateidhsm,
+                cancelnotificationhsm,
+                cancelcommunicationchannelid
             } = resultCalendar[0]
               const data = {
                 corpid: parameters.corpid,
                 orgid: parameters.orgid,
                 username: parameters.username,
-                communicationchannelid: communicationchannelid,
-                hsmtemplateid: messagetemplateid,
+                communicationchannelid: cancelcommunicationchannelid,
+                hsmtemplateid: canceltemplateidhsm,
                 type: notificationtype,
                 shippingreason: "BOOKING",
                 _requestid: request._requestid,
@@ -1473,32 +1484,32 @@ exports.cancelEventLaraigo = async (request, response) => {
                 platformtype: communicationchanneltype,
                 userid: 0,
                 listmembers: [{
-                    phone: "51929091384",
-                    firstname: "none",
-                    email: "kevramos95@gmail.com",
+                    phone: phone,
+                    firstname: name,
+                    email: email,
                     lastname: "",
                     parameters: parameters.otros
                 }],
-                body: notificationmessage,
+                body: cancelnotificationhsm,
                 messagetemplateidemail: messagetemplateidemail,
                 notificationmessageemail: notificationmessageemail
             }
-
+      
             const responseservices = await axiosObservable({
                 url: `${process.env.SERVICES}handler/external/sendhsm`,
                 data,
                 method: "post",
                 _requestid: request._requestid,
             });
+
        
             if (!responseservices.data || !(responseservices.data instanceof Object)) {
                 return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
             }
 
-
             //EMAIL
             const result = await executesimpletransaction(method, parameters, null || {});
-            console.log("result",result)
+    
             if (result instanceof Array)
                 return response.json({ error: false, success: true, data: result, key });
             else
@@ -1513,7 +1524,6 @@ exports.cancelEventLaraigo = async (request, response) => {
             return response.status(result.rescode).json({ ...result, key });
         }
 
-
         //logger.child({ _requestid: request._requestid }).info(data)
         return response.status(200).json({
             code: '',
@@ -1526,6 +1536,100 @@ exports.cancelEventLaraigo = async (request, response) => {
     catch (exception) {
         logger.child({ _requestid: request._requestid }).error(exception)
         return response.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+    
+}
+exports.rescheduleEventLaraigo = async (req, res) => {
+    try {
+        console.log("askdjaskdas")
+        const { parameters = {}, method, key } = req.body;
+
+        if (!method_allowed.includes(method)) {
+            const resError = getErrorCode(errors.FORBIDDEN);
+            return res.status(resError.rescode).json(resError);
+        }
+        parameters._requestid = req._requestid;
+
+        const result = await executesimpletransaction(method, parameters);
+        const newcalendarbookingid = result?.[0]?.calendarbookingid;
+        let resultCalendarx = {}
+
+        if (!result.error) {
+            if (method === "UFN_CALENDARYBOOKING_INS") {
+                //si envia un calendarbookinguuid es porque quiere reprogramar, osea cancelar la antigua y crear una nueva
+                if (parameters.calendarbookingid) {
+                    await executesimpletransaction("QUERY_CANCEL_EVENT_BY_CALENDARBOOKINGUUID", {
+                        ...parameters,
+                        cancelcomment: "RESCHEDULED BOOKING"
+                    });
+                    await executesimpletransaction("QUERY_CANCEL_TASK_BY_CALENDARBOOKINGUUID", {
+                        ...parameters,
+                    });
+                }
+    
+                const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
+                resultCalendarx = resultCalendar;
+                const {
+                    messagetemplateid,
+                    messagetemplatename,
+                    communicationchannelid,
+                    communicationchanneltype,
+                    notificationtype,
+                    notificationmessage,
+                    reminderhsmcommunicationchannelid,
+                    reminderhsmcommunicationchanneltype,
+                    reminderperiod,
+                    reminderfrecuency,
+                    remindermailmessage,
+                    remindermailtemplateid,
+                    reminderhsmmessage,
+                    reminderhsmtemplateid,
+                    reminderhsmtemplatename,
+                    remindertype,
+                    notificationmessageemail,
+                    messagetemplateidemail
+                } = resultCalendar[0]
+    
+                if (notificationtype === "EMAIL" || notificationtype === "HSM") {
+                    const sendmessage = {
+                        corpid: parameters.corpid,
+                        orgid: parameters.orgid,
+                        username: parameters.username,
+                        communicationchannelid: communicationchannelid,
+                        hsmtemplateid: messagetemplateid,
+                        type: notificationtype,
+                        shippingreason: "BOOKING",
+                        _requestid: req._requestid,
+                        hsmtemplatename: messagetemplatename,
+                        communicationchanneltype: communicationchanneltype,
+                        platformtype: communicationchanneltype,
+                        userid: 0,
+                        listmembers: [{
+                            phone: parameters.phone,
+                            firstname: parameters.name,
+                            email: parameters.email,
+                            lastname: "",
+                            parameters: parameters.parameters
+                        }],
+                        body: notificationmessage,
+                        messagetemplateidemail: messagetemplateidemail,
+                        notificationmessageemail: notificationmessageemail
+                    }
+                    await send(sendmessage, req._requestid);
+                }
+            }
+        }
+        //logger.child({ _requestid: request._requestid }).info(data)
+        return res.json({ error: false, success: true, data: result, key, resultCalendarx });
+    }
+    catch (exception) {
+        logger.child({ _requestid: req._requestid }).error(exception)
+        return res.status(500).json({
             code: "error_unexpected_error",
             error: true,
             message: exception.message,
