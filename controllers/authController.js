@@ -299,6 +299,7 @@ exports.changeOrganization = async (req, res) => {
     if (!resultBD.error) {
         const newusertoken = {
             ...req.user,
+            companyuser: req.user.companyuser,
             orgid: parameters.neworgid,
             corpid: parameters.newcorpid,
             corpdesc: parameters.corpdesc,
@@ -330,7 +331,7 @@ exports.changeOrganization = async (req, res) => {
             const resConnection = await executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...newusertoken, propertyname: 'CONEXIONAUTOMATICAINBOX' })
             
             automaticConnection = validateResProperty(resConnection, 'bool');
-    
+            
             if (automaticConnection) {
                 await executesimpletransaction("UFN_USERSTATUS_UPDATE", {
                     ...newusertoken,
@@ -338,7 +339,7 @@ exports.changeOrganization = async (req, res) => {
                     status: 'ACTIVO',
                     description: null,
                     motive: null,
-                    username: req.user.username
+                    username: req.user.usr
                 })
             }
         }
