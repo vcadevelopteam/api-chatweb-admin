@@ -304,6 +304,7 @@ exports.changeOrganization = async (req, res) => {
             corpdesc: parameters.corpdesc,
             orgdesc: parameters.orgdesc,
             _requestid: req._requestid,
+            roledesc: req.user.roledesc === "SUPERADMIN" ? "SUPERADMIN" :  resultBD[0]?.roledesc,
             redirect: resultBD[0]?.redirect || '/tickets',
             plan: resultBD[0]?.plan || '',
             currencysymbol: resultBD[0]?.currencysymbol || 'S/',
@@ -322,14 +323,31 @@ exports.changeOrganization = async (req, res) => {
         }), {});
 
         newusertoken.menu = { ...menu, "system-label": undefined, "/": undefined };
-
+        
+        let automaticConnection = false;
+        
+        if (req.user.roledesc !== "SUPERADMIN") {
+            const resConnection = await executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...newusertoken, propertyname: 'CONEXIONAUTOMATICAINBOX' })
+            
+            automaticConnection = validateResProperty(resConnection, 'bool');
+            
+            if (automaticConnection) {
+                await executesimpletransaction("UFN_USERSTATUS_UPDATE", {
+                    ...newusertoken,
+                    type: 'INBOX',
+                    status: 'ACTIVO',
+                    description: null,
+                    motive: null,
+                    username: req.user.usr
+                })
+            }
+        }
+        
         jwt.sign({ user: newusertoken }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
             if (error) throw error;
             delete req.user.token;
-            // delete req.user.corpid;
-            // delete req.user.orgid;
-            // delete req.user.userid;
-            return res.json({ data: { token } });
+
+            return res.json({ data: { token, automaticConnection } });
         })
     } else {
         return res.status(400).json(getErrorCode());
