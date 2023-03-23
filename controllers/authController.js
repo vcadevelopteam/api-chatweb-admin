@@ -307,6 +307,7 @@ exports.changeOrganization = async (req, res) => {
             corpdesc: parameters.corpdesc,
             orgdesc: parameters.orgdesc,
             _requestid: req._requestid,
+            roledesc: req.user.roledesc === "SUPERADMIN" ? "SUPERADMIN" :  resultBD[0]?.roledesc,
             redirect: resultBD[0]?.redirect || '/tickets',
             plan: resultBD[0]?.plan || '',
             currencysymbol: resultBD[0]?.currencysymbol || 'S/',
@@ -325,20 +326,24 @@ exports.changeOrganization = async (req, res) => {
         }), {});
 
         newusertoken.menu = { ...menu, "system-label": undefined, "/": undefined };
-
-        const resConnection = await executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...newusertoken, propertyname: 'CONEXIONAUTOMATICAINBOX' })
-
-        const automaticConnection = validateResProperty(resConnection, 'bool');
-
-        if (automaticConnection) {
-            await executesimpletransaction("UFN_USERSTATUS_UPDATE", {
-                ...newusertoken,
-                type: 'INBOX',
-                status: 'ACTIVO',
-                description: null,
-                motive: null,
-                username: req.user.username
-            })
+        
+        let automaticConnection = false;
+        
+        if (req.user.roledesc !== "SUPERADMIN") {
+            const resConnection = await executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...newusertoken, propertyname: 'CONEXIONAUTOMATICAINBOX' })
+            
+            automaticConnection = validateResProperty(resConnection, 'bool');
+    
+            if (automaticConnection) {
+                await executesimpletransaction("UFN_USERSTATUS_UPDATE", {
+                    ...newusertoken,
+                    type: 'INBOX',
+                    status: 'ACTIVO',
+                    description: null,
+                    motive: null,
+                    username: req.user.username
+                })
+            }
         }
         
         jwt.sign({ user: newusertoken }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
