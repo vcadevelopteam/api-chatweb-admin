@@ -219,7 +219,7 @@ exports.getUser = async (req, res) => {
         ]);
 
         const resultBDProperties = resultBD[3];
-        const propertyEnv = resultBD[5] instanceof Array  && resultBD[5].length > 0 ? resultBD[5][0].propertyvalue : "";
+        const propertyEnv = resultBD[5] instanceof Array && resultBD[5].length > 0 ? resultBD[5][0].propertyvalue : "";
 
         if (!(resultBD[0] instanceof Array)) {
             return res.status(500).json(getErrorCode());
@@ -323,13 +323,26 @@ exports.changeOrganization = async (req, res) => {
 
         newusertoken.menu = { ...menu, "system-label": undefined, "/": undefined };
 
+        const resConnection = await executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...newusertoken, propertyname: 'CONEXIONAUTOMATICAINBOX' })
+
+        const automaticConnection = validateResProperty(resConnection, 'bool');
+
+        if (automaticConnection) {
+            await executesimpletransaction("UFN_USERSTATUS_UPDATE", {
+                ...newusertoken,
+                type: 'INBOX',
+                status: 'ACTIVO',
+                description: null,
+                motive: null,
+                username: req.user.username
+            })
+        }
+        
         jwt.sign({ user: newusertoken }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
             if (error) throw error;
             delete req.user.token;
-            // delete req.user.corpid;
-            // delete req.user.orgid;
-            // delete req.user.userid;
-            return res.json({ data: { token } });
+
+            return res.json({ data: { token, automaticConnection } });
         })
     } else {
         return res.status(400).json(getErrorCode());
