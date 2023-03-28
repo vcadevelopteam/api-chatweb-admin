@@ -475,7 +475,7 @@ exports.Collection = async (req, res) => {
                     username: parameters.username,
                     communicationchannelid: communicationchannelid,
                     hsmtemplateid: messagetemplateid,
-                    type: notificationtype,
+                    type: "HSM",
                     shippingreason: "BOOKING",
                     _requestid: req._requestid,
                     // hsmtemplatename: messagetemplatename,
@@ -493,7 +493,15 @@ exports.Collection = async (req, res) => {
                     messagetemplateidemail: messagetemplateidemail,
                     notificationmessageemail: notificationmessageemail
                 }
-                await send(sendmessage, req._requestid);
+
+                if ("HSMEMAIL" === notificationtype) {
+                    await send(sendmessage, req._requestid);
+                    await send({ ...sendmessage, type: "MAIL", body: notificationmessageemail, hsmtemplateid: messagetemplateidemail }, req._requestuestid);
+                } else if ("EMAIL" === notificationtype) {
+                    await send({ ...sendmessage, type: "MAIL", body: notificationmessageemail, hsmtemplateid: messagetemplateidemail }, req._requestuestid);
+                } else {
+                    await send(sendmessage, req._requestid);
+                }
             }
 
             //Inicio - Envio de recordatorio - JR
