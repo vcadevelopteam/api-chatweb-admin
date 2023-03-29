@@ -18,7 +18,7 @@ router.get('/version',
     checkController.version
 )
 
-router.get('/recaptcha',
+router.post('/recaptcha',
     checkController.recaptcha
 )
 
