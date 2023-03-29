@@ -18,4 +18,8 @@ router.get('/version',
     checkController.version
 )
 
+router.get('/recaptcha',
+    checkController.recaptcha
+)
+
 module.exports = router;
