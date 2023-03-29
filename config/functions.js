@@ -2753,6 +2753,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_REPORT_REQUESTSD_EXPORT: {
+        query: "SELECT * FROM ufn_report_requestsd_export($corpid, $orgid, $where, $order, $startdate, $enddate, $company, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_COMPLIANCESLA_EXPORT: {
+        query: "SELECT * FROM ufn_report_compliancesla_export($corpid, $orgid, $where, $order, $startdate, $enddate, $company, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_REPORT_COMPLIANCESLA_SEL: {
         query: "SELECT * FROM ufn_report_compliancesla_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $company, $offset)",
         module: "",
