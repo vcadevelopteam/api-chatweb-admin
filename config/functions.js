@@ -2384,7 +2384,7 @@ module.exports = {
                         cb.personname, cb.personcontact, cb.calendarbookinguuid,cb.corpid,cb.orgid, ce.code
             FROM calendarbooking cb
             JOIN calendarevent ce ON ce.corpid = cb.corpid AND ce.orgid = cb.orgid AND ce.calendareventid = cb.calendareventid
-            WHERE cb.personcontact IN ($email,$phone)
+            WHERE (cb.personcontact=$phone or cb.personmail=$email)
                 AND ce.code=$code
                 AND cb.datestart > NOW() + cb.timezone * INTERVAL '1HOUR'
                 AND cb.status='ACTIVO'`,
