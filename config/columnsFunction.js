@@ -1338,5 +1338,94 @@ module.exports = {
         transferduration: {
             column: "date_trunc('seconds', co.transferduration)::text"
         },
-    }
+    },
+    reportrequestsd:{
+        sd_request: {
+            column: "ld.sd_request"
+        },
+        type: {
+            column: "ld.type"
+        },
+        personcommunicationchannel: {
+            column: "ld.personcommunicationchannel"
+        },
+        display_name: {
+            column: "COALESCE(NULLIF(pcc.displayname, ''), TRIM(CONCAT(pe.firstname, ' ', pe.lastname))"
+        },
+        company: {
+            column: "ld.company"
+        },
+        description: {
+            column: "ld.description"
+        },
+        priority: {
+            column: "ld.priority"
+        },
+        phase: {
+            column: "CASE WHEN col.columnid = 0 THEN 'Soporte N1' ELSE col.description END"
+        },
+        report_date: {
+            column: "ld.createdate",
+            type: "date"
+        },
+        resolution_date: {
+            column: "ld.resolution_date",
+            type: "date"
+        },
+    },
+    reportcompliancesla:{
+        sd_request: {
+            column: "ld.sd_request"
+        },
+        type: {
+            column: "ld.type"
+        },
+        personcommunicationchannel: {
+            column: "ld.personcommunicationchannel"
+        },
+        display_name: {
+            column: "COALESCE(NULLIF(pcc.displayname, ''), TRIM(CONCAT(pe.firstname, ' ', pe.lastname))"
+        },
+        company: {
+            column: "ld.company"
+        },
+        description: {
+            column: "ld.description"
+        },
+        urgency: {
+            column: "ld.urgency"
+        },
+        impact: {
+            column: "ld.impact"
+        },
+        priority: {
+            column: "ld.priority"
+        },
+        report_date: {
+            column: "ld.createdate",
+            type: "date"
+        },        
+        first_contact_date: {
+            column: "ld.firstconversationdate",
+            type: "date"
+        },
+        compliance_first_contact:{
+            column: "case when c.firstconversationdate <= ld.first_contact_deadline then 'CUMPLE' else 'NO CUMPLE' end"
+        },
+        first_contact_deadline: {
+            column: "ld.first_contact_deadline",
+            type: "date"
+        },
+        resolution_date: {
+            column: "ld.resolution_date",
+            type: "date"
+        },
+        resolution_deadline: {
+            column: "ld.resolution_deadline",
+            type: "date"
+        },
+        compliance_resolution:{
+            column: "case when ld.resolution_date <= ld.resolution_deadline then 'CUMPLE' else 'NO CUMPLE' end"
+        },
+    },
 }
