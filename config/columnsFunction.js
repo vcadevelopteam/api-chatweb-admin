@@ -1384,8 +1384,8 @@ module.exports = {
         type: {
             column: "ld.type"
         },
-        personcommunicationchannel: {
-            column: "ld.personcommunicationchannel"
+        channel: {
+            column: "cc.description"
         },
         display_name: {
             column: "COALESCE(NULLIF(pcc.displayname, ''), TRIM(CONCAT(pe.firstname, ' ', pe.lastname))"
@@ -1417,9 +1417,6 @@ module.exports = {
         },
         type: {
             column: "ld.type"
-        },
-        personcommunicationchannel: {
-            column: "ld.personcommunicationchannel"
         },
         display_name: {
             column: "COALESCE(NULLIF(pcc.displayname, ''), TRIM(CONCAT(pe.firstname, ' ', pe.lastname))"
