@@ -1447,6 +1447,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_USER_SD_SEL: {
+        query: "select * from ufn_user_sd_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_PERSONWITHOUTDATE_TOTALRECORDS: {
         query: "select * from ufn_personwithoutdate_totalrecords($corpid, $orgid, $where)",
         module: "",
