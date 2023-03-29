@@ -33,14 +33,18 @@ exports.version = async (_, res) => {
 }
 
 exports.recaptcha = async (req, res) => {
-    console.log(req.body)
-    const data = { secret: req.body.secret, response: req.body.token };
-    const response = axiosObservable({
-        url: `https://www.google.com/recaptcha/api/siteverify`,
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(data),
-        method: "POST",
-        _requestid: req._requestid,
-    })
-    return res.json(response);
+    const data = { secret: req.body.secret, response: req.body.response };
+    console.log("xx", data)
+    try {
+        const response = await axiosObservable({
+            url: `https://www.google.com/recaptcha/api/siteverify`,
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            data: new URLSearchParams(Object.entries(req.body)).toString(),
+            method: "POST",
+            _requestid: req._requestid,
+        })
+        return res.json(response.data);
+    } catch (error) {
+        return res.json({ message: error.message, detail: error.stack, error });
+    }
 }
