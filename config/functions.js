@@ -2738,6 +2738,26 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_REPORT_REQUESTSD_SEL: {
+        query: "SELECT * FROM ufn_report_requestsd_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $company, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_REQUESTSD_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_report_requestsd_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $company, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_COMPLIANCESLA_SEL: {
+        query: "SELECT * FROM ufn_report_compliancesla_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $company, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_COMPLIANCESLA_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_report_compliancesla_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $company, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_USERBYSUPERVISOR_LST: {
         query: "SELECT * FROM ufn_userbysupervisor_lst($corpid, $orgid, $userid)",
         module: "",
