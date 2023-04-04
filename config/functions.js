@@ -575,7 +575,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_SEL: {
-        query: "SELECT * FROM ufn_messagetemplate_sel($corpid, $orgid, $id, $username, $all)",
+        query: "SELECT * FROM ufn_messagetemplate_sel($corpid, $orgid, $communicationchannelid, $take, $skip, $where, $order)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_MESSAGETEMPLATE_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_messagetemplate_totalrecords($corpid, $orgid, $communicationchannelid, $where)",
         module: "",
         protected: "SELECT"
     },
