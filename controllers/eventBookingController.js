@@ -21,8 +21,8 @@ const method_allowed = [
 const laraigoEndpoint = process.env.LARAIGO;
 
 const send = async (data, requestid) => {
-    data._requestid = requestid;
 
+    data._requestid = requestid;
     try {
         if (data.listmembers.every(x => !!x.personid)) {
             await executesimpletransaction("QUERY_UPDATE_PERSON_BY_HSM", undefined, false, {
@@ -33,8 +33,9 @@ const send = async (data, requestid) => {
             })
         }
 
-        if (data.type === "MAIL" || data.type === "EMAIL") {
+        if (["MAIL", "EMAIL"].includes(data.type)) {
             let jsonconfigmail = "";
+
             const resBD = await Promise.all([
                 executesimpletransaction("QUERY_GET_CONFIG_MAIL", data),
                 executesimpletransaction("QUERY_GET_MESSAGETEMPLATE", data),
@@ -101,7 +102,7 @@ const send = async (data, requestid) => {
                             Origin: "EXTERNAL",
                             MessageTemplateId: data.hsmtemplateid,
                             ShippingReason: data.shippingreason,
-                            HsmId: data.hsmtemplatename,
+                            // HsmId: data.hsmtemplatename,
                             Body: data.listmembers[0].parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (data.body || mailtemplate.body))
                         },
                         attachments: mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
@@ -131,13 +132,12 @@ const send = async (data, requestid) => {
                         Origin: "EXTERNAL",
                         MessageTemplateId: data.hsmtemplateid,
                         ShippingReason: data.shippingreason,
-                        HsmId: data.hsmtemplatename,
+                        // HsmId: data.hsmtemplatename,
                         Body: data.listmembers[0].parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (data.body || mailtemplate.body))
                     }),
                 })
             }
-        }
-        else if (data.type === "SMS" || data.type === 'HSM') {
+        } else if (["SMS", "HSM"].includes(data.type)) {
             if (data.type === "SMS") {
                 const smschannel = await executesimpletransaction("QUERY_GET_SMS_DEFAULT_BY_ORG", data);
                 if (smschannel[0] && smschannel) {
@@ -162,7 +162,7 @@ const send = async (data, requestid) => {
         }
     }
     catch (exception) {
-        getErrorCode(null, exception, `Request to ${req.originalUrl}`, data._requestid);
+        getErrorCode(null, exception, `Request to ${requestid}`, data._requestid);
     }
 }
 
@@ -267,7 +267,7 @@ const setReminder = async (data, requestid) => {
                             Origin: "EXTERNAL",
                             MessageTemplateId: data.remindermailtemplateid,
                             ShippingReason: data.shippingreason,
-                            HsmId: data.hsmtemplatename,
+                            // HsmId: data.hsmtemplatename,
                             Body: data.listmembers[0].parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (data.bodyMailMessage || mailtemplate.body))
                         },
                         attachments: mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
@@ -304,7 +304,7 @@ const setReminder = async (data, requestid) => {
                         Origin: "EXTERNAL",
                         MessageTemplateId: data.remindermailtemplateid,
                         ShippingReason: data.shippingreason,
-                        HsmId: data.hsmtemplatename,
+                        // HsmId: data.hsmtemplatename,
                         Body: data.listmembers[0].parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (data.body || mailtemplate.body))
                     }),
                 })
@@ -314,7 +314,7 @@ const setReminder = async (data, requestid) => {
 
             // Balance validation is done in services
 
-            const variables_keys = data.variables.reduce((ac, x) => ({...ac, [x.name]: x.text }), {})
+            const variables_keys = data.variables.reduce((ac, x) => ({ ...ac, [x.name]: x.text }), {})
 
             const taskResult = await executesimpletransaction("QUERY_INSERT_REMINDER_TASK_SCHEDULER", {
                 corpid: data.corpid,
@@ -323,7 +323,7 @@ const setReminder = async (data, requestid) => {
                 taskbody: JSON.stringify({
                     corpid: data.corpid,
                     orgid: data.orgid,
-                    hsmtemplatename: data.reminderhsmtemplatename,
+                    // hsmtemplatename: data.reminderhsmtemplatename,
                     hsmtemplateid: data.reminderhsmtemplateid,
                     communicationchannelid: data.reminderhsmcommunicationchannelid,
                     communicationchanneltype: data.reminderhsmcommunicationchanneltype,
@@ -380,25 +380,12 @@ exports.Collection = async (req, res) => {
 
     const result = await executesimpletransaction(method, parameters);
     const newcalendarbookingid = result?.[0]?.calendarbookingid;
-    let resultCalendarx = {}
+
     if (!result.error) {
         if (method === "UFN_CALENDARYBOOKING_INS") {
-            //si envia un calendarbookinguuid es porque quiere reprogramar, osea cancelar la antigua y crear una nueva
-            if (parameters.calendarbookingid) {
-                await executesimpletransaction("QUERY_CANCEL_EVENT_BY_CALENDARBOOKINGUUID", {
-                    ...parameters,
-                    cancelcomment: "RESCHEDULED BOOKING"
-                });
-                await executesimpletransaction("QUERY_CANCEL_TASK_BY_CALENDARBOOKINGUUID", {
-                    ...parameters,
-                });
-            }
-
             const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
-            resultCalendarx = resultCalendar;
             const {
                 messagetemplateid,
-                messagetemplatename,
                 communicationchannelid,
                 communicationchanneltype,
                 notificationtype,
@@ -411,21 +398,87 @@ exports.Collection = async (req, res) => {
                 remindermailtemplateid,
                 reminderhsmmessage,
                 reminderhsmtemplateid,
-                reminderhsmtemplatename,
-                remindertype
+                remindertype,
+                notificationmessageemail,
+                messagetemplateidemail,
+                rescheduletemplateidhsm,
+                reschedulenotificationhsm,
+                reschedulecommunicationchannelid,
+                rescheduletemplateidemail,
+                reschedulenotificationemail,
+                rescheduletype
             } = resultCalendar[0]
 
-            if (notificationtype === "EMAIL" || notificationtype === "HSM") {
+            //si envia un calendarbookinguuid es porque quiere reprogramar, osea cancelar la antigua y crear una nueva
+            if (parameters.calendarbookingid) {
+            
+                await executesimpletransaction("QUERY_CANCEL_EVENT_BY_CALENDARBOOKINGUUID", {
+                    ...parameters,
+                    cancelcomment: "RESCHEDULED BOOKING"
+                });
+                await executesimpletransaction("QUERY_CANCEL_TASK_BY_CALENDARBOOKINGUUID", {
+                    ...parameters,
+                });
+                try {
+           
+                    //Reschedulde start
+                    if (["HSM", "HSMEMAIL", "EMAIL"].includes(rescheduletype)) {
+                        const sendmessage = {
+                            type: "HSM",
+                            corpid: parameters.corpid,
+                            orgid: parameters.orgid,
+                            username: parameters.username,
+                            communicationchannelid: reschedulecommunicationchannelid,
+                            hsmtemplateid: rescheduletemplateidhsm,
+                            shippingreason: "BOOKING",
+                            _requestid: req._requestid,
+                            communicationchanneltype: communicationchanneltype,
+                            platformtype: communicationchanneltype,
+                            userid: 0,
+                            listmembers: [{
+                                phone: parameters.phone,
+                                firstname: parameters.name,
+                                email: parameters.email,
+                                lastname: "",
+                                parameters: parameters.parameters
+                            }],
+                            body: reschedulenotificationhsm
+                        }
+                
+                        if ("HSMEMAIL" === rescheduletype) {
+                            await send(sendmessage, req._requestid);
+                            await send({ ...sendmessage, type: "MAIL", body: reschedulenotificationemail, hsmtemplateid: rescheduletemplateidemail }, req._requestuestid);
+                        } else if ("EMAIL" === rescheduletype) {
+                            await send({ ...sendmessage, type: "MAIL", body: reschedulenotificationemail, hsmtemplateid: rescheduletemplateidemail }, req._requestuestid);
+                        } else {
+                            await send(sendmessage, req._requestid);
+                        }
+                    }
+                    //Reschedule end
+                    
+                } catch (exception) {
+                    logger.child({ _requestid: req._requestid }).error(exception)
+                    return res.status(500).json({
+                        code: "error_unexpected_error",
+                        error: true,
+                        message: exception.message,
+                        success: false,
+                    });
+                }
+               
+            }
+
+            if (["EMAIL", "HSM", "HSMEMAIL"].includes(notificationtype) && !parameters.calendarbookingid) {
                 const sendmessage = {
                     corpid: parameters.corpid,
                     orgid: parameters.orgid,
                     username: parameters.username,
                     communicationchannelid: communicationchannelid,
                     hsmtemplateid: messagetemplateid,
-                    type: notificationtype,
+                    type: "HSM",
                     shippingreason: "BOOKING",
                     _requestid: req._requestid,
-                    hsmtemplatename: messagetemplatename,
+                    // hsmtemplatename: messagetemplatename,
                     communicationchanneltype: communicationchanneltype,
                     platformtype: communicationchanneltype,
                     userid: 0,
@@ -436,10 +489,19 @@ exports.Collection = async (req, res) => {
                         lastname: "",
                         parameters: parameters.parameters
                     }],
-                    body: notificationmessage
+                    body: notificationmessage,
+                    messagetemplateidemail: messagetemplateidemail,
+                    notificationmessageemail: notificationmessageemail
                 }
 
-                await send(sendmessage, req._requestid);
+                if ("HSMEMAIL" === notificationtype) {
+                    await send(sendmessage, req._requestid);
+                    await send({ ...sendmessage, type: "MAIL", body: notificationmessageemail, hsmtemplateid: messagetemplateidemail }, req._requestuestid);
+                } else if ("EMAIL" === notificationtype) {
+                    await send({ ...sendmessage, type: "MAIL", body: notificationmessageemail, hsmtemplateid: messagetemplateidemail }, req._requestuestid);
+                } else {
+                    await send(sendmessage, req._requestid);
+                }
             }
 
             //Inicio - Envio de recordatorio - JR
@@ -452,7 +514,7 @@ exports.Collection = async (req, res) => {
                 type: notificationtype,
                 shippingreason: "BOOKING",
                 _requestid: req._requestid,
-                hsmtemplatename: messagetemplatename,
+                // hsmtemplatename: messagetemplatename,
                 communicationchanneltype: communicationchanneltype,
                 platformtype: communicationchanneltype,
                 userid: 0,
@@ -471,7 +533,7 @@ exports.Collection = async (req, res) => {
                 reminderfrecuency: reminderfrecuency,
                 remindermailtemplateid: remindermailtemplateid,
                 reminderhsmtemplateid: reminderhsmtemplateid,
-                reminderhsmtemplatename: reminderhsmtemplatename,
+                // reminderhsmtemplatename: reminderhsmtemplatename,
                 remindertype: remindertype,
                 monthdate: parameters.monthdate,
                 hourstart: parameters.hourstart,
@@ -501,10 +563,11 @@ exports.Collection = async (req, res) => {
                 });
             }
         }
-        return res.json({ error: false, success: true, data: result, key, resultCalendarx });
+        return res.json({ error: false, success: true, data: result, key });
     }
     else
         return res.status(result.rescode).json(({ ...result, key }));
+
 }
 
 exports.EventsPerPerson = async (req, res) => {
@@ -513,57 +576,27 @@ exports.EventsPerPerson = async (req, res) => {
     const result = await executesimpletransaction('QUERY_GET_EVENTS_PER_PERSON', parameters);
 
     if (!result.error) {
-        result.forEach(event => {
-            event.reprogramacion = `${laraigoEndpoint}events/${parameters.orgid}/${parameters.calendareventid}?booking=${event.calendarbookinguuid}`
-        });
-        const events = result.map(event => {
-            return {
-                code: event.code,
-                calendareventid: event.calendareventid,
-                calendarbookingid: event.calendarbookingid,
-                calendarbookinguuid: event.calendarbookinguuid,
-                description: event.description,
-                status: event.status,
-                datestart: event.datestart,
-                monthdate: event.monthdate,
-                monthday: event.monthday,
-                weekday: event.weekday,
-                hourstart: event.hourstart,
-                hourend: event.hourend,
-                timeduration: event.timeduration,
-                personname: event.personname,
-                personcontact: event.personcontact,
-                reprogramacion: `${laraigoEndpoint}events/${event.orgid}/${event.code}?booking=${event.calendarbookinguuid}`,
-                cancelar: `${laraigoEndpoint}cancelevent/${event.corpid}/${event.orgid}/${event.calendareventid}/${event.calendarbookinguuid}`,
-            }
-        });
+        const events = result.map(event => ({
+            code: event.code,
+            calendareventid: event.calendareventid,
+            calendarbookingid: event.calendarbookingid,
+            calendarbookinguuid: event.calendarbookinguuid,
+            description: event.description,
+            status: event.status,
+            datestart: event.datestart,
+            monthdate: event.monthdate,
+            monthday: event.monthday,
+            weekday: event.weekday,
+            hourstart: event.hourstart,
+            hourend: event.hourend,
+            timeduration: event.timeduration,
+            personname: event.personname,
+            personcontact: event.personcontact,
+            reprogramacion: `${laraigoEndpoint}events/${event.orgid}/${event.code}?booking=${event.calendarbookinguuid}`,
+            cancelar: `${laraigoEndpoint}cancelevent/${event.corpid}/${event.orgid}/${event.calendareventid}/${event.calendarbookinguuid}`,
+        }));
 
         return res.json({ error: false, success: true, count: events.length, data: events });
-    }
-    else
-        return res.status(result.rescode).json(({ ...result, key }));
-}
-
-exports.CancelEvent = async (req, res) => {
-    const { orgid, corpid, calendarbookinguuid } = req.params;
-    const { parameters = {}, method, key } = req.body;
-
-    parameters.corpid = Number(corpid);
-    parameters.orgid = Number(orgid);
-    parameters.calendarbookinguuid = Number(calendarbookinguuid);
-
-
-    if (!method_allowed.includes(method)) {
-        const resError = getErrorCode(errors.FORBIDDEN);
-        return res.status(resError.rescode).json(resError);
-    }
-
-    parameters._requestid = req._requestid;
-
-    const result = await executesimpletransaction(method, parameters);
-
-    if (!result.error) {
-        return res.json({ error: false, success: true, data: result, key });
     }
     else
         return res.status(result.rescode).json(({ ...result, key }));
@@ -1231,4 +1264,79 @@ exports.googleWebhook = async (request, response) => {
             success: false,
         });
     }
+}
+
+exports.cancelEventLaraigo = async (request, response) => {
+    try {
+        let parameters = request.body.parameters || request.body.data || {};
+        const { method, key, phone, name, email } = request.body;
+
+        setSessionParameters(parameters, request.user, request._requestid);
+
+        const result = await executesimpletransaction(method, parameters, null || {});
+        if (!(result instanceof Array))
+            return response.status(result.rescode).json({ ...result, key });
+
+        if (["HSM", "HSMEMAIL", "EMAIL"].includes(parameters.canceltype)) {
+
+            const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
+
+            const {
+                communicationchanneltype,
+                canceltemplateidhsm,
+                cancelnotificationhsm,
+                cancelcommunicationchannelid,
+                canceltemplateidemail,
+                cancelnotificationemail,
+            } = resultCalendar[0]
+
+            const sendmessage = {
+                type: "HSM",
+                corpid: parameters.corpid,
+                orgid: parameters.orgid,
+                username: parameters.username,
+                communicationchannelid: cancelcommunicationchannelid,
+                hsmtemplateid: canceltemplateidhsm,
+                shippingreason: "BOOKING",
+                _requestid: request._requestid,
+                communicationchanneltype: communicationchanneltype,
+                platformtype: communicationchanneltype,
+                userid: 0,
+                listmembers: [{
+                    phone: phone,
+                    firstname: name,
+                    email: email,
+                    lastname: "",
+                    parameters: parameters.otros
+                }],
+                body: cancelnotificationhsm,
+            }
+            if ("HSMEMAIL" === parameters.canceltype) {
+                await send(sendmessage, req._requestid);
+                await send({ ...sendmessage, type: "MAIL", body: cancelnotificationemail, hsmtemplateid: canceltemplateidemail }, request._requestuestid);
+            } else if ("EMAIL" === parameters.canceltype) {
+                await send({ ...sendmessage, type: "MAIL", body: cancelnotificationemail, hsmtemplateid: canceltemplateidemail }, request._requestuestid);
+            } else {
+                await send(sendmessage, request._requestid);
+            }
+        }
+
+        return response.status(200).json({
+            code: '',
+            error: false,
+            message: '',
+            success: true,
+        });
+
+    }
+    catch (exception) {
+        logger.child({ _requestid: request._requestid }).error(exception)
+        return response.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+
 }

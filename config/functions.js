@@ -1632,6 +1632,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    QUERY_GET_MESSAGETEMPLATE_EMAIL_CAL: {
+        query: "select messagetemplateid, header, body, priority, attachment from messagetemplate where corpid = $corpid and orgid = $orgid and messagetemplateid = $messagetemplateidemail",
+        module: "",
+        protected: "INSERT"
+    },
     QUERY_GET_MESSAGETEMPLATE_BYNAMESPACE: {
         query: "select messagetemplateid, header, body, priority, attachment from messagetemplate where corpid = $corpid and orgid = $orgid and namespace = $namespace",
         module: "",
@@ -2246,7 +2251,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CALENDAREVENT_INS: {
-        query: "SELECT * FROM ufn_calendarevent_ins($corpid, $orgid, $id, $description, $descriptionobject, $type, $status, $code, $name, $locationtype, $location, $eventlink, $color, $notificationtype, $communicationchannelid, $messagetemplateid, $notificationmessage, $daterange, $daysduration, $daystype, $startdate, $enddate, $timeduration, $timeunit, $availability, $timebeforeeventduration, $timebeforeeventunit, $timeaftereventduration, $timeaftereventunit, $increments, $reminderenable, $remindertype, $reminderhsmtemplateid, $reminderhsmcommunicationchannelid , $reminderhsmmessage, $remindermailtemplateid, $remindermailmessage, $reminderperiod, $reminderfrecuency, $username, $operation, $maximumcapacity)",
+        query: "SELECT * FROM ufn_calendarevent_ins($corpid, $orgid, $id, $description, $descriptionobject, $type, $status, $code, $name, $locationtype, $location, $eventlink, $color, $notificationtype, $communicationchannelid, $messagetemplateid, $notificationmessage, $daterange, $daysduration, $daystype, $startdate, $enddate, $timeduration, $timeunit, $availability, $timebeforeeventduration, $timebeforeeventunit, $timeaftereventduration, $timeaftereventunit, $increments, $reminderenable, $remindertype, $reminderhsmtemplateid, $reminderhsmcommunicationchannelid , $reminderhsmmessage, $remindermailtemplateid, $remindermailmessage, $reminderperiod, $reminderfrecuency, $username, $operation, $maximumcapacity, $notificationmessageemail, $messagetemplateidemail, $canceltype, $canceltemplateidemail, $cancelnotificationemail, $canceltemplateidhsm, $cancelnotificationhsm,$cancelcommunicationchannelid,$rescheduletype, $rescheduletemplateidemail, $reschedulenotificationemail, $rescheduletemplateidhsm, $reschedulenotificationhsm,$reschedulecommunicationchannelid)",
         module: "",
         protected: "INSERT"
     },
@@ -2305,6 +2310,8 @@ module.exports = {
     },
     QUERY_EVENT_BY_CALENDAR_EVENT_ID: {
         query: `SELECT
+        ce.canceltemplateidemail,
+        ce.cancelnotificationemail,
         mt1.name messagetemplatename,
         cc1.type communicationchanneltype,
         ce.messagetemplateid,
@@ -2320,7 +2327,18 @@ module.exports = {
         ce.reminderhsmmessage,
         ce.reminderhsmtemplateid,
         mt2.name reminderhsmtemplatename,
-        ce.remindertype
+        ce.remindertype,
+        ce.notificationmessageemail, 
+        ce.messagetemplateidemail,
+        ce.canceltemplateidhsm,
+        ce.cancelnotificationhsm,
+        ce.cancelcommunicationchannelid,
+        ce.rescheduletemplateidhsm,
+        ce.reschedulenotificationhsm,
+        ce.reschedulecommunicationchannelid,
+        ce.rescheduletemplateidemail,
+        ce.reschedulenotificationemail,
+        ce.rescheduletype
         from calendarevent ce 
         left join communicationchannel cc1 on cc1.corpid = ce.corpid and cc1.orgid = ce.orgid and cc1.communicationchannelid = ce.communicationchannelid
         left join communicationchannel cc2 on cc2.corpid = ce.corpid and cc2.orgid = ce.orgid and cc2.communicationchannelid = ce.reminderhsmcommunicationchannelid
@@ -2429,7 +2447,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CALENDARBOOKING_CANCEL: {
-        query: "SELECT * FROM ufn_calendarbooking_cancel($corpid, $orgid, $calendareventid, $id, $cancelcomment, $username)",
+        query: "SELECT * FROM ufn_calendarbooking_cancel($corpid, $orgid, $calendareventid, $id, $cancelcomment, $username, $canceltype)",
         module: "",
         protected: "SELECT"
     },
