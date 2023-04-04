@@ -476,6 +476,12 @@ exports.getCallRecord = async ({ account_id, account_name, call_session_history_
         data['with_calls'] = 'true';
         data['with_records'] = 'true';
         data['with_other_resources'] = 'true';
+
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        data['from_date'] = '2000-01-01 00:00:00';
+        data['to_date'] = `${tomorrow.getFullYear()}-${tomorrow.getMonth() + 1}-${tomorrow.getDate()} 00:00:00`;
         const result = await voximplantRequest('GetCallHistory', data, requestid);
         if (result.data.error) {
             return { error: result.data.error };
