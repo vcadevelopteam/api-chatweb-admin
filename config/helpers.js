@@ -280,6 +280,8 @@ exports.setSessionParameters = (parameters, user, id) => {
         parameters.userid = user.userid;
     if (parameters.agentid === null || parameters.agentid === undefined)
         parameters.agentid = user.userid
+    if (parameters.companyuser === null || parameters.companyuser === undefined)
+        parameters.companyuser = (user?.companyuser || "")
 
     return parameters;
 }

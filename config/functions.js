@@ -1,7 +1,7 @@
 module.exports = {
     QUERY_AUTHENTICATED: {
         query: `
-        SELECT us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision
+        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision
         FROM usr us 
         INNER JOIN orguser ous ON ous.userid = us.userid 
         INNER JOIN org org ON org.orgid = ous.orgid 
@@ -23,7 +23,7 @@ module.exports = {
     },
     QUERY_AUTHENTICATED_BY_FACEBOOKID: {
         query: `
-        SELECT us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision
+        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision
         from usr us 
         INNER JOIN orguser ous on ous.userid = us.userid 
         INNER JOIN org org on org.orgid = ous.orgid 
@@ -41,7 +41,7 @@ module.exports = {
     },
     QUERY_AUTHENTICATED_BY_GOOGLEID: {
         query: `
-        SELECT us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision
+        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision
         from usr us 
         INNER JOIN orguser ous on ous.userid = us.userid 
         INNER JOIN org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency 
@@ -251,7 +251,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_SLA_INS: {
-        query: "SELECT * FROM ufn_sla_ins( $corpid, $orgid, $id, $description, $type, $company, $communicationchannelid, $usergroup, $status, $totaltmo, $totaltmomin, $totaltmopercentmax, $totaltmopercentmin, $usertmo, $usertmomin, $usertmopercentmax, $usertmopercentmin, $tme, $tmemin, $tmepercentmax, $tmepercentmin, $usertme, $usertmemin, $usertmepercentmax, $usertmepercentmin, $productivitybyhour, $username, $operation)",
+        query: "SELECT * FROM ufn_sla_ins( $corpid, $orgid, $id, $description, $type, $company, $communicationchannelid, $usergroup, $status, $totaltmo, $totaltmomin, $totaltmopercentmax, $totaltmopercentmin, $usertmo, $usertmomin, $usertmopercentmax, $usertmopercentmin, $tme, $tmemin, $tmepercentmax, $tmepercentmin, $usertme, $usertmemin, $usertmepercentmax, $usertmepercentmin, $productivitybyhour, $username, $operation, $criticality, $service_times )",
         module: "/extras/sla",
         protected: "INSERT"
     },
@@ -1352,6 +1352,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_LEAD_SD_INS: {
+        query: "select * from ufn_lead_sd_ins($corpid, $orgid, $id, $description, $ticketnum, $type, $personid, $company, $email, $phone, $urgency, $impact, $priority, $tags, $leadgroups, $userid, $columnid, $index, $status, $column_uuid, $operation, $username)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_LEAD_PERSON_TOTALRECORDS: {
         query: "SELECT * FROM ufn_lead_person_totalrecords($corpid, $orgid, $where, $username, $offset)",
         module: "",
@@ -1379,6 +1384,16 @@ module.exports = {
     },
     UFN_LEAD_SEL: {
         query: "select * from ufn_lead_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $campaignid, $tags, $userid, $supervisorid, $persontype, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_COLUMN_SD_SEL: {
+        query: "select * from ufn_column_sd_sel($corpid, $orgid, $id, $lost, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEAD_SD_SEL: {
+        query: "select * from ufn_lead_sd_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $tags, $supervisorid, $all, $company, $groups, $companyuser)",
         module: "",
         protected: "SELECT"
     },
@@ -1429,6 +1444,11 @@ module.exports = {
     },
     UFN_ADVISERS_SEL: {
         query: "select * from ufn_advisers_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_USER_SD_SEL: {
+        query: "select * from ufn_user_sd_sel($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
@@ -1504,6 +1524,16 @@ module.exports = {
     },
     UFN_LEADGRID_TOTALRECORDS: {
         query: "SELECT * FROM ufn_leadgrid_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $asesorid, $channel, $contact, $persontype, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEADGRID_SD_SEL: {
+        query: "SELECT * FROM ufn_leadgrid_sd_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $fullname, $leadproduct, $tags, $supervisorid, $company, $groups, $offset, $companyuser)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEADGRID_SD_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_leadgrid_sd_totalrecords($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $fullname, $leadproduct, $tags, $supervisorid, $company, $groups, $offset, $companyuser)",
         module: "",
         protected: "SELECT"
     },
@@ -2710,6 +2740,36 @@ module.exports = {
     },
     UFN_REPORT_ASESOR_VS_TICKET_TOTALRECORDS: {
         query: "SELECT * FROM ufn_report_asesor_vs_ticket_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $userid, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_REQUESTSD_SEL: {
+        query: "SELECT * FROM ufn_report_requestsd_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $company, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_REQUESTSD_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_report_requestsd_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $company, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_REQUESTSD_EXPORT: {
+        query: "SELECT * FROM ufn_report_requestsd_export($corpid, $orgid, $where, $order, $startdate, $enddate, $company, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_COMPLIANCESLA_EXPORT: {
+        query: "SELECT * FROM ufn_report_compliancesla_export($corpid, $orgid, $where, $order, $startdate, $enddate, $company, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_COMPLIANCESLA_SEL: {
+        query: "SELECT * FROM ufn_report_compliancesla_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $company, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_COMPLIANCESLA_TOTALRECORDS: {
+        query: "SELECT * FROM ufn_report_compliancesla_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $company, $offset)",
         module: "",
         protected: "SELECT"
     },
