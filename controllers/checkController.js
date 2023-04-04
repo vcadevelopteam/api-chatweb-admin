@@ -1,5 +1,5 @@
 const sequelize = require('../config/database');
-const { getErrorSeq } = require('../config/helpers');
+const { getErrorSeq, axiosObservable } = require('../config/helpers');
 const { QueryTypes } = require('sequelize');
 
 exports.auth = async (req, res) => {
@@ -30,4 +30,21 @@ exports.version = async (_, res) => {
         version_ios: process.env.VERSION_APP_IOS,
         date: process.env.RELEASE_DATE
     });
+}
+
+exports.recaptcha = async (req, res) => {
+    const data = { secret: req.body.secret, response: req.body.response };
+    console.log("xx", data)
+    try {
+        const response = await axiosObservable({
+            url: `https://www.google.com/recaptcha/api/siteverify`,
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            data: new URLSearchParams(Object.entries(req.body)).toString(),
+            method: "POST",
+            _requestid: req._requestid,
+        })
+        return res.json(response.data);
+    } catch (error) {
+        return res.json({ message: error.message, detail: error.stack, error });
+    }
 }
