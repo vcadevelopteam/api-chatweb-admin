@@ -136,10 +136,10 @@ exports.drawCardDynamic = async (req, res) => {
 
 //corpid, orgid, personid, limit
 exports.drawPDFSBS = async (req, res) => {
-    const { parameters } = req.body;
+    const { parameters, reportname} = req.body;
 
     try {
-        ejs.renderFile(path.join('./views/', "card-order.html"), {
+        ejs.renderFile(path.join('./views/', "debt-report.html"), {
             data: parameters
         }, (error, data) => {
             if (error) {

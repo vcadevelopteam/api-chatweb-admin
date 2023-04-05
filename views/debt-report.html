@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<style>
+    .blue-highlight {
+        color: rgb(12, 124, 197);
+        font-weight: bold;
+        font-family: 'Arial', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    }
+    .blacktext {
+        color: #14203C;
+        font-family: 'Arial', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    }
+    .bluetext {
+        color: #001E6B;
+        font-family: 'Arial', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    }
+
+    .general-row {
+        display: flex;
+        font-size: 8px;
+    }
+
+    .general-column-first {
+        padding: 2px;
+        font-size: 8px;
+        width: 100%;
+    }
+
+    .general-column-last {
+        padding: 4px;
+        width: auto;
+    }
+
+    .billing-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10px;
+    }
+
+    .billing-summary {
+        width: 80%;
+        font-size: 8px;
+        border: 1px solid rgb(223, 237, 249);
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .billing-table-header {
+        padding: 2px;
+        text-align: right;
+        width: 50px;
+        max-width: 50px;
+        font-size: 8px;
+        text-align: center;
+        font-weight: bold;
+        border: 1px solid white;
+        font-family: 'Arial', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    }
+
+    .billing-summary-header {
+        padding: 2px;
+        text-align: center;
+        width: 60px;
+        font-weight: bold;
+        font-family: 'Arial', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    }
+
+    .billing-table-cell {
+        font-size: 8px;
+        padding: 2px;
+        text-align: right;
+        background-color: #d2d3d5;
+        border: 1px solid white;
+        font-family: 'Arial', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        width: 50px;
+        max-width: 50px;
+    }
+
+
+    .grid2column{
+        display: grid; 
+        grid-template-columns: 1fr 1fr;
+    }
+</style>
+
+<body>
+    <div style="width: 90%; margin-left: auto; margin-right: auto; margin-top: 5px; position: relative;">
+        <img src="https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/Laraigo-logo-name.svg"
+            width="100px" style="position: absolute; top: 20px">
+        <div style="font-size: 8px;" class="blacktext"><%= data.fecha_reporte %></div>
+        <div style="text-align: center; font-size: 8px;" class="blacktext">Reporte de Deudas SBS - Versión impresa</div>
+        <div >
+            <div class="bluetext general-row" style="margin-top: 10px; text-align: end; font-weight: bold;">
+                <div class="general-column-first">
+                    Reporte de Deuda SBS
+                </div>
+            </div>
+            <div class="blacktext general-row grid2column" style="margin-top: 10px; text-align: end;">
+                <div> </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr;">
+                    <div>Usuario:</div>
+                    <div><%= data.numero_documento %></div>
+                </div>
+            </div>
+            <div class="blacktext general-row grid2column" style="margin-top: 5px; text-align: end;">
+                <div> </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr;">
+                    <div>Impreso el:</div>
+                    <div><%= data.fecha_reporte %></div>
+                </div>
+            </div>
+        </div>
+        <div class="bluetext" style="margin-top:10px; font-size: 8px; font-weight: bold;">
+            DATOS DEL DEUDOR
+        </div>
+        <div class="blacktext" style="display: grid; grid-template-columns: 1fr 1fr 1fr; font-size: 8px;">
+            <div style="padding-right:5px; padding-top: 5px;">
+                <div class="blacktext grid2column">
+                    <div style="font-weight: bold">Apellido Paterno: </div>
+                    <div style="text-align: end;"><%= data.apellido_paterno %></div>
+                </div>
+                <div class="blacktext grid2column">
+                    <div style="font-weight: bold">Apellido Materno: </div>
+                    <div style="text-align: end;"><%= data.apellido_materno %></div>
+                </div>
+                <div class="blacktext grid2column">
+                    <div style="font-weight: bold">Nombres: </div>
+                    <div style="text-align: end;"><%= data.nombre_completo %></div>
+                </div>
+            </div>
+            <div style="border-left: solid #14203C 1px; padding:0 5px; border-right: solid #14203C 1px; ; padding-top: 5px;" >
+                <div class="blacktext grid2column">
+                    <div style="font-weight: bold">Tipo de Documento: </div>
+                    <div style="text-align: end;"><%= data.tipo_documento %></div>
+                </div>
+                <div class="blacktext grid2column">
+                    <div style="font-weight: bold">N° de Documento: </div>
+                    <div style="text-align: end;"><%= data.numero_documento %></div>
+                </div>
+                <div class="blacktext grid2column">
+                    <div style="font-weight: bold">Codigo SBS: </div>
+                    <div style="text-align: end;"><%= data.codigo_sbs %></div>
+                </div>
+                <div class="blacktext grid2column">
+                    <div style="font-weight: bold">Tipo de Persona: </div>
+                    <div style="text-align: end;"><%= data.des_tipo_documento %></div>
+                </div>
+            </div>
+            <div style="padding-left:5px">
+                <div class="bluetext" style="font-size: 8px; font-weight: bold;">
+                    DATOS DEL REPORTE
+                </div>
+                <div class="blacktext grid2column">
+                    <div style="font-weight: bold">Mes Reportado: </div>
+                    <div style="text-align: end;"><%= data.mes %>/<%= data.anio %></div>
+                </div>
+                <div class="blacktext" style="font-size:6px">(Mes al que corresponden las deudas que se muestran en el presente reporte).</div>
+                <div class="blacktext grid2column" style="margin-top: 5px">
+                    <div style="font-weight: bold">N° Entidades reportantes: </div>
+                    <div style="text-align: end;"><%= data.cant_entity %></div>
+                </div>
+                <div class="blacktext" style="font-size:6px">(Incluye información de deudas y lineas de crédito).</div>
+            </div>
+        </div>
+        <div style="text-align: center; font-size: 8px; margin-top: 20px;" class="bluetext">La siguiente información ha sido proporcionada por las entidades 
+        del sistema financiero supervisadas por la SBS</div>
+        <div style="margin-top: 16px">
+            <table class="billing-table">
+                <tr style="background-color: #658ae2; color: white;">
+                    <th class="billing-table-header" colspan="6">DEUDAS</th>
+                </tr>
+                <tr style="background-color: #658ae2; color: white;">
+                    <th class="billing-table-header" style="width: auto;">N°</th>
+                    <th class="billing-table-header" style="width: 18%;">ENTIDAD REPORTANTE</th>
+                    <th class="billing-table-header" style="width: 18%;">CALIFICACIÓN</th>
+                    <th class="billing-table-header" style="width: 18%;">DEUDA CAPITAL (S/.)</th>
+                    <th class="billing-table-header" style="width: 18%;">INTERES Y COMISIONES (S/.)</th>
+                    <th class="billing-table-header" style="width: 18%;">TOTAL (S/.)</th>
+                </tr>
+                
+                <% data.deuda.forEach(function(order){ %>
+                    <tr>
+                        <td class="billing-table-cell">
+                            <%= order.id %>
+                        </td>
+                        <td class="billing-table-cell">
+                            <%= order.nombre_entidad %>
+                        </td>
+                        <td class="billing-table-cell">
+                            <%= order.calificacion %>
+                        </td>
+                        <td class="billing-table-cell">
+                            <%= order.capital %>
+                        </td>
+                        <td class="billing-table-cell">
+                            <%= order.intereses_comisiones %>
+                        </td>
+                        <td class="billing-table-cell">
+                            <%= order.monto %>
+                        </td>
+                    </tr>
+                <% }); %>
+            </table>
+        </div>
+        <div style="text-align: center; font-size: 6px;" class="blacktext">*Moneda de crédito otorgado expresado en nuevos soles.</div>
+        <div style="margin-top: 16px">
+            <table class="billing-table">
+                <tr style="background-color: #658ae2; color: white;">
+                    <th class="billing-table-header" colspan="4">LÍNEAS DE CRÉDITO (Otorgadas y que no han sido usadas)</th>
+                </tr>
+                <tr style="background-color: #658ae2; color: white;">
+                    <th class="billing-table-header" style="width: auto;">N°</th>
+                    <th class="billing-table-header" style="width: 30%;">ENTIDAD REPORTANTE</th>
+                    <th class="billing-table-header" style="width: 30%;">TIPO DE LÍNEA</th>
+                    <th class="billing-table-header" style="width: 30%;">TOTAL LÍNEA DE CRÉDITO (S/.)</th>
+                </tr>
+                <% data.lineas_credito.forEach(function(order){ %>
+                    <tr>
+                        <td class="billing-table-cell">
+                            <%= order.id %>
+                        </td>
+                        <td class="billing-table-cell">
+                            <%= order.nombre_entidad %>
+                        </td>
+                        <td class="billing-table-cell">
+                            <%= order.nombre_cuenta %>
+                        </td>
+                        <td class="billing-table-cell">
+                            <%= order.saldo %>
+                        </td>
+                    </tr>
+                <% }); %>
+            </table>
+        </div>
+        <div style="text-align: center; font-size: 10px; font-weight: bold; margin-top: 20px;" class="bluetext">Este reporte contiene información de deudas con una antigüedad máxima de 5 años, 
+            contados desde la fecha de vencimiento. Las entidades financieras realizan la evaluación y clasificación del deudor al cierre de cada mes, por lo que el 
+            reporte presenta un periodo de desface.</div>
+
+        <div style="border: solid grey 1px; margin-top: 10px; padding: 10px">
+            
+            <div style="text-align: center; font-size: 10px; font-weight: bold;" class="blacktext">Aviso importante</div>
+            <div style="text-align: center; font-size: 8px; margin-top: 10px;" class="blacktext">La información mostrada en este reporte, ha sido proporcionada por las empresas del sistema
+             financiero, por lo que esta Superintendencia no se hace responsable por la veracidad, exactitud y rectificación de las deudas informadas. Si usted considera que la información
+             consignada no es correcta, puede presentar su reclamo y/o ejercer sus derechos ARCO(Acceso, Rectificación, Cancelación y Oposición) ante la empresa del sistema financiero
+             reportante.</div>
+        </div>
+        <div style="text-align: center; font-size: 8px; margin-top: 20px;" class="blacktext">
+        Contáctanos llamando a la línea gratuita a nivel nacional 0-800-10840 o a través de cualquiera de nuestros 
+        <a href="https://www.sbs.gob.pe/usuarios/nuestros-servicios/servicios-sbs/consultas">Canales de atención.</a></div>
+        <div style="text-align: center; font-size: 8px;" class="blacktext">
+        Para más información visita <a href="www.sbs.gob.pe/usuarios">www.sbs.gob.pe/usuarios.</a></div>
+        
+    </div>
+</body>
+
+</html>
