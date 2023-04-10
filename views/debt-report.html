@@ -83,16 +83,22 @@
     }
 
 
-    .grid2column{
-        display: grid; 
-        grid-template-columns: 1fr 1fr;
+    .tablefix {
+        display: table;
+        /* border-spacing: 2px; */
     }
+    .tablefix div {
+        display: table-cell;
+    }
+    .spacing-table {
+        border-spacing: 2px;
+    }
+    
 </style>
 
 <body>
     <div style="width: 90%; margin-left: auto; margin-right: auto; margin-top: 5px; position: relative;">
-        <img src="https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/Laraigo-logo-name.svg"
-            width="100px" style="position: absolute; top: 20px">
+        <img src="https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/LARAIGO/6b23d92b-186f-4856-8833-19f22210a7d3/Logo-SBS--Productos-digitales-horizontal%20.jpg" width="100px" style="position: absolute; top: 20px">
         <div style="font-size: 8px;" class="blacktext"><%= data.fecha_reporte %></div>
         <div style="text-align: center; font-size: 8px;" class="blacktext">Reporte de Deudas SBS - Versión impresa</div>
         <div >
@@ -101,14 +107,14 @@
                     Reporte de Deuda SBS
                 </div>
             </div>
-            <div class="blacktext general-row grid2column" style="margin-top: 10px; text-align: end;">
+            <div class="blacktext general-row tablefix" style="margin-top: 10px; text-align: end;">
                 <div> </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr;">
                     <div>Usuario:</div>
                     <div><%= data.numero_documento %></div>
                 </div>
             </div>
-            <div class="blacktext general-row grid2column" style="margin-top: 5px; text-align: end;">
+            <div class="blacktext general-row tablefix" style="margin-top: 5px; text-align: end;">
                 <div> </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr;">
                     <div>Impreso el:</div>
@@ -119,49 +125,49 @@
         <div class="bluetext" style="margin-top:10px; font-size: 8px; font-weight: bold;">
             DATOS DEL DEUDOR
         </div>
-        <div class="blacktext" style="display: grid; grid-template-columns: 1fr 1fr 1fr; font-size: 8px;">
-            <div style="padding-right:5px; padding-top: 5px;">
-                <div class="blacktext grid2column">
+        <div class="blacktext" style="display: table; font-size: 8px; table-layout: fixed; width: 100%;">
+            <div style="display: table-cell;">
+                <div class="blacktext tablefix spacing-table">
                     <div style="font-weight: bold">Apellido Paterno: </div>
                     <div style="text-align: end;"><%= data.apellido_paterno %></div>
                 </div>
-                <div class="blacktext grid2column">
+                <div class="blacktext tablefix spacing-table">
                     <div style="font-weight: bold">Apellido Materno: </div>
                     <div style="text-align: end;"><%= data.apellido_materno %></div>
                 </div>
-                <div class="blacktext grid2column">
+                <div class="blacktext tablefix spacing-table">
                     <div style="font-weight: bold">Nombres: </div>
                     <div style="text-align: end;"><%= data.nombre_completo %></div>
                 </div>
             </div>
-            <div style="border-left: solid #14203C 1px; padding:0 5px; border-right: solid #14203C 1px; ; padding-top: 5px;" >
-                <div class="blacktext grid2column">
+            <div style="display: table-cell;" >
+                <div class="blacktext tablefix spacing-table">
                     <div style="font-weight: bold">Tipo de Documento: </div>
                     <div style="text-align: end;"><%= data.tipo_documento %></div>
                 </div>
-                <div class="blacktext grid2column">
+                <div class="blacktext tablefix spacing-table">
                     <div style="font-weight: bold">N° de Documento: </div>
                     <div style="text-align: end;"><%= data.numero_documento %></div>
                 </div>
-                <div class="blacktext grid2column">
+                <div class="blacktext tablefix spacing-table">
                     <div style="font-weight: bold">Codigo SBS: </div>
                     <div style="text-align: end;"><%= data.codigo_sbs %></div>
                 </div>
-                <div class="blacktext grid2column">
+                <div class="blacktext tablefix spacing-table">
                     <div style="font-weight: bold">Tipo de Persona: </div>
                     <div style="text-align: end;"><%= data.des_tipo_documento %></div>
                 </div>
             </div>
-            <div style="padding-left:5px">
+            <div style="display: table-cell;">
                 <div class="bluetext" style="font-size: 8px; font-weight: bold;">
                     DATOS DEL REPORTE
                 </div>
-                <div class="blacktext grid2column">
+                <div class="blacktext tablefix">
                     <div style="font-weight: bold">Mes Reportado: </div>
                     <div style="text-align: end;"><%= data.mes %>/<%= data.anio %></div>
                 </div>
                 <div class="blacktext" style="font-size:6px">(Mes al que corresponden las deudas que se muestran en el presente reporte).</div>
-                <div class="blacktext grid2column" style="margin-top: 5px">
+                <div class="blacktext tablefix" style="margin-top: 5px">
                     <div style="font-weight: bold">N° Entidades reportantes: </div>
                     <div style="text-align: end;"><%= data.cant_entity %></div>
                 </div>
