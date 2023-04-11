@@ -1,7 +1,7 @@
-const channelfunctions = require("../config/channelfunctions");
+const channelfunctions = require('../config/channelfunctions');
 const triggerfunctions = require('../config/triggerfunctions');
 const { getErrorCode } = require('../config/helpers');
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken');
 
 const { setSessionParameters, axiosObservable } = require('../config/helpers');
 
@@ -17,6 +17,7 @@ const telegramEndpoint = process.env.TELEGRAMAPI;
 const webChatApplication = process.env.CHATAPPLICATION;
 const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
 const whatsAppEndpoint = process.env.WHATSAPPAPI;
+const metaEndpoint = process.env.METAAPI;
 const googleClientId = process.env.GOOGLE_CLIENTID;
 const googleClientSecret = process.env.GOOGLE_CLIENTSECRET;
 const googleTopicName = process.env.GOOGLE_TOPICNAME;
@@ -25,7 +26,7 @@ exports.checkPaymentPlan = async (request, response) => {
     try {
         logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
-        var { method, parameters } = request.body;
+        let { method, parameters } = request.body;
 
         setSessionParameters(parameters, request.user, request._requestid);
 
@@ -33,7 +34,7 @@ exports.checkPaymentPlan = async (request, response) => {
 
         if (transactionCheckPaymentPlan instanceof Array) {
             if (transactionCheckPaymentPlan.length > 0) {
-                var createChannel = transactionCheckPaymentPlan[0].channelnumber < transactionCheckPaymentPlan[0].channelscontracted ? true : false;
+                let createChannel = transactionCheckPaymentPlan[0].channelnumber < transactionCheckPaymentPlan[0].channelscontracted ? true : false;
 
                 return response.json({
                     createChannel: createChannel,
@@ -68,7 +69,7 @@ exports.deleteChannel = async (request, response) => {
     try {
         logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
-        var { method, parameters = {} } = request.body;
+        let { method, parameters = {} } = request.body;
 
         setSessionParameters(parameters, request.user, request._requestid);
 
@@ -219,10 +220,10 @@ exports.deleteChannel = async (request, response) => {
             case 'INDM':
             case 'INST':
                 if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
-                    var serviceCredentials = JSON.parse(parameters.servicecredentials);
-                    var linkType = '';
+                    let serviceCredentials = JSON.parse(parameters.servicecredentials);
+                    let linkType = '';
 
-                    var DeleteIntegration = true;
+                    let DeleteIntegration = true;
 
                     if (parameters.type === 'FBDM') {
                         linkType = 'MESSENGERREMOVE';
@@ -237,8 +238,8 @@ exports.deleteChannel = async (request, response) => {
                     }
 
                     if (linkType === 'INSTAGRAMREMOVE') {
-                        var validateMethod = 'UFN_COMMUNICATIONCHANNELSITE_SEL';
-                        var validateParameters = {
+                        let validateMethod = 'UFN_COMMUNICATIONCHANNELSITE_SEL';
+                        let validateParameters = {
                             communicationchannelsite: serviceCredentials.siteId,
                             type: (parameters.type === 'INST' ? 'INDM' : 'INST'),
                             _requestid: request._requestid,
@@ -315,7 +316,7 @@ exports.deleteChannel = async (request, response) => {
 
             case 'INMS':
                 if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
-                    var serviceCredentials = JSON.parse(parameters.servicecredentials);
+                    let serviceCredentials = JSON.parse(parameters.servicecredentials);
 
                     const requestDeleteInstagramSmooch = await axiosObservable({
                         data: {
@@ -374,7 +375,7 @@ exports.deleteChannel = async (request, response) => {
 
             case 'TELE':
                 if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
-                    var serviceCredentials = JSON.parse(parameters.servicecredentials);
+                    let serviceCredentials = JSON.parse(parameters.servicecredentials);
 
                     const requestDeleteTelegram = await axiosObservable({
                         data: {
@@ -432,10 +433,10 @@ exports.deleteChannel = async (request, response) => {
             case 'TWIT':
             case 'TWMS':
                 if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
-                    var serviceCredentials = JSON.parse(parameters.servicecredentials);
+                    let serviceCredentials = JSON.parse(parameters.servicecredentials);
 
-                    var validateMethod = 'UFN_COMMUNICATIONCHANNELSITE_SEL';
-                    var validateParameters = {
+                    let validateMethod = 'UFN_COMMUNICATIONCHANNELSITE_SEL';
+                    let validateParameters = {
                         communicationchannelsite: serviceCredentials.twitterPageId,
                         type: (parameters.type === 'TWIT' ? 'TWMS' : 'TWIT'),
                         _requestid: request._requestid,
@@ -528,7 +529,7 @@ exports.deleteChannel = async (request, response) => {
 
             case 'WHAD':
                 if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
-                    var serviceCredentials = JSON.parse(parameters.servicecredentials);
+                    let serviceCredentials = JSON.parse(parameters.servicecredentials);
 
                     const requestDeleteWhatsApp = await axiosObservable({
                         data: {
@@ -585,7 +586,7 @@ exports.deleteChannel = async (request, response) => {
 
             case 'WHAT':
                 if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
-                    var serviceCredentials = JSON.parse(parameters.servicecredentials);
+                    let serviceCredentials = JSON.parse(parameters.servicecredentials);
 
                     if (typeof serviceCredentials.apiKeyId !== 'undefined' && serviceCredentials.apiKeyId) {
                         const requestDeleteWhatsAppSmooch = await axiosObservable({
@@ -663,9 +664,9 @@ exports.deleteChannel = async (request, response) => {
 
             case 'VOXI':
                 if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
-                    var serviceCredentials = JSON.parse(parameters.servicecredentials);
+                    let serviceCredentials = JSON.parse(parameters.servicecredentials);
 
-                    var voximplantPhoneNumber = await channelfunctions.voximplantDeletePhoneNumber(request.user.corpid, request.user.orgid, serviceCredentials.phoneid, serviceCredentials.queueid, request.originalUrl, request._requestid);
+                    let voximplantPhoneNumber = await channelfunctions.voximplantDeletePhoneNumber(request.user.corpid, request.user.orgid, serviceCredentials.phoneid, serviceCredentials.queueid, request.originalUrl, request._requestid);
 
                     if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.queueid) {
                         const transactionDeleteVoximplant = await triggerfunctions.executesimpletransaction(method, parameters);
@@ -706,7 +707,7 @@ exports.deleteChannel = async (request, response) => {
 
             case 'WHAG':
                 if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
-                    var serviceCredentials = JSON.parse(parameters.servicecredentials);
+                    let serviceCredentials = JSON.parse(parameters.servicecredentials);
 
                     const requestDeleteWhatsAppGupshup = await axiosObservable({
                         data: {
@@ -791,8 +792,8 @@ exports.getChannelService = async (request, response) => {
     try {
         logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
-        var method = null;
-        var parameters = null;
+        let method = null;
+        let parameters = null;
 
         if (request.body.siteType === 'SMCH') {
             method = 'UFN_COMMUNICATIONCHANNELSITE_SMOOCH_SEL';
@@ -960,7 +961,7 @@ exports.insertChannel = async (request, response) => {
     try {
         logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
-        var { method, parameters = {}, service = {} } = request.body;
+        let { method, parameters = {}, service = {} } = request.body;
 
         setSessionParameters(parameters, request.user, request._requestid);
 
@@ -1027,8 +1028,8 @@ exports.insertChannel = async (request, response) => {
                             uploadvideo: service.extra ? service.extra.uploadvideo : false,
                             withBorder: service.extra?.withBorder || false,
                             withHour: service.extra?.withHour || false,
-                            iconColorActive: service.extra?.iconColorActive || "",
-                            iconColorDisabled: service.extra?.iconColorDisabled || "",
+                            iconColorActive: service.extra?.iconColorActive || '',
+                            iconColorDisabled: service.extra?.iconColorDisabled || '',
                             inputTextSize: service.extra?.inputTextSize || 0,
                             inputTextWeight: service.extra?.inputTextWeight || 0,
                             chatTextSize: service.extra?.chatTextSize || 0,
@@ -1155,11 +1156,11 @@ exports.insertChannel = async (request, response) => {
                 });
 
                 if (typeof requestWebChatCreate1.data.id !== 'undefined' && requestWebChatCreate1.data.id) {
-                    parameters.apikey = "";
+                    parameters.apikey = '';
                     parameters.appintegrationid = webChatApplication;
                     parameters.channelparameters = JSON.stringify(webChatData1);
-                    parameters.communicationchannelcontact = "";
-                    parameters.communicationchannelowner = "";
+                    parameters.communicationchannelcontact = '';
+                    parameters.communicationchannelowner = '';
                     parameters.communicationchannelsite = requestWebChatCreate1.data.id;
                     parameters.integrationid = requestWebChatCreate1.data.id;
                     parameters.servicecredentials = JSON.stringify(service);
@@ -1203,10 +1204,10 @@ exports.insertChannel = async (request, response) => {
                 });
 
                 if (requestGetLongToken.data.success) {
-                    var businessId = null;
-                    var channelLinkService = null;
-                    var channelType = null;
-                    var serviceType = null;
+                    let businessId = null;
+                    let channelLinkService = null;
+                    let channelType = null;
+                    let serviceType = null;
 
                     switch (request.body.type) {
                         case 'FACEBOOK':
@@ -1269,7 +1270,7 @@ exports.insertChannel = async (request, response) => {
                     });
 
                     if (requestCreateFacebook.data.success) {
-                        var serviceCredentials = {
+                        let serviceCredentials = {
                             accessToken: requestGetLongToken.data.longToken,
                             endpoint: facebookEndpoint,
                             serviceType: serviceType,
@@ -1329,7 +1330,7 @@ exports.insertChannel = async (request, response) => {
                 });
 
                 if (requestCreateSmooch.data.success) {
-                    var serviceCredentials = {
+                    let serviceCredentials = {
                         apiKeyId: requestCreateSmooch.data.appApiKey,
                         apiKeySecret: requestCreateSmooch.data.appSecret,
                         appId: requestCreateSmooch.data.applicationId,
@@ -1372,15 +1373,15 @@ exports.insertChannel = async (request, response) => {
             case 'INFOBIPEMAIL':
             case 'INFOBIPSMS':
                 if (service) {
-                    var serviceCredentials = {
+                    let serviceCredentials = {
                         apiKey: service.apikey,
-                        callbackEndpoint: `${hookEndpoint}infobip/${request.body.type === "INFOBIPEMAIL" ? "mail" : ""}webhookasync`,
-                        callbackType: "application/json",
+                        callbackEndpoint: `${hookEndpoint}infobip/${request.body.type === 'INFOBIPEMAIL' ? 'mail' : ''}webhookasync`,
+                        callbackType: 'application/json',
                         endpoint: service.url,
                         number: service.emittername,
                     };
 
-                    if (request.body.type === "INFOBIPEMAIL") {
+                    if (request.body.type === 'INFOBIPEMAIL') {
                         serviceCredentials.validateMail = false;
                     }
 
@@ -1393,7 +1394,7 @@ exports.insertChannel = async (request, response) => {
                     const transactionCreateInfobip = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateInfobip instanceof Array) {
-                        if (request.body.type === "INFOBIPEMAIL") {
+                        if (request.body.type === 'INFOBIPEMAIL') {
                             await channelfunctions.clearHookCache('InfobipMailService', request._requestid);
                         }
                         else {
@@ -1415,7 +1416,7 @@ exports.insertChannel = async (request, response) => {
 
             case 'GMAIL':
                 if (service) {
-                    var informationtoken = jwt.decode(service.idtoken);
+                    let informationtoken = jwt.decode(service.idtoken);
 
                     parameters.communicationchannelowner = informationtoken.name;
                     parameters.integrationid = informationtoken.email;
@@ -1447,7 +1448,7 @@ exports.insertChannel = async (request, response) => {
             case 'BLOGGER':
             case 'YOUTUBE':
                 if (service) {
-                    var informationtoken = jwt.decode(service.idtoken);
+                    let informationtoken = jwt.decode(service.idtoken);
 
                     parameters.communicationchannelowner = informationtoken.name;
                     parameters.integrationid = service.channel;
@@ -1540,7 +1541,7 @@ exports.insertChannel = async (request, response) => {
                 });
 
                 if (requestCreateTelegram.data.success) {
-                    var serviceCredentials = {
+                    let serviceCredentials = {
                         bot: requestCreateTelegram.data.botName,
                         endpoint: telegramEndpoint,
                         token: service.accesstoken
@@ -1590,7 +1591,7 @@ exports.insertChannel = async (request, response) => {
                 });
 
                 if (requestPageTwitter.data.success) {
-                    var serviceCredentials = {
+                    let serviceCredentials = {
                         accessSecret: service.accesssecret,
                         accessToken: service.accesstoken,
                         consumerKey: service.consumerkey,
@@ -1697,7 +1698,7 @@ exports.insertChannel = async (request, response) => {
                 });
 
                 if (requestCreateWhatsApp.data.success) {
-                    var serviceCredentials = {
+                    let serviceCredentials = {
                         apiKey: service.accesstoken,
                         endpoint: whatsAppEndpoint,
                         number: requestCreateWhatsApp.data.phoneNumber
@@ -1742,8 +1743,8 @@ exports.insertChannel = async (request, response) => {
 
                 if (transactionCreateWhatsAppSmooch instanceof Array) {
                     if (parameters.type === 'WHAT') {
-                        var domainMethod = 'UFN_DOMAIN_VALUES_SEL';
-                        var domainParameters = {
+                        let domainMethod = 'UFN_DOMAIN_VALUES_SEL';
+                        let domainParameters = {
                             all: false,
                             corpid: 1,
                             domainname: 'WHATSAPPRECIPIENT',
@@ -1782,35 +1783,35 @@ exports.insertChannel = async (request, response) => {
 
                                         if (transactionGetBody instanceof Array) {
                                             if (transactionGetBody.length > 0) {
-                                                var mailBody = transactionGetBody[0].domainvalue;
-                                                var mailRecipient = transactionGetRecipient[0].domainvalue;
-                                                var mailSubject = transactionGetSubject[0].domainvalue;
+                                                let mailBody = transactionGetBody[0].domainvalue;
+                                                let mailRecipient = transactionGetRecipient[0].domainvalue;
+                                                let mailSubject = transactionGetSubject[0].domainvalue;
 
-                                                mailBody = mailBody.split("{{brandname}}").join(service.brandname);
-                                                mailBody = mailBody.split("{{brandaddress}}").join(service.brandaddress);
-                                                mailBody = mailBody.split("{{firstname}}").join(service.firstname);
-                                                mailBody = mailBody.split("{{lastname}}").join(service.lastname);
-                                                mailBody = mailBody.split("{{email}}").join(service.email);
-                                                mailBody = mailBody.split("{{phone}}").join(service.phone);
-                                                mailBody = mailBody.split("{{customerfacebookid}}").join(service.customerfacebookid);
-                                                mailBody = mailBody.split("{{phonenumberwhatsappbusiness}}").join(service.phonenumberwhatsappbusiness);
-                                                mailBody = mailBody.split("{{nameassociatednumber}}").join(service.nameassociatednumber);
-                                                mailBody = mailBody.split("{{corpid}}").join(request.user.corpid);
-                                                mailBody = mailBody.split("{{orgid}}").join(request.user.orgid);
-                                                mailBody = mailBody.split("{{username}}").join(request.user.usr);
+                                                mailBody = mailBody.split('{{brandname}}').join(service.brandname);
+                                                mailBody = mailBody.split('{{brandaddress}}').join(service.brandaddress);
+                                                mailBody = mailBody.split('{{firstname}}').join(service.firstname);
+                                                mailBody = mailBody.split('{{lastname}}').join(service.lastname);
+                                                mailBody = mailBody.split('{{email}}').join(service.email);
+                                                mailBody = mailBody.split('{{phone}}').join(service.phone);
+                                                mailBody = mailBody.split('{{customerfacebookid}}').join(service.customerfacebookid);
+                                                mailBody = mailBody.split('{{phonenumberwhatsappbusiness}}').join(service.phonenumberwhatsappbusiness);
+                                                mailBody = mailBody.split('{{nameassociatednumber}}').join(service.nameassociatednumber);
+                                                mailBody = mailBody.split('{{corpid}}').join(request.user.corpid);
+                                                mailBody = mailBody.split('{{orgid}}').join(request.user.orgid);
+                                                mailBody = mailBody.split('{{username}}').join(request.user.usr);
 
-                                                mailSubject = mailSubject.split("{{brandname}}").join(service.brandname);
-                                                mailSubject = mailSubject.split("{{brandaddress}}").join(service.brandaddress);
-                                                mailSubject = mailSubject.split("{{firstname}}").join(service.firstname);
-                                                mailSubject = mailSubject.split("{{lastname}}").join(service.lastname);
-                                                mailSubject = mailSubject.split("{{email}}").join(service.email);
-                                                mailSubject = mailSubject.split("{{phone}}").join(service.phone);
-                                                mailSubject = mailSubject.split("{{customerfacebookid}}").join(service.customerfacebookid);
-                                                mailSubject = mailSubject.split("{{phonenumberwhatsappbusiness}}").join(service.phonenumberwhatsappbusiness);
-                                                mailSubject = mailSubject.split("{{nameassociatednumber}}").join(service.nameassociatednumber);
-                                                mailSubject = mailSubject.split("{{corpid}}").join(request.user.corpid);
-                                                mailSubject = mailSubject.split("{{orgid}}").join(request.user.orgid);
-                                                mailSubject = mailSubject.split("{{username}}").join(request.user.usr);
+                                                mailSubject = mailSubject.split('{{brandname}}').join(service.brandname);
+                                                mailSubject = mailSubject.split('{{brandaddress}}').join(service.brandaddress);
+                                                mailSubject = mailSubject.split('{{firstname}}').join(service.firstname);
+                                                mailSubject = mailSubject.split('{{lastname}}').join(service.lastname);
+                                                mailSubject = mailSubject.split('{{email}}').join(service.email);
+                                                mailSubject = mailSubject.split('{{phone}}').join(service.phone);
+                                                mailSubject = mailSubject.split('{{customerfacebookid}}').join(service.customerfacebookid);
+                                                mailSubject = mailSubject.split('{{phonenumberwhatsappbusiness}}').join(service.phonenumberwhatsappbusiness);
+                                                mailSubject = mailSubject.split('{{nameassociatednumber}}').join(service.nameassociatednumber);
+                                                mailSubject = mailSubject.split('{{corpid}}').join(request.user.corpid);
+                                                mailSubject = mailSubject.split('{{orgid}}').join(request.user.orgid);
+                                                mailSubject = mailSubject.split('{{username}}').join(request.user.usr);
 
                                                 const requestSendMail = await axiosObservable({
                                                     data: {
@@ -1884,7 +1885,7 @@ exports.insertChannel = async (request, response) => {
                 });
 
                 if (requestInsertWhatsAppSmooch.data.success) {
-                    var serviceCredentials = {
+                    let serviceCredentials = {
                         apiKeyId: service.apikeyid,
                         apiKeySecret: service.apikeysecret,
                         appId: service.appid,
@@ -1936,7 +1937,7 @@ exports.insertChannel = async (request, response) => {
                 });
 
                 if (requestInsertWhatsAppGupshup.data.success) {
-                    var serviceCredentials = {
+                    let serviceCredentials = {
                         apiKey: service.apikey,
                         app: service.appname,
                         endpoint: `${requestInsertWhatsAppGupshup.data.endpoint}sm/api/v1/`,
@@ -1972,20 +1973,66 @@ exports.insertChannel = async (request, response) => {
                     });
                 }
 
+            case 'WHATSAPPMETA':
+                const requestCreateMeta = await axiosObservable({
+                    data: {
+                        accessToken: service.accesstoken,
+                        linkType: 'METACHECK'
+                    },
+                    method: 'post',
+                    url: `${bridgeEndpoint}processlaraigo/meta/managemetalink`,
+                    _requestid: request._requestid,
+                });
+
+                if (requestCreateMeta.data.success) {
+                    let serviceCredentials = {
+                        accessToken: service.accesstoken,
+                        endpoint: metaEndpoint,
+                        siteId: service.phone,
+                    };
+
+                    parameters.communicationchannelsite = service.phone;
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.phone = service.phone;
+                    parameters.type = 'WHAM';
+
+                    const transactionCreateMeta = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateMeta instanceof Array) {
+                        await channelfunctions.clearHookCache('WhatsAppService', request._requestid);
+
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateMeta.code,
+                            success: false
+                        });
+                    }
+                }
+                else {
+                    return response.status(400).json({
+                        msg: requestCreateMeta.data.operationMessage,
+                        success: false
+                    });
+                }
+
             case 'VOXIMPLANTPHONE':
-                var voximplantEnvironment = await channelfunctions.voximplantHandleEnvironment(request.user.corpid, request.user.orgid, request.originalUrl, request._requestid);
+                let voximplantEnvironment = await channelfunctions.voximplantHandleEnvironment(request.user.corpid, request.user.orgid, request.originalUrl, request._requestid);
 
                 if (voximplantEnvironment) {
                     if (voximplantEnvironment.accountid && voximplantEnvironment.apikey && voximplantEnvironment.applicationid && voximplantEnvironment.userid) {
-                        var voximplantScenario = await channelfunctions.voximplantHandleScenario(request.user.corpid, request.user.orgid, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, request.originalUrl, request._requestid);
+                        let voximplantScenario = await channelfunctions.voximplantHandleScenario(request.user.corpid, request.user.orgid, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, request.originalUrl, request._requestid);
 
                         if (voximplantScenario) {
                             if (voximplantScenario.ruleid && voximplantScenario.scenarioid) {
-                                var voximplantPhoneNumber = await channelfunctions.voximplantHandlePhoneNumber(request.user.corpid, request.user.orgid, request.user.usr, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, voximplantScenario.ruleid, service.country, service.category, service.state, (service.region || 0).toString(), service.cost, service.costinstallation, voximplantEnvironment.additionalperchannel, request.originalUrl, request._requestid);
+                                let voximplantPhoneNumber = await channelfunctions.voximplantHandlePhoneNumber(request.user.corpid, request.user.orgid, request.user.usr, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, voximplantScenario.ruleid, service.country, service.category, service.state, (service.region || 0).toString(), service.cost, service.costinstallation, voximplantEnvironment.additionalperchannel, request.originalUrl, request._requestid);
 
                                 if (voximplantPhoneNumber) {
                                     if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.phonenumber && voximplantPhoneNumber.queueid) {
-                                        var serviceCredentials = {
+                                        let serviceCredentials = {
                                             phoneid: voximplantPhoneNumber.phoneid,
                                             phonenumber: voximplantPhoneNumber.phonenumber,
                                             queueid: voximplantPhoneNumber.queueid,
@@ -2017,7 +2064,7 @@ exports.insertChannel = async (request, response) => {
                                             additionalperchannel: voximplantEnvironment.additionalperchannel,
                                         };
 
-                                        var voximplantRecording = {
+                                        let voximplantRecording = {
                                             recording: service.recording,
                                             recordingstorage: service.recordingstorage?.value,
                                             recordingquality: service.recordingquality?.value,
@@ -2027,8 +2074,8 @@ exports.insertChannel = async (request, response) => {
                                         parameters.communicationchannelowner = voximplantEnvironment.applicationname;
                                         parameters.servicecredentials = JSON.stringify(serviceCredentials);
                                         parameters.voximplantrecording = JSON.stringify(voximplantRecording);
-                                        parameters.voximplantwelcometone = "https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/VCA%20PERU/994eacd0-4520-4aec-8f4e-fe7dcab5f5ed/intel.mp3";
-                                        parameters.voximplantholdtone = "https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/VCA%20PERU/932a8ad1-0a67-467f-aef5-e56c52e05c3f/halos-of-eternity.mp3";
+                                        parameters.voximplantwelcometone = 'https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/VCA%20PERU/994eacd0-4520-4aec-8f4e-fe7dcab5f5ed/intel.mp3';
+                                        parameters.voximplantholdtone = 'https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/VCA%20PERU/932a8ad1-0a67-467f-aef5-e56c52e05c3f/halos-of-eternity.mp3';
                                         parameters.phone = voximplantPhoneNumber.phonenumber;
                                         parameters.type = 'VOXI';
 
@@ -2108,7 +2155,7 @@ exports.updateChannel = async (request, response) => {
     try {
         logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
-        var { method, parameters = {}, service = {}, type } = request.body;
+        let { method, parameters = {}, service = {}, type } = request.body;
 
         setSessionParameters(parameters, request.user, request._requestid);
 
@@ -2117,7 +2164,7 @@ exports.updateChannel = async (request, response) => {
         parameters.username = request.user.usr;
         parameters.phone = null;
 
-        if (type === "CHATWEB") {
+        if (type === 'CHATWEB') {
             const webChatData = {
                 applicationId: webChatApplication,
                 name: parameters.description,
@@ -2154,8 +2201,8 @@ exports.updateChannel = async (request, response) => {
                         uploadvideo: service.extra ? service.extra.uploadvideo : false,
                         withBorder: service.extra?.withBorder || false,
                         withHour: service.extra?.withHour || false,
-                        iconColorActive: service.extra?.iconColorActive || "",
-                        iconColorDisabled: service.extra?.iconColorDisabled || "",
+                        iconColorActive: service.extra?.iconColorActive || '',
+                        iconColorDisabled: service.extra?.iconColorDisabled || '',
                         inputTextSize: service.extra?.inputTextSize || 0,
                         inputTextWeight: service.extra?.inputTextWeight || 0,
                         chatTextSize: service.extra?.chatTextSize || 0,
@@ -2271,7 +2318,7 @@ exports.activateChannel = async (request, response) => {
     try {
         logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
 
-        var { method, parameters = {}, service = {} } = request.body;
+        let { method, parameters = {}, service = {} } = request.body;
 
         setSessionParameters(parameters, request.user, request._requestid);
 
@@ -2311,7 +2358,7 @@ exports.activateChannel = async (request, response) => {
             });
 
             if (requestCreateWhatsApp.data.success) {
-                var serviceCredentials = {
+                let serviceCredentials = {
                     apiKey: service.accesstoken,
                     endpoint: whatsAppEndpoint,
                     number: requestCreateWhatsApp.data.phoneNumber
@@ -2404,17 +2451,17 @@ exports.activateChannel = async (request, response) => {
 
 exports.synchronizeTemplate = async (request, response) => {
     try {
-        let requestCode = "error_unexpected_error";
-        let requestMessage = "error_unexpected_error";
+        let requestCode = 'error_unexpected_error';
+        let requestMessage = 'error_unexpected_error';
         let requestStatus = 400;
         let requestSuccess = false;
 
-        if (typeof whitelist !== "undefined" && whitelist) {
+        if (typeof whitelist !== 'undefined' && whitelist) {
             if (!whitelist.includes(request.ip)) {
                 return response.status(requestStatus).json({
-                    code: "error_auth_error",
+                    code: 'error_auth_error',
                     error: !requestSuccess,
-                    message: "error_auth_error",
+                    message: 'error_auth_error',
                     success: requestSuccess,
                 });
             }
@@ -2426,22 +2473,22 @@ exports.synchronizeTemplate = async (request, response) => {
             if (communicationchannel) {
                 if (communicationchannel.type) {
                     let templateList = null;
-    
+
                     switch (communicationchannel.type) {
-                        case "WHAD":
+                        case 'WHAD':
                             if (communicationchannel.servicecredentials) {
                                 let serviceData = JSON.parse(communicationchannel.servicecredentials);
-    
+
                                 const requestListDialog = await axiosObservable({
                                     data: {
                                         ApiKey: serviceData.apiKey,
-                                        Type: "LIST",
+                                        Type: 'LIST',
                                     },
                                     method: 'post',
                                     url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
                                     _requestid: request._requestid,
                                 });
-    
+
                                 if (requestListDialog.data.success) {
                                     templateList = requestListDialog.data.result;
                                 }
@@ -2451,22 +2498,22 @@ exports.synchronizeTemplate = async (request, response) => {
                                 }
                             }
                             break;
-    
-                        case "WHAG":
+
+                        case 'WHAG':
                             if (communicationchannel.servicecredentials) {
                                 let serviceData = JSON.parse(communicationchannel.servicecredentials);
-    
+
                                 const requestListGupshup = await axiosObservable({
                                     data: {
                                         AppName: serviceData.app,
                                         ApiKey: serviceData.apiKey,
-                                        Type: "LIST",
+                                        Type: 'LIST',
                                     },
                                     method: 'post',
                                     url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
                                     _requestid: request._requestid,
                                 });
-    
+
                                 if (requestListGupshup.data.success) {
                                     templateList = requestListGupshup.data.result;
                                 }
@@ -2476,16 +2523,16 @@ exports.synchronizeTemplate = async (request, response) => {
                                 }
                             }
                             break;
-    
-                        case "WHAT":
+
+                        case 'WHAT':
                             if (communicationchannel.servicecredentials) {
                                 let serviceData = JSON.parse(communicationchannel.servicecredentials);
-    
+
                                 const requestListSmooch = await axiosObservable({
                                     data: {
                                         AppId: serviceData.appId,
                                         IntegrationId: communicationchannel.integrationid,
-                                        Type: "LIST",
+                                        Type: 'LIST',
                                         KeyId: serviceData.apiKeyId,
                                         KeySecret: serviceData.apiKeySecret,
                                     },
@@ -2493,7 +2540,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                     url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
                                     _requestid: request._requestid,
                                 });
-    
+
                                 if (requestListSmooch.data.success) {
                                     templateList = requestListSmooch.data.result;
                                 }
@@ -2504,13 +2551,13 @@ exports.synchronizeTemplate = async (request, response) => {
                             }
                             break;
                     }
-    
+
                     if (templateList) {
-                        await channelfunctions.messageTemplateReset(communicationchannel.corpid, communicationchannel.orgid, communicationchannel.communicationchannelid, (communicationchannel.type === "WHAD" || communicationchannel.type === "WHAG") ? templateList[0]?.id || null : null, request.user.usr, request._requestid);
-    
+                        await channelfunctions.messageTemplateReset(communicationchannel.corpid, communicationchannel.orgid, communicationchannel.communicationchannelid, (communicationchannel.type === 'WHAD' || communicationchannel.type === 'WHAG') ? templateList[0]?.id || null : null, request.user.usr, request._requestid);
+
                         for (const templateData of templateList) {
                             let buttonObject = [];
-    
+
                             if (templateData.buttons) {
                                 for (const buttonData of templateData.buttons) {
                                     let buttonInformation = {
@@ -2518,11 +2565,11 @@ exports.synchronizeTemplate = async (request, response) => {
                                         title: buttonData.text || '',
                                         payload: (buttonData.data || buttonData.text) || '',
                                     };
-    
+
                                     buttonObject.push(buttonInformation);
                                 }
                             }
-    
+
                             await channelfunctions.messageTemplateUpd(
                                 communicationchannel.corpid,
                                 communicationchannel.orgid,
@@ -2530,10 +2577,10 @@ exports.synchronizeTemplate = async (request, response) => {
                                 'HSM',
                                 'ACTIVO',
                                 templateData.name,
-                                (communicationchannel.type === "WHAD" || communicationchannel.type === "WHAG") ? templateData.id : null,
+                                (communicationchannel.type === 'WHAD' || communicationchannel.type === 'WHAG') ? templateData.id : null,
                                 templateData.category,
                                 templateData.language,
-                                (templateData.header || templateData.footer || templateData.buttons) ? "MULTIMEDIA" : "STANDARD",
+                                (templateData.header || templateData.footer || templateData.buttons) ? 'MULTIMEDIA' : 'STANDARD',
                                 (templateData.header) ? true : false,
                                 templateData.header?.type ? templateData.header?.type.toLowerCase() : null,
                                 templateData.header?.text || null,
@@ -2553,9 +2600,9 @@ exports.synchronizeTemplate = async (request, response) => {
                                 request._requestid,
                             );
                         }
-    
-                        requestCode = "";
-                        requestMessage = "";
+
+                        requestCode = '';
+                        requestMessage = '';
                         requestStatus = 200;
                         requestSuccess = true;
                     }
@@ -2574,20 +2621,20 @@ exports.synchronizeTemplate = async (request, response) => {
                                 servicecredentials = messagetemplate.communicationchannelservicecredentials;
 
                                 switch (messagetemplate.communicationchanneltype) {
-                                    case "WHAD":
+                                    case 'WHAD':
                                         if (servicecredentials) {
                                             let serviceData = JSON.parse(servicecredentials);
-                
+
                                             const requestListDialog = await axiosObservable({
                                                 data: {
                                                     ApiKey: serviceData.apiKey,
-                                                    Type: "LIST",
+                                                    Type: 'LIST',
                                                 },
                                                 method: 'post',
                                                 url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
                                                 _requestid: request._requestid,
                                             });
-                
+
                                             if (requestListDialog.data.success) {
                                                 templatelist = requestListDialog.data.result;
                                             }
@@ -2597,22 +2644,22 @@ exports.synchronizeTemplate = async (request, response) => {
                                             }
                                         }
                                         break;
-                
-                                    case "WHAG":
+
+                                    case 'WHAG':
                                         if (servicecredentials) {
                                             let serviceData = JSON.parse(servicecredentials);
-                
+
                                             const requestListGupshup = await axiosObservable({
                                                 data: {
                                                     AppName: serviceData.app,
                                                     ApiKey: serviceData.apiKey,
-                                                    Type: "LIST",
+                                                    Type: 'LIST',
                                                 },
                                                 method: 'post',
                                                 url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
                                                 _requestid: request._requestid,
                                             });
-                
+
                                             if (requestListGupshup.data.success) {
                                                 templatelist = requestListGupshup.data.result;
                                             }
@@ -2622,16 +2669,16 @@ exports.synchronizeTemplate = async (request, response) => {
                                             }
                                         }
                                         break;
-                
-                                    case "WHAT":
+
+                                    case 'WHAT':
                                         if (servicecredentials) {
                                             let serviceData = JSON.parse(servicecredentials);
-                
+
                                             const requestListSmooch = await axiosObservable({
                                                 data: {
                                                     AppId: serviceData.appId,
                                                     IntegrationId: messagetemplate.communicationchannelintegrationid,
-                                                    Type: "LIST",
+                                                    Type: 'LIST',
                                                     KeyId: serviceData.apiKeyId,
                                                     KeySecret: serviceData.apiKeySecret,
                                                 },
@@ -2639,7 +2686,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                                 url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
                                                 _requestid: request._requestid,
                                             });
-                
+
                                             if (requestListSmooch.data.success) {
                                                 templatelist = requestListSmooch.data.result;
                                             }
@@ -2677,10 +2724,10 @@ exports.synchronizeTemplate = async (request, response) => {
                                         'HSM',
                                         'ACTIVO',
                                         templatefound.name,
-                                        (messagetemplate.communicationchanneltype === "WHAD" || messagetemplate.communicationchanneltype === "WHAG") ? templatefound.id : messagetemplate.namespace,
+                                        (messagetemplate.communicationchanneltype === 'WHAD' || messagetemplate.communicationchanneltype === 'WHAG') ? templatefound.id : messagetemplate.namespace,
                                         templatefound.category,
                                         templatefound.language,
-                                        (templatefound.header || templatefound.footer || templatefound.buttons) ? "MULTIMEDIA" : "STANDARD",
+                                        (templatefound.header || templatefound.footer || templatefound.buttons) ? 'MULTIMEDIA' : 'STANDARD',
                                         (templatefound.header) ? true : false,
                                         templatefound.header?.type ? templatefound.header?.type.toLowerCase() : null,
                                         templatefound.header?.text || null,
@@ -2700,8 +2747,8 @@ exports.synchronizeTemplate = async (request, response) => {
                                         request._requestid,
                                     );
 
-                                    requestCode = "";
-                                    requestMessage = "";
+                                    requestCode = '';
+                                    requestMessage = '';
                                     requestStatus = 200;
                                     requestSuccess = true;
                                 }
@@ -2736,8 +2783,8 @@ exports.synchronizeTemplate = async (request, response) => {
                                         request._requestid,
                                     );
 
-                                    requestCode = "";
-                                    requestMessage = "";
+                                    requestCode = '';
+                                    requestMessage = '';
                                     requestStatus = 200;
                                     requestSuccess = true;
                                 }
@@ -2765,17 +2812,17 @@ exports.synchronizeTemplate = async (request, response) => {
 
 exports.addTemplate = async (request, response) => {
     try {
-        var requestCode = "error_unexpected_error";
-        var requestMessage = "error_unexpected_error";
-        var requestStatus = 400;
-        var requestSuccess = false;
+        let requestCode = 'error_unexpected_error';
+        let requestMessage = 'error_unexpected_error';
+        let requestStatus = 400;
+        let requestSuccess = false;
 
-        if (typeof whitelist !== "undefined" && whitelist) {
+        if (typeof whitelist !== 'undefined' && whitelist) {
             if (!whitelist.includes(request.ip)) {
                 return response.status(requestStatus).json({
-                    code: "error_auth_error",
+                    code: 'error_auth_error',
                     error: !requestSuccess,
-                    message: "error_auth_error",
+                    message: 'error_auth_error',
                     success: requestSuccess,
                 });
             }
@@ -2783,20 +2830,20 @@ exports.addTemplate = async (request, response) => {
 
         if (request.body) {
             if (request.body.communicationchanneltype) {
-                var addSuccess = false;
+                let addSuccess = false;
 
                 switch (request.body.communicationchanneltype) {
-                    case "WHAD":
+                    case 'WHAD':
                         if (request.body.servicecredentials) {
-                            var serviceData = JSON.parse(request.body.servicecredentials);
+                            let serviceData = JSON.parse(request.body.servicecredentials);
 
-                            var createBody = {
+                            let createBody = {
                                 ApiKey: serviceData.apiKey,
-                                Type: "CREATE",
+                                Type: 'CREATE',
                                 Category: request.body.category,
                                 Name: request.body.name,
                                 Language: ((request.body.language || '').split('_')).length > 1 ? `${(request.body.language || '').split('_')[0].toLowerCase()}_${(request.body.language || '').split('_')[1]}` : ((request.body.language || '').split('_')[0].toLowerCase()),
-                                Header: request.body.headerenabled ? { Type: request.body.headertype, Text: request.body.headertype === "text" ? request.body.header : null } : null,
+                                Header: request.body.headerenabled ? { Type: request.body.headertype, Text: request.body.headertype === 'text' ? request.body.header : null } : null,
                                 Footer: request.body.footerenabled ? { Text: request.body.footer } : null,
                                 Body: { Text: request.body.body },
                             }
@@ -2805,7 +2852,7 @@ exports.addTemplate = async (request, response) => {
                                 createBody.Buttons = [];
 
                                 request.body.buttons.forEach(element => {
-                                    createBody.Buttons.push({ Text: element.title, Type: element.type, Data: (element.type === "phone_number" ? `phoneNumber: ${element.payload}` : (element.type === "url" ? `url: ${element.payload}` : null)) });
+                                    createBody.Buttons.push({ Text: element.title, Type: element.type, Data: (element.type === 'phone_number' ? `phoneNumber: ${element.payload}` : (element.type === 'url' ? `url: ${element.payload}` : null)) });
                                 });
                             }
 
@@ -2817,7 +2864,7 @@ exports.addTemplate = async (request, response) => {
                             });
 
                             if (requestCreateDialog.data.success) {
-                                var parameters = request.body;
+                                let parameters = request.body;
 
                                 parameters.corpid = request.user.corpid;
                                 parameters.orgid = request.user.orgid;
@@ -2844,20 +2891,20 @@ exports.addTemplate = async (request, response) => {
                         }
                         break;
 
-                    case "WHAT":
+                    case 'WHAT':
                         if (request.body.servicecredentials) {
-                            var serviceData = JSON.parse(request.body.servicecredentials);
+                            let serviceData = JSON.parse(request.body.servicecredentials);
 
-                            var createBody = {
+                            let createBody = {
                                 AppId: serviceData.appId,
                                 IntegrationId: request.body.integrationid,
-                                Type: "CREATE",
+                                Type: 'CREATE',
                                 KeyId: serviceData.apiKeyId,
                                 KeySecret: serviceData.apiKeySecret,
                                 Category: request.body.category,
                                 Name: request.body.name,
                                 Language: ((request.body.language || '').split('_')).length > 1 ? `${(request.body.language || '').split('_')[0].toLowerCase()}_${(request.body.language || '').split('_')[1]}` : ((request.body.language || '').split('_')[0].toLowerCase()),
-                                Header: request.body.headerenabled ? { Type: request.body.headertype, Text: request.body.headertype === "text" ? request.body.header : null } : null,
+                                Header: request.body.headerenabled ? { Type: request.body.headertype, Text: request.body.headertype === 'text' ? request.body.header : null } : null,
                                 Footer: request.body.footerenabled ? { Text: request.body.footer } : null,
                                 Body: { Text: request.body.body },
                             }
@@ -2866,7 +2913,7 @@ exports.addTemplate = async (request, response) => {
                                 createBody.Buttons = [];
 
                                 request.body.buttons.forEach(element => {
-                                    createBody.Buttons.push({ Text: element.title, Type: element.type, Data: (element.type === "phone_number" ? `phoneNumber: ${element.payload}` : (element.type === "url" ? `url: ${element.payload}` : null)) });
+                                    createBody.Buttons.push({ Text: element.title, Type: element.type, Data: (element.type === 'phone_number' ? `phoneNumber: ${element.payload}` : (element.type === 'url' ? `url: ${element.payload}` : null)) });
                                 });
                             }
 
@@ -2878,7 +2925,7 @@ exports.addTemplate = async (request, response) => {
                             });
 
                             if (requestCreateSmooch.data.success) {
-                                var parameters = request.body;
+                                let parameters = request.body;
 
                                 parameters.corpid = request.user.corpid;
                                 parameters.orgid = request.user.orgid;
@@ -2906,8 +2953,8 @@ exports.addTemplate = async (request, response) => {
                 }
 
                 if (addSuccess) {
-                    requestCode = "";
-                    requestMessage = "";
+                    requestCode = '';
+                    requestMessage = '';
                     requestStatus = 200;
                     requestSuccess = true;
                 }
@@ -2931,17 +2978,17 @@ exports.addTemplate = async (request, response) => {
 
 exports.deleteTemplate = async (request, response) => {
     try {
-        let requestCode = "error_unexpected_error";
-        let requestMessage = "error_unexpected_error";
+        let requestCode = 'error_unexpected_error';
+        let requestMessage = 'error_unexpected_error';
         let requestStatus = 400;
         let requestSuccess = false;
 
-        if (typeof whitelist !== "undefined" && whitelist) {
+        if (typeof whitelist !== 'undefined' && whitelist) {
             if (!whitelist.includes(request.ip)) {
                 return response.status(requestStatus).json({
-                    code: "error_auth_error",
+                    code: 'error_auth_error',
                     error: !requestSuccess,
-                    message: "error_auth_error",
+                    message: 'error_auth_error',
                     success: requestSuccess,
                 });
             }
@@ -2956,21 +3003,21 @@ exports.deleteTemplate = async (request, response) => {
 
                     if (messagetemplate.deleteprovider) {
                         switch (messagetemplate.communicationchanneltype) {
-                            case "WHAD":
+                            case 'WHAD':
                                 if (messagetemplate.communicationchannelservicecredentials) {
                                     let serviceData = JSON.parse(messagetemplate.communicationchannelservicecredentials);
-        
+
                                     const requestDeleteDialog = await axiosObservable({
                                         data: {
                                             ApiKey: serviceData.apiKey,
                                             DeleteName: messagetemplate.name,
-                                            Type: "DELETE",
+                                            Type: 'DELETE',
                                         },
                                         method: 'post',
                                         url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
                                         _requestid: request._requestid,
                                     });
-    
+
                                     if (requestDeleteDialog.data.success) {
                                         deleteSuccess = true;
                                     }
@@ -2980,8 +3027,8 @@ exports.deleteTemplate = async (request, response) => {
                                     }
                                 }
                                 break;
-        
-                            case "WHAT":
+
+                            case 'WHAT':
                                 if (messagetemplate.communicationchannelservicecredentials) {
                                     let serviceData = JSON.parse(messagetemplate.communicationchannelservicecredentials);
 
@@ -2990,7 +3037,7 @@ exports.deleteTemplate = async (request, response) => {
                                             AppId: serviceData.appId,
                                             IntegrationId: messagetemplate.communicationchannelintegrationid,
                                             DeleteName: messagetemplate.name,
-                                            Type: "DELETE",
+                                            Type: 'DELETE',
                                             KeyId: serviceData.apiKeyId,
                                             KeySecret: serviceData.apiKeySecret,
                                         },
@@ -2998,7 +3045,7 @@ exports.deleteTemplate = async (request, response) => {
                                         url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
                                         _requestid: request._requestid,
                                     });
-        
+
                                     if (requestDeleteSmooch.data.success) {
                                         deleteSuccess = true;
                                     }
@@ -3008,8 +3055,9 @@ exports.deleteTemplate = async (request, response) => {
                                     }
                                 }
                                 break;
-        
-                            case "WHAG":
+
+                            case 'WHAG':
+                            case 'WHAM':
                                 if (messagetemplate.communicationchannelservicecredentials) {
                                     deleteSuccess = true;
                                 }
@@ -3028,12 +3076,12 @@ exports.deleteTemplate = async (request, response) => {
                         parameters.corpid = request.user.corpid;
                         parameters.orgid = request.user.orgid;
                         parameters.username = request.user.usr;
-        
+
                         const queryTemplateDelete = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
-        
+
                         if (queryTemplateDelete instanceof Array) {
-                            requestCode = "";
-                            requestMessage = "";
+                            requestCode = '';
+                            requestMessage = '';
                             requestStatus = 200;
                             requestSuccess = true;
                         }
