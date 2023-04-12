@@ -163,7 +163,7 @@
                         </div>
                     </div>
                 </div>
-                <div style="border-left: 1px solid #14203C; display: table-cell; padding-left: 10px;">
+                <div style="border-left: 1px solid #658ae2; display: table-cell; padding-left: 10px;">
                     <div class="blacktext tablefix spacing-table">
                         <div style="font-weight: bold">Tipo de Documento: </div>
                         <div style="text-align: end;">
@@ -238,7 +238,7 @@
                             <td class="billing-table-cell">
                                 <%= order.nombre_entidad %>
                             </td>
-                            <td class="billing-table-cell" style="text-align: right;">
+                            <td class="billing-table-cell">
                                 <%= order.calificacion %>
                             </td>
                             <td class="billing-table-cell" style="text-align: right;">
@@ -251,7 +251,15 @@
                                 <%= order.monto %>
                             </td>
                         </tr>
-                        <% }); %>
+                    <% }); %>
+
+                    <% if ((item.deuda?.length || 0) == 0) { %>
+                        <tr>
+                            <td colspan="6" class="billing-table-cell" style="text-align: center; font-weight: bold;">
+                                No registra informacion
+                            </td>
+                        </tr>
+                    <% } %>
                 </table>
             </div>
             <div style="text-align: center; font-size: 6px;" class="blacktext">*Moneda de crédito otorgado expresado en
@@ -283,7 +291,15 @@
                                 <%= order.saldo %>
                             </td>
                         </tr>
-                        <% }); %>
+                    <% }); %>
+                    
+                    <% if ((item.linea_credito?.length || 0) == 0) { %>
+                        <tr>
+                            <td colspan="6" class="billing-table-cell" style="text-align: center; font-weight: bold;">
+                                No registra informacion
+                            </td>
+                        </tr>
+                    <% } %>
                 </table>
             </div>
             <div style="text-align: center; font-size: 10px; font-weight: bold; margin-top: 20px;" class="bluetext">Este
