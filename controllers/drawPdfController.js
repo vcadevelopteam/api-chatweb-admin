@@ -145,7 +145,7 @@ exports.drawPDFSBS = async (req, res) => {
         const data = parameters.detalle.map((x, i) => ({
             ...x,
             ...parameters.persona_natural,
-            heightContainer: parameters.detalle === i + 1 ? "750px" : "812px"
+            heightContainer: parameters.detalle.length === i + 1 ? "750px" : "812px"
         }))
 
         ejs.renderFile(path.join('./views/', "debt-report.html"), {
