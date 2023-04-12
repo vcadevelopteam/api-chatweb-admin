@@ -139,8 +139,17 @@ exports.drawPDFSBS = async (req, res) => {
     const { parameters, reportname} = req.body;
 
     try {
+        // parameters.detalle
+        // parameters.persona_natural
+
+        const data = parameters.detalle.map((x, i) => ({
+            ...x,
+            ...parameters.persona_natural,
+            heightContainer: parameters.detalle === i + 1 ? "750px" : "812px"
+        }))
+
         ejs.renderFile(path.join('./views/', "debt-report.html"), {
-            data: parameters
+            data
         }, (error, data) => {
             if (error) {
                 logger.child({ _requestid: req._requestid, error: { detail: error.stack, message: error.message } }).error(`Request to ${req.originalUrl}: ${error.message}`);
@@ -157,8 +166,7 @@ exports.drawPDFSBS = async (req, res) => {
             }
         });
     } catch (exception) {
-        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing drawCardDynamic");
+        const result = getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing drawPDFSBS");
+        return res.status(result.rescode).json({ ...result });
     }
-
-
 }
