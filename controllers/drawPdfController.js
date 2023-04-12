@@ -144,6 +144,7 @@ exports.drawPDFSBS = async (req, res) => {
 
         const data = parameters.detalle.map((x, i) => ({
             ...x,
+            fecha_reporte: new Date().toLocaleString('es-PE', { timeZone: 'America/Lima' }),
             ...parameters.persona_natural,
             heightContainer: parameters.detalle.length !== i + 1 ? "always" : "avoid"
         }))
