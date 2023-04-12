@@ -100,7 +100,7 @@
 
 <body>
     <% data.forEach(function(item){ %>
-        <div style="width: 90%; margin-left: auto; margin-right: auto; padding-top: 5px; position: relative; height: <%= item.heightContainer %>">
+        <div style="width: 90%; margin-left: auto; margin-right: auto; padding-top: 5px; position: relative; page-break-after: <%= item.heightContainer %>;">
             <div style="display: table; width: 100%;">
                 <div style="font-size: 8px;" class="blacktext">
                     <%= item.fecha_reporte %>
@@ -226,7 +226,7 @@
                     <% item.deuda.forEach(function(order, index1) { %>
                         <tr>
                             <td class="billing-table-cell">
-                                <%= index1 %>
+                                <%= index1 + 1 %>
                             </td>
                             <td class="billing-table-cell">
                                 <%= order.nombre_entidad %>
@@ -264,7 +264,7 @@
                     <% item.linea_credito.forEach(function(order, index2){ %>
                         <tr>
                             <td class="billing-table-cell">
-                                <%= index2 %>
+                                <%= index2 + 1%>
                             </td>
                             <td class="billing-table-cell">
                                 <%= order.nombre_entidad %>
