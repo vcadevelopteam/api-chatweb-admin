@@ -1977,6 +1977,7 @@ exports.insertChannel = async (request, response) => {
                 const requestCreateMeta = await axiosObservable({
                     data: {
                         accessToken: service.accesstoken,
+                        phoneId: service.phone,
                         linkType: 'METACHECK'
                     },
                     method: 'post',
@@ -1988,12 +1989,13 @@ exports.insertChannel = async (request, response) => {
                     let serviceCredentials = {
                         accessToken: service.accesstoken,
                         endpoint: metaEndpoint,
-                        siteId: service.phone,
+                        numberId: service.phone,
+                        siteId: requestCreateMeta.data.phoneNumber,
                     };
 
-                    parameters.communicationchannelsite = service.phone;
+                    parameters.communicationchannelsite = requestCreateMeta.data.phoneNumber;
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
-                    parameters.phone = service.phone;
+                    parameters.phone = requestCreateMeta.data.phoneNumber;
                     parameters.type = 'WHAM';
 
                     const transactionCreateMeta = await triggerfunctions.executesimpletransaction(method, parameters);
