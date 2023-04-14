@@ -835,6 +835,8 @@ exports.createSubscription = async (request, response) => {
 
                                         await channelfunctions.serviceTokenUpdate(channelService.imapusername, '', '', JSON.stringify(extraData), 'IMAP', 'ACTIVO', parameters.username, 1);
 
+                                        await channelfunctions.serviceSubscriptionUpdate(channelService.imapusername, channelService.imapusername, JSON.stringify(extraData), 'MAIL-IMAP', 'ACTIVO', parameters.username, `${hookEndpoint}mail/imapwebhookasync`, 2);
+
                                         channelMethodArray.push(channelMethod);
                                         channelParametersArray.push(channelParameters);
                                         channelServiceArray.push(channelService);
