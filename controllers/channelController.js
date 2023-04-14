@@ -1414,6 +1414,45 @@ exports.insertChannel = async (request, response) => {
                 }
                 break;
 
+            case 'IMAP':
+                if (service) {
+                    parameters.communicationchannelowner = service.imapusername;
+                    parameters.integrationid = service.imapusername;
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.status = 'ACTIVO';
+                    parameters.communicationchannelsite = `${service.imapusername}|IMAP|`;
+                    parameters.type = 'MAIL';
+
+                    let extraData = {
+                        username: service.imapusername || '',
+                        password: service.imappassword || '',
+                        incomingEndpoint: service.imapincomingendpoint || '',
+                        incomingPort: parseInt(service.imapincomingport || 0),
+                        accessToken: service.imapaccesstoken || '',
+                        host: service.imaphost || '',
+                        port: parseInt(service.imapport || 0),
+                        useSsl: service.imapssl === 'SSL' ? true : false,
+                        useStartTls: service.imapssl === 'STARTTLS' ? true : false,
+                    };
+
+                    await channelfunctions.serviceTokenUpdate(service.imapusername, '', '', JSON.stringify(extraData), 'IMAP', 'ACTIVO', request?.user?.usr, 1);
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
             case 'GMAIL':
                 if (service) {
                     let informationtoken = jwt.decode(service.idtoken);
@@ -2501,7 +2540,7 @@ exports.synchronizeTemplate = async (request, response) => {
                             }
                             break;
 
-                        case 'WHAG':
+                        case "WHAG":
                             if (communicationchannel.servicecredentials) {
                                 let serviceData = JSON.parse(communicationchannel.servicecredentials);
 
@@ -2526,7 +2565,7 @@ exports.synchronizeTemplate = async (request, response) => {
                             }
                             break;
 
-                        case 'WHAT':
+                        case "WHAT":
                             if (communicationchannel.servicecredentials) {
                                 let serviceData = JSON.parse(communicationchannel.servicecredentials);
 
@@ -2555,7 +2594,7 @@ exports.synchronizeTemplate = async (request, response) => {
                     }
 
                     if (templateList) {
-                        await channelfunctions.messageTemplateReset(communicationchannel.corpid, communicationchannel.orgid, communicationchannel.communicationchannelid, (communicationchannel.type === 'WHAD' || communicationchannel.type === 'WHAG') ? templateList[0]?.id || null : null, request.user.usr, request._requestid);
+                        await channelfunctions.messageTemplateReset(communicationchannel.corpid, communicationchannel.orgid, communicationchannel.communicationchannelid, (communicationchannel.type === "WHAD" || communicationchannel.type === "WHAG") ? templateList[0]?.id || null : null, request.user.usr, request._requestid);
 
                         for (const templateData of templateList) {
                             let buttonObject = [];
@@ -2603,8 +2642,8 @@ exports.synchronizeTemplate = async (request, response) => {
                             );
                         }
 
-                        requestCode = '';
-                        requestMessage = '';
+                        requestCode = "";
+                        requestMessage = "";
                         requestStatus = 200;
                         requestSuccess = true;
                     }
@@ -2647,7 +2686,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                         }
                                         break;
 
-                                    case 'WHAG':
+                                    case "WHAG":
                                         if (servicecredentials) {
                                             let serviceData = JSON.parse(servicecredentials);
 
@@ -2672,7 +2711,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                         }
                                         break;
 
-                                    case 'WHAT':
+                                    case "WHAT":
                                         if (servicecredentials) {
                                             let serviceData = JSON.parse(servicecredentials);
 
@@ -3030,7 +3069,7 @@ exports.deleteTemplate = async (request, response) => {
                                 }
                                 break;
 
-                            case 'WHAT':
+                            case "WHAT":
                                 if (messagetemplate.communicationchannelservicecredentials) {
                                     let serviceData = JSON.parse(messagetemplate.communicationchannelservicecredentials);
 
