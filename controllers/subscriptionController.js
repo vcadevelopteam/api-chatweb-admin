@@ -813,19 +813,27 @@ exports.createSubscription = async (request, response) => {
                             case 'INFOBIPEMAIL':
                             case 'INFOBIPSMS':
                                 if (channelService) {
-                                    if (channelService.type && channelService.type === "GMAIL") {
-                                        var informationtoken = jwt.decode(channelService.idtoken);
+                                    if (channelService.type && channelService.type === "IMAP") {
+                                        parameters.communicationchannelowner = channelService.imapusername;
+                                        parameters.integrationid = channelService.imapusername;
+                                        parameters.servicecredentials = JSON.stringify(channelService);
+                                        parameters.status = 'ACTIVO';
+                                        parameters.communicationchannelsite = `${channelService.imapusername}|IMAP|`;
+                                        parameters.type = 'MAIL';
 
-                                        channelParameters.communicationchannelowner = informationtoken.name;
-                                        channelParameters.integrationid = informationtoken.email;
-                                        channelParameters.servicecredentials = JSON.stringify(channelService);
-                                        channelParameters.status = 'ACTIVO';
-                                        channelParameters.communicationchannelsite = informationtoken.email;
-                                        channelParameters.type = 'MAIL';
+                                        let extraData = {
+                                            username: channelService.imapusername || '',
+                                            password: channelService.imappassword || '',
+                                            incomingEndpoint: channelService.imapincomingendpoint || '',
+                                            incomingPort: parseInt(channelService.imapincomingport || 0),
+                                            accessToken: channelService.imapaccesstoken || '',
+                                            host: channelService.imaphost || '',
+                                            port: parseInt(channelService.imapport || 0),
+                                            useSsl: channelService.imapssl === 'SSL' ? true : false,
+                                            useStartTls: channelService.imapssl === 'STARTTLS' ? true : false,
+                                        };
 
-                                        await channelfunctions.serviceTokenUpdate(informationtoken.email, channelService.accesstoken, channelService.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', parameters.username, 50);
-
-                                        await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, informationtoken.email, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-GMAIL', 'ACTIVO', parameters.username, `${hookEndpoint}mail/gmailwebhookasync`, 2880);
+                                        await channelfunctions.serviceTokenUpdate(channelService.imapusername, '', '', JSON.stringify(extraData), 'IMAP', 'ACTIVO', parameters.username, 1);
 
                                         channelMethodArray.push(channelMethod);
                                         channelParametersArray.push(channelParameters);
@@ -833,28 +841,49 @@ exports.createSubscription = async (request, response) => {
                                         channelTypeArray.push(channel.type);
                                     }
                                     else {
-                                        var serviceCredentials = {
-                                            apiKey: channelService.apikey,
-                                            callbackEndpoint: `${hookEndpoint}infobip/${channel.type === "INFOBIPEMAIL" ? "mail" : ""}webhookasync`,
-                                            callbackType: "application/json",
-                                            endpoint: channelService.url,
-                                            number: channelService.emittername,
-                                        };
+                                        if (channelService.type && channelService.type === "GMAIL") {
+                                            var informationtoken = jwt.decode(channelService.idtoken);
 
-                                        if (channel.type === "INFOBIPEMAIL") {
-                                            serviceCredentials.validateMail = false;
+                                            channelParameters.communicationchannelowner = informationtoken.name;
+                                            channelParameters.integrationid = informationtoken.email;
+                                            channelParameters.servicecredentials = JSON.stringify(channelService);
+                                            channelParameters.status = 'ACTIVO';
+                                            channelParameters.communicationchannelsite = informationtoken.email;
+                                            channelParameters.type = 'MAIL';
+
+                                            await channelfunctions.serviceTokenUpdate(informationtoken.email, channelService.accesstoken, channelService.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', parameters.username, 50);
+
+                                            await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, informationtoken.email, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-GMAIL', 'ACTIVO', parameters.username, `${hookEndpoint}mail/gmailwebhookasync`, 2880);
+
+                                            channelMethodArray.push(channelMethod);
+                                            channelParametersArray.push(channelParameters);
+                                            channelServiceArray.push(channelService);
+                                            channelTypeArray.push(channel.type);
                                         }
+                                        else {
+                                            var serviceCredentials = {
+                                                apiKey: channelService.apikey,
+                                                callbackEndpoint: `${hookEndpoint}infobip/${channel.type === "INFOBIPEMAIL" ? "mail" : ""}webhookasync`,
+                                                callbackType: "application/json",
+                                                endpoint: channelService.url,
+                                                number: channelService.emittername,
+                                            };
 
-                                        channelParameters.communicationchannelowner = channelService.emittername;
-                                        channelParameters.communicationchannelsite = channelService.emittername;
-                                        channelParameters.integrationid = channelService.emittername;
-                                        channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
-                                        channelParameters.type = (channel.type === 'INFOBIPEMAIL' ? 'MAII' : 'SMSI');
+                                            if (channel.type === "INFOBIPEMAIL") {
+                                                serviceCredentials.validateMail = false;
+                                            }
 
-                                        channelMethodArray.push(channelMethod);
-                                        channelParametersArray.push(channelParameters);
-                                        channelServiceArray.push(channelService);
-                                        channelTypeArray.push(channel.type);
+                                            channelParameters.communicationchannelowner = channelService.emittername;
+                                            channelParameters.communicationchannelsite = channelService.emittername;
+                                            channelParameters.integrationid = channelService.emittername;
+                                            channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
+                                            channelParameters.type = (channel.type === 'INFOBIPEMAIL' ? 'MAII' : 'SMSI');
+
+                                            channelMethodArray.push(channelMethod);
+                                            channelParametersArray.push(channelParameters);
+                                            channelServiceArray.push(channelService);
+                                            channelTypeArray.push(channel.type);
+                                        }
                                     }
                                 }
                                 break;
