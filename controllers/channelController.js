@@ -1437,6 +1437,8 @@ exports.insertChannel = async (request, response) => {
 
                     await channelfunctions.serviceTokenUpdate(service.imapusername, '', '', JSON.stringify(extraData), 'IMAP', 'ACTIVO', request?.user?.usr, 1);
 
+                    await channelfunctions.serviceSubscriptionUpdate(service.imapusername, service.imapusername, JSON.stringify(extraData), 'MAIL-IMAP', 'ACTIVO', request?.user?.usr, `${hookEndpoint}mail/imapwebhookasync`, 2);
+
                     const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateGeneric instanceof Array) {
