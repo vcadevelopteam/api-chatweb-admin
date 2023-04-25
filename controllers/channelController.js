@@ -1008,7 +1008,7 @@ exports.insertChannel = async (request, response) => {
                         },
                         extra: {
                             abandonendpoint: `${webChatScriptEndpoint}smooch`,
-                            cssbody: '',
+                            cssbody: service.extra?.customcss || '',
                             enableabandon: service.extra ? service.extra.abandonevent : false,
                             enableformhistory: service.extra ? service.extra.formhistory : false,
                             enableidlemessage: service.bubble ? service.bubble.active : false,
@@ -2224,7 +2224,7 @@ exports.updateChannel = async (request, response) => {
                     },
                     extra: {
                         abandonendpoint: `${webChatScriptEndpoint}smooch`,
-                        cssbody: '',
+                        cssbody: service.extra?.customcss || '',
                         enableabandon: service.extra ? service.extra.abandonevent : false,
                         enableformhistory: service.extra ? service.extra.formhistory : false,
                         enableidlemessage: service.bubble ? service.bubble.active : false,
