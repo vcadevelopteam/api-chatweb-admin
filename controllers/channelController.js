@@ -1188,6 +1188,54 @@ exports.insertChannel = async (request, response) => {
                         success: false
                     });
                 }
+            case 'FACEBOOKWORPLACE':
+                console.log("---Execute Workplace---");
+
+                const requestTokenWorkplace = await axiosObservable({
+                    method: 'get',
+                    url: `https://graph.workplace.com/me?access_token=${service.accesstoken}`,
+                    _requestid: request._requestid,
+                });
+
+                if(requestTokenWorkplace.status = 200){
+
+                    var serviceCredentials = {
+                        accessToken: service.accesstoken,
+                        endpoint: facebookEndpoint,
+                        appid: service.appid || null,
+                        appsecret: service.appsecret ||null,
+                        serviceType: 'WORKPLACE',
+                        siteId: requestTokenWorkplace.data.id
+                    };
+
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.type = 'FBWP';
+                    parameters.communicationchannelowner = requestTokenWorkplace.data.id;
+                    parameters.communicationchannelsite = requestTokenWorkplace.data.id;
+                    
+                    const transactionCreateWorkplace = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateWorkplace instanceof Array) {
+                        await channelfunctions.clearHookCache('FacebookService', request._requestid);
+
+                        return response.json({
+                            success: true
+                        });
+                        
+                    }
+                
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateWorkplace.code,
+                            success: false
+                        });
+                    }
+                }else{
+                    return response.status(400).json({
+                        msg: requestTokenWorkplace.data.error.message,
+                        success: false
+                    });
+                }
             case 'FACEBOOK':
             case 'INSTAGRAM':
             case 'INSTAMESSENGER':
