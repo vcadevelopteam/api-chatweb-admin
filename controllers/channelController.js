@@ -214,7 +214,22 @@ exports.deleteChannel = async (request, response) => {
                         success: false
                     });
                 }
+            case 'WORKPLACE':
+                const deleteChannelWorkplace = await triggerfunctions.executesimpletransaction(method, parameters);
 
+                if (deleteChannelWorkplace instanceof Array) {
+                    await channelfunctions.clearHookCache('EveryService', request._requestid);
+
+                    return response.json({
+                        success: true
+                    });
+                }
+                else {
+                    return response.status(400).json({
+                        msg: deleteChannelWorkplace.code,
+                        success: false
+                    });
+                }
             case 'FBDM':
             case 'FBWA':
             case 'INDM':
