@@ -1444,6 +1444,37 @@ exports.insertChannel = async (request, response) => {
                 }
                 break;
 
+            case 'BUSINESS':
+                if (service) {
+                    var informationtoken = jwt.decode(service.idtoken);
+
+                    parameters.communicationchannelowner = informationtoken.name;
+                    parameters.communicationchannelsite = informationtoken.email;
+                    parameters.integrationid = informationtoken.email;
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.status = 'ACTIVO';
+                    parameters.type = 'GOBU';
+
+                    await channelfunctions.serviceTokenUpdate(informationtoken.email, service.accesstoken, service.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', request?.user?.usr, 50);
+
+                    await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, informationtoken.email, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-BUSINESS', 'ACTIVO', request?.user?.usr, `${hookEndpoint}business/webhookasync`, 2);
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
             case 'BLOGGER':
             case 'YOUTUBE':
                 if (service) {
@@ -2426,12 +2457,12 @@ exports.synchronizeTemplate = async (request, response) => {
             if (communicationchannel) {
                 if (communicationchannel.type) {
                     let templateList = null;
-    
+
                     switch (communicationchannel.type) {
                         case "WHAD":
                             if (communicationchannel.servicecredentials) {
                                 let serviceData = JSON.parse(communicationchannel.servicecredentials);
-    
+
                                 const requestListDialog = await axiosObservable({
                                     data: {
                                         ApiKey: serviceData.apiKey,
@@ -2441,7 +2472,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                     url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
                                     _requestid: request._requestid,
                                 });
-    
+
                                 if (requestListDialog.data.success) {
                                     templateList = requestListDialog.data.result;
                                 }
@@ -2451,11 +2482,11 @@ exports.synchronizeTemplate = async (request, response) => {
                                 }
                             }
                             break;
-    
+
                         case "WHAG":
                             if (communicationchannel.servicecredentials) {
                                 let serviceData = JSON.parse(communicationchannel.servicecredentials);
-    
+
                                 const requestListGupshup = await axiosObservable({
                                     data: {
                                         AppName: serviceData.app,
@@ -2466,7 +2497,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                     url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
                                     _requestid: request._requestid,
                                 });
-    
+
                                 if (requestListGupshup.data.success) {
                                     templateList = requestListGupshup.data.result;
                                 }
@@ -2476,11 +2507,11 @@ exports.synchronizeTemplate = async (request, response) => {
                                 }
                             }
                             break;
-    
+
                         case "WHAT":
                             if (communicationchannel.servicecredentials) {
                                 let serviceData = JSON.parse(communicationchannel.servicecredentials);
-    
+
                                 const requestListSmooch = await axiosObservable({
                                     data: {
                                         AppId: serviceData.appId,
@@ -2493,7 +2524,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                     url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
                                     _requestid: request._requestid,
                                 });
-    
+
                                 if (requestListSmooch.data.success) {
                                     templateList = requestListSmooch.data.result;
                                 }
@@ -2504,13 +2535,13 @@ exports.synchronizeTemplate = async (request, response) => {
                             }
                             break;
                     }
-    
+
                     if (templateList) {
                         await channelfunctions.messageTemplateReset(communicationchannel.corpid, communicationchannel.orgid, communicationchannel.communicationchannelid, (communicationchannel.type === "WHAD" || communicationchannel.type === "WHAG") ? templateList[0]?.id || null : null, request.user.usr, request._requestid);
-    
+
                         for (const templateData of templateList) {
                             let buttonObject = [];
-    
+
                             if (templateData.buttons) {
                                 for (const buttonData of templateData.buttons) {
                                     let buttonInformation = {
@@ -2518,11 +2549,11 @@ exports.synchronizeTemplate = async (request, response) => {
                                         title: buttonData.text || '',
                                         payload: (buttonData.data || buttonData.text) || '',
                                     };
-    
+
                                     buttonObject.push(buttonInformation);
                                 }
                             }
-    
+
                             await channelfunctions.messageTemplateUpd(
                                 communicationchannel.corpid,
                                 communicationchannel.orgid,
@@ -2553,7 +2584,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                 request._requestid,
                             );
                         }
-    
+
                         requestCode = "";
                         requestMessage = "";
                         requestStatus = 200;
@@ -2577,7 +2608,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                     case "WHAD":
                                         if (servicecredentials) {
                                             let serviceData = JSON.parse(servicecredentials);
-                
+
                                             const requestListDialog = await axiosObservable({
                                                 data: {
                                                     ApiKey: serviceData.apiKey,
@@ -2587,7 +2618,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                                 url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
                                                 _requestid: request._requestid,
                                             });
-                
+
                                             if (requestListDialog.data.success) {
                                                 templatelist = requestListDialog.data.result;
                                             }
@@ -2597,11 +2628,11 @@ exports.synchronizeTemplate = async (request, response) => {
                                             }
                                         }
                                         break;
-                
+
                                     case "WHAG":
                                         if (servicecredentials) {
                                             let serviceData = JSON.parse(servicecredentials);
-                
+
                                             const requestListGupshup = await axiosObservable({
                                                 data: {
                                                     AppName: serviceData.app,
@@ -2612,7 +2643,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                                 url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
                                                 _requestid: request._requestid,
                                             });
-                
+
                                             if (requestListGupshup.data.success) {
                                                 templatelist = requestListGupshup.data.result;
                                             }
@@ -2622,11 +2653,11 @@ exports.synchronizeTemplate = async (request, response) => {
                                             }
                                         }
                                         break;
-                
+
                                     case "WHAT":
                                         if (servicecredentials) {
                                             let serviceData = JSON.parse(servicecredentials);
-                
+
                                             const requestListSmooch = await axiosObservable({
                                                 data: {
                                                     AppId: serviceData.appId,
@@ -2639,7 +2670,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                                 url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
                                                 _requestid: request._requestid,
                                             });
-                
+
                                             if (requestListSmooch.data.success) {
                                                 templatelist = requestListSmooch.data.result;
                                             }
@@ -2959,7 +2990,7 @@ exports.deleteTemplate = async (request, response) => {
                             case "WHAD":
                                 if (messagetemplate.communicationchannelservicecredentials) {
                                     let serviceData = JSON.parse(messagetemplate.communicationchannelservicecredentials);
-        
+
                                     const requestDeleteDialog = await axiosObservable({
                                         data: {
                                             ApiKey: serviceData.apiKey,
@@ -2970,7 +3001,7 @@ exports.deleteTemplate = async (request, response) => {
                                         url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
                                         _requestid: request._requestid,
                                     });
-    
+
                                     if (requestDeleteDialog.data.success) {
                                         deleteSuccess = true;
                                     }
@@ -2980,7 +3011,7 @@ exports.deleteTemplate = async (request, response) => {
                                     }
                                 }
                                 break;
-        
+
                             case "WHAT":
                                 if (messagetemplate.communicationchannelservicecredentials) {
                                     let serviceData = JSON.parse(messagetemplate.communicationchannelservicecredentials);
@@ -2998,7 +3029,7 @@ exports.deleteTemplate = async (request, response) => {
                                         url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
                                         _requestid: request._requestid,
                                     });
-        
+
                                     if (requestDeleteSmooch.data.success) {
                                         deleteSuccess = true;
                                     }
@@ -3008,7 +3039,7 @@ exports.deleteTemplate = async (request, response) => {
                                     }
                                 }
                                 break;
-        
+
                             case "WHAG":
                                 if (messagetemplate.communicationchannelservicecredentials) {
                                     deleteSuccess = true;
@@ -3028,9 +3059,9 @@ exports.deleteTemplate = async (request, response) => {
                         parameters.corpid = request.user.corpid;
                         parameters.orgid = request.user.orgid;
                         parameters.username = request.user.usr;
-        
+
                         const queryTemplateDelete = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
-        
+
                         if (queryTemplateDelete instanceof Array) {
                             requestCode = "";
                             requestMessage = "";
