@@ -890,6 +890,28 @@ exports.createSubscription = async (request, response) => {
                                 }
                                 break;
 
+                            case 'BUSINESS':
+                                if (channelService) {
+                                    var informationtoken = jwt.decode(channelService.idtoken);
+
+                                    channelParameters.communicationchannelowner = informationtoken.name;
+                                    channelParameters.communicationchannelsite = informationtoken.email;
+                                    channelParameters.integrationid = informationtoken.email;
+                                    channelParameters.servicecredentials = JSON.stringify(channelService);
+                                    channelParameters.status = 'ACTIVO';
+                                    channelParameters.type = 'GOBU';
+
+                                    await channelfunctions.serviceTokenUpdate(informationtoken.email, channelService.accesstoken, channelService.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', parameters.username, 50);
+
+                                    await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, informationtoken.email, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-BLOGGER', 'ACTIVO', parameters.username, `${hookEndpoint}blogger/webhookasync`, 2);
+
+                                    channelMethodArray.push(channelMethod);
+                                    channelParametersArray.push(channelParameters);
+                                    channelServiceArray.push(channelService);
+                                    channelTypeArray.push(channel.type);
+                                }
+                                break;
+
                             case 'BLOGGER':
                             case 'YOUTUBE':
                                 if (channelService) {

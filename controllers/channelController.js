@@ -1549,6 +1549,37 @@ exports.insertChannel = async (request, response) => {
                 }
                 break;
 
+            case 'BUSINESS':
+                if (service) {
+                    var informationtoken = jwt.decode(service.idtoken);
+
+                    parameters.communicationchannelowner = informationtoken.name;
+                    parameters.communicationchannelsite = informationtoken.email;
+                    parameters.integrationid = informationtoken.email;
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.status = 'ACTIVO';
+                    parameters.type = 'GOBU';
+
+                    await channelfunctions.serviceTokenUpdate(informationtoken.email, service.accesstoken, service.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', request?.user?.usr, 50);
+
+                    await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, informationtoken.email, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-BUSINESS', 'ACTIVO', request?.user?.usr, `${hookEndpoint}business/webhookasync`, 2);
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
             case 'BLOGGER':
             case 'YOUTUBE':
                 if (service) {
