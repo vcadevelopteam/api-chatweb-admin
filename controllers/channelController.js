@@ -11,6 +11,8 @@ const bridgeEndpoint = process.env.BRIDGE;
 const brokerEndpoint = process.env.CHATBROKER;
 const facebookEndpoint = process.env.FACEBOOKAPI;
 const hookEndpoint = process.env.HOOK;
+const linkedinEndpoint = process.env.LINKEDIN;
+const linkedinTokenEndpoint = process.env.LINKEDINTOKEN;
 const smoochEndpoint = process.env.SMOOCHAPI;
 const smoochVersion = process.env.SMOOCHVERSION;
 const telegramEndpoint = process.env.TELEGRAMAPI;
@@ -1624,7 +1626,67 @@ exports.insertChannel = async (request, response) => {
                 }
                 break;
 
+            case 'PLAYSTORE':
+                if (service) {
+                    parameters.communicationchannelowner = service.mail;
+                    parameters.communicationchannelsite = `${service.mail}|AC|${service.appcode}`;
+                    parameters.integrationid = service.appcode;
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.status = 'ACTIVO';
+                    parameters.type = 'PLAY';
+
+                    await channelfunctions.serviceTokenUpdate(service.mail, '', '', JSON.stringify(service), 'PLAYSTORE', 'ACTIVO', request?.user?.usr, 50);
+
+                    await channelfunctions.serviceSubscriptionUpdate(service.mail, service.appcode, JSON.stringify(service), 'GOOGLE-PLAYSTORE', 'ACTIVO', request?.user?.usr, `${hookEndpoint}appstore/playstorewebhookasync`, 2);
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
             case 'LINKEDIN':
+                if (service) {
+                    parameters.communicationchannelowner = service.clientid;
+                    parameters.communicationchannelsite = service.clientid;
+                    parameters.integrationid = service.organizationid;
+                    parameters.servicecredentials = JSON.stringify({
+                        clientId: service.clientid,
+                        clientSecret: service.clientsecret,
+                        endpoint: linkedinEndpoint,
+                        organizationId: service.organizationid,
+                    });
+                    parameters.status = 'ACTIVO';
+                    parameters.type = 'LNKD';
+
+                    await channelfunctions.serviceTokenUpdate(service.clientid, service.accesstoken, service.refreshtoken, JSON.stringify({ clientId: service.clientid, clientSecret: service.clientsecret, endpoint: linkedinTokenEndpoint }), 'LINKEDIN', 'ACTIVO', request?.user?.usr, 1400);
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
             case 'MICROSOFTTEAMS':
             case 'TIKTOK':
                 if (service) {
