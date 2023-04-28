@@ -894,6 +894,26 @@ exports.createSubscription = async (request, response) => {
                                 }
                                 break;
 
+                            case 'PLAYSTORE':
+                                if (channelService) {
+                                    channelParameters.communicationchannelowner = channelService.mail;
+                                    channelParameters.communicationchannelsite = `${channelService.mail}|AC|${channelService.appcode}`;
+                                    channelParameters.integrationid = channelService.appcode;
+                                    channelParameters.servicecredentials = JSON.stringify(channelService);
+                                    channelParameters.status = 'ACTIVO';
+                                    channelParameters.type = 'PLAY';
+
+                                    await channelfunctions.serviceTokenUpdate(channelService.mail, '', '', JSON.stringify(channelService), 'PLAYSTORE', 'ACTIVO', parameters.username, 50);
+
+                                    await channelfunctions.serviceSubscriptionUpdate(channelService.mail, channelService.appcode, JSON.stringify(channelService), 'GOOGLE-PLAYSTORE', 'ACTIVO', parameters.username, `${hookEndpoint}appstore/playstorewebhookasync`, 2);
+
+                                    channelMethodArray.push(channelMethod);
+                                    channelParametersArray.push(channelParameters);
+                                    channelServiceArray.push(channelService);
+                                    channelTypeArray.push(channel.type);
+                                }
+                                break;
+
                             case 'LINKEDIN':
                             case 'MICROSOFTTEAMS':
                             case 'TIKTOK':
