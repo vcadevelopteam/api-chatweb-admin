@@ -971,6 +971,39 @@ exports.getPhoneList = async (request, response) => {
         });
     }
 }
+exports.getGroupList = async (request, response) => {
+    try {
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
+        const {accesstoken}= request.body;
+
+        if(!accesstoken){
+            return response.status(400).json({
+                msg: 'there is no accesstoken parameter.',
+                success: false
+            });
+        }
+        
+        const requestGroupList = await axiosObservable({
+            method: 'get',
+            url: `https://graph.workplace.com/community/groups?access_token=${accesstoken}`,
+            _requestid: request._requestid,
+        });
+       
+        if (requestGroupList.data) {
+            return response.json({
+                data: requestGroupList.data,
+                success: true
+            });
+        }
+        
+    }
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            msg: exception.message,
+        });
+    }
+}
 
 exports.insertChannel = async (request, response) => {
     try {
@@ -1203,9 +1236,7 @@ exports.insertChannel = async (request, response) => {
                         success: false
                     });
                 }
-            case 'FACEBOOKWORPLACE':
-                console.log("---Execute Workplace---");
-
+            case 'FACEBOOKWORPLACE' || 'FBWM' :
                 const requestTokenWorkplace = await axiosObservable({
                     method: 'get',
                     url: `https://graph.workplace.com/me?access_token=${service.accesstoken}`,
@@ -1225,6 +1256,12 @@ exports.insertChannel = async (request, response) => {
 
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
                     parameters.type = 'FBWP';
+                    if(request.body.type === 'FBWM'){
+                        parameters.type = 'FBWM';
+                        //falta
+                        // parameters.communicationchannelsite = request group id
+                    }
+                    
                     parameters.communicationchannelowner = requestTokenWorkplace.data.id;
                     parameters.communicationchannelsite = requestTokenWorkplace.data.id;
                     

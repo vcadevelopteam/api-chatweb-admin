@@ -73,5 +73,10 @@ router.post("/getphonelist",
     auth,
     channelController.getPhoneList
 )
+router.post("/getgrouplist",
+    ip,
+    auth,
+    channelController.getGroupList
+)
 
 module.exports = router;
