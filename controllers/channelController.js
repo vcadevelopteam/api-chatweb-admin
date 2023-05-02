@@ -1236,7 +1236,8 @@ exports.insertChannel = async (request, response) => {
                         success: false
                     });
                 }
-            case 'FACEBOOKWORPLACE' || 'FBWM' :
+            case 'FACEBOOKWORPLACE':
+                console.log("Se ejecutooo")
                 const requestTokenWorkplace = await axiosObservable({
                     method: 'get',
                     url: `https://graph.workplace.com/me?access_token=${service.accesstoken}`,
@@ -1255,17 +1256,11 @@ exports.insertChannel = async (request, response) => {
                     };
 
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
-                    
+
                     //WORKPLACE MESSENGER
                     parameters.type = 'FBWP';
                     parameters.communicationchannelowner = requestTokenWorkplace.data.id;
                     parameters.communicationchannelsite = requestTokenWorkplace.data.id;
-
-                    //WORKPLACE WALL
-                    if(request.body.type === 'FBWM'){
-                        parameters.type = 'FBWM';
-                        parameters.communicationchannelsite = service.groupid;
-                    }
 
                     const transactionCreateWorkplace = await triggerfunctions.executesimpletransaction(method, parameters);
 
@@ -1287,6 +1282,54 @@ exports.insertChannel = async (request, response) => {
                 }else{
                     return response.status(400).json({
                         msg: requestTokenWorkplace.data.error.message,
+                        success: false
+                    });
+                }
+
+            case "FBWM":
+                 const requestTokenWorkplaceWall = await axiosObservable({
+                    method: 'get',
+                    url: `https://graph.workplace.com/me?access_token=${service.accesstoken}`,
+                    _requestid: request._requestid,
+                });
+
+                if(requestTokenWorkplaceWall.status = 200){
+
+                    var serviceCredentials = {
+                        accessToken: service.accesstoken,
+                        endpoint: facebookEndpoint,
+                        appid: service.appid || null,
+                        appsecret: service.appsecret ||null,
+                        serviceType: 'WORKPLACE',
+                        siteId: requestTokenWorkplaceWall.data.id
+                    };
+
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+
+                    parameters.type = 'FBWM';
+                    parameters.communicationchannelowner = requestTokenWorkplaceWall.data.id;
+                    parameters.communicationchannelsite = service.groupid;
+              
+                    const transactionCreateWorkplace = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateWorkplace instanceof Array) {
+                        await channelfunctions.clearHookCache('FacebookService', request._requestid);
+
+                        return response.json({
+                            success: true
+                        });
+                        
+                    }
+                
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateWorkplace.code,
+                            success: false
+                        });
+                    }
+                }else{
+                    return response.status(400).json({
+                        msg: requestTokenWorkplaceWall.data.error.message,
                         success: false
                     });
                 }
