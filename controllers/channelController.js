@@ -1255,16 +1255,18 @@ exports.insertChannel = async (request, response) => {
                     };
 
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
-                    parameters.type = 'FBWP';
-                    if(request.body.type === 'FBWM'){
-                        parameters.type = 'FBWM';
-                        //falta
-                        // parameters.communicationchannelsite = request group id
-                    }
                     
+                    //WORKPLACE MESSENGER
+                    parameters.type = 'FBWP';
                     parameters.communicationchannelowner = requestTokenWorkplace.data.id;
                     parameters.communicationchannelsite = requestTokenWorkplace.data.id;
-                    
+
+                    //WORKPLACE WALL
+                    if(request.body.type === 'FBWM'){
+                        parameters.type = 'FBWM';
+                        parameters.communicationchannelsite = service.groupid;
+                    }
+
                     const transactionCreateWorkplace = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateWorkplace instanceof Array) {
