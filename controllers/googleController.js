@@ -1,4 +1,5 @@
-const axios = require('axios');
+const axios = require("axios");
+const jwt = require("jsonwebtoken");
 
 const FormData = require("form-data");
 
@@ -7,6 +8,64 @@ const googleClientSecret = process.env.GOOGLE_CLIENTSECRET;
 const googleGrantType = process.env.GOOGLE_GRANTYPE;
 const googleAuthUri = process.env.GOOGLE_AUTHURI;
 const googleRedirectUri = process.env.GOOGLE_REDIRECTURI;
+
+exports.exchangeJwt = async (request, response) => {
+    try {
+        var requestCode = "error_unexpected_error";
+        var requestData = null;
+        var requestMessage = "error_unexpected_error";
+        var requestStatus = 400;
+        var requestSuccess = false;
+
+        if (request.body) {
+            const { privateKey, keyId, issuerId } = request.body;
+
+            let datestart = Math.round(new Date().getTime() / 1000);
+            let dateend = datestart + 1079;
+
+            let payload = {
+                "aud": "appstoreconnect-v1",
+                "exp": dateend,
+                "iat": datestart,
+                "iss": issuerId,
+            }
+
+            let header = {
+                "algorithm": "ES256",
+                header: {
+                    "alg": "ES256",
+                    "kid": keyId,
+                    "typ": "JWT",
+                }
+            };
+
+            let token = jwt.sign(payload, privateKey, header);
+
+            if (token) {
+                requestCode = null;
+                requestData = { token: token };
+                requestMessage = null;
+                requestStatus = 200;
+                requestSuccess = true;
+            }
+        }
+
+        return response.status(requestStatus).json({
+            code: requestCode,
+            data: requestData,
+            error: !requestSuccess,
+            message: requestMessage,
+            success: requestSuccess,
+        });
+    } catch (exception) {
+        return response.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
+};
 
 exports.exchangeCode = async (request, response) => {
     try {
@@ -21,17 +80,17 @@ exports.exchangeCode = async (request, response) => {
 
             const data = {};
 
-            data['client_id'] = googleClientId;
-            data['client_secret'] = googleClientSecret;
-            data['code'] = googlecode;
-            data['grant_type'] = googleGrantType;
-            data['redirect_uri'] = googleRedirectUri;
+            data["client_id"] = googleClientId;
+            data["client_secret"] = googleClientSecret;
+            data["code"] = googlecode;
+            data["grant_type"] = googleGrantType;
+            data["redirect_uri"] = googleRedirectUri;
 
             const form = new FormData();
 
-            Object.keys(data).forEach(parameter => {
+            Object.keys(data).forEach((parameter) => {
                 if (![undefined, null].includes(data[parameter])) {
-                    form.append(parameter, data[parameter])
+                    form.append(parameter, data[parameter]);
                 }
             });
 
@@ -58,8 +117,7 @@ exports.exchangeCode = async (request, response) => {
             message: requestMessage,
             success: requestSuccess,
         });
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             code: "error_unexpected_error",
             error: true,
@@ -67,7 +125,7 @@ exports.exchangeCode = async (request, response) => {
             success: false,
         });
     }
-}
+};
 
 exports.listBlogger = async (request, response) => {
     try {
@@ -84,7 +142,7 @@ exports.listBlogger = async (request, response) => {
                 method: "get",
                 url: "https://www.googleapis.com/blogger/v3/users/self/blogs",
                 headers: {
-                    "Authorization": `Bearer ${accesstoken}`,
+                    Authorization: `Bearer ${accesstoken}`,
                 },
             });
 
@@ -104,8 +162,7 @@ exports.listBlogger = async (request, response) => {
             message: requestMessage,
             success: requestSuccess,
         });
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             code: "error_unexpected_error",
             error: true,
@@ -113,7 +170,7 @@ exports.listBlogger = async (request, response) => {
             success: false,
         });
     }
-}
+};
 
 exports.listYouTube = async (request, response) => {
     try {
@@ -130,7 +187,7 @@ exports.listYouTube = async (request, response) => {
                 method: "get",
                 url: "https://www.googleapis.com/youtube/v3/channels?mine=true&maxResults=50",
                 headers: {
-                    "Authorization": `Bearer ${accesstoken}`,
+                    Authorization: `Bearer ${accesstoken}`,
                 },
             });
 
@@ -150,8 +207,7 @@ exports.listYouTube = async (request, response) => {
             message: requestMessage,
             success: requestSuccess,
         });
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             code: "error_unexpected_error",
             error: true,
@@ -159,4 +215,4 @@ exports.listYouTube = async (request, response) => {
             success: false,
         });
     }
-}
+};
