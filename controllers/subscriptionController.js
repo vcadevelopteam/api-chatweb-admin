@@ -894,6 +894,26 @@ exports.createSubscription = async (request, response) => {
                                 }
                                 break;
 
+                            case 'APPSTORE':
+                                if (channelService) {
+                                    channelParameters.communicationchannelowner = channelService.keyid;
+                                    channelParameters.communicationchannelsite = channelService.issuerid;
+                                    channelParameters.integrationid = channelService.issuerid;
+                                    channelParameters.servicecredentials = JSON.stringify(channelService);
+                                    channelParameters.status = 'ACTIVO';
+                                    channelParameters.type = 'APPS';
+
+                                    await channelfunctions.serviceTokenUpdate(channelService.issuerid, '', '', JSON.stringify({ issuerId: channelService.issuerid, keyId: channelService.keyid, secretKey: channelService.secretkey }), 'APPSTORE', 'ACTIVO', parameters.username, 15);
+
+                                    await channelfunctions.serviceSubscriptionUpdate(channelService.issuerid, channelService.keyid, JSON.stringify({ issuerId: channelService.issuerid, keyId: channelService.keyid, secretKey: channelService.secretkey }), 'APPLE-APPSTORE', 'ACTIVO', parameters.username, `${hookEndpoint}appstore/appstorewebhookasync`, 2);
+
+                                    channelMethodArray.push(channelMethod);
+                                    channelParametersArray.push(channelParameters);
+                                    channelServiceArray.push(channelService);
+                                    channelTypeArray.push(channel.type);
+                                }
+                                break;
+
                             case 'LINKEDIN':
                             case 'MICROSOFTTEAMS':
                             case 'TIKTOK':
