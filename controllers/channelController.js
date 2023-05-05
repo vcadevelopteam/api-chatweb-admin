@@ -1808,6 +1808,35 @@ exports.insertChannel = async (request, response) => {
                 }
                 break;
 
+            case 'APPSTORE':
+                if (service) {
+                    parameters.communicationchannelowner = service.keyid;
+                    parameters.communicationchannelsite = service.issuerid;
+                    parameters.integrationid = service.issuerid;
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.status = 'ACTIVO';
+                    parameters.type = 'APPS';
+
+                    await channelfunctions.serviceTokenUpdate(service.issuerid, '', '', JSON.stringify({ issuerId: service.issuerid, keyId: service.keyid, secretKey: service.secretkey }), 'APPSTORE', 'ACTIVO', request?.user?.usr, 15);
+
+                    await channelfunctions.serviceSubscriptionUpdate(service.issuerid, service.keyid, JSON.stringify({ issuerId: service.issuerid, keyId: service.keyid, secretKey: service.secretkey }), 'APPLE-APPSTORE', 'ACTIVO', request?.user?.usr, `${hookEndpoint}appstore/appstorewebhookasync`, 2);
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
             case 'TELEGRAM':
                 const requestCreateTelegram = await axiosObservable({
                     data: {
