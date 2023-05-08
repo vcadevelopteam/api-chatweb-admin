@@ -1411,6 +1411,40 @@ module.exports = {
             type: "date"
         },
     },
+    messagetemplate:{
+        createdate: {
+            column: "mt.createdate",
+            type: "date"
+        },
+        templateid: {
+            column: "mt.messagetemplateid",
+        },
+        type: {
+            column: "mt.type",
+        },
+        templatetype: {
+            column: "mt.templatetype",
+        },
+        name: {
+            column: "mt.name",
+        },
+        namespace: {
+            column: "mt.namespace",
+        },
+        status: {
+            column: "mt.status",
+        },
+        fromprovider: {
+            column: "mt.fromprovider",
+        },
+        communicationchanneldesc: {
+            column: "cc.description",
+        },
+        externalstatus: {
+            column: "mt.externalstatus",
+        },
+
+    },
     reportcompliancesla:{
         sd_request: {
             column: "ld.sd_request"
