@@ -589,6 +589,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_MESSAGETEMPLATE_EXPORT: {
+        query: "SELECT * FROM ufn_messagetemplate_export($corpid, $orgid, $communicationchannelid, $where, $order)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CLASSIFICATION_INS: {
         query: "SELECT * FROM ufn_classification_ins( $id, $corpid, $orgid, $description, $parent, $communicationchannel, $status, $type, $username, $operation, $tags,$title, $jobplan, $usergroup, $schedule, $order, $metacatalogid)",
         module: "",
