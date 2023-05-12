@@ -1663,7 +1663,7 @@ module.exports = {
         protected: "INSERT"
     },
     QUERY_GET_MESSAGETEMPLATE: {
-        query: "select messagetemplateid, header, body, priority, attachment from messagetemplate where corpid = $corpid and orgid = $orgid and messagetemplateid = $hsmtemplateid",
+        query: "select messagetemplateid, header, name, body, priority, attachment from messagetemplate where corpid = $corpid and orgid = $orgid and messagetemplateid = $hsmtemplateid",
         module: "",
         protected: "INSERT"
     },
