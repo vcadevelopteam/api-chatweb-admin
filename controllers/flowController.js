@@ -103,6 +103,12 @@ exports.TestRequest = async (req, res) => {
             else {
                 result = await axios.post(url, body, { ...setConfig(authorization, headersjson) });
             }
+        } else if (method === "PUT") {
+            result = await axios.put(url, { ...setConfig(authorization, headersjson) });
+        } else if (method === "DELETE") {
+            result = await axios.delete(url, { ...setConfig(authorization, headersjson) });
+        } else if (method === "PATCH") {
+            result = await axios.patch(url, { ...setConfig(authorization, headersjson) });
         }
         else {
             result = await axios.get(url, { ...setConfig(authorization, headersjson) });
