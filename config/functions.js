@@ -3677,12 +3677,12 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_DASHBOARD_KPI_SUMMARY_SEL: {
-        query: "SELECT * FROM ufn_dashboard_kpi_summary_sel($corpid, $orgid, $date, $origin, $usergroup, $supervisorid, $offset)",
+        query: "SELECT * FROM ufn_dashboard_kpi_summary_sel($corpid, $orgid, $date, $origin, $usergroup, $supervisorid, $offset, $userid)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_KPI_SUMMARY_GRAPH_SEL: {
-        query: "SELECT * FROM ufn_dashboard_kpi_graph_sel($corpid, $orgid, $date, $origin, $usergroup, $supervisorid, $offset)",
+        query: "SELECT * FROM ufn_dashboard_kpi_graph_sel($corpid, $orgid, $date, $origin, $usergroup, $supervisorid, $offset, $userid)",
         module: "",
         protected: "SELECT"
     },
