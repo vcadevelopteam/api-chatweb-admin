@@ -73,7 +73,7 @@ const setConfig = (auth, headers) => {
     const defaults = { headers: headers };
     const { type, token, username, password } = getHttpAuthorization(auth);
     if (token) {
-        defaults['Authorization'] = `Bearer ${token}`;
+        defaults.headers['Authorization'] = `Bearer ${token}`;
     }
     if (type === 'BASIC') {
         // defaults['Authorization'] = `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
