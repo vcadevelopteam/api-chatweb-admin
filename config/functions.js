@@ -2784,7 +2784,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PROFILE_SEL: {
-        query: "SELECT firstname, lastname, email, phone, country FROM usr WHERE userid = $userid;",
+        query: "SELECT firstname, lastname, email, phone, country, doctype, docnum FROM usr WHERE userid = $userid;",
         module: "",
         protected: "SELECT"
     },
