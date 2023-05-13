@@ -7,6 +7,7 @@ const { setSessionParameters, axiosObservable } = require('../config/helpers');
 
 const logger = require('../config/winston');
 
+const ayrshareEndpoint = process.env.AYRSHARE;
 const bridgeEndpoint = process.env.BRIDGE;
 const brokerEndpoint = process.env.CHATBROKER;
 const facebookEndpoint = process.env.FACEBOOKAPI;
@@ -976,28 +977,28 @@ exports.getPhoneList = async (request, response) => {
 exports.getGroupList = async (request, response) => {
     try {
         logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-        const {accesstoken}= request.body;
+        const { accesstoken } = request.body;
 
-        if(!accesstoken){
+        if (!accesstoken) {
             return response.status(400).json({
                 msg: 'there is no accesstoken parameter.',
                 success: false
             });
         }
-        
+
         const requestGroupList = await axiosObservable({
             method: 'get',
             url: `https://graph.workplace.com/community/groups?access_token=${accesstoken}`,
             _requestid: request._requestid,
         });
-       
+
         if (requestGroupList.data) {
             return response.json({
                 data: requestGroupList.data,
                 success: true
             });
         }
-        
+
     }
     catch (exception) {
         return response.status(500).json({
@@ -1246,13 +1247,13 @@ exports.insertChannel = async (request, response) => {
                     _requestid: request._requestid,
                 });
 
-                if(requestTokenWorkplace.status = 200){
+                if (requestTokenWorkplace.status = 200) {
 
                     var serviceCredentials = {
                         accessToken: service.accesstoken,
                         endpoint: facebookEndpoint,
                         appid: service.appid || null,
-                        appsecret: service.appsecret ||null,
+                        appsecret: service.appsecret || null,
                         serviceType: 'WORKPLACE',
                         siteId: requestTokenWorkplace.data.id
                     };
@@ -1272,16 +1273,16 @@ exports.insertChannel = async (request, response) => {
                         return response.json({
                             success: true
                         });
-                        
+
                     }
-                
+
                     else {
                         return response.status(400).json({
                             msg: transactionCreateWorkplace.code,
                             success: false
                         });
                     }
-                }else{
+                } else {
                     return response.status(400).json({
                         msg: requestTokenWorkplace.data.error.message,
                         success: false
@@ -1289,19 +1290,19 @@ exports.insertChannel = async (request, response) => {
                 }
 
             case "FBWM":
-                 const requestTokenWorkplaceWall = await axiosObservable({
+                const requestTokenWorkplaceWall = await axiosObservable({
                     method: 'get',
                     url: `https://graph.workplace.com/me?access_token=${service.accesstoken}`,
                     _requestid: request._requestid,
                 });
 
-                if(requestTokenWorkplaceWall.status = 200){
+                if (requestTokenWorkplaceWall.status = 200) {
 
                     var serviceCredentials = {
                         accessToken: service.accesstoken,
                         endpoint: facebookEndpoint,
                         appid: service.appid || null,
-                        appsecret: service.appsecret ||null,
+                        appsecret: service.appsecret || null,
                         serviceType: 'WORKPLACE',
                         siteId: requestTokenWorkplaceWall.data.id
                     };
@@ -1311,7 +1312,7 @@ exports.insertChannel = async (request, response) => {
                     parameters.type = 'FBWM';
                     parameters.communicationchannelowner = requestTokenWorkplaceWall.data.id;
                     parameters.communicationchannelsite = service.groupid;
-              
+
                     const transactionCreateWorkplace = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateWorkplace instanceof Array) {
@@ -1320,16 +1321,16 @@ exports.insertChannel = async (request, response) => {
                         return response.json({
                             success: true
                         });
-                        
+
                     }
-                
+
                     else {
                         return response.status(400).json({
                             msg: transactionCreateWorkplace.code,
                             success: false
                         });
                     }
-                }else{
+                } else {
                     return response.status(400).json({
                         msg: requestTokenWorkplaceWall.data.error.message,
                         success: false
@@ -1737,6 +1738,58 @@ exports.insertChannel = async (request, response) => {
                 }
                 break;
 
+            case 'AYRSHARE-TIKTOK':
+                if (service) {
+                    const requestCreateAyrshare = await axiosObservable({
+                        data: {
+                            accessToken: service.accesstoken,
+                            integrationType: "TIKTOK",
+                            linkType: "CHECKINTEGRATION",
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processlaraigo/ayrshare/manageayrsharelink`,
+                        _requestid: request._requestid,
+                    });
+
+                    if (requestCreateAyrshare.data.success) {
+                        var serviceCredentials = {
+                            endpoint: ayrshareEndpoint,
+                            username: requestCreateAyrshare.data.username,
+                            accessToken: service.accesstoken,
+                        };
+
+                        parameters.communicationchannelowner = requestCreateAyrshare.data.username;
+                        parameters.communicationchannelsite = requestCreateAyrshare.data.username;
+                        parameters.integrationid = requestCreateAyrshare.data.username;
+                        parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                        parameters.status = 'ACTIVO';
+                        parameters.type = 'TKTA';
+
+                        await channelfunctions.serviceSubscriptionUpdate(requestCreateAyrshare.data.username, requestCreateAyrshare.data.username, JSON.stringify(serviceCredentials), 'AYRSHARE-TIKTOK', 'ACTIVO', request?.user?.usr, `${hookEndpoint}ayrshare/webhookasync`, 2);
+
+                        const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                        if (transactionCreateGeneric instanceof Array) {
+                            return response.json({
+                                success: true
+                            });
+                        }
+                        else {
+                            return response.status(400).json({
+                                msg: transactionCreateGeneric.code,
+                                success: false
+                            });
+                        }
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: requestCreateAyrshare.data.operationMessage,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
             case 'LINKEDIN':
                 if (service) {
                     parameters.communicationchannelowner = service.clientid;
@@ -1788,7 +1841,7 @@ exports.insertChannel = async (request, response) => {
                             break;
 
                         case 'TIKTOK':
-                            parameters.type = 'TITO';
+                            parameters.type = 'TKTK';
                             break;
                     }
 
