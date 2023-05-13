@@ -56,6 +56,7 @@ exports.schedulePost = async (request, response) => {
                                 break;
 
                             case "TKTK":
+                            case "TKTA":
                                 parameters.textbody = request.body.data.textcustomtiktok || textbody;
                                 break;
 

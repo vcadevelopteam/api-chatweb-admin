@@ -8,6 +8,7 @@ const { getErrorCode, setSessionParameters, axiosObservable } = require('../conf
 
 const cryptojs = require("crypto-js");
 
+const ayrshareEndpoint = process.env.AYRSHARE;
 const bridgeEndpoint = process.env.BRIDGE;
 const brokerEndpoint = process.env.CHATBROKER;
 const facebookEndpoint = process.env.FACEBOOKAPI;
@@ -894,6 +895,43 @@ exports.createSubscription = async (request, response) => {
                                 }
                                 break;
 
+                            case 'AYRSHARE-TIKTOK':
+                                if (channelService) {
+                                    const requestCreateAyrshare = await axiosObservable({
+                                        data: {
+                                            accessToken: channelService.accesstoken,
+                                            integrationType: "TIKTOK",
+                                            linkType: "CHECKINTEGRATION",
+                                        },
+                                        method: 'post',
+                                        url: `${bridgeEndpoint}processlaraigo/ayrshare/manageayrsharelink`,
+                                        _requestid: request._requestid,
+                                    });
+
+                                    if (requestCreateAyrshare.data.success) {
+                                        var serviceCredentials = {
+                                            endpoint: ayrshareEndpoint,
+                                            username: requestCreateAyrshare.data.username,
+                                            accessToken: channelService.accesstoken,
+                                        };
+
+                                        channelParameters.communicationchannelowner = requestCreateAyrshare.data.username;
+                                        channelParameters.communicationchannelsite = requestCreateAyrshare.data.username;
+                                        channelParameters.integrationid = requestCreateAyrshare.data.username;
+                                        channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
+                                        channelParameters.status = 'ACTIVO';
+                                        channelParameters.type = 'TKTA';
+
+                                        await channelfunctions.serviceSubscriptionUpdate(requestCreateAyrshare.data.username, requestCreateAyrshare.data.username, JSON.stringify(serviceCredentials), 'AYRSHARE-TIKTOK', 'ACTIVO', parameters.username, `${hookEndpoint}ayrshare/webhookasync`, 2);
+
+                                        channelMethodArray.push(channelMethod);
+                                        channelParametersArray.push(channelParameters);
+                                        channelServiceArray.push(channelService);
+                                        channelTypeArray.push(channel.type);
+                                    }
+                                }
+                                break;
+
                             case 'LINKEDIN':
                             case 'MICROSOFTTEAMS':
                             case 'TIKTOK':
@@ -914,7 +952,7 @@ exports.createSubscription = async (request, response) => {
                                             break;
 
                                         case 'TIKTOK':
-                                            channelParameters.type = 'TITO';
+                                            channelParameters.type = 'TKTK';
                                             break;
                                     }
 
