@@ -15,6 +15,7 @@ const hookEndpoint = process.env.HOOK;
 const smoochEndpoint = process.env.SMOOCHAPI;
 const smoochVersion = process.env.SMOOCHVERSION;
 const telegramEndpoint = process.env.TELEGRAMAPI;
+const tikApiEndpoint = process.env.TIKAPI;
 const webChatApplication = process.env.CHATAPPLICATION;
 const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
 const whatsAppEndpoint = process.env.WHATSAPPAPI;
@@ -1535,6 +1536,59 @@ exports.insertChannel = async (request, response) => {
                     else {
                         return response.status(400).json({
                             msg: requestCreateAyrshare.data.operationMessage,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
+            case 'TIKAPI-TIKTOK':
+                if (service) {
+                    const requestCreateTikApi = await axiosObservable({
+                        data: {
+                            apiKey: service.apikey,
+                            accountKey: service.accountkey,
+                            linkType: "CHECKINTEGRATION",
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processlaraigo/tikapi/managetikapilink`,
+                        _requestid: request._requestid,
+                    });
+
+                    if (requestCreateTikApi.data.success) {
+                        var serviceCredentials = {
+                            endpoint: tikApiEndpoint,
+                            username: requestCreateTikApi.data.username,
+                            apiKey: service.apikey,
+                            accountKey: service.accountkey,
+                        };
+
+                        parameters.communicationchannelowner = requestCreateTikApi.data.username;
+                        parameters.communicationchannelsite = requestCreateTikApi.data.username;
+                        parameters.integrationid = requestCreateTikApi.data.username;
+                        parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                        parameters.status = 'ACTIVO';
+                        parameters.type = 'TKTT';
+
+                        await channelfunctions.serviceSubscriptionUpdate(requestCreateTikApi.data.username, requestCreateTikApi.data.username, JSON.stringify(serviceCredentials), 'TIKAPI-TIKTOK', 'ACTIVO', request?.user?.usr, `${hookEndpoint}tikapi/webhookasync`, 2);
+
+                        const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                        if (transactionCreateGeneric instanceof Array) {
+                            return response.json({
+                                success: true
+                            });
+                        }
+                        else {
+                            return response.status(400).json({
+                                msg: transactionCreateGeneric.code,
+                                success: false
+                            });
+                        }
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: requestCreateTikApi.data.operationMessage,
                             success: false
                         });
                     }
