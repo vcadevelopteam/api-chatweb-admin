@@ -97,19 +97,16 @@ exports.TestRequest = async (req, res) => {
                 Object.keys(parametersjson).forEach(key => formData.append(key, parametersjson[key]));
                 result = await axios.post(url, formData, { ...setConfig(authorization, { ...formData.getHeaders(), ...headersjson }) });
             }
-            else if (postformat.toLowerCase() === 'json') {
-                if (method === "POST") {
-                    result = await axios.post(url, JSON.parse(body), { ...setConfig(authorization, headersjson) });
-                } else if (method === "PUT") {
-                    result = await axios.put(url, JSON.parse(body), { ...setConfig(authorization, headersjson) });
-                } else if (method === "DELETE") {
-                    result = await axios.delete(url, JSON.parse(body), { ...setConfig(authorization, headersjson) });
-                } else if (method === "PATCH") {
-                    result = await axios.patch(url, JSON.parse(body), { ...setConfig(authorization, headersjson) });
-                } 
-            }
             else {
-                result = await axios.post(url, body, { ...setConfig(authorization, headersjson) });
+                if (method === "POST") {
+                    result = await axios.post(url, postformat.toLowerCase() === 'json' ? JSON.parse(body) : body, { ...setConfig(authorization, headersjson) });
+                } else if (method === "PUT") {
+                    result = await axios.put(url, postformat.toLowerCase() === 'json' ? JSON.parse(body) : body, { ...setConfig(authorization, headersjson) });
+                } else if (method === "DELETE") {
+                    result = await axios.delete(url, postformat.toLowerCase() === 'json' ? JSON.parse(body) : body, { ...setConfig(authorization, headersjson) });
+                } else if (method === "PATCH") {
+                    result = await axios.patch(url, postformat.toLowerCase() === 'json' ? JSON.parse(body) : body, { ...setConfig(authorization, headersjson) });
+                }
             }
         } 
         else {
