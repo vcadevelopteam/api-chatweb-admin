@@ -92,6 +92,7 @@ exports.TestRequest = async (req, res) => {
         let parametersjson = parameters.reduce((a, x) => ({ ...a, [x.key]: x.value }), {});
         let result = {}
         if (["POST", "PUT", "DELETE", "PATCH"].includes(method)) {
+        if (["POST", "PUT", "DELETE", "PATCH"].includes(method)) {
             if (postformat.toLowerCase() === 'urlencoded') {
                 const formData = new FormData();
                 Object.keys(parametersjson).forEach(key => formData.append(key, parametersjson[key]));
@@ -109,15 +110,7 @@ exports.TestRequest = async (req, res) => {
                 } 
             }
             else {
-                if (method === "POST") {
-                    result = result = await axios.post(url, body, { ...setConfig(authorization, headersjson) });
-                } else if (method === "PUT") {
-                    result = result = await axios.put(url, body, { ...setConfig(authorization, headersjson) });
-                } else if (method === "DELETE") {
-                    result = result = await axios.delete(url, body, { ...setConfig(authorization, headersjson) });
-                } else if (method === "PATCH") {
-                    result = result = await axios.patch(url, body, { ...setConfig(authorization, headersjson) });
-                } 
+                result = await axios.post(url, body, { ...setConfig(authorization, headersjson) });
             }
         } 
         else {
