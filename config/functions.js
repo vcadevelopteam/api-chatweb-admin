@@ -1663,7 +1663,7 @@ module.exports = {
         protected: "INSERT"
     },
     QUERY_GET_MESSAGETEMPLATE: {
-        query: "select messagetemplateid, header, body, priority, attachment from messagetemplate where corpid = $corpid and orgid = $orgid and messagetemplateid = $hsmtemplateid",
+        query: "select messagetemplateid, header, name, body, priority, attachment from messagetemplate where corpid = $corpid and orgid = $orgid and messagetemplateid = $hsmtemplateid",
         module: "",
         protected: "INSERT"
     },
@@ -2789,7 +2789,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PROFILE_SEL: {
-        query: "SELECT firstname, lastname, email, phone, country FROM usr WHERE userid = $userid;",
+        query: "SELECT firstname, lastname, email, phone, country, doctype, docnum FROM usr WHERE userid = $userid;",
         module: "",
         protected: "SELECT"
     },
@@ -3677,12 +3677,12 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_DASHBOARD_KPI_SUMMARY_SEL: {
-        query: "SELECT * FROM ufn_dashboard_kpi_summary_sel($corpid, $orgid, $date, $origin, $usergroup, $supervisorid, $offset)",
+        query: "SELECT * FROM ufn_dashboard_kpi_summary_sel($corpid, $orgid, $date, $origin, $usergroup, $supervisorid, $offset, $userid)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_KPI_SUMMARY_GRAPH_SEL: {
-        query: "SELECT * FROM ufn_dashboard_kpi_graph_sel($corpid, $orgid, $date, $origin, $usergroup, $supervisorid, $offset)",
+        query: "SELECT * FROM ufn_dashboard_kpi_graph_sel($corpid, $orgid, $date, $origin, $usergroup, $supervisorid, $offset, $userid)",
         module: "",
         protected: "SELECT"
     },

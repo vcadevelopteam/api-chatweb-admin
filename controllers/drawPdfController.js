@@ -113,6 +113,7 @@ exports.drawCardDynamic = async (req, res) => {
                 return res.json({ error: false, success: true, url: "", code: "WITHOUT-TEMPLATE" });
             } else {
                 let template = result[0].body;
+                const filename = (result[0].name || "").replace(/\r?\n|\r/g, '').replace(/[^a-zA-Z0-9áéíóúüñÁÉÍÓÚÜÑ\s]+/g, '') || "file-lar"
                 variables.forEach(x => { template = template.replace(new RegExp(`{{${x.Key}}}`, 'gi'), x.Value) });
 
                 const data = ejs.render(template, {});
@@ -122,7 +123,7 @@ exports.drawCardDynamic = async (req, res) => {
                         logger.child({ _requestid: req._requestid, error: { detail: error1.stack, message: error1.message } }).error(`Request to ${req.originalUrl}: ${error1.message}`);
                         return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
                     }
-                    const rr = await uploadBufferToCos(req._requestid, buffer, (fileType === "image" ? "image/jpeg" : "application/pdf"), `${uuidv4()}/cardimageaux.${fileType === "image" ? "jpeg" : "pdf"}`);
+                    const rr = await uploadBufferToCos(req._requestid, buffer, (fileType === "image" ? "image/jpeg" : "application/pdf"), `${uuidv4()}/${filename}.${fileType === "image" ? "jpeg" : "pdf"}`);
                     return res.json({ error: false, success: true, url: rr.url });
                 })
             }
