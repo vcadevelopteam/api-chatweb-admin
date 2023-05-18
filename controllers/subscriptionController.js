@@ -1017,7 +1017,7 @@ exports.createSubscription = async (request, response) => {
                                         channelParameters.status = 'ACTIVO';
                                         channelParameters.type = 'TKTA';
 
-                                        await channelfunctions.serviceSubscriptionUpdate(requestCreateAyrshare.data.username, requestCreateAyrshare.data.username, JSON.stringify(serviceCredentials), 'AYRSHARE-TIKTOK', 'ACTIVO', parameters.username, `${hookEndpoint}ayrshare/webhookasync`, 2);
+                                        await channelfunctions.serviceSubscriptionUpdate(requestCreateAyrshare.data.username, requestCreateAyrshare.data.username, JSON.stringify(serviceCredentials), 'AYRSHARE-TIKTOK', 'ACTIVO', parameters.username, `${hookEndpoint}ayrshare/webhookasync`, 20);
 
                                         channelMethodArray.push(channelMethod);
                                         channelParametersArray.push(channelParameters);

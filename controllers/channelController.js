@@ -1766,7 +1766,7 @@ exports.insertChannel = async (request, response) => {
                         parameters.status = 'ACTIVO';
                         parameters.type = 'TKTA';
 
-                        await channelfunctions.serviceSubscriptionUpdate(requestCreateAyrshare.data.username, requestCreateAyrshare.data.username, JSON.stringify(serviceCredentials), 'AYRSHARE-TIKTOK', 'ACTIVO', request?.user?.usr, `${hookEndpoint}ayrshare/webhookasync`, 2);
+                        await channelfunctions.serviceSubscriptionUpdate(requestCreateAyrshare.data.username, requestCreateAyrshare.data.username, JSON.stringify(serviceCredentials), 'AYRSHARE-TIKTOK', 'ACTIVO', request?.user?.usr, `${hookEndpoint}ayrshare/webhookasync`, 20);
 
                         const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
 
@@ -1819,7 +1819,7 @@ exports.insertChannel = async (request, response) => {
                         parameters.status = 'ACTIVO';
                         parameters.type = 'TKTT';
 
-                        await channelfunctions.serviceSubscriptionUpdate(requestCreateTikApi.data.username, requestCreateTikApi.data.username, JSON.stringify(serviceCredentials), 'TIKAPI-TIKTOK', 'ACTIVO', request?.user?.usr, `${hookEndpoint}tikapi/webhookasync`, 2);
+                        await channelfunctions.serviceSubscriptionUpdate(requestCreateTikApi.data.username, requestCreateTikApi.data.username, JSON.stringify(serviceCredentials), 'TIKAPI-TIKTOK', 'ACTIVO', request?.user?.usr, `${hookEndpoint}tikapi/webhookasync`, 20);
 
                         const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
 
