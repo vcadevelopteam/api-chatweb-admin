@@ -163,9 +163,7 @@ exports.drawPDFSBS = async (req, res) => {
                         return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
                     }
                     const fileName = "Reporte de deudas.pdf";
-                    const encodedFileName = fileName.replace(/ /g, "%20");
-
-                    const rr = await uploadBufferToCos(req._requestid, buffer, "application/x-pdf", `${uuidv4()}/${encodedFileName}`);
+                    const rr = await uploadBufferToCos(req._requestid, buffer, "application/x-pdf", `${uuidv4()}/${fileName}`);
 
                     const encodedURL = rr.url.replace(/ /g, "%20");
 
