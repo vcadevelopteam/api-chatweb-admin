@@ -162,10 +162,10 @@ exports.drawPDFSBS = async (req, res) => {
                         logger.child({ _requestid: req._requestid, error: { detail: error1.stack, message: error1.message } }).error(`Request to ${req.originalUrl}: ${error1.message}`);
                         return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
                     }
-                    const fileName = "Reporte de Deudas";
+                    const fileName = "Reporte%20de%20Deudas";
                     const encodedFileName = encodeURIComponent(fileName);
 
-                    const rr = await uploadBufferToCos(req._requestid, buffer, "application/x-pdf", `${uuidv4()}/${encodedFileName}`);
+                    const rr = await uploadBufferToCos(req._requestid, buffer, "application/x-pdf", `${uuidv4()}/${encodedFileName}.pdf`);
                     return res.json({ error: false, success: true, url: rr.url });
                 })
             }
