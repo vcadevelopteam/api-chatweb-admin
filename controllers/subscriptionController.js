@@ -1031,12 +1031,12 @@ exports.createSubscription = async (request, response) => {
                                 if (channelService) {
                                     channelParameters.communicationchannelowner = channelService.clientid;
                                     channelParameters.communicationchannelsite = channelService.clientid;
-                                    channelParameters.integrationid = channelService.organizationid;
+                                    channelParameters.integrationid = `urn:li:organization:${channelService.organizationid}`;
                                     channelParameters.servicecredentials = JSON.stringify({
                                         clientId: channelService.clientid,
                                         clientSecret: channelService.clientsecret,
                                         endpoint: linkedinEndpoint,
-                                        organizationId: channelService.organizationid,
+                                        organizationId: `urn:li:organization:${channelService.organizationid}`,
                                     });
                                     channelParameters.status = 'ACTIVO';
                                     channelParameters.type = 'LNKD';

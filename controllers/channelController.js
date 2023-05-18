@@ -1848,12 +1848,12 @@ exports.insertChannel = async (request, response) => {
                 if (service) {
                     parameters.communicationchannelowner = service.clientid;
                     parameters.communicationchannelsite = service.clientid;
-                    parameters.integrationid = service.organizationid;
+                    parameters.integrationid = `urn:li:organization:${service.organizationid}`;
                     parameters.servicecredentials = JSON.stringify({
                         clientId: service.clientid,
                         clientSecret: service.clientsecret,
                         endpoint: linkedinEndpoint,
-                        organizationId: service.organizationid,
+                        organizationId: `urn:li:organization:${service.organizationid}`,
                     });
                     parameters.status = 'ACTIVO';
                     parameters.type = 'LNKD';
