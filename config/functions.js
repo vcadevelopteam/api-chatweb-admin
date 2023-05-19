@@ -1792,6 +1792,13 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_SEL_PROPERTY_INTEGRATION: {
+        query: `SELECT im.corpid, im.orgid, p.propertyname, p.propertyvalue FROM integrationmanager im
+        INNER JOIN property p ON p.corpid = im.corpid AND p.orgid = im.orgid AND p.propertyname = 'MAXIMAPI'
+        WHERE split_part(url, '/', array_length(string_to_array(url, '/'), 1)) = $table_name;`,
+        module: "",
+        protected: "SELECT"
+    },
     UFN_DASHBOARDTEMPLATE_SEL: {
         query: "SELECT * FROM ufn_dashboardtemplate_sel($corpid, $orgid, $id, $all);",
         module: "",
