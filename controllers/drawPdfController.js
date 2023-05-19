@@ -165,7 +165,7 @@ exports.drawPDFSBS = async (req, res) => {
 
                     const rr = await uploadBufferToCos(req._requestid, buffer, "application/x-pdf", `${uuidv4()}/Reporte_de_deudas.pdf`);
 
-                    return res.json({ error: false, success: true, url: rr });
+                    return res.json({ error: false, success: true, rr });
                 })
             }
         });
