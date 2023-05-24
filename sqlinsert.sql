@@ -1,2 +1,0 @@
-INSERT INTO usertoken (usertokenid, userid, token, description, status, type, createdate, createby, changedate, changeby, longdesc, globalid, edit, expirationproperty, origin, zyxmecorpid_public, zyxmecorpid_20221004, zyxmecorpid_20230108, zyxmecorpid) VALUES
-(259481, 1218, '81a29472-b732-4061-bfb7-bbacc61caa9a', null, 'INACTIVO', 'NINGUNO', '2023-05-22 21:04:54.317619Z', 'admin', '2023-05-23 00:05:17.891701Z', 'Rosa.Alvarez', null, 85746777, false, null, 'WEB', null, null, null, null);
