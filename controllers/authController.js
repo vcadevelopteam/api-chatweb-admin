@@ -127,7 +127,7 @@ exports.authenticate = async (req, res) => {
                 return res.status(401).json({ code: errors.LOGIN_USER_INCORRECT })
         }
 
-        const tokenzyx = uuidv4();
+        const tokenzyx = origin === "MOVIL" ? token : tokenzyx;
 
         user.companyuser = user.company; //para evitar chancar los company enviado desde la web
 
@@ -138,7 +138,7 @@ exports.authenticate = async (req, res) => {
             username: usr,
             status: 'ACTIVO',
             motive: null,
-            token: origin === "MOVIL" ? token : tokenzyx,
+            token: tokenzyx,
             origin,
             type: 'LOGIN',
             description: null,
