@@ -34,7 +34,7 @@ exports.incremental = async (req, res) => {
             const { tablename } = table;
             console.log("executing ", tablename)
             const querySelect = `
-                SELECT tb.* FROM ${tablename} tb 
+                SELECT tb.* FROM "${tablename}" tb 
                 WHERE tb.changedate > '${lastdate}'
                 AND tb.changedate <= '${todate}'
             `;
