@@ -95,7 +95,7 @@ const validateResProperty = (r, type) => {
 }
 
 exports.authenticate = async (req, res) => {
-    const { data: { usr, password, facebookid, googleid } } = req.body;
+    const { data: { usr, password, facebookid, googleid, origin = "WEB", token } } = req.body;
 
     let integration = false;
     const prevdata = { _requestid: req._requestid }
@@ -138,8 +138,8 @@ exports.authenticate = async (req, res) => {
             username: usr,
             status: 'ACTIVO',
             motive: null,
-            token: tokenzyx,
-            origin: 'WEB',
+            token: origin === "MOVIL" ? token : tokenzyx,
+            origin,
             type: 'LOGIN',
             description: null,
             _requestid: req._requestid,
