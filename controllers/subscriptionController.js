@@ -1008,6 +1008,7 @@ exports.createSubscription = async (request, response) => {
                                             endpoint: ayrshareEndpoint,
                                             username: requestCreateAyrshare.data.username,
                                             accessToken: channelService.accesstoken,
+                                            dayRange: -400,
                                         };
 
                                         channelParameters.communicationchannelowner = requestCreateAyrshare.data.username;
@@ -1017,7 +1018,7 @@ exports.createSubscription = async (request, response) => {
                                         channelParameters.status = 'ACTIVO';
                                         channelParameters.type = 'TKTA';
 
-                                        await channelfunctions.serviceSubscriptionUpdate(requestCreateAyrshare.data.username, requestCreateAyrshare.data.username, JSON.stringify(serviceCredentials), 'AYRSHARE-TIKTOK', 'ACTIVO', parameters.username, `${hookEndpoint}ayrshare/webhookasync`, 2);
+                                        await channelfunctions.serviceSubscriptionUpdate(requestCreateAyrshare.data.username, requestCreateAyrshare.data.username, JSON.stringify(serviceCredentials), 'AYRSHARE-TIKTOK', 'ACTIVO', parameters.username, `${hookEndpoint}ayrshare/webhookasync`, 6);
 
                                         channelMethodArray.push(channelMethod);
                                         channelParametersArray.push(channelParameters);
@@ -1031,12 +1032,12 @@ exports.createSubscription = async (request, response) => {
                                 if (channelService) {
                                     channelParameters.communicationchannelowner = channelService.clientid;
                                     channelParameters.communicationchannelsite = channelService.clientid;
-                                    channelParameters.integrationid = channelService.organizationid;
+                                    channelParameters.integrationid = `urn:li:organization:${channelService.organizationid}`;
                                     channelParameters.servicecredentials = JSON.stringify({
                                         clientId: channelService.clientid,
                                         clientSecret: channelService.clientsecret,
                                         endpoint: linkedinEndpoint,
-                                        organizationId: channelService.organizationid,
+                                        organizationId: `urn:li:organization:${channelService.organizationid}`,
                                     });
                                     channelParameters.status = 'ACTIVO';
                                     channelParameters.type = 'LNKD';

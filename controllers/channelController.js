@@ -1757,6 +1757,7 @@ exports.insertChannel = async (request, response) => {
                             endpoint: ayrshareEndpoint,
                             username: requestCreateAyrshare.data.username,
                             accessToken: service.accesstoken,
+                            dayRange: -400,
                         };
 
                         parameters.communicationchannelowner = requestCreateAyrshare.data.username;
@@ -1766,7 +1767,7 @@ exports.insertChannel = async (request, response) => {
                         parameters.status = 'ACTIVO';
                         parameters.type = 'TKTA';
 
-                        await channelfunctions.serviceSubscriptionUpdate(requestCreateAyrshare.data.username, requestCreateAyrshare.data.username, JSON.stringify(serviceCredentials), 'AYRSHARE-TIKTOK', 'ACTIVO', request?.user?.usr, `${hookEndpoint}ayrshare/webhookasync`, 2);
+                        await channelfunctions.serviceSubscriptionUpdate(requestCreateAyrshare.data.username, requestCreateAyrshare.data.username, JSON.stringify(serviceCredentials), 'AYRSHARE-TIKTOK', 'ACTIVO', request?.user?.usr, `${hookEndpoint}ayrshare/webhookasync`, 6);
 
                         const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
 
@@ -1810,6 +1811,8 @@ exports.insertChannel = async (request, response) => {
                             username: requestCreateTikApi.data.username,
                             apiKey: service.apikey,
                             accountKey: service.accountkey,
+                            dayRange: -120,
+                            cursorLimit: 100,
                         };
 
                         parameters.communicationchannelowner = requestCreateTikApi.data.username;
@@ -1819,7 +1822,7 @@ exports.insertChannel = async (request, response) => {
                         parameters.status = 'ACTIVO';
                         parameters.type = 'TKTT';
 
-                        await channelfunctions.serviceSubscriptionUpdate(requestCreateTikApi.data.username, requestCreateTikApi.data.username, JSON.stringify(serviceCredentials), 'TIKAPI-TIKTOK', 'ACTIVO', request?.user?.usr, `${hookEndpoint}tikapi/webhookasync`, 2);
+                        await channelfunctions.serviceSubscriptionUpdate(requestCreateTikApi.data.username, requestCreateTikApi.data.username, JSON.stringify(serviceCredentials), 'TIKAPI-TIKTOK', 'ACTIVO', request?.user?.usr, `${hookEndpoint}tikapi/webhookasync`, 4);
 
                         const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
 
@@ -1848,12 +1851,12 @@ exports.insertChannel = async (request, response) => {
                 if (service) {
                     parameters.communicationchannelowner = service.clientid;
                     parameters.communicationchannelsite = service.clientid;
-                    parameters.integrationid = service.organizationid;
+                    parameters.integrationid = `urn:li:organization:${service.organizationid}`;
                     parameters.servicecredentials = JSON.stringify({
                         clientId: service.clientid,
                         clientSecret: service.clientsecret,
                         endpoint: linkedinEndpoint,
-                        organizationId: service.organizationid,
+                        organizationId: `urn:li:organization:${service.organizationid}`,
                     });
                     parameters.status = 'ACTIVO';
                     parameters.type = 'LNKD';
