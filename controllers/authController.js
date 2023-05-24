@@ -95,7 +95,7 @@ const validateResProperty = (r, type) => {
 }
 
 exports.authenticate = async (req, res) => {
-    const { data: { usr, password, facebookid, googleid } } = req.body;
+    const { data: { usr, password, facebookid, googleid, origin = "WEB", token } } = req.body;
 
     let integration = false;
     const prevdata = { _requestid: req._requestid }
@@ -127,7 +127,7 @@ exports.authenticate = async (req, res) => {
                 return res.status(401).json({ code: errors.LOGIN_USER_INCORRECT })
         }
 
-        const tokenzyx = uuidv4();
+        const tokenzyx = origin === "MOVIL" ? token : uuidv4();
 
         user.companyuser = user.company; //para evitar chancar los company enviado desde la web
 
@@ -139,7 +139,7 @@ exports.authenticate = async (req, res) => {
             status: 'ACTIVO',
             motive: null,
             token: tokenzyx,
-            origin: 'WEB',
+            origin,
             type: 'LOGIN',
             description: null,
             _requestid: req._requestid,
