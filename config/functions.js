@@ -3597,7 +3597,7 @@ module.exports = {
         protected: "SELECT"
     },
     QUERY_SEL_TABLESETTING_BACKUP: {
-        query: `select tablename, columnpk, tableorder, type from tablesettingbackup where status = 'ACTIVO' order by tableorder asc`,
+        query: `select tablename, columnpk, tableorder, selectwhere, update, batchsize, insertwhere, updatewhere from tablesettingbackup where status = 'ACTIVO' order by tableorder asc`,
         module: "",
         protected: "SELECT"
     },
