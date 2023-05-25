@@ -107,3 +107,4 @@ dist
 *credentials.json
 # Voximplant credential file
 voximplant_credentials.json
+.vscode/settings.json
