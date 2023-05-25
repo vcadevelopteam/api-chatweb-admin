@@ -3,7 +3,7 @@ const { executesimpletransaction: exeMethod } = require('../config/triggerfuncti
 const { Pool } = require('pg');
 const Cursor = require('pg-cursor');
 const BATCH_SIZE = 100_000;
-const clientBackup = null;
+let clientBackup = null;
 
 const processCursor = async (cursor, table, dt, columns, lastdate) => {
     return new Promise((resolve, reject) => {
@@ -107,8 +107,8 @@ exports.incremental = async (req, res) => {
         const tablesToBackup = await exeMethod("QUERY_SEL_TABLESETTING_BACKUP", {});
         const infoSelect = [
             {
-                lastdate: "2023-05-19 17:00:00",
-                todate: "2023-05-25 22:25:00",
+                lastdate: "2023-05-25 22:25:00",
+                todate: "2023-05-25 23:30:00",
                 interval: 1,
             },
         ];
@@ -127,10 +127,8 @@ exports.incremental = async (req, res) => {
 
         for (const table of tablesToBackup) {
             const { tablename, selectwhere, columnpk } = table;
-
-            if (!["conversation", "interaction", "conversationclassification", "conversationwhatsapp"].includes(tablename)) {
-                continue;
-            }
+            // Si desea ejecutar algunas tablas, descomentar 
+            // if (!["conversation", "interaction", "conversationclassification", "conversationwhatsapp"].includes(tablename)) continue;
 
             let querySelect = "";
 
@@ -161,7 +159,6 @@ exports.incremental = async (req, res) => {
                 console.log(`BACKUP: executing SELECT MAX(${columnpk}) max FROM ${tablename}`);
                 const maxResult = await clientBackup.query(`SELECT MAX(${columnpk}) max FROM ${tablename}`);
                 table.idMax = maxResult.rows[0].max;
-                console.log("idMax", table.idMax);
             }
             const where = selectwhere
                 .replace('###FROMDATE###', lastdate)
