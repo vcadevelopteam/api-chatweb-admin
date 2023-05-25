@@ -1508,7 +1508,6 @@ exports.insertChannel = async (request, response) => {
                             endpoint: ayrshareEndpoint,
                             username: requestCreateAyrshare.data.username,
                             accessToken: service.accesstoken,
-                            dayRange: -400,
                         };
 
                         parameters.communicationchannelowner = requestCreateAyrshare.data.username;
@@ -1562,8 +1561,6 @@ exports.insertChannel = async (request, response) => {
                             username: requestCreateTikApi.data.username,
                             apiKey: service.apikey,
                             accountKey: service.accountkey,
-                            dayRange: -120,
-                            cursorLimit: 100,
                         };
 
                         parameters.communicationchannelowner = requestCreateTikApi.data.username;
