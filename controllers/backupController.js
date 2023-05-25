@@ -6,6 +6,7 @@ const BATCH_SIZE = 100_000;
 
 let client = null;
 let clientBackup = null;
+let lastdate = "";
 
 const processCursor = async (cursor, table, dt, columns) => {
     return new Promise((resolve, reject) => {
@@ -21,14 +22,13 @@ const processCursor = async (cursor, table, dt, columns) => {
                         return resolve({ error: false, success: true });
                     }
 
-                    insertMassive(table, rows, dt, columns);
+                    await insertMassive(table, rows, dt, columns);
 
+                    return read();
                 } catch (error) {
-                    console.log(error)
-                    throw error
+                    console.log(error);
+                    return reject(error);
                 }
-
-                return read();
             });
         })();
     });
@@ -38,61 +38,48 @@ const insertMassive = async (table, rows, dt, columns) => {
     try {
         const { columnpk, tablename, update, insertwhere, updatewhere, idMax } = table;
 
-        const data = update ? resultbd.reduce((acc, item) => {
+        const data = update ? rows.reduce((acc, item) => {
             let trigger = "";
-            //aplicariamos una logica de validacion, si el id > maxId es un INSERT, si es menor es un update ya q fue CERRADO y entro por el finishdate
-            //condicion: conversationid > ###ID### OR (finishdate > '###FROMDATE###' AND finishdate <= '###TODATE###')
-            if (tablename === "conversation") {
-                trigger = item.conversationid > idMax ? "inserts" : "updates"
-            } else {
-                trigger = (item.changedate > item.createdate && item.createdate < lastdate) ? "inserts" : "updates";
-            }
+            trigger = (item.changedate > item.createdate && item.createdate < lastdate) ? "updates" : "inserts";
             return {
                 ...acc,
                 [trigger]: [item, ...acc[trigger]]
             }
         }, { inserts: [], updates: [] }) : { inserts: rows, updates: [] };
 
+        console.log(`${tablename} insert: ${data.inserts.length} update: ${data.updates.length}`);
+
         if (data.inserts.length > 0) {
-            console.time(`inserting ${tablename}`);
-            const where = columnpk ? `WHERE NOT EXISTS(SELECT 1 FROM "${tablename}" xins WHERE xins.${columnpk} = dt.${columnpk})` : `WHERE ${insertwhere}`;
-            await clientBackup.query(`
-                INSERT INTO ${tablename}
+            console.time(`inserting ${tablename} (${data.inserts.length})`);
+
+            const where = columnpk ? `xins.${columnpk} = dt.${columnpk}` : insertwhere;
+
+            const query = `INSERT INTO "${tablename}"
                 OVERRIDING SYSTEM VALUE
                 SELECT dt.*
                 FROM json_populate_recordset(null::record, $1)
                 AS dt (${dt})
-                ${where}`.replace('\n', ' '),
-                [JSON.stringify(data)], (error, result) => {
-                    if (error) {
-                        console.error('Error al ejecutar la consulta:', error);
-                    } else {
-                        console.log('El insert se realizó correctamente.');
-                    }
-                });
-            console.timeEnd(`inserting ${tablename}`);
+                WHERE NOT EXISTS(SELECT 1 FROM "${tablename}" xins WHERE ${where})`.replace('\n', ' ');
+
+            await clientBackup.query(query, [JSON.stringify(data.inserts)]);
+            console.timeEnd(`inserting ${tablename} (${data.inserts.length})`);
         }
         if (data.updates.length > 0) {
-            console.time(`updating ${tablename}`);
-            const where = columnpk ? `WHERE xupd.${columnpk} = dt.${columnpk}` : `WHERE ${updatewhere}`;
-            await clientBackup.query(`
-                UPDATE ${tablename} xupd
-                SET ${columns.split(', ').map(c => `"${c}" = dt.${c}`).join(', ')}
-                FROM json_populate_recordset(null::record, $datatable)
-                AS dt (${dt})
-                ${where}`.replace('\n', ' '),
-                [JSON.stringify(data)], (error, result) => {
-                    if (error) {
-                        console.error('Error al ejecutar la consulta:', error);
-                    } else {
-                        console.log('El update se realizó correctamente.');
-                    }
-                });
-            console.timeEnd(`updating ${tablename}`);
+            console.time(`updating ${tablename} (${data.updates.length})`);
+            const where = columnpk ? `xupd.${columnpk} = dt.${columnpk}` : `${updatewhere}`;
+
+            const query = `UPDATE "${tablename}" xupd
+            SET ${columns.split(', ').map(c => `"${c}" = dt.${c}`).join(', ')}
+            FROM json_populate_recordset(null::record, $1)
+            AS dt (${dt})
+            WHERE ${where}`.replace('\n', ' ');
+
+            await clientBackup.query(query, [JSON.stringify(data.updates)]);
+            console.timeEnd(`updating ${tablename} (${data.updates.length})`);
         }
 
     } catch (error) {
-        console.log("err", error);
+        console.log()
         throw error;
     }
 }
@@ -118,16 +105,16 @@ exports.incremental = async (req, res) => {
     try {
         const tablesToBackup = await exeMethod("QUERY_SEL_TABLESETTING_BACKUP", {});
         const infoSelect = [{
-            lastdate: "2023-05-19 00:05:00",
-            todate: "2023-05-19 08:00:00",
+            lastdate: "2023-05-19 17:00:00",
+            todate: "2023-05-25 22:25:00",
             interval: 1,
         }];
 
         if (!Array.isArray(tablesToBackup) || !Array.isArray(infoSelect)) {
             return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
         }
-
-        const { lastdate, interval, todate } = infoSelect[0];
+        lastdate = infoSelect[0].lastdate;
+        const { interval, todate } = infoSelect[0];
 
         if (tablesToBackup.length === 0) {
             return res.status(200).json({ error: false, success: false, message: "there are not tables" });
@@ -138,12 +125,12 @@ exports.incremental = async (req, res) => {
 
         for (const table of tablesToBackup) {
             const { tablename, selectwhere, columnpk } = table;
-            if (!["interaction"].includes(tablename)) {
+
+            if (!["conversation", "interaction", "conversationclassification", "conversationwhatsapp"].includes(tablename)) {
                 continue;
             }
-            let querySelect = "";
 
-            console.time(tablename);
+            let querySelect = "";
 
             const dtResult = await client.query(`SELECT
             string_agg(c.column_name, ', ') filter (WHERE c.is_identity = 'NO') as columns,
@@ -176,23 +163,20 @@ exports.incremental = async (req, res) => {
                 .replace('###TODATE###', todate)
                 .replace('###ID###', table.idMax);
 
-            querySelect = `SELECT ${fixsel} FROM "${tablename}" WHERE ${where} LIMIT 10`;
-            console.log(`BD: executing `, `SELECT FROM "${tablename}" WHERE ${where} LIMIT 10`);
+            querySelect = `SELECT ${fixsel} FROM "${tablename}" WHERE ${where}`;
+            console.log(`BD: executing `, `SELECT FROM "${tablename}" WHERE ${where}`);
 
             const cursor = client.query(new Cursor(querySelect));
 
             await processCursor(cursor, table, dt, columns);
 
             cursor.close(); // Cerrar el cursor después de procesarlo
-
-            console.timeEnd(tablename);
         }
         client.release();
         clientBackup.release();
 
         return res.status(200).json({ success: true });
     } catch (exception) {
-        console.log("aaaa");
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 };
