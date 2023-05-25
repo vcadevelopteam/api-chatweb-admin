@@ -107,4 +107,6 @@ dist
 *credentials.json
 # Voximplant credential file
 voximplant_credentials.json
+
+# VSCode settings
 .vscode/settings.json
