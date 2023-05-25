@@ -3,12 +3,9 @@ const { executesimpletransaction: exeMethod } = require('../config/triggerfuncti
 const { Pool } = require('pg');
 const Cursor = require('pg-cursor');
 const BATCH_SIZE = 100_000;
+const clientBackup = null;
 
-let client = null;
-let clientBackup = null;
-let lastdate = "";
-
-const processCursor = async (cursor, table, dt, columns) => {
+const processCursor = async (cursor, table, dt, columns, lastdate) => {
     return new Promise((resolve, reject) => {
         (function read() {
             cursor.read(table.batchsize || BATCH_SIZE, async (err, rows) => {
@@ -22,7 +19,7 @@ const processCursor = async (cursor, table, dt, columns) => {
                         return resolve({ error: false, success: true });
                     }
 
-                    await insertMassive(table, rows, dt, columns);
+                    await insertMassive(table, rows, dt, columns, lastdate);
 
                     return read();
                 } catch (error) {
@@ -34,18 +31,23 @@ const processCursor = async (cursor, table, dt, columns) => {
     });
 };
 
-const insertMassive = async (table, rows, dt, columns) => {
+const insertMassive = async (table, rows, dt, columns, lastdate) => {
     try {
         const { columnpk, tablename, update, insertwhere, updatewhere, idMax } = table;
 
-        const data = update ? rows.reduce((acc, item) => {
-            let trigger = "";
-            trigger = (item.changedate > item.createdate && item.createdate < lastdate) ? "updates" : "inserts";
-            return {
-                ...acc,
-                [trigger]: [item, ...acc[trigger]]
-            }
-        }, { inserts: [], updates: [] }) : { inserts: rows, updates: [] };
+        const data = update
+            ? rows.reduce(
+                (acc, item) => {
+                    let trigger = "";
+                    trigger = item.changedate > item.createdate && item.createdate < lastdate ? "updates" : "inserts";
+                    return {
+                        ...acc,
+                        [trigger]: [item, ...acc[trigger]],
+                    };
+                },
+                { inserts: [], updates: [] }
+            )
+            : { inserts: rows, updates: [] };
 
         console.log(`${tablename} insert: ${data.inserts.length} update: ${data.updates.length}`);
 
@@ -77,12 +79,11 @@ const insertMassive = async (table, rows, dt, columns) => {
             await clientBackup.query(query, [JSON.stringify(data.updates)]);
             console.timeEnd(`updating ${tablename} (${data.updates.length})`);
         }
-
     } catch (error) {
-        console.log()
+        console.log(error);
         throw error;
     }
-}
+};
 
 const connectToDB = async (backup = false) => {
     const pool = new Pool({
@@ -104,23 +105,24 @@ const connectToDB = async (backup = false) => {
 exports.incremental = async (req, res) => {
     try {
         const tablesToBackup = await exeMethod("QUERY_SEL_TABLESETTING_BACKUP", {});
-        const infoSelect = [{
-            lastdate: "2023-05-19 17:00:00",
-            todate: "2023-05-25 22:25:00",
-            interval: 1,
-        }];
+        const infoSelect = [
+            {
+                lastdate: "2023-05-19 17:00:00",
+                todate: "2023-05-25 22:25:00",
+                interval: 1,
+            },
+        ];
 
         if (!Array.isArray(tablesToBackup) || !Array.isArray(infoSelect)) {
             return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
         }
-        lastdate = infoSelect[0].lastdate;
-        const { interval, todate } = infoSelect[0];
+        const { lastdate, todate } = infoSelect[0];
 
         if (tablesToBackup.length === 0) {
             return res.status(200).json({ error: false, success: false, message: "there are not tables" });
         }
 
-        client = await connectToDB();
+        const client = await connectToDB();
         clientBackup = await connectToDB(true);
 
         for (const table of tablesToBackup) {
@@ -132,7 +134,8 @@ exports.incremental = async (req, res) => {
 
             let querySelect = "";
 
-            const dtResult = await client.query(`SELECT
+            const dtResult = await client.query(
+                `SELECT
             string_agg(c.column_name, ', ') filter (WHERE c.is_identity = 'NO') as columns,
             string_agg(c.fixsel, ', ') as fixsel,
             string_agg(c.cnd, ', ') as cnd
@@ -144,19 +147,21 @@ exports.incremental = async (req, res) => {
                 CONCAT('"', c.column_name, '"', ' ', c.data_type) as cnd
                 FROM information_schema.columns c
                 WHERE c.table_schema = 'public'
-                AND c.table_name = '${tablename}'
+                AND c.table_name = $1
                 ORDER BY c.ordinal_position
-            ) c`);
+            ) c`,
+                [tablename]
+            );
 
             const fixsel = dtResult.rows?.[0]?.fixsel;
             const dt = dtResult.rows?.[0]?.cnd;
             const columns = dtResult.rows?.[0]?.columns;
 
             if (selectwhere.includes("###ID###")) {
-                console.log(`BACKUP: executing SELECT MAX(${columnpk}) max FROM ${tablename}`)
+                console.log(`BACKUP: executing SELECT MAX(${columnpk}) max FROM ${tablename}`);
                 const maxResult = await clientBackup.query(`SELECT MAX(${columnpk}) max FROM ${tablename}`);
                 table.idMax = maxResult.rows[0].max;
-                console.log("idMax", table.idMax)
+                console.log("idMax", table.idMax);
             }
             const where = selectwhere
                 .replace('###FROMDATE###', lastdate)
@@ -168,7 +173,7 @@ exports.incremental = async (req, res) => {
 
             const cursor = client.query(new Cursor(querySelect));
 
-            await processCursor(cursor, table, dt, columns);
+            await processCursor(cursor, table, dt, columns, lastdate);
 
             cursor.close(); // Cerrar el cursor después de procesarlo
         }
