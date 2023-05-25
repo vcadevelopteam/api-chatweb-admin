@@ -146,7 +146,7 @@
                 <div style="display: table-cell;">
                     <div class="blacktext tablefix spacing-table">
                         <div style="font-weight: bold">Apellido Paterno: </div>
-                        <div style="text-align: end; width: 32px;">
+                        <div style="text-align: end; width: 34px;">
                             <%= item.apellido_paterno %>
                         </div>
                     </div>
@@ -158,7 +158,7 @@
                     </div>
                     <div class="blacktext tablefix spacing-table">
                         <div style="font-weight: bold">Nombres: </div>
-                        <div style="text-align: end; width: 60px;">
+                        <div style="text-align: end; width: 65px;">
                             <%= item.nombre_completo %>
                         </div>
                     </div>
@@ -225,9 +225,9 @@
                         <th class="billing-table-header" style="width: auto;">N°</th>
                         <th class="billing-table-header" style="width: 18%;">ENTIDAD REPORTANTE</th>
                         <th class="billing-table-header" style="width: 18%;">CALIFICACIÓN</th>
-                        <th class="billing-table-header" style="width: 18%;">DEUDA CAPITAL (S/.)</th>
-                        <th class="billing-table-header" style="width: 18%;">INTERES Y COMISIONES (S/.)</th>
-                        <th class="billing-table-header" style="width: 18%;">TOTAL (S/.)*</th>
+                        <th class="billing-table-header" style="width: 18%; text-align: right;">DEUDA CAPITAL (S/.)</th>
+                        <th class="billing-table-header" style="width: 18%; text-align: right;">INTERES Y COMISIONES (S/.)</th>
+                        <th class="billing-table-header" style="width: 18%; text-align: right;">TOTAL (S/.)*</th>
                     </tr>
     
                     <% item.deuda.forEach(function(order, index1) { %>
@@ -278,17 +278,17 @@
                     </tr>
                     <% item.linea_credito.forEach(function(order, index2){ %>
                         <tr>
-                            <td class="billing-table-cell">
+                            <td class="billing-table-cell" style="text-align: center;">
                                 <%= index2 + 1%>
                             </td>
-                            <td class="billing-table-cell">
+                            <td class="billing-table-cell" style="text-align: center;">
                                 <%= order.nombre_entidad %>
                             </td>
-                            <td class="billing-table-cell">
+                            <td class="billing-table-cell" style="text-align: center;">
                                 <%= order.nombre_cuenta %>
                             </td>
-                            <td class="billing-table-cell" style="text-align: right;">
-                                <%= order.saldo %>
+                            <td class="billing-table-cell" style="text-align: center;">
+                                S/.<%= order.saldo %>
                             </td>
                         </tr>
                     <% }); %>
