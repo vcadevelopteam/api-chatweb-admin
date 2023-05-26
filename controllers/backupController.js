@@ -1,10 +1,11 @@
+const logger = require('../config/winston');
 const { errors, getErrorCode } = require('../config/helpers');
 const { executesimpletransaction: exeMethod } = require('../config/triggerfunctions');
 const { Pool } = require('pg');
 const Cursor = require('pg-cursor');
 const BATCH_SIZE = 100_000;
 let clientBackup = null;
-let tables_success = [];
+let _requestid = "", tables_success = [], logbackupid = 0;
 
 const processCursor = async (cursor, table, dt, columns, lastdate) => {
     return new Promise((resolve, reject) => {
@@ -12,11 +13,9 @@ const processCursor = async (cursor, table, dt, columns, lastdate) => {
             cursor.read(table.batchsize || BATCH_SIZE, async (err, rows) => {
                 try {
                     if (err) {
-                        console.error({ error: err });
-                        return reject({ error: true, err });
+                        return reject(err);
                     }
-                    // no more rows, so we're done!
-                    if (!rows.length) {
+                    if (!rows.length) { // no more rows, so we're done!
                         return resolve({ error: false, success: true });
                     }
 
@@ -24,7 +23,6 @@ const processCursor = async (cursor, table, dt, columns, lastdate) => {
 
                     return read();
                 } catch (error) {
-                    console.log(error);
                     return reject(error);
                 }
             });
@@ -49,14 +47,12 @@ const insertMassive = async (table, rows, dt, columns, lastdate) => {
             )
             : { inserts: rows, updates: [] };
 
-        console.log(`${tablename} insert: ${data.inserts.length} update: ${data.updates.length}`);
+        logger.child({ _requestid }).debug(`${tablename} insert: ${data.inserts.length} update: ${data.updates.length}`)
 
         if (data.inserts.length > 0) {
-            console.time(`inserting ${tablename} (${data.inserts.length})`);
-
             const where = columnpk ? `xins.${columnpk} = dt.${columnpk}` : insertwhere;
 
-            const query = `INSERT INTO "${tablename}"
+            const query = `INSERT INTO ${tablename}
                 OVERRIDING SYSTEM VALUE
                 SELECT dt.*
                 FROM json_populate_recordset(null::record, $1)
@@ -64,10 +60,8 @@ const insertMassive = async (table, rows, dt, columns, lastdate) => {
                 WHERE NOT EXISTS(SELECT 1 FROM "${tablename}" xins WHERE ${where})`.replace('\n', ' ');
 
             await clientBackup.query(query, [JSON.stringify(data.inserts)]);
-            console.timeEnd(`inserting ${tablename} (${data.inserts.length})`);
         }
         if (data.updates.length > 0) {
-            console.time(`updating ${tablename} (${data.updates.length})`);
             const where = columnpk ? `xupd.${columnpk} = dt.${columnpk}` : `${updatewhere}`;
 
             const query = `UPDATE "${tablename}" xupd
@@ -77,11 +71,9 @@ const insertMassive = async (table, rows, dt, columns, lastdate) => {
             WHERE ${where}`.replace('\n', ' ');
 
             await clientBackup.query(query, [JSON.stringify(data.updates)]);
-            console.timeEnd(`updating ${tablename} (${data.updates.length})`);
         }
         tables_success.push(tablename)
     } catch (error) {
-        console.log(error);
         throw error;
     }
 };
@@ -105,12 +97,17 @@ const connectToDB = async (backup = false) => {
 
 exports.incremental = async (req, res) => {
     try {
+        _requestid = req._requestid;
         const tablesToBackup = await exeMethod("QUERY_SEL_TABLESETTING_BACKUP", {});
         const infoSelect = await exeMethod("UFN_LOGBACKUP_SEL", {});
 
         if (!Array.isArray(tablesToBackup) || !Array.isArray(infoSelect)) {
             return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
         }
+        logbackupid = infoSelect[0].logbackupid;
+        
+        logger.child({ ctx: infoSelect[0].logbackupid, _requestid }).debug(`Run backup incremental`)
+
         const { lastconsulteddate: lastdate, nextconsulteddate: todate } = infoSelect[0];
 
         if (tablesToBackup.length === 0) {
@@ -119,13 +116,11 @@ exports.incremental = async (req, res) => {
 
         const client = await connectToDB();
         clientBackup = await connectToDB(true);
-        
+
         for (const table of tablesToBackup) {
             const { tablename, selectwhere, columnpk } = table;
             // Si desea ejecutar algunas tablas, descomentar 
             // if (!["interaction"].includes(tablename)) continue;
-
-            let querySelect = "";
 
             const dtResult = await client.query(
                 `SELECT
@@ -151,7 +146,6 @@ exports.incremental = async (req, res) => {
             const columns = dtResult.rows?.[0]?.columns;
 
             if (selectwhere.includes("###ID###")) {
-                console.log(`BACKUP: executing SELECT MAX(${columnpk}) max FROM ${tablename}`);
                 const maxResult = await clientBackup.query(`SELECT MAX(${columnpk}) max FROM ${tablename}`);
                 table.idMax = maxResult.rows[0].max;
             }
@@ -160,8 +154,7 @@ exports.incremental = async (req, res) => {
                 .replace('###TODATE###', todate)
                 .replace('###ID###', table.idMax);
 
-            querySelect = `SELECT ${fixsel} FROM "${tablename}" WHERE ${where}`;
-            console.log(`BD: executing `, `SELECT FROM "${tablename}" WHERE ${where}`);
+            const querySelect = `SELECT ${fixsel} FROM "${tablename}" WHERE ${where}`;
 
             const cursor = client.query(new Cursor(querySelect));
 
@@ -172,8 +165,16 @@ exports.incremental = async (req, res) => {
         client.release();
         clientBackup.release();
 
-        return res.status(200).json({ success: true });
+        await exeMethod("UFN_LOGBACKUP_UPD", {
+            logbackupid, error: "", status: "EXITO", tables_update: tables_success.join(",")
+        })
+        logger.child({ ctx: infoSelect[0].logbackupid, _requestid }).debug(`Finish backup incremental successfully`)
+        return res.status(200).json({ success: true, logbackupid });
     } catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+        await exeMethod("UFN_LOGBACKUP_UPD", {
+            logbackupid, error: `${exception}`, status: "ERROR", tables_update: tables_success.join(",")
+        })
+        logger.child({ ctx: infoSelect[0].logbackupid, _requestid }).debug(`Finish backup incremental ERROR`)
+        return res.status(500).json(getErrorCode(null, exception, `Finish backup incremental ERROR ${req.originalUrl}`, req._requestid));
     }
 };
