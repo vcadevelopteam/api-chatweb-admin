@@ -106,18 +106,12 @@ const connectToDB = async (backup = false) => {
 exports.incremental = async (req, res) => {
     try {
         const tablesToBackup = await exeMethod("QUERY_SEL_TABLESETTING_BACKUP", {});
-        const infoSelect = [
-            {
-                lastdate: "2023-05-26 01:30:00",
-                todate: "2023-05-26 17:00:00",
-                interval: 1,
-            },
-        ];
+        const infoSelect = await exeMethod("UFN_LOGBACKUP_SEL", {});
 
         if (!Array.isArray(tablesToBackup) || !Array.isArray(infoSelect)) {
             return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
         }
-        const { lastdate, todate } = infoSelect[0];
+        const { lastconsulteddate: lastdate, nextconsulteddate: todate } = infoSelect[0];
 
         if (tablesToBackup.length === 0) {
             return res.status(400).json({ error: false, success: false, message: "there are not tables" });
