@@ -4,6 +4,7 @@ const { Pool } = require('pg');
 const Cursor = require('pg-cursor');
 const BATCH_SIZE = 100_000;
 let clientBackup = null;
+let tables_success = [];
 
 const processCursor = async (cursor, table, dt, columns, lastdate) => {
     return new Promise((resolve, reject) => {
@@ -38,8 +39,7 @@ const insertMassive = async (table, rows, dt, columns, lastdate) => {
         const data = update
             ? rows.reduce(
                 (acc, item) => {
-                    let trigger = "";
-                    trigger = item.changedate > item.createdate && item.createdate < lastdate ? "updates" : "inserts";
+                    const trigger = item.changedate > item.createdate && item.createdate < lastdate ? "updates" : "inserts";
                     return {
                         ...acc,
                         [trigger]: [item, ...acc[trigger]],
@@ -79,6 +79,7 @@ const insertMassive = async (table, rows, dt, columns, lastdate) => {
             await clientBackup.query(query, [JSON.stringify(data.updates)]);
             console.timeEnd(`updating ${tablename} (${data.updates.length})`);
         }
+        tables_success.push(tablename)
     } catch (error) {
         console.log(error);
         throw error;
@@ -107,8 +108,8 @@ exports.incremental = async (req, res) => {
         const tablesToBackup = await exeMethod("QUERY_SEL_TABLESETTING_BACKUP", {});
         const infoSelect = [
             {
-                lastdate: "2023-05-25 22:25:00",
-                todate: "2023-05-25 23:30:00",
+                lastdate: "2023-05-26 01:30:00",
+                todate: "2023-05-26 17:00:00",
                 interval: 1,
             },
         ];
@@ -119,16 +120,16 @@ exports.incremental = async (req, res) => {
         const { lastdate, todate } = infoSelect[0];
 
         if (tablesToBackup.length === 0) {
-            return res.status(200).json({ error: false, success: false, message: "there are not tables" });
+            return res.status(400).json({ error: false, success: false, message: "there are not tables" });
         }
 
         const client = await connectToDB();
         clientBackup = await connectToDB(true);
-
+        
         for (const table of tablesToBackup) {
             const { tablename, selectwhere, columnpk } = table;
             // Si desea ejecutar algunas tablas, descomentar 
-            // if (!["conversation", "interaction", "conversationclassification", "conversationwhatsapp"].includes(tablename)) continue;
+            // if (!["interaction"].includes(tablename)) continue;
 
             let querySelect = "";
 
