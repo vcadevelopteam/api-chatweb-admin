@@ -18,7 +18,7 @@ const COS_BUCKET_NAME = "staticfileszyxme"
 const REPLACEFILTERS = "###FILTERS###";
 const REPLACESEL = "###REPLACESEL###";
 
-const executeQuery = async (query, bind, _requestid) => {
+exports.executeQuery = async (query, bind, _requestid) => {
     const profiler = logger.child({ ctx: bind || {}, _requestid }).startTimer();
 
     return await sequelize.query(query, {

@@ -50,6 +50,7 @@ app.use('/api/event-booking', require('./routes/eventbooking'));
 app.use('/api/user', require('./routes/user'));
 app.use('/api/check', require('./routes/check'));
 app.use('/api/migrator', require('./routes/migrator'));
+app.use('/api/backup', require('./routes/backup'));
 app.use('/api/payment', require('./routes/payment'));
 app.use('/api/paymentniubiz', require('./routes/paymentniubiz'));
 app.use('/api/drawpdf', require('./routes/draw-pdf'));
