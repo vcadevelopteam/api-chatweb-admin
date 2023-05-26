@@ -8,7 +8,7 @@
 </head>
 <style>
     .blue-highlight {
-        color: rgb(12, 124, 197);
+        color: #001E6B;
         font-weight: bold;
         font-family: 'Arial', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     }
@@ -48,7 +48,7 @@
     .billing-summary {
         width: 80%;
         font-size: 8px;
-        border: 1px solid rgb(223, 237, 249);
+        border: none;
         margin-left: auto;
         margin-right: auto;
     }
@@ -76,7 +76,7 @@
     .billing-table-cell {
         font-size: 8px;
         padding: 2px;
-        background-color: #d2d3d5;
+        background-color: #f0f0f1;
         border: 1px solid white;
         font-family: 'Arial', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
         width: 50px;
@@ -120,14 +120,14 @@
                         </div>
                     </div>
                     <div class="blacktext tablefix" style="width: 100%;">
-                        <div style="text-align: left;">Usuario:</div>
-                        <div style="text-align: right;">
+                        <div style="text-align: right; width: 100px;">Usuario:</div>
+                        <div style="text-align: right; width: 100px;">
                             <%= item.numero_documento %>
                         </div>
                     </div>
                     <div class="blacktext tablefix" style="width: 100%;">
-                        <div style="text-align: left;">Impreso el:</div>
-                        <div style="text-align: right;">
+                        <div style="text-align: right; width: 100px;">Impreso el:</div>
+                        <div style="text-align: right; width: 100px;">
                             <%= item.fecha_reporte %>
                         </div>
                     </div>
@@ -139,25 +139,25 @@
                 <span style="display: table-cell; width: 20%;">
                     DATOS DEL DEUDOR
                 </span>
-                <span style="display: table-cell; border-bottom: 1px solid #658ae2;">
+                <span style="display: table-cell;">
                 </span>
             </div>
             <div class="blacktext" style="display: table; font-size: 8px; table-layout: fixed; width: 100%;">
                 <div style="display: table-cell;">
                     <div class="blacktext tablefix spacing-table">
-                        <div style="font-weight: bold">Apellido Paterno: </div>
+                        <div style="font-weight: bold; width: 90px;">Apellido Paterno: </div>
                         <div style="text-align: end;">
                             <%= item.apellido_paterno %>
                         </div>
                     </div>
                     <div class="blacktext tablefix spacing-table">
-                        <div style="font-weight: bold">Apellido Materno: </div>
+                        <div style="font-weight: bold; width: 90px;">Apellido Materno: </div>
                         <div style="text-align: end;">
                             <%= item.apellido_materno %>
                         </div>
                     </div>
                     <div class="blacktext tablefix spacing-table">
-                        <div style="font-weight: bold">Nombres: </div>
+                        <div style="font-weight: bold; width: 90px;">Nombres: </div>
                         <div style="text-align: end;">
                             <%= item.nombre_completo %>
                         </div>
@@ -165,25 +165,25 @@
                 </div>
                 <div style="border-left: 1px solid #658ae2; display: table-cell; padding-left: 10px;">
                     <div class="blacktext tablefix spacing-table">
-                        <div style="font-weight: bold">Tipo de Documento: </div>
+                        <div style="font-weight: bold; width: 80px;">Tipo de Documento: </div>
                         <div style="text-align: end;">
                             <%= item.tipo_documento %>
                         </div>
                     </div>
                     <div class="blacktext tablefix spacing-table">
-                        <div style="font-weight: bold">N° de Documento: </div>
+                        <div style="font-weight: bold; width: 80px;">N° de Documento: </div>
                         <div style="text-align: end;">
                             <%= item.numero_documento %>
                         </div>
                     </div>
                     <div class="blacktext tablefix spacing-table">
-                        <div style="font-weight: bold">Codigo SBS: </div>
+                        <div style="font-weight: bold; width: 80px;">Codigo SBS: </div>
                         <div style="text-align: end;">
                             <%= item.codigo_sbs %>
                         </div>
                     </div>
                     <div class="blacktext tablefix spacing-table">
-                        <div style="font-weight: bold">Tipo de Persona: </div>
+                        <div style="font-weight: bold; width: 80px;">Tipo de Persona: </div>
                         <div style="text-align: end;">
                             <%= item.des_tipo_documento %>
                         </div>
@@ -210,7 +210,7 @@
                     <div class="blacktext" style="font-size:6px">(Incluye información de deudas y lineas de crédito).</div>
                 </div>
             </div>
-            <div style="border-top: 1px solid #658ae2; margin-top: 15px;">
+            <div style="margin-top: 15px;">
 
             </div>
             <div style="text-align: center; font-size: 8px; margin-top: 20px;" class="bluetext">La siguiente información ha
@@ -218,37 +218,37 @@
                 del sistema financiero supervisadas por la SBS</div>
             <div style="margin-top: 16px">
                 <table class="billing-table">
-                    <tr style="background-color: #658ae2; color: white;">
+                    <tr style="background-color: #001E6B; color: white;">
                         <th class="billing-table-header" colspan="6">DEUDAS</th>
                     </tr>
-                    <tr style="background-color: #658ae2; color: white;">
+                    <tr style="background-color: #001E6B; color: white;">
                         <th class="billing-table-header" style="width: auto;">N°</th>
                         <th class="billing-table-header" style="width: 18%;">ENTIDAD REPORTANTE</th>
                         <th class="billing-table-header" style="width: 18%;">CALIFICACIÓN</th>
-                        <th class="billing-table-header" style="width: 18%;">DEUDA CAPITAL (S/.)</th>
-                        <th class="billing-table-header" style="width: 18%;">INTERES Y COMISIONES (S/.)</th>
-                        <th class="billing-table-header" style="width: 18%;">TOTAL (S/.)</th>
+                        <th class="billing-table-header" style="width: 18%; text-align: right;">DEUDA CAPITAL (S/.)</th>
+                        <th class="billing-table-header" style="width: 18%; text-align: right;">INTERES Y COMISIONES (S/.)</th>
+                        <th class="billing-table-header" style="width: 18%; text-align: right;">TOTAL (S/.)*</th>
                     </tr>
     
                     <% item.deuda.forEach(function(order, index1) { %>
                         <tr>
-                            <td class="billing-table-cell">
+                            <td class="billing-table-cell" style="text-align: center;">
                                 <%= index1 + 1 %>
                             </td>
-                            <td class="billing-table-cell">
+                            <td class="billing-table-cell" style="text-align: center;">
                                 <%= order.nombre_entidad %>
                             </td>
-                            <td class="billing-table-cell">
+                            <td class="billing-table-cell" style="text-align: center;">
                                 <%= order.calificacion %>
                             </td>
                             <td class="billing-table-cell" style="text-align: right;">
-                                <%= order.capital?.toFixed(2) %>
+                                S/.<%= order.capital %>
                             </td>
                             <td class="billing-table-cell" style="text-align: right;">
-                                <%= order.intereses_comisiones?.toFixed(2) %>
+                                S/.<%= order.intereses_comisiones %>
                             </td>
                             <td class="billing-table-cell" style="text-align: right;">
-                                <%= order.monto?.toFixed(2) %>
+                                S/.<%= order.monto %>
                             </td>
                         </tr>
                     <% }); %>
@@ -266,11 +266,11 @@
                 nuevos soles.</div>
             <div style="margin-top: 16px">
                 <table class="billing-table">
-                    <tr style="background-color: #658ae2; color: white;">
+                    <tr style="background-color: #001E6B; color: white;">
                         <th class="billing-table-header" colspan="4">LÍNEAS DE CRÉDITO (Otorgadas y que no han sido usadas)
                         </th>
                     </tr>
-                    <tr style="background-color: #658ae2; color: white;">
+                    <tr style="background-color: #001E6B; color: white;">
                         <th class="billing-table-header" style="width: auto;">N°</th>
                         <th class="billing-table-header" style="width: 30%;">ENTIDAD REPORTANTE</th>
                         <th class="billing-table-header" style="width: 30%;">TIPO DE LÍNEA</th>
@@ -278,17 +278,17 @@
                     </tr>
                     <% item.linea_credito.forEach(function(order, index2){ %>
                         <tr>
-                            <td class="billing-table-cell">
+                            <td class="billing-table-cell" style="text-align: center;">
                                 <%= index2 + 1%>
                             </td>
-                            <td class="billing-table-cell">
+                            <td class="billing-table-cell" style="text-align: center;">
                                 <%= order.nombre_entidad %>
                             </td>
-                            <td class="billing-table-cell">
+                            <td class="billing-table-cell" style="text-align: center;">
                                 <%= order.nombre_cuenta %>
                             </td>
-                            <td class="billing-table-cell" style="text-align: right;">
-                                <%= order.saldo %>
+                            <td class="billing-table-cell" style="text-align: center;">
+                                S/.<%= order.saldo %>
                             </td>
                         </tr>
                     <% }); %>
@@ -302,7 +302,7 @@
                     <% } %>
                 </table>
             </div>
-            <div style="text-align: center; font-size: 10px; font-weight: bold; margin-top: 20px;" class="bluetext">Este
+            <div style="text-align: center; font-size: 10px; font-weight: bold; margin-top: 60px;" class="bluetext">Este
                 reporte contiene información de deudas con una antigüedad máxima de 5 años,
                 contados desde la fecha de vencimiento. Las entidades financieras realizan la evaluación y clasificación del
                 deudor al cierre de cada mes, por lo que el
@@ -320,7 +320,7 @@
                     Rectificación, Cancelación y Oposición) ante la empresa del sistema financiero
                     reportante.</div>
             </div>
-            <div style="text-align: center; font-size: 8px; margin-top: 20px;" class="blacktext">
+            <div style="text-align: center; font-size: 8px; margin-top: 160px;" class="blacktext">
                 Contáctanos llamando a la línea gratuita a nivel nacional 0-800-10840 o a través de cualquiera de nuestros
                 <a href="https://www.sbs.gob.pe/usuarios/nuestros-servicios/servicios-sbs/consultas">Canales de
                     atención.</a>
