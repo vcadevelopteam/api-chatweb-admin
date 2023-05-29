@@ -43,6 +43,10 @@ exports.schedulePost = async (request, response) => {
                                 parameters.textbody = request.body.data.textcustomfacebook || textbody;
                                 break;
 
+                            case "FBWM":
+                                parameters.textbody = request.body.data.textcustomworkplace || textbody;
+                                break;
+        
                             case "INST":
                                 parameters.textbody = request.body.data.textcustominstagram || textbody;
                                 break;
@@ -56,6 +60,7 @@ exports.schedulePost = async (request, response) => {
                                 break;
 
                             case "TKTK":
+                            case "TKTA":
                                 parameters.textbody = request.body.data.textcustomtiktok || textbody;
                                 break;
 

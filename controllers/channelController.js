@@ -7,13 +7,17 @@ const { setSessionParameters, axiosObservable } = require('../config/helpers');
 
 const logger = require('../config/winston');
 
+const ayrshareEndpoint = process.env.AYRSHARE;
 const bridgeEndpoint = process.env.BRIDGE;
 const brokerEndpoint = process.env.CHATBROKER;
 const facebookEndpoint = process.env.FACEBOOKAPI;
 const hookEndpoint = process.env.HOOK;
+const linkedinEndpoint = process.env.LINKEDIN;
+const linkedinTokenEndpoint = process.env.LINKEDINTOKEN;
 const smoochEndpoint = process.env.SMOOCHAPI;
 const smoochVersion = process.env.SMOOCHVERSION;
 const telegramEndpoint = process.env.TELEGRAMAPI;
+const tikApiEndpoint = process.env.TIKAPI;
 const webChatApplication = process.env.CHATAPPLICATION;
 const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
 const whatsAppEndpoint = process.env.WHATSAPPAPI;
@@ -213,7 +217,22 @@ exports.deleteChannel = async (request, response) => {
                         success: false
                     });
                 }
+            case 'WORKPLACE':
+                const deleteChannelWorkplace = await triggerfunctions.executesimpletransaction(method, parameters);
 
+                if (deleteChannelWorkplace instanceof Array) {
+                    await channelfunctions.clearHookCache('EveryService', request._requestid);
+
+                    return response.json({
+                        success: true
+                    });
+                }
+                else {
+                    return response.status(400).json({
+                        msg: deleteChannelWorkplace.code,
+                        success: false
+                    });
+                }
             case 'FBDM':
             case 'FBWA':
             case 'INDM':
@@ -955,6 +974,39 @@ exports.getPhoneList = async (request, response) => {
         });
     }
 }
+exports.getGroupList = async (request, response) => {
+    try {
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
+        const { accesstoken } = request.body;
+
+        if (!accesstoken) {
+            return response.status(400).json({
+                msg: 'there is no accesstoken parameter.',
+                success: false
+            });
+        }
+
+        const requestGroupList = await axiosObservable({
+            method: 'get',
+            url: `https://graph.workplace.com/community/groups?access_token=${accesstoken}`,
+            _requestid: request._requestid,
+        });
+
+        if (requestGroupList.data) {
+            return response.json({
+                data: requestGroupList.data,
+                success: true
+            });
+        }
+
+    }
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            msg: exception.message,
+        });
+    }
+}
 
 exports.insertChannel = async (request, response) => {
     try {
@@ -1184,6 +1236,103 @@ exports.insertChannel = async (request, response) => {
                 else {
                     return response.status(400).json({
                         msg: 'Could not create integration',
+                        success: false
+                    });
+                }
+            case 'FACEBOOKWORPLACE':
+                console.log("Se ejecutooo")
+                const requestTokenWorkplace = await axiosObservable({
+                    method: 'get',
+                    url: `https://graph.workplace.com/me?access_token=${service.accesstoken}`,
+                    _requestid: request._requestid,
+                });
+
+                if (requestTokenWorkplace.status = 200) {
+
+                    var serviceCredentials = {
+                        accessToken: service.accesstoken,
+                        endpoint: facebookEndpoint,
+                        appid: service.appid || null,
+                        appsecret: service.appsecret || null,
+                        serviceType: 'WORKPLACE',
+                        siteId: requestTokenWorkplace.data.id
+                    };
+
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+
+                    //WORKPLACE MESSENGER
+                    parameters.type = 'FBWP';
+                    parameters.communicationchannelowner = requestTokenWorkplace.data.id;
+                    parameters.communicationchannelsite = requestTokenWorkplace.data.id;
+
+                    const transactionCreateWorkplace = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateWorkplace instanceof Array) {
+                        await channelfunctions.clearHookCache('FacebookService', request._requestid);
+
+                        return response.json({
+                            success: true
+                        });
+
+                    }
+
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateWorkplace.code,
+                            success: false
+                        });
+                    }
+                } else {
+                    return response.status(400).json({
+                        msg: requestTokenWorkplace.data.error.message,
+                        success: false
+                    });
+                }
+
+            case "FBWM":
+                const requestTokenWorkplaceWall = await axiosObservable({
+                    method: 'get',
+                    url: `https://graph.workplace.com/me?access_token=${service.accesstoken}`,
+                    _requestid: request._requestid,
+                });
+
+                if (requestTokenWorkplaceWall.status = 200) {
+
+                    var serviceCredentials = {
+                        accessToken: service.accesstoken,
+                        endpoint: facebookEndpoint,
+                        appid: service.appid || null,
+                        appsecret: service.appsecret || null,
+                        serviceType: 'WORKPLACE',
+                        siteId: requestTokenWorkplaceWall.data.id
+                    };
+
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+
+                    parameters.type = 'FBWM';
+                    parameters.communicationchannelowner = requestTokenWorkplaceWall.data.id;
+                    parameters.communicationchannelsite = service.groupid;
+
+                    const transactionCreateWorkplace = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateWorkplace instanceof Array) {
+                        await channelfunctions.clearHookCache('FacebookService', request._requestid);
+
+                        return response.json({
+                            success: true
+                        });
+
+                    }
+
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateWorkplace.code,
+                            success: false
+                        });
+                    }
+                } else {
+                    return response.status(400).json({
+                        msg: requestTokenWorkplaceWall.data.error.message,
                         success: false
                     });
                 }
@@ -1444,6 +1593,37 @@ exports.insertChannel = async (request, response) => {
                 }
                 break;
 
+            case 'BUSINESS':
+                if (service) {
+                    var informationtoken = jwt.decode(service.idtoken);
+
+                    parameters.communicationchannelowner = informationtoken.name;
+                    parameters.communicationchannelsite = informationtoken.email;
+                    parameters.integrationid = informationtoken.email;
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.status = 'ACTIVO';
+                    parameters.type = 'GOBU';
+
+                    await channelfunctions.serviceTokenUpdate(informationtoken.email, service.accesstoken, service.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', request?.user?.usr, 50);
+
+                    await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, informationtoken.email, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-BUSINESS', 'ACTIVO', request?.user?.usr, `${hookEndpoint}business/webhookasync`, 2);
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
             case 'BLOGGER':
             case 'YOUTUBE':
                 if (service) {
@@ -1488,7 +1668,172 @@ exports.insertChannel = async (request, response) => {
                 }
                 break;
 
+            case 'AYRSHARE-TIKTOK':
+                if (service) {
+                    const requestCreateAyrshare = await axiosObservable({
+                        data: {
+                            accessToken: service.accesstoken,
+                            integrationType: "TIKTOK",
+                            linkType: "CHECKINTEGRATION",
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processlaraigo/ayrshare/manageayrsharelink`,
+                        _requestid: request._requestid,
+                    });
+
+                    if (requestCreateAyrshare.data.success) {
+                        var serviceCredentials = {
+                            endpoint: ayrshareEndpoint,
+                            username: requestCreateAyrshare.data.username,
+                            accessToken: service.accesstoken,
+                        };
+
+                        parameters.communicationchannelowner = requestCreateAyrshare.data.username;
+                        parameters.communicationchannelsite = requestCreateAyrshare.data.username;
+                        parameters.integrationid = requestCreateAyrshare.data.username;
+                        parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                        parameters.status = 'ACTIVO';
+                        parameters.type = 'TKTA';
+
+                        await channelfunctions.serviceSubscriptionUpdate(requestCreateAyrshare.data.username, requestCreateAyrshare.data.username, JSON.stringify(serviceCredentials), 'AYRSHARE-TIKTOK', 'ACTIVO', request?.user?.usr, `${hookEndpoint}ayrshare/webhookasync`, 6);
+
+                        const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                        if (transactionCreateGeneric instanceof Array) {
+                            return response.json({
+                                success: true
+                            });
+                        }
+                        else {
+                            return response.status(400).json({
+                                msg: transactionCreateGeneric.code,
+                                success: false
+                            });
+                        }
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: requestCreateAyrshare.data.operationMessage,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
+            case 'TIKAPI-TIKTOK':
+                if (service) {
+                    const requestCreateTikApi = await axiosObservable({
+                        data: {
+                            apiKey: service.apikey,
+                            accountKey: service.accountkey,
+                            linkType: "CHECKINTEGRATION",
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processlaraigo/tikapi/managetikapilink`,
+                        _requestid: request._requestid,
+                    });
+
+                    if (requestCreateTikApi.data.success) {
+                        var serviceCredentials = {
+                            endpoint: tikApiEndpoint,
+                            username: requestCreateTikApi.data.username,
+                            apiKey: service.apikey,
+                            accountKey: service.accountkey,
+                        };
+
+                        parameters.communicationchannelowner = requestCreateTikApi.data.username;
+                        parameters.communicationchannelsite = requestCreateTikApi.data.username;
+                        parameters.integrationid = requestCreateTikApi.data.username;
+                        parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                        parameters.status = 'ACTIVO';
+                        parameters.type = 'TKTT';
+
+                        await channelfunctions.serviceSubscriptionUpdate(requestCreateTikApi.data.username, requestCreateTikApi.data.username, JSON.stringify(serviceCredentials), 'TIKAPI-TIKTOK', 'ACTIVO', request?.user?.usr, `${hookEndpoint}tikapi/webhookasync`, 4);
+
+                        const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                        if (transactionCreateGeneric instanceof Array) {
+                            return response.json({
+                                success: true
+                            });
+                        }
+                        else {
+                            return response.status(400).json({
+                                msg: transactionCreateGeneric.code,
+                                success: false
+                            });
+                        }
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: requestCreateTikApi.data.operationMessage,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
+            case 'PLAYSTORE':
+                if (service) {
+                    parameters.communicationchannelowner = service.mail;
+                    parameters.communicationchannelsite = `${service.mail}|AC|${service.appcode}`;
+                    parameters.integrationid = service.appcode;
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.status = 'ACTIVO';
+                    parameters.type = 'PLAY';
+
+                    await channelfunctions.serviceTokenUpdate(service.mail, '', '', JSON.stringify(service), 'PLAYSTORE', 'ACTIVO', request?.user?.usr, 50);
+
+                    await channelfunctions.serviceSubscriptionUpdate(service.mail, service.appcode, JSON.stringify(service), 'GOOGLE-PLAYSTORE', 'ACTIVO', request?.user?.usr, `${hookEndpoint}appstore/playstorewebhookasync`, 2);
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
             case 'LINKEDIN':
+                if (service) {
+                    parameters.communicationchannelowner = service.clientid;
+                    parameters.communicationchannelsite = service.clientid;
+                    parameters.integrationid = `urn:li:organization:${service.organizationid}`;
+                    parameters.servicecredentials = JSON.stringify({
+                        clientId: service.clientid,
+                        clientSecret: service.clientsecret,
+                        endpoint: linkedinEndpoint,
+                        organizationId: `urn:li:organization:${service.organizationid}`,
+                    });
+                    parameters.status = 'ACTIVO';
+                    parameters.type = 'LNKD';
+
+                    await channelfunctions.serviceTokenUpdate(service.clientid, service.accesstoken, service.refreshtoken, JSON.stringify({ clientId: service.clientid, clientSecret: service.clientsecret, endpoint: linkedinTokenEndpoint }), 'LINKEDIN', 'ACTIVO', request?.user?.usr, 1400);
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
             case 'MICROSOFTTEAMS':
             case 'TIKTOK':
                 if (service) {
@@ -1508,9 +1853,38 @@ exports.insertChannel = async (request, response) => {
                             break;
 
                         case 'TIKTOK':
-                            parameters.type = 'TITO';
+                            parameters.type = 'TKTK';
                             break;
                     }
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
+            case 'APPSTORE':
+                if (service) {
+                    parameters.communicationchannelowner = service.keyid;
+                    parameters.communicationchannelsite = service.issuerid;
+                    parameters.integrationid = service.issuerid;
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.status = 'ACTIVO';
+                    parameters.type = 'APPS';
+
+                    await channelfunctions.serviceTokenUpdate(service.issuerid, '', '', JSON.stringify({ issuerId: service.issuerid, keyId: service.keyid, secretKey: service.secretkey }), 'APPSTORE', 'ACTIVO', request?.user?.usr, 15);
+
+                    await channelfunctions.serviceSubscriptionUpdate(service.issuerid, service.keyid, JSON.stringify({ issuerId: service.issuerid, keyId: service.keyid, secretKey: service.secretkey }), 'APPLE-APPSTORE', 'ACTIVO', request?.user?.usr, `${hookEndpoint}appstore/appstorewebhookasync`, 2);
 
                     const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
 
@@ -2426,12 +2800,12 @@ exports.synchronizeTemplate = async (request, response) => {
             if (communicationchannel) {
                 if (communicationchannel.type) {
                     let templateList = null;
-    
+
                     switch (communicationchannel.type) {
                         case "WHAD":
                             if (communicationchannel.servicecredentials) {
                                 let serviceData = JSON.parse(communicationchannel.servicecredentials);
-    
+
                                 const requestListDialog = await axiosObservable({
                                     data: {
                                         ApiKey: serviceData.apiKey,
@@ -2441,7 +2815,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                     url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
                                     _requestid: request._requestid,
                                 });
-    
+
                                 if (requestListDialog.data.success) {
                                     templateList = requestListDialog.data.result;
                                 }
@@ -2451,11 +2825,11 @@ exports.synchronizeTemplate = async (request, response) => {
                                 }
                             }
                             break;
-    
+
                         case "WHAG":
                             if (communicationchannel.servicecredentials) {
                                 let serviceData = JSON.parse(communicationchannel.servicecredentials);
-    
+
                                 const requestListGupshup = await axiosObservable({
                                     data: {
                                         AppName: serviceData.app,
@@ -2466,7 +2840,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                     url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
                                     _requestid: request._requestid,
                                 });
-    
+
                                 if (requestListGupshup.data.success) {
                                     templateList = requestListGupshup.data.result;
                                 }
@@ -2476,11 +2850,11 @@ exports.synchronizeTemplate = async (request, response) => {
                                 }
                             }
                             break;
-    
+
                         case "WHAT":
                             if (communicationchannel.servicecredentials) {
                                 let serviceData = JSON.parse(communicationchannel.servicecredentials);
-    
+
                                 const requestListSmooch = await axiosObservable({
                                     data: {
                                         AppId: serviceData.appId,
@@ -2493,7 +2867,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                     url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
                                     _requestid: request._requestid,
                                 });
-    
+
                                 if (requestListSmooch.data.success) {
                                     templateList = requestListSmooch.data.result;
                                 }
@@ -2504,13 +2878,13 @@ exports.synchronizeTemplate = async (request, response) => {
                             }
                             break;
                     }
-    
+
                     if (templateList) {
                         await channelfunctions.messageTemplateReset(communicationchannel.corpid, communicationchannel.orgid, communicationchannel.communicationchannelid, (communicationchannel.type === "WHAD" || communicationchannel.type === "WHAG") ? templateList[0]?.id || null : null, request.user.usr, request._requestid);
-    
+
                         for (const templateData of templateList) {
                             let buttonObject = [];
-    
+
                             if (templateData.buttons) {
                                 for (const buttonData of templateData.buttons) {
                                     let buttonInformation = {
@@ -2518,11 +2892,11 @@ exports.synchronizeTemplate = async (request, response) => {
                                         title: buttonData.text || '',
                                         payload: (buttonData.data || buttonData.text) || '',
                                     };
-    
+
                                     buttonObject.push(buttonInformation);
                                 }
                             }
-    
+
                             await channelfunctions.messageTemplateUpd(
                                 communicationchannel.corpid,
                                 communicationchannel.orgid,
@@ -2553,7 +2927,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                 request._requestid,
                             );
                         }
-    
+
                         requestCode = "";
                         requestMessage = "";
                         requestStatus = 200;
@@ -2577,7 +2951,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                     case "WHAD":
                                         if (servicecredentials) {
                                             let serviceData = JSON.parse(servicecredentials);
-                
+
                                             const requestListDialog = await axiosObservable({
                                                 data: {
                                                     ApiKey: serviceData.apiKey,
@@ -2587,7 +2961,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                                 url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
                                                 _requestid: request._requestid,
                                             });
-                
+
                                             if (requestListDialog.data.success) {
                                                 templatelist = requestListDialog.data.result;
                                             }
@@ -2597,11 +2971,11 @@ exports.synchronizeTemplate = async (request, response) => {
                                             }
                                         }
                                         break;
-                
+
                                     case "WHAG":
                                         if (servicecredentials) {
                                             let serviceData = JSON.parse(servicecredentials);
-                
+
                                             const requestListGupshup = await axiosObservable({
                                                 data: {
                                                     AppName: serviceData.app,
@@ -2612,7 +2986,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                                 url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
                                                 _requestid: request._requestid,
                                             });
-                
+
                                             if (requestListGupshup.data.success) {
                                                 templatelist = requestListGupshup.data.result;
                                             }
@@ -2622,11 +2996,11 @@ exports.synchronizeTemplate = async (request, response) => {
                                             }
                                         }
                                         break;
-                
+
                                     case "WHAT":
                                         if (servicecredentials) {
                                             let serviceData = JSON.parse(servicecredentials);
-                
+
                                             const requestListSmooch = await axiosObservable({
                                                 data: {
                                                     AppId: serviceData.appId,
@@ -2639,7 +3013,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                                 url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
                                                 _requestid: request._requestid,
                                             });
-                
+
                                             if (requestListSmooch.data.success) {
                                                 templatelist = requestListSmooch.data.result;
                                             }
@@ -2959,7 +3333,7 @@ exports.deleteTemplate = async (request, response) => {
                             case "WHAD":
                                 if (messagetemplate.communicationchannelservicecredentials) {
                                     let serviceData = JSON.parse(messagetemplate.communicationchannelservicecredentials);
-        
+
                                     const requestDeleteDialog = await axiosObservable({
                                         data: {
                                             ApiKey: serviceData.apiKey,
@@ -2970,7 +3344,7 @@ exports.deleteTemplate = async (request, response) => {
                                         url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
                                         _requestid: request._requestid,
                                     });
-    
+
                                     if (requestDeleteDialog.data.success) {
                                         deleteSuccess = true;
                                     }
@@ -2980,7 +3354,7 @@ exports.deleteTemplate = async (request, response) => {
                                     }
                                 }
                                 break;
-        
+
                             case "WHAT":
                                 if (messagetemplate.communicationchannelservicecredentials) {
                                     let serviceData = JSON.parse(messagetemplate.communicationchannelservicecredentials);
@@ -2998,7 +3372,7 @@ exports.deleteTemplate = async (request, response) => {
                                         url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
                                         _requestid: request._requestid,
                                     });
-        
+
                                     if (requestDeleteSmooch.data.success) {
                                         deleteSuccess = true;
                                     }
@@ -3008,7 +3382,7 @@ exports.deleteTemplate = async (request, response) => {
                                     }
                                 }
                                 break;
-        
+
                             case "WHAG":
                                 if (messagetemplate.communicationchannelservicecredentials) {
                                     deleteSuccess = true;
@@ -3028,9 +3402,9 @@ exports.deleteTemplate = async (request, response) => {
                         parameters.corpid = request.user.corpid;
                         parameters.orgid = request.user.orgid;
                         parameters.username = request.user.usr;
-        
+
                         const queryTemplateDelete = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
-        
+
                         if (queryTemplateDelete instanceof Array) {
                             requestCode = "";
                             requestMessage = "";
