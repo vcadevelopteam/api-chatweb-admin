@@ -242,13 +242,13 @@
                                 <%= order.calificacion %>
                             </td>
                             <td class="billing-table-cell" style="text-align: right;">
-                                S/.<%= order.capital %>
+                                S/.<%= (order.capital + "").replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') %>
                             </td>
                             <td class="billing-table-cell" style="text-align: right;">
-                                S/.<%= order.intereses_comisiones %>
+                                S/.<%= (order.intereses_comisiones + "").replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') %>
                             </td>
                             <td class="billing-table-cell" style="text-align: right;">
-                                S/.<%= order.monto %>
+                                S/.<%= (order.monto + "").replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') %>
                             </td>
                         </tr>
                     <% }); %>
@@ -288,7 +288,7 @@
                                 <%= order.nombre_cuenta %>
                             </td>
                             <td class="billing-table-cell" style="text-align: center;">
-                                S/.<%= order.saldo %>
+                                S/.<%= (order.saldo + "").replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') %>
                             </td>
                         </tr>
                     <% }); %>
