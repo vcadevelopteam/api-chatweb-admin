@@ -19,4 +19,9 @@ router.post("/listyoutube",
     googleController.listYouTube,
 )
 
+router.post("/exchangejwt",
+    ip,
+    googleController.exchangeJwt,
+)
+
 module.exports = router;
