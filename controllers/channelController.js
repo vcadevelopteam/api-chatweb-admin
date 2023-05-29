@@ -12,6 +12,8 @@ const bridgeEndpoint = process.env.BRIDGE;
 const brokerEndpoint = process.env.CHATBROKER;
 const facebookEndpoint = process.env.FACEBOOKAPI;
 const hookEndpoint = process.env.HOOK;
+const linkedinEndpoint = process.env.LINKEDIN;
+const linkedinTokenEndpoint = process.env.LINKEDINTOKEN;
 const smoochEndpoint = process.env.SMOOCHAPI;
 const smoochVersion = process.env.SMOOCHVERSION;
 const telegramEndpoint = process.env.TELEGRAMAPI;
@@ -975,28 +977,28 @@ exports.getPhoneList = async (request, response) => {
 exports.getGroupList = async (request, response) => {
     try {
         logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-        const {accesstoken}= request.body;
+        const { accesstoken } = request.body;
 
-        if(!accesstoken){
+        if (!accesstoken) {
             return response.status(400).json({
                 msg: 'there is no accesstoken parameter.',
                 success: false
             });
         }
-        
+
         const requestGroupList = await axiosObservable({
             method: 'get',
             url: `https://graph.workplace.com/community/groups?access_token=${accesstoken}`,
             _requestid: request._requestid,
         });
-       
+
         if (requestGroupList.data) {
             return response.json({
                 data: requestGroupList.data,
                 success: true
             });
         }
-        
+
     }
     catch (exception) {
         return response.status(500).json({
@@ -1245,13 +1247,13 @@ exports.insertChannel = async (request, response) => {
                     _requestid: request._requestid,
                 });
 
-                if(requestTokenWorkplace.status = 200){
+                if (requestTokenWorkplace.status = 200) {
 
                     var serviceCredentials = {
                         accessToken: service.accesstoken,
                         endpoint: facebookEndpoint,
                         appid: service.appid || null,
-                        appsecret: service.appsecret ||null,
+                        appsecret: service.appsecret || null,
                         serviceType: 'WORKPLACE',
                         siteId: requestTokenWorkplace.data.id
                     };
@@ -1271,16 +1273,16 @@ exports.insertChannel = async (request, response) => {
                         return response.json({
                             success: true
                         });
-                        
+
                     }
-                
+
                     else {
                         return response.status(400).json({
                             msg: transactionCreateWorkplace.code,
                             success: false
                         });
                     }
-                }else{
+                } else {
                     return response.status(400).json({
                         msg: requestTokenWorkplace.data.error.message,
                         success: false
@@ -1288,19 +1290,19 @@ exports.insertChannel = async (request, response) => {
                 }
 
             case "FBWM":
-                 const requestTokenWorkplaceWall = await axiosObservable({
+                const requestTokenWorkplaceWall = await axiosObservable({
                     method: 'get',
                     url: `https://graph.workplace.com/me?access_token=${service.accesstoken}`,
                     _requestid: request._requestid,
                 });
 
-                if(requestTokenWorkplaceWall.status = 200){
+                if (requestTokenWorkplaceWall.status = 200) {
 
                     var serviceCredentials = {
                         accessToken: service.accesstoken,
                         endpoint: facebookEndpoint,
                         appid: service.appid || null,
-                        appsecret: service.appsecret ||null,
+                        appsecret: service.appsecret || null,
                         serviceType: 'WORKPLACE',
                         siteId: requestTokenWorkplaceWall.data.id
                     };
@@ -1310,7 +1312,7 @@ exports.insertChannel = async (request, response) => {
                     parameters.type = 'FBWM';
                     parameters.communicationchannelowner = requestTokenWorkplaceWall.data.id;
                     parameters.communicationchannelsite = service.groupid;
-              
+
                     const transactionCreateWorkplace = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateWorkplace instanceof Array) {
@@ -1319,16 +1321,16 @@ exports.insertChannel = async (request, response) => {
                         return response.json({
                             success: true
                         });
-                        
+
                     }
-                
+
                     else {
                         return response.status(400).json({
                             msg: transactionCreateWorkplace.code,
                             success: false
                         });
                     }
-                }else{
+                } else {
                     return response.status(400).json({
                         msg: requestTokenWorkplaceWall.data.error.message,
                         success: false
@@ -1771,7 +1773,67 @@ exports.insertChannel = async (request, response) => {
                 }
                 break;
 
+            case 'PLAYSTORE':
+                if (service) {
+                    parameters.communicationchannelowner = service.mail;
+                    parameters.communicationchannelsite = `${service.mail}|AC|${service.appcode}`;
+                    parameters.integrationid = service.appcode;
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.status = 'ACTIVO';
+                    parameters.type = 'PLAY';
+
+                    await channelfunctions.serviceTokenUpdate(service.mail, '', '', JSON.stringify(service), 'PLAYSTORE', 'ACTIVO', request?.user?.usr, 50);
+
+                    await channelfunctions.serviceSubscriptionUpdate(service.mail, service.appcode, JSON.stringify(service), 'GOOGLE-PLAYSTORE', 'ACTIVO', request?.user?.usr, `${hookEndpoint}appstore/playstorewebhookasync`, 2);
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
             case 'LINKEDIN':
+                if (service) {
+                    parameters.communicationchannelowner = service.clientid;
+                    parameters.communicationchannelsite = service.clientid;
+                    parameters.integrationid = `urn:li:organization:${service.organizationid}`;
+                    parameters.servicecredentials = JSON.stringify({
+                        clientId: service.clientid,
+                        clientSecret: service.clientsecret,
+                        endpoint: linkedinEndpoint,
+                        organizationId: `urn:li:organization:${service.organizationid}`,
+                    });
+                    parameters.status = 'ACTIVO';
+                    parameters.type = 'LNKD';
+
+                    await channelfunctions.serviceTokenUpdate(service.clientid, service.accesstoken, service.refreshtoken, JSON.stringify({ clientId: service.clientid, clientSecret: service.clientsecret, endpoint: linkedinTokenEndpoint }), 'LINKEDIN', 'ACTIVO', request?.user?.usr, 1400);
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
+                    }
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
+
             case 'MICROSOFTTEAMS':
             case 'TIKTOK':
                 if (service) {

@@ -12,8 +12,13 @@ const ayrshareEndpoint = process.env.AYRSHARE;
 const bridgeEndpoint = process.env.BRIDGE;
 const brokerEndpoint = process.env.CHATBROKER;
 const facebookEndpoint = process.env.FACEBOOKAPI;
+const googleClientId = process.env.GOOGLE_CLIENTID;
+const googleClientSecret = process.env.GOOGLE_CLIENTSECRET;
+const googleTopicName = process.env.GOOGLE_TOPICNAME;
 const hookEndpoint = process.env.HOOK;
 const laraigoEndpoint = process.env.LARAIGO;
+const linkedinEndpoint = process.env.LINKEDIN;
+const linkedinTokenEndpoint = process.env.LINKEDINTOKEN;
 const smoochEndpoint = process.env.SMOOCHAPI;
 const smoochVersion = process.env.SMOOCHVERSION;
 const telegramEndpoint = process.env.TELEGRAMAPI;
@@ -21,9 +26,6 @@ const userSecret = process.env.USERSECRET;
 const webChatApplication = process.env.CHATAPPLICATION;
 const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
 const whitelist = process.env.WHITELIST;
-const googleClientId = process.env.GOOGLE_CLIENTID;
-const googleClientSecret = process.env.GOOGLE_CLIENTSECRET;
-const googleTopicName = process.env.GOOGLE_TOPICNAME;
 
 exports.activateUser = async (request, response) => {
     try {
@@ -975,7 +977,49 @@ exports.createSubscription = async (request, response) => {
                                 }
                                 break;
 
+                            case 'PLAYSTORE':
+                                if (channelService) {
+                                    channelParameters.communicationchannelowner = channelService.mail;
+                                    channelParameters.communicationchannelsite = `${channelService.mail}|AC|${channelService.appcode}`;
+                                    channelParameters.integrationid = channelService.appcode;
+                                    channelParameters.servicecredentials = JSON.stringify(channelService);
+                                    channelParameters.status = 'ACTIVO';
+                                    channelParameters.type = 'PLAY';
+
+                                    await channelfunctions.serviceTokenUpdate(channelService.mail, '', '', JSON.stringify(channelService), 'PLAYSTORE', 'ACTIVO', parameters.username, 50);
+
+                                    await channelfunctions.serviceSubscriptionUpdate(channelService.mail, channelService.appcode, JSON.stringify(channelService), 'GOOGLE-PLAYSTORE', 'ACTIVO', parameters.username, `${hookEndpoint}appstore/playstorewebhookasync`, 2);
+
+                                    channelMethodArray.push(channelMethod);
+                                    channelParametersArray.push(channelParameters);
+                                    channelServiceArray.push(channelService);
+                                    channelTypeArray.push(channel.type);
+                                }
+                                break;
+
                             case 'LINKEDIN':
+                                if (channelService) {
+                                    channelParameters.communicationchannelowner = channelService.clientid;
+                                    channelParameters.communicationchannelsite = channelService.clientid;
+                                    channelParameters.integrationid = `urn:li:organization:${channelService.organizationid}`;
+                                    channelParameters.servicecredentials = JSON.stringify({
+                                        clientId: channelService.clientid,
+                                        clientSecret: channelService.clientsecret,
+                                        endpoint: linkedinEndpoint,
+                                        organizationId: `urn:li:organization:${channelService.organizationid}`,
+                                    });
+                                    channelParameters.status = 'ACTIVO';
+                                    channelParameters.type = 'LNKD';
+
+                                    await channelfunctions.serviceTokenUpdate(channelService.clientid, channelService.accesstoken, channelService.refreshtoken, JSON.stringify({ clientId: channelService.clientid, clientSecret: channelService.clientsecret, endpoint: linkedinTokenEndpoint }), 'LINKEDIN', 'ACTIVO', request?.user?.usr, 1400);
+
+                                    channelMethodArray.push(channelMethod);
+                                    channelParametersArray.push(channelParameters);
+                                    channelServiceArray.push(channelService);
+                                    channelTypeArray.push(channel.type);
+                                }
+                                break;
+
                             case 'MICROSOFTTEAMS':
                             case 'TIKTOK':
                                 if (channelService) {
