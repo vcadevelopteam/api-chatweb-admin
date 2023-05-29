@@ -96,10 +96,11 @@ const connectToDB = async (backup = false) => {
 };
 
 exports.incremental = async (req, res) => {
+    let infoSelect = null;
     try {
         _requestid = req._requestid;
         const tablesToBackup = await exeMethod("QUERY_SEL_TABLESETTING_BACKUP", {});
-        const infoSelect = await exeMethod("UFN_LOGBACKUP_SEL", {});
+        infoSelect = await exeMethod("UFN_LOGBACKUP_SEL", {});
 
         if (!Array.isArray(tablesToBackup) || !Array.isArray(infoSelect)) {
             return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
@@ -174,7 +175,7 @@ exports.incremental = async (req, res) => {
         await exeMethod("UFN_LOGBACKUP_UPD", {
             logbackupid, error: `${exception}`, status: "ERROR", tables_update: tables_success.join(",")
         })
-        logger.child({ ctx: infoSelect[0].logbackupid, _requestid }).debug(`Finish backup incremental ERROR`)
+        logger.child({ ctx: infoSelect[0].logbackupid, _requestid: req._requestid }).debug(`Finish backup incremental ERROR`)
         return res.status(500).json(getErrorCode(null, exception, `Finish backup incremental ERROR ${req.originalUrl}`, req._requestid));
     }
 };
