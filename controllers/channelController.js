@@ -213,7 +213,22 @@ exports.deleteChannel = async (request, response) => {
                         success: false
                     });
                 }
+            case 'WORKPLACE':
+                const deleteChannelWorkplace = await triggerfunctions.executesimpletransaction(method, parameters);
 
+                if (deleteChannelWorkplace instanceof Array) {
+                    await channelfunctions.clearHookCache('EveryService', request._requestid);
+
+                    return response.json({
+                        success: true
+                    });
+                }
+                else {
+                    return response.status(400).json({
+                        msg: deleteChannelWorkplace.code,
+                        success: false
+                    });
+                }
             case 'FBDM':
             case 'FBWA':
             case 'INDM':
@@ -955,6 +970,39 @@ exports.getPhoneList = async (request, response) => {
         });
     }
 }
+exports.getGroupList = async (request, response) => {
+    try {
+        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
+        const {accesstoken}= request.body;
+
+        if(!accesstoken){
+            return response.status(400).json({
+                msg: 'there is no accesstoken parameter.',
+                success: false
+            });
+        }
+        
+        const requestGroupList = await axiosObservable({
+            method: 'get',
+            url: `https://graph.workplace.com/community/groups?access_token=${accesstoken}`,
+            _requestid: request._requestid,
+        });
+       
+        if (requestGroupList.data) {
+            return response.json({
+                data: requestGroupList.data,
+                success: true
+            });
+        }
+        
+    }
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            msg: exception.message,
+        });
+    }
+}
 
 exports.insertChannel = async (request, response) => {
     try {
@@ -1184,6 +1232,103 @@ exports.insertChannel = async (request, response) => {
                 else {
                     return response.status(400).json({
                         msg: 'Could not create integration',
+                        success: false
+                    });
+                }
+            case 'FACEBOOKWORPLACE':
+                console.log("Se ejecutooo")
+                const requestTokenWorkplace = await axiosObservable({
+                    method: 'get',
+                    url: `https://graph.workplace.com/me?access_token=${service.accesstoken}`,
+                    _requestid: request._requestid,
+                });
+
+                if(requestTokenWorkplace.status = 200){
+
+                    var serviceCredentials = {
+                        accessToken: service.accesstoken,
+                        endpoint: facebookEndpoint,
+                        appid: service.appid || null,
+                        appsecret: service.appsecret ||null,
+                        serviceType: 'WORKPLACE',
+                        siteId: requestTokenWorkplace.data.id
+                    };
+
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+
+                    //WORKPLACE MESSENGER
+                    parameters.type = 'FBWP';
+                    parameters.communicationchannelowner = requestTokenWorkplace.data.id;
+                    parameters.communicationchannelsite = requestTokenWorkplace.data.id;
+
+                    const transactionCreateWorkplace = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateWorkplace instanceof Array) {
+                        await channelfunctions.clearHookCache('FacebookService', request._requestid);
+
+                        return response.json({
+                            success: true
+                        });
+                        
+                    }
+                
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateWorkplace.code,
+                            success: false
+                        });
+                    }
+                }else{
+                    return response.status(400).json({
+                        msg: requestTokenWorkplace.data.error.message,
+                        success: false
+                    });
+                }
+
+            case "FBWM":
+                 const requestTokenWorkplaceWall = await axiosObservable({
+                    method: 'get',
+                    url: `https://graph.workplace.com/me?access_token=${service.accesstoken}`,
+                    _requestid: request._requestid,
+                });
+
+                if(requestTokenWorkplaceWall.status = 200){
+
+                    var serviceCredentials = {
+                        accessToken: service.accesstoken,
+                        endpoint: facebookEndpoint,
+                        appid: service.appid || null,
+                        appsecret: service.appsecret ||null,
+                        serviceType: 'WORKPLACE',
+                        siteId: requestTokenWorkplaceWall.data.id
+                    };
+
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+
+                    parameters.type = 'FBWM';
+                    parameters.communicationchannelowner = requestTokenWorkplaceWall.data.id;
+                    parameters.communicationchannelsite = service.groupid;
+              
+                    const transactionCreateWorkplace = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateWorkplace instanceof Array) {
+                        await channelfunctions.clearHookCache('FacebookService', request._requestid);
+
+                        return response.json({
+                            success: true
+                        });
+                        
+                    }
+                
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateWorkplace.code,
+                            success: false
+                        });
+                    }
+                }else{
+                    return response.status(400).json({
+                        msg: requestTokenWorkplaceWall.data.error.message,
                         success: false
                     });
                 }
