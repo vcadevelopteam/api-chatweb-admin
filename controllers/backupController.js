@@ -50,6 +50,13 @@ const insertMassive = async (table, rows, dt, columns, lastdate) => {
         logger.child({ _requestid }).debug(`${tablename} insert: ${data.inserts.length} update: ${data.updates.length}`)
 
         if (data.inserts.length > 0) {
+            if (tablename === "conversation") {
+                data.inserts = data.inserts.map(x => ({
+                    ...x,
+                    chatflowcontext: null,
+                    variablecontext: null
+                }))
+            }
             const where = columnpk ? `xins.${columnpk} = dt.${columnpk}` : insertwhere;
 
             const query = `INSERT INTO ${tablename}
