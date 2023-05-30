@@ -189,9 +189,10 @@ exports.incremental = async (req, res) => {
         logger.child({ ctx: infoSelect[0].logbackupid, _requestid }).debug(`Finish backup incremental successfully`)
         return res.status(200).json({ success: true, logbackupid });
     } catch (exception) {
-        await exeMethod("UFN_LOGBACKUP_UPD", {
-            logbackupid, error: `${exception}`, status: "ERROR", tables_update: tables_success.join(",")
-        })
+        await client.query(`select * FROM ufn_logbackup_upd($logbackupid, $error, $tables_update, $status)`, [logbackupid, `${exception}`, "ERROR", tables_success.join(",")])
+        // await exeMethod("UFN_LOGBACKUP_UPD", {
+        //     logbackupid, error: `${exception}`, status: "ERROR", tables_update: tables_success.join(",")
+        // })
         logger.child({ ctx: infoSelect[0].logbackupid, _requestid: req._requestid }).debug(`Finish backup incremental ERROR`)
         return res.status(500).json(getErrorCode(null, exception, `Finish backup incremental ERROR ${req.originalUrl}`, req._requestid));
     }
