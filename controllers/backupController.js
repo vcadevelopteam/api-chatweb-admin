@@ -178,11 +178,12 @@ exports.incremental = async (req, res) => {
 
             cursor.close(); // Cerrar el cursor después de procesarlo
         }
-        client.release();
-        clientBackup.release();
-
+        
         await client.query(`select * FROM ufn_logbackup_upd($1, $2, $3, $4)`, [logbackupid, "", tables_success.join(","), "EXITO"])
         logger.child({ ctx: infoSelect[0].logbackupid, _requestid }).debug(`Finish backup incremental successfully`)
+        
+        client.release();
+        clientBackup.release();
         return res.status(200).json({ success: true, logbackupid });
     } catch (exception) {
         client.query(`select * FROM ufn_logbackup_upd($1, $2, $3, $4)`, [logbackupid, `${exception}`, tables_success.join(","), "ERROR"])
