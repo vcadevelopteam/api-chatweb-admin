@@ -10,7 +10,7 @@ require('dotenv').config();
 const DBNAME = process.env.BACKUP_DBNAME || process.env.DBNAME;
 const DBUSER = process.env.BACKUP_DBUSER || process.env.DBUSER;
 const DBPORT = process.env.BACKUP_DBPORT || process.env.DBPORT;
-const DBPASSWORD = process.env.BACKUP_DBPADBPASSWORD || process.env.DBPASSWORD;
+const DBPASSWORD = process.env.BACKUP_DBPASSWORD || process.env.DBPASSWORD;
 const DBHOST = process.env.BACKUP_DBHOST || process.env.DBHOST;
 
 module.exports = new Sequelize(DBNAME, DBUSER, DBPASSWORD, {
