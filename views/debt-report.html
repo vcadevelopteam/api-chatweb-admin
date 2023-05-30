@@ -100,7 +100,7 @@
 
 <body>
     <% data.forEach(function(item){ %>
-        <div style="width: 90%; margin-left: auto; margin-right: auto; padding-top: 5px; position: relative; page-break-after: <%= item.heightContainer %>;">
+        <div style="width: 90%; position: relative; margin-left: auto; margin-right: auto; padding-top: 5px; position: relative; page-break-after: <%= item.heightContainer %>;">
             <div style="display: table; width: 100%;">
                 <div style="font-size: 8px;" class="blacktext">
                     <%= item.fecha_reporte %>
@@ -302,32 +302,33 @@
                     <% } %>
                 </table>
             </div>
-            <div style="text-align: center; font-size: 10px; font-weight: bold; margin-top: 50px;" class="bluetext">Este
-                reporte contiene información de deudas con una antigüedad máxima de 5 años,
-                contados desde la fecha de vencimiento. Las entidades financieras realizan la evaluación y clasificación del
-                deudor al cierre de cada mes, por lo que el
-                reporte presenta un periodo de desface.</div>
-    
-            <div style="border: solid grey 1px; margin-top: 10px; padding: 10px">
-    
-                <div style="text-align: center; font-size: 10px; font-weight: bold;" class="blacktext">Aviso importante
+            <div style="position: absolute; top: 700px">
+                <div style="text-align: center; font-size: 10px; font-weight: bold;" class="bluetext">Este
+                    reporte contiene información de deudas con una antigüedad máxima de 5 años,
+                    contados desde la fecha de vencimiento. Las entidades financieras realizan la evaluación y clasificación del
+                    deudor al cierre de cada mes, por lo que el
+                    reporte presenta un periodo de desface.</div>
+        
+                <div style="border: solid grey 1px; margin-top: 10px; padding: 10px">
+        
+                    <div style="text-align: center; font-size: 10px; font-weight: bold;" class="blacktext">Aviso importante
+                    </div>
+                    <div style="text-align: center; font-size: 8px; margin-top: 10px;" class="blacktext">La información mostrada
+                        en este reporte, ha sido proporcionada por las empresas del sistema
+                        financiero, por lo que esta Superintendencia no se hace responsable por la veracidad, exactitud y
+                        rectificación de las deudas informadas. Si usted considera que la información
+                        consignada no es correcta, puede presentar su reclamo y/o ejercer sus derechos ARCO(Acceso,
+                        Rectificación, Cancelación y Oposición) ante la empresa del sistema financiero
+                        reportante.</div>
                 </div>
-                <div style="text-align: center; font-size: 8px; margin-top: 10px;" class="blacktext">La información mostrada
-                    en este reporte, ha sido proporcionada por las empresas del sistema
-                    financiero, por lo que esta Superintendencia no se hace responsable por la veracidad, exactitud y
-                    rectificación de las deudas informadas. Si usted considera que la información
-                    consignada no es correcta, puede presentar su reclamo y/o ejercer sus derechos ARCO(Acceso,
-                    Rectificación, Cancelación y Oposición) ante la empresa del sistema financiero
-                    reportante.</div>
+                <div style="text-align: center; font-size: 8px; margin-top: 160px;" class="blacktext">
+                    Contáctanos llamando a la línea gratuita a nivel nacional 0-800-10840 o a través de cualquiera de nuestros
+                    <a href="https://www.sbs.gob.pe/usuarios/nuestros-servicios/servicios-sbs/consultas">Canales de
+                        atención.</a>
+                </div>
+                <div style="text-align: center; font-size: 8px;" class="blacktext">
+                    Para más información visita <a href="www.sbs.gob.pe/usuarios">www.sbs.gob.pe/usuarios.</a></div>
             </div>
-            <div style="text-align: center; font-size: 8px; margin-top: 20px;" class="blacktext">
-                Contáctanos llamando a la línea gratuita a nivel nacional 0-800-10840 o a través de cualquiera de nuestros
-                <a href="https://www.sbs.gob.pe/usuarios/nuestros-servicios/servicios-sbs/consultas">Canales de
-                    atención.</a>
-            </div>
-            <div style="text-align: center; font-size: 8px;" class="blacktext">
-                Para más información visita <a href="www.sbs.gob.pe/usuarios">www.sbs.gob.pe/usuarios.</a></div>
-    
         </div>
     <% }); %>
 </body>
