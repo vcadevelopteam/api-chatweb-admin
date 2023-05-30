@@ -103,16 +103,28 @@ const connectToDB = async (backup = false) => {
 };
 
 exports.incremental = async (req, res) => {
+    let infoSelect = null;
     try {
+        const client = await connectToDB();
+        clientBackup = await connectToDB(true);
+
         _requestid = req._requestid;
-        const tablesToBackup = await exeMethod("QUERY_SEL_TABLESETTING_BACKUP", {});
-        const infoSelect = await exeMethod("UFN_LOGBACKUP_SEL", {});
+
+        const ResultTablesToBackup = await client.query(
+            `select tablename, columnpk, tableorder, selectwhere, update, batchsize, insertwhere, updatewhere from tablesettingbackup where status = 'ACTIVO' order by tableorder asc`
+        );
+        const ResultInfoSelect = await client.query(
+            `select * FROM ufn_logbackup_sel()`
+        );
+        
+        const tablesToBackup = ResultTablesToBackup.rows;
+        infoSelect = ResultInfoSelect.rows;
 
         if (!Array.isArray(tablesToBackup) || !Array.isArray(infoSelect)) {
             return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
         }
         logbackupid = infoSelect[0].logbackupid;
-        
+
         logger.child({ ctx: infoSelect[0].logbackupid, _requestid }).debug(`Run backup incremental`)
 
         const { lastconsulteddate: lastdate, nextconsulteddate: todate } = infoSelect[0];
@@ -121,8 +133,7 @@ exports.incremental = async (req, res) => {
             return res.status(400).json({ error: false, success: false, message: "there are not tables" });
         }
 
-        const client = await connectToDB();
-        clientBackup = await connectToDB(true);
+
 
         for (const table of tablesToBackup) {
             const { tablename, selectwhere, columnpk } = table;
@@ -181,7 +192,7 @@ exports.incremental = async (req, res) => {
         await exeMethod("UFN_LOGBACKUP_UPD", {
             logbackupid, error: `${exception}`, status: "ERROR", tables_update: tables_success.join(",")
         })
-        logger.child({ ctx: infoSelect[0].logbackupid, _requestid }).debug(`Finish backup incremental ERROR`)
+        logger.child({ ctx: infoSelect[0].logbackupid, _requestid: req._requestid }).debug(`Finish backup incremental ERROR`)
         return res.status(500).json(getErrorCode(null, exception, `Finish backup incremental ERROR ${req.originalUrl}`, req._requestid));
     }
 };
