@@ -104,9 +104,9 @@ const connectToDB = async (backup = false) => {
 
 exports.incremental = async (req, res) => {
     let infoSelect = null;
+    const client = await connectToDB();
+    clientBackup = await connectToDB(true);
     try {
-        const client = await connectToDB();
-        clientBackup = await connectToDB(true);
 
         _requestid = req._requestid;
 
@@ -132,8 +132,6 @@ exports.incremental = async (req, res) => {
         if (tablesToBackup.length === 0) {
             return res.status(400).json({ error: false, success: false, message: "there are not tables" });
         }
-
-
 
         for (const table of tablesToBackup) {
             const { tablename, selectwhere, columnpk } = table;
@@ -183,12 +181,16 @@ exports.incremental = async (req, res) => {
         client.release();
         clientBackup.release();
 
-        await client.query(`select * FROM ufn_logbackup_upd($1, $2, $3, $4)`, [logbackupid, ``, "EXITO", tables_success.join(",")])
+        await client.query(`select * FROM ufn_logbackup_upd($1, $2, $3, $4)`, [logbackupid, "", tables_success.join(","), "EXITO"])
         logger.child({ ctx: infoSelect[0].logbackupid, _requestid }).debug(`Finish backup incremental successfully`)
         return res.status(200).json({ success: true, logbackupid });
     } catch (exception) {
-        await client.query(`select * FROM ufn_logbackup_upd($1, $2, $3, $4)`, [logbackupid, `${exception}`, "ERROR", tables_success.join(",")])
-        logger.child({ ctx: infoSelect[0].logbackupid, _requestid: req._requestid }).debug(`Finish backup incremental ERROR`)
+        client.query(`select * FROM ufn_logbackup_upd($1, $2, $3, $4)`, [logbackupid, `${exception}`, tables_success.join(","), "ERROR"])
+        logger.child({ ctx: infoSelect?.[0].logbackupid, _requestid: req._requestid }).debug(`Finish backup incremental ERROR`)
+        
+        client.release();
+        clientBackup.release();
+
         return res.status(500).json(getErrorCode(null, exception, `Finish backup incremental ERROR ${req.originalUrl}`, req._requestid));
     }
 };
