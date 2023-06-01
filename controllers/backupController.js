@@ -8,26 +8,30 @@ let clientBackup = null;
 let _requestid = "", tables_success = [], logbackupid = 0;
 
 const processCursor = async (cursor, table, dt, columns, lastdate) => {
-    return new Promise((resolve, reject) => {
-        (function read() {
-            cursor.read(table.batchsize || BATCH_SIZE, async (err, rows) => {
-                try {
-                    if (err) {
-                        return reject(err);
-                    }
-                    if (!rows.length) { // no more rows, so we're done!
-                        return resolve({ error: false, success: true });
-                    }
+    try {
+        return new Promise((resolve, reject) => {
+            (function read() {
+                cursor.read(table.batchsize || BATCH_SIZE, async (err, rows) => {
+                    try {
+                        if (err) {
+                            return reject(err);
+                        }
+                        if (!rows.length) { // no more rows, so we're done!
+                            return resolve({ error: false, success: true });
+                        }
 
-                    await insertMassive(table, rows, dt, columns, lastdate);
+                        await insertMassive(table, rows, dt, columns, lastdate);
 
-                    return read();
-                } catch (error) {
-                    return reject(error);
-                }
-            });
-        })();
-    });
+                        return read();
+                    } catch (error) {
+                        return reject(error);
+                    }
+                });
+            })();
+        });
+    } catch (error) {
+        throw error; // Si ocurre algún error al crear la promesa, lanza el error para ser manejado fuera de la función
+    }
 };
 
 const insertMassive = async (table, rows, dt, columns, lastdate) => {
@@ -54,9 +58,12 @@ const insertMassive = async (table, rows, dt, columns, lastdate) => {
                 data.inserts = data.inserts.map(x => ({
                     ...x,
                     chatflowcontext: null,
-                    variablecontext: null
+                    variablecontext: null,
+                    mailflag: false
                 }))
             }
+            // console.log("data.inserts.map(x => x.mailflag)", JSON.stringify(data.inserts))
+            // console.log("dt", dt)
             const where = columnpk ? `xins.${columnpk} = dt.${columnpk}` : insertwhere;
 
             const query = `INSERT INTO ${tablename}
@@ -65,7 +72,7 @@ const insertMassive = async (table, rows, dt, columns, lastdate) => {
                 FROM json_populate_recordset(null::record, $1)
                 AS dt (${dt})
                 WHERE NOT EXISTS(SELECT 1 FROM "${tablename}" xins WHERE ${where})`.replace('\n', ' ');
-
+            console.log("query", query)
             await clientBackup.query(query, [JSON.stringify(data.inserts)]);
         }
         if (data.updates.length > 0) {
@@ -116,7 +123,7 @@ exports.incremental = async (req, res) => {
         const ResultInfoSelect = await client.query(
             `select * FROM ufn_logbackup_sel()`
         );
-        
+
         const tablesToBackup = ResultTablesToBackup.rows;
         infoSelect = ResultInfoSelect.rows;
 
@@ -136,7 +143,7 @@ exports.incremental = async (req, res) => {
         for (const table of tablesToBackup) {
             const { tablename, selectwhere, columnpk } = table;
             // Si desea ejecutar algunas tablas, descomentar 
-            // if (!["interaction"].includes(tablename)) continue;
+            // if (!["conversation"].includes(tablename)) continue;
 
             const dtResult = await client.query(
                 `SELECT
@@ -174,21 +181,25 @@ exports.incremental = async (req, res) => {
 
             const cursor = client.query(new Cursor(querySelect));
 
-            await processCursor(cursor, table, dt, columns, lastdate);
-
-            cursor.close(); // Cerrar el cursor después de procesarlo
+            try {
+                await processCursor(cursor, table, dt, columns, lastdate);
+            } catch (error) {
+                throw error;
+            } finally {
+                await cursor.close(); // Cerrar el cursor después de procesarlo
+            }
         }
-        
+
         await client.query(`select * FROM ufn_logbackup_upd($1, $2, $3, $4)`, [logbackupid, "", tables_success.join(","), "EXITO"])
         logger.child({ ctx: infoSelect[0].logbackupid, _requestid }).debug(`Finish backup incremental successfully`)
-        
+
         client.release();
         clientBackup.release();
         return res.status(200).json({ success: true, logbackupid });
     } catch (exception) {
         client.query(`select * FROM ufn_logbackup_upd($1, $2, $3, $4)`, [logbackupid, `${exception}`, tables_success.join(","), "ERROR"])
         logger.child({ ctx: infoSelect?.[0].logbackupid, _requestid: req._requestid }).debug(`Finish backup incremental ERROR`)
-        
+
         client.release();
         clientBackup.release();
 
