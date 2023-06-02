@@ -58,21 +58,19 @@ const insertMassive = async (table, rows, dt, columns, lastdate) => {
                 data.inserts = data.inserts.map(x => ({
                     ...x,
                     chatflowcontext: null,
-                    variablecontext: null,
-                    mailflag: false
+                    variablecontext: null
                 }))
             }
-            // console.log("data.inserts.map(x => x.mailflag)", JSON.stringify(data.inserts))
-            // console.log("dt", dt)
+
             const where = columnpk ? `xins.${columnpk} = dt.${columnpk}` : insertwhere;
 
-            const query = `INSERT INTO ${tablename}
+            const query = `INSERT INTO "${tablename}"
                 OVERRIDING SYSTEM VALUE
                 SELECT dt.*
                 FROM json_populate_recordset(null::record, $1)
                 AS dt (${dt})
                 WHERE NOT EXISTS(SELECT 1 FROM "${tablename}" xins WHERE ${where})`.replace('\n', ' ');
-            console.log("query", query)
+            
             await clientBackup.query(query, [JSON.stringify(data.inserts)]);
         }
         if (data.updates.length > 0) {
@@ -145,7 +143,7 @@ exports.incremental = async (req, res) => {
             // Si desea ejecutar algunas tablas, descomentar 
             // if (!["conversation"].includes(tablename)) continue;
 
-            const dtResult = await client.query(
+            const dtResult = await clientBackup.query(
                 `SELECT
             string_agg(c.column_name, ', ') filter (WHERE c.is_identity = 'NO') as columns,
             string_agg(c.fixsel, ', ') as fixsel,
