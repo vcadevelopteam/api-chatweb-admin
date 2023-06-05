@@ -950,6 +950,46 @@ exports.createSubscription = async (request, response) => {
                                 }
                                 break;
 
+                            case 'PLAYSTORE':
+                                if (channelService) {
+                                    channelParameters.communicationchannelowner = channelService.mail;
+                                    channelParameters.communicationchannelsite = `${channelService.mail}|AC|${channelService.appcode}`;
+                                    channelParameters.integrationid = channelService.appcode;
+                                    channelParameters.servicecredentials = JSON.stringify(channelService);
+                                    channelParameters.status = 'ACTIVO';
+                                    channelParameters.type = 'PLAY';
+
+                                    await channelfunctions.serviceTokenUpdate(channelService.mail, '', '', JSON.stringify(channelService), 'PLAYSTORE', 'ACTIVO', parameters.username, 50);
+
+                                    await channelfunctions.serviceSubscriptionUpdate(channelService.mail, channelService.appcode, JSON.stringify(channelService), 'GOOGLE-PLAYSTORE', 'ACTIVO', parameters.username, `${hookEndpoint}appstore/playstorewebhookasync`, 2);
+
+                                    channelMethodArray.push(channelMethod);
+                                    channelParametersArray.push(channelParameters);
+                                    channelServiceArray.push(channelService);
+                                    channelTypeArray.push(channel.type);
+                                }
+                                break;
+
+                            case 'APPSTORE':
+                                if (channelService) {
+                                    channelParameters.communicationchannelowner = channelService.keyid;
+                                    channelParameters.communicationchannelsite = channelService.issuerid;
+                                    channelParameters.integrationid = channelService.issuerid;
+                                    channelParameters.servicecredentials = JSON.stringify(channelService);
+                                    channelParameters.status = 'ACTIVO';
+                                    channelParameters.type = 'APPS';
+
+                                    await channelfunctions.serviceTokenUpdate(channelService.issuerid, '', '', JSON.stringify({ issuerId: channelService.issuerid, keyId: channelService.keyid, secretKey: channelService.secretkey }), 'APPSTORE', 'ACTIVO', parameters.username, 15);
+
+                                    await channelfunctions.serviceSubscriptionUpdate(channelService.issuerid, channelService.keyid, JSON.stringify({ issuerId: channelService.issuerid, keyId: channelService.keyid, secretKey: channelService.secretkey }), 'APPLE-APPSTORE', 'ACTIVO', parameters.username, `${hookEndpoint}appstore/appstorewebhookasync`, 2);
+
+                                    channelMethodArray.push(channelMethod);
+                                    channelParametersArray.push(channelParameters);
+                                    channelServiceArray.push(channelService);
+                                    channelTypeArray.push(channel.type);
+                                }
+                                break;
+
                             case 'AYRSHARE-TIKTOK':
                                 if (channelService) {
                                     const requestCreateAyrshare = await axiosObservable({
@@ -985,46 +1025,6 @@ exports.createSubscription = async (request, response) => {
                                         channelServiceArray.push(channelService);
                                         channelTypeArray.push(channel.type);
                                     }
-                                }
-                                break;
-
-                            case 'APPSTORE':
-                                if (channelService) {
-                                    channelParameters.communicationchannelowner = channelService.keyid;
-                                    channelParameters.communicationchannelsite = channelService.issuerid;
-                                    channelParameters.integrationid = channelService.issuerid;
-                                    channelParameters.servicecredentials = JSON.stringify(channelService);
-                                    channelParameters.status = 'ACTIVO';
-                                    channelParameters.type = 'APPS';
-
-                                    await channelfunctions.serviceTokenUpdate(channelService.issuerid, '', '', JSON.stringify({ issuerId: channelService.issuerid, keyId: channelService.keyid, secretKey: channelService.secretkey }), 'APPSTORE', 'ACTIVO', parameters.username, 15);
-
-                                    await channelfunctions.serviceSubscriptionUpdate(channelService.issuerid, channelService.keyid, JSON.stringify({ issuerId: channelService.issuerid, keyId: channelService.keyid, secretKey: channelService.secretkey }), 'APPLE-APPSTORE', 'ACTIVO', parameters.username, `${hookEndpoint}appstore/appstorewebhookasync`, 2);
-
-                                    channelMethodArray.push(channelMethod);
-                                    channelParametersArray.push(channelParameters);
-                                    channelServiceArray.push(channelService);
-                                    channelTypeArray.push(channel.type);
-                                }
-                                break;
-
-                            case 'PLAYSTORE':
-                                if (channelService) {
-                                    channelParameters.communicationchannelowner = channelService.mail;
-                                    channelParameters.communicationchannelsite = `${channelService.mail}|AC|${channelService.appcode}`;
-                                    channelParameters.integrationid = channelService.appcode;
-                                    channelParameters.servicecredentials = JSON.stringify(channelService);
-                                    channelParameters.status = 'ACTIVO';
-                                    channelParameters.type = 'PLAY';
-
-                                    await channelfunctions.serviceTokenUpdate(channelService.mail, '', '', JSON.stringify(channelService), 'PLAYSTORE', 'ACTIVO', parameters.username, 50);
-
-                                    await channelfunctions.serviceSubscriptionUpdate(channelService.mail, channelService.appcode, JSON.stringify(channelService), 'GOOGLE-PLAYSTORE', 'ACTIVO', parameters.username, `${hookEndpoint}appstore/playstorewebhookasync`, 2);
-
-                                    channelMethodArray.push(channelMethod);
-                                    channelParametersArray.push(channelParameters);
-                                    channelServiceArray.push(channelService);
-                                    channelTypeArray.push(channel.type);
                                 }
                                 break;
 
