@@ -1272,6 +1272,9 @@ module.exports = {
         customnumber4: {
             column: "p.customnumber4"
         },
+        standardfeatures0: {
+            column: "p.standardfeatures0"
+        },
         reviewstatus: {
             column: "p.reviewstatus"
         },
@@ -1377,7 +1380,7 @@ module.exports = {
             column: "cc.description"
         },
     },
-    reportrequestsd:{
+    reportrequestsd: {
         sd_request: {
             column: "ld.sd_request"
         },
@@ -1411,7 +1414,7 @@ module.exports = {
             type: "date"
         },
     },
-    reportcompliancesla:{
+    reportcompliancesla: {
         sd_request: {
             column: "ld.sd_request"
         },
@@ -1439,12 +1442,12 @@ module.exports = {
         report_date: {
             column: "ld.createdate",
             type: "date"
-        },        
+        },
         first_contact_date: {
             column: "ld.firstconversationdate",
             type: "date"
         },
-        compliance_first_contact:{
+        compliance_first_contact: {
             column: "case when c.firstconversationdate <= ld.first_contact_deadline then 'CUMPLE' else 'NO CUMPLE' end"
         },
         first_contact_deadline: {
@@ -1459,7 +1462,7 @@ module.exports = {
             column: "ld.resolution_deadline",
             type: "date"
         },
-        compliance_resolution:{
+        compliance_resolution: {
             column: "case when ld.resolution_date <= ld.resolution_deadline then 'CUMPLE' else 'NO CUMPLE' end"
         },
     },
