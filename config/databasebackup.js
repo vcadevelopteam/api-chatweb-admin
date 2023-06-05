@@ -7,15 +7,15 @@ pg.types.setTypeParser(1114, str => str + 'Z');
 
 require('dotenv').config();
 
-const DBNAME = process.env.BACKUP_DBNAME || process.env.DBNAME;
-const DBUSER = process.env.BACKUP_DBUSER || process.env.DBUSER;
-const DBPORT = process.env.BACKUP_DBPORT || process.env.DBPORT;
-const DBPASSWORD = process.env.BACKUP_DBPASSWORD || process.env.DBPASSWORD;
-const DBHOST = process.env.BACKUP_DBHOST || process.env.DBHOST;
+const DBNAME = process.env.BACKUPDBNAME
+const DBUSER = process.env.BACKUPDBUSER
+const DBPORT = process.env.BACKUPDBPORT
+const DBPASSWORD = process.env.BACKUPDBPASSWORD
+const DBHOST = process.env.BACKUPDBHOST
 
 module.exports = new Sequelize(DBNAME, DBUSER, DBPASSWORD, {
     host: DBHOST,
-    port: DBPORT || 30503,
+    port: DBPORT || 5432,
     dialect: 'postgres',
     logging: false,
     dialectOptions: {
@@ -32,7 +32,7 @@ module.exports = new Sequelize(DBNAME, DBUSER, DBPASSWORD, {
         timestamps: false
     },
     pool: {
-        max: 50,
+        max: 5,
         min: 0,
         acquire: 30000,
         idle: 10000

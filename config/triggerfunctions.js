@@ -18,6 +18,7 @@ const COS_BUCKET_NAME = "staticfileszyxme"
 const REPLACEFILTERS = "###FILTERS###";
 const REPLACESEL = "###REPLACESEL###";
 
+
 const executeQuery = async (query, bind, _requestid) => {
     const profiler = logger.child({ ctx: bind || {}, _requestid }).startTimer();
 
@@ -27,6 +28,9 @@ const executeQuery = async (query, bind, _requestid) => {
     })
         .catch(err => getErrorSeq(err, profiler, query, _requestid));
 }
+
+exports.executeQuery = () => executeQuery();
+
 //no se puede usar bind y replace en el mismo query 
 exports.executesimpletransaction = async (method, data, permissions = false, replacements = undefined) => {
     let functionMethod = functionsbd[method];

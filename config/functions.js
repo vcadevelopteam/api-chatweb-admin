@@ -3608,6 +3608,21 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_SEL_TABLESETTING_BACKUP: {
+        query: `select tablename, columnpk, tableorder, selectwhere, update, batchsize, insertwhere, updatewhere from tablesettingbackup where status = 'ACTIVO' order by tableorder asc`,
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LOGBACKUP_SEL: {
+        query: `select * FROM ufn_logbackup_sel()`,
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LOGBACKUP_UPD: {
+        query: `select * FROM ufn_logbackup_upd($logbackupid, $error, $tables_update, $status)`,
+        module: "",
+        protected: "SELECT"
+    },
     UFN_LEAD_PERSON_INS_MOVIL: {
         query: "SELECT * FROM ufn_lead_person_ins($corpid, $orgid, $id, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $username, $index, $firstname, $lastname, $email, $phone, $personid, $userid, $persontype,$leadproduct)",
         module: "",
