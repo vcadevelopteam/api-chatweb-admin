@@ -1,6 +1,7 @@
 const sequelize = require('../config/database');
 
 const { getErrorSeq } = require('../config/helpers');
+const { executesimpletransaction } = require('../config/triggerfunctions');
 
 const { QueryTypes } = require('sequelize');
 
@@ -53,9 +54,22 @@ exports.load = async (req, res) => {
             break;
 
         case 'find_many':
+            const result = await executesimpletransaction("QUERY_SEL_PROPERTY_INTEGRATION", { table_name });
+            let limitX = limit;
+            if (result instanceof Array) {
+                if (result.length > 0) {
+                    const limitProperty = parseInt(result[0].propertyvalue);
+                    if (!limit) {
+                        limitX = limitProperty
+                    } else if (limit > limitProperty) {
+                        limitX = limitProperty
+                    }
+                }
+            }
+
             w_data = (filter) ? `WHERE ${equalQuery(filter).join(' AND ')}` : ''
             s_data = (sort) ? `order by ${getSort(sort).join(', ')}` : ''
-            let s_limit = (limit) ? ` limit ${limit}` : ''
+            let s_limit = (limitX) ? ` limit ${limitX}` : ''
             query = `SELECT * FROM ${table_name} ${w_data} ${s_data} ${s_limit}`;
             break;
 

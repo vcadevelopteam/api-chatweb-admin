@@ -665,7 +665,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INTEGRATIONMANAGER_INS: {
-        query: "SELECT * FROM ufn_integrationmanager_ins($corpid,$orgid,$id,$description,$type,$status,$name,$method,$url,$authorization,$headers,$bodytype,$body,$parameters,$variables,$level,$fields,$apikey,$username,$operation)",
+        query: "SELECT * FROM ufn_integrationmanager_ins($corpid,$orgid,$id,$description,$type,$status,$name,$method,$url,$authorization,$headers,$bodytype,$body,$parameters,$variables,$level,$fields,$apikey,$username,$operation,$url_params,$results)",
         module: "",
         protected: "INSERT"
     },
@@ -1794,6 +1794,13 @@ module.exports = {
     },
     QUERY_SEL_PROPERTY_ENV_ON_LOGIN: {
         query: "SELECT propertyname, propertyvalue FROM property p WHERE p.corpid = $corpid AND p.propertyname = 'AMBIENTE' and p.status = 'ACTIVO';",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_SEL_PROPERTY_INTEGRATION: {
+        query: `SELECT im.corpid, im.orgid, p.propertyname, p.propertyvalue FROM integrationmanager im
+        INNER JOIN property p ON p.corpid = im.corpid AND p.orgid = im.orgid AND p.propertyname = 'MAXIMAPI'
+        WHERE split_part(url, '/', array_length(string_to_array(url, '/'), 1)) = $table_name;`,
         module: "",
         protected: "SELECT"
     },
