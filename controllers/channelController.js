@@ -1809,6 +1809,7 @@ exports.insertChannel = async (request, response) => {
                     else {
                         return response.status(400).json({
                             msg: requestCreateTikApi.data.operationMessage,
+<<<<<<< HEAD
                             success: false
                         });
                     }
@@ -1838,11 +1839,41 @@ exports.insertChannel = async (request, response) => {
                     else {
                         return response.status(400).json({
                             msg: transactionCreateGeneric.code,
+=======
+>>>>>>> testing
                             success: false
                         });
                     }
                 }
                 break;
+                case 'PLAYSTORE':
+                    if (service) {
+                        parameters.communicationchannelowner = service.mail;
+                        parameters.communicationchannelsite = `${service.mail}|AC|${service.appcode}`;
+                        parameters.integrationid = service.appcode;
+                        parameters.servicecredentials = JSON.stringify(service);
+                        parameters.status = 'ACTIVO';
+                        parameters.type = 'PLAY';
+    
+                        await channelfunctions.serviceTokenUpdate(service.mail, '', '', JSON.stringify(service), 'PLAYSTORE', 'ACTIVO', request?.user?.usr, 50);
+    
+                        await channelfunctions.serviceSubscriptionUpdate(service.mail, service.appcode, JSON.stringify(service), 'GOOGLE-PLAYSTORE', 'ACTIVO', request?.user?.usr, `${hookEndpoint}appstore/playstorewebhookasync`, 2);
+    
+                        const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+    
+                        if (transactionCreateGeneric instanceof Array) {
+                            return response.json({
+                                success: true
+                            });
+                        }
+                        else {
+                            return response.status(400).json({
+                                msg: transactionCreateGeneric.code,
+                                success: false
+                            });
+                        }
+                    }
+                    break;    
 
             case 'LINKEDIN':
                 if (service) {
