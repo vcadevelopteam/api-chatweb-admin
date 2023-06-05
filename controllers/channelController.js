@@ -3473,7 +3473,8 @@ exports.deleteTemplate = async (request, response) => {
                                 }
                                 break;
 
-                            case "WHAG":
+                            case 'WHAG':
+                            case 'WHAM':
                                 if (messagetemplate.communicationchannelservicecredentials) {
                                     deleteSuccess = true;
                                 }
