@@ -1814,7 +1814,7 @@ exports.insertChannel = async (request, response) => {
                     }
                 }
                 break;
-
+                
             case 'PLAYSTORE':
                 if (service) {
                     parameters.communicationchannelowner = service.mail;
