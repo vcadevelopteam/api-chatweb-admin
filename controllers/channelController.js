@@ -1809,7 +1809,6 @@ exports.insertChannel = async (request, response) => {
                     else {
                         return response.status(400).json({
                             msg: requestCreateTikApi.data.operationMessage,
-<<<<<<< HEAD
                             success: false
                         });
                     }
@@ -1839,8 +1838,6 @@ exports.insertChannel = async (request, response) => {
                     else {
                         return response.status(400).json({
                             msg: transactionCreateGeneric.code,
-=======
->>>>>>> testing
                             success: false
                         });
                     }
