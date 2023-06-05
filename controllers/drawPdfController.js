@@ -134,3 +134,52 @@ exports.drawCardDynamic = async (req, res) => {
         return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing drawCardDynamic");
     }
 }
+
+//corpid, orgid, personid, limit
+exports.drawPDFSBS = async (req, res) => {
+    const { parameters, reportname } = req.body;
+
+    try {
+        // parameters.detalle
+        // parameters.persona_natural
+
+        const data = parameters.detalle.map((x, i) => ({
+            ...x,
+            fecha_reporte: new Date().toLocaleString('es-PE', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true,
+                timeZone: 'America/Lima'
+            }),
+            ...parameters.persona_natural,
+            heightContainer: parameters.detalle.length !== i + 1 ? "always" : "avoid"
+        }))
+
+        ejs.renderFile(path.join('./views/', "debt-report.html"), {
+            data
+        }, (error, data) => {
+            if (error) {
+                logger.child({ _requestid: req._requestid, error: { detail: error.stack, message: error.message } }).error(`Request to ${req.originalUrl}: ${error.message}`);
+                return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+            } else {
+                pdf.create(data, options).toBuffer(async (error1, buffer) => {
+                    if (error1) {
+                        logger.child({ _requestid: req._requestid, error: { detail: error1.stack, message: error1.message } }).error(`Request to ${req.originalUrl}: ${error1.message}`);
+                        return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+                    }
+
+                    const rr = await uploadBufferToCos(req._requestid, buffer, "application/x-pdf", `${uuidv4()}/Reporte_de_deudas.pdf`);
+
+                    return res.json({ error: false, success: true, url: rr.url });
+                })
+            }
+        });
+    } catch (exception) {
+        const result = getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing drawPDFSBS");
+        return res.status(result.rescode).json({ ...result });
+    }
+}

@@ -16,4 +16,8 @@ router.post("/drawCardDynamic",
     drawPdfController.drawCardDynamic
 )
 
+router.post("/drawpdfsbs",
+    drawPdfController.drawPDFSBS
+)
+
 module.exports = router;
