@@ -14,9 +14,9 @@ const changeInvoiceBalance = async (corpId, orgId, balanceId, invoiceId, usernam
     const queryString = "UFN_BALANCE_CHANGEINVOICE";
     const queryParameters = {
         balanceid: balanceId || null,
-        corpid: corpId || null,
+        corpid: corpId || 0,
         invoiceid: invoiceId || null,
-        orgid: orgId || null,
+        orgid: orgId || 0,
         username: username || null,
         _requestid: requestId || null,
     }
@@ -33,9 +33,9 @@ const changeInvoiceBalance = async (corpId, orgId, balanceId, invoiceId, usernam
 const changeInvoicePayment = async (corpId, orgId, invoiceId, status, paymentNote, paymentFile, paymentCommentary, username, requestId) => {
     const queryString = "UFN_INVOICE_CHANGEPAYMENTSTATUS";
     const queryParameters = {
-        corpid: corpId || null,
+        corpid: corpId || 0,
         invoiceid: invoiceId || null,
-        orgid: orgId || null,
+        orgid: orgId || 0,
         paymentcommentary: paymentCommentary || null,
         paymentfile: paymentFile || null,
         paymentnote: paymentNote || null,
@@ -56,9 +56,9 @@ const changeInvoicePayment = async (corpId, orgId, invoiceId, status, paymentNot
 const changeInvoiceStatus = async (corpId, orgId, invoiceId, status, username, requestId) => {
     const queryString = "UFN_INVOICE_CHANGEINVOICESTATUS";
     const queryParameters = {
-        corpid: corpId || null,
+        corpid: corpId || 0,
         invoiceid: invoiceId || null,
-        orgid: orgId || null,
+        orgid: orgId || 0,
         status: status || null,
         username: username || null,
         _requestid: requestId || null,
@@ -79,12 +79,12 @@ const createBalance = async (corpId, orgId, communicationChannelId, description,
         amount: amount || null,
         balance: balance || null,
         communicationchannelid: communicationChannelId || null,
-        corpid: corpId || null,
+        corpid: corpId || 0,
         description: description || null,
         documentnumber: documentNumber || null,
         documenttype: documentType || null,
         module: module || null,
-        orgid: orgId || null,
+        orgid: orgId || 0,
         paymentstatus: paymentStatus || null,
         receiver: receiver || null,
         status: status || null,
@@ -138,7 +138,7 @@ const createInvoice = async (corpId, orgId, invoiceId, description, status, type
         comments: comments || null,
         concept: concept || null,
         contractnumber: contractNumber || null,
-        corpid: corpId || null,
+        corpid: corpId || 0,
         correlative: correlative || null,
         creditnotediscount: creditNoteDiscount || null,
         creditnotemotive: creditNoteMotive || null,
@@ -165,7 +165,7 @@ const createInvoice = async (corpId, orgId, invoiceId, description, status, type
         issuerubigeo: issuerUbigeo || null,
         month: month || null,
         netamount: netAmount || null,
-        orgid: orgId || null,
+        orgid: orgId || 0,
         paymentstatus: paymentStatus || null,
         printingformat: printingFormat || null,
         purchaseorder: purchaseOrder || null,
@@ -205,7 +205,7 @@ const createInvoice = async (corpId, orgId, invoiceId, description, status, type
 const createInvoiceDetail = async (corpId, orgId, invoiceId, description, status, type, quantity, productCode, hasIgv, saleType, igvTribute, measureUnit, totalIgv, totalAmount, igvRate, productPrice, productDescription, productNetPrice, productNetWorth, netAmount, username, requestId) => {
     const queryString = "UFN_INVOICEDETAIL_INS";
     const queryParameters = {
-        corpid: corpId || null,
+        corpid: corpId || 0,
         description: description || null,
         hasigv: hasIgv || null,
         igvrate: igvRate || null,
@@ -213,7 +213,7 @@ const createInvoiceDetail = async (corpId, orgId, invoiceId, description, status
         invoiceid: invoiceId || null,
         measureunit: measureUnit || null,
         netamount: netAmount || null,
-        orgid: orgId || null,
+        orgid: orgId || 0,
         productcode: productCode || null,
         productdescription: productDescription || null,
         productnetprice: productNetPrice || null,
@@ -244,14 +244,14 @@ const createPaymentCard = async (corpId, orgId, id, cardNumber, cardCode, firstN
         cardcode: cardCode || null,
         cardnumber: cardNumber || null,
         clientcode: clientCode || null,
-        corpid: corpId || null,
+        corpid: corpId || 0,
         favorite: favorite || null,
         firstname: firstName || null,
         id: id || null,
         lastname: lastName || null,
         mail: mail || null,
         operation: id ? "UPDATE" : "INSERT",
-        orgid: orgId || null,
+        orgid: orgId || 0,
         status: status || null,
         phone: phone || null,
         type: type || null,
@@ -265,9 +265,9 @@ const createPaymentCard = async (corpId, orgId, id, cardNumber, cardCode, firstN
 const deleteInvoiceDetail = async (corpId, orgId, invoiceId, requestId) => {
     const queryString = "UFN_INVOICEDETAIL_DELETE";
     const queryParameters = {
-        corpid: corpId || null,
+        corpid: corpId || 0,
         invoiceid: invoiceId || null,
-        orgid: orgId || null,
+        orgid: orgId || 0,
         _requestid: requestId || null,
     }
 
@@ -283,7 +283,7 @@ const deleteInvoiceDetail = async (corpId, orgId, invoiceId, requestId) => {
 const favoritePaymentCard = async (corpId, requestId) => {
     const queryString = "UFN_PAYMENTCARD_LST";
     const queryParameters = {
-        corpid: corpId || null,
+        corpid: corpId || 0,
         id: 0,
         orgid: 0,
         _requestid: requestId || null,
@@ -324,9 +324,9 @@ const getAppSetting = async (requestId) => {
 const getCharge = async (corpId, orgId, userId, id, requestId) => {
     const queryString = "UFN_CHARGE_SEL";
     const queryParameters = {
-        corpid: corpId || null,
+        corpid: corpId || 0,
         invoiceid: id || null,
-        orgid: orgId || null,
+        orgid: orgId || 0,
         userid: userId || null,
         _requestid: requestId || null,
     }
@@ -346,8 +346,8 @@ const getCorporation = async (corpId, requestId) => {
     const queryString = "UFN_CORP_SEL";
     const queryParameters = {
         all: false,
-        corpid: corpId || null,
-        id: corpId || null,
+        corpid: corpId || 0,
+        id: corpId || 0,
         orgid: 0,
         username: 'admin',
         _requestid: requestId || null,
@@ -367,9 +367,9 @@ const getCorporation = async (corpId, requestId) => {
 const getCorrelative = async (corpId, orgId, id, type, requestId) => {
     var queryString = null;
     const queryParameters = {
-        corpid: corpId || null,
+        corpid: corpId || 0,
         invoiceid: id || null,
-        orgid: orgId || null,
+        orgid: orgId || 0,
         _requestid: requestId || null,
     }
 
@@ -453,9 +453,9 @@ async function sleep(msec) {
 const getInvoice = async (corpId, orgId, userId, id, requestId) => {
     const queryString = "UFN_INVOICE_SELBYID";
     const queryParameters = {
-        corpid: corpId || null,
+        corpid: corpId || 0,
         invoiceid: id || null,
-        orgid: orgId || null,
+        orgid: orgId || 0,
         userid: userId || null,
         _requestid: requestId || null,
     }
@@ -474,9 +474,9 @@ const getInvoice = async (corpId, orgId, userId, id, requestId) => {
 const getInvoiceDetail = async (corpId, orgId, userId, id, requestId) => {
     const queryString = "UFN_INVOICEDETAIL_SELBYINVOICEID";
     const queryParameters = {
-        corpid: corpId || null,
+        corpid: corpId || 0,
         invoiceid: id || null,
-        orgid: orgId || null,
+        orgid: orgId || 0,
         userid: userId || null,
         _requestid: requestId || null,
     }
@@ -497,9 +497,9 @@ const getOrganization = async (corpId, orgId, requestId) => {
         const queryString = "UFN_ORG_SEL";
         const queryParameters = {
             all: false,
-            corpid: corpId || null,
-            id: orgId || null,
-            orgid: orgId || null,
+            corpid: corpId || 0,
+            id: orgId || 0,
+            orgid: orgId || 0,
             username: 'admin',
             _requestid: requestId || null,
         }
@@ -519,7 +519,7 @@ const getOrganization = async (corpId, orgId, requestId) => {
 const getPaymentCard = async (corpId, id, requestId) => {
     const queryString = "UFN_PAYMENTCARD_LST";
     const queryParameters = {
-        corpid: corpId || null,
+        corpid: corpId || 0,
         id: id || null,
         orgid: 0,
         _requestid: requestId || null,
@@ -564,7 +564,7 @@ const invoiceSunat = async (corpId, orgId, invoiceId, status, error, qrCode, has
     const queryParameters = {
         annexcode: annexCode || null,
         comments: comments || null,
-        corpid: corpId || null,
+        corpid: corpId || 0,
         credittype: creditType || null,
         detraction: detraction || null,
         detractionaccount: detractionAccount || null,
@@ -581,7 +581,7 @@ const invoiceSunat = async (corpId, orgId, invoiceId, status, error, qrCode, has
         issuerruc: issuerRuc || null,
         issuertradename: issuerTradeName || null,
         issuerubigeo: issuerUbigeo || null,
-        orgid: orgId || null,
+        orgid: orgId || 0,
         printingformat: printingFormat || null,
         purchaseorder: purchaseOrder || null,
         qrcode: qrCode || null,
@@ -627,7 +627,7 @@ const insertCharge = async (corpId, orgId, invoiceId, id, amount, capture, charg
         capture: capture || null,
         chargejson: chargeJson || null,
         chargetoken: chargeToken || null,
-        corpid: corpId || null,
+        corpid: corpId || 0,
         currency: currency || null,
         description: description || null,
         email: email || null,
@@ -636,7 +636,7 @@ const insertCharge = async (corpId, orgId, invoiceId, id, amount, capture, charg
         operation: operation || null,
         orderid: orderId || null,
         orderjson: orderJson || null,
-        orgid: orgId || null,
+        orgid: orgId || 0,
         paidby: paidBy || null,
         status: status || null,
         tokenid: tokenId || null,
@@ -662,11 +662,11 @@ const insertPayment = async (corpId, orgId, invoiceId, capture, chargeId, charge
         chargeid: chargeId || null,
         chargejson: chargeJson || null,
         chargetoken: chargeToken || null,
-        corpid: corpId || null,
+        corpid: corpId || 0,
         culqiamount: culqiAmount || null,
         email: email || null,
         invoiceid: invoiceId || null,
-        orgid: orgId || null,
+        orgid: orgId || 0,
         paidby: paidBy || null,
         tokenid: tokenId || null,
         tokenjson: tokenJson || null,
@@ -686,9 +686,9 @@ const searchDomain = async (corpId, orgId, all, domainName, username, requestId)
     const queryString = "UFN_DOMAIN_VALUES_SEL";
     const queryParameters = {
         all: all || null,
-        corpid: corpId || null,
+        corpid: corpId || 0,
         domainname: domainName || null,
-        orgid: orgId || null,
+        orgid: orgId || 0,
         username: username || null,
         _requestid: requestId || null,
     }
