@@ -13,12 +13,12 @@ const whitelist = process.env.WHITELIST;
 const changeInvoiceBalance = async (corpId, orgId, balanceId, invoiceId, username, requestId) => {
     const queryString = "UFN_BALANCE_CHANGEINVOICE";
     const queryParameters = {
-        balanceid: balanceId || null,
-        corpid: corpId || 0,
-        invoiceid: invoiceId || null,
-        orgid: orgId || 0,
-        username: username || null,
-        _requestid: requestId || null,
+        balanceid: balanceId,
+        corpid: corpId,
+        invoiceid: invoiceId,
+        orgid: orgId,
+        username: username,
+        _requestid: requestId,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -33,15 +33,15 @@ const changeInvoiceBalance = async (corpId, orgId, balanceId, invoiceId, usernam
 const changeInvoicePayment = async (corpId, orgId, invoiceId, status, paymentNote, paymentFile, paymentCommentary, username, requestId) => {
     const queryString = "UFN_INVOICE_CHANGEPAYMENTSTATUS";
     const queryParameters = {
-        corpid: corpId || 0,
-        invoiceid: invoiceId || null,
-        orgid: orgId || 0,
-        paymentcommentary: paymentCommentary || null,
-        paymentfile: paymentFile || null,
-        paymentnote: paymentNote || null,
-        status: status || null,
-        username: username || null,
-        _requestid: requestId || null,
+        corpid: corpId,
+        invoiceid: invoiceId,
+        orgid: orgId,
+        paymentcommentary: paymentCommentary,
+        paymentfile: paymentFile,
+        paymentnote: paymentNote,
+        status: status,
+        username: username,
+        _requestid: requestId,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -56,12 +56,12 @@ const changeInvoicePayment = async (corpId, orgId, invoiceId, status, paymentNot
 const changeInvoiceStatus = async (corpId, orgId, invoiceId, status, username, requestId) => {
     const queryString = "UFN_INVOICE_CHANGEINVOICESTATUS";
     const queryParameters = {
-        corpid: corpId || 0,
-        invoiceid: invoiceId || null,
-        orgid: orgId || 0,
-        status: status || null,
-        username: username || null,
-        _requestid: requestId || null,
+        corpid: corpId,
+        invoiceid: invoiceId,
+        orgid: orgId,
+        status: status,
+        username: username,
+        _requestid: requestId,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -76,23 +76,23 @@ const changeInvoiceStatus = async (corpId, orgId, invoiceId, status, username, r
 const createBalance = async (corpId, orgId, communicationChannelId, description, status, type, module, receiver, amount, balance, documentType, documentNumber, paymentStatus, transactionDate, transactionUser, username, requestId) => {
     const queryString = "UFN_BALANCE_INS_PAYMENT";
     const queryParameters = {
-        amount: amount || null,
-        balance: balance || null,
-        communicationchannelid: communicationChannelId || null,
-        corpid: corpId || 0,
-        description: description || null,
-        documentnumber: documentNumber || null,
-        documenttype: documentType || null,
-        module: module || null,
-        orgid: orgId || 0,
-        paymentstatus: paymentStatus || null,
-        receiver: receiver || null,
-        status: status || null,
-        transactiondate: transactionDate || null,
-        transactionuser: transactionUser || null,
-        type: type || null,
-        username: username || null,
-        _requestid: requestId || null,
+        amount: amount,
+        balance: balance,
+        communicationchannelid: communicationChannelId,
+        corpid: corpId,
+        description: description,
+        documentnumber: documentNumber,
+        documenttype: documentType,
+        module: module,
+        orgid: orgId,
+        paymentstatus: paymentStatus,
+        receiver: receiver,
+        status: status,
+        transactiondate: transactionDate,
+        transactionuser: transactionUser,
+        type: type,
+        username: username,
+        _requestid: requestId,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -134,61 +134,61 @@ const createCharge = async (userProfile, settings, token, metadata, privateKey) 
 const createInvoice = async (corpId, orgId, invoiceId, description, status, type, issuerRuc, issuerBusinessName, issuerTradeName, issuerFiscalAddress, issuerUbigeo, emitterType, annexCode, printingFormat, xmlVersion, ublVersion, receiverDocType, receiverDocNum, receiverBusinessName, receiverFiscalAddress, receiverCountry, receiverMail, invoiceType, sunatOpeCode, serie, correlative, concept, invoiceDate, expirationDate, subtotal, taxes, totalAmount, currency, exchangeRate, invoiceStatus, fileNumber, purchaseOrder, executingUnitCode, selectionProcessNumber, contractNumber, comments, creditType, creditNoteType, creditNoteMotive, creditNoteDiscount, invoiceReferenceFile, invoicePaymentNote, username, referenceInvoiceId, netAmount, paymentStatus, hasReport, year, month, requestId) => {
     const queryString = "UFN_INVOICE_INS";
     const queryParameters = {
-        annexcode: annexCode || null,
-        comments: comments || null,
-        concept: concept || null,
-        contractnumber: contractNumber || null,
-        corpid: corpId || 0,
-        correlative: correlative || null,
-        creditnotediscount: creditNoteDiscount || null,
-        creditnotemotive: creditNoteMotive || null,
-        creditnotetype: creditNoteType || null,
-        credittype: creditType || null,
-        currency: currency || null,
-        description: description || null,
-        emittertype: emitterType || null,
-        exchangerate: exchangeRate || null,
-        executingunitcode: executingUnitCode || null,
-        expirationdate: expirationDate || null,
-        filenumber: fileNumber || null,
-        hasreport: hasReport || null,
-        invoicedate: invoiceDate || null,
-        invoiceid: invoiceId || null,
-        invoicepaymentnote: invoicePaymentNote || null,
-        invoicereferencefile: invoiceReferenceFile || null,
-        invoicestatus: invoiceStatus || null,
-        invoicetype: invoiceType || null,
-        issuerbusinessname: issuerBusinessName || null,
-        issuerfiscaladdress: issuerFiscalAddress || null,
-        issuerruc: issuerRuc || null,
-        issuertradename: issuerTradeName || null,
-        issuerubigeo: issuerUbigeo || null,
-        month: month || null,
-        netamount: netAmount || null,
-        orgid: orgId || 0,
-        paymentstatus: paymentStatus || null,
-        printingformat: printingFormat || null,
-        purchaseorder: purchaseOrder || null,
-        receiverbusinessname: receiverBusinessName || null,
-        receivercountry: receiverCountry || null,
-        receiverdocnum: receiverDocNum || null,
-        receiverdoctype: receiverDocType || null,
-        receiverfiscaladdress: receiverFiscalAddress || null,
-        receivermail: receiverMail || null,
-        referenceinvoiceid: referenceInvoiceId || null,
-        selectionprocessnumber: selectionProcessNumber || null,
-        serie: serie || null,
-        status: status || null,
-        subtotal: subtotal || null,
-        sunatopecode: sunatOpeCode || null,
-        taxes: taxes || null,
-        totalamount: totalAmount || null,
-        type: type || null,
-        ublversion: ublVersion || null,
-        username: username || null,
-        xmlversion: xmlVersion || null,
-        year: year || null,
-        _requestid: requestId || null,
+        annexcode: annexCode,
+        comments: comments,
+        concept: concept,
+        contractnumber: contractNumber,
+        corpid: corpId,
+        correlative: correlative,
+        creditnotediscount: creditNoteDiscount,
+        creditnotemotive: creditNoteMotive,
+        creditnotetype: creditNoteType,
+        credittype: creditType,
+        currency: currency,
+        description: description,
+        emittertype: emitterType,
+        exchangerate: exchangeRate,
+        executingunitcode: executingUnitCode,
+        expirationdate: expirationDate,
+        filenumber: fileNumber,
+        hasreport: hasReport,
+        invoicedate: invoiceDate,
+        invoiceid: invoiceId,
+        invoicepaymentnote: invoicePaymentNote,
+        invoicereferencefile: invoiceReferenceFile,
+        invoicestatus: invoiceStatus,
+        invoicetype: invoiceType,
+        issuerbusinessname: issuerBusinessName,
+        issuerfiscaladdress: issuerFiscalAddress,
+        issuerruc: issuerRuc,
+        issuertradename: issuerTradeName,
+        issuerubigeo: issuerUbigeo,
+        month: month,
+        netamount: netAmount,
+        orgid: orgId,
+        paymentstatus: paymentStatus,
+        printingformat: printingFormat,
+        purchaseorder: purchaseOrder,
+        receiverbusinessname: receiverBusinessName,
+        receivercountry: receiverCountry,
+        receiverdocnum: receiverDocNum,
+        receiverdoctype: receiverDocType,
+        receiverfiscaladdress: receiverFiscalAddress,
+        receivermail: receiverMail,
+        referenceinvoiceid: referenceInvoiceId,
+        selectionprocessnumber: selectionProcessNumber,
+        serie: serie,
+        status: status,
+        subtotal: subtotal,
+        sunatopecode: sunatOpeCode,
+        taxes: taxes,
+        totalamount: totalAmount,
+        type: type,
+        ublversion: ublVersion,
+        username: username,
+        xmlversion: xmlVersion,
+        year: year,
+        _requestid: requestId,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -205,28 +205,28 @@ const createInvoice = async (corpId, orgId, invoiceId, description, status, type
 const createInvoiceDetail = async (corpId, orgId, invoiceId, description, status, type, quantity, productCode, hasIgv, saleType, igvTribute, measureUnit, totalIgv, totalAmount, igvRate, productPrice, productDescription, productNetPrice, productNetWorth, netAmount, username, requestId) => {
     const queryString = "UFN_INVOICEDETAIL_INS";
     const queryParameters = {
-        corpid: corpId || 0,
-        description: description || null,
-        hasigv: hasIgv || null,
-        igvrate: igvRate || null,
-        igvtribute: igvTribute || null,
-        invoiceid: invoiceId || null,
-        measureunit: measureUnit || null,
-        netamount: netAmount || null,
-        orgid: orgId || 0,
-        productcode: productCode || null,
-        productdescription: productDescription || null,
-        productnetprice: productNetPrice || null,
-        productnetworth: productNetWorth || null,
-        productprice: productPrice || null,
-        quantity: quantity || null,
-        saletype: saleType || null,
-        status: status || null,
-        totalamount: totalAmount || null,
-        totaligv: totalIgv || null,
-        type: type || null,
-        username: username || null,
-        _requestid: requestId || null,
+        corpid: corpId,
+        description: description,
+        hasigv: hasIgv,
+        igvrate: igvRate,
+        igvtribute: igvTribute,
+        invoiceid: invoiceId,
+        measureunit: measureUnit,
+        netamount: netAmount,
+        orgid: orgId,
+        productcode: productCode,
+        productdescription: productDescription,
+        productnetprice: productNetPrice,
+        productnetworth: productNetWorth,
+        productprice: productPrice,
+        quantity: quantity,
+        saletype: saleType,
+        status: status,
+        totalamount: totalAmount,
+        totaligv: totalIgv,
+        type: type,
+        username: username,
+        _requestid: requestId,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -241,22 +241,22 @@ const createInvoiceDetail = async (corpId, orgId, invoiceId, description, status
 const createPaymentCard = async (corpId, orgId, id, cardNumber, cardCode, firstName, lastName, mail, favorite, clientCode, status, phone, type, username, requestId) => {
     const queryString = "UFN_PAYMENTCARD_INS";
     const queryParameters = {
-        cardcode: cardCode || null,
-        cardnumber: cardNumber || null,
-        clientcode: clientCode || null,
-        corpid: corpId || 0,
-        favorite: favorite || null,
-        firstname: firstName || null,
-        id: id || null,
-        lastname: lastName || null,
-        mail: mail || null,
+        cardcode: cardCode,
+        cardnumber: cardNumber,
+        clientcode: clientCode,
+        corpid: corpId,
+        favorite: favorite,
+        firstname: firstName,
+        id: id,
+        lastname: lastName,
+        mail: mail,
         operation: id ? "UPDATE" : "INSERT",
-        orgid: orgId || 0,
-        status: status || null,
-        phone: phone || null,
-        type: type || null,
-        username: username || null,
-        _requestid: requestId || null,
+        orgid: orgId,
+        status: status,
+        phone: phone,
+        type: type,
+        username: username,
+        _requestid: requestId,
     }
 
     return await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -265,10 +265,10 @@ const createPaymentCard = async (corpId, orgId, id, cardNumber, cardCode, firstN
 const deleteInvoiceDetail = async (corpId, orgId, invoiceId, requestId) => {
     const queryString = "UFN_INVOICEDETAIL_DELETE";
     const queryParameters = {
-        corpid: corpId || 0,
-        invoiceid: invoiceId || null,
-        orgid: orgId || 0,
-        _requestid: requestId || null,
+        corpid: corpId,
+        invoiceid: invoiceId,
+        orgid: orgId,
+        _requestid: requestId,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -283,10 +283,10 @@ const deleteInvoiceDetail = async (corpId, orgId, invoiceId, requestId) => {
 const favoritePaymentCard = async (corpId, requestId) => {
     const queryString = "UFN_PAYMENTCARD_LST";
     const queryParameters = {
-        corpid: corpId || 0,
+        corpid: corpId,
         id: 0,
         orgid: 0,
-        _requestid: requestId || null,
+        _requestid: requestId,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -307,7 +307,7 @@ const favoritePaymentCard = async (corpId, requestId) => {
 const getAppSetting = async (requestId) => {
     const queryString = "UFN_APPSETTING_INVOICE_SEL";
     const queryParameters = {
-        _requestid: requestId || null,
+        _requestid: requestId,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -324,11 +324,11 @@ const getAppSetting = async (requestId) => {
 const getCharge = async (corpId, orgId, userId, id, requestId) => {
     const queryString = "UFN_CHARGE_SEL";
     const queryParameters = {
-        corpid: corpId || 0,
-        invoiceid: id || null,
-        orgid: orgId || 0,
-        userid: userId || null,
-        _requestid: requestId || null,
+        corpid: corpId,
+        invoiceid: id,
+        orgid: orgId,
+        userid: userId,
+        _requestid: requestId,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -346,11 +346,11 @@ const getCorporation = async (corpId, requestId) => {
     const queryString = "UFN_CORP_SEL";
     const queryParameters = {
         all: false,
-        corpid: corpId || 0,
-        id: corpId || 0,
+        corpid: corpId,
+        id: corpId,
         orgid: 0,
         username: 'admin',
-        _requestid: requestId || null,
+        _requestid: requestId,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -367,10 +367,10 @@ const getCorporation = async (corpId, requestId) => {
 const getCorrelative = async (corpId, orgId, id, type, requestId) => {
     var queryString = null;
     const queryParameters = {
-        corpid: corpId || 0,
-        invoiceid: id || null,
-        orgid: orgId || 0,
-        _requestid: requestId || null,
+        corpid: corpId,
+        invoiceid: id,
+        orgid: orgId,
+        _requestid: requestId,
     }
 
     switch (type) {
@@ -453,11 +453,11 @@ async function sleep(msec) {
 const getInvoice = async (corpId, orgId, userId, id, requestId) => {
     const queryString = "UFN_INVOICE_SELBYID";
     const queryParameters = {
-        corpid: corpId || 0,
-        invoiceid: id || null,
-        orgid: orgId || 0,
-        userid: userId || null,
-        _requestid: requestId || null,
+        corpid: corpId,
+        invoiceid: id,
+        orgid: orgId,
+        userid: userId,
+        _requestid: requestId,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -474,11 +474,11 @@ const getInvoice = async (corpId, orgId, userId, id, requestId) => {
 const getInvoiceDetail = async (corpId, orgId, userId, id, requestId) => {
     const queryString = "UFN_INVOICEDETAIL_SELBYINVOICEID";
     const queryParameters = {
-        corpid: corpId || 0,
-        invoiceid: id || null,
-        orgid: orgId || 0,
-        userid: userId || null,
-        _requestid: requestId || null,
+        corpid: corpId,
+        invoiceid: id,
+        orgid: orgId,
+        userid: userId,
+        _requestid: requestId,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -497,11 +497,11 @@ const getOrganization = async (corpId, orgId, requestId) => {
         const queryString = "UFN_ORG_SEL";
         const queryParameters = {
             all: false,
-            corpid: corpId || 0,
-            id: orgId || 0,
-            orgid: orgId || 0,
+            corpid: corpId,
+            id: orgId,
+            orgid: orgId,
             username: 'admin',
-            _requestid: requestId || null,
+            _requestid: requestId,
         }
 
         const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -519,10 +519,10 @@ const getOrganization = async (corpId, orgId, requestId) => {
 const getPaymentCard = async (corpId, id, requestId) => {
     const queryString = "UFN_PAYMENTCARD_LST";
     const queryParameters = {
-        corpid: corpId || 0,
-        id: id || null,
+        corpid: corpId,
+        id: id,
         orgid: 0,
-        _requestid: requestId || null,
+        _requestid: requestId,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -544,8 +544,8 @@ const getPaymentCard = async (corpId, id, requestId) => {
 const getProfile = async (userId, requestId) => {
     const queryString = "UFN_PROFILE_SEL";
     const queryParameters = {
-        userid: userId || null,
-        _requestid: requestId || null,
+        userid: userId,
+        _requestid: requestId,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -562,51 +562,51 @@ const getProfile = async (userId, requestId) => {
 const invoiceSunat = async (corpId, orgId, invoiceId, status, error, qrCode, hashCode, urlCdr, urlPdf, urlXml, serie, issuerRuc, issuerBusinessName, issuerTradeName, issuerFiscalAddress, issuerUbigeo, emitterType, annexCode, printingFormat, sendToSunat, returnPdf, returnXmlSunat, returnXml, token, sunatUrl, sunatUsername, xmlVersion, ublVersion, receiverDocType, receiverDocNum, receiverBusinessName, receiverFiscalAddress, receiverCountry, receiverMail, invoiceType, sunatOpeCode, expirationDate, purchaseOrder, comments, creditType, detractionCode, detraction, detractionAccount, invoiceDate, requestId) => {
     const queryString = "UFN_INVOICE_SUNAT";
     const queryParameters = {
-        annexcode: annexCode || null,
-        comments: comments || null,
-        corpid: corpId || 0,
-        credittype: creditType || null,
-        detraction: detraction || null,
-        detractionaccount: detractionAccount || null,
-        detractioncode: detractionCode || null,
-        emittertype: emitterType || null,
-        error: error || null,
-        expirationdate: expirationDate || null,
-        hashcode: hashCode || null,
-        invoicedate: invoiceDate || null,
-        invoiceid: invoiceId || null,
-        invoicetype: invoiceType || null,
-        issuerbusinessname: issuerBusinessName || null,
-        issuerfiscaladdress: issuerFiscalAddress || null,
-        issuerruc: issuerRuc || null,
-        issuertradename: issuerTradeName || null,
-        issuerubigeo: issuerUbigeo || null,
-        orgid: orgId || 0,
-        printingformat: printingFormat || null,
-        purchaseorder: purchaseOrder || null,
-        qrcode: qrCode || null,
-        receiverbusinessname: receiverBusinessName || null,
-        receivercountry: receiverCountry || null,
-        receiverdocnum: receiverDocNum || null,
-        receiverdoctype: receiverDocType || null,
-        receiverfiscaladdress: receiverFiscalAddress || null,
-        receivermail: receiverMail || null,
-        returnpdf: returnPdf || null,
-        returnxml: returnXml || null,
-        returnxmlsunat: returnXmlSunat || null,
-        sendtosunat: sendToSunat || null,
-        serie: serie || null,
-        status: status || null,
-        sunatopecode: sunatOpeCode || null,
-        sunaturl: sunatUrl || null,
-        sunatusername: sunatUsername || null,
-        token: token || null,
-        ublversion: ublVersion || null,
-        urlcdr: urlCdr || null,
-        urlpdf: urlPdf || null,
-        urlxml: urlXml || null,
-        xmlversion: xmlVersion || null,
-        _requestid: requestId || null,
+        annexcode: annexCode,
+        comments: comments,
+        corpid: corpId,
+        credittype: creditType,
+        detraction: detraction,
+        detractionaccount: detractionAccount,
+        detractioncode: detractionCode,
+        emittertype: emitterType,
+        error: error,
+        expirationdate: expirationDate,
+        hashcode: hashCode,
+        invoicedate: invoiceDate,
+        invoiceid: invoiceId,
+        invoicetype: invoiceType,
+        issuerbusinessname: issuerBusinessName,
+        issuerfiscaladdress: issuerFiscalAddress,
+        issuerruc: issuerRuc,
+        issuertradename: issuerTradeName,
+        issuerubigeo: issuerUbigeo,
+        orgid: orgId,
+        printingformat: printingFormat,
+        purchaseorder: purchaseOrder,
+        qrcode: qrCode,
+        receiverbusinessname: receiverBusinessName,
+        receivercountry: receiverCountry,
+        receiverdocnum: receiverDocNum,
+        receiverdoctype: receiverDocType,
+        receiverfiscaladdress: receiverFiscalAddress,
+        receivermail: receiverMail,
+        returnpdf: returnPdf,
+        returnxml: returnXml,
+        returnxmlsunat: returnXmlSunat,
+        sendtosunat: sendToSunat,
+        serie: serie,
+        status: status,
+        sunatopecode: sunatOpeCode,
+        sunaturl: sunatUrl,
+        sunatusername: sunatUsername,
+        token: token,
+        ublversion: ublVersion,
+        urlcdr: urlCdr,
+        urlpdf: urlPdf,
+        urlxml: urlXml,
+        xmlversion: xmlVersion,
+        _requestid: requestId,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -623,26 +623,26 @@ const invoiceSunat = async (corpId, orgId, invoiceId, status, error, qrCode, has
 const insertCharge = async (corpId, orgId, invoiceId, id, amount, capture, chargeJson, chargeToken, currency, description, email, operation, orderId, orderJson, paidBy, status, tokenId, tokenJson, type, requestId) => {
     const queryString = "UFN_CHARGE_INS";
     const queryParameters = {
-        amount: amount || null,
-        capture: capture || null,
-        chargejson: chargeJson || null,
-        chargetoken: chargeToken || null,
-        corpid: corpId || 0,
-        currency: currency || null,
-        description: description || null,
-        email: email || null,
-        id: id || null,
-        invoiceid: invoiceId || null,
-        operation: operation || null,
-        orderid: orderId || null,
-        orderjson: orderJson || null,
-        orgid: orgId || 0,
-        paidby: paidBy || null,
-        status: status || null,
-        tokenid: tokenId || null,
-        tokenjson: tokenJson || null,
-        type: type || null,
-        _requestid: requestId || null,
+        amount: amount,
+        capture: capture,
+        chargejson: chargeJson,
+        chargetoken: chargeToken,
+        corpid: corpId,
+        currency: currency,
+        description: description,
+        email: email,
+        id: id,
+        invoiceid: invoiceId,
+        operation: operation,
+        orderid: orderId,
+        orderjson: orderJson,
+        orgid: orgId,
+        paidby: paidBy,
+        status: status,
+        tokenid: tokenId,
+        tokenjson: tokenJson,
+        type: type,
+        _requestid: requestId,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -658,19 +658,19 @@ const insertCharge = async (corpId, orgId, invoiceId, id, amount, capture, charg
 const insertPayment = async (corpId, orgId, invoiceId, capture, chargeId, chargeJson, chargeToken, culqiAmount, email, paidBy, tokenId, tokenJson, requestId) => {
     const queryString = "UFN_INVOICE_PAYMENT";
     const queryParameters = {
-        capture: capture || null,
-        chargeid: chargeId || null,
-        chargejson: chargeJson || null,
-        chargetoken: chargeToken || null,
-        corpid: corpId || 0,
-        culqiamount: culqiAmount || null,
-        email: email || null,
-        invoiceid: invoiceId || null,
-        orgid: orgId || 0,
-        paidby: paidBy || null,
-        tokenid: tokenId || null,
-        tokenjson: tokenJson || null,
-        _requestid: requestId || null,
+        capture: capture,
+        chargeid: chargeId,
+        chargejson: chargeJson,
+        chargetoken: chargeToken,
+        corpid: corpId,
+        culqiamount: culqiAmount,
+        email: email,
+        invoiceid: invoiceId,
+        orgid: orgId,
+        paidby: paidBy,
+        tokenid: tokenId,
+        tokenjson: tokenJson,
+        _requestid: requestId,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -685,12 +685,12 @@ const insertPayment = async (corpId, orgId, invoiceId, capture, chargeId, charge
 const searchDomain = async (corpId, orgId, all, domainName, username, requestId) => {
     const queryString = "UFN_DOMAIN_VALUES_SEL";
     const queryParameters = {
-        all: all || null,
-        corpid: corpId || 0,
-        domainname: domainName || null,
-        orgid: orgId || 0,
-        username: username || null,
-        _requestid: requestId || null,
+        all: all,
+        corpid: corpId,
+        domainname: domainName,
+        orgid: orgId,
+        username: username,
+        _requestid: requestId,
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
@@ -1147,7 +1147,7 @@ exports.automaticPayment = async (request, response) => {
                                                 if (requestSendToSunat.data.result) {
                                                     invoicesuccess = true;
 
-                                                    await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc, appsetting?.businessname, appsetting?.tradename, appsetting?.fiscaladdress, appsetting?.ubigeo, appsetting?.emittertype, appsetting?.annexcode, appsetting?.printingformat, invoicedata?.EnviarSunat, appsetting?.returnpdf, appsetting?.returnxmlsunat, appsetting?.returnxml, appsetting?.token, appsetting?.sunaturl, appsetting?.sunatusername, appsetting?.xmlversion, appsetting?.ublversion, invoicedata?.CodigoRucReceptor, invoicedata?.NumeroDocumentoReceptor, invoicedata?.RazonSocialReceptor, invoicedata?.DireccionFiscalReceptor, invoicedata?.PaisRecepcion, invoicedata?.MailEnvio, documenttype, invoicedata?.CodigoOperacionSunat, invoicedata?.FechaVencimiento, null, null, 'typecredit_alcontado', appsetting?.detractioncode, appsetting?.detraction, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+                                                    await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
 
                                                     const requestSendMail = await axiosObservable({
                                                         data: invoicedata,
@@ -1163,7 +1163,7 @@ exports.automaticPayment = async (request, response) => {
                                                 else {
                                                     responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticinvoice_invoiceerror', responsedata.status, responsedata.success);
 
-                                                    await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc, appsetting?.businessname, appsetting?.tradename, appsetting?.fiscaladdress, appsetting?.ubigeo, appsetting?.emittertype, appsetting?.annexcode, appsetting?.printingformat, invoicedata?.EnviarSunat, appsetting?.returnpdf, appsetting?.returnxmlsunat, appsetting?.returnxml, appsetting?.token, appsetting?.sunaturl, appsetting?.sunatusername, appsetting?.xmlversion, appsetting?.ublversion, invoicedata?.CodigoRucReceptor, invoicedata?.NumeroDocumentoReceptor, invoicedata?.RazonSocialReceptor, invoicedata?.DireccionFiscalReceptor, invoicedata?.PaisRecepcion, invoicedata?.MailEnvio, documenttype, invoicedata?.CodigoOperacionSunat, invoicedata?.FechaVencimiento, null, null, 'typecredit_alcontado', appsetting?.detractioncode, appsetting?.detraction, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+                                                    await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
 
                                                     if (org) {
                                                         if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
@@ -1190,7 +1190,7 @@ exports.automaticPayment = async (request, response) => {
 
                                                 responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticinvoice_exception', responsedata.status, responsedata.success);
 
-                                                await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', exception.message, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, (org ? org.doctype : corp.doctype), (org ? org.docnum : corp.docnum), (org ? org.businessname : corp.businessname), (org ? org.fiscaladdress : corp.fiscaladdress), (org ? org.sunatcountry : corp.sunatcountry), (org ? org.contactemail : corp.contactemail), null, null, null, null, null, null, null, null, null, null, responsedata.id);
+                                                await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', exception.message, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, (org ? org.doctype : corp.doctype) || null, (org ? org.docnum : corp.docnum) || null, (org ? org.businessname : corp.businessname) || null, (org ? org.fiscaladdress : corp.fiscaladdress) || null, (org ? org.sunatcountry : corp.sunatcountry) || null, (org ? org.contactemail : corp.contactemail) || null, null, null, null, null, null, null, null, null, null, null, responsedata.id);
 
                                                 if (org) {
                                                     if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
@@ -1215,7 +1215,7 @@ exports.automaticPayment = async (request, response) => {
                                         else {
                                             responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticinvoice_nocorrelative', responsedata.status, responsedata.success);
 
-                                            await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, (org ? org.doctype : corp.doctype), (org ? org.docnum : corp.docnum), (org ? org.businessname : corp.businessname), (org ? org.fiscaladdress : corp.fiscaladdress), (org ? org.sunatcountry : corp.sunatcountry), (org ? org.contactemail : corp.contactemail), null, null, null, null, null, null, null, null, null, null, responsedata.id);
+                                            await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, (org ? org.doctype : corp.doctype) || null, (org ? org.docnum : corp.docnum) || null, (org ? org.businessname : corp.businessname) || null, (org ? org.fiscaladdress : corp.fiscaladdress) || null, (org ? org.sunatcountry : corp.sunatcountry) || null, (org ? org.contactemail : corp.contactemail) || null, null, null, null, null, null, null, null, null, null, null, responsedata.id);
                                         }
                                     }
                                     else {
@@ -1939,10 +1939,10 @@ exports.chargeInvoice = async (request, response) => {
                                                 });
 
                                                 if (requestSendToSunat.data.result) {
-                                                    await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc, appsetting?.businessname, appsetting?.tradename, appsetting?.fiscaladdress, appsetting?.ubigeo, appsetting?.emittertype, appsetting?.annexcode, appsetting?.printingformat, invoicedata?.EnviarSunat, appsetting?.returnpdf, appsetting?.returnxmlsunat, appsetting?.returnxml, appsetting?.token, appsetting?.sunaturl, appsetting?.sunatusername, appsetting?.xmlversion, appsetting?.ublversion, invoicedata?.CodigoRucReceptor, invoicedata?.NumeroDocumentoReceptor, invoicedata?.RazonSocialReceptor, invoicedata?.DireccionFiscalReceptor, invoicedata?.PaisRecepcion, invoicedata?.MailEnvio, documenttype, invoicedata?.CodigoOperacionSunat, invoicedata?.FechaVencimiento, purchaseorder, comments, 'typecredit_alcontado', appsetting?.detractioncode, appsetting?.detraction, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+                                                    await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
                                                 }
                                                 else {
-                                                    await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc, appsetting?.businessname, appsetting?.tradename, appsetting?.fiscaladdress, appsetting?.ubigeo, appsetting?.emittertype, appsetting?.annexcode, appsetting?.printingformat, invoicedata?.EnviarSunat, appsetting?.returnpdf, appsetting?.returnxmlsunat, appsetting?.returnxml, appsetting?.token, appsetting?.sunaturl, appsetting?.sunatusername, appsetting?.xmlversion, appsetting?.ublversion, invoicedata?.CodigoRucReceptor, invoicedata?.NumeroDocumentoReceptor, invoicedata?.RazonSocialReceptor, invoicedata?.DireccionFiscalReceptor, invoicedata?.PaisRecepcion, invoicedata?.MailEnvio, documenttype, invoicedata?.CodigoOperacionSunat, invoicedata?.FechaVencimiento, purchaseorder, comments, 'typecredit_alcontado', appsetting?.detractioncode, appsetting?.detraction, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+                                                    await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
 
                                                     if (corp.billbyorg) {
                                                         if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
@@ -2509,10 +2509,10 @@ exports.createBalance = async (request, response) => {
                                             });
 
                                             if (requestSendToSunat.data.result) {
-                                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc, appsetting?.businessname, appsetting?.tradename, appsetting?.fiscaladdress, appsetting?.ubigeo, appsetting?.emittertype, appsetting?.annexcode, appsetting?.printingformat, invoicedata?.EnviarSunat, appsetting?.returnpdf, appsetting?.returnxmlsunat, appsetting?.returnxml, appsetting?.token, appsetting?.sunaturl, appsetting?.sunatusername, appsetting?.xmlversion, appsetting?.ublversion, invoicedata?.CodigoRucReceptor, invoicedata?.NumeroDocumentoReceptor, invoicedata?.RazonSocialReceptor, invoicedata?.DireccionFiscalReceptor, invoicedata?.PaisRecepcion, invoicedata?.MailEnvio, documenttype, invoicedata?.CodigoOperacionSunat, invoicedata?.FechaVencimiento, purchaseorder, comments, 'typecredit_alcontado', appsetting?.detractioncode, appsetting?.detraction, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+                                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
                                             }
                                             else {
-                                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc, appsetting?.businessname, appsetting?.tradename, appsetting?.fiscaladdress, appsetting?.ubigeo, appsetting?.emittertype, appsetting?.annexcode, appsetting?.printingformat, invoicedata?.EnviarSunat, appsetting?.returnpdf, appsetting?.returnxmlsunat, appsetting?.returnxml, appsetting?.token, appsetting?.sunaturl, appsetting?.sunatusername, appsetting?.xmlversion, appsetting?.ublversion, invoicedata?.CodigoRucReceptor, invoicedata?.NumeroDocumentoReceptor, invoicedata?.RazonSocialReceptor, invoicedata?.DireccionFiscalReceptor, invoicedata?.PaisRecepcion, invoicedata?.MailEnvio, documenttype, invoicedata?.CodigoOperacionSunat, invoicedata?.FechaVencimiento, purchaseorder, comments, 'typecredit_alcontado', appsetting?.detractioncode, appsetting?.detraction, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+                                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
 
                                                 if (corp.billbyorg) {
                                                     if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
@@ -3099,13 +3099,13 @@ exports.createInvoice = async (request, response) => {
                                 });
 
                                 if (requestSendToSunat.data.result) {
-                                    await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc, appsetting?.businessname, appsetting?.tradename, appsetting?.fiscaladdress, appsetting?.ubigeo, appsetting?.emittertype, appsetting?.annexcode, appsetting?.printingformat, autosendinvoice, appsetting?.returnpdf, appsetting?.returnxmlsunat, appsetting?.returnxml, appsetting?.token, appsetting?.sunaturl, appsetting?.sunatusername, appsetting?.xmlversion, appsetting?.ublversion, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode, appsetting?.detraction, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+                                    await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat || null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
 
                                     responsedata = genericfunctions.changeResponseData(responsedata, null, null, 'successinvoiced', 200, true);
                                     return response.status(responsedata.status).json(responsedata);
                                 }
                                 else {
-                                    await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc, appsetting?.businessname, appsetting?.tradename, appsetting?.fiscaladdress, appsetting?.ubigeo, appsetting?.emittertype, appsetting?.annexcode, appsetting?.printingformat, autosendinvoice, appsetting?.returnpdf, appsetting?.returnxmlsunat, appsetting?.returnxml, appsetting?.token, appsetting?.sunaturl, appsetting?.sunatusername, appsetting?.xmlversion, appsetting?.ublversion, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode, appsetting?.detraction, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+                                    await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat || null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
 
                                     if ((clientcountry === 'PE' && clientdoctype === '6') || (clientcountry !== 'PE' && clientdoctype === '0')) {
                                         await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR', responsedata.id);
@@ -3122,14 +3122,14 @@ exports.createInvoice = async (request, response) => {
                             catch (exception) {
                                 printException(exception, request.originalUrl, responsedata.id);
 
-                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', exception.message, null, null, null, null, null, null, appsetting?.ruc, appsetting?.businessname, appsetting?.tradename, appsetting?.fiscaladdress, appsetting?.ubigeo, appsetting?.emittertype, appsetting?.annexcode, appsetting?.printingformat, autosendinvoice, appsetting?.returnpdf, appsetting?.returnxmlsunat, appsetting?.returnxml, appsetting?.token, appsetting?.sunaturl, appsetting?.sunatusername, appsetting?.xmlversion, appsetting?.ublversion, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, null, null, null, null, responsedata.id);
+                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', exception.message, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, null, null, null, null, responsedata.id);
 
                                 responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'createdbutnotinvoiced', responsedata.status, responsedata.success);
                                 return response.status(responsedata.status).json(responsedata);
                             }
                         }
                         else {
-                            await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting?.ruc, appsetting?.businessname, appsetting?.tradename, appsetting?.fiscaladdress, appsetting?.ubigeo, appsetting?.emittertype, appsetting?.annexcode, appsetting?.printingformat, autosendinvoice, appsetting?.returnpdf, appsetting?.returnxmlsunat, appsetting?.returnxml, appsetting?.token, appsetting?.sunaturl, appsetting?.sunatusername, appsetting?.xmlversion, appsetting?.ublversion, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, null, null, null, null, responsedata.id);
+                            await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, null, null, null, null, responsedata.id);
 
                             responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'correlativenotfound', responsedata.status, responsedata.success);
                             return response.status(responsedata.status).json(responsedata);
@@ -3446,13 +3446,13 @@ exports.emitInvoice = async (request, response) => {
                                     });
 
                                     if (requestSendToSunat.data.result) {
-                                        await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc, appsetting?.businessname, appsetting?.tradename, appsetting?.fiscaladdress, appsetting?.ubigeo, appsetting?.emittertype, appsetting?.annexcode, appsetting?.printingformat, invoicedata?.EnviarSunat, appsetting?.returnpdf, appsetting?.returnxmlsunat, appsetting?.returnxml, appsetting?.token, appsetting?.sunaturl, appsetting?.sunatusername, appsetting?.xmlversion, appsetting?.ublversion, invoicedata?.CodigoRucReceptor, invoicedata?.NumeroDocumentoReceptor, invoicedata?.RazonSocialReceptor, invoicedata?.DireccionFiscalReceptor, invoicedata?.PaisRecepcion, invoicedata?.MailEnvio, documenttype, invoicedata?.CodigoOperacionSunat, invoicedata?.FechaVencimiento, invoice.purchaseorder, invoice.comments, invoice.credittype, appsetting?.detractioncode, appsetting?.detraction, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+                                        await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
 
                                         responsedata = genericfunctions.changeResponseData(responsedata, null, requestSendToSunat.data.result, 'successinvoiced', 200, true);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                     else {
-                                        await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc, appsetting?.businessname, appsetting?.tradename, appsetting?.fiscaladdress, appsetting?.ubigeo, appsetting?.emittertype, appsetting?.annexcode, appsetting?.printingformat, invoicedata?.EnviarSunat, appsetting?.returnpdf, appsetting?.returnxmlsunat, appsetting?.returnxml, appsetting?.token, appsetting?.sunaturl, appsetting?.sunatusername, appsetting?.xmlversion, appsetting?.ublversion, invoicedata?.CodigoRucReceptor, invoicedata?.NumeroDocumentoReceptor, invoicedata?.RazonSocialReceptor, invoicedata?.DireccionFiscalReceptor, invoicedata?.PaisRecepcion, invoicedata?.MailEnvio, documenttype, invoicedata?.CodigoOperacionSunat, invoicedata?.FechaVencimiento, invoice.purchaseorder, invoice.comments, invoice.credittype, appsetting?.detractioncode, appsetting?.detraction, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+                                        await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
 
                                         if (corp.billbyorg) {
                                             if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
