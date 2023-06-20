@@ -33,13 +33,13 @@ exports.version = async (_, res) => {
 }
 
 exports.recaptcha = async (req, res) => {
-    const data = { secret: req.body.secret, response: req.body.response };
-    console.log("xx", data)
+    const data = { secret: "6LdU-R4lAAAAAMew8ZJ_bxj0uxcX9mk3Z0bO_F5D", response: req.body.response };
+    
     try {
         const response = await axiosObservable({
             url: `https://www.google.com/recaptcha/api/siteverify`,
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            data: new URLSearchParams(Object.entries(req.body)).toString(),
+            data: new URLSearchParams(Object.entries(data)).toString(),
             method: "POST",
             _requestid: req._requestid,
         })
