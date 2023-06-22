@@ -82,6 +82,7 @@ exports.dashboardDesigner = async (req, res) => {
             // { INDICATOR
             //     "description": "prueba 18 01",
             //     "contentType": "report|kpi|funnel", 
+            //     "funnelType": "byway|bycount", 
             //     "reporttemplateid": 160,
             //     "kpiid": 11,
             //     "grouping": "quantity",
@@ -140,7 +141,7 @@ exports.dashboardDesigner = async (req, res) => {
             const result = await Promise.all(triggerIndicators);
 
             const cleanDatat = result.map((resIndicator, index) => {
-                const { column, contentType, grouping, interval, summarizationfunction, tags } = indicatorList[index];
+                const { column, contentType, funnelType = "byway", grouping, interval, summarizationfunction, tags } = indicatorList[index];
 
                 if (resIndicator) {
                     if (contentType === "kpi") {
@@ -150,7 +151,7 @@ exports.dashboardDesigner = async (req, res) => {
                             const total = resIndicator.reduce((acc, item) => acc + ((typeof item.total === "string" && item.total.includes(":")) ? stringToMinutes(item.total || "00:00:00") : item.total), 0)
 
                             resultReports[index][0].total = total;
-                            if (!!summarizationfunction) {
+                            if (summarizationfunction) {
                                 return resIndicator.reduce((acc, item) => ({
                                     ...acc,
                                     [interval + item.interval]: (typeof item.total === "string" && item.total.includes(":")) ? stringToMinutes(item.total || "00:00:00") : item.total
@@ -167,36 +168,60 @@ exports.dashboardDesigner = async (req, res) => {
                                 }), {})
                             }
                         } else if (contentType === "funnel") {
-                            const tagsToSearch = tags.reduce((acc, item) => ([
-                                ...acc,
-                                (acc.length > 0 ? item.value + "," + acc[acc.length - 1] : item.value)
-                            ]), []).map(x => `,${x},`);
+                            if (funnelType === "byway") {
+                                const tagsToSearch = tags.reduce((acc, item) => ([
+                                    ...acc,
+                                    (acc.length > 0 ? item.value + "," + acc[acc.length - 1] : item.value)
+                                ]), []).map(x => `,${x},`);
+    
+                                const resCleaned = resIndicator.reduce((acc, item) => {
+                                    const columnTag = item[column.replace(".", "")];
+                                    if (columnTag) {
+                                        // clean tags, example t1,t2,t2,t2,t3 => t1,t2,t3
+                                        const tagsCleaned = columnTag.split(',').reduce((accx, itemx) => ({
+                                            lastTag: itemx,
+                                            acc: accx.lastTag === itemx ? accx.acc : [...accx.acc, itemx]
+                                        }), { lastTag: '', acc: [] })
+    
+                                        const ts = `,${tagsCleaned.acc.join(",")},`; //column tags
+    
+                                        return tagsToSearch.reduce((acc2, item2) => ({
+                                            ...acc2,
+                                            [item2]: (acc[item2] || 0) + (ts.includes(item2) ? 1 : 0)
+                                        }), acc)
+                                    } else {
+                                        return acc;
+                                    }
+                                }, tagsToSearch.reduce((acc1, item1) => ({ ...acc1, [item1]: 0 }), {}))
+    
+                                return Object.entries(resCleaned).map(([key, value], index) => ({
+                                    title: tags[index].title,
+                                    quantity: value,
+                                    path: key
+                                }))
+                            } else {
+                                const tags1 = tags.map(x => `,${x.value},`);
 
-                            const resCleaned = resIndicator.reduce((acc, item) => {
-                                const columnTag = item[column.replace(".", "")];
-                                if (columnTag) {
-                                    // clean tags, example t1,t2,t2,t2,t3 => t1,t2,t3
-                                    const tagsCleaned = columnTag.split(',').reduce((accx, itemx) => ({
-                                        lastTag: itemx,
-                                        acc: accx.lastTag === itemx ? accx.acc : [...accx.acc, itemx]
-                                    }), { lastTag: '', acc: [] })
+                                const resCleaned = resIndicator.reduce((acc, item) => {
+                                    const columnTag = item[column.replace(".", "")];
+                                    if (columnTag) {
+                                        const ts = `,${columnTag},`; //column tags
+    
+                                        return tags1.reduce((acc2, item2) => ({
+                                            ...acc2,
+                                            [item2]: (acc[item2] || 0) + (ts.includes(item2) ? 1 : 0)
+                                        }), acc)
+                                    } else {
+                                        return acc;
+                                    }
+                                }, tags1.reduce((acc1, item1) => ({ ...acc1, [item1]: 0 }), {}));
 
-                                    const ts = `,${tagsCleaned.acc.join(",")},`; //column tags
-
-                                    return tagsToSearch.reduce((acc2, item2) => ({
-                                        ...acc2,
-                                        [item2]: (acc[item2] || 0) + (ts.includes(item2) ? 1 : 0)
-                                    }), acc)
-                                } else {
-                                    return acc;
-                                }
-                            }, tagsToSearch.reduce((acc1, item1) => ({ ...acc1, [item1]: 0 }), {}))
-
-                            return Object.entries(resCleaned).map(([key, value], index) => ({
-                                title: tags[index].title,
-                                quantity: value,
-                                path: key
-                            }))
+                                return Object.entries(resCleaned).map(([key, value], index) => ({
+                                    title: tags[index].title,
+                                    quantity: value,
+                                    path: key
+                                })).sort((a, b) => b.quantity - a.quantity)
+                            }
                         } else {
                             const res = resIndicator.reduce((acc, item) => ({
                                 ...acc,
