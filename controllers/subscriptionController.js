@@ -388,6 +388,14 @@ exports.createSubscription = async (request, response) => {
 
             parameters.loginpassword = await bcryptjs.hash(parameters.loginpassword, await bcryptjs.genSalt(10));
 
+            if (parameters.loginfacebookid) {
+                parameters.loginusername = parameters.loginfacebookid;
+            }
+
+            if (parameters.logingoogleid) {
+                parameters.loginusername = parameters.logingoogleid;
+            }
+
             const subscriptionLaraigo = await createLaraigoAccount(method, parameters.contactnameorcompany, null, parameters.loginusername, parameters.loginpassword, parameters.contactmail, parameters.contactdocumenttype, parameters.contactdocumentnumber, parameters.contactphone, parameters.loginfacebookid, parameters.logingoogleid, null, null, null, parameters.contactnameorcompany, parameters.paymentplanid, parameters.contactcurrency, parameters.contactcountry, parameters.contactnameorcompany, parameters.contactaddress, parameters.contactcountry, parameters.contactmail, parameters.contactnameorcompany, true, parameters.timezoneoffset, parameters.timezone, request._requestid);
 
             if (subscriptionLaraigo) {
