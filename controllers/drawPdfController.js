@@ -98,7 +98,7 @@ exports.drawCardOrder = async (req, res) => {
                             return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
                         }
                         const rr = await uploadBufferToCos(req._requestid, buffer, "application/x-pdf", `${(reportname === 'lastorders' ? `orden-${currentdate}.${orderidentifier}` : reportname)}.pdf`);
-                        return res.json({ error: false, success: true, url: rr.url });
+                        return res.json({ error: false, success: true, url: rr.url, result });
                     })
                 }
             });
