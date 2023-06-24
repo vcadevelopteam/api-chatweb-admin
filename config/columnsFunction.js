@@ -155,6 +155,7 @@ module.exports = {
         origin: {
             column: "co.origin"
         },
+
         client: {
             column: "pe.name"
         },
@@ -456,7 +457,15 @@ module.exports = {
         },
         campaign: {
             column: "ca.title"
-        }
+        },
+        originalpublicationdate: {
+            column: "co.originalpublicationdate + p_offset * INTERVAL '1hour'",
+            type: "date"
+        },
+        numberfollowers: {
+            column: "co.numberfollowers",
+            type: "number"
+        },
     },
     person: {
         havelead: {
