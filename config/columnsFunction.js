@@ -1423,7 +1423,7 @@ module.exports = {
             type: "date"
         },
     },
-    messagetemplate:{
+    messagetemplate: {
         createdate: {
             column: "mt.createdate",
             type: "date"
@@ -1457,7 +1457,7 @@ module.exports = {
         },
 
     },
-    reportcompliancesla:{
+    reportcompliancesla: {
         sd_request: {
             column: "ld.sd_request"
         },
