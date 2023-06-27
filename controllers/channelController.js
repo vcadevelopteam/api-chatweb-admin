@@ -1289,7 +1289,55 @@ exports.insertChannel = async (request, response) => {
                         success: false
                     });
                 }
-
+                case 'FBLD':
+                    console.log("Se ejecutooo")
+                    const requestToknLong = await axiosObservable({
+                        method: 'get',
+                        url: `https://graph.workplace.com/me?access_token=${service.accesstoken}`,
+                        _requestid: request._requestid,
+                    });
+    
+                    if (requestToknLong.status = 200) {
+    
+                        var serviceCredentials = {
+                            accessToken: service.accesstoken,
+                            endpoint: facebookEndpoint,
+                            appid: service.appid || null,
+                            appsecret: service.appsecret || null,
+                            serviceType: 'WORKPLACE',
+                            siteId: requestToknLong.data.id
+                        };
+    
+                        parameters.servicecredentials = JSON.stringify(serviceCredentials);
+    
+                        //WORKPLACE MESSENGER
+                        parameters.type = 'FBWP';
+                        parameters.communicationchannelowner = requestToknLong.data.id;
+                        parameters.communicationchannelsite = requestToknLong.data.id;
+    
+                        const transactionCreateFBLead = await triggerfunctions.executesimpletransaction(method, parameters);
+    
+                        if (transactionCreateFBLead instanceof Array) {
+                            await channelfunctions.clearHookCache('FacebookService', request._requestid);
+    
+                            return response.json({
+                                success: true
+                            });
+    
+                        }
+    
+                        else {
+                            return response.status(400).json({
+                                msg: transactionCreateFBLead.code,
+                                success: false
+                            });
+                        }
+                    } else {
+                        return response.status(400).json({
+                            msg: transactionCreateFBLead.data.error.message,
+                            success: false
+                        });
+                    }
             case "FBWM":
                 const requestTokenWorkplaceWall = await axiosObservable({
                     method: 'get',
