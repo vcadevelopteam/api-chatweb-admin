@@ -1341,7 +1341,6 @@ exports.insertChannel = async (request, response) => {
             case 'INSTAMESSENGER':
             case 'MESSENGER':
             case 'FBLD':
-                console.log("asdasdasd")
                     const requestGetLongToken = await axiosObservable({
                         data: {
                             accessToken: service.accesstoken,
@@ -1383,10 +1382,9 @@ exports.insertChannel = async (request, response) => {
                                 serviceType = 'MESSENGER';
                                 break;
                             case 'FBLD':
-                                console.log("assodjaiosdjoadjoias")
                                     channelLinkService = 'WALLADD';
                                     channelType = 'FBLD';
-                                    serviceType = 'WALL';
+                                    serviceType = 'FBLD';
                                 break;
                         }
     
@@ -1423,7 +1421,6 @@ exports.insertChannel = async (request, response) => {
                             url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
                             _requestid: request._requestid,
                         });
-                        console.log(requestCreateFacebook.data.success)
                         if (requestCreateFacebook.data.success) {
                             let serviceCredentials = {
                                 accessToken: requestGetLongToken.data.longToken,
