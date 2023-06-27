@@ -3717,4 +3717,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CHANGE_ORDERSTATUS : {
+        query: "SELECT * FROM ufn_change_orderstatus($corpid, $orgid, $orderid, $orderstatus, $username)",
+        module: "",
+        protected: "SELECT"
+    },
 }
