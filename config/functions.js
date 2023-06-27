@@ -3710,6 +3710,10 @@ module.exports = {
     },
     UFN_RASA_INTENT_SEL: {
         query: "SELECT * FROM ufn_rasa_intent_sel($corpid, $orgid, $rasaid)",
+        protected: "SELECT"
+    },
+    UFN_ORDERLINE_PRODUCT_LST : {
+        query: "SELECT * FROM ufn_orderline_product_lst ($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
