@@ -3708,4 +3708,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_RASA_INTENT_SEL: {
+        query: "SELECT * FROM ufn_rasa_intent_sel($corpid, $orgid, $rasaid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
