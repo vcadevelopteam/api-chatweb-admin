@@ -1313,7 +1313,8 @@ exports.insertChannel = async (request, response) => {
                         parameters.type = 'FBLD';
                         parameters.communicationchannelowner = requestToknLong.data.id;
                         parameters.communicationchannelsite = requestToknLong.data.id;
-    
+                        console.log("EXECUTE: ",method)
+                        console.log("parametes:", parameters)
                         const transactionCreateFBLead = await triggerfunctions.executesimpletransaction(method, parameters);
     
                         if (transactionCreateFBLead instanceof Array) {
