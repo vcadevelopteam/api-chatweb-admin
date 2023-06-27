@@ -1290,7 +1290,6 @@ exports.insertChannel = async (request, response) => {
                     });
                 }
                 case 'FBLD':
-                    console.log("Se ejecutooo")
                     const requestToknLong = await axiosObservable({
                         method: 'get',
                         url: `https://graph.workplace.com/me?access_token=${service.accesstoken}`,
@@ -1304,14 +1303,14 @@ exports.insertChannel = async (request, response) => {
                             endpoint: facebookEndpoint,
                             appid: service.appid || null,
                             appsecret: service.appsecret || null,
-                            serviceType: 'WORKPLACE',
+                            serviceType: 'FBLD',
                             siteId: requestToknLong.data.id
                         };
     
                         parameters.servicecredentials = JSON.stringify(serviceCredentials);
     
                         //WORKPLACE MESSENGER
-                        parameters.type = 'FBWP';
+                        parameters.type = 'FBLD';
                         parameters.communicationchannelowner = requestToknLong.data.id;
                         parameters.communicationchannelsite = requestToknLong.data.id;
     
