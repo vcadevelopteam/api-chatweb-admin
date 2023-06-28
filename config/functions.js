@@ -3722,4 +3722,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_RASA_SYNONYM_SEL: {
+        query: "SELECT * FROM ufn_rasa_synonym_sel($corpid, $orgid, $rasaid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
