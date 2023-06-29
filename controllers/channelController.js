@@ -219,6 +219,7 @@ exports.deleteChannel = async (request, response) => {
                     });
                 }
             case 'WORKPLACE':
+            case 'FBLD':
                 const deleteChannelWorkplace = await triggerfunctions.executesimpletransaction(method, parameters);
 
                 if (deleteChannelWorkplace instanceof Array) {
@@ -1241,7 +1242,6 @@ exports.insertChannel = async (request, response) => {
                     });
                 }
             case 'FACEBOOKWORPLACE':
-                console.log("Se ejecutooo")
                 const requestTokenWorkplace = await axiosObservable({
                     method: 'get',
                     url: `https://graph.workplace.com/me?access_token=${service.accesstoken}`,
