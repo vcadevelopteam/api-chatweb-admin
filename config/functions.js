@@ -1533,7 +1533,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEADGRID_SD_SEL: {
-        query: "SELECT * FROM ufn_leadgrid_sd_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $fullname, $leadproduct, $tags, $supervisorid, $company, $groups, $offset, $companyuser)",
+        query: "SELECT * FROM ufn_leadgrid_sd_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $fullname, $leadproduct, $tags, $supervisorid, $company, $groups, $offset, $phase, $companyuser)",
         module: "",
         protected: "SELECT"
     },
@@ -3674,7 +3674,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORDER_SEL: {
-        query: "SELECT * FROM ufn_order_sel($corpid, $orgid, $product)",
+        query: "SELECT * FROM ufn_order_sel($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
@@ -3719,6 +3719,11 @@ module.exports = {
     },
     UFN_CHANGE_ORDERSTATUS : {
         query: "SELECT * FROM ufn_change_orderstatus($corpid, $orgid, $orderid, $orderstatus, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_RASA_SYNONYM_SEL: {
+        query: "SELECT * FROM ufn_rasa_synonym_sel($corpid, $orgid, $rasaid)",
         module: "",
         protected: "SELECT"
     },
