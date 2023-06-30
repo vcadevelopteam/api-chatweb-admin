@@ -3727,4 +3727,18 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_RASA_MODEL_UUID_SEL : {
+        query: "SELECT * FROM ufn_rasa_model_uuid_sel($corpid, $orgid, $model_uuid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_RASA_SYNONYM_SEL: {
+        query: "SELECT * FROM ufn_rasa_synonym_sel($corpid, $orgid, $rasaid)",
+        protected: "SELECT"
+    },
+    UFN_RASA_FILE_UPLOAD: {
+        query: "SELECT * FROM ufn_rasa_file_upload($corpid, $orgid, $rasaid, $intents, $synonyms, $usr)",
+        protected: "SELECT"
+    },
+    
 }
