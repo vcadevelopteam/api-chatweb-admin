@@ -1421,6 +1421,7 @@ exports.insertChannel = async (request, response) => {
                             url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
                             _requestid: request._requestid,
                         });
+
                         if (requestCreateFacebook.data.success) {
                             let serviceCredentials = {
                                 accessToken: requestGetLongToken.data.longToken,
@@ -1428,6 +1429,17 @@ exports.insertChannel = async (request, response) => {
                                 serviceType: serviceType,
                                 siteId: service.siteid
                             };
+
+                            if(request.body.type === 'FBLD'){
+                                serviceCredentials = {
+                                    accessToken: requestGetLongToken.data.longToken,
+                                    endpoint: facebookEndpoint,
+                                    serviceType: serviceType,
+                                    siteId: service.siteid,
+                                    corpid: request.user.corpid,
+                                    org: request.user.orgid
+                                };
+                            }
     
                             if (typeof businessId !== 'undefined' && businessId) {
                                 parameters.communicationchannelowner = service.siteid;
