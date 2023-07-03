@@ -8,7 +8,10 @@ const { response } = require("express");
 
 exports.train = async (req, res) => {
     const { corpid, orgid } = req.user;
-    const model_uuid = req.params.model_uuid;
+    const { model_uuid } = req.body;
+
+    if (!model_uuid || model_uuid == '') 
+        return res.status(400).json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
 
     const model_detail = await executesimpletransaction("UFN_RASA_MODEL_UUID_SEL", { corpid, orgid, model_uuid });
     const model_intent = await executesimpletransaction("UFN_RASA_INTENT_SEL", {
@@ -76,7 +79,8 @@ exports.train = async (req, res) => {
 
 exports.upload = async (req, res) => {
     const { corpid, orgid, usr } = req.user;
-    const model_uuid = req.params.model_uuid;
+    // const model_uuid = req.params.model_uuid;
+    const { model_uuid } = req.body;
 
     if (!req.file) {
         return res.status(400).json({ error: "No se ha proporcionado ningún archivo." });
@@ -152,7 +156,8 @@ exports.upload = async (req, res) => {
 
 exports.download = async (req, res) => {
     const { corpid, orgid, usr } = req.user;
-    const model_uuid = req.params.model_uuid;
+    // const model_uuid = req.params.model_uuid;
+    const { model_uuid } = req.body;
 
     try {
         const model_detail = await executesimpletransaction("UFN_RASA_MODEL_UUID_SEL", { corpid, orgid, model_uuid });
@@ -191,7 +196,8 @@ exports.download = async (req, res) => {
 
 exports.list = async (req, res) => {
     const { corpid, orgid, usr } = req.user;
-    const model_uuid = req.params.model_uuid;
+    // const model_uuid = req.params.model_uuid;
+    const { model_uuid } = req.body;
 
     try {
         const model_detail = await executesimpletransaction("UFN_RASA_MODEL_UUID_SEL", {
@@ -273,9 +279,11 @@ const nluYamlBuilder = async (intents, synonyms) => {
         item.intent_examples.forEach((example) => {
             yamlData += `      - ${example.texto}`;
 
-            example.entidades.forEach((entidad) => {
-                yamlData += `{"entity": "${entidad.entity}", "value": "${entidad.value}"}`;
-            });
+            const entities = example.entidades.map((entidad) => `{"entity": "${entidad.entity}", "value": "${entidad.value}"}`).join(' ');
+
+            // example.entidades.forEach((entidad) => {
+            //     yamlData += `{"entity": "${entidad.entity}", "value": "${entidad.value}"}`;
+            // });
             yamlData += `\n`;
         });
         yamlData += `\n`;
