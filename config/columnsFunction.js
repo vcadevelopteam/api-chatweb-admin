@@ -1177,6 +1177,10 @@ module.exports = {
             column: "p.productcatalogid",
             type: "number"
         },
+        unitmeasurement: {
+            column: "p.unitmeasurement",
+            type: "number"
+        },
         productid: {
             column: "p.productid"
         },
@@ -1188,6 +1192,9 @@ module.exports = {
         },
         description: {
             column: "p.description"
+        },
+        description: {
+            column: "p.quantity"
         },
         descriptionshort: {
             column: "p.descriptionshort"
