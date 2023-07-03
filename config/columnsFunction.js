@@ -1193,7 +1193,7 @@ module.exports = {
         description: {
             column: "p.description"
         },
-        description: {
+        quantity: {
             column: "p.quantity"
         },
         descriptionshort: {
