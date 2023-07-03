@@ -6,13 +6,13 @@ const rasaController = require("../controllers/rasaController");
 var multer = require('multer');
 var upload = multer();
 
-router.get("/train/:model_uuid", ip, auth, rasaController.train);
+router.post("/train", ip, auth, rasaController.train);
 
-router.post("/upload/:model_uuid", ip, auth, upload.single("file"), rasaController.upload);
+router.post("/upload", ip, auth, upload.single("file"), rasaController.upload);
 
-router.get("/download/:model_uuid", ip, auth, rasaController.download);
+router.post("/download", ip, auth, rasaController.download);
 
-router.get("/list/:model_uuid", ip, auth, rasaController.list);
+router.post("/list", ip, auth, rasaController.list);
 
 router.post("/test", ip, auth, rasaController.test);
 
