@@ -219,7 +219,7 @@ exports.dashboardDesigner = async (req, res) => {
                                 return tags.map(x => {
                                     return {
                                         title: x.title,
-                                        quantity: resCleaned[x.value] || 0,
+                                        quantity: resCleaned[`,${x.value},`] || 0,
                                         path: x.value
                                     }
                                 });
