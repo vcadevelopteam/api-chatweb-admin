@@ -173,7 +173,7 @@ exports.dashboardDesigner = async (req, res) => {
                                     ...acc,
                                     (acc.length > 0 ? item.value + "," + acc[acc.length - 1] : item.value)
                                 ]), []).map(x => `,${x},`);
-    
+
                                 const resCleaned = resIndicator.reduce((acc, item) => {
                                     const columnTag = item[column.replace(".", "")];
                                     if (columnTag) {
@@ -182,9 +182,9 @@ exports.dashboardDesigner = async (req, res) => {
                                             lastTag: itemx,
                                             acc: accx.lastTag === itemx ? accx.acc : [...accx.acc, itemx]
                                         }), { lastTag: '', acc: [] })
-    
+
                                         const ts = `,${tagsCleaned.acc.join(",")},`; //column tags
-    
+
                                         return tagsToSearch.reduce((acc2, item2) => ({
                                             ...acc2,
                                             [item2]: (acc[item2] || 0) + (ts.includes(item2) ? 1 : 0)
@@ -193,7 +193,7 @@ exports.dashboardDesigner = async (req, res) => {
                                         return acc;
                                     }
                                 }, tagsToSearch.reduce((acc1, item1) => ({ ...acc1, [item1]: 0 }), {}))
-    
+
                                 return Object.entries(resCleaned).map(([key, value], index) => ({
                                     title: tags[index].title,
                                     quantity: value,
@@ -206,7 +206,7 @@ exports.dashboardDesigner = async (req, res) => {
                                     const columnTag = item[column.replace(".", "")];
                                     if (columnTag) {
                                         const ts = `,${columnTag},`; //column tags
-    
+
                                         return tags1.reduce((acc2, item2) => ({
                                             ...acc2,
                                             [item2]: (acc[item2] || 0) + (ts.includes(item2) ? 1 : 0)
@@ -216,11 +216,18 @@ exports.dashboardDesigner = async (req, res) => {
                                     }
                                 }, tags1.reduce((acc1, item1) => ({ ...acc1, [item1]: 0 }), {}));
 
-                                return Object.entries(resCleaned).map(([key, value], index) => ({
-                                    title: tags[index].title,
-                                    quantity: value,
-                                    path: key
-                                })).sort((a, b) => b.quantity - a.quantity)
+                                return tags.map(x => {
+                                    return {
+                                        title: x.title,
+                                        quantity: resCleaned[`,${x.value},`] || 0,
+                                        path: x.value
+                                    }
+                                });
+                                // return Object.entries(resCleaned).map(([key, value], index) => ({
+                                //     title: tags[index].title,
+                                //     quantity: value,
+                                //     path: key
+                                // })).sort((a, b) => b.quantity - a.quantity)
                             }
                         } else {
                             const res = resIndicator.reduce((acc, item) => ({

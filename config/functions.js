@@ -1533,7 +1533,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEADGRID_SD_SEL: {
-        query: "SELECT * FROM ufn_leadgrid_sd_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $fullname, $leadproduct, $tags, $supervisorid, $company, $groups, $offset, $phase, $companyuser)",
+        query: "SELECT * FROM ufn_leadgrid_sd_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $fullname, $leadproduct, $tags, $description, $supervisorid, $company, $groups, $offset, $phase, $companyuser)",
         module: "",
         protected: "SELECT"
     },
@@ -2233,7 +2233,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PRODUCTCATALOG_INS: {
-        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $metacatalogid, $id, $productid, $retailerid, $title, $description, $descriptionshort, $availability, $category, $condition, $currency, $price, $saleprice, $link, $imagelink, $additionalimagelink, $brand, $color, $gender, $material, $pattern, $size, $datestart, $datelaunch, $dateexpiration, $labels, $customlabel0, $customlabel1, $customlabel2, $customlabel3, $customlabel4, $customnumber0, $customnumber1, $customnumber2, $customnumber3, $customnumber4, $standardfeatures0, $reviewstatus, $reviewdescription, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $metacatalogid, $id, $productid, $retailerid, $title, $description, $descriptionshort, $availability, $category, $condition, $currency, $price, $saleprice, $link, $imagelink, $additionalimagelink, $brand, $color, $gender, $material, $pattern, $size, $datestart, $datelaunch, $dateexpiration, $labels, $customlabel0, $customlabel1, $customlabel2, $customlabel3, $customlabel4, $customnumber0, $customnumber1, $customnumber2, $customnumber3, $customnumber4, $standardfeatures0, $reviewstatus, $reviewdescription, $status, $type, $username, $operation, $unitmeasurement, $quantity)",
         module: "",
         protected: "INSERT"
     },
@@ -3680,6 +3680,11 @@ module.exports = {
     },
     UFN_ORDERLINE_SEL: {
         query: "SELECT * FROM ufn_orderline_sel($corpid, $orgid, $orderid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ORDERHISTORY_SEL: {
+        query: "SELECT * FROM ufn_orderhistory_sel($corpid, $orgid, $orderid, $offset)",
         module: "",
         protected: "SELECT"
     },
