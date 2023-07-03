@@ -1,4 +1,4 @@
-const { executesimpletransaction } = require("../config/triggerfunctions");
+const { executesimpletransaction, uploadBufferToCos } = require("../config/triggerfunctions");
 const { setSessionParameters, axiosObservable, getErrorCode, errors } = require("../config/helpers");
 const logger = require("../config/winston");
 const axios = require("axios");
@@ -10,8 +10,10 @@ exports.train = async (req, res) => {
     const { corpid, orgid } = req.user;
     const { model_uuid } = req.body;
 
-    if (!model_uuid || model_uuid == '') 
-        return res.status(400).json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
+    if (!model_uuid || model_uuid == "")
+        return res
+            .status(400)
+            .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
 
     const model_detail = await executesimpletransaction("UFN_RASA_MODEL_UUID_SEL", { corpid, orgid, model_uuid });
     const model_intent = await executesimpletransaction("UFN_RASA_INTENT_SEL", {
@@ -177,17 +179,16 @@ exports.download = async (req, res) => {
 
         const zip = new jszip();
         zip.file("nlu.yml", nluYaml);
-        zip.file("domain.yml", domainYaml);
-        zip.generateAsync({ type: "nodebuffer" })
-            .then(function (buffer) {
-                res.set("Content-Type", "application/zip");
-                res.set("Content-Disposition", `attachment; filename=${Date.now()}_model_${model_uuid}.zip`);
-                res.send(buffer);
-            })
-            .catch(function (error) {
-                console.error("Error al generar el archivo zip:", error);
-                res.status(500).send("Error al generar el archivo zip");
-            });
+
+        const buffer = await zip.generateAsync({
+            type: "nodebuffer",
+            compression: "DEFLATE",
+            compressionOptions: {
+                level: 1,
+            },
+        });
+        const rr = await uploadBufferToCos(req._requestid, buffer, "application/zip", new Date().toISOString() + ".zip");
+        return res.json({ error: false, success: true, url: rr.url });
     } catch (error) {
         console.error("Error:", error);
         return res.status(500).json({ error: "Error al procesar el archivo." });
@@ -279,7 +280,9 @@ const nluYamlBuilder = async (intents, synonyms) => {
         item.intent_examples.forEach((example) => {
             yamlData += `      - ${example.texto}`;
 
-            const entities = example.entidades.map((entidad) => `{"entity": "${entidad.entity}", "value": "${entidad.value}"}`).join(' ');
+            const entities = example.entidades
+                .map((entidad) => `{"entity": "${entidad.entity}", "value": "${entidad.value}"}`)
+                .join(" ");
 
             // example.entidades.forEach((entidad) => {
             //     yamlData += `{"entity": "${entidad.entity}", "value": "${entidad.value}"}`;
