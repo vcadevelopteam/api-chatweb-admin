@@ -154,10 +154,10 @@ exports.download = async (req, res) => {
     const { corpid, orgid, usr } = req.user;
     const { model_uuid, origin } = req.body;
 
-    if (!model_uuid || model_uuid == "")
-        return res
-            .status(400)
-            .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
+    // if (!model_uuid || model_uuid == "")
+    //     return res
+    //         .status(400)
+    //         .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
 
     try {
         // const model_detail = await executesimpletransaction("UFN_RASA_MODEL_UUID_SEL", { corpid, orgid, model_uuid });
