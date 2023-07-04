@@ -160,11 +160,11 @@ exports.download = async (req, res) => {
             .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
 
     try {
-        const model_detail = await executesimpletransaction("UFN_RASA_MODEL_UUID_SEL", { corpid, orgid, model_uuid });
-        if (!model_detail.length)
-            return res
-                .status(400)
-                .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
+        // const model_detail = await executesimpletransaction("UFN_RASA_MODEL_UUID_SEL", { corpid, orgid, model_uuid });
+        // if (!model_detail.length)
+        //     return res
+        //         .status(400)
+        //         .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
 
         const model_intent = await executesimpletransaction("UFN_RASA_INTENT_SEL", {
             corpid,
