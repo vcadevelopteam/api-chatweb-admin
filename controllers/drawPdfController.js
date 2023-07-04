@@ -48,7 +48,7 @@ exports.drawCardOrder = async (req, res) => {
     const { reportname, parameters } = req.body;
 
     const result = await executesimpletransaction("QUERY_ORDER_DETAIL_CARD", parameters);
-    console.log("result", result)
+    
     if (result instanceof Array) {
         if (result.length === 0) {
             return res.json({ error: false, success: true, url: "", code: "WITHOUT-ORDERS" });
@@ -63,7 +63,7 @@ exports.drawCardOrder = async (req, res) => {
                     unitprice: undefined,
                     detailamount: undefined,
                     orderid: `${item.orderid}`.padStart(2, "7"),
-                    urllogo: item.urllogo ?? "https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/voz-dev/a5692d43-ab61-4cce-9fb3-18930b3290f5/urllogo.PNG",
+                    urllogo: parameters.urllogo ?? "https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/voz-dev/a5692d43-ab61-4cce-9fb3-18930b3290f5/urllogo.PNG",
                     createdate: new Date(item.createdate).toLocaleString("es-PE"),
                     orderamount: `${item.currency} ${formatDecimals(item.orderamount.toFixed(2))}`,
                     detail: [
