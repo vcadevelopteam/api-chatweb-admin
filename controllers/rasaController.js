@@ -169,15 +169,18 @@ exports.download = async (req, res) => {
         const model_intent = await executesimpletransaction("UFN_RASA_INTENT_SEL", {
             corpid,
             orgid,
-            rasaid: model_detail[0].rasaid,
+            rasaid: 0,
         });
         const model_synonym = await executesimpletransaction("UFN_RASA_SYNONYM_SEL", {
             corpid,
             orgid,
-            rasaid: model_detail[0].rasaid,
+            rasaid: 0,
         });
 
         const data = origin === "intent" ? model_intent : model_synonym;
+        if (!data.length)
+            return res.status(500).json({ message: "Nada que exportar", error: true, success: false });
+            
         const yaml = await singleYamlBuilder(data, origin);
 
         const zip = new jszip();
@@ -198,7 +201,6 @@ exports.download = async (req, res) => {
         );
         return res.json({ error: false, success: true, url: rr.url });
     } catch (error) {
-        console.error("Error:", error);
         return res.status(500).json({ message: "Error al procesar el archivo.", error: true, success: false });
     }
 };
