@@ -15,154 +15,13 @@ exports.train = async (req, res) => {
             .status(400)
             .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
 
-    const model_detail = await executesimpletransaction("UFN_RASA_MODEL_UUID_SEL", { corpid, orgid, model_uuid });
-    const model_intent = await executesimpletransaction("UFN_RASA_INTENT_SEL", {
-        corpid,
-        orgid,
-        rasaid: model_detail[0].rasaid,
-    });
-    const model_synonym = await executesimpletransaction("UFN_RASA_SYNONYM_SEL", {
-        corpid,
-        orgid,
-        rasaid: model_detail[0].rasaid,
-    });
-
-    try {
-        const config2 = {
-            method: "get",
-            maxBodyLength: Infinity,
-            url: `http://10.240.65.11/rasa-api/status/${model_detail[0].server_port}`,
-            headers: {},
-        };
-
-        const response = await axios.request(config2);
-        if (response.data.data.num_active_training_jobs > 0) {
-            return res.status(400).json({ message: "El modelo esta en entrenamiento", error: true, success: false });
-        }
-    } catch (error) {
-        return res.status(500).json({ message: "El modelo esta en entrenamiento", error: true, success: false });
-    }
-
-    const nluYaml = await nluYamlBuilder(model_intent, model_synonym);
-    const domainYaml = await domainYamlBuilder(model_intent);
-
-    const data = new FormData();
-    data.append("port", model_detail[0].server_port);
-    data.append("nlu", Buffer.from(nluYaml), {
-        filename: "nlu.yml",
-        contentType: "application/octet-stream",
-    });
-    data.append("domain", Buffer.from(domainYaml), {
-        filename: "domain.yml",
-        contentType: "application/octet-stream",
-    });
-    data.append("config", Buffer.from(getConfigYaml()), {
-        filename: "config.yml",
-        contentType: "application/octet-stream",
-    });
-
-    const config = {
-        method: "post",
-        maxBodyLength: Infinity,
-        url: "http://10.240.65.11/rasa-api/model/train",
-        headers: {
-            ...data.getHeaders(),
-        },
-        data: data,
-    };
-
-    try {
-        const response = await axios.request(config);
-        return res.json({ error: false, success: true });
-    } catch (error) {
-        return res.status(500).json({ message: "Error al enviar los archivos", data: error.response.data });
-    }
-};
-
-exports.upload = async (req, res) => {
-    const { corpid, orgid, usr } = req.user;
-    // const model_uuid = req.params.model_uuid;
-    const { model_uuid } = req.body;
-
-    if (!req.file) {
-        return res.status(400).json({ error: "No se ha proporcionado ningún archivo." });
-    }
-
-    const file = req.file;
-    if (file.mimetype !== "text/yaml") {
-        return res.status(400).json({ error: "Formato de archivo inválido. Se requiere un archivo YAML." });
-    }
-
     try {
         const model_detail = await executesimpletransaction("UFN_RASA_MODEL_UUID_SEL", { corpid, orgid, model_uuid });
+        if (!model_detail.length)
+            return res
+                .status(400)
+                .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
 
-        const fileContent = req.file.buffer.toString("utf-8");
-        const jsonOutput = convertYAMLtoJSON(fileContent);
-
-        const insertData = await executesimpletransaction("UFN_RASA_FILE_UPLOAD", {
-            corpid,
-            orgid,
-            usr,
-            rasaid: model_detail[0].rasaid,
-            intents: JSON.stringify(
-                jsonOutput.intents.map((item) => {
-                    let entities = item.intent_examples.reduce((acc, example) => {
-                        example.entidades.forEach((entity) => {
-                            if (!acc.includes(entity.entity)) {
-                                acc.push(entity.entity);
-                            }
-                        });
-                        return acc;
-                    }, []);
-
-                    let entity_examples = entities.length;
-
-                    let entity_values = item.intent_examples
-                        .reduce((acc, example) => {
-                            example.entidades.forEach((entity) => {
-                                if (!acc.includes(entity.value)) {
-                                    acc.push(entity.value);
-                                }
-                            });
-                            return acc;
-                        }, [])
-                        .join(",");
-
-                    return {
-                        intent_name: item.intent_name,
-                        intent_description: item.intent_description,
-                        entities: entities.join(","),
-                        entity_examples: entity_examples,
-                        entity_values: entity_values,
-                        intent_examples: item.intent_examples,
-                    };
-                })
-            ),
-            synonyms: JSON.stringify(
-                jsonOutput.synonyms.map((item) => {
-                    const values = item.values.map((value) => value.texto);
-                    return { description: item.description, values: values.join(","), examples: values.length };
-                })
-            ),
-        });
-        if (insertData.error) {
-            return res.status(500).json({ error: "Error al insertar el archivo." });
-        }
-    } catch (error) {
-        console.error("Error:", error);
-        return res.status(500).json({ error: "Error al procesar el archivo." });
-    }
-
-    return res.json({ error: false, success: true });
-};
-
-exports.download = async (req, res) => {
-    const { corpid, orgid, usr } = req.user;
-    // const model_uuid = req.params.model_uuid;
-    const { model_uuid } = req.body;
-
-    try {
-        const model_detail = await executesimpletransaction("UFN_RASA_MODEL_UUID_SEL", { corpid, orgid, model_uuid });
         const model_intent = await executesimpletransaction("UFN_RASA_INTENT_SEL", {
             corpid,
             orgid,
@@ -174,11 +33,155 @@ exports.download = async (req, res) => {
             rasaid: model_detail[0].rasaid,
         });
 
+        if (!model_intent.length)
+            return res
+                .status(400)
+                .json({ message: "El modelo no tiene intenciones validas", error: true, success: false });
+
+        const responseservices = await axiosObservable({
+            method: "get",
+            url: `http://10.240.65.11/rasa-api/status/${model_detail[0].server_port}`,
+            data: {},
+            _requestid: req._requestid,
+        });
+
+        if (!responseservices.data || !(responseservices.data instanceof Object))
+            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+
+        if (responseservices.data.data.num_active_training_jobs > 0) {
+            return res.status(400).json({ message: "El modelo esta en entrenamiento", error: true, success: false });
+        }
+
         const nluYaml = await nluYamlBuilder(model_intent, model_synonym);
         const domainYaml = await domainYamlBuilder(model_intent);
 
+        const data = new FormData();
+        data.append("port", model_detail[0].server_port);
+        data.append("nlu", Buffer.from(nluYaml), {
+            filename: "nlu.yml",
+            contentType: "application/octet-stream",
+        });
+        data.append("domain", Buffer.from(domainYaml), {
+            filename: "domain.yml",
+            contentType: "application/octet-stream",
+        });
+        data.append("config", Buffer.from(getConfigYaml()), {
+            filename: "config.yml",
+            contentType: "application/octet-stream",
+        });
+
+        const responsetrain = await axiosObservable({
+            method: "post",
+            url: `http://10.240.65.11/rasa-api/model/train`,
+            headers: {
+                ...data.getHeaders(),
+            },
+            data: data,
+            _requestid: req._requestid,
+        });
+
+        if (!responsetrain.data || !(responsetrain.data instanceof Object))
+            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+
+        return res.json({ error: false, success: true });
+    } catch (error) {
+        return res.status(500).json({ message: "Error al enviar los archivos", error: true, success: false });
+    }
+};
+
+exports.upload = async (req, res) => {
+    const { corpid, orgid, usr } = req.user;
+    const { model_uuid, origin = "asdf" } = req.body;
+
+    if (!model_uuid || model_uuid == "")
+        return res
+            .status(400)
+            .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
+
+    if (!req.file || req.file.mimetype !== "text/yaml") {
+        return res.status(400).json({ message: "Archivo inválido.", error: true, success: false });
+    }
+
+    try {
+        const model_detail = await executesimpletransaction("UFN_RASA_MODEL_UUID_SEL", { corpid, orgid, model_uuid });
+        if (!model_detail.length)
+            return res
+                .status(400)
+                .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
+
+        const fileContent = req.file.buffer.toString("utf-8");
+
+        const data = origin === "intent" ? intentYamlToJson(fileContent) : synonymYamlToJson(fileContent);
+        if (!data.length)
+            return res.status(400).json({
+                message: "Archivo inválido, por favor revisa la estructura e intenta de nuevo.",
+                error: true,
+                success: false,
+            });
+
+        const insertData = await executesimpletransaction("UFN_RASA_FILE_UPLOAD", {
+            corpid,
+            orgid,
+            usr,
+            rasaid: model_detail[0].rasaid,
+            intents: origin === "intent" ? parseIntents(data) : "{}",
+            synonyms:
+                origin === "synonym"
+                    ? JSON.stringify(
+                          data.map((item) => {
+                              const values = item.values.map((value) => value.texto);
+                              return {
+                                  description: item.description,
+                                  values: values.join(","),
+                                  examples: values.length,
+                              };
+                          })
+                      )
+                    : "{}",
+        });
+
+        if (insertData.error) {
+            return res.status(500).json({ message: "Error al insertar el archivo.", error: true, success: false });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: "Error al procesar el archivo.", error: true, success: false });
+    }
+
+    return res.json({ error: false, success: true });
+};
+
+exports.download = async (req, res) => {
+    const { corpid, orgid, usr } = req.user;
+    const { model_uuid, origin } = req.body;
+
+    if (!model_uuid || model_uuid == "")
+        return res
+            .status(400)
+            .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
+
+    try {
+        const model_detail = await executesimpletransaction("UFN_RASA_MODEL_UUID_SEL", { corpid, orgid, model_uuid });
+        if (!model_detail.length)
+            return res
+                .status(400)
+                .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
+
+        const model_intent = await executesimpletransaction("UFN_RASA_INTENT_SEL", {
+            corpid,
+            orgid,
+            rasaid: model_detail[0].rasaid,
+        });
+        const model_synonym = await executesimpletransaction("UFN_RASA_SYNONYM_SEL", {
+            corpid,
+            orgid,
+            rasaid: model_detail[0].rasaid,
+        });
+
+        const data = origin === "intent" ? model_intent : model_synonym;
+        const yaml = await singleYamlBuilder(data, origin);
+
         const zip = new jszip();
-        zip.file("nlu.yml", nluYaml);
+        zip.file(`${origin}.yml`, yaml);
 
         const buffer = await zip.generateAsync({
             type: "nodebuffer",
@@ -187,25 +190,34 @@ exports.download = async (req, res) => {
                 level: 1,
             },
         });
-        const rr = await uploadBufferToCos(req._requestid, buffer, "application/zip", new Date().toISOString() + ".zip");
+        const rr = await uploadBufferToCos(
+            req._requestid,
+            buffer,
+            "application/zip",
+            new Date().toISOString() + ".zip"
+        );
         return res.json({ error: false, success: true, url: rr.url });
     } catch (error) {
         console.error("Error:", error);
-        return res.status(500).json({ error: "Error al procesar el archivo." });
+        return res.status(500).json({ message: "Error al procesar el archivo.", error: true, success: false });
     }
 };
 
 exports.list = async (req, res) => {
     const { corpid, orgid, usr } = req.user;
-    // const model_uuid = req.params.model_uuid;
     const { model_uuid } = req.body;
 
+    if (!model_uuid || model_uuid == "")
+        return res
+            .status(400)
+            .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
+
     try {
-        const model_detail = await executesimpletransaction("UFN_RASA_MODEL_UUID_SEL", {
-            corpid,
-            orgid,
-            model_uuid,
-        });
+        const model_detail = await executesimpletransaction("UFN_RASA_MODEL_UUID_SEL", { corpid, orgid, model_uuid });
+        if (!model_detail.length)
+            return res
+                .status(400)
+                .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
 
         try {
             const response = await axios.request({
@@ -217,11 +229,11 @@ exports.list = async (req, res) => {
 
             return res.json({ error: false, success: true, data: response.data.data });
         } catch (error) {
-            return res.status(500).json({ message: "Error al consultar el api", error: true, success: false });
+            return res.status(500).json({ message: "Error al consultar el servicio", error: true, success: false });
         }
     } catch (error) {
         console.error("Error:", error);
-        return res.status(500).json({ error: "Error al procesar el archivo." });
+        return res.status(500).json({ message: "Error al procesar el archivo.", error: true, success: false });
     }
 };
 
@@ -229,12 +241,17 @@ exports.test = async (req, res) => {
     const { corpid, orgid, usr } = req.user;
     const { model_uuid, text } = req.body;
 
+    if (!model_uuid || model_uuid == "")
+        return res
+            .status(400)
+            .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
+
     try {
-        const model_detail = await executesimpletransaction("UFN_RASA_MODEL_UUID_SEL", {
-            corpid,
-            orgid,
-            model_uuid,
-        });
+        const model_detail = await executesimpletransaction("UFN_RASA_MODEL_UUID_SEL", { corpid, orgid, model_uuid });
+        if (!model_detail.length)
+            return res
+                .status(400)
+                .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
 
         const responseservices = await axiosObservable({
             method: "get",
@@ -265,7 +282,7 @@ exports.test = async (req, res) => {
         return res.json({ error: false, success: true, data: responseservicetest.data });
     } catch (error) {
         console.error("Error:", error);
-        return res.status(500).json({ error: "Error al procesar el archivo." });
+        return res.status(500).json({ message: "Error al procesar el request.", error: true, success: false });
     }
 };
 
@@ -273,36 +290,50 @@ const nluYamlBuilder = async (intents, synonyms) => {
     let yamlData = "";
     yamlData = `version: "2.0"\n\nnlu:\n`;
 
-    intents.forEach((item) => {
-        yamlData += `  - intent: ${item.intent_name}\n`;
-        yamlData += `    examples: |\n`;
+    yamlData += await singleYamlBuilder(intents, "intent");
+    yamlData += await singleYamlBuilder(synonyms, "synonym");
 
-        item.intent_examples.forEach((example) => {
-            yamlData += `      - ${example.texto}`;
+    return yamlData;
+};
 
-            const entities = example.entidades
-                .map((entidad) => `{"entity": "${entidad.entity}", "value": "${entidad.value}"}`)
-                .join(" ");
+const singleYamlBuilder = async (data, origin) => {
+    let yamlData = "";
 
-            // example.entidades.forEach((entidad) => {
-            //     yamlData += `{"entity": "${entidad.entity}", "value": "${entidad.value}"}`;
-            // });
+    if (origin === "intent") {
+        data.forEach((item) => {
+            yamlData += `  - intent: ${item.intent_name}\n`;
+            yamlData += `    examples: |\n`;
+
+            item.intent_examples.forEach((example) => {
+                const { texto, entidades } = example;
+                const indice = texto.indexOf("]");
+
+                if (indice !== -1) {
+                    const entidad = entidades[0];
+                    const entidadString = JSON.stringify({ entity: entidad.entity, value: entidad.value });
+                    const textTransform = `${texto.slice(0, indice + 1)}${entidadString}${texto.slice(indice + 1)}`;
+                    yamlData += `      - ${textTransform}`;
+                } else {
+                    yamlData += `      - ${example.texto}`;
+                }
+                yamlData += `\n`;
+            });
             yamlData += `\n`;
         });
-        yamlData += `\n`;
-    });
+    }
 
-    synonyms.forEach((item) => {
-        yamlData += `  - synonym: ${item.description}\n`;
-        yamlData += `    examples: |\n`;
+    if (origin === "synonym") {
+        data.forEach((item) => {
+            yamlData += `  - synonym: ${item.description}\n`;
+            yamlData += `    examples: |\n`;
 
-        item.values.split(",").forEach((value) => {
-            yamlData += `      - ${value}`;
+            item.values.split(",").forEach((value) => {
+                yamlData += `      - ${value}`;
+                yamlData += `\n`;
+            });
             yamlData += `\n`;
         });
-        yamlData += `\n`;
-    });
-
+    }
     return yamlData;
 };
 
@@ -328,6 +359,140 @@ const domainYamlBuilder = (data) => {
 const getConfigYaml = () => {
     return `language: es\r\n\r\npolicies:\r\n  - name: TEDPolicy\r\n    max_history: 5\r\n    epochs: 10\r\n\r\npipeline:\r\n  - name: WhitespaceTokenizer\r\n  - name: RegexFeaturizer\r\n  - name: LexicalSyntacticFeaturizer\r\n  - name: CountVectorsFeaturizer\r\n    analyzer: word\r\n  - name: CountVectorsFeaturizer\r\n    analyzer: \"char_wb\"\r\n    min_ngram: 1\r\n    max_ngram: 4\r\n  - name: DIETClassifier\r\n    epochs: 100\r\n    constrain_similarities: true\r\n  - name: DucklingEntityExtractor\r\n    url: http://localhost:8000\r\n    locale: \"es_PE\"\r\n    timezone: \"America/Peru\"\r\n    timeout: 3\r\n  - name: RegexEntityExtractor\r\n  - name: EntitySynonymMapper\r\n`;
 };
+
+function intentYamlToJson(yamlIntent) {
+    const lines = yamlIntent.split("\n");
+    const intents = [];
+
+    let currentIntent = null;
+    let currentExamples = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+
+        if (line.startsWith("- intent:")) {
+            if (currentIntent) {
+                intents.push({
+                    intent_name: currentIntent,
+                    intent_description: currentIntent,
+                    intent_examples: currentExamples,
+                });
+            }
+
+            currentIntent = line.split(":")[1].trim();
+            currentExamples = [];
+        } else if (line.startsWith("examples: |") && currentIntent) {
+            const examplesStart = i + 1;
+
+            while (i < lines.length && lines[i + 1] && !lines[i + 1].startsWith("  - ")) {
+                i++;
+            }
+            const examplesEnd = i;
+
+            for (let j = examplesStart; j <= examplesEnd; j++) {
+                const example = lines[j].split("-")[1].trim();
+                if (example.includes("[")) {
+                    const text = example.replace(/{[^}]+}/g, "");
+                    const matches = example.match(/{([^}]+)}/g);
+
+                    let entityString = null;
+                    if (matches && matches.length > 0) {
+                        entityString = matches[0];
+                    }
+
+                    currentExamples.push({
+                        texto: text,
+                        entidades: [JSON.parse(entityString)],
+                    });
+                } else {
+                    currentExamples.push({
+                        texto: example,
+                        entidades: [],
+                    });
+                }
+            }
+        } else if (line.startsWith("- synonym:")) {
+            break;
+        }
+    }
+
+    if (currentIntent) {
+        intents.push({
+            intent_name: currentIntent,
+            intent_description: currentIntent,
+            intent_examples: currentExamples,
+        });
+    }
+
+    return intents;
+}
+
+function synonymYamlToJson(yamlSynonym) {
+    const lines = yamlSynonym.split("\n");
+    const synonyms = [];
+
+    let currentSynonym = null;
+    let currentExamples = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        console.log("line", line);
+
+        if (line.startsWith("- synonym:")) {
+            if (currentSynonym) {
+                synonyms.push({
+                    description: currentSynonym,
+                    values: currentExamples,
+                });
+            }
+
+            currentSynonym = line.split(":")[1].trim();
+            currentExamples = [];
+        } else if (line.startsWith("examples: |") && currentSynonym) {
+            const examplesStart = i + 1;
+
+            while (i < lines.length && lines[i + 1] && !lines[i + 1].startsWith("  - ")) {
+                i++;
+            }
+            const examplesEnd = i;
+
+            for (let j = examplesStart; j <= examplesEnd; j++) {
+                const example = lines[j].split("-")[1].trim();
+                console.log("example", example);
+                if (example.includes("[")) {
+                    const text = example.replace(/{[^}]+}/g, "");
+                    const matches = example.match(/{([^}]+)}/g);
+
+                    let entityString = null;
+                    if (matches && matches.length > 0) {
+                        entityString = matches[0];
+                    }
+
+                    currentExamples.push({
+                        texto: text,
+                        entidades: [JSON.parse(entityString)],
+                    });
+                } else {
+                    currentExamples.push({
+                        texto: example,
+                        entidades: [],
+                    });
+                }
+            }
+        } else if (line.startsWith("- intent:") && currentSynonym) {
+            break;
+        }
+    }
+
+    if (currentSynonym) {
+        synonyms.push({
+            description: currentSynonym,
+            values: currentExamples,
+        });
+    }
+
+    return synonyms;
+}
 
 function convertYAMLtoJSON(yamlContent) {
     const lines = yamlContent.split("\n");
@@ -419,4 +584,39 @@ function convertYAMLtoJSON(yamlContent) {
     return { intents, synonyms };
 }
 
-const transformIntents = (data) => {};
+const parseIntents = (data) => {
+    return JSON.stringify(
+        data.map((item) => {
+            let entities = item.intent_examples.reduce((acc, example) => {
+                example.entidades.forEach((entity) => {
+                    if (!acc.includes(entity.entity)) {
+                        acc.push(entity.entity);
+                    }
+                });
+                return acc;
+            }, []);
+
+            let entity_examples = entities.length;
+
+            let entity_values = item.intent_examples
+                .reduce((acc, example) => {
+                    example.entidades.forEach((entity) => {
+                        if (!acc.includes(entity.value)) {
+                            acc.push(entity.value);
+                        }
+                    });
+                    return acc;
+                }, [])
+                .join(",");
+
+            return {
+                intent_name: item.intent_name,
+                intent_description: item.intent_description,
+                entities: entities.join(","),
+                entity_examples: entity_examples,
+                entity_values: entity_values,
+                intent_examples: item.intent_examples,
+            };
+        })
+    );
+};
