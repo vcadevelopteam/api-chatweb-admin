@@ -3760,7 +3760,7 @@ module.exports = {
     },
     
     UFN_DASHBOARD_KPI_SUMMARY_BY_MONTH: {
-        query: "SELECT * FROM ufn_dashboard_kpi_summary_sel($corpid, $orgid, $date, $origin, $usergroup, $supervisorid, $offset, $userid)",
+        query: "SELECT * FROM ufn_dashboard_kpi_summary_by_month($corpid, $orgid, $date, $origin, $usergroup, $supervisorid, $offset, $userid)",
         module: "",
         protected: "SELECT"
     },
