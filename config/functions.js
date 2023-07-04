@@ -486,9 +486,12 @@ module.exports = {
         protected: "SELECT"
     },
     QUERY_ORDER_DETAIL_CARD: {
-        query: `select o2.name, o2.email, o2.phone, o2.orderid, o2.createdate, ol.title producttitle, o2.amount orderamount, o2.currency, ol.quantity, ol.unitprice, ol.productmetaid productid, ol.amount detailamount from (
-            select o.corpid, o.orgid, p.name, p.email, p.phone, o.orderid, o.createdate, o.amount, o.currency from "order" o
+        query: `select o2.name, o2.email, o2.phone, o2.orderid, o2.createdate, ol.title producttitle, o2.amount orderamount, o2.currency, ol.quantity, ol.unitprice, ol.productmetaid productid, ol.amount detailamount, o2.address
+        from (
+            select o.corpid, o.orgid, p.name, p.email, p.phone, o.orderid, o.createdate, o.amount, o.currency, c.variablecontextsimple->>'address' address
+            from "order" o
             join person p on p.corpid = o.corpid and p.orgid = o.orgid and p.personid = o.personid
+            join conversation c on c.corpid = o.corpid and c.orgid = o.orgid and c.conversationid = o.conversationid
             where o.corpid = $corpid and o.orgid = $orgid and o.personid = $personid and o.status = 'ACTIVO'
             order by orderid desc
             limit $limit
