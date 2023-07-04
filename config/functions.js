@@ -3765,7 +3765,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_DASHBOARD_KPI_SUMMARY_GRAPH_BY_MONTH: {
-        query: "SELECT * FROM ufn_dashboard_kpi_graph_by_month($corpid, $orgid, $startdate, $enddate $origin, $usergroup, $supervisorid, $offset, $userid)",
+        query: "SELECT * FROM ufn_dashboard_kpi_graph_by_month($corpid, $orgid, $startdate, $enddate, $origin, $usergroup, $supervisorid, $offset, $userid)",
         module: "",
         protected: "SELECT"
     },
