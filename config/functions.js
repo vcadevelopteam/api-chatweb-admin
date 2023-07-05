@@ -3769,4 +3769,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_COLUMN_ORDER_SEL: {
+        query: "SELECT * FROM ufn_column_order_sel($corpid, $orgid, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
 }
