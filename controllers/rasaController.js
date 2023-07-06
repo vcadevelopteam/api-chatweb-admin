@@ -5,6 +5,7 @@ const axios = require("axios");
 const FormData = require("form-data");
 const jszip = require("jszip");
 const { response } = require("express");
+const path = require('path');
 
 exports.train = async (req, res) => {
     const { corpid, orgid } = req.user;
@@ -99,6 +100,9 @@ exports.upload = async (req, res) => {
             .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
 
     console.log('req.file.mimetype', req?.file?.mimetype)
+    const fileExtension = path.extname(req.file.originalname);
+    console.log('fileExtension',fileExtension)
+    return res.send('hola')
     if (!req.file || req.file.mimetype !== "text/yaml") {
         return res.status(400).json({ message: "Archivo inválido.", error: true, success: false });
     }
