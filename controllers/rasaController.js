@@ -98,6 +98,7 @@ exports.upload = async (req, res) => {
             .status(400)
             .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
 
+    console.log('req.file.mimetype', req?.file?.mimetype)
     if (!req.file || req.file.mimetype !== "text/yaml") {
         return res.status(400).json({ message: "Archivo inválido.", error: true, success: false });
     }
