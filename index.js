@@ -53,6 +53,7 @@ app.use('/api/migrator', require('./routes/migrator'));
 app.use('/api/backup', require('./routes/backup'));
 app.use('/api/payment', require('./routes/payment'));
 app.use('/api/paymentniubiz', require('./routes/paymentniubiz'));
+app.use('/api/paymentopenpay', require('./routes/paymentopenpay'));
 app.use('/api/drawpdf', require('./routes/draw-pdf'));
 app.use('/api/billing', require('./routes/billing'));
 app.use('/api/gmaps', require('./routes/gmaps'));
