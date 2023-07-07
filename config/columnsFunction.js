@@ -1505,7 +1505,7 @@ module.exports = {
             column: "ld.sd_request"
         },
         communicationchannel: {
-            column: "chn.description"
+            column: "cc.description",
         },
         changedate: {
             column: "ld.changedate"
