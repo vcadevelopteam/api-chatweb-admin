@@ -240,7 +240,13 @@ exports.getBusinessList = async (request, response) => {
 
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
-        return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        if (exception?.response?.data?.error?.message) {
+            let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        }
+        else {
+            return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+        }
     }
 }
 
@@ -358,7 +364,7 @@ exports.manageCatalog = async (request, response) => {
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
-            var errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
+            let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
             return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
@@ -448,7 +454,7 @@ exports.synchroCatalog = async (request, response) => {
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
-            var errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
+            let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
             return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
@@ -758,7 +764,7 @@ exports.manageProduct = async (request, response) => {
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
-            var errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
+            let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
             return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
@@ -896,7 +902,7 @@ exports.synchroProduct = async (request, response) => {
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
-            var errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
+            let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
             return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
@@ -1016,7 +1022,7 @@ exports.deleteProduct = async (request, response) => {
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
-            var errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
+            let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
             return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
@@ -1124,7 +1130,7 @@ exports.importProduct = async (request, response) => {
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
-            var errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
+            let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
             return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
@@ -1159,7 +1165,7 @@ exports.downloadProduct = async (request, response) => {
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
-            var errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
+            let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
             return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {

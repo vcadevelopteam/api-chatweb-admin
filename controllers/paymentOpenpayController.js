@@ -70,8 +70,8 @@ exports.processTransaction = async (request, response) => {
                                         order_id: paymentorder[0].paymentorderid,
                                         device_session_id: devicesessionid,
                                         customer: {
-                                            name: paymentorder[0].userfirstname || 'FIRST',
-                                            lastname: paymentorder[0].userlastname || 'LAST',
+                                            name: formdata.holder_name || '',
+                                            lastname: `(${paymentorder[0].userfirstname} ${paymentorder[0].userlastname})`,
                                             phone_number: paymentorder[0].userphone || '51999999999',
                                             email: paymentorder[0].usermail || 'mail@mail.com',
                                         }
@@ -129,7 +129,7 @@ exports.processTransaction = async (request, response) => {
                                 }
                             }
                             catch (error) {
-                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Generic error', responsedata.status, responsedata.success);
+                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, error?.response?.data?.description || error?.message, responsedata.status, responsedata.success);
                             }
                         }
                         else {
