@@ -1526,7 +1526,7 @@ module.exports = {
             column: "ld.ticketnum"
         },
         displayname: {
-            column: "COALESCE(NULLIF(pcc.displayname, ''), TRIM(CONCAT(pe.firstname, ' ', pe.lastname))"
+            column: "COALESCE(NULLIF(pcc.displayname, ''), TRIM(CONCAT(pe.firstname, ' ', pe.lastname)))"
         },
         tags: {
             column: "ld.tags"
