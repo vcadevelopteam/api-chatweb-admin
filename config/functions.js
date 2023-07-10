@@ -1538,7 +1538,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEADGRID_SD_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_leadgrid_sd_totalrecords($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $fullname, $leadproduct, $tags, $supervisorid, $company, $groups, $offset, $phase, $companyuser)",
+        query: "SELECT * FROM ufn_leadgrid_sd_totalrecords($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $fullname, $leadproduct,  $tags,$description, $supervisorid, $company, $groups, $offset, $phase, $companyuser)",
         module: "",
         protected: "SELECT"
     },
