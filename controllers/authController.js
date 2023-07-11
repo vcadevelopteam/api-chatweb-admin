@@ -98,9 +98,6 @@ exports.authenticate = async (req, res) => {
     const { data: { usr, password, facebookid, googleid, origin = "WEB", token } } = req.body;
     
     logger.child({ _requestid: req._requestid, body: req.body }).info(`authenticate.body`);
-
-
-    console.log("authenticate.body", req.body)
     let integration = false;
     const prevdata = { _requestid: req._requestid }
     try {
@@ -178,7 +175,7 @@ exports.authenticate = async (req, res) => {
             delete user.pwd;
 
             if (origin === "MOVIL") {
-                loginGroup(token, user.orgid, user.userid, req._requestid);
+                await loginGroup(token, user.orgid, user.userid, req._requestid);
             }
 
             jwt.sign({ user }, (process.env.SECRETA ? process.env.SECRETA : "palabrasecreta"), {}, (error, token) => {

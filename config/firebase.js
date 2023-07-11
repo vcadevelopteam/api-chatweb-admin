@@ -1,6 +1,7 @@
 const admin = require("firebase-admin");
 const serviceAccount = require("../zyxmeapp.json");
 const logger = require('./winston');
+const { axiosObservable } = require("./helpers");
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -14,24 +15,26 @@ const apns = {
 };
 
 exports.loginGroup = async (token, orgid, userid, _requestid) => {
-    await admin.messaging().unsubscribeFromTopic(token, null)
-        .then(r => r)
-        .catch(function (error) {
-            logger.child({ _requestid, error: { detail: error.stack || error, message: error.toString() } }).error(`Error to EXIT all group, userid: ${userid}`);
-        });
+    await exitFromAllGroup(token, _requestid);
     await admin.messaging().subscribeToTopic(token, `org-${orgid}`)
-        .then(r => r)
+        .then(r => {
+            console.log("exito2", r)
+        })
         .catch(function (error) {
             logger.child({ _requestid, error: { detail: error.stack || error, message: error.toString() } }).error(`Error to JOIN group org-${orgid}, userid: ${userid}`);
         });
 }
 
-exports.exitFromAllGroup = async (token, orgid) => {
-    await admin.messaging().subscribeToTopic(token, null)
-        .then(r => r)
-        .catch(function (error) {
-            logger.child({ _requestid, error: { detail: error.stack || error, message: error.toString() } }).error(`Error to EXIT all group, userid: ${userid}`);
-        });
+const exitFromAllGroup = async (token, _requestid) => {
+    const responseservices = await axiosObservable({
+        method: "get",
+        url: `https://iid.googleapis.com/iid/info/${token}?details=true`,
+        _requestid,
+        headers: {
+            "Authorization": `key = ${process.env.KEY_FIREBASE}`
+        }
+    });
+    await Promise.all(Object.keys(responseservices.data.rel.topics).map(x => admin.messaging().subscribeToTopic(token, x)))
 }
 
 exports.pushNotification = (datatmp) => {
