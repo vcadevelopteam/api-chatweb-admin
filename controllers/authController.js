@@ -7,6 +7,7 @@ const { addApplication } = require('./voximplantController');
 
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { loginGroup } = require('../config/firebase');
 
 //type: int|string|bool
 const properties = [
@@ -173,6 +174,10 @@ exports.authenticate = async (req, res) => {
             user.token = tokenzyx;
             delete user.pwd;
 
+            if (origin === "MOVIL") {
+                loginGroup(token, user.orgid, user.userid, req._requestid);
+            }
+
             jwt.sign({ user }, (process.env.SECRETA ? process.env.SECRETA : "palabrasecreta"), {}, (error, token) => {
                 if (error) throw error;
                 delete user.corpid;
@@ -180,6 +185,7 @@ exports.authenticate = async (req, res) => {
                 delete user.userid;
                 return res.json({ data: { ...user, token, automaticConnection, notifications, redirect: user.redirect || '/tickets' }, success: true });
             })
+
         } else if (user.status === 'PENDIENTE') {
             return res.status(401).json({ code: errors.LOGIN_USER_PENDING })
         } else if (user.status === 'BLOQUEADO') {
