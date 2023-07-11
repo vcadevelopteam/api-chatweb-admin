@@ -4,7 +4,6 @@ const { v4: uuidv4 } = require('uuid');
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { errors, getErrorCode, cleanPropertyValue } = require('../config/helpers');
 const { addApplication } = require('./voximplantController');
-const logger = require('../config/winston');
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { loginGroup } = require('../config/firebase');
