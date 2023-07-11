@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { errors, getErrorCode, cleanPropertyValue } = require('../config/helpers');
 const { addApplication } = require('./voximplantController');
-
+const logger = require('../config/winston');
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { loginGroup } = require('../config/firebase');
@@ -97,7 +97,11 @@ const validateResProperty = (r, type) => {
 
 exports.authenticate = async (req, res) => {
     const { data: { usr, password, facebookid, googleid, origin = "WEB", token } } = req.body;
+    
+    logger.child({ _requestid: req._requestid, body: req.body }).info(`authenticate.body`);
 
+
+    console.log("authenticate.body", req.body)
     let integration = false;
     const prevdata = { _requestid: req._requestid }
     try {

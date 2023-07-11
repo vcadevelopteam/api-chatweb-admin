@@ -1,5 +1,6 @@
 const admin = require("firebase-admin");
 const serviceAccount = require("../zyxmeapp.json");
+const logger = require('./winston');
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
