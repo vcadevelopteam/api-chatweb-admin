@@ -34,7 +34,9 @@ const exitFromAllGroup = async (token, _requestid) => {
             "Authorization": `key = ${process.env.KEY_FIREBASE}`
         }
     });
-    await Promise.all(Object.keys(responseservices.data.rel.topics).map(x => admin.messaging().subscribeToTopic(token, x)))
+    if (responseservices.data.rel?.topics) {
+        await Promise.all(Object.keys(responseservices.data.rel?.topics).map(x => admin.messaging().subscribeToTopic(token, x)))
+    }
 }
 
 exports.pushNotification = (datatmp) => {
