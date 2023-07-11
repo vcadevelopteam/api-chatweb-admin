@@ -33,3 +33,51 @@ exports.exitFromAllGroup = async (token, orgid) => {
             logger.child({ _requestid, error: { detail: error.stack || error, message: error.toString() } }).error(`Error to EXIT all group, userid: ${userid}`);
         });
 }
+
+exports.pushNotification = (datatmp) => {
+    try {
+        const { data, notification } = datatmp;
+
+        const token = data.token;
+        delete data.token;
+
+        for (const [key, value] of Object.entries(data))
+            data[key] = value === null ? "" : value + "";
+
+        data.click_action = "FLUTTER_NOTIFICATION_CLICK";
+
+        Promise.all([
+            admin.messaging().send({
+                token,
+                notification,
+                apns,
+                android: {
+                    priority: "high"
+                },
+                data,
+            })
+                .then(r => {
+                    console.log('notification 11 send', r);
+                })
+                .catch(r => {
+                    console.log("error catch 1: ", r);
+                }),
+            admin.messaging().send({
+                token,
+                // notification,
+                // apns,
+                data
+            })
+                .then(r => {
+                    console.log('notification 22 send', r);
+                })
+                .catch(r => {
+                    console.log("error catch 2: ", r);
+
+                })
+        ])
+    }
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+    }
+}
