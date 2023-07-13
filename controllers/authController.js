@@ -172,6 +172,7 @@ exports.authenticate = async (req, res) => {
             }
 
             user.token = tokenzyx;
+            user.origin = origin;
             delete user.pwd;
 
             if (origin === "MOVIL") {
@@ -350,6 +351,10 @@ exports.changeOrganization = async (req, res) => {
                     username: req.user.usr
                 })
             }
+        }
+
+        if (req.user.origin === "MOVIL") {
+            await loginGroup(req.user.token, parameters.neworgid, req.user.userid, req._requestid);
         }
         
         jwt.sign({ user: newusertoken }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
