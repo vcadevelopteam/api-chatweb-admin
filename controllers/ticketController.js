@@ -1,6 +1,7 @@
 const { errors, getErrorCode, axiosObservable } = require('../config/helpers');
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { uploadToCOS, unrar, unzip, xlsxToJSON } = require('../config/filefunctions');
+const { pushNotification } = require('../config/firebase');
 
 exports.reply = async (req, res) => {
     try {
@@ -203,6 +204,8 @@ exports.reassign = async (req, res) => {
             data.newuserid = req.user.userid;
         }
         console.log("UFN_CONVERSATION_REASSIGNTICKET", data)
+        console.log("req.user", req.user)
+        console.log("req.body", req.body)
         await executesimpletransaction("UFN_CONVERSATION_REASSIGNTICKET", { ...data, _requestid: req._requestid });
 
         if (req.user.origin === "MOVIL") {
