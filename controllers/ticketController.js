@@ -202,7 +202,7 @@ exports.reassign = async (req, res) => {
         if (!data.newuserid && !data.usergroup) { //esta siendo reasigando x el mismo supervisor
             data.newuserid = req.user.userid;
         }
-
+        console.log("UFN_CONVERSATION_REASSIGNTICKET", data)
         await executesimpletransaction("UFN_CONVERSATION_REASSIGNTICKET", { ...data, _requestid: req._requestid });
 
         if (req.user.origin === "MOVIL") {
