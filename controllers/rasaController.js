@@ -318,7 +318,7 @@ const singleYamlBuilder = async (data, origin) => {
                     const entidad = entidades[0];
                     const entidadString = entidad.value
                         ? JSON.stringify({ entity: entidad.entity, value: entidad.value })
-                        : `(${entidad})`;
+                        : `(${entidad.entity})`;
                     const textTransform = `${texto.slice(0, indice + 1)}${entidadString}${texto.slice(indice + 1)}`;
                     yamlData += `      - ${textTransform}`;
                 } else {
