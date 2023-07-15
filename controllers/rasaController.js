@@ -226,7 +226,7 @@ exports.list = async (req, res) => {
             const formattedTime = time.split(".")[0].replace(/(\d{2})(\d{2})(\d{2})/, "$1:$2:$3");
             const createdate = `${formattedDate} ${formattedTime}`;
 
-            return { model_name: model, createdate, status: 'INACTIVO' };
+            return { model_name: model, createdate, status: "INACTIVO" };
         });
 
         models.sort((a, b) => {
@@ -234,7 +234,7 @@ exports.list = async (req, res) => {
             const dateB = new Date(b.createdate);
             return dateB - dateA;
         });
-        models[0].status = 'ACTIVO'
+        models[0].status = "ACTIVO";
 
         return res.json({ error: false, success: true, data: models });
     } catch (error) {
@@ -316,7 +316,9 @@ const singleYamlBuilder = async (data, origin) => {
 
                 if (indice !== -1) {
                     const entidad = entidades[0];
-                    const entidadString = JSON.stringify({ entity: entidad.entity, value: entidad.value });
+                    const entidadString = entidad.value
+                        ? JSON.stringify({ entity: entidad.entity, value: entidad.value })
+                        : `(${entidad})`;
                     const textTransform = `${texto.slice(0, indice + 1)}${entidadString}${texto.slice(indice + 1)}`;
                     yamlData += `      - ${textTransform}`;
                 } else {
@@ -398,17 +400,22 @@ function intentYamlToJson(yamlIntent) {
             for (let j = examplesStart; j <= examplesEnd; j++) {
                 const example = lines[j].split("-")[1].trim();
                 if (example.includes("[")) {
-                    const text = example.replace(/{[^}]+}/g, "");
+                    let entidad = null;
+                    const text = example.replace(/{[^}]+}/g, "").replace(/\((.*?)\)/g, "");
                     const matches = example.match(/{([^}]+)}/g);
-
+                    const match_wparenthesis = example.match(/\((.*?)\)/g);
+                    
                     let entityString = null;
                     if (matches && matches.length > 0) {
                         entityString = matches[0];
+                        entidad = JSON.parse(entityString);
+                    } else if (match_wparenthesis && match_wparenthesis.length > 0) {
+                        entidad = { entity: match_wparenthesis[0].replace(/[()]/g, ""), value: null, description: null };
                     }
 
                     currentExamples.push({
                         texto: text,
-                        entidades: [JSON.parse(entityString)],
+                        entidades: [entidad],
                     });
                 } else {
                     currentExamples.push({
