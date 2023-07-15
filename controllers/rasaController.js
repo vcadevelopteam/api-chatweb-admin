@@ -5,7 +5,7 @@ const axios = require("axios");
 const FormData = require("form-data");
 const jszip = require("jszip");
 const { response } = require("express");
-const path = require('path');
+const path = require("path");
 
 exports.train = async (req, res) => {
     const { corpid, orgid } = req.user;
@@ -34,7 +34,7 @@ exports.train = async (req, res) => {
             rasaid: model_detail[0].rasaid,
         });
 
-        if (!model_intent.length)
+        if (!model_intent.length || model_intent.length <= 1)
             return res
                 .status(400)
                 .json({ message: "El modelo no tiene intenciones validas", error: true, success: false });
@@ -99,7 +99,7 @@ exports.upload = async (req, res) => {
             .status(400)
             .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
 
-    if(!req.file || ['yaml', 'yml'].includes(path.extname(req.file.originalname))) {
+    if (!req.file || ["yaml", "yml"].includes(path.extname(req.file.originalname))) {
         return res.status(400).json({ message: "Archivo inválido.", error: true, success: false });
     }
 
@@ -155,18 +155,7 @@ exports.download = async (req, res) => {
     const { corpid, orgid, usr } = req.user;
     const { model_uuid, origin } = req.body;
 
-    // if (!model_uuid || model_uuid == "")
-    //     return res
-    //         .status(400)
-    //         .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
-
     try {
-        // const model_detail = await executesimpletransaction("UFN_RASA_MODEL_UUID_SEL", { corpid, orgid, model_uuid });
-        // if (!model_detail.length)
-        //     return res
-        //         .status(400)
-        //         .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
-
         const model_intent = await executesimpletransaction("UFN_RASA_INTENT_SEL", {
             corpid,
             orgid,
@@ -179,9 +168,8 @@ exports.download = async (req, res) => {
         });
 
         const data = origin === "intent" ? model_intent : model_synonym;
-        if (!data.length)
-            return res.status(500).json({ message: "Nada que exportar", error: true, success: false });
-            
+        if (!data.length) return res.status(500).json({ message: "Nada que exportar", error: true, success: false });
+
         const yaml = await singleYamlBuilder(data, origin);
 
         const zip = new jszip();
@@ -222,21 +210,36 @@ exports.list = async (req, res) => {
                 .status(400)
                 .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
 
-        try {
-            const response = await axios.request({
-                method: "get",
-                maxBodyLength: Infinity,
-                url: `http://10.240.65.11/rasa-api/models/${model_detail[0].server_port}`,
-                headers: {},
-            });
+        const response = await axiosObservable({
+            method: "get",
+            url: `http://10.240.65.11/rasa-api/models/${model_detail[0].server_port}`,
+            data: {},
+            _requestid: req._requestid,
+        });
 
-            return res.json({ error: false, success: true, data: response.data.data });
-        } catch (error) {
-            return res.status(500).json({ message: "Error al consultar el servicio", error: true, success: false });
-        }
+        if (!response.data || !(response.data instanceof Object))
+            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+
+        const models = response.data.data.map((model) => {
+            const [name, date, time] = model.split("-");
+            const formattedDate = date.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3");
+            const formattedTime = time.split(".")[0].replace(/(\d{2})(\d{2})(\d{2})/, "$1:$2:$3");
+            const createdate = `${formattedDate} ${formattedTime}`;
+
+            return { model_name: model, createdate, status: 'INACTIVO' };
+        });
+
+        models.sort((a, b) => {
+            const dateA = new Date(a.createdate);
+            const dateB = new Date(b.createdate);
+            return dateB - dateA;
+        });
+        models[0].status = 'ACTIVO'
+
+        return res.json({ error: false, success: true, data: models });
     } catch (error) {
         console.error("Error:", error);
-        return res.status(500).json({ message: "Error al procesar el archivo.", error: true, success: false });
+        return res.status(500).json({ message: "Error al consultar el servicio.", error: true, success: false });
     }
 };
 
