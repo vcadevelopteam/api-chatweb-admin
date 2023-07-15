@@ -316,7 +316,9 @@ const singleYamlBuilder = async (data, origin) => {
 
                 if (indice !== -1) {
                     const entidad = entidades[0];
-                    const entidadString = JSON.stringify({ entity: entidad.entity, value: entidad.value });
+                    const entidadString = entidad.value
+                        ? JSON.stringify({ entity: entidad.entity, value: entidad.value })
+                        : `(${entidad})`;
                     const textTransform = `${texto.slice(0, indice + 1)}${entidadString}${texto.slice(indice + 1)}`;
                     yamlData += `      - ${textTransform}`;
                 } else {
@@ -402,13 +404,13 @@ function intentYamlToJson(yamlIntent) {
                     const text = example.replace(/{[^}]+}/g, "").replace(/\((.*?)\)/g, "");
                     const matches = example.match(/{([^}]+)}/g);
                     const match_wparenthesis = example.match(/\((.*?)\)/g);
-
+                    
                     let entityString = null;
                     if (matches && matches.length > 0) {
                         entityString = matches[0];
                         entidad = JSON.parse(entityString);
                     } else if (match_wparenthesis && match_wparenthesis.length > 0) {
-                        entidad = { entity: match_wparenthesis.replace(/[()]/g, ""), value: null, description: null };
+                        entidad = { entity: match_wparenthesis[0].replace(/[()]/g, ""), value: null, description: null };
                     }
 
                     currentExamples.push({
