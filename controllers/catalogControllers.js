@@ -123,7 +123,7 @@ const productCatalogInsArray = async (corpid, orgid, metacatalogid, username, ta
     return null;
 }
 
-const productCatalogIns = async (corpid, orgid, metacatalogid, id, productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, username, operation, requestid) => {
+const productCatalogIns = async (corpid, orgid, metacatalogid, id, productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, username, operation, unitmeasurement, quantity, requestid) => {
     const queryResult = await triggerfunctions.executesimpletransaction("UFN_PRODUCTCATALOG_INS", {
         corpid: corpid,
         orgid: orgid,
@@ -170,6 +170,7 @@ const productCatalogIns = async (corpid, orgid, metacatalogid, id, productid, re
         type: type,
         username: username,
         operation: operation,
+        unitmeasurement, quantity,
         _requestid: requestid,
     });
 
@@ -483,7 +484,7 @@ exports.manageProduct = async (request, response) => {
                     case "CREATE":
                     case "INSERT":
                         if (accessToken) {
-                            const { productid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type } = request.body;
+                            const { productid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, unitmeasurement, quantity } = request.body;
 
                             const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
@@ -536,7 +537,7 @@ exports.manageProduct = async (request, response) => {
                             if (result?.data?.id) {
                                 const productcatalogid = result.data.id
 
-                                let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, 0, productid, productcatalogid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, usr, operation, request._requestid);
+                                let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, 0, productid, productcatalogid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, usr, operation, unitmeasurement, quantity, request._requestid);
 
                                 responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                             }
@@ -548,7 +549,7 @@ exports.manageProduct = async (request, response) => {
 
                     case "EDIT":
                         if (accessToken) {
-                            const { productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type } = request.body;
+                            const { productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, unitmeasurement, quantity } = request.body;
 
                             const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
@@ -652,7 +653,7 @@ exports.manageProduct = async (request, response) => {
                                 });
 
                                 if (result?.data) {
-                                    let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, usr, operation, request._requestid);
+                                    let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, usr, operation, unitmeasurement, quantity, request._requestid);
 
                                     responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                                 }
@@ -668,7 +669,7 @@ exports.manageProduct = async (request, response) => {
 
                     case "DELETE":
                         if (accessToken) {
-                            const { productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type } = request.body;
+                            const { productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, unitmeasurement, quantity } = request.body;
 
                             const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
@@ -738,7 +739,7 @@ exports.manageProduct = async (request, response) => {
                                 });
 
                                 if (result?.data) {
-                                    let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, usr, operation, request._requestid);
+                                    let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, usr, operation, unitmeasurement, quantity, request._requestid);
 
                                     responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                                 }
@@ -997,7 +998,7 @@ exports.deleteProduct = async (request, response) => {
                             });
 
                             if (result?.data) {
-                                let catalogResponse = await productCatalogIns(corpid, orgid, productdata.metacatalogid, productdata.productcatalogid, productdata.productid, facebookretailerid, productdata.title, productdata.description, productdata.descriptionshort, productdata.availability, productdata.category, productdata.condition, productdata.currency, productdata.price, productdata.saleprice, productdata.link, productdata.imagelink, productdata.additionalimagelink, productdata.brand, productdata.color, productdata.gender, productdata.material, productdata.pattern, productdata.size, productdata.datestart, productdata.datelaunch, productdata.dateexpiration, productdata.labels, productdata.customlabel0, productdata.customlabel1, productdata.customlabel2, productdata.customlabel3, productdata.customlabel4, productdata.customnumber0, productdata.customnumber1, productdata.customnumber2, productdata.customnumber3, productdata.customnumber4, productdata.standardfeatures0, productdata.reviewstatus, productdata.reviewdescription, productdata.status, productdata.type, usr, 'DELETE', request._requestid);
+                                let catalogResponse = await productCatalogIns(corpid, orgid, productdata.metacatalogid, productdata.productcatalogid, productdata.productid, facebookretailerid, productdata.title, productdata.description, productdata.descriptionshort, productdata.availability, productdata.category, productdata.condition, productdata.currency, productdata.price, productdata.saleprice, productdata.link, productdata.imagelink, productdata.additionalimagelink, productdata.brand, productdata.color, productdata.gender, productdata.material, productdata.pattern, productdata.size, productdata.datestart, productdata.datelaunch, productdata.dateexpiration, productdata.labels, productdata.customlabel0, productdata.customlabel1, productdata.customlabel2, productdata.customlabel3, productdata.customlabel4, productdata.customnumber0, productdata.customnumber1, productdata.customnumber2, productdata.customnumber3, productdata.customnumber4, productdata.standardfeatures0, productdata.reviewstatus, productdata.reviewdescription, productdata.status, productdata.type, usr, 'DELETE', "", 0, request._requestid);
 
                                 responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                             }
