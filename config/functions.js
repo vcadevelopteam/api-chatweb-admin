@@ -486,9 +486,12 @@ module.exports = {
         protected: "SELECT"
     },
     QUERY_ORDER_DETAIL_CARD: {
-        query: `select o2.name, o2.email, o2.phone, o2.orderid, o2.createdate, ol.title producttitle, o2.amount orderamount, o2.currency, ol.quantity, ol.unitprice, ol.productmetaid productid, ol.amount detailamount from (
-            select o.corpid, o.orgid, p.name, p.email, p.phone, o.orderid, o.createdate, o.amount, o.currency from "order" o
+        query: `select o2.name, o2.email, o2.phone, o2.orderid, o2.createdate, ol.title producttitle, o2.amount orderamount, o2.currency, ol.quantity, ol.unitprice, ol.productmetaid productid, ol.amount detailamount, o2.address
+        from (
+            select o.corpid, o.orgid, p.name, p.email, p.phone, o.orderid, o.createdate, o.amount, o.currency, c.variablecontextsimple->>'address' address
+            from "order" o
             join person p on p.corpid = o.corpid and p.orgid = o.orgid and p.personid = o.personid
+            join conversation c on c.corpid = o.corpid and c.orgid = o.orgid and c.conversationid = o.conversationid
             where o.corpid = $corpid and o.orgid = $orgid and o.personid = $personid and o.status = 'ACTIVO'
             order by orderid desc
             limit $limit
@@ -2233,7 +2236,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PRODUCTCATALOG_INS: {
-        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $metacatalogid, $id, $productid, $retailerid, $title, $description, $descriptionshort, $availability, $category, $condition, $currency, $price, $saleprice, $link, $imagelink, $additionalimagelink, $brand, $color, $gender, $material, $pattern, $size, $datestart, $datelaunch, $dateexpiration, $labels, $customlabel0, $customlabel1, $customlabel2, $customlabel3, $customlabel4, $customnumber0, $customnumber1, $customnumber2, $customnumber3, $customnumber4, $standardfeatures0, $reviewstatus, $reviewdescription, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $metacatalogid, $id, $productid, $retailerid, $title, $description, $descriptionshort, $availability, $category, $condition, $currency, $price, $saleprice, $link, $imagelink, $additionalimagelink, $brand, $color, $gender, $material, $pattern, $size, $datestart, $datelaunch, $dateexpiration, $labels, $customlabel0, $customlabel1, $customlabel2, $customlabel3, $customlabel4, $customnumber0, $customnumber1, $customnumber2, $customnumber3, $customnumber4, $standardfeatures0, $reviewstatus, $reviewdescription, $status, $type, $username, $operation, $unitmeasurement, $quantity)",
         module: "",
         protected: "INSERT"
     },
@@ -2288,7 +2291,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEADAUTOMATIZATIONRULES_INS: {
-        query: "SELECT * FROM ufn_leadautomatizationrules_ins($corpid,$orgid,$id,$description,$status,$type,$columnid,$communicationchannelid,$messagetemplateid,$messagetemplateparameters,$shippingtype,$xdays,$schedule,$tags,$products,$username,$operation)",
+        query: "SELECT * FROM ufn_leadautomatizationrules_ins($corpid,$orgid,$id,$description,$status,$type,$order,$orderstatus ,$columnid,$communicationchannelid,$messagetemplateid,$messagetemplateparameters,$shippingtype,$xdays,$schedule,$tags,$products,$username,$operation)",
         module: "",
         protected: "INSERT"
     },
@@ -3674,7 +3677,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORDER_SEL: {
-        query: "SELECT * FROM ufn_order_sel($corpid, $orgid)",
+        query: "SELECT * FROM ufn_order_sel($corpid, $orgid, $product, $category, $type)",
         module: "",
         protected: "SELECT"
     },
