@@ -48,7 +48,6 @@ exports.drawCardOrder = async (req, res) => {
     const { reportname, parameters } = req.body;
 
     const result = await executesimpletransaction("QUERY_ORDER_DETAIL_CARD", parameters);
-    console.log("result", result)
     if (result instanceof Array) {
         if (result.length === 0) {
             return res.json({ error: false, success: true, url: "", code: "WITHOUT-ORDERS" });
