@@ -3726,4 +3726,19 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_TIMESHEET_INS: {
+        query: "SELECT * FROM ufn_timesheet_ins($corpid, $orgid, $id, $description, $type, $status, $username, $operation, $startdate, $startuserid, $registerdate, $registeruserid, $registerprofile, $registerdetail, $timeduration);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_TIMESHEET_SEL: {
+        query: "SELECT * FROM ufn_timesheet_sel($corpid, $orgid, $timesheetid, $startdate, $all);",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_TIMESHEET_USER_SEL: {
+        query: "SELECT * FROM ufn_timesheet_user_sel($corpid, $orgid);",
+        module: "",
+        protected: "SELECT"
+    },
 }
