@@ -8,7 +8,7 @@ const { response } = require("express");
 const path = require("path");
 
 exports.train = async (req, res) => {
-    const { corpid, orgid } = req.user;
+    const { corpid, orgid, usr } = req.user;
     const { model_uuid } = req.body;
 
     if (!model_uuid || model_uuid == "")
@@ -83,6 +83,8 @@ exports.train = async (req, res) => {
 
         if (!responsetrain.data || !(responsetrain.data instanceof Object))
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+
+        await executesimpletransaction("UFN_RASA_MODEL_INS", { corpid, orgid, rasaid: model_detail[0].rasaid, usr });          
 
         return res.json({ error: false, success: true });
     } catch (error) {

@@ -3741,5 +3741,8 @@ module.exports = {
         query: "SELECT * FROM ufn_rasa_model_sel($corpid, $orgid)",
         protected: "SELECT"
     },
-    
+    UFN_RASA_MODEL_INS: {
+        query: "SELECT * FROM ufn_rasa_model_ins($corpid, $orgid, $rasaid, $usr)",
+        protected: "SELECT"
+    },
 }
