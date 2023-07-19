@@ -3758,7 +3758,6 @@ module.exports = {
         query: "SELECT * FROM ufn_rasa_model_sel($corpid, $orgid)",
         protected: "SELECT"
     },
-    
     UFN_DASHBOARD_KPI_SUMMARY_BY_MONTH: {
         query: "SELECT * FROM ufn_dashboard_kpi_summary_by_month($corpid, $orgid, $date, $origin, $usergroup, $supervisorid, $offset, $userid)",
         module: "",
@@ -3772,6 +3771,9 @@ module.exports = {
     UFN_COLUMN_ORDER_SEL: {
         query: "SELECT * FROM ufn_column_order_sel($corpid, $orgid, $id, $all)",
         module: "",
+    },
+    UFN_RASA_MODEL_INS: {
+        query: "SELECT * FROM ufn_rasa_model_ins($corpid, $orgid, $rasaid, $usr)",
         protected: "SELECT"
     },
 }
