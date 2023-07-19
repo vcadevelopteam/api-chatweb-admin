@@ -16,4 +16,6 @@ router.post("/list", ip, auth, rasaController.list);
 
 router.post("/test", ip, auth, rasaController.test);
 
+router.post("/download-model", ip, auth, rasaController.download_model);
+
 module.exports = router;

@@ -41,7 +41,7 @@ exports.train = async (req, res) => {
 
         const responseservices = await axiosObservable({
             method: "get",
-            url: `http://10.240.65.11/rasa-api/status/${model_detail[0].server_port}`,
+            url: `https://rasa.laraigo.com/rasa-api/status/${model_detail[0].server_port}`,
             data: {},
             _requestid: req._requestid,
         });
@@ -73,7 +73,7 @@ exports.train = async (req, res) => {
 
         const responsetrain = await axiosObservable({
             method: "post",
-            url: `http://10.240.65.11/rasa-api/model/train`,
+            url: `https://rasa.laraigo.com/rasa-api/model/train`,
             headers: {
                 ...data.getHeaders(),
             },
@@ -212,7 +212,7 @@ exports.list = async (req, res) => {
 
         const response = await axiosObservable({
             method: "get",
-            url: `http://10.240.65.11/rasa-api/models/${model_detail[0].server_port}`,
+            url: `https://rasa.laraigo.com/rasa-api/models/${model_detail[0].server_port}`,
             data: {},
             _requestid: req._requestid,
         });
@@ -261,7 +261,7 @@ exports.test = async (req, res) => {
 
         const responseservices = await axiosObservable({
             method: "get",
-            url: `http://10.240.65.11/rasa-api/status/${model_detail[0].server_port}`,
+            url: `https://rasa.laraigo.com/rasa-api/status/${model_detail[0].server_port}`,
             data: {},
             _requestid: req._requestid,
         });
@@ -275,7 +275,7 @@ exports.test = async (req, res) => {
 
         const responseservicetest = await axiosObservable({
             method: "post",
-            url: `http://10.240.65.11/rasa-api/model/parse/${model_detail[0].server_port}`,
+            url: `https://rasa.laraigo.com/rasa-api/model/parse/${model_detail[0].server_port}`,
             data: {
                 text,
             },
@@ -289,6 +289,43 @@ exports.test = async (req, res) => {
     } catch (error) {
         console.error("Error:", error);
         return res.status(500).json({ message: "Error al procesar el request.", error: true, success: false });
+    }
+};
+
+exports.download_model = async (req, res) => {
+    const { corpid, orgid, usr } = req.user;
+    const { model_uuid, model_name } = req.body;
+
+    if (!model_uuid || model_uuid == "")
+        return res
+            .status(400)
+            .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
+
+    try {
+        const model_detail = await executesimpletransaction("UFN_RASA_MODEL_UUID_SEL", { corpid, orgid, model_uuid });
+        if (!model_detail.length)
+            return res
+                .status(400)
+                .json({ message: "La organizacion no tiene servicio RASA activo", error: true, success: false });
+
+        const responseservices = await axiosObservable({
+            method: "post",
+            url: `https://rasa.laraigo.com/rasa-api/download-model`,
+            data: {
+                model_name: model_name,
+                port: model_detail[0].server_port,
+            },
+            _requestid: req._requestid,
+        });
+
+        if (!responseservices.data || !(responseservices.data instanceof Object))
+            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+        if (responseservices.data.error)
+            return res.status(400).json({ message: responseservices.data.msg, error: true, success: false });
+
+        return res.json({ error: false, success: true, url: responseservices.data.data.url });
+    } catch (error) {
+        return res.status(500).json({ message: "Error al procesar el archivo.", error: true, success: false });
     }
 };
 
@@ -404,13 +441,17 @@ function intentYamlToJson(yamlIntent) {
                     const text = example.replace(/{[^}]+}/g, "").replace(/\((.*?)\)/g, "");
                     const matches = example.match(/{([^}]+)}/g);
                     const match_wparenthesis = example.match(/\((.*?)\)/g);
-                    
+
                     let entityString = null;
                     if (matches && matches.length > 0) {
                         entityString = matches[0];
                         entidad = JSON.parse(entityString);
                     } else if (match_wparenthesis && match_wparenthesis.length > 0) {
-                        entidad = { entity: match_wparenthesis[0].replace(/[()]/g, ""), value: null, description: null };
+                        entidad = {
+                            entity: match_wparenthesis[0].replace(/[()]/g, ""),
+                            value: null,
+                            description: null,
+                        };
                     }
 
                     currentExamples.push({
