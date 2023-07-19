@@ -1,6 +1,7 @@
 const { errors, getErrorCode, axiosObservable } = require('../config/helpers');
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { uploadToCOS, unrar, unzip, xlsxToJSON } = require('../config/filefunctions');
+const { pushNotification } = require('../config/firebase');
 
 exports.reply = async (req, res) => {
     try {
@@ -31,6 +32,31 @@ exports.reply = async (req, res) => {
             _requestid: req._requestid,
         });
 
+        if (req.user.origin === "MOVIL") {
+            const ticket = {
+                conversationid: data.p_conversationid,
+                ticketnum: data.ticketnum,
+                personcommunicationchannel: data.p_messagesourcekey1,
+                lastmessage: data.p_messagetext,
+                typemessage: data.p_type,
+                lastuserid: req.user.userid,
+                interactionid: 0,
+                userid: data.p_userid,
+                corpid: data.p_corpid,
+                orgid: data.p_orgid,
+                ticketWasAnswered: data.newanswered,
+                wasanswered: data.newanswered,
+                status: data.status || "ASIGNADO"
+
+            }
+            axiosObservable({
+                url: `${process.env.APP_MOBILE_SOCKET}inbox/sendMessageFromBotHub`,
+                method: 'post',
+                data: ticket,
+                _requestid: req._requestid,
+            })
+        }
+
         if (!responseservices.data || !(responseservices.data instanceof Object))
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
 
@@ -42,7 +68,7 @@ exports.reply = async (req, res) => {
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
         }
 
-        res.json(responseservices.data);
+        return res.json(responseservices.data);
     }
     catch (exception) {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
@@ -130,7 +156,30 @@ exports.close = async (req, res) => {
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
         }
 
-        res.json(responseservices.data);
+        if (req.user.origin === "MOVIL") {
+            const body = new URLSearchParams({
+                ticketnum: data.ticketnum,
+                lastasesorid: data.p_userid,
+                corpid: req.user.corpid,
+                orgid: req.user.orgid,
+                statusticket: data.status,
+                conversationid: data.p_conversationid,
+                isanswered: data.isanswered.toString()
+            });
+
+            const responseapp = await axiosObservable({
+                url: `${process.env.APP_MOBILE_SOCKET}inbox/DeleteTicketHub`,
+                method: 'post',
+                data: body,
+                _requestid: req._requestid,
+            })
+
+            if (!responseapp.data || !(responseapp.data instanceof Object)) {
+                return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+            }
+        }
+
+        return res.json(responseservices.data);
     }
     catch (exception) {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
@@ -158,10 +207,54 @@ exports.reassign = async (req, res) => {
         if (!data.newuserid && !data.usergroup) { //esta siendo reasigando x el mismo supervisor
             data.newuserid = req.user.userid;
         }
-
+        console.log("UFN_CONVERSATION_REASSIGNTICKET", data)
+        console.log("req.user", req.user)
+        console.log("req.body", req.body)
         await executesimpletransaction("UFN_CONVERSATION_REASSIGNTICKET", { ...data, _requestid: req._requestid });
 
-        res.json({ success: true });
+        if (req.user.origin === "MOVIL") {
+            if (data.newuserid !== 3) {
+                executesimpletransaction("UFN_GET_TOKEN_LOGGED_MOVIL", { userid: data.userid }).then(resBD => {
+                    if (resBD instanceof Array && resBD.length > 0) {
+                        if (resBD[0].token) {
+                            const ticketToGive = {
+                                data: {
+                                    displayname: data.displayname,
+                                    lastmessage: 'Ticket reasignado',
+                                    interactiontype: 'text',
+                                    interactionid: 0,
+                                    ticketnum: data.ticketnum,
+                                    newConversation: true,
+                                    conversationid: data.conversationid,
+                                    mode: "messagein",
+                                    corpid: data.corpid,
+                                    orgid: data.orgid,
+                                    token: resBD[0].token,
+                                },
+                                notification: {
+                                    title: `Mensaje nuevo de ${data.displayname}`,
+                                    body: data.lastmessage,
+                                }
+                            }
+                            pushNotification(ticketToGive)
+                        }
+                    }
+                });
+            }
+
+            const responseapp = await axiosObservable({
+                url: `${process.env.APP_MOBILE_SOCKET}inbox/ReassignedTicketHub`,
+                method: 'post',
+                data:  data,
+                _requestid: req._requestid,
+            })
+    
+            if (!responseapp.data || !(responseapp.data instanceof Object)) {
+                return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
+            }
+        }
+
+        return res.json({ success: true });
     }
     catch (exception) {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
@@ -194,7 +287,7 @@ exports.massiveClose = async (req, res) => {
         if (!responseservices.data.Success) {
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
         }
-        res.json({ success: true });
+        return res.json({ success: true });
     }
     catch (exception) {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
@@ -349,7 +442,30 @@ exports.sendHSM = async (req, res) => {
                 return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
             }
         }
-        res.json({ success: true });
+
+        if (req.user.origin === "MOVIL") {
+            const ticket = {
+                conversationid: data.conversationid,
+                ticketnum: data.ticketnum,
+                personcommunicationchannel: data.personcommunicationchannel,
+                lastmessage: data.message,
+                wasanswered: data.newanswered,
+                typemessage: "text",
+                interactionid: 0,
+                userid: data.userid,
+                corpid: data.corpid,
+                orgid: data.orgid,
+                token: req.user.token,
+            }
+            axiosObservable({
+                url: `${process.env.APP_MOBILE_SOCKET}inbox/sendMessageFromBotHub`,
+                method: 'post',
+                data:  ticket,
+                _requestid: req._requestid,
+            })
+        }
+        
+        return res.json({ success: true });
     }
     catch (exception) {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
@@ -362,7 +478,7 @@ exports.import = async (req, res) => {
         if (req.files.length > 10) {
             return res.status(400).json(getErrorCode(errors.LIMIT_EXCEEDED));
         }
-        
+
         const attachments = []
 
         let file_list = req.files.filter(f => f.mimetype === 'application/x-zip-compressed' && f.originalname !== 'wa_layout.css');
@@ -370,32 +486,32 @@ exports.import = async (req, res) => {
             let files = await unzip(file_list[i])
             if (files) {
                 for (let j = 0; j < files.length; j++) {
-                    if (files[j]?.size < 10*1024*1024) {
+                    if (files[j]?.size < 10 * 1024 * 1024) {
                         let cosname = await uploadToCOS({
                             size: files[j]?.size,
                             originalname: files[j]?.name,
                             buffer: files[j]?.data,
                             mimetype: null
                         }, req.user?.orgdesc || "anonymous")
-                        attachments.push({filename: files[j].name, url: cosname });
+                        attachments.push({ filename: files[j].name, url: cosname });
                     }
                 }
             }
         }
-        
+
         file_list = req.files.filter(f => f.originalname.includes('.rar'));
         for (let i = 0; i < file_list.length; i++) {
             let files = await unrar(file_list[i])
             if (files) {
                 for (let j = 0; j < files.length; j++) {
-                    if (files[j]?.size < 10*1024*1024) {
+                    if (files[j]?.size < 10 * 1024 * 1024) {
                         let cosname = await uploadToCOS({
                             size: files[j]?.fileHeader?.unpSize,
                             originalname: files[j]?.fileHeader?.name,
                             buffer: Buffer.from(files[j]?.extraction),
                             mimetype: null
                         }, req.user?.orgdesc || "anonymous")
-                        attachments.push({filename: files[j]?.fileHeader?.name, url: cosname });
+                        attachments.push({ filename: files[j]?.fileHeader?.name, url: cosname });
                     }
                 }
             }
@@ -403,7 +519,7 @@ exports.import = async (req, res) => {
 
         // Variable which will store all data
         let datatable = [];
-        
+
         // Joining xlx files
         file_list = req.files.filter(f => f.mimetype === 'application/vnd.ms-excel' || f.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         file_list = file_list.sort((a, b) => a.originalname > b.originalname ? 1 : -1);
@@ -422,7 +538,7 @@ exports.import = async (req, res) => {
                 }))
             ]
         }
-        
+
         // Joining csv files
         file_list = req.files.filter(f => f.mimetype === 'text/csv');
         for (const csv_elem of file_list) {
@@ -436,7 +552,7 @@ exports.import = async (req, res) => {
                     const data = {
                         ...headers.reduce((ad, key, j) => ({
                             ...ad,
-                            [key]: line[j][0] === '"' && line[j].slice(-1) === '"' ? line[j].slice(1,-1) : line[j]
+                            [key]: line[j][0] === '"' && line[j].slice(-1) === '"' ? line[j].slice(1, -1) : line[j]
                         }), {}),
                     }
                     lines.push(data)
@@ -465,29 +581,29 @@ exports.import = async (req, res) => {
             }
         }
 
-       // Get uniques personphones
-       const personphone_list = [...new Map(datatable.filter(d => !!d.personname).map(d => [d['personphone'], d])).values()];
-       const personphone_dict = personphone_list.reduce((ac, c) => ({
-           ...ac,
-           [c.personphone]: c
-       }), {});
-       
-       // Add personname for attachment files
-       datatable = datatable.map(d => ({
-           ...d,
-           personname: !d.personname ? personphone_dict[d.personphone]?.personname : d.personname
-       }));
-       
-       // Clean data without personname
-       datatable = datatable.filter(p => !!p.personname);
-       
-       // Sort data by date
-       datatable = datatable.sort((a, b) => new Date(a['date']) > new Date(b['date']) ? 1 : -1);
+        // Get uniques personphones
+        const personphone_list = [...new Map(datatable.filter(d => !!d.personname).map(d => [d['personphone'], d])).values()];
+        const personphone_dict = personphone_list.reduce((ac, c) => ({
+            ...ac,
+            [c.personphone]: c
+        }), {});
 
-       if (!data?.corpid)
-           data.corpid = req.user?.corpid ? req.user.corpid : 1;
-       if (!data?.orgid)
-           data.orgid = req.user?.orgid ? req.user.orgid : 1;
+        // Add personname for attachment files
+        datatable = datatable.map(d => ({
+            ...d,
+            personname: !d.personname ? personphone_dict[d.personphone]?.personname : d.personname
+        }));
+
+        // Clean data without personname
+        datatable = datatable.filter(p => !!p.personname);
+
+        // Sort data by date
+        datatable = datatable.sort((a, b) => new Date(a['date']) > new Date(b['date']) ? 1 : -1);
+
+        if (!data?.corpid)
+            data.corpid = req.user?.corpid ? req.user.corpid : 1;
+        if (!data?.orgid)
+            data.orgid = req.user?.orgid ? req.user.orgid : 1;
 
         data._requestid = req._requestid;
 
@@ -588,7 +704,7 @@ exports.import = async (req, res) => {
         if (pcc_to_create.length > 0) {
             // Filter pcc without personid
             const person_to_create = pcc_to_create.filter(d => !d.personid);
-            
+
             // Create persons
             const person_result = await executesimpletransaction("QUERY_TICKETIMPORT_PERSON_INS", {
                 corpid: data.corpid,

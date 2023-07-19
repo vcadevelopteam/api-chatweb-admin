@@ -4,9 +4,9 @@ const { v4: uuidv4 } = require('uuid');
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { errors, getErrorCode, cleanPropertyValue } = require('../config/helpers');
 const { addApplication } = require('./voximplantController');
-
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { loginGroup } = require('../config/firebase');
 
 //type: int|string|bool
 const properties = [
@@ -96,7 +96,8 @@ const validateResProperty = (r, type) => {
 
 exports.authenticate = async (req, res) => {
     const { data: { usr, password, facebookid, googleid, origin = "WEB", token } } = req.body;
-
+    
+    logger.child({ _requestid: req._requestid, body: req.body }).info(`authenticate.body`);
     let integration = false;
     const prevdata = { _requestid: req._requestid }
     try {
@@ -171,7 +172,12 @@ exports.authenticate = async (req, res) => {
             }
 
             user.token = tokenzyx;
+            user.origin = origin;
             delete user.pwd;
+
+            if (origin === "MOVIL") {
+                await loginGroup(token, user.orgid, user.userid, req._requestid);
+            }
 
             jwt.sign({ user }, (process.env.SECRETA ? process.env.SECRETA : "palabrasecreta"), {}, (error, token) => {
                 if (error) throw error;
@@ -180,6 +186,7 @@ exports.authenticate = async (req, res) => {
                 delete user.userid;
                 return res.json({ data: { ...user, token, automaticConnection, notifications, redirect: user.redirect || '/tickets' }, success: true });
             })
+
         } else if (user.status === 'PENDIENTE') {
             return res.status(401).json({ code: errors.LOGIN_USER_PENDING })
         } else if (user.status === 'BLOQUEADO') {
@@ -344,6 +351,10 @@ exports.changeOrganization = async (req, res) => {
                     username: req.user.usr
                 })
             }
+        }
+
+        if (req.user.origin === "MOVIL") {
+            await loginGroup(req.user.token, parameters.neworgid, req.user.userid, req._requestid);
         }
         
         jwt.sign({ user: newusertoken }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
