@@ -100,6 +100,21 @@ module.exports = {
         module: "/extras/users",
         protected: "INSERT"
     },
+    QUERY_GET_DATA_FROM_APIKEY: {
+        query: `SELECT userid, corpid, orgid FROM orguser WHERE apikey = $apikey`,
+        module: "/extras/users",
+        protected: "INSERT"
+    },
+    QUERY_GET_DATA_FROM_REPORT: {
+        query: `SELECT rp.reporttemplateid, rp.columnjson, rp.filterjson, rp.summaryjson
+		FROM reporttemplate rp 
+		WHERE rp.corpid = $corpid
+		AND rp.orgid = $orgid
+        AND nameapi = $reportname
+		AND rp.status <> 'ELIMINADO'`,
+        module: "/extras/users",
+        protected: "INSERT"
+    },
     UFN_USER_INS: {
         query: "SELECT * FROM ufn_user_ins($corpid, $orgid, $id, $usr, $doctype, $docnum, $password, $firstname, $lastname, $email, $pwdchangefirstlogin, $type, $status,$description, $username, $operation, $company, $twofactorauthentication, $registercode, $billinggroup, $image)",
         module: "/extras/users",

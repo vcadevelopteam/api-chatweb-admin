@@ -360,9 +360,9 @@ exports.generateToken = async (req, res) => {
         userid: req.user.userid,
     }
     const key = process.env?.SECRETA ?? "palabrasecreta";
-    const token = CryptoJS.AES.encrypt(JSON.stringify(dataUser), key).toString();
+    const apikey = CryptoJS.AES.encrypt(JSON.stringify(dataUser), key).toString();
 
+    const resUser = await executesimpletransaction("QUERY_UPDATE_APIKEY", { ...dataUser, apikey })
 
-    return res.json({ token })
-
+    return res.json({ resUser, apikey })
 }

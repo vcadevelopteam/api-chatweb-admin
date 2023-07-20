@@ -64,6 +64,7 @@ app.use('/api/catalog', require('./routes/catalog'));
 app.use('/api/witai', require('./routes/witai'));
 app.use('/api/product', require('./routes/product'));
 app.use('/api/posthistory', require('./routes/posthistory'));
+app.use('/api/report-data', require('./routes/reportdata'));
 //mobile
 app.use('/api/mobile/auth', require('./routes/mobile/auth'));
 app.use('/api/mobile/ticket', require('./routes/mobile/ticket'));
