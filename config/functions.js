@@ -1701,7 +1701,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGCONFIGURATION_INS: {
-        query: "SELECT * FROM ufn_billingconfiguration_ins($year,$month,$plan,$id,$basicfee,$userfreequantity,$useradditionalfee,$channelfreequantity,$channelwhatsappfee,$channelotherfee,$clientfreequantity,$clientadditionalfee,$allowhsm,$hsmfee,$description,$status,$whatsappconversationfreequantity,$freewhatsappchannel,$usercreateoverride,$channelcreateoverride,$vcacomissionperhsm,$vcacomissionpervoicechannel,$type,$username,$operation)",
+        query: "SELECT * FROM ufn_billingconfiguration_ins($year, $month, $plan, $id, $basicfee, $userfreequantity, $useradditionalfee, $channelfreequantity, $channelwhatsappfee, $channelotherfee, $clientfreequantity, $clientadditionalfee, $allowhsm, $hsmfee, $description, $status, $whatsappconversationfreequantity, $freewhatsappchannel, $usercreateoverride, $channelcreateoverride, $vcacomissionperhsm, $vcacomissionpervoicechannel, $plancurrency, $vcacomission, $basicanualfee, $type, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
