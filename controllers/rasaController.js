@@ -358,7 +358,7 @@ const singleYamlBuilder = async (data, origin, synonym_data = null) => {
 
                     if (synonym_data) {
                         const entityText = texto.match(/\[(.*?)\]/);
-                        const entitySynonym = synonym_data.find((synonym) => synonym.description === entityText[1]);
+                        const entitySynonym = synonym_data.find((synonym) => synonym.description.toLowerCase() === entityText[1].toLowerCase());
                         if (entitySynonym) {
                             entitySynonym.values.split(",").forEach((value) => {
                                 const newTextIntent = texto.replace(/\[(.*?)\]/g, `[${value}]`);
