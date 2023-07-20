@@ -84,7 +84,7 @@ exports.train = async (req, res) => {
         if (!responsetrain.data || !(responsetrain.data instanceof Object))
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
 
-        await executesimpletransaction("UFN_RASA_MODEL_INS", { corpid, orgid, rasaid: model_detail[0].rasaid, usr });          
+        await executesimpletransaction("UFN_RASA_MODEL_INS", { corpid, orgid, rasaid: model_detail[0].rasaid, usr });
 
         return res.json({ error: false, success: true });
     } catch (error) {
@@ -335,13 +335,13 @@ const nluYamlBuilder = async (intents, synonyms) => {
     let yamlData = "";
     yamlData = `version: "2.0"\n\nnlu:\n`;
 
-    yamlData += await singleYamlBuilder(intents, "intent");
+    yamlData += await singleYamlBuilder(intents, "intent", synonyms);
     yamlData += await singleYamlBuilder(synonyms, "synonym");
 
     return yamlData;
 };
 
-const singleYamlBuilder = async (data, origin) => {
+const singleYamlBuilder = async (data, origin, synonym_data = null) => {
     let yamlData = "";
 
     if (origin === "intent") {
@@ -355,6 +355,27 @@ const singleYamlBuilder = async (data, origin) => {
 
                 if (indice !== -1) {
                     const entidad = entidades[0];
+
+                    if (synonym_data) {
+                        const entityText = texto.match(/\[(.*?)\]/);
+                        const entitySynonym = synonym_data.find((synonym) => synonym.description === entityText[1]);
+                        if (entitySynonym) {
+                            entitySynonym.values.split(",").forEach((value) => {
+                                const newTextIntent = texto.replace(/\[(.*?)\]/g, `[${value}]`);
+                                const indice = newTextIntent.indexOf("]");
+                                const entidadString = JSON.stringify({
+                                    entity: entidad.entity,
+                                    value: entitySynonym.description,
+                                });
+                                const textTransform = `${newTextIntent.slice(
+                                    0,
+                                    indice + 1
+                                )}${entidadString}${newTextIntent.slice(indice + 1)}`;
+                                yamlData += `      - ${textTransform}`;
+                                yamlData += `\n`;
+                            });
+                        }
+                    }
                     const entidadString = entidad.value
                         ? JSON.stringify({ entity: entidad.entity, value: entidad.value })
                         : `(${entidad.entity})`;
