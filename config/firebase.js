@@ -39,6 +39,10 @@ const exitFromAllGroup = async (token, _requestid) => {
     }
 }
 
+exports.exitFromAllGroup1 = async (token, _requestid) => {
+    await exitFromAllGroup(token, _requestid)
+}
+
 exports.pushNotification = (datatmp) => {
     try {
         const { data, notification } = datatmp;

@@ -6,7 +6,7 @@ const { errors, getErrorCode, cleanPropertyValue } = require('../config/helpers'
 const { addApplication } = require('./voximplantController');
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { loginGroup } = require('../config/firebase');
+const { loginGroup, exitFromAllGroup1 } = require('../config/firebase');
 
 //type: int|string|bool
 const properties = [
@@ -276,6 +276,9 @@ exports.getUser = async (req, res) => {
 
 exports.logout = async (req, res) => {
     try {
+        if (origin === "MOVIL") {
+            await exitFromAllGroup1(req.user.token, req._requestid);
+        }
         executesimpletransaction("UFN_USERSTATUS_UPDATE", { _requestid: req._requestid, ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
     } catch (exception) {
         logger.child({ error: { detail: exception.stack, message: exception.toString() } }).error(`Request to ${req.originalUrl}`);
