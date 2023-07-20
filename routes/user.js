@@ -5,19 +5,21 @@ const auth = require('../middleware/auth');
 const ip = require('../middleware/ip');
 
 router.post("/update/info",
-    ip,
     auth,
     userController.updateInformation
 )
 router.post("/sendmail/password",
-    ip,
     auth,
     userController.sendMailPassword
 )
 router.post("/delete",
-    ip,
     auth,
     userController.delete
+)
+
+router.get("/generatetoken",
+    auth,
+    userController.generateToken
 )
 
 module.exports = router;

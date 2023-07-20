@@ -5,6 +5,7 @@ const { errors, getErrorCode } = require('../config/helpers');
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const voximplant = require("../config/voximplantfunctions");
+const CryptoJS = require('crypto-js');
 
 require('dotenv').config();
 
@@ -69,7 +70,7 @@ exports.sendMailPassword = async (req, res) => {
 
     const passwordtext = parameters.password;
 
-    if (header && header.parameters.password) {
+    if (header?.parameters.password) {
         const salt = await bcryptjs.genSalt(10);
         header.parameters.password = await bcryptjs.hash(header.parameters.password, salt);
     }
@@ -276,7 +277,7 @@ exports.sendMailPassword = async (req, res) => {
 exports.delete = async (req, res) => {
     const { header, detail: detailtmp } = req.body;
 
-    if (header && header.parameters.password) {
+    if (header?.parameters.password) {
         const salt = await bcryptjs.genSalt(10);
         header.parameters.password = await bcryptjs.hash(header.parameters.password, salt);
     }
@@ -349,4 +350,19 @@ exports.delete = async (req, res) => {
         return res.json(result);
     else
         return res.status(result.rescode).json({ ...result, key: header.key });
+}
+
+
+exports.generateToken = async (req, res) => {
+    const dataUser = {
+        orgid: req.user.orgid,
+        corpid: req.user.corpid,
+        userid: req.user.userid,
+    }
+    const key = process.env?.SECRETA ?? "palabrasecreta";
+    const token = CryptoJS.AES.encrypt(JSON.stringify(dataUser), key).toString();
+
+
+    return res.json({ token })
+
 }
