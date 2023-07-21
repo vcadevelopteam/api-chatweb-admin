@@ -97,6 +97,31 @@ module.exports = {
         module: "/extras/users",
         protected: "INSERT"
     },
+    QUERY_UPDATE_APIKEY: {
+        query: `UPDATE orguser SET
+            apikey = $apikey
+            WHERE corpid = $corpid
+            AND orgid = $orgid
+            AND userid = $userid
+            `,
+        module: "/extras/users",
+        protected: "INSERT"
+    },
+    QUERY_GET_DATA_FROM_APIKEY: {
+        query: `SELECT userid, corpid, orgid FROM orguser WHERE apikey = $apikey`,
+        module: "/extras/users",
+        protected: "INSERT"
+    },
+    QUERY_GET_DATA_FROM_REPORT: {
+        query: `SELECT rp.reporttemplateid, rp.columnjson, rp.filterjson, rp.summaryjson
+		FROM reporttemplate rp 
+		WHERE rp.corpid = $corpid
+		AND rp.orgid = $orgid
+        AND nameapi = $reportname
+		AND rp.status <> 'ELIMINADO'`,
+        module: "/extras/users",
+        protected: "INSERT"
+    },
     UFN_USER_INS: {
         query: "SELECT * FROM ufn_user_ins($corpid, $orgid, $id, $usr, $doctype, $docnum, $password, $firstname, $lastname, $email, $pwdchangefirstlogin, $type, $status,$description, $username, $operation, $company, $twofactorauthentication, $registercode, $billinggroup, $image)",
         module: "/extras/users",
@@ -986,7 +1011,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORTTEMPLATE_SEL: {
-        query: "SELECT * FROM ufn_reporttemplate_sel($corpid, $orgid, $reporttemplateid, $username, $all)",
+        query: "SELECT * FROM ufn_reporttemplate_sel($corpid, $orgid, $reporttemplateid, $username, $all, $userid)",
         module: "",
         protected: "SELECT"
     },
