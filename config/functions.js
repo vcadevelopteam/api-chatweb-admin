@@ -1681,7 +1681,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_BILLINGSUPPORT_INS: {
-        query: "SELECT * FROM ufn_billingsupport_ins($year,$month,$plan,$id,$basicfee,$starttime,$finishtime,$description,$status,$type,$username,$operation )",
+        query: "SELECT * FROM ufn_billingsupport_ins($year, $month, $plan, $id, $basicfee, $starttime, $finishtime, $plancurrency, $description, $status, $type, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -1711,7 +1711,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGCONVERSATION_INS: {
-        query: "SELECT * FROM ufn_billingconversation_ins($year, $month, $countrycode, $id, $companystartfee, $clientstartfee, $vcacomission, $freeconversations, $description, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_billingconversation_ins($id, $year, $month, $countrycode, $vcacomission, $description, $status, $type, $plancurrency, $businessutilityfee, $businessauthenticationfee, $businessmarketingfee, $usergeneralfee, $freequantity, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
