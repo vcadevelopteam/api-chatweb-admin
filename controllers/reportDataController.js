@@ -37,7 +37,7 @@ exports.drawReport = async (req, res) => {
         
         const filtersBD = JSON.parse(filterjson);
 
-        const allFilters = filtersBD.every(x => filters.find(y => y.columnname === x.columnname));
+        const allFilters = filtersBD.every(x => filters.find(y => y.columnname === x.columnname) || x.type_filter === "unique_value");
 
         if (!allFilters) {
             throw new Error("Filters are necessary.")

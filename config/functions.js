@@ -1004,7 +1004,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORTTEMPLATE_SEL: {
-        query: "SELECT * FROM ufn_reporttemplate_sel($corpid, $orgid, $reporttemplateid, $username, $all)",
+        query: "SELECT * FROM ufn_reporttemplate_sel($corpid, $orgid, $reporttemplateid, $username, $all, $userid)",
         module: "",
         protected: "SELECT"
     },
