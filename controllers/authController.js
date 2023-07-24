@@ -150,6 +150,13 @@ exports.authenticate = async (req, res) => {
         if (user.status === 'ACTIVO') {
             logger.info(`auth success: ${usr}`);
 
+            if (origin === "MOVIL") {
+                const resLastToken = await executesimpletransaction("UFN_GET_TOKEN_LOGGED_MOVIL", { userid: user.userid });
+                if (resLastToken.length > 0) {
+                    exitFromAllGroup1(resLastToken[0].token)
+                }
+            }
+
             const resConnection = await executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...user, ...prevdata, propertyname: 'CONEXIONAUTOMATICAINBOX' })
 
             const automaticConnection = validateResProperty(resConnection, 'bool');
