@@ -51,8 +51,6 @@ const insertMassive = async (table, rows, dt, columns, lastdate) => {
             )
             : { inserts: rows, updates: [] };
 
-        logger.child({ _requestid }).debug(`${tablename} insert: ${data.inserts.length} update: ${data.updates.length}`)
-
         if (data.inserts.length > 0) {
             if (tablename === "conversation") {
                 data.inserts = data.inserts.map(x => ({
@@ -130,8 +128,6 @@ exports.incremental = async (req, res) => {
         }
         logbackupid = infoSelect[0].logbackupid;
 
-        logger.child({ ctx: infoSelect[0].logbackupid, _requestid }).debug(`Run backup incremental`)
-
         const { lastconsulteddate: lastdate, nextconsulteddate: todate } = infoSelect[0];
 
         if (tablesToBackup.length === 0) {
@@ -189,14 +185,13 @@ exports.incremental = async (req, res) => {
         }
 
         await client.query(`select * FROM ufn_logbackup_upd($1, $2, $3, $4)`, [logbackupid, "", tables_success.join(","), "EXITO"])
-        logger.child({ ctx: infoSelect[0].logbackupid, _requestid }).debug(`Finish backup incremental successfully`)
 
         client.release();
         clientBackup.release();
         return res.status(200).json({ success: true, logbackupid });
     } catch (exception) {
         client.query(`select * FROM ufn_logbackup_upd($1, $2, $3, $4)`, [logbackupid, `${exception}`, tables_success.join(","), "ERROR"])
-        logger.child({ ctx: infoSelect?.[0].logbackupid, _requestid: req._requestid }).debug(`Finish backup incremental ERROR`)
+        logger.child({ ctx: infoSelect?.[0].logbackupid, _requestid: req._requestid }).error(`Finish backup incremental ERROR`)
 
         client.release();
         clientBackup.release();
