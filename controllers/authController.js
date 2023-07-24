@@ -6,7 +6,7 @@ const { errors, getErrorCode, cleanPropertyValue } = require('../config/helpers'
 
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { loginGroup } = require('../config/firebase');
+const { loginGroup, exitFromAllGroup1 } = require('../config/firebase');
 
 //type: int|string|bool
 const properties = [
@@ -150,6 +150,13 @@ exports.authenticate = async (req, res) => {
         if (user.status === 'ACTIVO') {
             logger.info(`auth success: ${usr}`);
 
+            if (origin === "MOVIL") {
+                const resLastToken = await executesimpletransaction("UFN_GET_TOKEN_LOGGED_MOVIL", { userid: user.userid });
+                if (resLastToken.length > 0) {
+                    exitFromAllGroup1(resLastToken[0].token)
+                }
+            }
+
             const resConnection = await executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...user, ...prevdata, propertyname: 'CONEXIONAUTOMATICAINBOX' })
 
             const automaticConnection = validateResProperty(resConnection, 'bool');
@@ -276,6 +283,9 @@ exports.getUser = async (req, res) => {
 
 exports.logout = async (req, res) => {
     try {
+        if (origin === "MOVIL") {
+            await exitFromAllGroup1(req.user.token, req._requestid);
+        }
         executesimpletransaction("UFN_USERSTATUS_UPDATE", { _requestid: req._requestid, ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
     } catch (exception) {
         logger.child({ error: { detail: exception.stack, message: exception.toString() } }).error(`Request to ${req.originalUrl}`);

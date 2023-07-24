@@ -39,6 +39,10 @@ const exitFromAllGroup = async (token, _requestid) => {
     }
 }
 
+exports.exitFromAllGroup1 = async (token, _requestid) => {
+    await exitFromAllGroup(token, _requestid)
+}
+
 exports.pushNotification = (datatmp) => {
     try {
         const { data, notification } = datatmp;
@@ -67,19 +71,19 @@ exports.pushNotification = (datatmp) => {
                 .catch(r => {
                     console.log("error catch 1: ", r);
                 }),
-            admin.messaging().send({
-                token,
-                // notification,
-                // apns,
-                data
-            })
-                .then(r => {
-                    console.log('notification 22 send', r);
-                })
-                .catch(r => {
-                    console.log("error catch 2: ", r);
+            // admin.messaging().send({
+            //     token,
+            //     // notification,
+            //     // apns,
+            //     data
+            // })
+            //     .then(r => {
+            //         console.log('notification 22 send', r);
+            //     })
+            //     .catch(r => {
+            //         console.log("error catch 2: ", r);
 
-                })
+            //     })
         ])
     }
     catch (exception) {
