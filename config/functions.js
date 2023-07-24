@@ -3683,6 +3683,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_ORDERHISTORY_SEL: {
+        query: "SELECT * FROM ufn_orderhistory_sel($corpid, $orgid, $orderid, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_METACATALOG_CLEAN: {
         query: "SELECT * FROM ufn_metacatalog_clean($corpid, $orgid, $metabusinessid, $username)",
         module: "",
