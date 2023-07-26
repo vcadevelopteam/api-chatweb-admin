@@ -245,7 +245,7 @@ exports.reassign = async (req, res) => {
             const responseapp = await axiosObservable({
                 url: `${process.env.APP_MOBILE_SOCKET}inbox/ReassignedTicketHub`,
                 method: 'post',
-                data: data,
+                data: { ...data, userid: data.newUserId },
                 _requestid: req._requestid,
             })
 
