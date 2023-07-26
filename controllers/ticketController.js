@@ -155,7 +155,7 @@ exports.close = async (req, res) => {
         if (req.user.origin === "MOVIL") {
             const body = new URLSearchParams({
                 ticketnum: data.ticketnum,
-                lastasesorid: data.p_userid,
+                lastasesorid: data.lastuserid || data.p_userid,
                 corpid: req.user.corpid,
                 orgid: req.user.orgid,
                 statusticket: data.status,
