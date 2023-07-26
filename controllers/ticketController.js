@@ -241,10 +241,10 @@ exports.reassign = async (req, res) => {
             const responseapp = await axiosObservable({
                 url: `${process.env.APP_MOBILE_SOCKET}inbox/ReassignedTicketHub`,
                 method: 'post',
-                data:  data,
+                data: { ...data, userid: data.newUserId },
                 _requestid: req._requestid,
             })
-    
+
             if (!responseapp.data || !(responseapp.data instanceof Object)) {
                 return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
             }
@@ -456,11 +456,11 @@ exports.sendHSM = async (req, res) => {
             axiosObservable({
                 url: `${process.env.APP_MOBILE_SOCKET}inbox/sendMessageFromBotHub`,
                 method: 'post',
-                data:  ticket,
+                data: ticket,
                 _requestid: req._requestid,
             })
         }
-        
+
         return res.json({ success: true });
     }
     catch (exception) {
