@@ -849,7 +849,20 @@ exports.sendHSMcontactos = async (req, res) => {
                             "Name": "1"
                         }
                     ],
-                }
+                },
+                {
+                    "Phone": "51950947002",
+                    "header": saa,
+                    "Firstname": "Jose Vara",
+                    "Lastname": "",
+                    "Parameters": [
+                        {
+                            "Type": "text",
+                            "Text": text,
+                            "Name": "1"
+                        }
+                    ],
+                },
             ],
             "CommunicationChannelId": 3195,
         },
