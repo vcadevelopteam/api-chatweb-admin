@@ -787,6 +787,11 @@ exports.import = async (req, res) => {
 }
 
 exports.sendHSMcontactos = async (req, res) => {
+    const { url } = req.body;
+    const saa = {
+        type:"image",
+        text: url
+    }
     const responseservices = await axiosObservable({
         method: "post",
         url: `${process.env.SERVICES}handler/external/sendhsm`,
@@ -808,6 +813,7 @@ exports.sendHSMcontactos = async (req, res) => {
             "ListMembers": [
                 {
                     "Phone": "51943856850",
+                    "header": saa,
                     "Firstname": "Carlos Farro",
                     "Lastname": "",
                     "Parameters": [
@@ -820,6 +826,7 @@ exports.sendHSMcontactos = async (req, res) => {
                 },
                 {
                     "Phone": "51988024441",
+                    "header": saa,
                     "Firstname": "Edwin Cadillo",
                     "Lastname": "",
                     "Parameters": [
@@ -832,6 +839,7 @@ exports.sendHSMcontactos = async (req, res) => {
                 },
                 {
                     "Phone": "51949145973",
+                    "header": saa,
                     "Firstname": "Alex Arevalo",
                     "Lastname": "",
                     "Parameters": [
