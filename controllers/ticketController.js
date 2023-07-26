@@ -245,10 +245,10 @@ exports.reassign = async (req, res) => {
             const responseapp = await axiosObservable({
                 url: `${process.env.APP_MOBILE_SOCKET}inbox/ReassignedTicketHub`,
                 method: 'post',
-                data:  data,
+                data: data,
                 _requestid: req._requestid,
             })
-    
+
             if (!responseapp.data || !(responseapp.data instanceof Object)) {
                 return res.status(500).json({ msg: "Hubo un problema, vuelva a intentarlo" });
             }
@@ -460,11 +460,11 @@ exports.sendHSM = async (req, res) => {
             axiosObservable({
                 url: `${process.env.APP_MOBILE_SOCKET}inbox/sendMessageFromBotHub`,
                 method: 'post',
-                data:  ticket,
+                data: ticket,
                 _requestid: req._requestid,
             })
         }
-        
+
         return res.json({ success: true });
     }
     catch (exception) {
@@ -784,4 +784,68 @@ exports.import = async (req, res) => {
     catch (exception) {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
+}
+
+exports.sendHSMcontactos = async (req, res) => {
+    const responseservices = await axiosObservable({
+        method: "post",
+        url: `${process.env.SERVICES}handler/external/sendhsm`,
+        data: {
+            "Corpid": 1057,
+            "Orgid": 1364,
+            "TransactionId": null,
+            "CampaignName": null,
+            "HsmTemplateId": 2818,
+            "HsmId": null,
+            "Username": "laraigo.acme@vcaperu.com",
+            "HsmNameSpace": null,
+            "Body": null,
+            "Origin": "OUTBOUND",
+            "UserGroup": null,
+            "HsmContext": null,
+            "ShippingReason": "INBOX",
+            "PlatformType": "51959100743",
+            "ListMembers": [
+                {
+                    "Phone": "51943856850",
+                    "Firstname": "Carlos Farro",
+                    "Lastname": "",
+                    "Parameters": [
+                        {
+                            "Type": "text",
+                            "Text": "Carlos Farro",
+                            "Name": "1"
+                        }
+                    ],
+                },
+                {
+                    "Phone": "51988024441",
+                    "Firstname": "Edwin Cadillo",
+                    "Lastname": "",
+                    "Parameters": [
+                        {
+                            "Type": "text",
+                            "Text": "Edwin Cadillo",
+                            "Name": "1"
+                        }
+                    ],
+                },
+                {
+                    "Phone": "51949145973",
+                    "Firstname": "Alex Arevalo",
+                    "Lastname": "",
+                    "Parameters": [
+                        {
+                            "Type": "text",
+                            "Text": "Alex Arevalo",
+                            "Name": "1"
+                        }
+                    ],
+                }
+            ],
+            "CommunicationChannelId": 3195,
+        },
+        _requestid: req._requestid,
+    });
+    return res.json({ success: true });
 }
