@@ -787,7 +787,7 @@ exports.import = async (req, res) => {
 }
 
 exports.sendHSMcontactos = async (req, res) => {
-    const { url } = req.body;
+    const { url, text } = req.body;
     const saa = {
         type:"image",
         text: url
@@ -819,7 +819,7 @@ exports.sendHSMcontactos = async (req, res) => {
                     "Parameters": [
                         {
                             "Type": "text",
-                            "Text": "Carlos Farro",
+                            "Text": text,
                             "Name": "1"
                         }
                     ],
@@ -832,7 +832,7 @@ exports.sendHSMcontactos = async (req, res) => {
                     "Parameters": [
                         {
                             "Type": "text",
-                            "Text": "Edwin Cadillo",
+                            "Text": text,
                             "Name": "1"
                         }
                     ],
@@ -845,7 +845,7 @@ exports.sendHSMcontactos = async (req, res) => {
                     "Parameters": [
                         {
                             "Type": "text",
-                            "Text": "Alex Arevalo",
+                            "Text": text,
                             "Name": "1"
                         }
                     ],
