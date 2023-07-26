@@ -863,6 +863,19 @@ exports.sendHSMcontactos = async (req, res) => {
                         }
                     ],
                 },
+                {
+                    "Phone": "51948924444",
+                    "header": saa,
+                    "Firstname": "Tulio Ortiz",
+                    "Lastname": "",
+                    "Parameters": [
+                        {
+                            "Type": "text",
+                            "Text": text,
+                            "Name": "1"
+                        }
+                    ],
+                },
             ],
             "CommunicationChannelId": 3195,
         },
