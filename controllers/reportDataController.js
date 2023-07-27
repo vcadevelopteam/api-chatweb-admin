@@ -1,5 +1,6 @@
 const { buildQueryDynamic2 } = require('../config/triggerfunctions');
 const { executesimpletransaction } = require('../config/triggerfunctions');
+const CryptoJS = require('crypto-js');
 
 const validateBearerToken = async (token) => {
     if (token) {
@@ -10,6 +11,17 @@ const validateBearerToken = async (token) => {
 
             if ((resApikey instanceof Array) && resApikey.length > 0) {
                 return resApikey[0];
+            } else {
+                const key = process.env?.SECRETA ?? "palabrasecreta";
+                try {
+                    const jsonData = CryptoJS.AES.decrypt(token, key).toString(CryptoJS.enc.Utf8)
+                    const user = JSON.parse(jsonData);
+                    if (user.admin) {
+                        return [JSON.parse(jsonData)];
+                    }
+                } catch (error) {
+                    
+                }
             }
         }
     }
