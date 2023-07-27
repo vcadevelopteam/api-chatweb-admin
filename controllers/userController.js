@@ -358,6 +358,7 @@ exports.generateToken = async (req, res) => {
         orgid: req.user.orgid,
         corpid: req.user.corpid,
         userid: req.user.userid,
+        admin: req.user.roledesc.includes("SUPERADMIN") ? true: false
     }
     const key = process.env?.SECRETA ?? "palabrasecreta";
     const apikey = CryptoJS.AES.encrypt(JSON.stringify(dataUser), key).toString();
