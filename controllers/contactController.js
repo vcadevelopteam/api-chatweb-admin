@@ -28,17 +28,13 @@ exports.Collection = async (req, res) => {
 }
 
 exports.sendHSMcontactos = async (req, res) => {
-    const { parameters = {}, method } = req.body;
-
-    if (!method_allowed.includes(method)) {
-        const resError = getErrorCode(errors.FORBIDDEN);
-        return res.status(resError.rescode).json(resError);
-    }
+    const { parameters = {} } = req.body;
+    
     const saa = {
         type:"image",
         text: parameters.url
     }
-    const result = await executesimpletransaction(method, parameters);
+    const result = await executesimpletransaction("UFN_LIST_PERSONS_BY_CATEGORY_SEL", parameters);
     const resultLista = await result.json();
     const contactos = resultLista.data;
     
