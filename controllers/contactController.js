@@ -54,8 +54,8 @@ exports.sendHSMcontactos = async (req, res) => {
             "ListMembers": contactos.map(x=>{return {
                        "Phone": x.phone,
                        "header": saa,
-                       "Firstname": x.fullname,
-                       "Lastname": "",
+                       "Firstname": x.firstname,
+                       "Lastname": x.lastname,
                        "Parameters": [
                            {
                                "Type": "text",
