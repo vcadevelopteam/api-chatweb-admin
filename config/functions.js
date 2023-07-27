@@ -2530,6 +2530,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PERSONS_BY_CATEGORY_SEL: {
+        query: "SELECT * FROM ufn_persons_by_category_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LIST_PERSONS_BY_CATEGORY_SEL: {
+        query: "SELECT * FROM ufn_list_persons_by_category_sel($corpid, $orgid, $category)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_INVOICE_IMPORT: {
         query: "SELECT * FROM ufn_invoice_import($corpid, $orgid, $year, $month, $description, $status, $receiverdoctype, $receiverdocnum, $receiverbusinessname, $receiverfiscaladdress, $receivercountry, $receivermail, $invoicetype, $serie, $correlative, $invoicedate, $expirationdate, $invoicestatus, $paymentstatus, $paymentdate, $paidby, $paymenttype, $totalamount, $exchangerate, $currency, $urlcdr, $urlpdf, $urlxml, $purchaseorder, $comments, $credittype, $username)",
         module: "",
@@ -3808,6 +3818,16 @@ module.exports = {
     },
     UFN_RASA_MODEL_INS: {
         query: "SELECT * FROM ufn_rasa_model_ins($corpid, $orgid, $rasaid, $usr)",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_KPI_SUMMARY_BY_MONTH: {
+        query: "SELECT * FROM ufn_dashboard_kpi_summary_by_month($corpid, $orgid, $date, $origin, $usergroup, $supervisorid, $offset, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_KPI_SUMMARY_GRAPH_BY_MONTH: {
+        query: "SELECT * FROM ufn_dashboard_kpi_graph_by_month($corpid, $orgid, $startdate, $enddate, $origin, $usergroup, $supervisorid, $offset, $userid)",
+        module: "",
         protected: "SELECT"
     },
 }
