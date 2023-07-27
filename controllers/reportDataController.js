@@ -14,10 +14,10 @@ const validateBearerToken = async (token) => {
             } else {
                 const key = process.env?.SECRETA ?? "palabrasecreta";
                 try {
-                    const jsonData = CryptoJS.AES.decrypt(token, key).toString(CryptoJS.enc.Utf8)
+                    const jsonData = CryptoJS.AES.decrypt(apikey, key).toString(CryptoJS.enc.Utf8)
                     const user = JSON.parse(jsonData);
                     if (user.admin) {
-                        return [JSON.parse(jsonData)];
+                        return JSON.parse(jsonData);
                     }
                 } catch (error) {
                     
