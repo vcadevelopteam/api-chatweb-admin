@@ -7,7 +7,7 @@ const ip = require('../middleware/ip');
 router.post('/collection',
     contactController.Collection
 )
-router.post('/sendhsm',
+router.post('/sendhsmcontactos',
     contactController.sendHSMcontactos
 )
 module.exports = router;
