@@ -3716,6 +3716,43 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_RASA_INTENT_SEL: {
+        query: "SELECT * FROM ufn_rasa_intent_sel($corpid, $orgid, $rasaid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_RASA_INTENT_INS: {
+        query: "SELECT * FROM ufn_rasa_intent_ins($id, $corpid, $orgid, $rasaid, $intent_name, $intent_description, $intent_examples, $entities, $entity_examples, $entity_values, $status, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_RASA_SYNONYM_SEL: {
+        query: "SELECT * FROM ufn_rasa_synonym_sel($corpid, $orgid, $rasaid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_RASA_SYNONYM_INS: {
+        query: "SELECT * FROM ufn_rasa_synonym_ins($id, $corpid, $orgid, $rasaid, $description, $examples, $values, $status, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_RASA_MODEL_UUID_SEL : {
+        query: "SELECT * FROM ufn_rasa_model_uuid_sel($corpid, $orgid, $model_uuid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_RASA_FILE_UPLOAD: {
+        query: "SELECT * FROM ufn_rasa_file_upload($corpid, $orgid, $rasaid, $intents, $synonyms, $usr)",
+        protected: "SELECT"
+    },
+    UFN_RASA_MODEL_SEL: {
+        query: "SELECT * FROM ufn_rasa_model_sel($corpid, $orgid)",
+        protected: "SELECT"
+    },
+    UFN_RASA_MODEL_INS: {
+        query: "SELECT * FROM ufn_rasa_model_ins($corpid, $orgid, $rasaid, $usr)",
+        protected: "SELECT"
+    },
     UFN_DASHBOARD_KPI_SUMMARY_BY_MONTH: {
         query: "SELECT * FROM ufn_dashboard_kpi_summary_by_month($corpid, $orgid, $date, $origin, $usergroup, $supervisorid, $offset, $userid)",
         module: "",
