@@ -28,44 +28,47 @@ exports.Collection = async (req, res) => {
 }
 
 exports.sendHSMcontactos = async (req, res) => {
-    const { parameters = {} } = req.body;
-    
-    const saa = {
-        type:"image",
-        text: parameters.url
+    try{
+        const { parameters = {} } = req.body;
+        
+        const saa = {
+            type:"image",
+            text: parameters.url
+        }
+        const result = await executesimpletransaction("UFN_LIST_PERSONS_BY_CATEGORY_SEL", parameters);
+        const contactos = result;
+        
+        const responseservices = await axiosObservable({
+            method: "post",
+            url: `${process.env.SERVICES}handler/external/sendhsm`,
+            data: {
+                "Corpid": parameters.corpid,
+                "Orgid": parameters.orgid,
+                "TransactionId": null,
+                "CampaignName": null,
+                "HsmTemplateId": parameters.HsmTemplateId,
+                "Username": "laraigo.acme@vcaperu.com",
+                "Origin": "OUTBOUND",
+                "CommunicationChannelId": parameters.CommunicationChannelId,
+                "ShippingReason": "INBOX",
+                "ListMembers": contactos.map(x=>{return {
+                           "Phone": x.phone,
+                           "header": saa,
+                           "Firstname": x.firstname,
+                           "Lastname": x.lastname,
+                           "Parameters": [
+                               {
+                                   "Type": "text",
+                                   "Text": parameters.text,
+                                   "Name": "1"
+                               }
+                           ],
+                       }})
+            },
+            //_requestid: req._requestid,
+        });
+        return res.json({ error: false, success: true });
+    }catch(e){
+        return res.json({ error: true, success: false });
     }
-    const result = await executesimpletransaction("UFN_LIST_PERSONS_BY_CATEGORY_SEL", parameters);
-    const resultLista = await result.json();
-    const contactos = resultLista.data;
-    
-    const responseservices = await axiosObservable({
-        method: "post",
-        url: `${process.env.SERVICES}handler/external/sendhsm`,
-        data: {
-            "Corpid": parameters.corpid,
-            "Orgid": parameters.orgid,
-            "TransactionId": null,
-            "CampaignName": null,
-            "HsmTemplateId": parameters.HsmTemplateId,
-            "Username": "laraigo.acme@vcaperu.com",
-            "Origin": "OUTBOUND",
-            "CommunicationChannelId": parameters.CommunicationChannelId,
-            "ShippingReason": "INBOX",
-            "ListMembers": contactos.map(x=>{return {
-                       "Phone": x.phone,
-                       "header": saa,
-                       "Firstname": x.firstname,
-                       "Lastname": x.lastname,
-                       "Parameters": [
-                           {
-                               "Type": "text",
-                               "Text": text,
-                               "Name": "1"
-                           }
-                       ],
-                   }})
-        },
-        //_requestid: req._requestid,
-    });
-    return responseservices.json({ success: true });
 }
