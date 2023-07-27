@@ -20,7 +20,7 @@ const validateBearerToken = async (token) => {
                         return JSON.parse(jsonData);
                     }
                 } catch (error) {
-                    
+
                 }
             }
         }
@@ -46,7 +46,7 @@ exports.drawReport = async (req, res) => {
             throw new Error("The report name not exists.")
         }
         const { columnjson, filterjson, summaryjson } = dataReport[0];
-        
+
         const filtersBD = JSON.parse(filterjson);
 
         const allFilters = filtersBD.every(x => filters.find(y => y.columnname === x.columnname) || x.type_filter === "unique_value");
@@ -61,8 +61,8 @@ exports.drawReport = async (req, res) => {
             filter.start = filterFound.start;
             filter.end = filterFound.end;
         }
-        
-        const result = await buildQueryDynamic2(JSON.parse(columnjson), filters, params, JSON.parse(summaryjson));
+
+        const result = await buildQueryDynamic2(JSON.parse(columnjson), filtersBD, { ...params, offset: -5.0 }, JSON.parse(summaryjson));
         if (!result.error)
             return res.json(result);
         else
