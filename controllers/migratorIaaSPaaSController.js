@@ -1016,12 +1016,6 @@ const queryBilling = {
         update: 'changedate',
         insert: 'id',
     },
-    billingnotification: {
-        id: 'billingnotificationid',
-        sequence: 'billingnotificationseq',
-        update: 'changedate',
-        insert: 'id',
-    },
     billingperiod: {
         update: 'lastupdate',
         xupd: 'xupd.corpid = dt.corpid AND xupd.orgid = dt.orgid AND xupd.year = dt.year AND xupd.month = dt.month',
