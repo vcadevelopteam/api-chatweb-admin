@@ -16,6 +16,30 @@ exports.Location = async (req, res) => {
     res.json({ success: true });
 }
 
+exports.ContinueFlow = async (req, res) => {
+    const { key, variables } = req.body;
+
+    if (key && key.split("-").length === 4) {
+        const [corpid, orgid, conversationid, personid] = key.split("-");
+        axiosObservable({
+            url: `${process.env.SERVICES}handler/continueflow`,
+            data: {
+                corpid, 
+                orgid, 
+                conversationid, 
+                personid,
+                variables
+            },
+            method: "POST",
+            _requestid: req._requestid,
+        });
+
+        return res.json({ success: true });
+    } else {
+        return res.status(400).json({ error: true, message: "key is obligatory" });
+    }
+}
+
 exports.TriggerBlock = async (req, res) => {
     const parameters = req.body;
 
@@ -108,7 +132,7 @@ exports.TestRequest = async (req, res) => {
                     result = await axios.patch(url, postformat.toLowerCase() === 'json' ? JSON.parse(body) : body, { ...setConfig(authorization, headersjson) });
                 }
             }
-        } 
+        }
         else {
             result = await axios.get(url, { ...setConfig(authorization, headersjson) });
         }
