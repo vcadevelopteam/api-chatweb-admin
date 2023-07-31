@@ -69,9 +69,9 @@ const insertMassive = async (table, rows, dt, columns, lastdate) => {
                 AS dt (${dt})
                 WHERE NOT EXISTS(SELECT 1 FROM "${tablename}" xins WHERE ${where})`.replace('\n', ' ');
             
-            if (tablename === "conversation") {
-                console.log("conversation", JSON.stringify(data.inserts.map(x => `${x.orgid}|${x.ticketnum}`)))
-            }
+            // if (tablename === "conversation") {
+            //     console.log("conversation", JSON.stringify(data.inserts.map(x => `${x.orgid}|${x.ticketnum}`)))
+            // }
             await clientBackup.query(query, [JSON.stringify(data.inserts)]);
         }
         if (data.updates.length > 0) {
