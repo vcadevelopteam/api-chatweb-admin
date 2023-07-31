@@ -2540,6 +2540,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PERSONS_FREQUENT_SEL: {
+        query: "SELECT * FROM ufn_persons_frequent_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LIST_PERSONS_FREQUENT_SEL: {
+        query: "SELECT * FROM ufn_list_persons_frequent_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_INVOICE_IMPORT: {
         query: "SELECT * FROM ufn_invoice_import($corpid, $orgid, $year, $month, $description, $status, $receiverdoctype, $receiverdocnum, $receiverbusinessname, $receiverfiscaladdress, $receivercountry, $receivermail, $invoicetype, $serie, $correlative, $invoicedate, $expirationdate, $invoicestatus, $paymentstatus, $paymentdate, $paidby, $paymenttype, $totalamount, $exchangerate, $currency, $urlcdr, $urlpdf, $urlxml, $purchaseorder, $comments, $credittype, $username)",
         module: "",
