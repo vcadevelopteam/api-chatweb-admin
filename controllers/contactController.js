@@ -4,6 +4,8 @@ const { getErrorCode, errors, axiosObservable } = require('../config/helpers');
 const method_allowed = [
     "UFN_PERSONS_BY_CATEGORY_SEL",
     "UFN_LIST_PERSONS_BY_CATEGORY_SEL",
+    "UFN_PERSONS_FREQUENT_SEL",
+    "UFN_LIST_PERSONS_FREQUENT_SEL"
 ]
 
 const laraigoEndpoint = process.env.LARAIGO;
