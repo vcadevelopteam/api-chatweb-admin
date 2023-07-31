@@ -3830,4 +3830,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CONVERSATION_SEL_ANALYTICS_V2: {
+        query: "SELECT * FROM ufn_conversation_sel_analytics_v2($conversationid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
