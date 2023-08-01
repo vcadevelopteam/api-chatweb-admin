@@ -61,6 +61,10 @@ exports.reply = async (req, res) => {
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
 
         if (!responseservices.data.Success) {
+            console.log("responseservices.data.Msg", responseservices.data.Msg)
+            if (responseservices.data.Msg === "ISNT-ERROR-TICKET_DOESN'T_BELONG_TO_THE_USER.") {
+                return res.status(400).json(getErrorCode("TICKET_DOESNT_BELONG_TO_THE_USER"));
+            }
             return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
         }
 

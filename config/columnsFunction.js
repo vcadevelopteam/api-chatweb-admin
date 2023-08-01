@@ -1177,6 +1177,10 @@ module.exports = {
             column: "p.productcatalogid",
             type: "number"
         },
+        unitmeasurement: {
+            column: "p.unitmeasurement",
+            type: "number"
+        },
         productid: {
             column: "p.productid"
         },
@@ -1188,6 +1192,9 @@ module.exports = {
         },
         description: {
             column: "p.description"
+        },
+        quantity: {
+            column: "p.quantity"
         },
         descriptionshort: {
             column: "p.descriptionshort"
@@ -1507,6 +1514,44 @@ module.exports = {
         },
         compliance_resolution: {
             column: "case when ld.resolution_date <= ld.resolution_deadline then 'CUMPLE' else 'NO CUMPLE' end"
+        },
+    },
+    servicedesk:{
+        sd_request: {
+            column: "ld.sd_request"
+        },
+        communicationchannel: {
+            column: "chn.description",
+        },
+        changedate: {
+            column: "ld.changedate"
+        },
+        type: {
+            column: "ld.type"
+        },
+        leadgroups: {
+            column: "ld.leadgroups"
+        },
+        column_description: {
+            column: "col.description"
+        },
+        description: {
+            column: "ld.description"
+        },
+        ticketnum: {
+            column: "ld.ticketnum"
+        },
+        displayname: {
+            column: "COALESCE(NULLIF(pcc.displayname, ''), TRIM(CONCAT(pe.firstname, ' ', pe.lastname)))"
+        },
+        tags: {
+            column: "ld.tags"
+        },
+        priority: {
+            column: "ld.priority"
+        },
+        company: {
+            column: "ld.company"
         },
     },
 }

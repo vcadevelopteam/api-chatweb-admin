@@ -486,9 +486,12 @@ module.exports = {
         protected: "SELECT"
     },
     QUERY_ORDER_DETAIL_CARD: {
-        query: `select o2.name, o2.email, o2.phone, o2.orderid, o2.createdate, ol.title producttitle, o2.amount orderamount, o2.currency, ol.quantity, ol.unitprice, ol.productmetaid productid, ol.amount detailamount from (
-            select o.corpid, o.orgid, p.name, p.email, p.phone, o.orderid, o.createdate, o.amount, o.currency from "order" o
+        query: `select o2.name, o2.email, o2.phone, o2.orderid, o2.createdate, ol.title producttitle, o2.amount orderamount, o2.currency, ol.quantity, ol.unitprice, ol.productmetaid productid, ol.amount detailamount, o2.address
+        from (
+            select o.corpid, o.orgid, p.name, p.email, p.phone, o.orderid, o.createdate, o.amount, o.currency, c.variablecontextsimple->>'address' address
+            from "order" o
             join person p on p.corpid = o.corpid and p.orgid = o.orgid and p.personid = o.personid
+            join conversation c on c.corpid = o.corpid and c.orgid = o.orgid and c.conversationid = o.conversationid
             where o.corpid = $corpid and o.orgid = $orgid and o.personid = $personid and o.status = 'ACTIVO'
             order by orderid desc
             limit $limit
@@ -1398,7 +1401,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_SD_SEL: {
-        query: "select * from ufn_lead_sd_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $tags, $supervisorid, $all, $company, $groups, $companyuser)",
+        query: "select * from ufn_lead_sd_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $tags, $supervisorid, $all, $company, $groups, $startdate, $enddate, $offset, $companyuser)",
         module: "",
         protected: "SELECT"
     },
@@ -1533,12 +1536,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEADGRID_SD_SEL: {
-        query: "SELECT * FROM ufn_leadgrid_sd_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $fullname, $leadproduct, $tags, $supervisorid, $company, $groups, $offset, $companyuser)",
+        query: "SELECT * FROM ufn_leadgrid_sd_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $fullname, $leadproduct, $tags, $description, $supervisorid, $company, $groups, $offset, $phase, $companyuser)",
         module: "",
         protected: "SELECT"
     },
     UFN_LEADGRID_SD_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_leadgrid_sd_totalrecords($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $fullname, $leadproduct, $tags, $supervisorid, $company, $groups, $offset, $companyuser)",
+        query: "SELECT * FROM ufn_leadgrid_sd_totalrecords($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $fullname, $leadproduct,  $tags,$description, $supervisorid, $company, $groups, $offset, $phase, $companyuser)",
         module: "",
         protected: "SELECT"
     },
@@ -2233,7 +2236,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PRODUCTCATALOG_INS: {
-        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $metacatalogid, $id, $productid, $retailerid, $title, $description, $descriptionshort, $availability, $category, $condition, $currency, $price, $saleprice, $link, $imagelink, $additionalimagelink, $brand, $color, $gender, $material, $pattern, $size, $datestart, $datelaunch, $dateexpiration, $labels, $customlabel0, $customlabel1, $customlabel2, $customlabel3, $customlabel4, $customnumber0, $customnumber1, $customnumber2, $customnumber3, $customnumber4, $standardfeatures0, $reviewstatus, $reviewdescription, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_productcatalog_ins($corpid, $orgid, $metacatalogid, $id, $productid, $retailerid, $title, $description, $descriptionshort, $availability, $category, $condition, $currency, $price, $saleprice, $link, $imagelink, $additionalimagelink, $brand, $color, $gender, $material, $pattern, $size, $datestart, $datelaunch, $dateexpiration, $labels, $customlabel0, $customlabel1, $customlabel2, $customlabel3, $customlabel4, $customnumber0, $customnumber1, $customnumber2, $customnumber3, $customnumber4, $standardfeatures0, $reviewstatus, $reviewdescription, $status, $type, $username, $operation, $unitmeasurement, $quantity)",
         module: "",
         protected: "INSERT"
     },
@@ -2288,7 +2291,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEADAUTOMATIZATIONRULES_INS: {
-        query: "SELECT * FROM ufn_leadautomatizationrules_ins($corpid,$orgid,$id,$description,$status,$type,$columnid,$communicationchannelid,$messagetemplateid,$messagetemplateparameters,$shippingtype,$xdays,$schedule,$tags,$products,$username,$operation)",
+        query: "SELECT * FROM ufn_leadautomatizationrules_ins($corpid,$orgid,$id,$description,$status,$type,$order,$orderstatus ,$columnid,$communicationchannelid,$messagetemplateid,$messagetemplateparameters,$shippingtype,$xdays,$schedule,$tags,$products,$username,$operation)",
         module: "",
         protected: "INSERT"
     },
@@ -3674,7 +3677,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORDER_SEL: {
-        query: "SELECT * FROM ufn_order_sel($corpid, $orgid)",
+        query: "SELECT * FROM ufn_order_sel($corpid, $orgid, $product, $category, $type)",
         module: "",
         protected: "SELECT"
     },
@@ -3710,6 +3713,53 @@ module.exports = {
     },
     UFN_DASHBOARD_KPI_SUMMARY_GRAPH_SEL: {
         query: "SELECT * FROM ufn_dashboard_kpi_graph_sel($corpid, $orgid, $date, $origin, $usergroup, $supervisorid, $offset, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_RASA_INTENT_SEL: {
+        query: "SELECT * FROM ufn_rasa_intent_sel($corpid, $orgid, $rasaid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_RASA_INTENT_INS: {
+        query: "SELECT * FROM ufn_rasa_intent_ins($id, $corpid, $orgid, $rasaid, $intent_name, $intent_description, $intent_examples, $entities, $entity_examples, $entity_values, $status, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_RASA_SYNONYM_SEL: {
+        query: "SELECT * FROM ufn_rasa_synonym_sel($corpid, $orgid, $rasaid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_RASA_SYNONYM_INS: {
+        query: "SELECT * FROM ufn_rasa_synonym_ins($id, $corpid, $orgid, $rasaid, $description, $examples, $values, $status, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_RASA_MODEL_UUID_SEL : {
+        query: "SELECT * FROM ufn_rasa_model_uuid_sel($corpid, $orgid, $model_uuid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_RASA_FILE_UPLOAD: {
+        query: "SELECT * FROM ufn_rasa_file_upload($corpid, $orgid, $rasaid, $intents, $synonyms, $usr)",
+        protected: "SELECT"
+    },
+    UFN_RASA_MODEL_SEL: {
+        query: "SELECT * FROM ufn_rasa_model_sel($corpid, $orgid)",
+        protected: "SELECT"
+    },
+    UFN_RASA_MODEL_INS: {
+        query: "SELECT * FROM ufn_rasa_model_ins($corpid, $orgid, $rasaid, $usr)",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_KPI_SUMMARY_BY_MONTH: {
+        query: "SELECT * FROM ufn_dashboard_kpi_summary_by_month($corpid, $orgid, $date, $origin, $usergroup, $supervisorid, $offset, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DASHBOARD_KPI_SUMMARY_GRAPH_BY_MONTH: {
+        query: "SELECT * FROM ufn_dashboard_kpi_graph_by_month($corpid, $orgid, $startdate, $enddate, $origin, $usergroup, $supervisorid, $offset, $userid)",
         module: "",
         protected: "SELECT"
     },

@@ -160,7 +160,6 @@ exports.changeOrganization = async (req, res) => {
         }
 
         const ff = await executesimpletransaction(method, data);
-        console.log("changeorganizaiton", ff)
 
         const dataSesion = {
             ...req.user,

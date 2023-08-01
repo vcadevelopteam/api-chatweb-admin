@@ -372,7 +372,7 @@ exports.axiosObservable = async ({ method = "post", url, data = undefined, heade
 
                 profiler.done(errorLog);
 
-                throw new Error({ ...error, notLog: true })
+                throw ({ ...new Error(error), ...error, notLog: true });
             } else {
                 if (retry !== 0) {
                     retry = retry - 1;
@@ -384,7 +384,7 @@ exports.axiosObservable = async ({ method = "post", url, data = undefined, heade
 
                 profiler.done(errorLog);
 
-                throw new Error({ ...error, notLog: true })
+                throw ({ ...new Error(error), ...error, notLog: true });
             }
         }
         break;
@@ -398,7 +398,7 @@ exports.getErrorSeq = (err, profiler, method, _requestid = "") => {
     const messageerror = err.toString().replace("SequelizeDatabaseError: ", "");
     const errorcode = messageerror.includes("Named bind parameter") ? "PARAMETER_IS_MISSING" : err?.parent?.code;
     if (errorcode !== "P0001") {
-        profiler && profiler.done({ _requestid, message: `Executed ${method}`, level: "error", error: { message: messageerror, code: errorcode, detail: err } });
+        profiler && profiler.done({ _requestid, message: `Executed ${method}`, level: "error", err: { message: messageerror, code: errorcode, detail: err } });
     }
 
     const codeError = (errorcode === 'P0001') ? messageerror : errorcode;

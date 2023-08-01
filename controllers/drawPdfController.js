@@ -48,11 +48,16 @@ exports.drawCardOrder = async (req, res) => {
     const { reportname, parameters } = req.body;
 
     const result = await executesimpletransaction("QUERY_ORDER_DETAIL_CARD", parameters);
-
     if (result instanceof Array) {
         if (result.length === 0) {
             return res.json({ error: false, success: true, url: "", code: "WITHOUT-ORDERS" });
         } else {
+            let date = new Date();
+            date.setHours(date.getHours() - 5);
+
+            let orderidentifier = result[0].orderid;
+            let currentdate = `${date.getDate()}`.padStart(2, '0') + '.' + `${date.getMonth() + 1}`.padStart(2, '0') + '.' + `${date.getFullYear()}`.substring(2);
+
             const ff = result.reduce((acc, item) => ({
                 ...acc,
                 [`item${item.orderid}`]: {
@@ -63,6 +68,7 @@ exports.drawCardOrder = async (req, res) => {
                     unitprice: undefined,
                     detailamount: undefined,
                     orderid: `${item.orderid}`.padStart(2, "7"),
+                    urllogo: item.urllogo ?? "https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/voz-dev/a5692d43-ab61-4cce-9fb3-18930b3290f5/urllogo.PNG",
                     createdate: new Date(item.createdate).toLocaleString("es-PE"),
                     orderamount: `${item.currency} ${formatDecimals(item.orderamount.toFixed(2))}`,
                     detail: [
@@ -91,8 +97,8 @@ exports.drawCardOrder = async (req, res) => {
                             logger.child({ _requestid: req._requestid, error: { detail: error1.stack, message: error1.message } }).error(`Request to ${req.originalUrl}: ${error1.message}`);
                             return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
                         }
-                        const rr = await uploadBufferToCos(req._requestid, buffer, "application/x-pdf", `${reportname}.pdf`);
-                        return res.json({ error: false, success: true, url: rr.url });
+                        const rr = await uploadBufferToCos(req._requestid, buffer, "application/x-pdf", `${(reportname === 'lastorders' ? `orden-${currentdate}.${orderidentifier}` : reportname)}.pdf`);
+                        return res.json({ error: false, success: true, url: rr.url, result });
                     })
                 }
             });
