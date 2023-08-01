@@ -151,6 +151,7 @@ exports.authenticate = async (req, res) => {
             logger.info(`auth success: ${usr}`);
 
             if (origin === "MOVIL") {
+                exitFromAllGroup1(token);
                 const resLastToken = await executesimpletransaction("UFN_GET_TOKEN_LOGGED_MOVIL", { userid: user.userid });
                 if (resLastToken.length > 0) {
                     exitFromAllGroup1(resLastToken[0].token)
