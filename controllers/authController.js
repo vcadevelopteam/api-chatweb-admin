@@ -182,7 +182,7 @@ exports.authenticate = async (req, res) => {
             user.origin = origin;
             delete user.pwd;
 
-            if (origin === "MOVIL" && /(supervisor|administrador)/gi.test(roledesc)) {
+            if (origin === "MOVIL" && /(supervisor|administrador)/gi.test(user.roledesc)) {
                 await loginGroup(token, user.orgid, user.userid, req._requestid);
             }
 
