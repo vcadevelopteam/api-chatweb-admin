@@ -358,7 +358,9 @@ const singleYamlBuilder = async (data, origin, synonym_data = null) => {
 
                     if (synonym_data) {
                         const entityText = texto.match(/\[(.*?)\]/);
-                        const entitySynonym = synonym_data.find((synonym) => synonym.description.toLowerCase() === entityText[1].toLowerCase());
+                        const entitySynonym = synonym_data.find(
+                            (synonym) => synonym.description.toLowerCase() === entityText[1].toLowerCase()
+                        );
                         if (entitySynonym) {
                             entitySynonym.values.split(",").forEach((value) => {
                                 const newTextIntent = texto.replace(/\[(.*?)\]/g, `[${value}]`);
@@ -455,8 +457,7 @@ function intentYamlToJson(yamlIntent) {
             while (i < lines.length && lines[i + 1] && !lines[i + 1].startsWith("  - ")) {
                 i++;
             }
-            const examplesEnd = i;
-
+            const examplesEnd = i - 1;
             for (let j = examplesStart; j <= examplesEnd; j++) {
                 const example = lines[j].split("-")[1].trim();
                 if (example.includes("[")) {
@@ -513,7 +514,6 @@ function synonymYamlToJson(yamlSynonym) {
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
-        console.log("line", line);
 
         if (line.startsWith("- synonym:")) {
             if (currentSynonym) {
@@ -531,7 +531,7 @@ function synonymYamlToJson(yamlSynonym) {
             while (i < lines.length && lines[i + 1] && !lines[i + 1].startsWith("  - ")) {
                 i++;
             }
-            const examplesEnd = i;
+            const examplesEnd = i - 1;
 
             for (let j = examplesStart; j <= examplesEnd; j++) {
                 const example = lines[j].split("-")[1].trim();

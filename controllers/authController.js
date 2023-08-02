@@ -151,6 +151,7 @@ exports.authenticate = async (req, res) => {
             logger.info(`auth success: ${usr}`);
 
             if (origin === "MOVIL") {
+                await exitFromAllGroup1(token)
                 const resLastToken = await executesimpletransaction("UFN_GET_TOKEN_LOGGED_MOVIL", { userid: user.userid });
                 if (resLastToken.length > 0) {
                     exitFromAllGroup1(resLastToken[0].token)
@@ -182,7 +183,7 @@ exports.authenticate = async (req, res) => {
             user.origin = origin;
             delete user.pwd;
 
-            if (origin === "MOVIL") {
+            if (origin === "MOVIL" && /(supervisor|administrador)/gi.test(user.roledesc)) {
                 await loginGroup(token, user.orgid, user.userid, req._requestid);
             }
 
