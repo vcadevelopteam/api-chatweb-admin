@@ -283,6 +283,13 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
 
         let JOINNERS = Array.from(new Set(ALLCOLUMNS.filter(x => !!x.join_alias).map(x => x.join_alias))).reduce((acc, join_alias) => {
             const { join_table, join_on } = ALLCOLUMNS.find(x => x.join_alias === join_alias);
+
+            if (join_alias === "hsmcampaign") {
+                return acc +
+                    `\nLEFT JOIN hsmhistory hsmhistory ON hsmhistory.corpid = conversation.corpid AND hsmhistory.orgid = conversation.orgid AND hsmhistory.conversationid = conversation.conversationid
+                \nLEFT JOIN campaignhistory campaignhistory ON campaignhistory.corpid = conversation.corpid AND campaignhistory.orgid = conversation.orgid AND campaignhistory.conversationid = conversation.conversationid`;
+            }
+
             return acc + `\nLEFT JOIN ${join_table} ${join_alias} ${join_on}`;
         }, "");
 
@@ -302,13 +309,9 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
 
             if (item.type === "interval") {
                 selcol = `cast(EXTRACT(epoch FROM ${item.columnname}) as integer)`;
-            } else if (item.columnname === "hsmhistory.success") {
-                selcol = `CASE WHEN hsmhistory.success = true AND conversation.personlastreplydate IS NOT NULL THEN 'attended' 
-                    WHEN hsmhistory.success = true THEN 'sent' 
-                    ELSE 'not sent' END`;
-            } else if (item.columnname === "campaignhistory.success") {
-                selcol = `CASE WHEN campaignhistory.success = true AND conversation.personlastreplydate IS NOT NULL THEN 'attended' 
-                    WHEN campaignhistory.success = true THEN 'sent' 
+            } else if (item.columnname === "hsmcampaign.success") {
+                selcol = `CASE WHEN (hsmhistory.success = true OR campaignhistory.success = true) AND conversation.personlastreplydate IS NOT NULL THEN 'attended' 
+                    WHEN (hsmhistory.success = true OR campaignhistory.success = true) THEN 'sent' 
                     ELSE 'not sent' END`;
             } else if (item.type === "variable") {
                 selcol = `conversation.variablecontextsimple->>'${item.columnname}'`;
