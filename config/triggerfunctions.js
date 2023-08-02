@@ -303,7 +303,13 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             if (item.type === "interval") {
                 selcol = `cast(EXTRACT(epoch FROM ${item.columnname}) as integer)`;
             } else if (item.columnname === "hsmhistory.success") {
-                selcol = `CASE WHEN hsmhistory.success = true AND conversation.personlastreplydate IS NOT NULL THEN 'attended' WHEN hsmhistory.success = true THEN 'sent' ELSE 'not sent' END`;
+                selcol = `CASE WHEN hsmhistory.success = true AND conversation.personlastreplydate IS NOT NULL THEN 'attended' 
+                    WHEN hsmhistory.success = true THEN 'sent' 
+                    ELSE 'not sent' END`;
+            } else if (item.columnname === "campaignhistory.success") {
+                selcol = `CASE WHEN campaignhistory.success = true AND conversation.personlastreplydate IS NOT NULL THEN 'attended' 
+                    WHEN campaignhistory.success = true THEN 'sent' 
+                    ELSE 'not sent' END`;
             } else if (item.type === "variable") {
                 selcol = `conversation.variablecontextsimple->>'${item.columnname}'`;
             } else if (DATES.includes(item.type) && fromExport) {
