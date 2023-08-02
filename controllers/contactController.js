@@ -5,7 +5,9 @@ const method_allowed = [
     "UFN_PERSONS_BY_CATEGORY_SEL",
     "UFN_LIST_PERSONS_BY_CATEGORY_SEL",
     "UFN_PERSONS_FREQUENT_SEL",
-    "UFN_LIST_PERSONS_FREQUENT_SEL"
+    "UFN_LIST_PERSONS_FREQUENT_SEL",
+    "UFN_PERSONS_BY_BRAND_SEL",
+    "UFN_LIST_PERSONS_BY_BRAND_SEL"
 ]
 
 const laraigoEndpoint = process.env.LARAIGO;
@@ -37,8 +39,26 @@ exports.sendHSMcontactos = async (req, res) => {
             type:"image",
             text: parameters.url
         }
-        const result = await executesimpletransaction("UFN_LIST_PERSONS_BY_CATEGORY_SEL", parameters);
-        const contactos = result;
+        function combineWithoutDuplicates(list1, list2) {
+            const combinedList = [...list1];
+            
+            list2.forEach((obj2) => {
+                if (!combinedList.some((obj1) => isEqual(obj1, obj2))) {
+                combinedList.push(obj2);
+                }
+            });
+            
+            return combinedList;
+        }
+          
+          // Helper function to check object equality
+        function isEqual(obj1, obj2) {
+            return JSON.stringify(obj1) === JSON.stringify(obj2);
+        }
+
+        const resultCategory = await executesimpletransaction("UFN_LIST_PERSONS_BY_CATEGORY_SEL", parameters);
+        const resultBrand = await executesimpletransaction("UFN_LIST_PERSONS_BY_BRAND_SEL", parameters);
+        const contactos = combineWithoutDuplicates(resultCategory, resultBrand);;
         
         const responseservices = await axiosObservable({
             method: "post",
