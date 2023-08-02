@@ -37,7 +37,7 @@ exports.train = async (req, res) => {
         if (!model_intent.length || model_intent.length <= 1)
             return res
                 .status(400)
-                .json({ message: "El modelo no tiene intenciones validas", error: true, success: false });
+                .json({ message: "Se requiere almenos 2 intenciones para poder entrenar el modelo.", error: true, success: false });
 
         const responseservices = await axiosObservable({
             method: "get",
