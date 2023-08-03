@@ -2481,6 +2481,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_TOTAL_PERSONS_BY_CATEGORY_BRAND_SEL: {
+        query: "SELECT * FROM ufn_total_persons_by_category_brand_sel($corpid, $orgid, $brand, $frequent, $category)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_CALENDARYBOOKING_SEL_DATETIME: {
         query: "SELECT * FROM ufn_calendarbooking_sel_datetime($corpid, $orgid, $calendareventid, $startdate, $enddate, $offset)",
         module: "",
