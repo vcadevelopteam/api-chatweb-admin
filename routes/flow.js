@@ -9,6 +9,10 @@ router.post("/location",
     flowController.Location
 )
 
+router.post("/continueflow",
+    flowController.ContinueFlow
+)
+
 router.post("/shippingcar",
     ip,
     flowController.ShippingCar
