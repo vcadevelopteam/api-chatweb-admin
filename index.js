@@ -15,7 +15,7 @@ app.use(express.urlencoded({
 
 app.use(morganMiddleware);
 
-app.use(cors({
+// app.use(cors({
     // origin: function (origin, callback) {
     //     if (!origin) return callback(null, true);
     //     if (allowedOrigins.indexOf(origin) === -1) {
@@ -25,7 +25,7 @@ app.use(cors({
     //     }
     //     return callback(null, true);
     // }
-}));
+// }));
 
 app.use(express.json({ limit: '100mb' }));//to accept json
 
