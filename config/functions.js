@@ -1725,11 +1725,6 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_BILLINGPERIOD_NEWORG: {
-        query: "SELECT * FROM ufn_billingperiod_neworg($corpid, $orgid, $year, $month, $billingplan, $supportplan)",
-        module: "",
-        protected: "INSERT"
-    },
     UFN_BILLINGPERIOD_NEWMONTH: {
         query: "SELECT * FROM ufn_billingperiod_newmonth($corpid, $orgid, $year, $month)",
         module: "",
@@ -3143,11 +3138,6 @@ module.exports = {
     },
     UFN_ARTIFICIALINTELLIGENCESERVICE_SEL: {
         query: "SELECT * FROM ufn_artificialintelligenceservice_sel($provider, $service)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_BILLINGPERIODARTIFICIALINTELLIGENCE_INS: {
-        query: "SELECT * FROM ufn_billingperiodartificialintelligence_ins($id, $corpid, $orgid, $year, $month, $provider, $measureunit, $charlimit, $plan, $freeinteractions, $basicfee, $additionalfee, $description, $aiquantity, $aicost, $status, $type, $username, $operation)",
         module: "",
         protected: "SELECT"
     },
