@@ -1731,7 +1731,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_BILLINGPERIOD_UPD: {
-        query: "SELECT * FROM ufn_billingperiod_upd($corpid, $orgid, $year, $month, $billingplan, $supportplan, $basicfee, $userfreequantity, $useradditionalfee, $channelfreequantity, $channelwhatsappfee, $channelotherfee, $clientfreequantity, $clientadditionalfee, $supportbasicfee, $unitpricepersms, $vcacomissionpersms, $unitepricepermail, $vcacomissionpermail, $additionalservicename1, $additionalservicefee1, $additionalservicename2, $additionalservicefee2, $additionalservicename3, $additionalservicefee3, $freewhatsappchannel, $freewhatsappconversations, $usercreateoverride, $channelcreateoverride, $vcacomissionperconversation, $vcacomissionperhsm, $minimumsmsquantity, $minimummailquantity, $vcacomissionpervoicechannel, $force)",
+        query: "SELECT * FROM ufn_billingperiod_upd($corpid, $orgid, $year, $month, $billingplan, $billingsupportplan, $billinginvoicecurrency, $billingplancurrency, $billingstartdate, $billingmode, $billingplanfee, $billingsupportfee, $billinginfrastructurefee, $billingexchangerate, $agentcontractedquantity, $agentplancurrency, $agentadditionalfee, $agenttotalfee, $agentaddlimit, $agentmode, $channelothercontractedquantity, $channelotheradditionalfee, $channelwhatsappcontractedquantity, $channelwhatsappadditionalfee, $channelotherquantity, $channelwhatsappquantity, $channeltotalfee, $channelwhatsappfreequantity, $channeladdlimit, $conversationuserplancurrency, $conversationuserserviceadditionalfee, $conversationuserservicevcafee, $conversationusermetacurrency, $conversationuserservicefee, $conversationuserservicetotalfee, $conversationbusinessplancurrency, $conversationbusinessutilityadditionalfee, $conversationbusinessauthenticationadditionalfee, $conversationbusinessmarketingadditionalfee, $conversationbusinessutilityvcafee, $conversationbusinessauthenticationvcafee, $conversationbusinessmarketingvcafee, $conversationbusinessmetacurrency, $conversationbusinessutilitymetafee, $conversationbusinessauthenticationmetafee, $conversationbusinessmarketingmetafee, $conversationbusinessutilitytotalfee, $conversationbusinessauthenticationtotalfee, $conversationbusinessmarketingtotalfee, $conversationplancurrency, $contactcalculatemode, $contactcountmode, $contactuniquelimit, $contactuniquequantity, $contactplancurrency, $contactuniqueadditionalfee, $contactuniquefee, $contactwhatsappquantity, $contactotherquantity, $contactotheradditionalfee, $contactwhatsappadditionalfee, $contactotherfee, $contactwhatsappfee, $contactfee, $messagingplancurrency, $messagingsmsadditionalfee, $messagingsmsvcafee, $messagingsmsquantity, $messagingsmsquantitylimit, $messagingsmstotalfee, $messagingmailadditionalfee, $messagingmailvcafee, $messagingmailquantity, $messagingmailquantitylimit, $messagingmailtotalfee, $voicevcacomission, $consultingplancurrency, $consultinghourtotal, $consultinghourquantity, $consultingcontractedfee, $consultingextrafee, $consultingtotalfee, $consultingprofile, $consultingadditionalfee, $additionalservice01, $additionalservice01fee, $additionalservice02, $additionalservice02fee, $additionalservice03, $additionalservice03fee, $invoiceid, $status, $force)",
         module: "",
         protected: "INSERT"
     },
@@ -1874,21 +1874,6 @@ module.exports = {
     },
     UFN_INTERACTION_INS_MASSIVE: {
         query: "select * from ufn_interaction_ins_massive($corpid, $orgid, $personid, $personcommunicationchannel, $conversationid, $communicationchannelid, $json)",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_INVOICE_CORP: {
-        query: "SELECT * FROM ufn_invoice_corp($corpid, $year, $month, $exchangerate)",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_INVOICE_ORG: {
-        query: "SELECT * FROM ufn_invoice_org($corpid, $orgid, $year, $month, $exchangerate)",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_INVOICEDETAIL_AUTOINS: {
-        query: "SELECT * FROM ufn_invoicedetail_autoins($corpid, $orgid, $invoiceid, $amount, $national, $year, $month)",
         module: "",
         protected: "INSERT"
     },
@@ -2096,7 +2081,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BALANCE_CHECK: {
-        query: "select * from ufn_balance_check($corpid, $orgid, $communicationchannelid, $type, $receiver, $username)",
+        query: "select * from ufn_balance_check($corpid, $orgid, $communicationchannelid, $messagetemplateid, $type, $receiver, $username)",
         module: "",
         protected: "SELECT"
     },
