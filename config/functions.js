@@ -1475,11 +1475,6 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_CURRENCY_SEL: {
-        query: "SELECT code, description FROM currency",
-        module: "",
-        protected: "SELECT"
-    },
     UFN_COUNTRY_SEL: {
         query: "SELECT code, description, currencycode FROM country",
         module: "",
@@ -3740,6 +3735,21 @@ module.exports = {
     },
     UFN_TIMESHEET_USER_SEL: {
         query: "SELECT * FROM ufn_timesheet_user_sel($corpid, $orgid);",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_TIMESHEET_PROFILE_SEL: {
+        query: "SELECT * FROM ufn_timesheet_profile_sel($corpid, $orgid, $startdate);",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CURRENCY_SEL: {
+        query: "SELECT * FROM ufn_currency_sel();",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_TIMESHEET_PERIOD_SEL: {
+        query: "SELECT * FROM ufn_timesheet_period_sel($corpid, $orgid, $year, $month);",
         module: "",
         protected: "SELECT"
     },
