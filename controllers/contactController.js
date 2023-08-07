@@ -8,7 +8,8 @@ const method_allowed = [
     "UFN_LIST_PERSONS_FREQUENT_SEL",
     "UFN_PERSONS_BY_BRAND_SEL",
     "UFN_LIST_PERSONS_BY_BRAND_SEL",
-    "UFN_TOTAL_PERSONS_BY_CATEGORY_BRAND_SEL"
+    "UFN_TOTAL_PERSONS_BY_CATEGORY_BRAND_SEL",
+    "UFN_LIST_PERSONS_BY_ORG_SEL"
 ]
 
 exports.Collection = async (req, res) => {
