@@ -3753,4 +3753,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_BILLING_REPORT_CONSULTING: {
+        query: "SELECT * FROM ufn_billing_report_consulting($corpid, $orgid, $year, $month)",
+        module: "",
+        protected: "SELECT"
+    },
 }
