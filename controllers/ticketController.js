@@ -343,7 +343,7 @@ exports.sendHSM = async (req, res) => {
             }
 
             data.listmembers.forEach(async x => {
-                const resCheck = await executesimpletransaction("UFN_BALANCE_CHECK", { ...data, receiver: x.email, communicationchannelid: 0 })
+                const resCheck = await executesimpletransaction("UFN_BALANCE_CHECK", { ...data, messagetemplateid: data.hsmtemplateid, receiver: x.email, communicationchannelid: 0 })
 
                 let send = false;
                 if (resCheck instanceof Array && resCheck.length > 0) {

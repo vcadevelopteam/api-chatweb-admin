@@ -130,7 +130,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_USER_INS: {
-        query: "SELECT * FROM ufn_user_ins($corpid, $orgid, $id, $usr, $doctype, $docnum, $password, $firstname, $lastname, $email, $pwdchangefirstlogin, $type, $status,$description, $username, $operation, $company, $twofactorauthentication, $registercode, $billinggroup, $image)",
+        query: "SELECT * FROM ufn_user_ins($corpid, $orgid, $id, $usr, $doctype, $docnum, $password, $firstname, $lastname, $email, $pwdchangefirstlogin, $type, $status, $description, $username, $operation, $company, $twofactorauthentication, $registercode, $billinggroup, $image)",
         module: "/extras/users",
         protected: "INSERT"
     },
@@ -200,7 +200,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_WHITELIST_INS: {
-        query: "SELECT * FROM ufn_whitelist_ins($corpid,$orgid,$id,$operation,$phone,$documenttype,$documentnumber,$usergroup,$type,$status,$asesorname,$username)",
+        query: "SELECT * FROM ufn_whitelist_ins($corpid, $orgid, $id, $operation, $phone, $documenttype, $documentnumber, $usergroup, $type, $status, $asesorname, $username)",
         module: "/extras/whitelist",
         protected: "INSERT"
     },
@@ -210,12 +210,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INAPPROPRIATEWORDS_SEL: {
-        query: "SELECT * FROM ufn_inappropriatewords_sel($corpid, $orgid,$id, $username)",
+        query: "SELECT * FROM ufn_inappropriatewords_sel($corpid, $orgid, $id, $username)",
         module: "",
         protected: "SELECT"
     },
     UFN_INAPPROPRIATEWORDS_INS: {
-        query: "SELECT * FROM ufn_inappropriatewords_ins($id,$corpid, $orgid, $description,$status,$type,$username,$classification,$defaultanswer,$operation)",
+        query: "SELECT * FROM ufn_inappropriatewords_ins($id, $corpid, $orgid, $description, $status, $type, $username, $classification, $defaultanswer, $operation)",
         module: "/extras/inappropriatewords",
         protected: "INSERT"
     },
@@ -275,17 +275,17 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INTELLIGENTMODELS_SEL: {
-        query: "SELECT * FROM ufn_intelligentmodels_sel($corpid,$orgid,$username,$id,$all)",
+        query: "SELECT * FROM ufn_intelligentmodels_sel($corpid, $orgid, $username, $id, $all)",
         module: "/extras/intelligentmodels",
         protected: "SELECT"
     },
     UFN_INTELLIGENTMODELS_INS: {
-        query: "SELECT * FROM ufn_intelligentmodels_ins($corpid,$orgid,$id,$operation,$description,$endpoint ,$modelid ,$provider ,$apikey ,$type ,$status ,$username) ",
+        query: "SELECT * FROM ufn_intelligentmodels_ins($corpid, $orgid, $id, $operation, $description, $endpoint , $modelid , $provider , $apikey , $type , $status , $username) ",
         module: "/extras/intelligentmodels",
         protected: "INSERT"
     },
     UFN_SLA_SEL: {
-        query: "SELECT * FROM ufn_sla_sel($corpid ,$orgid ,$id ,$username ,$all)",
+        query: "SELECT * FROM ufn_sla_sel($corpid , $orgid , $id , $username , $all)",
         module: "/extras/sla",
         protected: "SELECT"
     },
@@ -295,7 +295,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_REPORT_SEL: {
-        query: "SELECT * FROM ufn_report_sel($corpid ,$orgid ,$reportname  ,$username ,$all)",
+        query: "SELECT * FROM ufn_report_sel($corpid , $orgid , $reportname  , $username , $all)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -310,147 +310,147 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_INPUTRETRY_SEL: {
-        query: "SELECT * FROM ufn_report_inputretry_sel($corpid ,$orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_inputretry_sel($corpid , $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_INPUTRETRY_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_inputretry_totalrecords($corpid ,$orgid, $where, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_inputretry_totalrecords($corpid , $orgid, $where, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_INPUTRETRY_EXPORT: {
-        query: "SELECT * FROM ufn_report_inputretry_export($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_inputretry_export($corpid , $orgid, $where, $order, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_INPUTRETRY_GRAPHIC: {
-        query: "SELECT * FROM ufn_report_inputretry_graphic($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate, $column, $summarization, $offset)",
+        query: "SELECT * FROM ufn_report_inputretry_graphic($corpid , $orgid, $where, $order, $userid, $startdate, $enddate, $column, $summarization, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_TIPIFICATION_SEL: {
-        query: "SELECT * FROM ufn_report_tipification_sel($corpid ,$orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_tipification_sel($corpid , $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_TIPIFICATION_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_tipification_totalrecords($corpid ,$orgid, $where, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_tipification_totalrecords($corpid , $orgid, $where, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_TIPIFICATION_EXPORT: {
-        query: "SELECT * FROM ufn_report_tipification_export($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_tipification_export($corpid , $orgid, $where, $order, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_TIPIFICATION_GRAPHIC: {
-        query: "SELECT * FROM ufn_report_tipification_graphic($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate, $column, $summarization, $offset)",
+        query: "SELECT * FROM ufn_report_tipification_graphic($corpid , $orgid, $where, $order, $userid, $startdate, $enddate, $column, $summarization, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_INTERACTION_SEL: {
-        query: "SELECT * FROM ufn_report_interaction_sel($corpid ,$orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_interaction_sel($corpid , $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_INTERACTION_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_interaction_totalrecords($corpid ,$orgid, $where, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_interaction_totalrecords($corpid , $orgid, $where, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_INTERACTION_EXPORT: {
-        query: "SELECT * FROM ufn_report_interaction_export($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_interaction_export($corpid , $orgid, $where, $order, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_INTERACTION_GRAPHIC: {
-        query: "SELECT * FROM ufn_report_interaction_graphic($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate, $column, $summarization, $offset)",
+        query: "SELECT * FROM ufn_report_interaction_graphic($corpid , $orgid, $where, $order, $userid, $startdate, $enddate, $column, $summarization, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_PRODUCTIVITY_SEL: {
-        query: "SELECT * FROM ufn_report_productivity_sel($corpid ,$orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_productivity_sel($corpid , $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_PRODUCTIVITY_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_productivity_totalrecords($corpid ,$orgid, $where, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_productivity_totalrecords($corpid , $orgid, $where, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_PRODUCTIVITY_EXPORT: {
-        query: "SELECT * FROM ufn_report_productivity_export($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_productivity_export($corpid , $orgid, $where, $order, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_PRODUCTIVITY_GRAPHIC: {
-        query: "SELECT * FROM ufn_report_productivity_graphic($corpid ,$orgid, $where, $order, $userid, $startdate, $enddate, $column, $summarization, $offset)",
+        query: "SELECT * FROM ufn_report_productivity_graphic($corpid , $orgid, $where, $order, $userid, $startdate, $enddate, $column, $summarization, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_USERPRODUCTIVITYHOURS_SEL: {
-        query: "SELECT * FROM ufn_report_userproductivityhours_sel($corpid ,$orgid, $startdate, $enddate, $channel, $hours, $asesorid, $take, $skip, $where, $order, $userid, $offset)",
+        query: "SELECT * FROM ufn_report_userproductivityhours_sel($corpid , $orgid, $startdate, $enddate, $channel, $hours, $asesorid, $take, $skip, $where, $order, $userid, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_USERPRODUCTIVITYHOURS_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_userproductivityhours_totalrecords($corpid ,$orgid, $startdate, $enddate, $channel, $hours, $asesorid, $where, $userid, $offset)",
+        query: "SELECT * FROM ufn_report_userproductivityhours_totalrecords($corpid , $orgid, $startdate, $enddate, $channel, $hours, $asesorid, $where, $userid, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_USERPRODUCTIVITYHOURS_EXPORT: {
-        query: "SELECT * FROM ufn_report_userproductivityhours_export($corpid ,$orgid, $startdate, $enddate, $channel, $hours, $asesorid, $where, $order, $userid, $offset)",
+        query: "SELECT * FROM ufn_report_userproductivityhours_export($corpid , $orgid, $startdate, $enddate, $channel, $hours, $asesorid, $where, $order, $userid, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_USERPRODUCTIVITYHOURS_GRAPHIC: {
-        query: "SELECT * FROM ufn_report_userproductivityhours_graphic($corpid ,$orgid, $startdate, $enddate, $channel, $hours, $asesorid, $where, $order, $userid, $column, $summarization, $offset)",
+        query: "SELECT * FROM ufn_report_userproductivityhours_graphic($corpid , $orgid, $startdate, $enddate, $channel, $hours, $asesorid, $where, $order, $userid, $column, $summarization, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_USER_ASESORBYORGID_LST: {
-        query: "SELECT * FROM ufn_user_asesorbyorgid_lst($corpid ,$orgid, $userid)",
+        query: "SELECT * FROM ufn_user_asesorbyorgid_lst($corpid , $orgid, $userid)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_USRNOTIFICATION_USRID_SEL: {
-        query: "SELECT * FROM ufn_usrnotification_usrid_sel($corpid ,$orgid, $userid, $usrnotificationid, $all, $username)",
+        query: "SELECT * FROM ufn_usrnotification_usrid_sel($corpid , $orgid, $userid, $usrnotificationid, $all, $username)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_LOGINHISTORY_SEL: {
-        query: "SELECT * FROM ufn_loginhistory_sel($corpid ,$orgid, $take, $skip, $where, $order, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_loginhistory_sel($corpid , $orgid, $take, $skip, $where, $order, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_LOGINHISTORY_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_loginhistory_totalrecords($corpid ,$orgid, $where, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_loginhistory_totalrecords($corpid , $orgid, $where, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_LOGINHISTORY_EXPORT: {
-        query: "SELECT * FROM ufn_loginhistory_export($corpid ,$orgid, $where, $order, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_loginhistory_export($corpid , $orgid, $where, $order, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_LOGINHISTORY_GRAPHIC: {
-        query: "SELECT * FROM ufn_loginhistory_graphic($corpid ,$orgid, $where, $order, $startdate, $enddate, $column, $summarization, $offset)",
+        query: "SELECT * FROM ufn_loginhistory_graphic($corpid , $orgid, $where, $order, $startdate, $enddate, $column, $summarization, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_USERPRODUCTIVITY_SEL: {
-        query: "SELECT * FROM ufn_report_userproductivity_sel($corpid ,$orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $userid, $offset)",
+        query: "SELECT * FROM ufn_report_userproductivity_sel($corpid , $orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $userid, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_USERPRODUCTIVITY_GRAPHIC: {
-        query: "SELECT * FROM ufn_report_userproductivity_graphic($corpid ,$orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $userid, $column, $summarization, $offset)",
+        query: "SELECT * FROM ufn_report_userproductivity_graphic($corpid , $orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $userid, $column, $summarization, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_EMOJI_ALL_SEL: {
-        query: "select * from ufn_emoji_all_sel($corpid ,$orgid ,$userid ,$all);",
+        query: "select * from ufn_emoji_all_sel($corpid , $orgid , $userid , $all);",
         module: "",
         protected: "SELECT"
     },
@@ -490,22 +490,22 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_DOMAIN_SEL: {
-        query: "SELECT * FROM ufn_domain_sel($corpid ,$orgid ,$domainname  ,$username ,$all)",
+        query: "SELECT * FROM ufn_domain_sel($corpid , $orgid , $domainname  , $username , $all)",
         module: "/extras/domains",
         protected: "SELECT"
     },
     UFN_DOMAIN_VALUES_SEL: {
-        query: "SELECT * FROM ufn_domain_values_sel($corpid ,$orgid ,$domainname  ,$username ,$all)",
+        query: "SELECT * FROM ufn_domain_values_sel($corpid , $orgid , $domainname  , $username , $all)",
         module: "/extras/domains",
         protected: "SELECT"
     },
     UFN_DOMAIN_INS: {
-        query: "SELECT * FROM ufn_domain_ins($id ,$corpid ,$orgid ,$domainname, $description, $type, $status  ,$username ,$operation )",
+        query: "SELECT * FROM ufn_domain_ins($id , $corpid , $orgid , $domainname, $description, $type, $status  , $username , $operation )",
         module: "/extras/domains",
         protected: "INSERT"
     },
     UFN_DOMAIN_VALUES_INS: {
-        query: "SELECT * FROM ufn_domain_value_ins($id ,$corpid ,$orgid ,$domainname  ,$description ,$domainvalue ,$domaindesc,$system,$status,$type ,$bydefault,$username,$operation)",
+        query: "SELECT * FROM ufn_domain_value_ins($id , $corpid , $orgid , $domainname  , $description , $domainvalue , $domaindesc, $system, $status, $type , $bydefault, $username, $operation)",
         module: "/extras/domains",
         protected: "INSERT"
     },
@@ -515,7 +515,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_QUICKREPLY_SEL: {
-        query: "SELECT * FROM ufn_quickreply_sel($corpid ,$orgid ,$id  ,$username ,$all)",
+        query: "SELECT * FROM ufn_quickreply_sel($corpid , $orgid , $id  , $username , $all)",
         module: "",
         protected: "SELECT"
     },
@@ -547,7 +547,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_ORG_SEL: {
-        query: "SELECT * FROM ufn_org_sel($corpid ,$orgid ,$all)",
+        query: "SELECT * FROM ufn_org_sel($corpid , $orgid , $all)",
         module: "",
         protected: "SELECT"
     },
@@ -557,12 +557,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORG_INS: {
-        query: "SELECT * FROM ufn_org_ins($corpid,$id,$description,$status,$type,$username,$operation,$email,$password,$port,$host,$default_credentials,$ssl, $private_mail, $currency,$country, $timezoneoffset, $timezone, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $iconbot, $iconadvisor, $iconclient, $credittype, $automaticpayment, $automaticperiod, $automaticinvoice, $voximplantautomaticrecharge, $voximplantrechargerange, $voximplantrechargepercentage, $voximplantrechargefixed, $voximplantadditionalperchannel)",
+        query: "SELECT * FROM ufn_org_ins($corpid, $id, $description, $status, $type, $username, $operation, $email, $password, $port, $host, $default_credentials, $ssl, $private_mail, $currency, $country, $timezoneoffset, $timezone, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $iconbot, $iconadvisor, $iconclient, $credittype, $automaticpayment, $automaticperiod, $automaticinvoice, $voximplantautomaticrecharge, $voximplantrechargerange, $voximplantrechargepercentage, $voximplantrechargefixed, $voximplantadditionalperchannel)",
         module: "",
         protected: "INSERT"
     },
     UFN_QUICKREPLY_INS: {
-        query: "SELECT * FROM ufn_quickreply_ins($corpid,$orgid,$id,$classificationid,$description,$quickreply,$status,$type,$username,$operation,$favorite)",
+        query: "SELECT * FROM ufn_quickreply_ins($corpid, $orgid, $id, $classificationid, $description, $quickreply, $status, $type, $username, $operation, $favorite)",
         module: "",
         protected: "INSERT"
     },
@@ -582,12 +582,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_DOMAIN_LST_VALORES: {
-        query: "SELECT * FROM ufn_domain_lst_valores($corpid,$orgid,$domainname)",
+        query: "SELECT * FROM ufn_domain_lst_valores($corpid, $orgid, $domainname)",
         module: "",
         protected: "SELECT"
     },
     UFN_DOMAIN_LST_VALUES_ONLY_DATA: {
-        query: "SELECT * FROM ufn_domain_lst_values_only_data($corpid,$orgid,$domainname)",
+        query: "SELECT * FROM ufn_domain_lst_values_only_data($corpid, $orgid, $domainname)",
         module: "",
         protected: "SELECT"
     },
@@ -607,12 +607,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_USERTOKEN_SEL: {
-        query: "SELECT * FROM ufn_usertoken_sel($corpid,$orgid,$userid, $token)",
+        query: "SELECT * FROM ufn_usertoken_sel($corpid, $orgid, $userid, $token)",
         module: "",
         protected: "SELECT"
     },
     UFN_CLASSIFICATION_TREE_SEL: {
-        query: "SELECT * FROM ufn_classification_tree_sel($corpid,$orgid,$classificationid,$type)",
+        query: "SELECT * FROM ufn_classification_tree_sel($corpid, $orgid, $classificationid, $type)",
         module: "",
         protected: "SELECT"
     },
@@ -637,12 +637,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CLASSIFICATION_INS: {
-        query: "SELECT * FROM ufn_classification_ins( $id, $corpid, $orgid, $description, $parent, $communicationchannel, $status, $type, $username, $operation, $tags,$title, $jobplan, $usergroup, $schedule, $order, $metacatalogid)",
+        query: "SELECT * FROM ufn_classification_ins( $id, $corpid, $orgid, $description, $parent, $communicationchannel, $status, $type, $username, $operation, $tags, $title, $jobplan, $usergroup, $schedule, $order, $metacatalogid)",
         module: "",
         protected: "INSERT"
     },
     UFN_CLASSIFICATION_LST_PARENT: {
-        query: "SELECT * FROM ufn_classification_lst_parent($corpid,$orgid,$classificationid)",
+        query: "SELECT * FROM ufn_classification_lst_parent($corpid, $orgid, $classificationid)",
         module: "",
         protected: "SELECT"
     },
@@ -702,32 +702,32 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INTEGRATIONMANAGER_SEL: {
-        query: "SELECT * FROM ufn_integrationmanager_sel($corpid,$orgid,$id,$username, $all)",
+        query: "SELECT * FROM ufn_integrationmanager_sel($corpid, $orgid, $id, $username, $all)",
         module: "",
         protected: "SELECT"
     },
     UFN_INTEGRATIONMANAGER_INS: {
-        query: "SELECT * FROM ufn_integrationmanager_ins($corpid,$orgid,$id,$description,$type,$status,$name,$method,$url,$authorization,$headers,$bodytype,$body,$parameters,$variables,$level,$fields,$apikey,$username,$operation,$url_params,$results)",
+        query: "SELECT * FROM ufn_integrationmanager_ins($corpid, $orgid, $id, $description, $type, $status, $name, $method, $url, $authorization, $headers, $bodytype, $body, $parameters, $variables, $level, $fields, $apikey, $username, $operation, $url_params, $results)",
         module: "",
         protected: "INSERT"
     },
     UFN_INTEGRATIONMANAGER_IMPORT: {
-        query: "SELECT * FROM ufn_integrationmanager_importdata($corpid,$orgid,$id,$table)",
+        query: "SELECT * FROM ufn_integrationmanager_importdata($corpid, $orgid, $id, $table)",
         module: "",
         protected: "INSERT"
     },
     UFN_INTEGRATIONMANAGER_EXPORT: {
-        query: "SELECT * FROM ufn_integrationmanager_exportdata($corpid,$orgid,$id)",
+        query: "SELECT * FROM ufn_integrationmanager_exportdata($corpid, $orgid, $id)",
         module: "",
         protected: "INSERT"
     },
     UFN_INTEGRATIONMANAGER_DELETEDATA: {
-        query: "SELECT * FROM ufn_integrationmanager_deletedata($corpid,$orgid,$id)",
+        query: "SELECT * FROM ufn_integrationmanager_deletedata($corpid, $orgid, $id)",
         module: "",
         protected: "INSERT"
     },
     UFN_INTEGRATIONMANAGER_LST: {
-        query: "SELECT * FROM ufn_integrationmanager_lst($corpid,$orgid)",
+        query: "SELECT * FROM ufn_integrationmanager_lst($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
@@ -832,12 +832,12 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_DOMAIN_VALUES_IMPORT: {
-        query: "SELECT * FROM ufn_domain_value_import($corpid,$orgid,$domainname,$description,$domainvalue,$domaindesc,$system,$status,$type,$bydefault,$username)",
+        query: "SELECT * FROM ufn_domain_value_import($corpid, $orgid, $domainname, $description, $domainvalue, $domaindesc, $system, $status, $type, $bydefault, $username)",
         module: "",
         protected: "INSERT"
     },
     UFN_INPUTVALIDATION_IMPORT: {
-        query: "SELECT * FROM ufn_inputvalidation_import($corpid,$description,$inputvalue,$username)",
+        query: "SELECT * FROM ufn_inputvalidation_import($corpid, $description, $inputvalue, $username)",
         module: "",
         protected: "INSERT"
     },
@@ -1103,153 +1103,153 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_SUMMARY_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_summary_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$userid,$offset )",
+        query: "SELECT * FROM ufn_dashboard_gerencial_summary_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $userid, $offset )",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_SUMMARY_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_summary_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$userid,$offset )",
+        query: "SELECT * FROM ufn_dashboard_gerencial_summary_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $userid, $offset )",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_TMO_GENERAL_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_tmo_general_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_gerencial_tmo_general_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $level, $closedby, $min, $max, $target, $skipdown, $skipup, $bd, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_TMO_GENERAL_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_tmo_general_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_gerencial_tmo_general_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $level, $closedby, $min, $max, $target, $skipdown, $skipup, $bd, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_TME_GENERAL_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_tme_general_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_gerencial_tme_general_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $level, $closedby, $min, $max, $target, $skipdown, $skipup, $bd, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_TME_GENERAL_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_tme_general_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_gerencial_tme_general_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $level, $closedby, $min, $max, $target, $skipdown, $skipup, $bd, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_ENCUESTA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_encuesta_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$closedby ,$userid,$offset )",
+        query: "SELECT * FROM ufn_dashboard_gerencial_encuesta_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $closedby , $userid, $offset )",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_ENCUESTA3_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_encuesta3_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$question,$closedby,$target,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_gerencial_encuesta3_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $question, $closedby, $target, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_ENCUESTA3_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_encuesta3_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$question,$closedby,$target,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_gerencial_encuesta3_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $question, $closedby, $target, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_ENCUESTA2_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_encuesta2_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$question,$closedby,$target,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_gerencial_encuesta2_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $question, $closedby, $target, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_ENCUESTA2_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_encuesta2_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$question,$closedby,$target,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_gerencial_encuesta2_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $question, $closedby, $target, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_ASESORESCONECTADOSBAR_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_asesoresconectadosbar_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company ,$userid,$offset )",
+        query: "SELECT * FROM ufn_dashboard_gerencial_asesoresconectadosbar_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company , $userid, $offset )",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_ASESORESCONECTADOSBAR_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_asesoresconectadosbar_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company ,$userid,$offset )",
+        query: "SELECT * FROM ufn_dashboard_gerencial_asesoresconectadosbar_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company , $userid, $offset )",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_CONVERSATION_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_conversation_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company ,$userid,$offset )",
+        query: "SELECT * FROM ufn_dashboard_gerencial_conversation_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company , $userid, $offset )",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_CONVERSATION_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_conversation_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company ,$userid,$offset )",
+        query: "SELECT * FROM ufn_dashboard_gerencial_conversation_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company , $userid, $offset )",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_INTERACTION_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_interaction_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company ,$userid,$offset )",
+        query: "SELECT * FROM ufn_dashboard_gerencial_interaction_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company , $userid, $offset )",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_INTERACTION_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_interaction_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company ,$userid,$offset )",
+        query: "SELECT * FROM ufn_dashboard_gerencial_interaction_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company , $userid, $offset )",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_ETIQUETAS_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_etiquetas_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$limit ,$userid,$offset )",
+        query: "SELECT * FROM ufn_dashboard_gerencial_etiquetas_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $limit , $userid, $offset )",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_ETIQUETAS_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_etiquetas_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$limit ,$userid,$offset )",
+        query: "SELECT * FROM ufn_dashboard_gerencial_etiquetas_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $limit , $userid, $offset )",
         module: "",
         protected: "SELECT"
     },
 
     UFN_DASHBOARD_OPERATIVO_SUMMARY_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_summary_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$skipdowntmo,$skipuptmo,$skipdowntme,$skipuptme,$supervisorid,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_operativo_summary_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $skipdowntmo, $skipuptmo, $skipdowntme, $skipuptme, $supervisorid, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_OPERATIVO_TMO_GENERAL_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_tmo_general_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$supervisorid,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_operativo_tmo_general_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $level, $closedby, $min, $max, $target, $skipdown, $skipup, $bd, $supervisorid, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_OPERATIVO_TMO_GENERAL_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_tmo_general_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$supervisorid,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_operativo_tmo_general_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $level, $closedby, $min, $max, $target, $skipdown, $skipup, $bd, $supervisorid, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_OPERATIVO_TME_GENERAL_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_tme_general_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$supervisorid,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_operativo_tme_general_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $level, $closedby, $min, $max, $target, $skipdown, $skipup, $bd, $supervisorid, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_OPERATIVO_TME_GENERAL_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_tme_general_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$level,$closedby,$min,$max,$target,$skipdown,$skipup,$bd,$supervisorid,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_operativo_tme_general_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $level, $closedby, $min, $max, $target, $skipdown, $skipup, $bd, $supervisorid, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_OPERATIVO_PRODXHORA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_prodxhora_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$level,$supervisorid,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_operativo_prodxhora_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $level, $supervisorid, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_OPERATIVO_TMODIST_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_tmodist_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$skipdowntmo,$skipuptmo,$skipdowntme,$skipuptme,$supervisorid,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_operativo_tmodist_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $skipdowntmo, $skipuptmo, $skipdowntme, $skipuptme, $supervisorid, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_OPERATIVO_TMEDIST_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_tmedist_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$skipdowntmo,$skipuptmo,$skipdowntme,$skipuptme,$supervisorid,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_operativo_tmedist_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $skipdowntmo, $skipuptmo, $skipdowntme, $skipuptme, $supervisorid, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_OPERATIVO_PRODXHORADIST_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_prodxhoradist_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$supervisorid,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_operativo_prodxhoradist_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $supervisorid, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_OPERATIVO_PRODXHORADIST_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_prodxhoradist_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$supervisorid,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_operativo_prodxhoradist_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $supervisorid, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_OPERATIVO_ENCUESTA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_encuesta_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$closedby,$supervisorid,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_operativo_encuesta_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $closedby, $supervisorid, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
@@ -1259,17 +1259,17 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_DASHBOARD_OPERATIVO_ENCUESTA3_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_encuesta3_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$question,$closedby,$target,$supervisorid,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_operativo_encuesta3_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $question, $closedby, $target, $supervisorid, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_OPERATIVO_ENCUESTA2_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_encuesta2_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$question,$closedby,$target,$supervisorid,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_operativo_encuesta2_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $question, $closedby, $target, $supervisorid, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_OPERATIVO_ENCUESTA2_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_operativo_encuesta2_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$question,$closedby,$target,$supervisorid,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_operativo_encuesta2_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $question, $closedby, $target, $supervisorid, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
@@ -1285,77 +1285,77 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_DASHBOARD_PUSH_HSMCATEGORYRANK_SEL: {
-        query: "SELECT * FROM ufn_dashboard_push_hsmcategoryrank_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_push_hsmcategoryrank_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $category, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_PUSH_HSMCATEGORYRANK_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_push_hsmcategoryrank_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_push_hsmcategoryrank_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $category, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_PUSH_SUMMARY_SEL: {
-        query: "SELECT * FROM ufn_dashboard_push_summary_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_push_summary_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $category, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_PUSH_SUMMARY_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_push_summary_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_push_summary_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $category, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_PUSH_HSMRANK_SEL: {
-        query: "SELECT * FROM ufn_dashboard_push_hsmrank_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_push_hsmrank_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $category, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_PUSH_HSMRANK_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_push_hsmrank_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_push_hsmrank_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $category, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_PUSH_MENSAJEXDIA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_push_mensajexdia_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_push_mensajexdia_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $category, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_PUSH_MENSAJEXDIA_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_push_mensajexdia_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_push_mensajexdia_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $category, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_PUSH_APPLICATION_SEL: {
-        query: "SELECT * FROM ufn_dashboard_push_application_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_push_application_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $category, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_PUSH_APPLICATION_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_push_application_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$label,$category,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_push_application_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $label, $category, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_CHANNEL_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_channel_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_gerencial_channel_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_TAG_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_tag_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_gerencial_tag_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_DASHBOARD_GERENCIAL_TAG_DATA_SEL: {
-        query: "SELECT * FROM ufn_dashboard_gerencial_tag_data_sel($corpid,$orgid,$startdate,$enddate,$channel,$group,$company,$userid,$offset)",
+        query: "SELECT * FROM ufn_dashboard_gerencial_tag_data_sel($corpid, $orgid, $startdate, $enddate, $channel, $group, $company, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_USER_SUPERVISORBYORGID_LST: {
-        query: "SELECT * FROM ufn_user_supervisorbyorgid_lst($corpid,$orgid)",
+        query: "SELECT * FROM ufn_user_supervisorbyorgid_lst($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
     UFN_LABEL_LST: {
-        query: "SELECT * FROM ufn_label_lst($corpid,$orgid)",
+        query: "SELECT * FROM ufn_label_lst($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
@@ -1365,7 +1365,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_USER_UPDATE: {
-        query: "SELECT * FROM ufn_user_update($userid,$firstname,$lastname,$password,$image)",
+        query: "SELECT * FROM ufn_user_update($userid, $firstname, $lastname, $password, $image)",
         module: "",
         protected: "INSERT"
     },
@@ -1395,7 +1395,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_INS: {
-        query: "select * from ufn_lead_ins($corpid,$orgid, $leadid, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $column_uuid, $username, $index, $phone, $email, $userid, $phase, $campaignid, $leadproduct, $operation, $personid, $persontype)",
+        query: "select * from ufn_lead_ins($corpid, $orgid, $leadid, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $column_uuid, $username, $index, $phone, $email, $userid, $phase, $campaignid, $leadproduct, $operation, $personid, $persontype)",
         module: "",
         protected: "INSERT"
     },
@@ -1465,12 +1465,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORTSCHEDULER_INS: {
-        query: "select * from ufn_reportscheduler_ins($corpid,$orgid,$id,$title,$description,$status,$type,$origin,$origintype,$reportid,$reportname,$filterjson,$frecuency,$schedule,$datarange,$mailto,$mailcc,$mailsubject,$mailbody, $mailbodyobject,$username,$operation)",
+        query: "select * from ufn_reportscheduler_ins($corpid, $orgid, $id, $title, $description, $status, $type, $origin, $origintype, $reportid, $reportname, $filterjson, $frecuency, $schedule, $datarange, $mailto, $mailcc, $mailsubject, $mailbody, $mailbodyobject, $username, $operation)",
         module: "",
         protected: "SELECT"
     },
     UFN_LEADNOTES_SEL: {
-        query: "select * from ufn_leadnotes_sel($corpid,$orgid, $leadid, $leadnotesid, $all)",
+        query: "select * from ufn_leadnotes_sel($corpid, $orgid, $leadid, $leadnotesid, $all)",
         module: "",
         protected: "SELECT"
     },
@@ -1514,18 +1514,13 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_CURRENCY_SEL: {
-        query: "SELECT code, description FROM currency",
-        module: "",
-        protected: "SELECT"
-    },
     UFN_COUNTRY_SEL: {
         query: "SELECT code, description, currencycode FROM country",
         module: "",
         protected: "SELECT"
     },
     UFN_LEADACTIVITY_SEL: {
-        query: "select * from ufn_leadactivity_sel($corpid,$orgid,$leadid,$leadactivityid,$all)",
+        query: "select * from ufn_leadactivity_sel($corpid, $orgid, $leadid, $leadactivityid, $all)",
         module: "",
         protected: "SELECT"
     },
@@ -1540,7 +1535,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEADACTIVITY_INS: {
-        query: "select * from ufn_leadactivity_ins($corpid,$orgid,$leadid,$leadactivityid,$description,$duedate,$assigneduser,$assignto,$type,$status,$username,$operation, $feedback, $detailjson, $sendhsm, $communicationchannelid, $hsmtemplateid)",
+        query: "select * from ufn_leadactivity_ins($corpid, $orgid, $leadid, $leadactivityid, $description, $duedate, $assigneduser, $assignto, $type, $status, $username, $operation, $feedback, $detailjson, $sendhsm, $communicationchannelid, $hsmtemplateid)",
         module: "",
         protected: "INSERT"
     },
@@ -1560,7 +1555,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_LEADNOTES_INS: {
-        query: "select * from ufn_leadnotes_ins($corpid,$orgid,$leadid,$leadnotesid,$description,$type,$status,$username,$media,$operation)",
+        query: "select * from ufn_leadnotes_ins($corpid, $orgid, $leadid, $leadnotesid, $description, $type, $status, $username, $media, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -1580,7 +1575,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEADGRID_SD_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_leadgrid_sd_totalrecords($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $fullname, $leadproduct,  $tags,$description, $supervisorid, $company, $groups, $offset, $phase, $companyuser)",
+        query: "SELECT * FROM ufn_leadgrid_sd_totalrecords($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $fullname, $leadproduct,  $tags, $description, $supervisorid, $company, $groups, $offset, $phase, $companyuser)",
         module: "",
         protected: "SELECT"
     },
@@ -1590,67 +1585,67 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_PAGE1_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_page1_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$userid,$offset)",
+        query: "SELECT * FROM ufn_report_heatmap_page1_sel($corpid, $orgid, $communicationchannel, $startdate, $enddate, $closedby, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_PAGE1_DATE_DETAIL_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_page1_date_detail_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$horanum,$option,$userid,$offset)",
+        query: "SELECT * FROM ufn_report_heatmap_page1_date_detail_sel($corpid, $orgid, $communicationchannel, $startdate, $enddate, $closedby, $horanum, $option, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_DATE_DETAIL_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_date_detail_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$horanum,$userid,$offset)",
+        query: "SELECT * FROM ufn_report_heatmap_date_detail_sel($corpid, $orgid, $communicationchannel, $startdate, $enddate, $closedby, $horanum, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_PAGE2_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_page2_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$company,$group,$userid,$offset)",
+        query: "SELECT * FROM ufn_report_heatmap_page2_sel($corpid, $orgid, $communicationchannel, $startdate, $enddate, $closedby, $company, $group, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_PAGE2_1_AGENT_DETAIL_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_page2_1_agent_detail_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$company,$group,$agentid,$option,$userid,$offset)",
+        query: "SELECT * FROM ufn_report_heatmap_page2_1_agent_detail_sel($corpid, $orgid, $communicationchannel, $startdate, $enddate, $closedby, $company, $group, $agentid, $option, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_PAGE2_2_AGENT_DETAIL_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_page2_2_agent_detail_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$company,$group,$agentid,$option,$userid,$offset)",
+        query: "SELECT * FROM ufn_report_heatmap_page2_2_agent_detail_sel($corpid, $orgid, $communicationchannel, $startdate, $enddate, $closedby, $company, $group, $agentid, $option, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_ATENCIONESXFECHA_TOTAL_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_atencionesxfecha_total_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$offset)",
+        query: "SELECT * FROM ufn_report_heatmap_atencionesxfecha_total_sel($corpid, $orgid, $communicationchannel, $startdate, $enddate, $closedby, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_USER_REPORT_HEATMAP_ASESOR_LST: {
-        query: "SELECT * FROM ufn_report_heatmap_asesor_lst($corpid,$orgid, $communicationchannel,$bot)",
+        query: "SELECT * FROM ufn_report_heatmap_asesor_lst($corpid, $orgid, $communicationchannel, $bot)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_PAGE3_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_page3_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$company,$userid,$offset)",
+        query: "SELECT * FROM ufn_report_heatmap_page3_sel($corpid, $orgid, $communicationchannel, $startdate, $enddate, $closedby, $company, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_ASESORESCONECTADOS_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_asesoresconectados_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$offset)",
+        query: "SELECT * FROM ufn_report_heatmap_asesoresconectados_sel($corpid, $orgid, $communicationchannel, $startdate, $enddate, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_ASESORESCONECTADOS_DETAIL_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_asesoresconectados_detail_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$horanum,$userid,$offset)",
+        query: "SELECT * FROM ufn_report_heatmap_asesoresconectados_detail_sel($corpid, $orgid, $communicationchannel, $startdate, $enddate, $horanum, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_RESUMEN_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_resumen_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$userid,$offset)",
+        query: "SELECT * FROM ufn_report_heatmap_resumen_sel($corpid, $orgid, $communicationchannel, $startdate, $enddate, $closedby, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_HEATMAP_TIPIFICACION_SEL: {
-        query: "SELECT * FROM ufn_report_heatmap_tipificacion_sel($corpid,$orgid,$communicationchannel,$startdate,$enddate,$closedby,$userid,$offset)",
+        query: "SELECT * FROM ufn_report_heatmap_tipificacion_sel($corpid, $orgid, $communicationchannel, $startdate, $enddate, $closedby, $userid, $offset)",
         module: "",
         protected: "SELECT"
     },
@@ -1720,12 +1715,12 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_BILLINGSUPPORT_INS: {
-        query: "SELECT * FROM ufn_billingsupport_ins($year,$month,$plan,$id,$basicfee,$starttime,$finishtime,$description,$status,$type,$username,$operation )",
+        query: "SELECT * FROM ufn_billingsupport_ins($year, $month, $plan, $id, $basicfee, $starttime, $finishtime, $plancurrency, $description, $status, $type, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
     UFN_BILLINGSUPPORT_SEL: {
-        query: "SELECT * FROM ufn_billingsupport_sel($year,$month,$plan)",
+        query: "SELECT * FROM ufn_billingsupport_sel($year, $month, $plan)",
         module: "",
         protected: "SELECT"
     },
@@ -1735,12 +1730,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PAYMENTPLAN_SEL: {
-        query: "SELECT * FROM ufn_paymentplan_sel($code,$all)",
+        query: "SELECT * FROM ufn_paymentplan_sel($code, $all)",
         module: "",
         protected: "SELECT"
     },
     UFN_BILLINGCONFIGURATION_INS: {
-        query: "SELECT * FROM ufn_billingconfiguration_ins($year,$month,$plan,$id,$basicfee,$userfreequantity,$useradditionalfee,$channelfreequantity,$channelwhatsappfee,$channelotherfee,$clientfreequantity,$clientadditionalfee,$allowhsm,$hsmfee,$description,$status,$whatsappconversationfreequantity,$freewhatsappchannel,$usercreateoverride,$channelcreateoverride,$vcacomissionperhsm,$vcacomissionpervoicechannel,$type,$username,$operation)",
+        query: "SELECT * FROM ufn_billingconfiguration_ins($year, $month, $plan, $id, $basicfee, $userfreequantity, $useradditionalfee, $channelfreequantity, $channelwhatsappfee, $channelotherfee, $clientfreequantity, $clientadditionalfee, $allowhsm, $hsmfee, $description, $status, $whatsappconversationfreequantity, $freewhatsappchannel, $usercreateoverride, $channelcreateoverride, $vcacomissionperhsm, $vcacomissionpervoicechannel, $plancurrency, $vcacomission, $basicanualfee, $type, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -1750,7 +1745,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGCONVERSATION_INS: {
-        query: "SELECT * FROM ufn_billingconversation_ins($year, $month, $countrycode, $id, $companystartfee, $clientstartfee, $vcacomission, $freeconversations, $description, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_billingconversation_ins($id, $year, $month, $countrycode, $vcacomission, $description, $status, $type, $plancurrency, $businessutilityfee, $businessauthenticationfee, $businessmarketingfee, $usergeneralfee, $freequantity, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
@@ -1764,18 +1759,13 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_BILLINGPERIOD_NEWORG: {
-        query: "SELECT * FROM ufn_billingperiod_neworg($corpid, $orgid, $year, $month, $billingplan, $supportplan)",
-        module: "",
-        protected: "INSERT"
-    },
     UFN_BILLINGPERIOD_NEWMONTH: {
         query: "SELECT * FROM ufn_billingperiod_newmonth($corpid, $orgid, $year, $month)",
         module: "",
         protected: "INSERT"
     },
     UFN_BILLINGPERIOD_UPD: {
-        query: "SELECT * FROM ufn_billingperiod_upd($corpid, $orgid, $year, $month, $billingplan, $supportplan, $basicfee, $userfreequantity, $useradditionalfee, $channelfreequantity, $channelwhatsappfee, $channelotherfee, $clientfreequantity, $clientadditionalfee, $supportbasicfee, $unitpricepersms, $vcacomissionpersms, $unitepricepermail, $vcacomissionpermail, $additionalservicename1, $additionalservicefee1, $additionalservicename2, $additionalservicefee2, $additionalservicename3, $additionalservicefee3, $freewhatsappchannel, $freewhatsappconversations, $usercreateoverride, $channelcreateoverride, $vcacomissionperconversation, $vcacomissionperhsm, $minimumsmsquantity, $minimummailquantity, $vcacomissionpervoicechannel, $force)",
+        query: "SELECT * FROM ufn_billingperiod_upd($corpid, $orgid, $year, $month, $billingplan, $billingsupportplan, $billinginvoicecurrency, $billingplancurrency, $billingstartdate, $billingmode, $billingplanfee, $billingsupportfee, $billinginfrastructurefee, $billingexchangerate, $agentcontractedquantity, $agentplancurrency, $agentadditionalfee, $agenttotalfee, $agentaddlimit, $agentmode, $channelothercontractedquantity, $channelotheradditionalfee, $channelwhatsappcontractedquantity, $channelwhatsappadditionalfee, $channelotherquantity, $channelwhatsappquantity, $channeltotalfee, $channelwhatsappfreequantity, $channeladdlimit, $conversationuserplancurrency, $conversationuserserviceadditionalfee, $conversationuserservicevcafee, $conversationusermetacurrency, $conversationuserservicefee, $conversationuserservicetotalfee, $conversationbusinessplancurrency, $conversationbusinessutilityadditionalfee, $conversationbusinessauthenticationadditionalfee, $conversationbusinessmarketingadditionalfee, $conversationbusinessutilityvcafee, $conversationbusinessauthenticationvcafee, $conversationbusinessmarketingvcafee, $conversationbusinessmetacurrency, $conversationbusinessutilitymetafee, $conversationbusinessauthenticationmetafee, $conversationbusinessmarketingmetafee, $conversationbusinessutilitytotalfee, $conversationbusinessauthenticationtotalfee, $conversationbusinessmarketingtotalfee, $conversationplancurrency, $contactcalculatemode, $contactcountmode, $contactuniquelimit, $contactuniquequantity, $contactplancurrency, $contactuniqueadditionalfee, $contactuniquefee, $contactwhatsappquantity, $contactotherquantity, $contactotheradditionalfee, $contactwhatsappadditionalfee, $contactotherfee, $contactwhatsappfee, $contactfee, $messagingplancurrency, $messagingsmsadditionalfee, $messagingsmsvcafee, $messagingsmsquantity, $messagingsmsquantitylimit, $messagingsmstotalfee, $messagingmailadditionalfee, $messagingmailvcafee, $messagingmailquantity, $messagingmailquantitylimit, $messagingmailtotalfee, $voicevcacomission, $consultingplancurrency, $consultinghourtotal, $consultinghourquantity, $consultingcontractedfee, $consultingextrafee, $consultingtotalfee, $consultingprofile, $consultingadditionalfee, $additionalservice01, $additionalservice01fee, $additionalservice02, $additionalservice02fee, $additionalservice03, $additionalservice03fee, $invoiceid, $status, $force)",
         module: "",
         protected: "INSERT"
     },
@@ -1921,33 +1911,18 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
-    UFN_INVOICE_CORP: {
-        query: "SELECT * FROM ufn_invoice_corp($corpid, $year, $month, $exchangerate)",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_INVOICE_ORG: {
-        query: "SELECT * FROM ufn_invoice_org($corpid,$orgid,$year,$month,$exchangerate)",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_INVOICEDETAIL_AUTOINS: {
-        query: "SELECT * FROM ufn_invoicedetail_autoins($corpid, $orgid, $invoiceid, $amount, $national, $year, $month)",
-        module: "",
-        protected: "INSERT"
-    },
     UFN_INVOICE_SEL: {
-        query: "SELECT * FROM ufn_invoice_sel($corpid,$orgid,$invoiceid,$userid,$year,$month,$currency,$paymentstatus)",
+        query: "SELECT * FROM ufn_invoice_sel($corpid, $orgid, $invoiceid, $userid, $year, $month, $currency, $paymentstatus)",
         module: "",
         protected: "SELECT"
     },
     UFN_INVOICE_SELCLIENT: {
-        query: "SELECT * FROM ufn_invoice_selclient($corpid, $orgid, $invoiceid, $userid, $year, $month,$currency,$paymentstatus)",
+        query: "SELECT * FROM ufn_invoice_selclient($corpid, $orgid, $invoiceid, $userid, $year, $month, $currency, $paymentstatus)",
         module: "",
         protected: "SELECT"
     },
     UFN_INVOICE_SELBYID: {
-        query: "SELECT * FROM ufn_invoice_selbyid($corpid,$orgid,$invoiceid,$userid)",
+        query: "SELECT * FROM ufn_invoice_selbyid($corpid, $orgid, $invoiceid, $userid)",
         module: "",
         protected: "SELECT"
     },
@@ -1957,12 +1932,12 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVOICE_REGENERATE: {
-        query: "SELECT * FROM ufn_invoice_regenerate($corpid,$orgid,$invoiceid,$username)",
+        query: "SELECT * FROM ufn_invoice_regenerate($corpid, $orgid, $invoiceid, $username)",
         module: "",
         protected: "INSERT"
     },
     UFN_INVOICE_ORDER: {
-        query: "SELECT * FROM ufn_invoice_order($corpid,$orgid,$invoiceid,$orderid,$orderjson)",
+        query: "SELECT * FROM ufn_invoice_order($corpid, $orgid, $invoiceid, $orderid, $orderjson)",
         module: "",
         protected: "INSERT"
     },
@@ -1977,22 +1952,22 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVOICE_REFUND: {
-        query: "SELECT * FROM ufn_invoice_refund($corpid,$orgid,$invoiceid,$refundtoken,$refundjson,$username)",
+        query: "SELECT * FROM ufn_invoice_refund($corpid, $orgid, $invoiceid, $refundtoken, $refundjson, $username)",
         module: "",
         protected: "INSERT"
     },
     UFN_CHARGE_SEL: {
-        query: "SELECT * FROM ufn_charge_sel($corpid,$orgid,$userid,$chargeid)",
+        query: "SELECT * FROM ufn_charge_sel($corpid, $orgid, $userid, $chargeid)",
         module: "",
         protected: "INSERT"
     },
     UFN_CHARGE_INS: {
-        query: "SELECT * FROM ufn_charge_ins($corpid,$orgid,$id,$invoiceid,$description,$type,$status,$amount,$currency,$paidby,$orderid,$orderjson,$email,$tokenid,$capture,$tokenjson,$chargetoken,$chargejson,$operation)",
+        query: "SELECT * FROM ufn_charge_ins($corpid, $orgid, $id, $invoiceid, $description, $type, $status, $amount, $currency, $paidby, $orderid, $orderjson, $email, $tokenid, $capture, $tokenjson, $chargetoken, $chargejson, $operation)",
         module: "",
         protected: "INSERT"
     },
     UFN_CHARGE_REFUND: {
-        query: "SELECT * FROM ufn_charge_refund($corpid,$orgid,$chargeid,$refundtoken,$refundjson,$username)",
+        query: "SELECT * FROM ufn_charge_refund($corpid, $orgid, $chargeid, $refundtoken, $refundjson, $username)",
         module: "",
         protected: "INSERT"
     },
@@ -2052,42 +2027,32 @@ module.exports = {
         protected: "UPDATE"
     },
     UFN_KPI_SEL: {
-        query: "SELECT * FROM ufn_kpi_sel($corpid,$orgid,$kpiid)",
+        query: "SELECT * FROM ufn_kpi_sel($corpid, $orgid, $kpiid)",
         module: "",
         protected: "SELECT"
     },
     UFN_KPI_LST: {
-        query: "SELECT * FROM ufn_kpi_lst($corpid,$orgid)",
+        query: "SELECT * FROM ufn_kpi_lst($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
     UFN_KPI_INS: {
-        query: "SELECT * FROM ufn_kpi_ins($corpid,$orgid,$id,$kpiname,$description,$status,$type,$sqlselect,$sqlwhere,$target,$cautionat,$alertat,$taskperiod,$taskinterval,$taskstartdate,$username,$operation,$offset)",
+        query: "SELECT * FROM ufn_kpi_ins($corpid, $orgid, $id, $kpiname, $description, $status, $type, $sqlselect, $sqlwhere, $target, $cautionat, $alertat, $taskperiod, $taskinterval, $taskstartdate, $username, $operation, $offset)",
         module: "",
         protected: "INSERT"
     },
     UFN_KPI_DUPLICATE: {
-        query: "SELECT * FROM ufn_kpi_duplicate($corpid,$orgid,$kpiid,$username)",
+        query: "SELECT * FROM ufn_kpi_duplicate($corpid, $orgid, $kpiid, $username)",
         module: "",
         protected: "INSERT"
     },
     UFN_KPI_CALC: {
-        query: "SELECT * FROM ufn_kpi_calc($corpid,$orgid,$kpiid,$username,$task)",
+        query: "SELECT * FROM ufn_kpi_calc($corpid, $orgid, $kpiid, $username, $task)",
         module: "",
         protected: "INSERT"
     },
     UFN_KPIHISTORY_SEL: {
-        query: "SELECT * FROM ufn_kpihistory_sel($corpid,$orgid,$kpiid,$startdate,$enddate,$offset)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_BILLINGNOTIFICATION_INS: {
-        query: "SELECT * FROM ufn_billingnotification_ins($year, $month, $countrycode, $id, $vcacomission, $c250000, $c750000, $c2000000, $c3000000, $c4000000, $c5000000, $c10000000, $c25000000, $description, $status, $type, $username, $operation)",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_BILLINGNOTIFICATION_SEL: {
-        query: "SELECT * FROM ufn_billingnotification_sel($year, $month, $countrycode)",
+        query: "SELECT * FROM ufn_kpihistory_sel($corpid, $orgid, $kpiid, $startdate, $enddate, $offset)",
         module: "",
         protected: "SELECT"
     },
@@ -2097,7 +2062,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVOICEDETAIL_SELBYINVOICEID: {
-        query: "SELECT * FROM ufn_invoicedetail_selbyinvoiceid($corpid,$orgid,$invoiceid,$userid)",
+        query: "SELECT * FROM ufn_invoicedetail_selbyinvoiceid($corpid, $orgid, $invoiceid, $userid)",
         module: "",
         protected: "SELECT"
     },
@@ -2150,7 +2115,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BALANCE_CHECK: {
-        query: "select * from ufn_balance_check($corpid, $orgid, $communicationchannelid, $type, $receiver, $username)",
+        query: "select * from ufn_balance_check($corpid, $orgid, $communicationchannelid, $messagetemplateid, $type, $receiver, $username)",
         module: "",
         protected: "SELECT"
     },
@@ -2325,17 +2290,17 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEADAUTOMATIZATIONRULES_SEL: {
-        query: "SELECT * FROM ufn_leadautomatizationrules_sel($corpid, $orgid, $id,$communicationchannelid, $username, $all)",
+        query: "SELECT * FROM ufn_leadautomatizationrules_sel($corpid, $orgid, $id, $communicationchannelid, $username, $all)",
         module: "",
         protected: "SELECT"
     },
     UFN_LEADAUTOMATIZATIONRULES_INS: {
-        query: "SELECT * FROM ufn_leadautomatizationrules_ins($corpid,$orgid,$id,$description,$status,$type,$order,$orderstatus ,$columnid,$communicationchannelid,$messagetemplateid,$messagetemplateparameters,$shippingtype,$xdays,$schedule,$tags,$products,$username,$operation)",
+        query: "SELECT * FROM ufn_leadautomatizationrules_ins($corpid, $orgid, $id, $description, $status, $type, $order, $orderstatus , $columnid, $communicationchannelid, $messagetemplateid, $messagetemplateparameters, $shippingtype, $xdays, $schedule, $tags, $products, $username, $operation)",
         module: "",
         protected: "INSERT"
     },
     UFN_CALENDAREVENT_INS: {
-        query: "SELECT * FROM ufn_calendarevent_ins($corpid, $orgid, $id, $description, $descriptionobject, $type, $status, $code, $name, $locationtype, $location, $eventlink, $color, $notificationtype, $communicationchannelid, $messagetemplateid, $notificationmessage, $daterange, $daysduration, $daystype, $startdate, $enddate, $timeduration, $timeunit, $availability, $timebeforeeventduration, $timebeforeeventunit, $timeaftereventduration, $timeaftereventunit, $increments, $reminderenable, $remindertype, $reminderhsmtemplateid, $reminderhsmcommunicationchannelid , $reminderhsmmessage, $remindermailtemplateid, $remindermailmessage, $reminderperiod, $reminderfrecuency, $username, $operation, $maximumcapacity, $notificationmessageemail, $messagetemplateidemail, $canceltype, $canceltemplateidemail, $cancelnotificationemail, $canceltemplateidhsm, $cancelnotificationhsm,$cancelcommunicationchannelid,$rescheduletype, $rescheduletemplateidemail, $reschedulenotificationemail, $rescheduletemplateidhsm, $reschedulenotificationhsm,$reschedulecommunicationchannelid)",
+        query: "SELECT * FROM ufn_calendarevent_ins($corpid, $orgid, $id, $description, $descriptionobject, $type, $status, $code, $name, $locationtype, $location, $eventlink, $color, $notificationtype, $communicationchannelid, $messagetemplateid, $notificationmessage, $daterange, $daysduration, $daystype, $startdate, $enddate, $timeduration, $timeunit, $availability, $timebeforeeventduration, $timebeforeeventunit, $timeaftereventduration, $timeaftereventunit, $increments, $reminderenable, $remindertype, $reminderhsmtemplateid, $reminderhsmcommunicationchannelid , $reminderhsmmessage, $remindermailtemplateid, $remindermailmessage, $reminderperiod, $reminderfrecuency, $username, $operation, $maximumcapacity, $notificationmessageemail, $messagetemplateidemail, $canceltype, $canceltemplateidemail, $cancelnotificationemail, $canceltemplateidhsm, $cancelnotificationhsm, $cancelcommunicationchannelid, $rescheduletype, $rescheduletemplateidemail, $reschedulenotificationemail, $rescheduletemplateidhsm, $reschedulenotificationhsm, $reschedulecommunicationchannelid)",
         module: "",
         protected: "INSERT"
     },
@@ -2601,12 +2566,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PERSONCOMMUNICATIONCHANNEL_SEL_VOXI: {
-        query: "SELECT * FROM ufn_personcommunicationchannel_sel_voxi($corpid,$orgid)",
+        query: "SELECT * FROM ufn_personcommunicationchannel_sel_voxi($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
     UFN_USER_CHANNEL_SEL: {
-        query: "SELECT * FROM ufn_user_channel_sel($corpid,$orgid, $userid)",
+        query: "SELECT * FROM ufn_user_channel_sel($corpid, $orgid, $userid)",
         module: "",
         protected: "SELECT"
     },
@@ -2713,7 +2678,7 @@ module.exports = {
         SELECT
             $corpid, $orgid::bigint, pt.personid, pt.personcommunicationchannel, pt.communicationchannelid, pt.auxid,
             'CERRADO', 'NINGUNO', NOW(), 'admin', NOW() + INTERVAL '1MINUTE', 'admin', false,
-            (LPAD(nextval(concat('ticketnum',$orgid::text,'seq')::regclass)::text, 7, '0')),
+            (LPAD(nextval(concat('ticketnum', $orgid::text,'seq')::regclass)::text, 7, '0')),
             NOW(), NOW() + INTERVAL '1MINUTE', NOW(), NOW() + INTERVAL '1MINUTE',
             $botid, $botid,
             '00:00:00.00', '00:00:00.00', '00:00:00.00', '00:00:00.00', '00:00:00.00', '00:00:00.00', '00:00:00.00',
@@ -3230,11 +3195,6 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_BILLINGPERIODARTIFICIALINTELLIGENCE_INS: {
-        query: "SELECT * FROM ufn_billingperiodartificialintelligence_ins($id, $corpid, $orgid, $year, $month, $provider, $measureunit, $charlimit, $plan, $freeinteractions, $basicfee, $additionalfee, $description, $aiquantity, $aicost, $status, $type, $username, $operation)",
-        module: "",
-        protected: "SELECT"
-    },
     UFN_BILLINGPERIODARTIFICIALINTELLIGENCE_SEL: {
         query: "SELECT * FROM ufn_billingperiodartificialintelligence_sel($corpid, $orgid, $year, $month, $provider, $type, $plan, $userid)",
         module: "",
@@ -3446,7 +3406,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CORP_ORG_SEL_MOVIL: {
-        query: "SELECT * FROM ufn_corp_org_sel($corpid,$id,$username,$applicationid,$all)",
+        query: "SELECT * FROM ufn_corp_org_sel($corpid, $id, $username, $applicationid, $all)",
         module: "",
         protected: "SELECT"
     },
@@ -3481,7 +3441,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_USERTOKEN_SEL_MOVIL: {
-        query: "SELECT * FROM ufn_usertoken_sel($corpid,$orgid,$userid, $token)",
+        query: "SELECT * FROM ufn_usertoken_sel($corpid, $orgid, $userid, $token)",
         module: "",
         protected: "SELECT"
     },
@@ -3591,7 +3551,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_QUICKREPLY_SEL_MOVIL: {
-        query: "SELECT * FROM ufn_quickreply_sel($corpid,$orgid,0,$username,$applicationid, true)",
+        query: "SELECT * FROM ufn_quickreply_sel($corpid, $orgid,0, $username, $applicationid, true)",
         module: "",
         protected: "SELECT"
     },
@@ -3601,7 +3561,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_USR_UPDATEPWD_MOVIL: {
-        query: "SELECT * FROM ufn_usr_updatepwd($userid ,$pwd,$username)",
+        query: "SELECT * FROM ufn_usr_updatepwd($userid , $pwd, $username)",
         module: "",
         protected: "SELECT"
     },
@@ -3611,7 +3571,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_QUICKREPLY_LIST_SEL_MOVIL: {
-        query: "SELECT * FROM ufn_quickreply_list_sel($corpid,$orgid,$classificationid,$all)",
+        query: "SELECT * FROM ufn_quickreply_list_sel($corpid, $orgid, $classificationid, $all)",
         module: "",
         protected: "SELECT"
     },
@@ -3701,7 +3661,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_PERSON_INS_MOVIL: {
-        query: "SELECT * FROM ufn_lead_person_ins($corpid, $orgid, $id, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $username, $index, $firstname, $lastname, $email, $phone, $personid, $userid, $persontype,$leadproduct)",
+        query: "SELECT * FROM ufn_lead_person_ins($corpid, $orgid, $id, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $username, $index, $firstname, $lastname, $email, $phone, $personid, $userid, $persontype, $leadproduct)",
         module: "",
         protected: "SELECT"
     },
@@ -3721,7 +3681,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PRODUCTCATALOG_SEL_MOVIL: {
-        query: "select * from ufn_productcatalog_sel_normal($corpid,$orgid,$id,$category,$username,$all)",
+        query: "select * from ufn_productcatalog_sel_normal($corpid, $orgid, $id, $category, $username, $all)",
         module: "",
         protected: "SELECT"
     },
@@ -3819,7 +3779,7 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_RASA_MODEL_UUID_SEL : {
+    UFN_RASA_MODEL_UUID_SEL: {
         query: "SELECT * FROM ufn_rasa_model_uuid_sel($corpid, $orgid, $model_uuid)",
         module: "",
         protected: "SELECT"
@@ -3862,6 +3822,41 @@ module.exports = {
     },
     UFN_CONVERSATION_SEL_ANALYTICS_V2: {
         query: "SELECT * FROM ufn_conversation_sel_analytics_v2($conversationid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_TIMESHEET_INS: {
+        query: "SELECT * FROM ufn_timesheet_ins($corpid, $orgid, $id, $description, $type, $status, $username, $operation, $startdate, $startuserid, $registerdate, $registeruserid, $registerprofile, $registerdetail, $timeduration);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_TIMESHEET_SEL: {
+        query: "SELECT * FROM ufn_timesheet_sel($corpid, $orgid, $timesheetid, $startdate, $all);",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_TIMESHEET_USER_SEL: {
+        query: "SELECT * FROM ufn_timesheet_user_sel($corpid, $orgid);",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_TIMESHEET_PROFILE_SEL: {
+        query: "SELECT * FROM ufn_timesheet_profile_sel($corpid, $orgid, $startdate);",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CURRENCY_SEL: {
+        query: "SELECT * FROM ufn_currency_sel();",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_TIMESHEET_PERIOD_SEL: {
+        query: "SELECT * FROM ufn_timesheet_period_sel($corpid, $orgid, $year, $month);",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLING_REPORT_CONSULTING: {
+        query: "SELECT * FROM ufn_billing_report_consulting($corpid, $orgid, $year, $month)",
         module: "",
         protected: "SELECT"
     },
