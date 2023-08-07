@@ -57,7 +57,7 @@ exports.sendHSMcontactos = async (req, res) => {
         }
         
         let contactos = []
-        if(!parameters?.contacts?.length){
+        if(!!parameters?.contacts?.length){
             contactos = parameters.contacts
         }else{
             const resultCategory = await executesimpletransaction("UFN_LIST_PERSONS_BY_CATEGORY_SEL", parameters);
