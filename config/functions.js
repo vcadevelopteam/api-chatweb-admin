@@ -94,6 +94,11 @@ module.exports = {
         module: "/extras/users",
         protected: "SELECT"
     },
+    UFN_LIST_PERSONS_BY_ORG_SEL: {
+        query: "SELECT * FROM ufn_list_persons_by_org_sel($corpid, $orgid)",
+        module: "/extras/users",
+        protected: "SELECT"
+    },
     UFN_ORGUSER_INS: {
         query: "SELECT * FROM ufn_orguser_ins($corpid, $orgid, $p_userid, $rolegroups, $usersupervisor, $bydefault, $labels, $groups, $channels, $status,$type, $defaultsort, $username, $operation, $redirect)",
         module: "/extras/users",
