@@ -55,10 +55,15 @@ exports.sendHSMcontactos = async (req, res) => {
         function isEqual(obj1, obj2) {
             return JSON.stringify(obj1) === JSON.stringify(obj2);
         }
-
-        const resultCategory = await executesimpletransaction("UFN_LIST_PERSONS_BY_CATEGORY_SEL", parameters);
-        const resultBrand = await executesimpletransaction("UFN_LIST_PERSONS_BY_BRAND_SEL", parameters);
-        const contactos = combineWithoutDuplicates(resultCategory, resultBrand);;
+        
+        let contactos = []
+        if(!parameters?.contacts?.length){
+            contactos = parameters.contacts
+        }else{
+            const resultCategory = await executesimpletransaction("UFN_LIST_PERSONS_BY_CATEGORY_SEL", parameters);
+            const resultBrand = await executesimpletransaction("UFN_LIST_PERSONS_BY_BRAND_SEL", parameters);
+            contactos = combineWithoutDuplicates(resultCategory, resultBrand);
+        }
         
         const responseservices = await axiosObservable({
             method: "post",
