@@ -2,7 +2,8 @@ const logger = require('../config/winston');
 
 const { v4: uuidv4 } = require('uuid');
 const { executesimpletransaction } = require('../config/triggerfunctions');
-const { errors, getErrorCode, cleanPropertyValue } = require('../config/helpers');
+const { errors, getErrorCode, cleanPropertyValue, recaptcha } = require('../config/helpers');
+const { addApplication } = require('./voximplantController');
 
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -95,9 +96,20 @@ const validateResProperty = (r, type) => {
 }
 
 exports.authenticate = async (req, res) => {
-    const { data: { usr, password, facebookid, googleid, origin = "WEB", token } } = req.body;
+    const { data: { usr, password, facebookid, googleid, origin = "WEB", token, token_recaptcha } } = req.body;
     
     logger.child({ _requestid: req._requestid, body: req.body }).info(`authenticate.body`);
+
+    const secret_recaptcha = process.env.SECRET_RECAPTCHA;
+
+    if (origin !== "MOVIL" && secret_recaptcha) {
+        const result_recaptcha = await recaptcha(secret_recaptcha, token_recaptcha);
+    
+        if (result_recaptcha.error) {
+            return res.status(401).json({ code: errors.RECAPTCHA_ERROR })
+        }
+    }
+
     let integration = false;
     const prevdata = { _requestid: req._requestid }
     try {
