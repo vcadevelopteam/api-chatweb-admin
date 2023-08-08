@@ -104,8 +104,8 @@ exports.authenticate = async (req, res) => {
     if (origin !== "MOVIL" && secret_recaptcha) {
         const result_recaptcha = await recaptcha(secret_recaptcha, token_recaptcha);
     
-        if (result_recaptcha.error) {
-            return res.status(401).json({ code: errors.RECAPTCHA_ERROR })
+        if ((result_recaptcha.error || !result_recaptcha.success)) {
+            return res.status(401).json({ code: errors.RECAPTCHA_ERROR, ...result_recaptcha })
         }
     }
 

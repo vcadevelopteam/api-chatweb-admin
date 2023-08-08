@@ -302,6 +302,7 @@ const errorstmp = {
     LOGIN_LOCKED: "LOGIN_LOCKED",
     LOGIN_USER_INACTIVE: "LOGIN_USER_INACTIVE",
     LOGIN_NO_INTEGRATION: "LOGIN_NO_INTEGRATION",
+    RECAPTCHA_ERROR: "RECAPTCHA_ERROR",
     PARAMETER_IS_MISSING: "PARAMETER_IS_MISSING",
     REQUEST_SERVICES: "REQUEST_SERVICES",
     REQUEST_BRIDGE: "REQUEST_BRIDGE",
@@ -527,15 +528,14 @@ exports.recaptcha = async (secret, key) => {
     const data = { secret, response: key };
     
     try {
-        const response = await axiosObservable({
+        const response = await this.axiosObservable({
             url: `https://www.google.com/recaptcha/api/siteverify`,
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             data: new URLSearchParams(Object.entries(data)).toString(),
             method: "POST",
-            _requestid: req._requestid,
         })
         return response.data;
     } catch (error) {
-        return { error: true, message: error.message, detail: error.stack, error };
+        return { error: true, message: error.message, detail: error.stack, err: error };
     }
 }
