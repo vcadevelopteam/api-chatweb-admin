@@ -86,7 +86,32 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORGUSER_INS: {
-        query: "SELECT * FROM ufn_orguser_ins($corpid, $orgid, $p_userid, $roleid, $usersupervisor, $bydefault, $labels, $groups, $channels, $status,$type, $defaultsort, $username, $operation, $redirect)",
+        query: "SELECT * FROM ufn_orguser_ins($corpid, $orgid, $userid, $rolegroups, $usersupervisor, $bydefault, $labels, $groups, $channels, $status,$type, $defaultsort, $username, $operation, $redirect)",
+        module: "/extras/users",
+        protected: "INSERT"
+    },
+    QUERY_UPDATE_APIKEY: {
+        query: `UPDATE orguser SET
+            apikey = $apikey
+            WHERE corpid = $corpid
+            AND orgid = $orgid
+            AND userid = $userid
+            `,
+        module: "/extras/users",
+        protected: "INSERT"
+    },
+    QUERY_GET_DATA_FROM_APIKEY: {
+        query: `SELECT userid, corpid, orgid FROM orguser WHERE apikey = $apikey`,
+        module: "/extras/users",
+        protected: "INSERT"
+    },
+    QUERY_GET_DATA_FROM_REPORT: {
+        query: `SELECT rp.reporttemplateid, rp.columnjson, rp.filterjson, rp.summaryjson
+		FROM reporttemplate rp 
+		WHERE rp.corpid = $corpid
+		AND rp.orgid = $orgid
+        AND nameapi = $reportname
+		AND rp.status <> 'ELIMINADO'`,
         module: "/extras/users",
         protected: "INSERT"
     },
@@ -979,12 +1004,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORTTEMPLATE_SEL: {
-        query: "SELECT * FROM ufn_reporttemplate_sel($corpid, $orgid, $reporttemplateid, $username, $all)",
+        query: "SELECT * FROM ufn_reporttemplate_sel($corpid, $orgid, $reporttemplateid, $username, $all, $userid)",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORTTEMPLATE_INS: {
-        query: "select * from ufn_reporttemplate_ins($id, $corpid, $orgid, $description, $status, $type, $dataorigin, $columnjson, $filterjson, $summaryjson, $communicationchannelid, $username, $operation)",
+        query: "select * from ufn_reporttemplate_ins($id, $corpid, $orgid, $description, $status, $type, $dataorigin, $columnjson, $filterjson, $summaryjson, $communicationchannelid, $nameapi, $username, $operation)",
         module: "",
         protected: "SELECT"
     },
