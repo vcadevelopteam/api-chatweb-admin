@@ -779,6 +779,12 @@ exports.uploadBufferToCos = async (_requestid, buffer, contentType, key) => {
             }
             profiler1.done({ level: "debug", message: `Upload cos` });
 
+            const presignedUrl = s3.getSignedUrl('getObject', {
+                Bucket: COS_BUCKET_NAME,
+                Key: params.Key,
+                Expires: 300, // X horas en segundos
+            });
+
             res({ url: (data.Location || "").replace("http:", "https:") })
         });
     });
