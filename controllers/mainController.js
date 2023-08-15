@@ -136,20 +136,6 @@ exports.getGraphic = async (req, res) => {
     }
 }
 
-// exports.export = async (req, res) => {
-//     const { parameters, method } = req.body;
-
-//     setSessionParameters(parameters, req.user, req._requestid);
-
-//     const result = await exportData((!parameters.isNotPaginated ? await buildQueryWithFilterAndSort(method, parameters) : await executesimpletransaction(method, parameters)), parameters.reportName, parameters.formatToExport, parameters.headerClient, req._requestid);
-
-//     if (!result.error) {
-//         return res.json(result);
-//     } else {
-//         return res.status(result.rescode).json(result);
-//     }
-// }
-
 exports.multiCollection = async (req, res) => {
     try {
         const datatmp = req.body;

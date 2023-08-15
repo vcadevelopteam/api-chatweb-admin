@@ -188,7 +188,8 @@ exports.download = async (req, res) => {
             req._requestid,
             buffer,
             "application/zip",
-            new Date().toISOString() + ".zip"
+            new Date().toISOString() + ".zip",
+            true
         );
         return res.json({ error: false, success: true, url: rr.url });
     } catch (error) {
