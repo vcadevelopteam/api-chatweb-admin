@@ -284,7 +284,7 @@ exports.getUser = async (req, res) => {
 
 exports.logout = async (req, res) => {
     try {
-        if (origin === "MOVIL") {
+        if (req.user.origin === "MOVIL") {
             await exitFromAllGroup1(req.user.token, req._requestid);
         }
         executesimpletransaction("UFN_USERSTATUS_UPDATE", { _requestid: req._requestid, ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
