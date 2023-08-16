@@ -304,6 +304,20 @@ exports.createSubscription = async (request, response) => {
                         else {
                             cardError = true;
                             requestMessage = "error_card_card";
+
+                            if (requestCulqiCard.data.operationMessage) {
+                                let culqiError = JSON.parse(requestCulqiCard.data.operationMessage);
+
+                                if (culqiError) {
+                                    if (culqiError.user_message) {
+                                        requestMessage = culqiError.user_message;
+                                    }
+
+                                    if (culqiError.merchant_message) {
+                                        requestMessage = culqiError.merchant_message;
+                                    }
+                                }
+                            }
                         }
                     }
                     else {
