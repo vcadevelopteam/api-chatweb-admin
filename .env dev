@@ -15,7 +15,7 @@ DBPASSWORD=d549887c9ee5db461976c0d23ee4604235f67e6848ac2cbd2d
 DBPORT=30503
 DBUSER=admin
 EXCHANGE=https://api.apis.net.pe/v1/tipo-cambio-sunat?fecha=
-FACEBOOKAPI=https://graph.facebook.com/v15.0/
+FACEBOOKAPI=https://graph.facebook.com/v17.0/
 GOOGLE_AUTHURI=https://oauth2.googleapis.com/token
 GOOGLE_CALENDAR_CLIENTID=283248303891-7kttlq9tn5f43bk821fg7lnbhj5hvf6b.apps.googleusercontent.com
 GOOGLE_CALENDAR_CLIENTSECRET=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
