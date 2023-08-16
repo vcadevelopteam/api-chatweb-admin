@@ -297,6 +297,9 @@ module.exports = {
         type: {
             column: "uh.type"
         },
+        motivedescription: {
+            column: "uh.motivetype"
+        },
     },
     ticket: {
         numeroticket: {
