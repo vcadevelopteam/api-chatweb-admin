@@ -48,8 +48,8 @@ exports.executesimpletransaction = async (method, data, permissions = false, rep
     let functionMethod = functionsbd[method];
     if (functionMethod) {
         if (permissions && functionMethod.module) {
-            const application = permissions[functionMethod.module];
-            if (functionMethod.protected && (!application || ((functionMethod.protected === "SELECT" && !application[0]) || (functionMethod.protected === "INSERT" && !application[2])))) {
+            const application = (typeof functionMethod.module == 'string') ? permissions[functionMethod.module] : functionMethod.module.find(value => permissions[value]);
+            if (functionMethod.protected && !application) {
                 return getErrorCode(errors.FORBIDDEN);
             }
         }
