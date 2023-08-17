@@ -1394,7 +1394,23 @@ exports.cardCreate = async (request, response) => {
                                 }
                             }
                             else {
-                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_card_card', responsedata.status, responsedata.success);
+                                let errorCard = 'error_card_card';
+
+                                if (requestCulqiCard.data.operationMessage) {
+                                    let culqiError = JSON.parse(requestCulqiCard.data.operationMessage);
+
+                                    if (culqiError) {
+                                        if (culqiError.user_message) {
+                                            errorCard = culqiError.user_message;
+                                        }
+
+                                        if (culqiError.merchant_message) {
+                                            errorCard = culqiError.merchant_message;
+                                        }
+                                    }
+                                }
+
+                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCard, responsedata.status, responsedata.success);
                             }
                         }
                         else {
@@ -1467,7 +1483,23 @@ exports.cardDelete = async (request, response) => {
                     }
                 }
                 else {
-                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_card_delete', responsedata.status, responsedata.success);
+                    let errorCard = 'error_card_delete';
+
+                    if (requestCulqiCard.data.operationMessage) {
+                        let culqiError = JSON.parse(requestCulqiCard.data.operationMessage);
+
+                        if (culqiError) {
+                            if (culqiError.user_message) {
+                                errorCard = culqiError.user_message;
+                            }
+
+                            if (culqiError.merchant_message) {
+                                errorCard = culqiError.merchant_message;
+                            }
+                        }
+                    }
+
+                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCard, responsedata.status, responsedata.success);
                 }
             }
             else {
@@ -1520,7 +1552,23 @@ exports.cardGet = async (request, response) => {
                     responsedata = genericfunctions.changeResponseData(responsedata, null, null, requestCulqiCard.data.result, 200, true);
                 }
                 else {
-                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_card_get', responsedata.status, responsedata.success);
+                    let errorCard = 'error_card_get';
+
+                    if (requestCulqiCard.data.operationMessage) {
+                        let culqiError = JSON.parse(requestCulqiCard.data.operationMessage);
+
+                        if (culqiError) {
+                            if (culqiError.user_message) {
+                                errorCard = culqiError.user_message;
+                            }
+
+                            if (culqiError.merchant_message) {
+                                errorCard = culqiError.merchant_message;
+                            }
+                        }
+                    }
+
+                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCard, responsedata.status, responsedata.success);
                 }
             }
             else {
