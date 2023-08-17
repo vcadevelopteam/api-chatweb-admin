@@ -701,6 +701,11 @@ module.exports = {
         module: "", //supervisor and inbox
         protected: "INSERT"
     },
+    UFN_CONVERSATION_REASSIGNTICKET_HSM: {
+        query: "SELECT * FROM ufn_conversation_reassignticket_hsm($corpid, $orgid, $conversationid, $userid)",
+        module: "", //supervisor and inbox
+        protected: "INSERT"
+    },
     UFN_INTEGRATIONMANAGER_SEL: {
         query: "SELECT * FROM ufn_integrationmanager_sel($corpid, $orgid, $id, $username, $all)",
         module: "",
