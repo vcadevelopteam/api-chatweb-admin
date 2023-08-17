@@ -122,6 +122,8 @@ module.exports = {
             "/extras/properties",
             "/message_inbox",
             "/extras/campaign",
+            "/message_inbox",
+            "/supervisor"
         ],
         protected: "SELECT"
     },
@@ -207,12 +209,12 @@ module.exports = {
     },
     UFN_PERSON_TOTALRECORDS: {
         query: "SELECT * FROM ufn_person_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset, $userids, $channeltypes)",
-        module: ["/extras/person", "/crm", "/servicedesk"],
+        module: ["/extras/person", "/crm", "/servicedesk", "/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
     UFN_PERSON_SEL: {
         query: "SELECT  * FROM ufn_person_sel($corpid, $orgid, $username, $where, $order, $take, $skip, $startdate, $enddate, $offset, $userids, $channeltypes)",
-        module: ["/extras/person", "/crm", "/servicedesk"],
+        module: ["/extras/person", "/crm", "/servicedesk", "/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
     UFN_PERSON_EXPORT: {
@@ -422,12 +424,12 @@ module.exports = {
     },
     UFN_REPORT_USERPRODUCTIVITY_SEL: {
         query: "SELECT * FROM ufn_report_userproductivity_sel($corpid ,$orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $userid, $offset)",
-        module: "/reports",
+        module: ["/reports"],
         protected: "SELECT"
     },
     UFN_REPORT_USERPRODUCTIVITY_GRAPHIC: {
         query: "SELECT * FROM ufn_report_userproductivity_graphic($corpid ,$orgid, $channel, $startdate, $enddate, $userstatus, $usergroup, $bot, $userid, $column, $summarization, $offset)",
-        module: "/reports",
+        module: ["/reports"],
         protected: "SELECT"
     },
     UFN_EMOJI_ALL_SEL: {
@@ -564,7 +566,7 @@ module.exports = {
     },
     UFN_DOMAIN_LST_VALORES: {
         query: "SELECT * FROM ufn_domain_lst_valores($corpid,$orgid,$domainname)",
-        module: "",
+        module: ["/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
     UFN_DOMAIN_LST_VALUES_ONLY_DATA: {
@@ -639,7 +641,7 @@ module.exports = {
     },
     UFN_CONVERSATION_SEL_TICKETSBYUSER: {
         query: "SELECT * FROM ufn_conversation_sel_ticketsbyuser($corpid, $orgid, $agentid, $userid)",
-        module: "", //messag einbox y supervisor admitir arrays
+        module: ["/message_inbox", "/supervisor"], //messag einbox y supervisor admitir arrays
         protected: "SELECT"
     },
     UFN_CONVERSATION_SEL_INTENT: {
@@ -674,7 +676,7 @@ module.exports = {
     },
     UFN_CONVERSATIONCLASSIFICATION_SEL2: {
         query: "SELECT * FROM ufn_conversationclassification_sel2($corpid, $orgid, $conversationid)",
-        module: "", //supervisor and inbox
+        module: ["/message_inbox", "/supervisor"], //supervisor and inbox
         protected: "SELECT"
     },
     UFN_CONVERSATION_REASSIGNTICKET: {
@@ -779,7 +781,7 @@ module.exports = {
     },
     UFN_DOMAIN_LST: {
         query: "SELECT * FROM ufn_domain_lst($corpid, $orgid)",
-        module: "",
+        module: ["/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
     UFN_INPUTVALIDATION_LST: {
@@ -944,7 +946,7 @@ module.exports = {
     },
     UFN_USER_GROUPS_SEL: {
         query: "SELECT * FROM ufn_user_groups_sel($corpid, $orgid, $userid)",
-        module: ["/dashboard", "/servicedesk", "/extras/campaign"],
+        module: ["/dashboard", "/servicedesk", "/extras/campaign", "/reports"],
         protected: "SELECT"
     },
     UFN_CAMPAIGNMEMBER_SEL: {
@@ -1367,7 +1369,7 @@ module.exports = {
     },
     UFN_PERSON_INS: {
         query: "select * from ufn_person_ins( $id, $corpid, $orgid, $groups, $status, $type, $persontype, $personstatus, $phone, $email, $birthday, $alternativephone, $alternativeemail, $documenttype, $documentnumber, $firstname, $lastname, $sex, $gender, $civilstatus, $occupation, $educationlevel, $referringpersonid, $observation, $address, $healthprofessional, $referralchannel, $district, $username, $operation)",
-        module: "",
+        module: ["/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
     UFN_PERSON_PCC_INS: {
@@ -1377,7 +1379,7 @@ module.exports = {
     },
     UFN_LEAD_INS: {
         query: "select * from ufn_lead_ins($corpid,$orgid, $leadid, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $column_uuid, $username, $index, $phone, $email, $userid, $phase, $campaignid, $leadproduct, $operation, $personid, $persontype)",
-        module: ["/crm"],
+        module: ["/crm", "/message_inbox", "/supervisor"],
         protected: "INSERT"
     },
     UFN_LEAD_SD_INS: {
@@ -1397,7 +1399,7 @@ module.exports = {
     },
     UFN_LEAD_PERSON_INS: {
         query: "select * from ufn_lead_person_ins($corpid, $orgid, $id, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $username, $index, $firstname, $lastname, $email, $phone, $personid, $userid, $persontype, $products)",
-        module: "",
+        module: ["/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
     UFN_LEADBYPERSONCOMMUNICATIONCHANNEL_SEL: {
@@ -1467,7 +1469,7 @@ module.exports = {
     },
     UFN_CONVERSATION_CHANGESTATUS: {
         query: "select * from ufn_conversation_changestatus($corpid, $orgid, $conversationid, $status, $obs, $type, $userid, $username)",
-        module: "",
+        module: ["/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
     UFN_ADVISERS_SEL: {
@@ -1497,7 +1499,7 @@ module.exports = {
     },
     UFN_CURRENCY_SEL: {
         query: "SELECT code, description FROM currency",
-        module: ["/organizations"],
+        module: ["/organizations", "/reports"],
         protected: "SELECT"
     },
     UFN_COUNTRY_SEL: {
@@ -1512,12 +1514,12 @@ module.exports = {
     },
     UFN_PERSON_LINK_SEL: {
         query: "select * from ufn_person_link_sel($corpid, $orgid, $originpersonid, $where, $order, $take, $skip, $username, $offset)",
-        module: "",
+        module: ["/extras/person" , "/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
     UFN_PERSON_LINK_TOTALRECORDS: {
         query: "select * from ufn_person_link_totalrecords($corpid, $orgid, $originpersonid, $where, $username, $offset)",
-        module: "",
+        module: ["/extras/person" , "/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
     UFN_LEADACTIVITY_INS: {
@@ -1782,7 +1784,7 @@ module.exports = {
     },
     UFN_CONVERSATION_SUPERVISIONSTATUS: {
         query: `select * from ufn_conversation_supervisionstatus($corpid, $orgid, $conversationid, $status, $type, $userid, $username)`,
-        module: "",
+        module: ["/message_inbox", "/supervisor"],
         protected: "INSERT"
     },
     UFN_CONVERSATION_TRANSFERSTATUS: {
@@ -1919,7 +1921,7 @@ module.exports = {
     },
     UFN_INVOICE_SEL: {
         query: "SELECT * FROM ufn_invoice_sel($corpid,$orgid,$invoiceid,$userid,$year,$month,$currency,$paymentstatus)",
-        module: ["/invoice"],
+        module: ["/invoice", "/reports"],
         protected: "SELECT"
     },
     UFN_INVOICE_SELCLIENT: {
@@ -2519,17 +2521,17 @@ module.exports = {
     },
     UFN_INVOICE_IMPORT: {
         query: "SELECT * FROM ufn_invoice_import($corpid, $orgid, $year, $month, $description, $status, $receiverdoctype, $receiverdocnum, $receiverbusinessname, $receiverfiscaladdress, $receivercountry, $receivermail, $invoicetype, $serie, $correlative, $invoicedate, $expirationdate, $invoicestatus, $paymentstatus, $paymentdate, $paidby, $paymenttype, $totalamount, $exchangerate, $currency, $urlcdr, $urlpdf, $urlxml, $purchaseorder, $comments, $credittype, $username)",
-        module: ["/invoice"],
+        module: ["/invoice", "/reports"],
         protected: "SELECT"
     },
     UFN_REPORT_INVOICE_SUMMARY_SEL: {
         query: "SELECT * FROM ufn_report_invoice_summary_sel($year, $currency)",
-        module: "",
+        module: ["/reports"],
         protected: "SELECT"
     },
     UFN_REPORT_INVOICE_DETAIL_SEL: {
         query: "SELECT * FROM ufn_report_invoice_detail_sel($corpid, $year, $month, $currency)",
-        module: "",
+        module: ["/reports"],
         protected: "SELECT"
     },
     UFN_APPSETTING_VOXIMPLANT_SEL: {
@@ -2766,47 +2768,47 @@ module.exports = {
     },
     UFN_REPORT_ASESOR_VS_TICKET_EXPORT: {
         query: "SELECT * FROM ufn_report_asesor_vs_ticket_export($corpid, $orgid, $where, $order, $startdate, $enddate, $userid, $offset)",
-        module: "",
+        module: ["/reports"],
         protected: "SELECT"
     },
     UFN_REPORT_ASESOR_VS_TICKET_SEL: {
         query: "SELECT * FROM ufn_report_asesor_vs_ticket_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $userid, $offset)",
-        module: "",
+        module: ["/reports"],
         protected: "SELECT"
     },
     UFN_REPORT_ASESOR_VS_TICKET_TOTALRECORDS: {
         query: "SELECT * FROM ufn_report_asesor_vs_ticket_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $userid, $offset)",
-        module: "",
+        module: ["/reports"],
         protected: "SELECT"
     },
     UFN_REPORT_REQUESTSD_SEL: {
         query: "SELECT * FROM ufn_report_requestsd_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $company, $offset)",
-        module: "",
+        module: ["/reports"],
         protected: "SELECT"
     },
     UFN_REPORT_REQUESTSD_TOTALRECORDS: {
         query: "SELECT * FROM ufn_report_requestsd_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $company, $offset)",
-        module: "",
+        module: ["/reports"],
         protected: "SELECT"
     },
     UFN_REPORT_REQUESTSD_EXPORT: {
         query: "SELECT * FROM ufn_report_requestsd_export($corpid, $orgid, $where, $order, $startdate, $enddate, $company, $offset)",
-        module: "",
+        module: ["/reports"],
         protected: "SELECT"
     },
     UFN_REPORT_COMPLIANCESLA_EXPORT: {
         query: "SELECT * FROM ufn_report_compliancesla_export($corpid, $orgid, $where, $order, $startdate, $enddate, $company, $offset)",
-        module: "",
+        module: ["/reports"],
         protected: "SELECT"
     },
     UFN_REPORT_COMPLIANCESLA_SEL: {
         query: "SELECT * FROM ufn_report_compliancesla_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $company, $offset)",
-        module: "",
+        module: ["/reports"],
         protected: "SELECT"
     },
     UFN_REPORT_COMPLIANCESLA_TOTALRECORDS: {
         query: "SELECT * FROM ufn_report_compliancesla_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $company, $offset)",
-        module: "",
+        module: ["/reports"],
         protected: "SELECT"
     },
     UFN_USERBYSUPERVISOR_LST: {
@@ -2866,7 +2868,7 @@ module.exports = {
     },
     UFN_TEST: {
         query: "select 1",
-        module: "",
+        module: ["/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
     UFN_COMMUNICATIONCHANNEL_SEL_WHATSAPP: {
@@ -2906,17 +2908,17 @@ module.exports = {
     },
     UFN_CONVERSATION_CALLHOLD: {
         query: "SELECT * FROM ufn_conversation_callhold($corpid, $orgid, $conversationid, $holdtime)",
-        module: "",
+        module: ["/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
     UFN_INVOICECOMMENT_SEL: {
         query: "SELECT * FROM ufn_invoicecomment_sel($corpid, $orgid, $invoiceid, $invoicecommentid)",
-        module: ["/invoice"],
+        module: ["/invoice", "/reports"],
         protected: "SELECT"
     },
     UFN_INVOICECOMMENT_INS: {
         query: "SELECT * FROM ufn_invoicecomment_ins($corpid, $orgid, $invoiceid, $invoicecommentid, $description, $status, $type, $username, $commentcontent, $commenttype, $commentcaption)",
-        module: ["/invoice"],
+        module: ["/invoice", "/reports"],
         protected: "INSERT"
     },
     UFN_LOCATION_TOTALRECORDS: {
@@ -2941,12 +2943,12 @@ module.exports = {
     },
     UFN_REPORT_KPI_OPERATIVO_SEL: {
         query: "SELECT * FROM ufn_report_kpi_operativo_sel($corpid, $orgid, $date, $usergroup, $userid, $offset)",
-        module: "",
+        module: ["/reports"],
         protected: "SELECT"
     },
     UFN_CONVERSATION_LINKEDPERSON_EXECUTE: {
         query: "SELECT * FROM ufn_conversation_linkedperson_execute($corpid, $orgid, $personidfrom, $personidto, $imageurl, $name, $firstname, $lastname, $documenttype, $documentnumber, $persontype, $birthday, $gender, $phone, $alternativephone, $email, $alternativeemail, $civilstatus, $occupation, $educationlevel, $observation, $groups, $address, $healthprofessional, $referralchannel)",
-        module: "",
+        module: ["/extras/person", "/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
     UFN_CONVERSATION_UNLINKPERSON_EXECUTE: {
@@ -3122,7 +3124,7 @@ module.exports = {
         and intt.corpid = $corpid
         and intt.orgid = $orgid
         and intt.interactiontype IN ('file', 'video') order by intt.createdate desc`,
-        module: "",
+        module: ["/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
     QUERY_SELECT_LEADS_BY_USER_PERSON: {
@@ -3139,7 +3141,7 @@ module.exports = {
         and l.corpid = $corpid
         and l.orgid = $orgid
         and l.status = 'ACTIVO'`,
-        module: "",
+        module: ["/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
     UFN_BILLINGCONFIGURATION_NEWMONTH: {
