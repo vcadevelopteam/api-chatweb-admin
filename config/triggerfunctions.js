@@ -78,12 +78,12 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
 
         if (functionMethod && functionsbd[methodcount]) {
 
-            if (permissions && functionMethod.module) {
-                const application = permissions[functionMethod.module];
-                if (functionMethod.protected && (!application || ((functionMethod.protected === "SELECT" && !application[0]) || (functionMethod.protected === "INSERT" && !application[2])))) {
-                    return getErrorCode(errors.FORBIDDEN);
-                }
-            }
+            // if (permissions && functionMethod.module) {
+            //     const application = permissions[functionMethod.module];
+            //     if (functionMethod.protected && (!application || ((functionMethod.protected === "SELECT" && !application[0]) || (functionMethod.protected === "INSERT" && !application[2])))) {
+            //         return getErrorCode(errors.FORBIDDEN);
+            //     }
+            // }
 
             const querycollection = functionMethod.query;
             const querycount = functionsbd[methodcount].query;
