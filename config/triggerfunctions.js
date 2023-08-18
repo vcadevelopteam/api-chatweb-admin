@@ -67,8 +67,8 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
         if (functionMethod && functionsbd[methodcount]) {
 
             if (permissions && functionMethod.module) {
-                const application = permissions[functionMethod.module];
-                if (functionMethod.protected && (!application || ((functionMethod.protected === "SELECT" && !application[0]) || (functionMethod.protected === "INSERT" && !application[2])))) {
+                const application = (typeof functionMethod.module == 'string') ? permissions[functionMethod.module] : functionMethod.module.find(value => permissions[value]);
+                if (functionMethod.protected && !application) {
                     return getErrorCode(errors.FORBIDDEN);
                 }
             }
@@ -156,8 +156,8 @@ exports.GetMultiCollection = async (detail, permissions, _requestid) => {
         let functionMethod = functionsbd[item.method];
         if (functionMethod) {
             if (permissions && functionMethod.module) {
-                const application = permissions[functionMethod.module];
-                if (functionMethod.protected && (!application || ((functionMethod.protected === "SELECT" && !application[0]) || (functionMethod.protected === "INSERT" && !application[2])))) {
+                const application = (typeof functionMethod.module == 'string') ? permissions[functionMethod.module] : functionMethod.module.find(value => permissions[value]);
+                if (functionMethod.protected && !application) {
                     return getErrorCode(errors.FORBIDDEN);
                 }
             }
@@ -194,8 +194,8 @@ exports.executeTransaction = async (header, detail, permissions, _requestid) => 
         let functionMethod = functionsbd[method];
         if (functionMethod) {
             if (permissions && functionMethod.module) {
-                const application = permissions[functionMethod.module];
-                if (functionMethod.protected && (!application || ((functionMethod.protected === "SELECT" && !application[0]) || (functionMethod.protected === "INSERT" && !application[2])))) {
+                const application = (typeof functionMethod.module == 'string') ? permissions[functionMethod.module] : functionMethod.module.find(value => permissions[value]);
+                if (functionMethod.protected && !application) {
                     return getErrorCode(errors.FORBIDDEN);
                 }
             }
