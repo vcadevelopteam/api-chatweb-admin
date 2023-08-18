@@ -248,52 +248,52 @@ module.exports = {
     },
     UFN_PERSON_TOTALRECORDS: {
         query: "SELECT * FROM ufn_person_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset, $userids, $channeltypes)",
-        module: ["/extras/person", "/crm", "/servicedesk", "/message_inbox", "/supervisor"],
+        module: ["/person", "/crm", "/servicedesk", "/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
     UFN_PERSON_SEL: {
         query: "SELECT  * FROM ufn_person_sel($corpid, $orgid, $username, $where, $order, $take, $skip, $startdate, $enddate, $offset, $userids, $channeltypes)",
-        module: ["/extras/person", "/crm", "/servicedesk", "/message_inbox", "/supervisor"],
+        module: ["/person", "/crm", "/servicedesk", "/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
     UFN_PERSON_EXPORT: {
         query: "SELECT * FROM ufn_person_export($corpid, $orgid, $where, $order, $startdate, $enddate, $offset, $userids, $personcommunicationchannels )",
-        module: ["/extras/person"],
+        module: ["/person"],
         protected: "SELECT"
     },
     UFN_CONVERSATION_SEL_PERSON: {
         query: "select * from ufn_conversation_sel_person($personid, $take, $skip, $where, $order, $offset)",
-        module: ["/extras/person"],
+        module: ["/person"],
         protected: "SELECT"
     },
     UFN_PERSONCOMMUNICATIONCHANNEL_INS: {
         query: "SELECT * FROM ufn_personcommunicationchannel_ins($corpid, $orgid, $personid, $personcommunicationchannel, $personcommunicationchannelowner, $displayname, $type, $username, $operation, $status)",
-        module: "/extras/person",
+        module: "/person",
         protected: "INSERT"
     },
     UFN_PERSONCOMMUNICATIONCHANNEL_SEL: {
         query: "SELECT * FROM ufn_personcommunicationchannel_sel($corpid, $orgid, $personid,  $personcommunicationchannel, $username, $all)",
-        module: ["/extras/person"],
+        module: ["/person"],
         protected: "SELECT"
     },
     UFN_PERSONCOMMUNICATIONCHANNEL_UPDATE_LOCKED: {
         query: "SELECT * FROM ufn_personcommunicationchannel_update_locked($corpid, $orgid, $personid, $personcommunicationchannel, $username, $locked)",
-        module: ["/extras/person"],
+        module: ["/person"],
         protected: "INSERT"
     },
     UFN_PERSONCOMMUNICATIONCHANNEL_UPDATE_LOCKED_ARRAY: {
         query: "SELECT * FROM ufn_personcommunicationchannel_update_locked_array($corpid, $orgid, $username, $table)",
-        module: ["/extras/person"],
+        module: ["/person"],
         protected: "INSERT"
     },
     UFN_PERSONREFERRER_SEL: {
         query: "SELECT * FROM ufn_personreferrer_sel($personid)",
-        module: ["/extras/person"],
+        module: ["/person"],
         protected: "SELECT"
     },
     UFN_PERSONADDINFO_SEL: {
         query: "SELECT * FROM ufn_personaddinfo_sel($personid)",
-        module: "/extras/person",
+        module: "/person",
         protected: "SELECT"
     },
     UFN_INTELLIGENTMODELS_SEL: {
@@ -1111,7 +1111,7 @@ module.exports = {
     },
     UFN_CONVERSATION_SEL_PERSON_TOTALRECORDS: {
         query: "SELECT * FROM ufn_conversation_sel_person_totalrecords($personid, $where)",
-        module: ["/extras/person"],
+        module: ["/person"],
         protected: "SELECT"
     },
     UFN_ORGANIZATION_CHANGEORG_SEL: {
@@ -1418,7 +1418,7 @@ module.exports = {
     },
     UFN_PERSON_PCC_INS: {
         query: "select * from ufn_person_pcc_ins( $id, $corpid, $orgid, $groups, $status, $type, $persontype, $personstatus, $phone, $email, $birthday, $alternativephone, $alternativeemail, $documenttype, $documentnumber, $firstname, $lastname, $sex, $gender, $civilstatus, $occupation, $educationlevel, $referringpersonid, $observation, $address, $healthprofessional, $referralchannel, $district, $username, $operation)",
-        module: ["/extras/person"],
+        module: ["/person"],
         protected: "SELECT"
     },
     UFN_LEAD_INS: {
@@ -1453,7 +1453,7 @@ module.exports = {
     },
     UFN_COLUMN_SEL: {
         query: "select * from ufn_column_sel($corpid, $orgid, $id, $lost, $all)",
-        module: ["/automatizationrules", "/extras/person", "/crm"],
+        module: ["/automatizationrules", "/person", "/crm"],
         protected: "SELECT"
     },
     UFN_LEAD_SEL: {
@@ -1553,12 +1553,12 @@ module.exports = {
     },
     UFN_PERSON_LINK_SEL: {
         query: "select * from ufn_person_link_sel($corpid, $orgid, $originpersonid, $where, $order, $take, $skip, $username, $offset)",
-        module: ["/extras/person" , "/message_inbox", "/supervisor"],
+        module: ["/person" , "/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
     UFN_PERSON_LINK_TOTALRECORDS: {
         query: "select * from ufn_person_link_totalrecords($corpid, $orgid, $originpersonid, $where, $username, $offset)",
-        module: ["/extras/person" , "/message_inbox", "/supervisor"],
+        module: ["/person" , "/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
     UFN_LEADACTIVITY_INS: {
@@ -2992,12 +2992,12 @@ module.exports = {
     },
     UFN_CONVERSATION_LINKEDPERSON_EXECUTE: {
         query: "SELECT * FROM ufn_conversation_linkedperson_execute($corpid, $orgid, $personidfrom, $personidto, $imageurl, $name, $firstname, $lastname, $documenttype, $documentnumber, $persontype, $birthday, $gender, $phone, $alternativephone, $email, $alternativeemail, $civilstatus, $occupation, $educationlevel, $observation, $groups, $address, $healthprofessional, $referralchannel)",
-        module: ["/extras/person", "/message_inbox", "/supervisor"],
+        module: ["/person", "/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
     UFN_CONVERSATION_UNLINKPERSON_EXECUTE: {
         query: "SELECT * FROM ufn_conversation_unlinkperson_execute($corpid, $orgid, $personid, $personcommunicationchannel, $username)",
-        module: ["/extras/person"],
+        module: ["/person"],
         protected: "INSERT"
     },
     UFN_REPORT_UNIQUECONTACTS_SEL: {
@@ -3047,7 +3047,7 @@ module.exports = {
     },
     UFN_PERSON_INS_VALIDATION: {
         query: "SELECT * FROM ufn_person_ins_validation($id, $corpid, $orgid, $phone, $email, $alternativephone, $alternativeemail, $username, $operation)",
-        module: ["/extras/person"],
+        module: ["/person"],
         protected: "SELECT"
     },
     UFN_WITAI_APP_CRON: {
@@ -3138,7 +3138,7 @@ module.exports = {
 
     UFN_PERSON_IMPORT_VALIDATION: {
         query: "SELECT * FROM ufn_person_import_validation($corpid, $orgid, $table, $username)",
-        module: ["/extras/person"],
+        module: ["/person"],
         protected: "SELECT"
     },
     UFN_CHATFLOW_VARIABLE_SEL: {
@@ -3148,7 +3148,7 @@ module.exports = {
     },
     UDTT_PERSON_PCC_IMPORT: {
         query: "SELECT * FROM udtt_person_pcc_import($corpid, $orgid, $table, $username)",
-        module: ["/extras/person"],
+        module: ["/person"],
         protected: "SELECT"
     },
     UFN_SECURITYRULES_SEL: {
@@ -3370,7 +3370,7 @@ module.exports = {
     },
     UFN_PERSON_SEL_ONE: {
         query: "SELECT * FROM ufn_person_sel_one($corpid, $orgid, $personid)",
-        module: ["/extras/person"],
+        module: ["/person"],
         protected: "INSERT"
     },
     //mobile
