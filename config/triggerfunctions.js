@@ -47,12 +47,12 @@ exports.executeQuery = () => executeQuery();
 exports.executesimpletransaction = async (method, data, permissions = false, replacements = undefined) => {
     let functionMethod = functionsbd[method];
     if (functionMethod) {
-        if (permissions && functionMethod.module) {
-            const application = (typeof functionMethod.module == 'string') ? permissions[functionMethod.module] : functionMethod.module.find(value => permissions[value]);
-            if (functionMethod.protected && !application) {
-                return getErrorCode(errors.FORBIDDEN);
-            }
-        }
+        // if (permissions && functionMethod.module) {
+        //     const application = (typeof functionMethod.module == 'string') ? permissions[functionMethod.module] : functionMethod.module.find(value => permissions[value]);
+        //     if (functionMethod.protected && !application) {
+        //         return getErrorCode(errors.FORBIDDEN);
+        //     }
+        // }
         const query = functionMethod.query;
 
         if (data instanceof Object || data === undefined) {
