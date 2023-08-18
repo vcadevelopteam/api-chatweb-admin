@@ -167,12 +167,12 @@ exports.GetMultiCollection = async (detail, permissions, _requestid) => {
     return await Promise.all(detail.map(async (item, index) => {
         let functionMethod = functionsbd[item.method];
         if (functionMethod) {
-            if (permissions && functionMethod.module) {
-                const application = permissions[functionMethod.module];
-                if (functionMethod.protected && (!application || ((functionMethod.protected === "SELECT" && !application[0]) || (functionMethod.protected === "INSERT" && !application[2])))) {
-                    return getErrorCode(errors.FORBIDDEN);
-                }
-            }
+            // if (permissions && functionMethod.module) {
+            //     const application = permissions[functionMethod.module];
+            //     if (functionMethod.protected && (!application || ((functionMethod.protected === "SELECT" && !application[0]) || (functionMethod.protected === "INSERT" && !application[2])))) {
+            //         return getErrorCode(errors.FORBIDDEN);
+            //     }
+            // }
             const profiler = logger.child({ ctx: item.parameters, _requestid }).startTimer();
 
             const r = await sequelize.query(functionMethod.query, {
@@ -205,12 +205,12 @@ exports.executeTransaction = async (header, detail, permissions, _requestid) => 
 
         let functionMethod = functionsbd[method];
         if (functionMethod) {
-            if (permissions && functionMethod.module) {
-                const application = permissions[functionMethod.module];
-                if (functionMethod.protected && (!application || ((functionMethod.protected === "SELECT" && !application[0]) || (functionMethod.protected === "INSERT" && !application[2])))) {
-                    return getErrorCode(errors.FORBIDDEN);
-                }
-            }
+            // if (permissions && functionMethod.module) {
+            //     const application = permissions[functionMethod.module];
+            //     if (functionMethod.protected && (!application || ((functionMethod.protected === "SELECT" && !application[0]) || (functionMethod.protected === "INSERT" && !application[2])))) {
+            //         return getErrorCode(errors.FORBIDDEN);
+            //     }
+            // }
 
             if (parameters instanceof Object) {
                 const profiler = logger.child({ ctx: parameters, _requestid }).startTimer();
