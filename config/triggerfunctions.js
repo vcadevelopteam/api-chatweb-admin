@@ -37,7 +37,7 @@ exports.executesimpletransaction = async (method, data, permissions = false, rep
     if (functionMethod) {
         if (permissions && functionMethod.module) {
             const application = (typeof functionMethod.module == 'string') ? permissions[functionMethod.module] : functionMethod.module.find(value => permissions[value]);
-            if (functionMethod.protected && !application) {
+            if (functionMethod.protected && !application) { 
                 return getErrorCode(errors.FORBIDDEN);
             }
         }
