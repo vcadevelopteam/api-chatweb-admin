@@ -1388,6 +1388,15 @@ module.exports = {
         status: {
             column: "mt.status"
         },
+        category: {
+            column: "mt.category"
+        },
+        language: {
+            column: "mt.language"
+        },
+        body: {
+            column: "mt.body"
+        },
         fromprovider: {
             column: "mt.fromprovider",
             type: "boolean"
