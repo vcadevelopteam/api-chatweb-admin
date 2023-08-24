@@ -736,7 +736,7 @@ exports.getQuery = (method, data, isNotPaginated) => {
 
 exports.uploadBufferToCos = async (_requestid, buffer, contentType, key, presigned = false) => {
     const params = {
-        // ACL: 'public-read',
+        ACL: presigned ? undefined : 'public-read',
         Key: key,
         Body: buffer,
         Bucket: COS_BUCKET_NAME,
