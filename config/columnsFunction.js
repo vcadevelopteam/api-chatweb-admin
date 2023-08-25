@@ -1404,6 +1404,12 @@ module.exports = {
         externalstatus: {
             column: "mt.externalstatus"
         },
+        category: {
+            column: "mt.category"
+        },
+        language: {
+            column: "mt.language"
+        },
         communicationchanneldesc: {
             column: "cc.description"
         },
