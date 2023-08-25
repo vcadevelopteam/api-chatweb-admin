@@ -1413,6 +1413,7 @@ module.exports = {
         communicationchanneldesc: {
             column: "cc.description"
         },
+
     },
     reportrequestsd: {
         sd_request: {
@@ -1447,40 +1448,6 @@ module.exports = {
             column: "ld.resolution_date",
             type: "date"
         },
-    },
-    messagetemplate: {
-        createdate: {
-            column: "mt.createdate",
-            type: "date"
-        },
-        templateid: {
-            column: "mt.messagetemplateid",
-        },
-        type: {
-            column: "mt.type",
-        },
-        templatetype: {
-            column: "mt.templatetype",
-        },
-        name: {
-            column: "mt.name",
-        },
-        namespace: {
-            column: "mt.namespace",
-        },
-        status: {
-            column: "mt.status",
-        },
-        fromprovider: {
-            column: "mt.fromprovider",
-        },
-        communicationchanneldesc: {
-            column: "cc.description",
-        },
-        externalstatus: {
-            column: "mt.externalstatus",
-        },
-
     },
     reportcompliancesla: {
         sd_request: {
