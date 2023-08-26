@@ -250,7 +250,7 @@ exports.sendHSM = async (req, res) => {
             }
 
             data.listmembers.forEach(async x => {
-                const resCheck = await executesimpletransaction("UFN_BALANCE_CHECK", { ...data, receiver: x.email, communicationchannelid: 0 })
+                const resCheck = await executesimpletransaction("UFN_BALANCE_CHECK", { ...data, messagetemplateid: data.hsmtemplateid, receiver: x.email, communicationchannelid: 0 })
 
                 let send = false;
                 if (resCheck instanceof Array && resCheck.length > 0) {
@@ -362,7 +362,7 @@ exports.import = async (req, res) => {
         if (req.files.length > 10) {
             return res.status(400).json(getErrorCode(errors.LIMIT_EXCEEDED));
         }
-        
+
         const attachments = []
 
         let file_list = req.files.filter(f => f.mimetype === 'application/x-zip-compressed' && f.originalname !== 'wa_layout.css');
@@ -370,32 +370,32 @@ exports.import = async (req, res) => {
             let files = await unzip(file_list[i])
             if (files) {
                 for (let j = 0; j < files.length; j++) {
-                    if (files[j]?.size < 10*1024*1024) {
+                    if (files[j]?.size < 10 * 1024 * 1024) {
                         let cosname = await uploadToCOS({
                             size: files[j]?.size,
                             originalname: files[j]?.name,
                             buffer: files[j]?.data,
                             mimetype: null
                         }, req.user?.orgdesc || "anonymous")
-                        attachments.push({filename: files[j].name, url: cosname });
+                        attachments.push({ filename: files[j].name, url: cosname });
                     }
                 }
             }
         }
-        
+
         file_list = req.files.filter(f => f.originalname.includes('.rar'));
         for (let i = 0; i < file_list.length; i++) {
             let files = await unrar(file_list[i])
             if (files) {
                 for (let j = 0; j < files.length; j++) {
-                    if (files[j]?.size < 10*1024*1024) {
+                    if (files[j]?.size < 10 * 1024 * 1024) {
                         let cosname = await uploadToCOS({
                             size: files[j]?.fileHeader?.unpSize,
                             originalname: files[j]?.fileHeader?.name,
                             buffer: Buffer.from(files[j]?.extraction),
                             mimetype: null
                         }, req.user?.orgdesc || "anonymous")
-                        attachments.push({filename: files[j]?.fileHeader?.name, url: cosname });
+                        attachments.push({ filename: files[j]?.fileHeader?.name, url: cosname });
                     }
                 }
             }
@@ -403,7 +403,7 @@ exports.import = async (req, res) => {
 
         // Variable which will store all data
         let datatable = [];
-        
+
         // Joining xlx files
         file_list = req.files.filter(f => f.mimetype === 'application/vnd.ms-excel' || f.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         file_list = file_list.sort((a, b) => a.originalname > b.originalname ? 1 : -1);
@@ -422,7 +422,7 @@ exports.import = async (req, res) => {
                 }))
             ]
         }
-        
+
         // Joining csv files
         file_list = req.files.filter(f => f.mimetype === 'text/csv');
         for (const csv_elem of file_list) {
@@ -436,7 +436,7 @@ exports.import = async (req, res) => {
                     const data = {
                         ...headers.reduce((ad, key, j) => ({
                             ...ad,
-                            [key]: line[j][0] === '"' && line[j].slice(-1) === '"' ? line[j].slice(1,-1) : line[j]
+                            [key]: line[j][0] === '"' && line[j].slice(-1) === '"' ? line[j].slice(1, -1) : line[j]
                         }), {}),
                     }
                     lines.push(data)
@@ -465,29 +465,29 @@ exports.import = async (req, res) => {
             }
         }
 
-       // Get uniques personphones
-       const personphone_list = [...new Map(datatable.filter(d => !!d.personname).map(d => [d['personphone'], d])).values()];
-       const personphone_dict = personphone_list.reduce((ac, c) => ({
-           ...ac,
-           [c.personphone]: c
-       }), {});
-       
-       // Add personname for attachment files
-       datatable = datatable.map(d => ({
-           ...d,
-           personname: !d.personname ? personphone_dict[d.personphone]?.personname : d.personname
-       }));
-       
-       // Clean data without personname
-       datatable = datatable.filter(p => !!p.personname);
-       
-       // Sort data by date
-       datatable = datatable.sort((a, b) => new Date(a['date']) > new Date(b['date']) ? 1 : -1);
+        // Get uniques personphones
+        const personphone_list = [...new Map(datatable.filter(d => !!d.personname).map(d => [d['personphone'], d])).values()];
+        const personphone_dict = personphone_list.reduce((ac, c) => ({
+            ...ac,
+            [c.personphone]: c
+        }), {});
 
-       if (!data?.corpid)
-           data.corpid = req.user?.corpid ? req.user.corpid : 1;
-       if (!data?.orgid)
-           data.orgid = req.user?.orgid ? req.user.orgid : 1;
+        // Add personname for attachment files
+        datatable = datatable.map(d => ({
+            ...d,
+            personname: !d.personname ? personphone_dict[d.personphone]?.personname : d.personname
+        }));
+
+        // Clean data without personname
+        datatable = datatable.filter(p => !!p.personname);
+
+        // Sort data by date
+        datatable = datatable.sort((a, b) => new Date(a['date']) > new Date(b['date']) ? 1 : -1);
+
+        if (!data?.corpid)
+            data.corpid = req.user?.corpid ? req.user.corpid : 1;
+        if (!data?.orgid)
+            data.orgid = req.user?.orgid ? req.user.orgid : 1;
 
         data._requestid = req._requestid;
 
@@ -588,7 +588,7 @@ exports.import = async (req, res) => {
         if (pcc_to_create.length > 0) {
             // Filter pcc without personid
             const person_to_create = pcc_to_create.filter(d => !d.personid);
-            
+
             // Create persons
             const person_result = await executesimpletransaction("QUERY_TICKETIMPORT_PERSON_INS", {
                 corpid: data.corpid,

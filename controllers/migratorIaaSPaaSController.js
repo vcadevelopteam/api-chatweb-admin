@@ -255,7 +255,7 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     }
                     corpidBind['maxid'] = max?.[0]?.max || 0;
                 }
-                
+
                 // // Revisión del estado de la migración
                 // migrationstatus = running === true ? await zyxmeQuery(`SELECT run FROM migration WHERE corpid = $corpid`, corpidBind) : migrationstatus;
                 // running = migrationstatus.length > 0 ? migrationstatus[0].run : false;
@@ -321,12 +321,12 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                     });
                 }
                 const selectElapsedSeconds = parseHrtimeToSeconds(process.hrtime(selectStartTime));
-                
+
                 if (selectResult instanceof Array) {
                     if (selectResult.length === 0 || lastloopid === selectResult?.[0]?.[`${q.id}`]) {
                         break;
                     }
-                    
+
                     // Insert a la bd destino
                     const insertStartTime = process.hrtime();
                     try {
@@ -340,9 +340,9 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                             AS dt (${dt})
                             WHERE NOT EXISTS(SELECT 1 FROM "${k}" xins WHERE ${q.where_ins})
                             `.replace('\n', ' '),
-                            {
-                                datatable: JSON.stringify(selectResult)
-                            });
+                                {
+                                    datatable: JSON.stringify(selectResult)
+                                });
                         }
                         else {
                             if (q.id) {
@@ -354,9 +354,9 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                 AS dt (${dt})
                                 WHERE NOT EXISTS(SELECT 1 FROM "${k}" xins WHERE xins.${q.id} = dt.${q.id})
                                 `.replace('\n', ' '),
-                                {
-                                    datatable: JSON.stringify(selectResult)
-                                });
+                                    {
+                                        datatable: JSON.stringify(selectResult)
+                                    });
                             }
                             else {
                                 insertResult = await laraigoQuery(`
@@ -366,13 +366,13 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                 FROM json_populate_recordset(null::record, $datatable)
                                 AS dt (${dt})
                                 `.replace('\n', ' '),
-                                {
-                                    datatable: JSON.stringify(selectResult)
-                                });
+                                    {
+                                        datatable: JSON.stringify(selectResult)
+                                    });
                             }
                         }
                         let insertElapsedSeconds = parseHrtimeToSeconds(process.hrtime(insertStartTime));
-                        
+
                         if (insertResult instanceof Array) {
                         }
                         else {
@@ -390,9 +390,9 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                     AS dt (${dt})
                                     WHERE NOT EXISTS(SELECT 1 FROM "${k}" xins WHERE ${q.where_ins})
                                     `.replace('\n', ' '),
-                                    {
-                                        datatable: JSON.stringify([elem])
-                                    });
+                                        {
+                                            datatable: JSON.stringify([elem])
+                                        });
                                 }
                                 else {
                                     eleminsertResult = await laraigoQuery(`
@@ -402,9 +402,9 @@ const migrationExecute = async (corpidBind, queries, movewebhook = false) => {
                                     FROM json_populate_recordset(null::record, $datatable)
                                     AS dt (${dt})
                                     `.replace('\n', ' '),
-                                    {
-                                        datatable: JSON.stringify([elem])
-                                    });
+                                        {
+                                            datatable: JSON.stringify([elem])
+                                        });
                                 }
                                 if (eleminsertResult instanceof Array) {
                                 }
@@ -1016,12 +1016,6 @@ const queryBilling = {
         update: 'changedate',
         insert: 'id',
     },
-    billingnotification: {
-        id: 'billingnotificationid',
-        sequence: 'billingnotificationseq',
-        update: 'changedate',
-        insert: 'id',
-    },
     billingperiod: {
         update: 'lastupdate',
         xupd: 'xupd.corpid = dt.corpid AND xupd.orgid = dt.orgid AND xupd.year = dt.year AND xupd.month = dt.month',
@@ -1083,52 +1077,52 @@ exports.executeMigration = async (req, res) => {
         // }
         try {
             if (modules.includes('core')) {
-                for (const [k,q] of Object.entries(queryCore)) {
+                for (const [k, q] of Object.entries(queryCore)) {
                     queryResult.core[k] = await migrationExecute(corpidBind, { [k]: q });
                 }
             }
             if (!modules.includes('core')) {
-                for (const [k,q] of Object.entries(queryCore)) {
+                for (const [k, q] of Object.entries(queryCore)) {
                     if (modules.includes(`core.${k}`)) {
                         queryResult.core[k] = await migrationExecute(corpidBind, { [k]: q });
                     }
-                } 
+                }
             }
             if (modules.includes('subcore')) {
-                for (const [k,q] of Object.entries(querySubcore)) {
+                for (const [k, q] of Object.entries(querySubcore)) {
                     queryResult.subcore[k] = await migrationExecute(corpidBind, { [k]: q });
                 }
             }
             if (!modules.includes('subcore')) {
-                for (const [k,q] of Object.entries(querySubcore)) {
+                for (const [k, q] of Object.entries(querySubcore)) {
                     if (modules.includes(`subcore.${k}`)) {
                         queryResult.subcore[k] = await migrationExecute(corpidBind, { [k]: q });
                     }
-                } 
+                }
             }
             if (modules.includes('extras')) {
-                for (const [k,q] of Object.entries(queryExtras)) {
+                for (const [k, q] of Object.entries(queryExtras)) {
                     queryResult.extras[k] = await migrationExecute(corpidBind, { [k]: q });
                 }
             }
             if (!modules.includes('extras')) {
-                for (const [k,q] of Object.entries(queryExtras)) {
+                for (const [k, q] of Object.entries(queryExtras)) {
                     if (modules.includes(`extras.${k}`)) {
                         queryResult.extras[k] = await migrationExecute(corpidBind, { [k]: q });
                     }
-                } 
+                }
             }
             if (modules.includes('billing')) {
-                for (const [k,q] of Object.entries(queryBilling)) {
+                for (const [k, q] of Object.entries(queryBilling)) {
                     queryResult.billing[k] = await migrationExecute(corpidBind, { [k]: q });
                 }
             }
             if (!modules.includes('billing')) {
-                for (const [k,q] of Object.entries(queryBilling)) {
+                for (const [k, q] of Object.entries(queryBilling)) {
                     if (modules.includes(`billing.${k}`)) {
                         queryResult.billing[k] = await migrationExecute(corpidBind, { [k]: q });
                     }
-                } 
+                }
             }
             // await zyxmeQuery(`UPDATE migration SET run = $run, result = $result, enddate = NOW() WHERE corpid = $corpid`, bind = {
             //     _requestid: req._requestid,

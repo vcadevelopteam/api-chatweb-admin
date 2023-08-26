@@ -56,6 +56,7 @@ const send = async (data, requestid) => {
 
             const resCheck = await executesimpletransaction("UFN_BALANCE_CHECK", {
                 ...data,
+                messagetemplateid: data.hsmtemplateid,
                 receiver: data.listmembers[0].email,
                 communicationchannelid: 0
             })
@@ -219,6 +220,7 @@ const setReminder = async (data, requestid) => {
             const resCheck = await executesimpletransaction("UFN_BALANCE_CHECK", {
                 ...data,
                 type: 'MAIL',
+                messagetemplateid: data.remindermailtemplateid,
                 receiver: data.listmembers[0].email,
                 communicationchannelid: 0
             })
@@ -411,7 +413,7 @@ exports.Collection = async (req, res) => {
 
             //si envia un calendarbookinguuid es porque quiere reprogramar, osea cancelar la antigua y crear una nueva
             if (parameters.calendarbookingid) {
-            
+
                 await executesimpletransaction("QUERY_CANCEL_EVENT_BY_CALENDARBOOKINGUUID", {
                     ...parameters,
                     cancelcomment: "RESCHEDULED BOOKING"
@@ -420,7 +422,7 @@ exports.Collection = async (req, res) => {
                     ...parameters,
                 });
                 try {
-           
+
                     //Reschedulde start
                     if (["HSM", "HSMEMAIL", "EMAIL"].includes(rescheduletype)) {
                         const sendmessage = {
@@ -444,7 +446,7 @@ exports.Collection = async (req, res) => {
                             }],
                             body: reschedulenotificationhsm
                         }
-                
+
                         if ("HSMEMAIL" === rescheduletype) {
                             await send(sendmessage, req._requestid);
                             await send({ ...sendmessage, type: "MAIL", body: reschedulenotificationemail, hsmtemplateid: rescheduletemplateidemail }, req._requestuestid);
@@ -455,7 +457,7 @@ exports.Collection = async (req, res) => {
                         }
                     }
                     //Reschedule end
-                    
+
                 } catch (exception) {
                     logger.child({ _requestid: req._requestid }).error(exception)
                     return res.status(500).json({
@@ -465,7 +467,7 @@ exports.Collection = async (req, res) => {
                         success: false,
                     });
                 }
-               
+
             }
 
             if (["EMAIL", "HSM", "HSMEMAIL"].includes(notificationtype) && !parameters.calendarbookingid) {
