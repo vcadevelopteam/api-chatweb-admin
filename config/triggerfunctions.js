@@ -342,24 +342,24 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             if (DATES.includes(type)) {
                 return `${acc}\nand ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
             } else if (!!value) {
-
-                const filter_array = `ANY(string_to_array('${value}',',')::${type === "variable" ? "text" : type}[])`
+                const valueCleaned = value === "''" ? "" : value;
+                const filter_array = `ANY(string_to_array('${valueCleaned}',',')::${type === "variable" ? "text" : type}[])`
 
                 if (NUMBERS.includes(type)) {
-                    return `${acc}\nand ${columnname} = ${value.includes(",") ? filter_array : value}`
+                    return `${acc}\nand ${columnname} = ${valueCleaned.includes(",") ? filter_array : valueCleaned}`
                 } else if (type === "variable") {
-                    return `${acc}\nand conversation.variablecontextsimple->>'${columnname}' ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
+                    return `${acc}\nand conversation.variablecontextsimple->>'${columnname}' ilike ${valueCleaned.includes(",") ? filter_array : "'" + valueCleaned + "'"}`
                 } else if (type === "boolean") {
-                    return `${acc}\nand ${columnname} = ${value}`
+                    return `${acc}\nand ${columnname} = ${valueCleaned}`
                 } else {
                     if (columnname === "conversation.tags") {
-                        if (value.includes(",")) {
+                        if (valueCleaned.includes(",")) {
                             return `${acc}\nand ${filter_array}  && string_to_array(${columnname}, ',')`
                         } else {
-                            return `${acc}\nand '${value}'  = any(string_to_array(${columnname}, ','))`
+                            return `${acc}\nand '${valueCleaned}'  = any(string_to_array(${columnname}, ','))`
                         }
                     } else {
-                        return `${acc}\nand ${columnname} ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
+                        return `${acc}\nand ${columnname} ilike ${valueCleaned.includes(",") ? filter_array : "'" + valueCleaned + "'"}`
                     }
                 }
             } else {
@@ -495,23 +495,24 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
             if (DATES.includes(type)) {
                 return `${acc}\nand ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
             } else if (!!value) {
-                const filter_array = `ANY(string_to_array('${value}',',')::${type === "variable" ? "text" : type}[])`
+                const valueCleaned = value === "''" ? "" : value;
+                const filter_array = `ANY(string_to_array('${valueCleaned}',',')::${type === "variable" ? "text" : type}[])`
 
                 if (NUMBERS.includes(type)) {
-                    return `${acc}\nand ${columnname} = ${value.includes(",") ? filter_array : value}`
+                    return `${acc}\nand ${columnname} = ${valueCleaned.includes(",") ? filter_array : valueCleaned}`
                 } else if (type === "variable") {
-                    return `${acc}\nand conversation.variablecontextsimple->>'${columnname}' ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
+                    return `${acc}\nand conversation.variablecontextsimple->>'${columnname}' ilike ${valueCleaned.includes(",") ? filter_array : "'" + valueCleaned + "'"}`
                 } else if (type === "boolean") {
-                    return `${acc}\nand ${columnname} = ${value}`
+                    return `${acc}\nand ${columnname} = ${valueCleaned}`
                 } else {
                     if (columnname === "conversation.tags") {
-                        if (value.includes(",")) {
+                        if (valueCleaned.includes(",")) {
                             return `${acc}\nand ${filter_array}  && string_to_array(${columnname}, ',')`
                         } else {
-                            return `${acc}\nand '${value}'  = any(string_to_array(${columnname}, ','))`
+                            return `${acc}\nand '${valueCleaned}'  = any(string_to_array(${columnname}, ','))`
                         }
                     } else {
-                        return `${acc}\nand ${columnname} ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
+                        return `${acc}\nand ${columnname} ilike ${valueCleaned.includes(",") ? filter_array : "'" + valueCleaned + "'"}`
                     }
                 }
             } else {
