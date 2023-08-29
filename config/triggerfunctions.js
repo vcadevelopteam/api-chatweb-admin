@@ -359,7 +359,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                             return `${acc}\nand '${valueCleaned}'  = any(string_to_array(${columnname}, ','))`
                         }
                     } else {
-                        if (value === "") {
+                        if (valueCleaned === "") {
                             return `${acc}\nand COALESCE(${columnname}, '') ilike '${valueCleaned}'}`
                         } else {
                             return `${acc}\nand ${columnname} ilike ${valueCleaned.includes(",") ? filter_array : "'" + valueCleaned + "'"}`
@@ -516,7 +516,7 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
                             return `${acc}\nand '${valueCleaned}'  = any(string_to_array(${columnname}, ','))`
                         }
                     } else {
-                        if (value === "") {
+                        if (valueCleaned === "") {
                             return `${acc}\nand COALESCE(${columnname}, '') ilike '${valueCleaned}'}`
                         } else {
                             return `${acc}\nand ${columnname} ilike ${valueCleaned.includes(",") ? filter_array : "'" + valueCleaned + "'"}`
