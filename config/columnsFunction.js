@@ -36,43 +36,43 @@ module.exports = {
             type: "date"
         },
         enddate: {
-            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')"
+            column: "to_char(co.enddate, 'DD/MM/YYYY')"
         },
         endtime: {
-            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')"
+            column: "to_char(co.enddate :: time, 'HH24:MI:SS')"
         },
         firstinteractiondate: {
-            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY'), to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')) ELSE to_char((co.startdate + co.firstreplytime) + p_offset * INTERVAL '1hour', 'DD/MM/YYYY') END"
+            column: "to_char(co.firstinteractiondate, 'DD/MM/YYYY')"
         },
         firstinteractiontime: {
-            column: "CASE WHEN ou.type <> 'BOT' THEN coalesce(to_char((co.handoffdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS'), to_char((co.startdate + co.userfirstreplytime) + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')) ELSE to_char((co.startdate + co.firstreplytime) + p_offset * INTERVAL '1hour' ::time, 'HH24:MI:SS') END"
+            column: "to_char(co.firstinteractiondate :: time, 'HH24:MI:SS')"
         },
         person: {
-            column: "pcc.displayname"
+            column: "co.displayname"
         },
         phone: {
-            column: "pe.phone"
+            column: "co.phone"
         },
         closedby: {
-            column: "ou.type"
+            column: "co.closedby"
         },
         agent: {
-            column: "nullif(concat(us.firstname,' ',us.lastname), ' '), ' ')"
+            column: "co.user_name"
         },
         closetype: {
-            column: "coalesce(do2.domaindesc, co.closetype)"
+            column: "co.closetype"
         },
         channel: {
-            column: "cc.description"
+            column: "co.description"
         },
         classificationlevel1: {
-            column: "coalesce(cl2.description, cl1.description)"
+            column: "co.description1"
         },
         classificationlevel2: {
-            column: "case when cl2.description is null then cl.description else cl1.description end"
+            column: "co.description2"
         },
         classificationlevel3: {
-            column: "case when cl2.description is null then null else cl.description end"
+            column: "co.description3"
         },
     },
     interaction: {
@@ -1519,7 +1519,7 @@ module.exports = {
             column: "case when ld.resolution_date <= ld.resolution_deadline then 'CUMPLE' else 'NO CUMPLE' end"
         },
     },
-    servicedesk:{
+    servicedesk: {
         sd_request: {
             column: "ld.sd_request"
         },
