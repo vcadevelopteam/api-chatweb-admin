@@ -347,7 +347,11 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                             return `${acc}\nand '${valueCleaned}'  = any(string_to_array(${columnname}, ','))`
                         }
                     } else {
-                        return `${acc}\nand ${columnname} ilike ${valueCleaned.includes(",") ? filter_array : "'" + valueCleaned + "'"}`
+                        if (value === "") {
+                            return `${acc}\nand COALESCE(${columnname}, '') ilike '${valueCleaned}'}`
+                        } else {
+                            return `${acc}\nand ${columnname} ilike ${valueCleaned.includes(",") ? filter_array : "'" + valueCleaned + "'"}`
+                        }
                     }
                 }
             } else {
@@ -500,7 +504,11 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
                             return `${acc}\nand '${valueCleaned}'  = any(string_to_array(${columnname}, ','))`
                         }
                     } else {
-                        return `${acc}\nand ${columnname} ilike ${valueCleaned.includes(",") ? filter_array : "'" + valueCleaned + "'"}`
+                        if (value === "") {
+                            return `${acc}\nand COALESCE(${columnname}, '') ilike '${valueCleaned}'}`
+                        } else {
+                            return `${acc}\nand ${columnname} ilike ${valueCleaned.includes(",") ? filter_array : "'" + valueCleaned + "'"}`
+                        }
                     }
                 }
             } else {
