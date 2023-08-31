@@ -612,6 +612,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PRODUCT_PAG: {
+        query: "SELECT * FROM inventario.ufn_product_pag($corpid, $orgid, $productid, $userid, $where, $order, $take, $skip)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PRODUCT_TOTALRECORDS: {
+        query: "SELECT * FROM inventario.ufn_product_totalrecords($corpid, $orgid, $where)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_MESSAGETEMPLATE_INS: {
         query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $bodyobject, $footerenabled, $footer, $buttonsenabled, $buttons, $priority, $attachment, $fromprovider, $externalid, $externalstatus, $communicationchannelid, $communicationchanneltype, $exampleparameters, $username, $operation)",
         module: "",
