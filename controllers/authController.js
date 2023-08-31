@@ -231,7 +231,6 @@ exports.getUser = async (req, res) => {
             executesimpletransaction("UFN_DOMAIN_LST_VALUES_ONLY_DATA", { ...req.user, domainname: "TIPODESCONEXION", ...prevdata }),
             executesimpletransaction("QUERY_SEL_PROPERTY_ENV_ON_LOGIN", { ...req.user })
         ]);
-
         const resultBDProperties = resultBD[3];
         const propertyEnv = resultBD[5] instanceof Array && resultBD[5].length > 0 ? resultBD[5][0].propertyvalue : "";
 
@@ -245,15 +244,20 @@ exports.getUser = async (req, res) => {
                 [item.key]: cleanPropertyValue(resultBDProperties.filter(x => x.propertyname === item.propertyname), item)
             }), { environment: propertyEnv });
         }
+        // console.log(resultBD[0])
 
         const menu = resultBD[0].reduce((acc, item) => ({
             ...acc, [item.path]:
                 [item.view ? 1 : 0,
                 item.modify ? 1 : 0,
                 item.insert ? 1 : 0,
-                item.delete ? 1 : 0]
+                item.delete ? 1 : 0,
+                item.applicationid_parent,
+                item.description_parent,
+                item.menuorder,
+            ]
         }), {})
-
+        console.log(menu);
         jwt.sign({ user: { ...req.user, menu: { ...menu, "system-label": undefined, "/": undefined } } }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
             if (error) throw error;
             delete req.user.token;
