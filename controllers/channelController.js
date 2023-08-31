@@ -1290,7 +1290,6 @@ exports.insertChannel = async (request, response) => {
                         success: false
                     });
                 }
-
             case "FBWM":
                 const requestTokenWorkplaceWall = await axiosObservable({
                     method: 'get',
@@ -1344,86 +1343,86 @@ exports.insertChannel = async (request, response) => {
             case 'INSTAMESSENGER':
             case 'MESSENGER':
             case 'FBLD':
-                const requestGetLongToken = await axiosObservable({
-                    data: {
-                        accessToken: service.accesstoken,
-                        appId: service.appid,
-                        linkType: 'GENERATELONGTOKEN'
-                    },
-                    method: 'post',
-                    url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
-                    _requestid: request._requestid,
-                });
-                if (requestGetLongToken.data.success) {
-                    let businessId = null;
-                    let channelLinkService = null;
-                    let channelType = null;
-                    let serviceType = null;
-
-                    switch (request.body.type) {
-                        case 'FACEBOOK':
-                            channelLinkService = 'WALLADD';
-                            channelType = 'FBWA';
-                            serviceType = 'WALL';
-                            break;
-
-                        case 'INSTAGRAM':
-                            channelLinkService = 'INSTAGRAMADD';
-                            channelType = 'INST';
-                            serviceType = 'INSTAGRAM';
-                            break;
-
-                        case 'INSTAMESSENGER':
-                            channelLinkService = 'INSTAGRAMADD';
-                            channelType = 'INDM';
-                            serviceType = 'INSTAGRAM';
-                            break;
-
-                        case 'MESSENGER':
-                            channelLinkService = 'MESSENGERADD';
-                            channelType = 'FBDM';
-                            serviceType = 'MESSENGER';
-                            break;
-                        case 'FBLD':
-                            channelLinkService = 'WALLADD';
-                            channelType = 'FBLD';
-                            serviceType = 'FBLD';
-                            break;
-                    }
-
-                    if (request.body.type === 'INSTAGRAM' || request.body.type === 'INSTAMESSENGER') {
-                        const requestGetBusiness = await axiosObservable({
+                    const requestGetLongToken = await axiosObservable({
+                        data: {
+                            accessToken: service.accesstoken,
+                            appId: service.appid,
+                            linkType: 'GENERATELONGTOKEN'
+                        },
+                        method: 'post',
+                        url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
+                        _requestid: request._requestid,
+                    });
+                    if (requestGetLongToken.data.success) {
+                        let businessId = null;
+                        let channelLinkService = null;
+                        let channelType = null;
+                        let serviceType = null;
+    
+                        switch (request.body.type) {
+                            case 'FACEBOOK':
+                                channelLinkService = 'WALLADD';
+                                channelType = 'FBWA';
+                                serviceType = 'WALL';
+                                break;
+    
+                            case 'INSTAGRAM':
+                                channelLinkService = 'INSTAGRAMADD';
+                                channelType = 'INST';
+                                serviceType = 'INSTAGRAM';
+                                break;
+    
+                            case 'INSTAMESSENGER':
+                                channelLinkService = 'INSTAGRAMADD';
+                                channelType = 'INDM';
+                                serviceType = 'INSTAGRAM';
+                                break;
+    
+                            case 'MESSENGER':
+                                channelLinkService = 'MESSENGERADD';
+                                channelType = 'FBDM';
+                                serviceType = 'MESSENGER';
+                                break;
+                            case 'FBLD':
+                                    channelLinkService = 'WALLADD';
+                                    channelType = 'FBLD';
+                                    serviceType = 'FBLD';
+                                break;
+                        }
+    
+                        if (request.body.type === 'INSTAGRAM' || request.body.type === 'INSTAMESSENGER') {
+                            const requestGetBusiness = await axiosObservable({
+                                data: {
+                                    accessToken: service.accesstoken,
+                                    linkType: 'GETBUSINESS',
+                                    siteId: service.siteid
+                                },
+                                method: 'post',
+                                url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
+                                _requestid: request._requestid,
+                            });
+    
+                            if (requestGetBusiness.data.success) {
+                                businessId = requestGetBusiness.data.businessId;
+                            }
+                            else {
+                                return response.status(400).json({
+                                    msg: 'No Instagram account',
+                                    success: false
+                                });
+                            }
+                        }
+    
+                        const requestCreateFacebook = await axiosObservable({
                             data: {
-                                accessToken: service.accesstoken,
-                                linkType: 'GETBUSINESS',
+                                linkType: channelLinkService,
+                                accessToken: requestGetLongToken.data.longToken,
                                 siteId: service.siteid
                             },
                             method: 'post',
                             url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
                             _requestid: request._requestid,
                         });
-
-                        if (requestGetBusiness.data.success) {
-                            businessId = requestGetBusiness.data.businessId;
-                        }
-                        else {
-                            return response.status(400).json({
-                                msg: 'No Instagram account',
-                                success: false
-                            });
-                        }
-                    }
-
-                    const requestCreateFacebook = await axiosObservable({
-                        data: {
-                            linkType: channelLinkService,
-                            accessToken: requestGetLongToken.data.longToken,
-                            siteId: service.siteid
-                        },
-                        method: 'post',
-                        url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
-                        _requestid: request._requestid,
-                    });
 
                     if (requestCreateFacebook.data.success) {
                         let serviceCredentials = {
@@ -1432,17 +1431,6 @@ exports.insertChannel = async (request, response) => {
                             serviceType: serviceType,
                             siteId: service.siteid
                         };
-
-                        if (request.body.type === 'FBLD') {
-                            serviceCredentials = {
-                                accessToken: requestGetLongToken.data.longToken,
-                                endpoint: facebookEndpoint,
-                                serviceType: serviceType,
-                                siteId: service.siteid,
-                                corpid: request.user.corpid,
-                                org: request.user.orgid
-                            };
-                        }
 
                         if (typeof businessId !== 'undefined' && businessId) {
                             parameters.communicationchannelowner = service.siteid;
