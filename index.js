@@ -69,7 +69,7 @@ app.use('/api/report-data', require('./routes/reportdata'));
 //mobile
 app.use('/api/mobile/auth', require('./routes/mobile/auth'));
 app.use('/api/mobile/ticket', require('./routes/mobile/ticket'));
-app.use('/api/mobile/notification', require('./routes/mobile/notification'));
+// app.use('/api/mobile/notification', require('./routes/mobile/notification'));
 app.use('/api/contact', require('./routes/contact'));
 
 // Definir la pagina principal

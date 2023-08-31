@@ -4,9 +4,9 @@ const { v4: uuidv4 } = require('uuid');
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { errors, getErrorCode, cleanPropertyValue, recaptcha } = require('../config/helpers');
 const { addApplication } = require('./voximplantController');
-
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { loginGroup, exitFromAllGroup1 } = require('../config/firebase');
 
 //type: int|string|bool
 const properties = [
@@ -161,6 +161,14 @@ exports.authenticate = async (req, res) => {
         if (user.status === 'ACTIVO') {
             logger.info(`auth success: ${usr}`);
 
+            if (origin === "MOVIL") {
+                await exitFromAllGroup1(token)
+                const resLastToken = await executesimpletransaction("UFN_GET_TOKEN_LOGGED_MOVIL", { userid: user.userid });
+                if (resLastToken.length > 0) {
+                    exitFromAllGroup1(resLastToken[0].token)
+                }
+            }
+
             const resConnection = await executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...user, ...prevdata, propertyname: 'CONEXIONAUTOMATICAINBOX' })
 
             const automaticConnection = validateResProperty(resConnection, 'bool');
@@ -183,7 +191,12 @@ exports.authenticate = async (req, res) => {
             }
 
             user.token = tokenzyx;
+            user.origin = origin;
             delete user.pwd;
+
+            if (origin === "MOVIL" && /(supervisor|administrador)/gi.test(user.roledesc)) {
+                await loginGroup(token, user.orgid, user.userid, req._requestid);
+            }
 
             jwt.sign({ user }, (process.env.SECRETA ? process.env.SECRETA : "palabrasecreta"), {}, (error, token) => {
                 if (error) throw error;
@@ -192,6 +205,7 @@ exports.authenticate = async (req, res) => {
                 delete user.userid;
                 return res.json({ data: { ...user, token, automaticConnection, notifications, redirect: user.redirect || '/tickets' }, success: true });
             })
+
         } else if (user.status === 'PENDIENTE') {
             return res.status(401).json({ code: errors.LOGIN_USER_PENDING })
         } else if (user.status === 'BLOQUEADO') {
@@ -285,6 +299,9 @@ exports.getUser = async (req, res) => {
 
 exports.logout = async (req, res) => {
     try {
+        if (req.user.origin === "MOVIL") {
+            await exitFromAllGroup1(req.user.token, req._requestid);
+        }
         executesimpletransaction("UFN_USERSTATUS_UPDATE", { _requestid: req._requestid, ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
     } catch (exception) {
         logger.child({ error: { detail: exception.stack, message: exception.toString() } }).error(`Request to ${req.originalUrl}`);
@@ -360,6 +377,10 @@ exports.changeOrganization = async (req, res) => {
                     username: req.user.usr
                 })
             }
+        }
+
+        if (req.user.origin === "MOVIL") {
+            await loginGroup(req.user.token, parameters.neworgid, req.user.userid, req._requestid);
         }
         
         jwt.sign({ user: newusertoken }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
