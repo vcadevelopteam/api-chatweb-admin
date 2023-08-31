@@ -1,4 +1,5 @@
-var ibm = require('ibm-cos-sdk');
+
+const ibm = require('ibm-cos-sdk');
 
 const { v4: uuidv4 } = require('uuid');
 const { getErrorCode, axiosObservable, printException } = require('../config/helpers');
@@ -19,9 +20,7 @@ const COS_BUCKET_NAME = process.env.COS_BUCKET;
 exports.upload = async (req, res) => {
     try {
         const s3 = new ibm.S3(config);
-        if (req.file.size > 999999999) {
-            return res.status(500).json({ success: false, msg: 'Archivo demasiado grande.' });
-        }
+        
         const params = {
             ACL: 'public-read',
             Key: `${req.user?.orgdesc || "anonymous"}/${!req.body.random ? uuidv4() : "static"}/${req.file.originalname}`,
@@ -35,6 +34,12 @@ exports.upload = async (req, res) => {
                 logger.child({ _requestid: req._requestid, error: { detail: err, message: err.toString() } }).error(`Request to ${req.originalUrl}`);
                 return res.json({ success: false, msg: 'Hubo un error #1 en la carga de archivo.', err })
             }
+
+            const presignedUrl = s3.getSignedUrl('getObject', {
+                Bucket: COS_BUCKET_NAME,
+                Key: params.Key,
+                Expires: 3600, // X horas en segundos
+            });
 
             return res.json({ success: true, url: data.Location })
         })
