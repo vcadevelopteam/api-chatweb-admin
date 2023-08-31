@@ -96,7 +96,7 @@ exports.processCursor = async (cursor, _requestid, headerClient, formatDownload)
                             level: 1,
                         }
                     })
-                    const rr = await uploadBufferToCos(_requestid, buffer, "application/zip", new Date().toISOString() + ".zip");
+                    const rr = await uploadBufferToCos(_requestid, buffer, "application/zip", new Date().toISOString() + ".zip", true);
                     resultLink.push(rr.url)
                     alreadysave = true;
                     zip = new JSZip(); //reiniciamos
@@ -109,7 +109,7 @@ exports.processCursor = async (cursor, _requestid, headerClient, formatDownload)
                 if (!rows.length) {
                     if (!alreadysave) {
                         const buffer = await zip.generateAsync({ type: "nodebuffer", compression: 'DEFLATE' })
-                        const rr = await uploadBufferToCos(_requestid, buffer, "application/zip", new Date().toISOString() + ".zip");
+                        const rr = await uploadBufferToCos(_requestid, buffer, "application/zip", new Date().toISOString() + ".zip", true);
                         resultLink.push(rr.url)
                     }
                     zip = null;
