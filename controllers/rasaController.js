@@ -37,7 +37,7 @@ exports.train = async (req, res) => {
         if (!model_intent.length || model_intent.length <= 1)
             return res
                 .status(400)
-                .json({ message: "El modelo no tiene intenciones validas", error: true, success: false });
+                .json({ message: "Se requiere almenos 2 intenciones para poder entrenar el modelo.", error: true, success: false });
 
         const responseservices = await axiosObservable({
             method: "get",
@@ -358,7 +358,9 @@ const singleYamlBuilder = async (data, origin, synonym_data = null) => {
 
                     if (synonym_data) {
                         const entityText = texto.match(/\[(.*?)\]/);
-                        const entitySynonym = synonym_data.find((synonym) => synonym.description.toLowerCase() === entityText[1].toLowerCase());
+                        const entitySynonym = synonym_data.find(
+                            (synonym) => synonym.description.toLowerCase() === entityText[1].toLowerCase()
+                        );
                         if (entitySynonym) {
                             entitySynonym.values.split(",").forEach((value) => {
                                 const newTextIntent = texto.replace(/\[(.*?)\]/g, `[${value}]`);
@@ -452,11 +454,10 @@ function intentYamlToJson(yamlIntent) {
         } else if (line.startsWith("examples: |") && currentIntent) {
             const examplesStart = i + 1;
 
-            while (i < lines.length && lines[i + 1] && !lines[i + 1].startsWith("  - ")) {
+            while (i < lines.length && lines[i + 1] && lines[i + 1].trim().startsWith("- ")) {
                 i++;
             }
             const examplesEnd = i;
-
             for (let j = examplesStart; j <= examplesEnd; j++) {
                 const example = lines[j].split("-")[1].trim();
                 if (example.includes("[")) {
@@ -513,7 +514,6 @@ function synonymYamlToJson(yamlSynonym) {
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
-        console.log("line", line);
 
         if (line.startsWith("- synonym:")) {
             if (currentSynonym) {
@@ -528,7 +528,7 @@ function synonymYamlToJson(yamlSynonym) {
         } else if (line.startsWith("examples: |") && currentSynonym) {
             const examplesStart = i + 1;
 
-            while (i < lines.length && lines[i + 1] && !lines[i + 1].startsWith("  - ")) {
+            while (i < lines.length && lines[i + 1] && lines[i + 1].trim().startsWith("- ")) {
                 i++;
             }
             const examplesEnd = i;
