@@ -3701,6 +3701,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_ORDERLINE_PRODUCT_LST : {
+        query: "SELECT * FROM ufn_orderline_product_lst ($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CHANGE_ORDERSTATUS : {
+        query: "SELECT * FROM ufn_change_orderstatus($corpid, $orgid, $orderid, $orderstatus, $username)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_RASA_INTENT_SEL: {
         query: "SELECT * FROM ufn_rasa_intent_sel($corpid, $orgid, $rasaid)",
         module: "",
