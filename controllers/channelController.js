@@ -1290,6 +1290,7 @@ exports.insertChannel = async (request, response) => {
                         success: false
                     });
                 }
+                
             case "FBWM":
                 const requestTokenWorkplaceWall = await axiosObservable({
                     method: 'get',
@@ -1431,6 +1432,17 @@ exports.insertChannel = async (request, response) => {
                             serviceType: serviceType,
                             siteId: service.siteid
                         };
+
+                        if (request.body.type === 'FBLD') {
+                            serviceCredentials = {
+                                accessToken: requestGetLongToken.data.longToken,
+                                endpoint: facebookEndpoint,
+                                serviceType: serviceType,
+                                siteId: service.siteid,
+                                corpid: request.user.corpid,
+                                org: request.user.orgid
+                            };
+                        }
 
                         if (typeof businessId !== 'undefined' && businessId) {
                             parameters.communicationchannelowner = service.siteid;

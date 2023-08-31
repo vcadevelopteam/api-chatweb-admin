@@ -163,7 +163,6 @@ exports.SplitFirst = async (req, res) => {
 
 exports.getToken = async (req, res) => {
     let data  = req.body.parameters || req.body.data;
-    let data  = req.body.parameters || req.body.data; 
     
     const result = await executesimpletransaction("UFN_GET_TOKEN_LOGGED_MOVIL", { ...data, _requestid: req._requestid });
 

@@ -443,7 +443,7 @@ exports.sendHSM = async (req, res) => {
             }
         }
 
-        if (req.user.origin === "MOVIL") {
+        if ((data.origin || req.user?.origin) === "MOVIL") {
             const ticket = {
                 conversationid: data.conversationid,
                 ticketnum: data.ticketnum,
