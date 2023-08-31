@@ -94,6 +94,11 @@ module.exports = {
         module: "/extras/users",
         protected: "SELECT"
     },
+    UFN_LIST_PERSONS_BY_ORG_SEL: {
+        query: "SELECT * FROM ufn_list_persons_by_org_sel($corpid, $orgid)",
+        module: "/extras/users",
+        protected: "SELECT"
+    },
     UFN_ORGUSER_INS: {
         query: "SELECT * FROM ufn_orguser_ins($corpid, $orgid, $p_userid, $rolegroups, $usersupervisor, $bydefault, $labels, $groups, $channels, $status,$type, $defaultsort, $username, $operation, $redirect)",
         module: "/extras/users",
@@ -2480,6 +2485,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_TOTAL_PERSONS_BY_CATEGORY_BRAND_SEL: {
+        query: "SELECT * FROM ufn_total_persons_by_category_brand_sel($corpid, $orgid, $brand, $frequent, $category)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_CALENDARYBOOKING_SEL_DATETIME: {
         query: "SELECT * FROM ufn_calendarbooking_sel_datetime($corpid, $orgid, $calendareventid, $startdate, $enddate, $offset)",
         module: "",
@@ -2492,6 +2502,36 @@ module.exports = {
     },
     UFN_CALENDARBOOKING_CANCEL: {
         query: "SELECT * FROM ufn_calendarbooking_cancel($corpid, $orgid, $calendareventid, $id, $cancelcomment, $username, $canceltype)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PERSONS_BY_CATEGORY_SEL: {
+        query: "SELECT * FROM ufn_persons_by_category_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LIST_PERSONS_BY_CATEGORY_SEL: {
+        query: "SELECT * FROM ufn_list_persons_by_category_sel($corpid, $orgid, $category)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PERSONS_FREQUENT_SEL: {
+        query: "SELECT * FROM ufn_persons_frequent_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LIST_PERSONS_FREQUENT_SEL: {
+        query: "SELECT * FROM ufn_list_persons_frequent_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PERSONS_BY_BRAND_SEL: {
+        query: "SELECT * FROM ufn_persons_by_brand_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LIST_PERSONS_BY_BRAND_SEL: {
+        query: "SELECT * FROM ufn_list_persons_by_brand_sel($corpid, $orgid, $brand)",
         module: "",
         protected: "SELECT"
     },
