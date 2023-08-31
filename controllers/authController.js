@@ -258,7 +258,6 @@ exports.getUser = async (req, res) => {
                 [item.key]: cleanPropertyValue(resultBDProperties.filter(x => x.propertyname === item.propertyname), item)
             }), { environment: propertyEnv });
         }
-        // console.log(resultBD[0])
 
         const menu = resultBD[0].reduce((acc, item) => ({
             ...acc, [item.path]:
@@ -271,7 +270,6 @@ exports.getUser = async (req, res) => {
                 item.menuorder,
             ]
         }), {})
-        console.log(menu);
         jwt.sign({ user: { ...req.user, menu: { ...menu, "system-label": undefined, "/": undefined } } }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
             if (error) throw error;
             delete req.user.token;
