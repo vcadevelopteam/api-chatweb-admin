@@ -1,18 +1,19 @@
 module.exports = {
     QUERY_AUTHENTICATED: {
         query: `
-        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision
-        FROM usr us 
-        INNER JOIN orguser ous ON ous.userid = us.userid 
-        INNER JOIN org org ON org.orgid = ous.orgid 
-        LEFT JOIN currency cur ON cur.code = org.currency 
-        INNER JOIN corp corp ON corp.corpid = ous.corpid 
-        LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid 
-        INNER JOIN role role ON role.roleid = ous.roleid 
+        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision
+        FROM usr us
+        INNER JOIN orguser ous ON ous.userid = us.userid
+        INNER JOIN org org ON org.orgid = ous.orgid
+        LEFT JOIN currency cur ON cur.code = org.currency
+        INNER JOIN corp corp ON corp.corpid = ous.corpid
+        LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid
+        INNER JOIN role role ON role.corpid = 1 and role.orgid = 1 and role.roleid = any(string_to_array(ous.rolegroups, ',')::bigint[])
         LEFT JOIN communicationchannel cc ON cc.corpid = ous.corpid AND cc.communicationchannelid = ANY(string_to_array(ous.channels,',')::BIGINT[]) AND cc.orgid = ous.orgid AND cc.type = 'VOXI' AND cc.status = 'ACTIVO'
-        WHERE us.usr = $usr AND ous.bydefault 
-        AND ous.status <> 'ELIMINADO' 
-        limit 1`,
+        WHERE us.usr = $usr AND ous.bydefault
+        AND ous.status <> 'ELIMINADO'
+		GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision
+        LIMIT 1`,
         module: "",
         protected: false
     },
@@ -23,35 +24,43 @@ module.exports = {
     },
     QUERY_AUTHENTICATED_BY_FACEBOOKID: {
         query: `
-        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision
+        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan,  string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision
         from usr us 
         INNER JOIN orguser ous on ous.userid = us.userid 
         INNER JOIN org org on org.orgid = ous.orgid 
         LEFT JOIN currency cur on cur.code = org.currency 
         INNER JOIN corp corp on corp.corpid = ous.corpid 
         LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid 
-        INNER JOIN role role on role.roleid = ous.roleid 
+        INNER JOIN role role ON role.corpid = 1 and role.orgid = 1 and role.roleid = any(string_to_array(ous.rolegroups, ',')::bigint[])
         LEFT JOIN communicationchannel cc ON cc.corpid = ous.corpid AND cc.orgid = ous.orgid AND cc.type = 'VOXI' AND us.status = 'ACTIVO'
         WHERE us.facebookid = $facebookid 
         AND ous.bydefault 
         AND ous.status <> 'ELIMINADO'
+		GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision
         LIMIT 1`,
         module: "",
         protected: false
     },
     QUERY_AUTHENTICATED_BY_GOOGLEID: {
         query: `
-        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan, role.description roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision
-        from usr us 
-        INNER JOIN orguser ous on ous.userid = us.userid 
-        INNER JOIN org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency 
-        INNER JOIN corp corp on corp.corpid = ous.corpid LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid 
-        INNER JOIN role role on role.roleid = ous.roleid
+        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid,
+        ous.orgid, us.userid, us.usr, us.pwd,
+        us.firstname, us.image, us.lastname, us.email, us.status,
+        ous.groups, ous.redirect, pp.plan, COALESCE(cur.symbol, 'S/') currencysymbol,
+        COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi,
+        cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision,
+        string_agg(role.description,',') roledesc
+        from usr us
+        INNER JOIN orguser ous on ous.userid = us.userid
+        INNER JOIN org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency
+        INNER JOIN corp corp on corp.corpid = ous.corpid LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid
+        INNER JOIN role role ON role.corpid = 1 and role.orgid = 1 and role.roleid = any(string_to_array(ous.rolegroups, ',')::bigint[])
         LEFT JOIN communicationchannel cc ON cc.corpid = ous.corpid AND cc.orgid = ous.orgid AND cc.type = 'VOXI' AND cc.status = 'ACTIVO'
-        WHERE us.googleid = $googleid 
-        AND ous.bydefault 
-        AND ous.status <> 'ELIMINADO' 
-        LIMIT 1`,
+        WHERE us.googleid = $googleid
+        AND ous.bydefault
+        AND ous.status <> 'ELIMINADO'
+		GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision
+		LIMIT 1`,
         module: "",
         protected: false
     },
@@ -86,7 +95,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORGUSER_INS: {
-        query: "SELECT * FROM ufn_orguser_ins($corpid, $orgid, $p_userid, $roleid, $usersupervisor, $bydefault, $labels, $groups, $channels, $status, $type, $defaultsort, $username, $operation, $redirect)",
+        query: "SELECT * FROM ufn_orguser_ins($corpid, $orgid, $p_userid, $rolegroups, $usersupervisor, $bydefault, $labels, $groups, $channels, $status,$type, $defaultsort, $username, $operation, $redirect)",
         module: "/extras/users",
         protected: "INSERT"
     },

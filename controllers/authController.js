@@ -306,7 +306,7 @@ exports.changeOrganization = async (req, res) => {
             corpdesc: parameters.corpdesc,
             orgdesc: parameters.orgdesc,
             _requestid: req._requestid,
-            roledesc: req.user.roledesc === "SUPERADMIN" ? "SUPERADMIN" :  resultBD[0]?.roledesc,
+            roledesc: req.user.roledesc.includes("SUPERADMIN") ? "SUPERADMIN" :  resultBD[0]?.roledesc,
             redirect: resultBD[0]?.redirect || '/tickets',
             plan: resultBD[0]?.plan || '',
             currencysymbol: resultBD[0]?.currencysymbol || 'S/',
@@ -328,7 +328,7 @@ exports.changeOrganization = async (req, res) => {
         
         let automaticConnection = false;
         
-        if (req.user.roledesc !== "SUPERADMIN") {
+        if (!req.user.roledesc.includes("SUPERADMIN")) {
             const resConnection = await executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...newusertoken, propertyname: 'CONEXIONAUTOMATICAINBOX' })
             
             automaticConnection = validateResProperty(resConnection, 'bool');
