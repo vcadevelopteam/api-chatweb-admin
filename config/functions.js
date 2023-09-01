@@ -149,6 +149,8 @@ module.exports = {
             "/servicedesk",
             "/calendar",
             "/extras/campaign",
+            "/extras/users",
+            "/person"
         ],
         protected: "SELECT"
     },
@@ -193,7 +195,7 @@ module.exports = {
     },
     UFN_ROLE_LST: {
         query: "SELECT * FROM ufn_role_lst($corpid, $orgid, $userid)",
-        module: ["/extras/users"],
+        module: ["/extras/users", "/person", "/crm", "/servicedesk"],
         protected: "SELECT"
     },
     UFN_PROPERTY_INS: {
@@ -605,7 +607,7 @@ module.exports = {
     },
     UFN_DOMAIN_LST_VALORES: {
         query: "SELECT * FROM ufn_domain_lst_valores($corpid, $orgid, $domainname)",
-        module: ["/message_inbox", "/supervisor"],
+        module: [],
         protected: "SELECT"
     },
     UFN_DOMAIN_LST_VALUES_ONLY_DATA: {
@@ -705,7 +707,7 @@ module.exports = {
     },
     UFN_CONVERSATION_SEL_TICKETSBYPERSON: {
         query: "SELECT * FROM ufn_conversation_sel_ticketsbyperson($corpid, $orgid, $personid, $conversationid)",
-        module: "", //supervisor and inbox
+        module: ["/supervisor", "/message_inbox"], //supervisor and inbox
         protected: "SELECT"
     },
     UFN_CONVERSATIONCLASSIFICATION_INS: {
@@ -825,7 +827,7 @@ module.exports = {
     },
     UFN_DOMAIN_LST: {
         query: "SELECT * FROM ufn_domain_lst($corpid, $orgid)",
-        module: ["/message_inbox", "/supervisor"],
+        module: [],
         protected: "SELECT"
     },
     UFN_INPUTVALIDATION_LST: {
@@ -1518,7 +1520,7 @@ module.exports = {
     },
     UFN_ADVISERS_SEL: {
         query: "select * from ufn_advisers_sel($corpid, $orgid)",
-        module: ["/crm", "/servicedesk"],
+        module: ["/crm", "/servicedesk", "/person", "/extras/users"],
         protected: "SELECT"
     },
     UFN_USER_SD_SEL: {
@@ -2000,7 +2002,7 @@ module.exports = {
     },
     UFN_MESSAGETEMPLATE_LST: {
         query: "SELECT * FROM ufn_messagetemplate_lst($corpid, $orgid, $type, $username)",
-        module: ["/supervisor", "/message_inbox", "/calendar", "/extras/campaign"],
+        module: ["/supervisor", "/message_inbox", "/calendar", "/extras/campaign", "/crm", "/servicedesk", "/automatizationrules", "/person", "/extras/users", ],
         protected: "INSERT"
     },
     QUERY_UPDATE_PERSON_BY_HSM: {
@@ -2284,7 +2286,7 @@ module.exports = {
     },
     UFN_PRODUCTCATALOG_SEL_NORMAL: {
         query: "SELECT * FROM ufn_productcatalog_sel_normal($corpid, $orgid, $id, $category, $username, $all)",
-        module: ["/automatizationrules"],
+        module: ["/automatizationrules", "/message_inbox", "/supervisor", "/crm"],
         protected: "SELECT"
     },
     UFN_PRODUCTCATALOG_SEL_EXPORT: {
@@ -3873,7 +3875,7 @@ module.exports = {
     },
     UFN_CURRENCY_SEL: {
         query: "SELECT * FROM ufn_currency_sel();",
-        module: ["/organizations", "/reports"],
+        module: [],
         protected: "SELECT"
     },
     UFN_TIMESHEET_PERIOD_SEL: {
