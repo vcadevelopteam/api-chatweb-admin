@@ -236,27 +236,27 @@ module.exports = {
     },
     UFN_PERSON_EXPORT: {
         query: "SELECT * FROM UFN_PERSON_EXPORT($corpid, $orgid, $where, $order, $startdate, $enddate, $offset, $userids, $personcommunicationchannels )",
-        module: "/extras/person",
+        module: "/person",
         protected: "SELECT"
     },
     UFN_CONVERSATION_SEL_PERSON: {
         query: "select * from ufn_conversation_sel_person($personid, $take, $skip, $where, $order, $offset)",
-        module: "/extras/person",
+        module: "/person",
         protected: "SELECT"
     },
     UFN_PERSONCOMMUNICATIONCHANNEL_INS: {
         query: "SELECT * FROM ufn_personcommunicationchannel_ins($corpid, $orgid, $personid, $personcommunicationchannel, $personcommunicationchannelowner, $displayname, $type, $username, $operation, $status)",
-        module: "/extras/person",
+        module: "/person",
         protected: "INSERT"
     },
     UFN_PERSONCOMMUNICATIONCHANNEL_SEL: {
         query: "SELECT * FROM ufn_personcommunicationchannel_sel($corpid, $orgid, $personid,  $personcommunicationchannel, $username, $all)",
-        module: "/extras/person",
+        module: "/person",
         protected: "SELECT"
     },
     UFN_PERSONCOMMUNICATIONCHANNEL_UPDATE_LOCKED: {
         query: "SELECT * FROM ufn_personcommunicationchannel_update_locked($corpid, $orgid, $personid, $personcommunicationchannel, $username, $locked)",
-        module: "/extras/person",
+        module: "/person",
         protected: "INSERT"
     },
     UFN_PERSONCOMMUNICATIONCHANNEL_UPDATE_LOCKED_ARRAY: {
@@ -266,12 +266,12 @@ module.exports = {
     },
     UFN_PERSONREFERRER_SEL: {
         query: "SELECT * FROM ufn_personreferrer_sel($personid)",
-        module: "/extras/person",
+        module: "/person",
         protected: "SELECT"
     },
     UFN_PERSONADDINFO_SEL: {
         query: "SELECT * FROM ufn_personaddinfo_sel($personid)",
-        module: "/extras/person",
+        module: "/person",
         protected: "SELECT"
     },
     UFN_INTELLIGENTMODELS_SEL: {
