@@ -606,8 +606,8 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_DOMAIN_LST_VALORES: {
-        query: "SELECT * FROM ufn_domain_lst_valores($corpid, $orgid, $domainname)",
-        module: [],
+        query: "SELECT * FROM ufn_domain_lst_valores($corpid,$orgid,$domainname)",
+        module: "",
         protected: "SELECT"
     },
     UFN_DOMAIN_LST_VALUES_ONLY_DATA: {
@@ -827,7 +827,7 @@ module.exports = {
     },
     UFN_DOMAIN_LST: {
         query: "SELECT * FROM ufn_domain_lst($corpid, $orgid)",
-        module: [],
+        module: "",
         protected: "SELECT"
     },
     UFN_INPUTVALIDATION_LST: {
@@ -3875,7 +3875,7 @@ module.exports = {
     },
     UFN_CURRENCY_SEL: {
         query: "SELECT * FROM ufn_currency_sel();",
-        module: [],
+        module: "",
         protected: "SELECT"
     },
     UFN_TIMESHEET_PERIOD_SEL: {
