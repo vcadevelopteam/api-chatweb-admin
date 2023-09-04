@@ -15,7 +15,7 @@ const config = {
     serviceInstanceId: process.env.COS_FREE_SERVICEINSTANCEID,
 };
 
-const COS_BUCKET_NAME = process.env.COS_BUCKET;
+const COS_BUCKET_NAME = process.env.COS_FREE_BUCKET;
 
 exports.upload = async (req, res) => {
     try {
