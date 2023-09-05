@@ -26,16 +26,20 @@ exports.loginGroup = async (token, orgid, userid, _requestid) => {
 }
 
 const exitFromAllGroup = async (token, _requestid) => {
-    const responseservices = await axiosObservable({
-        method: "get",
-        url: `https://iid.googleapis.com/iid/info/${token}?details=true`,
-        _requestid,
-        headers: {
-            "Authorization": `key = ${process.env.KEY_FIREBASE}`
+    try {
+        const responseservices = await axiosObservable({
+            method: "get",
+            url: `https://iid.googleapis.com/iid/info/${token}?details=true`,
+            _requestid,
+            headers: {
+                "Authorization": `key = ${process.env.KEY_FIREBASE}`
+            }
+        });
+        if (responseservices.data.rel?.topics) {
+            await Promise.all(Object.keys(responseservices.data.rel?.topics).map(x => admin.messaging().subscribeToTopic(token, x)))
         }
-    });
-    if (responseservices.data.rel?.topics) {
-        await Promise.all(Object.keys(responseservices.data.rel?.topics).map(x => admin.messaging().subscribeToTopic(token, x)))
+    } catch (error) {
+        
     }
 }
 
