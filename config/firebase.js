@@ -36,7 +36,7 @@ const exitFromAllGroup = async (token, _requestid) => {
             }
         });
         if (responseservices.data.rel?.topics) {
-            await Promise.all(Object.keys(responseservices.data.rel?.topics).map(x => admin.messaging().subscribeToTopic(token, x)))
+            await Promise.all(Object.keys(responseservices.data.rel?.topics).map(x => admin.messaging().unsubscribeFromTopic(token, x)))
         }
     } catch (error) {
         
