@@ -1137,6 +1137,10 @@ exports.automaticPayment = async (request, response) => {
 
                                                 invoicedata.DataList.push(adicional05);
 
+                                                if (adicional05) {
+                                                    invoicedata.FechaVencimiento = null;
+                                                }
+
                                                 const requestSendToSunat = await axiosObservable({
                                                     data: invoicedata,
                                                     method: 'post',
@@ -1977,6 +1981,12 @@ exports.chargeInvoice = async (request, response) => {
                                                     }
 
                                                     invoicedata.DataList.push(adicional05);
+
+                                                    if (adicional05) {
+                                                        if (adicional05.DescripcionDatoAdicional === 'AL CONTADO') {
+                                                            invoicedata.FechaVencimiento = null;
+                                                        }
+                                                    }
                                                 }
 
                                                 const requestSendToSunat = await axiosObservable({
@@ -2530,6 +2540,10 @@ exports.createBalance = async (request, response) => {
                                             }
 
                                             invoicedata.DataList.push(adicional05);
+
+                                            if (adicional05) {
+                                                invoicedata.FechaVencimiento = null;
+                                            }
 
                                             var invoicedetaildata = {
                                                 CantidadProducto: 1,
@@ -3137,6 +3151,12 @@ exports.createInvoice = async (request, response) => {
                                     }
 
                                     invoicedata.DataList.push(adicional05);
+
+                                    if (adicional05) {
+                                        if (adicional05.DescripcionDatoAdicional === 'AL CONTADO') {
+                                            invoicedata.FechaVencimiento = null;
+                                        }
+                                    }
                                 }
 
                                 const requestSendToSunat = await axiosObservable({
@@ -3484,6 +3504,12 @@ exports.emitInvoice = async (request, response) => {
                                         }
 
                                         invoicedata.DataList.push(adicional05);
+
+                                        if (adicional05) {
+                                            if (adicional05.DescripcionDatoAdicional === 'AL CONTADO') {
+                                                invoicedata.FechaVencimiento = null;
+                                            }
+                                        }
                                     }
 
                                     const requestSendToSunat = await axiosObservable({
