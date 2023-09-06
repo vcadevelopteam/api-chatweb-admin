@@ -9,13 +9,13 @@ const logger = require('../config/winston');
 const hookEndpoint = process.env.HOOK;
 
 const config = {
-    endpoint: process.env.COS_ENDPOINT,
-    ibmAuthEndpoint: process.env.COS_IBMAUTHENDPOINT,
-    apiKeyId: process.env.COS_APIKEYID,
-    serviceInstanceId: process.env.COS_SERVICEINSTANCEID,
+    endpoint: process.env.COS_FREE_ENDPOINT,
+    ibmAuthEndpoint: process.env.COS_FREE_IBMAUTHENDPOINT,
+    apiKeyId: process.env.COS_FREE_APIKEYID,
+    serviceInstanceId: process.env.COS_FREE_SERVICEINSTANCEID,
 };
 
-const COS_BUCKET_NAME = process.env.COS_BUCKET;
+const COS_BUCKET_NAME = process.env.COS_FREE_BUCKET;
 
 exports.upload = async (req, res) => {
     try {
