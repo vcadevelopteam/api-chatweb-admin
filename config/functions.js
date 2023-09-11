@@ -623,12 +623,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PRODUCT_INS: {
-        query: "SELECT * FROM inventario.ufn_product_ins($corpid, $orgid, $productid, $description, $descriptionlarge, $producttype, $familyid, $unitbuyid, $unitydispatchid, $imagereference, $status, $type, $attachments, $productcode, $loteid, $subfamilyid, $operation, $username)",
+        query: "SELECT * FROM inventario.ufn_product_ins($corpid, $orgid, $productid, $description, $descriptionlarge, $producttype, $familyid, $unitbuyid, $unitdispatchid, $imagereference, $status, $type, $attachments, $productcode, $loteid, $subfamilyid, $operation, $username)",
         module: "",
         protected: "INSERT"
     },    
     UFN_PRODUCT_EXPORT: {
-        query: "SELECT * FROM inventario.ufn_product_export($corpid, $orgid, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM inventario.ufn_product_export($startdate, $enddate,$corpid, $orgid, $where, $order, $userid, $offset)",
         module: "/tickets",
         protected: "SELECT"
     },
