@@ -633,7 +633,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_WAREHOUSE_INS: {
-        query: "SELECT * FROM inventario.ufn_warehouse_ins($corpid, $orgid, $warehouseid, $description, $address, $phone, $location, $status, $type, $operation, $username)",
+        query: "SELECT * FROM inventario.ufn_warehouse_ins($corpid, $orgid, $warehouseid, $description,  $address, $latitude, $longitude, $phone, $status, $type, $name, $operation, $username)",
         module: "",
         protected: "INSERT"
     },    
@@ -643,7 +643,7 @@ module.exports = {
         protected: "INSERT"
     },    
     UFN_PRODUCT_EXPORT: {
-        query: "SELECT * FROM inventario.ufn_product_export($startdate, $enddate,$corpid, $orgid, $where, $order, $userid, $offset)",
+        query: "SELECT * FROM inventario.ufn_product_export($startdate, $enddate,$corpid, $orgid, $where, $order, $username, $offset)",
         module: "/tickets",
         protected: "SELECT"
     },
