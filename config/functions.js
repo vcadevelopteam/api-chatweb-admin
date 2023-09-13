@@ -636,7 +636,17 @@ module.exports = {
         query: "SELECT * FROM inventario.ufn_warehouse_ins($corpid, $orgid, $warehouseid, $description,  $address, $latitude, $longitude, $phone, $status, $type, $name, $operation, $username)",
         module: "",
         protected: "INSERT"
-    },    
+    },
+    UFN_ALL_PRODUCT_WAREHOUSE_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_product_warehouse_sel($corpid, $orgid, $warehouseid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_STATUSPRODUCT_INS: {
+        query: "SELECT * FROM inventario.ufn_statusproduct_ins($corpid, $orgid, $statusid, $comment, $status, $type, $productid, $ismoveinventory, $operation, $username)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_PRODUCT_INS: {
         query: "SELECT * FROM inventario.ufn_product_ins($corpid, $orgid, $productid, $description, $descriptionlarge, $producttype, $familyid, $unitbuyid, $unitdispatchid, $imagereference, $status, $type, $attachments, $productcode, $loteid, $subfamilyid, $operation, $username)",
         module: "",
