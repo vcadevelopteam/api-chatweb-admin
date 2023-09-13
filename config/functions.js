@@ -644,7 +644,37 @@ module.exports = {
     },    
     UFN_PRODUCT_EXPORT: {
         query: "SELECT * FROM inventario.ufn_product_export($startdate, $enddate,$corpid, $orgid, $where, $order, $username, $offset)",
-        module: "/tickets",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PRODUCT_SEL: {
+        query: "SELECT * FROM inventario.ufn_product_sel($corpid, $orgid, $productid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PRODUCT_SEL: {
+        query: "SELECT * FROM inventario.ufn_productwarehouse_sel($corpid, $orgid, $productid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ALL_WAREHOUSE_PRODUCT_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_warehouse_product_sel($corpid, $orgid, $productid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PRODUCTWAREHOUSE_INS: {
+        query: "SELECT * FROM inventario.ufn_productwarehouse_ins($corpid,$orgid,$productwarehouseid,$productid,$warehouseid,$priceunit,$ispredeterminate,$typecostdispatch,$unitdispatchid,$unitbuyid,$lotecode,$rackcode,$status,$type,$currentbalance,$operation,$username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_WAREHOUSE_EXPORT: {
+        query: "SELECT * FROM inventario.ufn_warehouse_export($startdate, $enddate,$corpid, $orgid, $where, $order, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WAREHOUSE_SEL: {
+        query: "SELECT * FROM inventario.ufn_warehouse_sel($corpid, $orgid, $warehouseid, $username)",
+        module: "",
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_INS: {
