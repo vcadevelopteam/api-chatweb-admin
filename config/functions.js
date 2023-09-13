@@ -687,6 +687,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_ALL_STATUSPRODUCT_PRODUCT_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_statusproduct_product_sel($corpid,$orgid,$id,$username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PRODUCT_MAS: {
+        query: "SELECT * FROM inventario.ufn_product_mas($json, $corpid,$orgid,$username)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_MESSAGETEMPLATE_INS: {
         query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $bodyobject, $footerenabled, $footer, $buttonsenabled, $buttons, $priority, $attachment, $fromprovider, $externalid, $externalstatus, $communicationchannelid, $communicationchanneltype, $exampleparameters, $username, $operation)",
         module: "",
