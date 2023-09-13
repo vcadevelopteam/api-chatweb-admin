@@ -642,6 +642,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_ALL_PRODUCT_PRODUCT_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_product_product_sel($corpid, $orgid, $productid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PRODUCTALTERNATIVE_INS: {
+        query: "SELECT * FROM inventario.ufn_productalternative_ins($corpid, $orgid, $productalternativeid, $productid, $productaltid, $status, $type, $operation, $username, $tableid)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_STATUSPRODUCT_INS: {
         query: "SELECT * FROM inventario.ufn_statusproduct_ins($corpid, $orgid, $statusid, $comment, $status, $type, $productid, $ismoveinventory, $operation, $username)",
         module: "",
@@ -662,11 +672,7 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_PRODUCT_SEL: {
-        query: "SELECT * FROM inventario.ufn_productwarehouse_sel($corpid, $orgid, $productid, $username)",
-        module: "",
-        protected: "SELECT"
-    },
+
     UFN_ALL_WAREHOUSE_PRODUCT_SEL: {
         query: "SELECT * FROM inventario.ufn_all_warehouse_product_sel($corpid, $orgid, $productid, $username)",
         module: "",
