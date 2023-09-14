@@ -623,12 +623,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_WAREHOUSE_PAG: {
-        query: "SELECT * FROM inventario.ufn_warehouse_pag($corpid, $orgid, $warehouseid, $userid, $where, $order, $take, $skip)",
+        query: "SELECT * FROM inventario.ufn_warehouse_pag($corpid, $orgid, $warehouseid, $userid, $where, $order, $take, $skip, $startdate, $enddate, $offset)",
         module: "",
         protected: "SELECT"
     },
     UFN_WAREHOUSE_TOTALRECORDS: {
-        query: "SELECT * FROM inventario.ufn_warehouse_totalrecords($corpid, $orgid, $where)",
+        query: "SELECT * FROM inventario.ufn_warehouse_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset)",
         module: "",
         protected: "SELECT"
     },
@@ -722,6 +722,16 @@ module.exports = {
     },
     UFN_PRODUCTWAREHOUSE_MAS: {
         query: "SELECT * FROM inventario.ufn_productwarehouse_mas($json, $corpid,$orgid,$username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_PRODUCTATTRIBUTE_MAS: {
+        query: "SELECT * FROM inventario.ufn_productattribute_mas($json, $corpid,$orgid,$username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_WAREHOUSE_MAS: {
+        query: "SELECT * FROM inventario.ufn_warehouse_mas($json, $corpid,$orgid,$username)",
         module: "",
         protected: "INSERT"
     },
