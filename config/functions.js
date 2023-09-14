@@ -703,6 +703,16 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_PRODUCTMANUFACTURER_INS: {
+        query: "SELECT * FROM inventario.ufn_productmanufacturer_ins($corpid, $orgid, $productcompanyid, $productid, $manufacturerid, $model, $catalognumber, $webpage, $taxeid, $isstockistdefault, $averagedeliverytime, $lastprice, $lastorderdate, $unitbuy, $status, $type, $operation, $username )",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_MANUFACTURER_SEL: {
+        query: "SELECT * FROM inventario.ufn_manufacturer_sel($corpid, $orgid, $manufacturerid, $username )",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_MESSAGETEMPLATE_INS: {
         query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $bodyobject, $footerenabled, $footer, $buttonsenabled, $buttons, $priority, $attachment, $fromprovider, $externalid, $externalstatus, $communicationchannelid, $communicationchanneltype, $exampleparameters, $username, $operation)",
         module: "",
