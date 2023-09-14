@@ -653,13 +653,13 @@ module.exports = {
         protected: "INSERT"
     },
 
-    UFN_PRODUCTATTRIBUTE_SEL: {
-        query: "SELECT * FROM inventario.ufn_productattribute_sel($corpid, $orgid, $productattributeid, $username)",
+    UFN_ALL_ATTRIBUTE_PRODUCT_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_attribute_product_sel($corpid, $orgid, $productid, $username)",
         module: "",
         protected: "SELECT"
     },
     UFN_PRODUCTATTRIBUTE_INS: {
-        query: "SELECT * FROM inventario.ufn_productattribute_ins($corpid, $orgid, $productattributeid, $productid, $orders, $value, $unitmeasureid, $status, $type, $operation, $username)",
+        query: "SELECT * FROM inventario.ufn_productattribute_ins($corpid, $orgid, $productattributeid, $productid, $attributeid, $value, $unitmeasureid, $status, $type, $operation, $username)",
         module: "",
         protected: "INSERT"
     },
