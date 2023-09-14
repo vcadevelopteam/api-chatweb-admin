@@ -716,9 +716,14 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_PRODUCTMANUFACTURER_INS: {
-        query: "SELECT * FROM inventario.ufn_productmanufacturer_ins($corpid, $orgid, $productcompanyid, $productid, $manufacturerid, $model, $catalognumber, $webpage, $taxeid, $isstockistdefault, $averagedeliverytime, $lastprice, $lastorderdate, $unitbuy, $status, $type, $operation, $username )",
+        query: "SELECT * FROM inventario.ufn_productmanufacturer_ins($corpid, $orgid, $productcompanyid, $productid, $manufacturerid, $model, $catalognumber, $webpage, $taxeid, $isstockistdefault, $averagedeliverytime, $lastprice, $lastorderdate, $unitbuy, $status, $type, $distributorid, $operation, $username)",
         module: "",
         protected: "INSERT"
+    },
+    UFN_ALL_MANUFACTURER_PRODUCT_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_manufacturer_product_sel($corpid, $orgid, $productid, $username)",
+        module: "",
+        protected: "SELECT"
     },
     UFN_MANUFACTURER_SEL: {
         query: "SELECT * FROM inventario.ufn_manufacturer_sel($corpid, $orgid, $manufacturerid, $username )",
