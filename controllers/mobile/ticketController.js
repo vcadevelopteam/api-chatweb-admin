@@ -1,7 +1,7 @@
 require('dotenv').config({ path: 'variables.env' });
 const { executesimpletransaction } = require('../../config/mobile/triggerMobileFunction');
 const { errors, getErrorCode, setSessionParameters, axiosObservable } = require('../../config/helpers');
-const { pushNotification } = require('../mobile/notificationMobileController');
+const { pushNotification } = require('../../config/firebase');
 
 exports.reply = async (req, res) => {
     try {

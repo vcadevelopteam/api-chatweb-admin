@@ -6,18 +6,30 @@ const { generatefilter, generateSort, errors, getErrorSeq, getErrorCode, stringT
 const { QueryTypes } = require('sequelize');
 require('pg').defaults.parseInt8 = true;
 
-const ibm = require('ibm-cos-sdk');
+const IBM = require('ibm-cos-sdk');
+const AWS = require('aws-sdk');
 
-const config = {
-    endpoint: 's3.us-east.cloud-object-storage.appdomain.cloud',
-    ibmAuthEndpoint: 'https://iam.cloud.ibm.com/identity/token',
-    apiKeyId: 'LwD1YXNXSp8ZYMGIUWD2D3-wmHkmWRVcFm-5a1Wz_7G1', //'GyvV7NE7QiuAMLkWLXRiDJKJ0esS-R5a6gc8VEnFo0r5',
-    serviceInstanceId: '0268699b-7d23-4e1d-9d17-e950b6804633' //'9720d58a-1b9b-42ed-a246-f2e9d7409b18',
+const configCOS = {
+    endpoint: process.env.COS_ENDPOINT,
+    ibmAuthEndpoint: process.env.COS_IBMAUTHENDPOINT,
+    apiKeyId: process.env.COS_APIKEYID,
+    serviceInstanceId: process.env.COS_SERVICEINSTANCEID,
 };
-const COS_BUCKET_NAME = "staticfileszyxme"
+
+const COS_BUCKET_NAME = process.env.COS_BUCKET;
 const REPLACEFILTERS = "###FILTERS###";
 const REPLACESEL = "###REPLACESEL###";
 
+const s3 = new IBM.S3(configCOS);
+
+AWS.config.update({
+    accessKeyId: process.env.COS_ACCESSKEYID,
+    secretAccessKey: process.env.COS_SECRETACCESSKEY,
+});
+
+const cosSigned = new AWS.S3({
+    endpoint: `https://${configCOS.endpoint}`,
+});
 
 const executeQuery = async (query, bind, _requestid) => {
     const profiler = logger.child({ ctx: bind || {}, _requestid }).startTimer();
@@ -283,6 +295,13 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
 
         let JOINNERS = Array.from(new Set(ALLCOLUMNS.filter(x => !!x.join_alias).map(x => x.join_alias))).reduce((acc, join_alias) => {
             const { join_table, join_on } = ALLCOLUMNS.find(x => x.join_alias === join_alias);
+
+            if (join_alias === "hsmcampaign") {
+                return acc +
+                    `\nLEFT JOIN hsmhistory hsmhistory ON hsmhistory.corpid = conversation.corpid AND hsmhistory.orgid = conversation.orgid AND hsmhistory.conversationid = conversation.conversationid
+                \nLEFT JOIN campaignhistory campaignhistory ON campaignhistory.corpid = conversation.corpid AND campaignhistory.orgid = conversation.orgid AND campaignhistory.conversationid = conversation.conversationid`;
+            }
+
             return acc + `\nLEFT JOIN ${join_table} ${join_alias} ${join_on}`;
         }, "");
 
@@ -302,6 +321,10 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
 
             if (item.type === "interval") {
                 selcol = `cast(EXTRACT(epoch FROM ${item.columnname}) as integer)`;
+            } else if (item.columnname === "hsmcampaign.success") {
+                selcol = `CASE WHEN (hsmhistory.success = true OR campaignhistory.success = true) AND conversation.personlastreplydate IS NOT NULL THEN 'attended' 
+                    WHEN (hsmhistory.success = true OR campaignhistory.success = true) THEN 'sent' 
+                    ELSE 'not sent' END`;
             } else if (item.type === "variable") {
                 selcol = `conversation.variablecontextsimple->>'${item.columnname}'`;
             } else if (DATES.includes(item.type) && fromExport) {
@@ -319,24 +342,28 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             if (DATES.includes(type)) {
                 return `${acc}\nand ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
             } else if (!!value) {
-
-                const filter_array = `ANY(string_to_array('${value}',',')::${type === "variable" ? "text" : type}[])`
+                const valueCleaned = value === "''" ? "" : value;
+                const filter_array = `ANY(string_to_array('${valueCleaned}',',')::${type === "variable" ? "text" : type}[])`
 
                 if (NUMBERS.includes(type)) {
-                    return `${acc}\nand ${columnname} = ${value.includes(",") ? filter_array : value}`
+                    return `${acc}\nand ${columnname} = ${valueCleaned.includes(",") ? filter_array : valueCleaned}`
                 } else if (type === "variable") {
-                    return `${acc}\nand conversation.variablecontextsimple->>'${columnname}' ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
+                    return `${acc}\nand conversation.variablecontextsimple->>'${columnname}' ilike ${valueCleaned.includes(",") ? filter_array : "'" + valueCleaned + "'"}`
                 } else if (type === "boolean") {
-                    return `${acc}\nand ${columnname} = ${value}`
+                    return `${acc}\nand ${columnname} = ${valueCleaned}`
                 } else {
                     if (columnname === "conversation.tags") {
-                        if (value.includes(",")) {
+                        if (valueCleaned.includes(",")) {
                             return `${acc}\nand ${filter_array}  && string_to_array(${columnname}, ',')`
                         } else {
-                            return `${acc}\nand '${value}'  = any(string_to_array(${columnname}, ','))`
+                            return `${acc}\nand '${valueCleaned}'  = any(string_to_array(${columnname}, ','))`
                         }
                     } else {
-                        return `${acc}\nand ${columnname} ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
+                        if (valueCleaned === "") {
+                            return `${acc}\nand COALESCE(${columnname}, '') ilike '${valueCleaned}'`
+                        } else {
+                            return `${acc}\nand ${columnname} ilike ${valueCleaned.includes(",") ? filter_array : "'" + valueCleaned + "'"}`
+                        }
                     }
                 }
             } else {
@@ -353,7 +380,6 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 ${TABLENAME}.corpid = $corpid and ${TABLENAME}.orgid = $orgid
                 ${FILTERS}
             `;
-
         const resultbd = await executeQuery(query, parameters, parameters._requestid);
 
         if (summaries.length > 0 && resultbd.length > 0) {
@@ -472,23 +498,28 @@ exports.buildQueryDynamicGroupInterval = async (columns, filters, parameters, in
             if (DATES.includes(type)) {
                 return `${acc}\nand ${columnname} >= '${start}'::DATE - $offset * INTERVAL '1hour' and ${columnname} < '${end}'::DATE + INTERVAL '1day' - $offset * INTERVAL '1hour'`
             } else if (!!value) {
-                const filter_array = `ANY(string_to_array('${value}',',')::${type === "variable" ? "text" : type}[])`
+                const valueCleaned = value === "''" ? "" : value;
+                const filter_array = `ANY(string_to_array('${valueCleaned}',',')::${type === "variable" ? "text" : type}[])`
 
                 if (NUMBERS.includes(type)) {
-                    return `${acc}\nand ${columnname} = ${value.includes(",") ? filter_array : value}`
+                    return `${acc}\nand ${columnname} = ${valueCleaned.includes(",") ? filter_array : valueCleaned}`
                 } else if (type === "variable") {
-                    return `${acc}\nand conversation.variablecontextsimple->>'${columnname}' ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
+                    return `${acc}\nand conversation.variablecontextsimple->>'${columnname}' ilike ${valueCleaned.includes(",") ? filter_array : "'" + valueCleaned + "'"}`
                 } else if (type === "boolean") {
-                    return `${acc}\nand ${columnname} = ${value}`
+                    return `${acc}\nand ${columnname} = ${valueCleaned}`
                 } else {
                     if (columnname === "conversation.tags") {
-                        if (value.includes(",")) {
+                        if (valueCleaned.includes(",")) {
                             return `${acc}\nand ${filter_array}  && string_to_array(${columnname}, ',')`
                         } else {
-                            return `${acc}\nand '${value}'  = any(string_to_array(${columnname}, ','))`
+                            return `${acc}\nand '${valueCleaned}'  = any(string_to_array(${columnname}, ','))`
                         }
                     } else {
-                        return `${acc}\nand ${columnname} ilike ${value.includes(",") ? filter_array : "'" + value + "'"}`
+                        if (valueCleaned === "") {
+                            return `${acc}\nand COALESCE(${columnname}, '') ilike '${valueCleaned}'`
+                        } else {
+                            return `${acc}\nand ${columnname} ilike ${valueCleaned.includes(",") ? filter_array : "'" + valueCleaned + "'"}`
+                        }
                     }
                 }
             } else {
@@ -612,12 +643,12 @@ exports.buildQueryDynamic = async (columns, filters, parameters) => {
     }
 }
 
-exports.exportData = (dataToExport, reportName, formatToExportx, headerClient, _requestid) => {
+exports.exportData = async (dataToExport, reportName, formatToExportx, headerClient, _requestid) => {
     const formatToExport = "csv";
     try {
         const titlefile = (reportName || "report") + new Date().toISOString() + (formatToExport !== "csv" ? ".xlsx" : ".csv");
         if (dataToExport instanceof Array && dataToExport.length > 0) {
-            const s3 = new ibm.S3(config);
+
             let keysHeaders;
             const keys = Object.keys(dataToExport[0]);
             keysHeaders = keys;
@@ -646,25 +677,14 @@ exports.exportData = (dataToExport, reportName, formatToExportx, headerClient, _
                 const wb = { Sheets: { 'data': ws }, SheetNames: ['data'] };
                 const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
 
-                const params = {
-                    ACL: 'public-read',
-                    Key: titlefile,
-                    Body: excelBuffer,
-                    Bucket: COS_BUCKET_NAME,
-                    ContentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
-                }
-                const profiler = logger.child({ _requestid }).startTimer();
-                return new Promise((res, rej) => {
-                    s3.upload(params, (err, data) => {
-                        if (err) {
-                            profiler.done({ level: "error", error: err, message: `Upload cos` });
-                            res(getErrorCode(errors.COS_UNEXPECTED, err));
-                        } else {
-                            profiler.done({ level: "debug", message: `Upload cos` });
-                            res({ url: (data.Location || "").replace("http:", "https:") })
-                        }
-                    });
-                });
+                const r = await this.uploadBufferToCos(
+                    _requestid,
+                    excelBuffer,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
+                    titlefile,
+                    true);
+                return r;
+
             } else {
                 logger.child({ _requestid }).debug(`drawing csv`)
 
@@ -678,31 +698,8 @@ exports.exportData = (dataToExport, reportName, formatToExportx, headerClient, _
 
                 profiler.done({ level: "debug", message: `Drawed csv` });
 
-                const params = {
-                    ACL: 'public-read',
-                    Key: titlefile,
-                    Body: Buffer.from(content, 'ASCII'),
-                    Bucket: COS_BUCKET_NAME,
-                    ContentType: "text/csv",
-                }
-
-                content = "";
-
-                logger.child({ _requestid }).debug(`Uploading to COS`)
-
-                const profiler1 = logger.child({ _requestid }).startTimer();
-
-                return new Promise((res, rej) => {
-                    s3.upload(params, (err, data) => {
-                        if (err) {
-                            profiler1.done({ level: "error", error: err, message: `Uploaded cos` });
-                            rej(getErrorCode(errors.COS_UNEXPECTED_ERROR, err));
-                        }
-                        profiler1.done({ level: "debug", message: `Upload cos` });
-
-                        res({ url: (data.Location || "").replace("http:", "https:") })
-                    });
-                });
+                const r = await this.uploadBufferToCos(_requestid, Buffer.from(content, 'ASCII'), "text/csv", titlefile, true);
+                return r;
             }
         } else {
             return getErrorCode(errors.ZERO_RECORDS_ERROR);
@@ -745,11 +742,9 @@ exports.getQuery = (method, data, isNotPaginated) => {
     }
 }
 
-exports.uploadBufferToCos = async (_requestid, buffer, contentType, key) => {
-    const s3 = new ibm.S3(config);
-
+exports.uploadBufferToCos = async (_requestid, buffer, contentType, key, presigned = false) => {
     const params = {
-        ACL: 'public-read',
+        ACL: presigned ? undefined : 'public-read',
         Key: key,
         Body: buffer,
         Bucket: COS_BUCKET_NAME,
@@ -759,17 +754,29 @@ exports.uploadBufferToCos = async (_requestid, buffer, contentType, key) => {
     logger.child({ _requestid }).debug(`Uploading to COS`)
 
     const profiler1 = logger.child({ _requestid }).startTimer();
-
     return new Promise((res, rej) => {
-        s3.upload(params, (err, data) => {
-            if (err) {
-                profiler1.done({ level: "error", error: err, message: `Uploaded cos` });
-                rej(getErrorCode(errors.COS_UNEXPECTED_ERROR, err));
-            }
-            profiler1.done({ level: "debug", message: `Upload cos` });
+        try {
+            s3.upload(params, async (err, data) => {
+                if (err) {
+                    profiler1.done({ level: "error", error: err, message: `Uploaded cos` });
+                    rej(getErrorCode(errors.COS_UNEXPECTED_ERROR, err));
+                }
+                profiler1.done({ level: "debug", message: `Upload cos` });
+                if (presigned) {
+                    const signedUrl = await cosSigned.getSignedUrlPromise("getObject", {
+                        Bucket: COS_BUCKET_NAME,
+                        Key: key,
+                        Expires: 300,
+                    });
 
-            res({ url: (data.Location || "").replace("http:", "https:") })
-        });
+                    res({ url: (signedUrl ?? data.Location).replace("http:", "https:") })
+                } else {
+                    res({ url: data.Location.replace("http:", "https:") })
+                }
+            });
+        } catch (error) {
+            console.log(error)
+        }
     });
 }
 

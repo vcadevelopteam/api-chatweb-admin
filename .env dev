@@ -1,9 +1,11 @@
-ADDRESSES_ALLOWED=https://locations-geodir.laraigo.com,http://localhost,https://testing.laraigo.com,http://localhost:3000,http://localhost:80,https://sbs-login.laraigo.com,https://dev.laraigo.com,https://testing.laraigo.com/,http://localhost:3000,https://localhost:3000,http://localhost:4200,https://localhost:4200,http://52.116.128.51:5040,https://test-laraigo.s3-web.us-south.cloud-object-storage.appdomain.cloud,https://scanvirus-cos-static-web-hosting-w26.s3-web.us-south.cloud-object-storage.appdomain.cloud,https://app.laraigo.com,https://socket.laraigo.com,https://testsocket.laraigo.com,https://socket.laraigo.com,https://zyxmelinux.zyxmeapp.com,https://zyxmelinux2.zyxmeapp.com,https://backend.laraigo.com,https://chatflow.s3-web.us-east.cloud-object-storage.appdomain.cloud,http://52.116.136.253,http://52.117.9.143,https://zyxmedev.com/,https://laraigo.com/
+ADDRESSES_ALLOWED=http://localhost,http://localhost:3000,http://localhost:80,https://sbs-login.laraigo.com,https://dev.laraigo.com,https://testing.laraigo.com/,http://localhost:3000,https://localhost:3000,http://localhost:4200,https://localhost:4200,http://52.116.128.51:5040,https://test-laraigo.s3-web.us-south.cloud-object-storage.appdomain.cloud,https://scanvirus-cos-static-web-hosting-w26.s3-web.us-south.cloud-object-storage.appdomain.cloud,https://app.laraigo.com,https://socket.laraigo.com,https://testsocket.laraigo.com,https://socket.laraigo.com,https://zyxmelinux.zyxmeapp.com,https://zyxmelinux2.zyxmeapp.com,https://backend.laraigo.com,https://chatflow.s3-web.us-east.cloud-object-storage.appdomain.cloud,http://52.116.136.253,http://52.117.9.143,https://zyxmedev.com/,https://laraigo.com/
 API2=https://apixreport.laraigo.com/api/
 APIKEY_GMAPS=AIzaSyDuXjjAnNl9yLKczCJtQ-5Z3GDJpxK720s
 APISERVICES=https://zyxmedev.com/zyxme/apiservices/api/
 APP_MOBILE_SOCKET=https://socket.laraigo.com/api/
+APP_MOBILE_SOCKET=https://socket.laraigo.com/api/
 APP=https://zyxmelinux2.zyxmeapp.com/zyxme/app/
+AYRSHARE=https://app.ayrshare.com/api/
 AYRSHARE=https://app.ayrshare.com/api/
 BRIDGE=https://zyxmelinux2.zyxmeapp.com/zyxme/bridge/api/
 BRIDGECLOUD=https://cloudprdbridge.laraigo.com/api/
@@ -25,6 +27,7 @@ COS_FREE_IBMAUTHENDPOINT=https://iam.cloud.ibm.com/identity/token
 
 
 BRIDGE=https://cloudprdbridge.laraigo.com/api/
+BRIDGECLOUD=https://cloudprdbridge.laraigo.com/api/
 BRIDGECLOUD=https://cloudprdbridge.laraigo.com/api/
 CHATAPPLICATION=53
 CHATBROKER=https://goo.zyxmeapp.com/api/

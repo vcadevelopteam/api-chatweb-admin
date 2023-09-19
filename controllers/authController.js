@@ -2,10 +2,11 @@ const logger = require('../config/winston');
 
 const { v4: uuidv4 } = require('uuid');
 const { executesimpletransaction } = require('../config/triggerfunctions');
-const { errors, getErrorCode, cleanPropertyValue } = require('../config/helpers');
-
+const { errors, getErrorCode, cleanPropertyValue, recaptcha } = require('../config/helpers');
+const { addApplication } = require('./voximplantController');
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { loginGroup, exitFromAllGroup1 } = require('../config/firebase');
 
 //type: int|string|bool
 const properties = [
@@ -94,7 +95,19 @@ const validateResProperty = (r, type) => {
 }
 
 exports.authenticate = async (req, res) => {
-    const { data: { usr, password, facebookid, googleid, origin = "WEB", token } } = req.body;
+    const { data: { usr, password, facebookid, googleid, origin = "WEB", token, token_recaptcha } } = req.body;
+    
+    logger.child({ _requestid: req._requestid, body: req.body }).info(`authenticate.body`);
+
+    const secret_recaptcha = process.env.SECRET_RECAPTCHA;
+
+    if (origin !== "MOVIL" && secret_recaptcha && token_recaptcha) {
+        const result_recaptcha = await recaptcha(secret_recaptcha, token_recaptcha);
+    
+        if ((result_recaptcha.error || !result_recaptcha.success)) {
+            return res.status(401).json({ code: errors.RECAPTCHA_ERROR, ...result_recaptcha })
+        }
+    }
 
     let integration = false;
     const prevdata = { _requestid: req._requestid }
@@ -148,6 +161,14 @@ exports.authenticate = async (req, res) => {
         if (user.status === 'ACTIVO') {
             logger.info(`auth success: ${usr}`);
 
+            if (origin === "MOVIL") {
+                await exitFromAllGroup1(token)
+                const resLastToken = await executesimpletransaction("UFN_GET_TOKEN_LOGGED_MOVIL", { userid: user.userid });
+                if (resLastToken.length > 0) {
+                    exitFromAllGroup1(resLastToken[0].token)
+                }
+            }
+
             const resConnection = await executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...user, ...prevdata, propertyname: 'CONEXIONAUTOMATICAINBOX' })
 
             const automaticConnection = validateResProperty(resConnection, 'bool');
@@ -170,7 +191,12 @@ exports.authenticate = async (req, res) => {
             }
 
             user.token = tokenzyx;
+            user.origin = origin;
             delete user.pwd;
+
+            if (origin === "MOVIL" && /(supervisor|administrador)/gi.test(user.roledesc)) {
+                await loginGroup(token, user.orgid, user.userid, req._requestid);
+            }
 
             jwt.sign({ user }, (process.env.SECRETA ? process.env.SECRETA : "palabrasecreta"), {}, (error, token) => {
                 if (error) throw error;
@@ -179,6 +205,7 @@ exports.authenticate = async (req, res) => {
                 delete user.userid;
                 return res.json({ data: { ...user, token, automaticConnection, notifications, redirect: user.redirect || '/tickets' }, success: true });
             })
+
         } else if (user.status === 'PENDIENTE') {
             return res.status(401).json({ code: errors.LOGIN_USER_PENDING })
         } else if (user.status === 'BLOQUEADO') {
@@ -218,7 +245,6 @@ exports.getUser = async (req, res) => {
             executesimpletransaction("UFN_DOMAIN_LST_VALUES_ONLY_DATA", { ...req.user, domainname: "TIPODESCONEXION", ...prevdata }),
             executesimpletransaction("QUERY_SEL_PROPERTY_ENV_ON_LOGIN", { ...req.user })
         ]);
-
         const resultBDProperties = resultBD[3];
         const propertyEnv = resultBD[5] instanceof Array && resultBD[5].length > 0 ? resultBD[5][0].propertyvalue : "";
 
@@ -238,9 +264,12 @@ exports.getUser = async (req, res) => {
                 [item.view ? 1 : 0,
                 item.modify ? 1 : 0,
                 item.insert ? 1 : 0,
-                item.delete ? 1 : 0]
+                item.delete ? 1 : 0,
+                item.applicationid_parent,
+                item.description_parent,
+                item.menuorder,
+            ]
         }), {})
-
         jwt.sign({ user: { ...req.user, menu: { ...menu, "system-label": undefined, "/": undefined } } }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
             if (error) throw error;
             delete req.user.token;
@@ -268,6 +297,9 @@ exports.getUser = async (req, res) => {
 
 exports.logout = async (req, res) => {
     try {
+        if (req.user.origin === "MOVIL") {
+            await exitFromAllGroup1(req.user.token, req._requestid);
+        }
         executesimpletransaction("UFN_USERSTATUS_UPDATE", { _requestid: req._requestid, ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
     } catch (exception) {
         logger.child({ error: { detail: exception.stack, message: exception.toString() } }).error(`Request to ${req.originalUrl}`);
@@ -306,7 +338,7 @@ exports.changeOrganization = async (req, res) => {
             corpdesc: parameters.corpdesc,
             orgdesc: parameters.orgdesc,
             _requestid: req._requestid,
-            roledesc: req.user.roledesc === "SUPERADMIN" ? "SUPERADMIN" :  resultBD[0]?.roledesc,
+            roledesc: req.user.roledesc.includes("SUPERADMIN") ? "SUPERADMIN" :  resultBD[0]?.roledesc,
             redirect: resultBD[0]?.redirect || '/tickets',
             plan: resultBD[0]?.plan || '',
             currencysymbol: resultBD[0]?.currencysymbol || 'S/',
@@ -328,7 +360,7 @@ exports.changeOrganization = async (req, res) => {
         
         let automaticConnection = false;
         
-        if (req.user.roledesc !== "SUPERADMIN") {
+        if (!req.user.roledesc.includes("SUPERADMIN")) {
             const resConnection = await executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...newusertoken, propertyname: 'CONEXIONAUTOMATICAINBOX' })
             
             automaticConnection = validateResProperty(resConnection, 'bool');
@@ -343,6 +375,10 @@ exports.changeOrganization = async (req, res) => {
                     username: req.user.usr
                 })
             }
+        }
+
+        if (req.user.origin === "MOVIL") {
+            await loginGroup(req.user.token, parameters.neworgid, req.user.userid, req._requestid);
         }
         
         jwt.sign({ user: newusertoken }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {

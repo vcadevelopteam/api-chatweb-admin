@@ -1,30 +1,30 @@
 const channelfunctions = require('../config/channelfunctions');
-const triggerfunctions = require('../config/triggerfunctions');
-const { getErrorCode } = require('../config/helpers');
 const jwt = require('jsonwebtoken');
-
-const { setSessionParameters, axiosObservable } = require('../config/helpers');
-
 const logger = require('../config/winston');
+const triggerfunctions = require('../config/triggerfunctions');
+
+const { axiosObservable, setSessionParameters } = require('../config/helpers');
+const { getErrorCode } = require('../config/helpers');
 
 const ayrshareEndpoint = process.env.AYRSHARE;
 const bridgeEndpoint = process.env.BRIDGE;
 const brokerEndpoint = process.env.CHATBROKER;
 const facebookEndpoint = process.env.FACEBOOKAPI;
+const googleClientId = process.env.GOOGLE_CLIENTID;
+const googleClientSecret = process.env.GOOGLE_CLIENTSECRET;
+const googleTopicName = process.env.GOOGLE_TOPICNAME;
 const hookEndpoint = process.env.HOOK;
 const linkedinEndpoint = process.env.LINKEDIN;
 const linkedinTokenEndpoint = process.env.LINKEDINTOKEN;
+const metaEndpoint = process.env.METAAPI;
 const smoochEndpoint = process.env.SMOOCHAPI;
 const smoochVersion = process.env.SMOOCHVERSION;
 const telegramEndpoint = process.env.TELEGRAMAPI;
 const tikApiEndpoint = process.env.TIKAPI;
 const webChatApplication = process.env.CHATAPPLICATION;
 const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
+const whatsAppCloudEndpoint = process.env.WHATSAPPCLOUDAPI;
 const whatsAppEndpoint = process.env.WHATSAPPAPI;
-const metaEndpoint = process.env.METAAPI;
-const googleClientId = process.env.GOOGLE_CLIENTID;
-const googleClientSecret = process.env.GOOGLE_CLIENTSECRET;
-const googleTopicName = process.env.GOOGLE_TOPICNAME;
 
 exports.checkPaymentPlan = async (request, response) => {
     try {
@@ -554,8 +554,9 @@ exports.deleteChannel = async (request, response) => {
                     const requestDeleteWhatsApp = await axiosObservable({
                         data: {
                             accessToken: serviceCredentials.apiKey,
+                            isCloud: serviceCredentials.isCloud ? true : false,
                             linkType: 'WHATSAPPREMOVE',
-                            siteId: serviceCredentials.number
+                            siteId: serviceCredentials.number,
                         },
                         method: 'post',
                         url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`,
@@ -1185,6 +1186,7 @@ exports.insertChannel = async (request, response) => {
                         success: false
                     });
                 }
+
             case 'FORM':
                 const webChatData1 = {
                     applicationId: webChatApplication,
@@ -1241,6 +1243,7 @@ exports.insertChannel = async (request, response) => {
                         success: false
                     });
                 }
+
             case 'FACEBOOKWORPLACE':
                 const requestTokenWorkplace = await axiosObservable({
                     method: 'get',
@@ -1260,8 +1263,6 @@ exports.insertChannel = async (request, response) => {
                     };
 
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
-
-                    //WORKPLACE MESSENGER
                     parameters.type = 'FBWP';
                     parameters.communicationchannelowner = requestTokenWorkplace.data.id;
                     parameters.communicationchannelsite = requestTokenWorkplace.data.id;
@@ -1289,6 +1290,7 @@ exports.insertChannel = async (request, response) => {
                         success: false
                     });
                 }
+                
             case "FBWM":
                 const requestTokenWorkplaceWall = await axiosObservable({
                     method: 'get',
@@ -1336,6 +1338,7 @@ exports.insertChannel = async (request, response) => {
                         success: false
                     });
                 }
+
             case 'FACEBOOK':
             case 'INSTAGRAM':
             case 'INSTAMESSENGER':
@@ -1422,64 +1425,65 @@ exports.insertChannel = async (request, response) => {
                             _requestid: request._requestid,
                         });
 
-                        if (requestCreateFacebook.data.success) {
-                            let serviceCredentials = {
+                    if (requestCreateFacebook.data.success) {
+                        let serviceCredentials = {
+                            accessToken: requestGetLongToken.data.longToken,
+                            endpoint: facebookEndpoint,
+                            serviceType: serviceType,
+                            siteId: service.siteid
+                        };
+
+                        if (request.body.type === 'FBLD') {
+                            serviceCredentials = {
                                 accessToken: requestGetLongToken.data.longToken,
                                 endpoint: facebookEndpoint,
                                 serviceType: serviceType,
-                                siteId: service.siteid
+                                siteId: service.siteid,
+                                corpid: request.user.corpid,
+                                org: request.user.orgid
                             };
+                        }
 
-                            if(request.body.type === 'FBLD'){
-                                serviceCredentials = {
-                                    accessToken: requestGetLongToken.data.longToken,
-                                    endpoint: facebookEndpoint,
-                                    serviceType: serviceType,
-                                    siteId: service.siteid,
-                                    corpid: request.user.corpid,
-                                    org: request.user.orgid
-                                };
-                            }
-    
-                            if (typeof businessId !== 'undefined' && businessId) {
-                                parameters.communicationchannelowner = service.siteid;
-                                parameters.communicationchannelsite = businessId;
-    
-                                serviceCredentials.siteId = businessId;
-                            }
-    
-                            parameters.servicecredentials = JSON.stringify(serviceCredentials);
-                            parameters.type = channelType;
-    
-                            const transactionCreateFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
-    
-                            if (transactionCreateFacebook instanceof Array) {
-                                await channelfunctions.clearHookCache('FacebookService', request._requestid);
-    
-                                return response.json({
-                                    success: true
-                                });
-                            }
-                            else {
-                                return response.status(400).json({
-                                    msg: transactionCreateFacebook.code,
-                                    success: false
-                                });
-                            }
+                        if (typeof businessId !== 'undefined' && businessId) {
+                            parameters.communicationchannelowner = service.siteid;
+                            parameters.communicationchannelsite = businessId;
+
+                            serviceCredentials.siteId = businessId;
+                        }
+
+                        parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                        parameters.type = channelType;
+
+                        const transactionCreateFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                        if (transactionCreateFacebook instanceof Array) {
+                            await channelfunctions.clearHookCache('FacebookService', request._requestid);
+
+                            return response.json({
+                                success: true
+                            });
                         }
                         else {
                             return response.status(400).json({
-                                msg: requestCreateFacebook.data.operationMessage,
+                                msg: transactionCreateFacebook.code,
                                 success: false
                             });
                         }
                     }
                     else {
                         return response.status(400).json({
-                            msg: requestGetLongToken.data.operationMessage,
+                            msg: requestCreateFacebook.data.operationMessage,
                             success: false
                         });
-                    }    
+                    }
+                }
+                else {
+                    return response.status(400).json({
+                        msg: requestGetLongToken.data.operationMessage,
+                        success: false
+                    });
+                }
+
             case 'SMOOCHANDROID':
             case 'SMOOCHIOS':
                 const requestCreateSmooch = await axiosObservable({
@@ -1828,34 +1832,35 @@ exports.insertChannel = async (request, response) => {
                     }
                 }
                 break;
-                case 'PLAYSTORE':
-                    if (service) {
-                        parameters.communicationchannelowner = service.mail;
-                        parameters.communicationchannelsite = `${service.mail}|AC|${service.appcode}`;
-                        parameters.integrationid = service.appcode;
-                        parameters.servicecredentials = JSON.stringify(service);
-                        parameters.status = 'ACTIVO';
-                        parameters.type = 'PLAY';
-    
-                        await channelfunctions.serviceTokenUpdate(service.mail, '', '', JSON.stringify(service), 'PLAYSTORE', 'ACTIVO', request?.user?.usr, 50);
-    
-                        await channelfunctions.serviceSubscriptionUpdate(service.mail, service.appcode, JSON.stringify(service), 'GOOGLE-PLAYSTORE', 'ACTIVO', request?.user?.usr, `${hookEndpoint}appstore/playstorewebhookasync`, 2);
-    
-                        const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
-    
-                        if (transactionCreateGeneric instanceof Array) {
-                            return response.json({
-                                success: true
-                            });
-                        }
-                        else {
-                            return response.status(400).json({
-                                msg: transactionCreateGeneric.code,
-                                success: false
-                            });
-                        }
+
+            case 'PLAYSTORE':
+                if (service) {
+                    parameters.communicationchannelowner = service.mail;
+                    parameters.communicationchannelsite = `${service.mail}|AC|${service.appcode}`;
+                    parameters.integrationid = service.appcode;
+                    parameters.servicecredentials = JSON.stringify(service);
+                    parameters.status = 'ACTIVO';
+                    parameters.type = 'PLAY';
+
+                    await channelfunctions.serviceTokenUpdate(service.mail, '', '', JSON.stringify(service), 'PLAYSTORE', 'ACTIVO', request?.user?.usr, 50);
+
+                    await channelfunctions.serviceSubscriptionUpdate(service.mail, service.appcode, JSON.stringify(service), 'GOOGLE-PLAYSTORE', 'ACTIVO', request?.user?.usr, `${hookEndpoint}appstore/playstorewebhookasync`, 2);
+
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+
+                    if (transactionCreateGeneric instanceof Array) {
+                        return response.json({
+                            success: true
+                        });
                     }
-                    break;    
+                    else {
+                        return response.status(400).json({
+                            msg: transactionCreateGeneric.code,
+                            success: false
+                        });
+                    }
+                }
+                break;
 
             case 'LINKEDIN':
                 if (service) {
@@ -2118,6 +2123,7 @@ exports.insertChannel = async (request, response) => {
                 const requestCreateWhatsApp = await axiosObservable({
                     data: {
                         accessToken: service.accesstoken,
+                        isCloud: service.iscloud ? true : false,
                         linkType: 'WHATSAPPADD'
                     },
                     method: 'post',
@@ -2128,7 +2134,8 @@ exports.insertChannel = async (request, response) => {
                 if (requestCreateWhatsApp.data.success) {
                     let serviceCredentials = {
                         apiKey: service.accesstoken,
-                        endpoint: whatsAppEndpoint,
+                        endpoint: service.iscloud ? whatsAppCloudEndpoint : whatsAppEndpoint,
+                        isCloud: service.iscloud ? true : false,
                         number: requestCreateWhatsApp.data.phoneNumber
                     };
 
@@ -2780,6 +2787,7 @@ exports.activateChannel = async (request, response) => {
             const requestCreateWhatsApp = await axiosObservable({
                 data: {
                     accessToken: service.accesstoken,
+                    isCloud: service.iscloud ? true : false,
                     linkType: 'WHATSAPPADD'
                 },
                 method: 'post',
@@ -2790,7 +2798,8 @@ exports.activateChannel = async (request, response) => {
             if (requestCreateWhatsApp.data.success) {
                 let serviceCredentials = {
                     apiKey: service.accesstoken,
-                    endpoint: whatsAppEndpoint,
+                    endpoint: service.iscloud ? whatsAppCloudEndpoint : whatsAppEndpoint,
+                    isCloud: service.iscloud ? true : false,
                     number: requestCreateWhatsApp.data.phoneNumber
                 };
 
@@ -2912,6 +2921,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                 const requestListDialog = await axiosObservable({
                                     data: {
                                         ApiKey: serviceData.apiKey,
+                                        IsCloud: serviceData.isCloud ? true : false,
                                         Type: 'LIST',
                                     },
                                     method: 'post',
@@ -3058,6 +3068,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                             const requestListDialog = await axiosObservable({
                                                 data: {
                                                     ApiKey: serviceData.apiKey,
+                                                    IsCloud: serviceData.isCloud ? true : false,
                                                     Type: 'LIST',
                                                 },
                                                 method: 'post',
@@ -3269,6 +3280,7 @@ exports.addTemplate = async (request, response) => {
 
                             let createBody = {
                                 ApiKey: serviceData.apiKey,
+                                IsCloud: serviceData.isCloud ? true : false,
                                 Type: 'CREATE',
                                 Category: request.body.category,
                                 Name: request.body.name,
@@ -3441,6 +3453,7 @@ exports.deleteTemplate = async (request, response) => {
                                         data: {
                                             ApiKey: serviceData.apiKey,
                                             DeleteName: messagetemplate.name,
+                                            IsCloud: serviceData.isCloud ? true : false,
                                             Type: 'DELETE',
                                         },
                                         method: 'post',
