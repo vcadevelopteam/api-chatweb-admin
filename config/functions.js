@@ -632,8 +632,25 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+
+    UFN_INVENTORY_PAG: {
+        query: "SELECT * FROM inventario.ufn_inventory_pag($corpid, $orgid, $inventoryid, $userid, $where, $order, $take, $skip, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVENTORY_TOTALRECORDS: {
+        query: "SELECT * FROM inventario.ufn_inventory_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVENTORY_INS: {
+        query: "SELECT * FROM inventario.ufn_inventory_ins($corpid, $orgid, $inventoryid, $productid, $warehousid, $iswharehousedefault, $rackdefault, $typecostdispatch, $familyid, $subfamilyid, $status, $type, $currentbalance, $operation, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+
     UFN_WAREHOUSE_INS: {
-        query: "SELECT * FROM inventario.ufn_warehouse_ins($corpid, $orgid, $warehouseid, $description,  $address, $latitude, $longitude, $phone, $status, $type, $name, $operation, $username)",
+        query: "SELECT * FROM inventario.ufn_warehouse_ins($corpid, $orgid, $warehouseid, $description, $address, $latitude, $longitude, $phone, $status, $type, $name, $operation, $username)",
         module: "",
         protected: "INSERT"
     },
