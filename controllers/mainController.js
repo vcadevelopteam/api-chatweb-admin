@@ -8,7 +8,7 @@ const { processCursor } = require("../config/pg-cursor");
 
 exports.GetCollection = async (req, res) => {
     let parameters = req.body.parameters || req.body.data || {};
-    const {method, key } = req.body;
+    const { method, key } = req.body;
 
     setSessionParameters(parameters, req.user, req._requestid);
 
@@ -105,7 +105,7 @@ exports.executeTransaction = async (req, res) => {
 }
 
 exports.getCollectionPagination = async (req, res) => {
-    let parameters  = req.body.parameters || req.body.data; 
+    let parameters = req.body.parameters || req.body.data;
     const { methodCollection, methodCount } = req.body;
 
     setSessionParameters(parameters, req.user, req._requestid);
@@ -113,7 +113,7 @@ exports.getCollectionPagination = async (req, res) => {
     logger.child({ _requestid: req._requestid, ctx: parameters }).info(`${methodCollection}: ${parameters.username}`);
 
     const result = await getCollectionPagination(methodCollection, methodCount, parameters, req.user.menu || {}, req._requestid);
-    
+
     if (!result.error) {
         res.json(result);
     } else {
@@ -122,7 +122,7 @@ exports.getCollectionPagination = async (req, res) => {
 }
 
 exports.getGraphic = async (req, res) => {
-    let parameters  = req.body.parameters || req.body.data; 
+    let parameters = req.body.parameters || req.body.data;
     const { method } = req.body;
 
     setSessionParameters(parameters, req.user, req._requestid);
@@ -162,7 +162,8 @@ exports.SplitFirst = async (req, res) => {
 }
 
 exports.getToken = async (req, res) => {
-    let data  = req.body.parameters || req.body.data;
+    let data = req.body.parameters || req.body.data;
+    
     const result = await executesimpletransaction("UFN_GET_TOKEN_LOGGED_MOVIL", { ...data, _requestid: req._requestid });
 
     if (result instanceof Array) {
@@ -219,7 +220,7 @@ exports.validateConversationWhatsapp = async (req, res) => {
 }
 
 exports.exportWithCursor = async (req, res) => {
-    let parameters  = req.body.parameters || req.body.data; 
+    let parameters = req.body.parameters || req.body.data;
     const { method } = req.body;
 
     try {
@@ -239,7 +240,7 @@ exports.exportWithCursor = async (req, res) => {
             password: process.env.DBPASSWORD,
             port: process.env.DBPORT || "30503",
             max: 50,
-            idleTimeoutMillis: 30000,
+            idleTimeoutMillis: 5000,
             allowExitOnIdle: true,
             ssl: {
                 rejectUnauthorized: false
