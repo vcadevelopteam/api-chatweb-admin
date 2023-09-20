@@ -638,11 +638,13 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    
     UFN_INVENTORY_TOTALRECORDS: {
         query: "SELECT * FROM inventario.ufn_inventory_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset)",
         module: "",
         protected: "SELECT"
     },
+
     UFN_INVENTORY_INS: {
         query: "SELECT * FROM inventario.ufn_inventory_ins($corpid, $orgid, $inventoryid, $productid, $warehousid, $iswharehousedefault, $rackdefault, $typecostdispatch, $familyid, $subfamilyid, $status, $type, $currentbalance, $operation, $username)",
         module: "",
