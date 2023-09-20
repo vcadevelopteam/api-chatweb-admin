@@ -68,7 +68,7 @@ const insertMassive = async (table, rows, dt, columns, lastdate) => {
                 FROM json_populate_recordset(null::record, $1)
                 AS dt (${dt})
                 WHERE NOT EXISTS(SELECT 1 FROM "${tablename}" xins WHERE ${where})`.replace('\n', ' ');
-            
+
             // if (tablename === "conversation") {
             //     console.log("conversation", JSON.stringify(data.inserts.map(x => `${x.orgid}|${x.ticketnum}`)))
             // }
@@ -99,7 +99,7 @@ const connectToDB = async (backup = false) => {
         password: backup ? process.env.BACKUP_DBPASSWORD : process.env.DBPASSWORD,
         port: backup ? process.env.BACKUP_DBPORT : (process.env.DBPORT || "30503"),
         max: 50,
-        idleTimeoutMillis: 30000,
+        idleTimeoutMillis: 5000,
         allowExitOnIdle: true,
         ssl: {
             rejectUnauthorized: false,
