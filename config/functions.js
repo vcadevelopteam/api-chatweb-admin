@@ -612,8 +612,38 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_MANUFACTURER_PAG: {
+        query: "SELECT * FROM inventario.ufn_manufacturer_pag($corpid, $orgid, $manufacturerid, $username, $where, $order, $take, $skip, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_MANUFACTURER_TOTALRECORDS: {
+        query: "SELECT * FROM inventario.ufn_manufacturer_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_MANUFACTURER_EXPORT: {
+        query: "SELECT * FROM inventario.ufn_manufacturer_export($startdate, $enddate, $corpid, $orgid, $where, $order, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_MANUFACTURER_INS: {
+        query: "SELECT * FROM inventario.ufn_manufacturer_ins($corpid, $orgid, $manufacturerid, $description,  $status, $type, $descriptionlarge, $clientenumbers, $beginpage, $currencyid, $taxeid, $ispaymentdelivery, $typemanufacterid, $manufacturercode, $operation, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_MANUFACTURER_MAS: {
+        query: "SELECT * FROM inventario.ufn_manufacturer_mas($json, $corpid, $orgid, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_PRODUCT_DUP: {
+        query: "SELECT * FROM inventario.ufn_product_dup($corpid, $orgid, $productid, $operation, $username)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_PRODUCT_PAG: {
-        query: "SELECT * FROM inventario.ufn_product_pag($corpid, $orgid, $productid, $userid, $where, $order, $take, $skip, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM inventario.ufn_product_pag($corpid, $orgid, $productid, $username, $where, $order, $take, $skip, $startdate, $enddate, $offset)",
         module: "",
         protected: "SELECT"
     },
@@ -623,7 +653,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_WAREHOUSE_PAG: {
-        query: "SELECT * FROM inventario.ufn_warehouse_pag($corpid, $orgid, $warehouseid, $userid, $where, $order, $take, $skip, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM inventario.ufn_warehouse_pag($corpid, $orgid, $warehouseid, $username, $where, $order, $take, $skip, $startdate, $enddate, $offset)",
         module: "",
         protected: "SELECT"
     },
