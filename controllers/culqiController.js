@@ -1112,7 +1112,7 @@ exports.automaticPayment = async (request, response) => {
                                                         MontoTotal: Math.round((data.totalamount + Number.EPSILON) * 100) / 100,
                                                         PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
                                                         PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
-                                                        TasaIgv: data.igvrate * 100,
+                                                        TasaIgv: Math.round((data.igvrate * 100) || 0),
                                                         TipoVenta: data.saletype,
                                                         UnidadMedida: data.measureunit,
                                                         ValorNetoProducto: Math.round(((data.quantity * data.productnetprice) + Number.EPSILON) * 100) / 100,
@@ -1136,6 +1136,10 @@ exports.automaticPayment = async (request, response) => {
                                                 }
 
                                                 invoicedata.DataList.push(adicional05);
+
+                                                if (adicional05) {
+                                                    invoicedata.FechaVencimiento = null;
+                                                }
 
                                                 const requestSendToSunat = await axiosObservable({
                                                     data: invoicedata,
@@ -1926,7 +1930,7 @@ exports.chargeInvoice = async (request, response) => {
                                                         UnidadMedida: data.measureunit,
                                                         IgvTotal: Math.round((data.totaligv + Number.EPSILON) * 100) / 100,
                                                         MontoTotal: Math.round((data.totalamount + Number.EPSILON) * 100) / 100,
-                                                        TasaIgv: data.igvrate * 100,
+                                                        TasaIgv: Math.round((data.igvrate * 100) || 0),
                                                         PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
                                                         DescripcionProducto: data.productdescription,
                                                         PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
@@ -1977,6 +1981,12 @@ exports.chargeInvoice = async (request, response) => {
                                                     }
 
                                                     invoicedata.DataList.push(adicional05);
+
+                                                    if (adicional05) {
+                                                        if (adicional05.DescripcionDatoAdicional === 'AL CONTADO') {
+                                                            invoicedata.FechaVencimiento = null;
+                                                        }
+                                                    }
                                                 }
 
                                                 const requestSendToSunat = await axiosObservable({
@@ -2531,6 +2541,10 @@ exports.createBalance = async (request, response) => {
 
                                             invoicedata.DataList.push(adicional05);
 
+                                            if (adicional05) {
+                                                invoicedata.FechaVencimiento = null;
+                                            }
+
                                             var invoicedetaildata = {
                                                 CantidadProducto: 1,
                                                 CodigoProducto: 'S001',
@@ -2538,7 +2552,7 @@ exports.createBalance = async (request, response) => {
                                                 UnidadMedida: 'ZZ',
                                                 IgvTotal: Math.round((producttotaligv + Number.EPSILON) * 100) / 100,
                                                 MontoTotal: Math.round((producttotalamount + Number.EPSILON) * 100) / 100,
-                                                TasaIgv: productigvrate * 100,
+                                                TasaIgv: Math.round((productigvrate * 100) || 0),
                                                 PrecioProducto: Math.round((productprice + Number.EPSILON) * 100) / 100,
                                                 DescripcionProducto: `COMPRA DE SALDO - ${invoicedata.RazonSocialReceptor}`,
                                                 PrecioNetoProducto: Math.round((productnetprice + Number.EPSILON) * 100) / 100,
@@ -2762,7 +2776,7 @@ exports.createCreditNote = async (request, response) => {
                                             UnidadMedida: data.measureunit,
                                             IgvTotal: Math.round((data.totaligv + Number.EPSILON) * 100) / 100,
                                             MontoTotal: Math.round((data.totalamount + Number.EPSILON) * 100) / 100,
-                                            TasaIgv: data.igvrate * 100,
+                                            TasaIgv: Math.round((data.igvrate * 100) || 0),
                                             PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
                                             DescripcionProducto: data.productdescription,
                                             PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
@@ -2782,7 +2796,7 @@ exports.createCreditNote = async (request, response) => {
                                         UnidadMedida: invoicedetail[0].measureunit,
                                         IgvTotal: invoice.receivercountry === 'PE' ? Math.round((creditnotediscount * appsetting.igv + Number.EPSILON) * 100) / 100 : 0,
                                         MontoTotal: Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100,
-                                        TasaIgv: invoice.receivercountry === 'PE' ? appsetting.igv * 100 : 0,
+                                        TasaIgv: invoice.receivercountry === 'PE' ? Math.round((appsetting.igv * 100) || 0) : 0,
                                         PrecioProducto: Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100,
                                         DescripcionProducto: `DISCOUNT: ${creditnotemotive}`,
                                         PrecioNetoProducto: invoice.receivercountry === 'PE' ? (Math.round((creditnotediscount + Number.EPSILON) * 100) / 100) : (Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100),
@@ -3075,7 +3089,7 @@ exports.createInvoice = async (request, response) => {
                                         UnidadMedida: element.productmeasure,
                                         IgvTotal: Math.round((element.producttotaligv + Number.EPSILON) * 100) / 100,
                                         MontoTotal: Math.round((element.producttotalamount + Number.EPSILON) * 100) / 100,
-                                        TasaIgv: element.productigvrate * 100,
+                                        TasaIgv: Math.round((element.productigvrate * 100) || 0),
                                         PrecioProducto: Math.round((element.productprice + Number.EPSILON) * 100) / 100,
                                         DescripcionProducto: element.productdescription,
                                         PrecioNetoProducto: Math.round((element.productnetprice + Number.EPSILON) * 100) / 100,
@@ -3134,9 +3148,21 @@ exports.createInvoice = async (request, response) => {
                                         case 'typecredit_90':
                                             adicional05.DescripcionDatoAdicional = 'CREDITO A 90 DIAS';
                                             break;
+                                        case 'typecredit_7':
+                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 7 DIAS';
+                                            break;
+                                        case 'typecredit_180':
+                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 180 DIAS';
+                                            break;
                                     }
 
                                     invoicedata.DataList.push(adicional05);
+
+                                    if (adicional05) {
+                                        if (adicional05.DescripcionDatoAdicional === 'AL CONTADO') {
+                                            invoicedata.FechaVencimiento = null;
+                                        }
+                                    }
                                 }
 
                                 const requestSendToSunat = await axiosObservable({
@@ -3435,7 +3461,7 @@ exports.emitInvoice = async (request, response) => {
                                             UnidadMedida: data.measureunit,
                                             IgvTotal: Math.round((data.totaligv + Number.EPSILON) * 100) / 100,
                                             MontoTotal: Math.round((data.totalamount + Number.EPSILON) * 100) / 100,
-                                            TasaIgv: data.igvrate * 100,
+                                            TasaIgv: Math.round((data.igvrate * 100) || 0),
                                             PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
                                             DescripcionProducto: data.productdescription,
                                             PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
@@ -3484,6 +3510,12 @@ exports.emitInvoice = async (request, response) => {
                                         }
 
                                         invoicedata.DataList.push(adicional05);
+
+                                        if (adicional05) {
+                                            if (adicional05.DescripcionDatoAdicional === 'AL CONTADO') {
+                                                invoicedata.FechaVencimiento = null;
+                                            }
+                                        }
                                     }
 
                                     const requestSendToSunat = await axiosObservable({

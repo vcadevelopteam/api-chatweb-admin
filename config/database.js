@@ -35,7 +35,7 @@ module.exports = new Sequelize(DBNAME, DBUSER, DBPASSWORD, {
         max: 50,
         min: 0,
         acquire: 30000,
-        idle: 10000
+        idle: 5000
     },
     retry: {
         match: [ConnectionError, ConnectionRefusedError, HostNotFoundError, HostNotReachableError, ConnectionTimedOutError, TimeoutError],
