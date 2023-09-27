@@ -636,6 +636,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_PRODUCT_DUP: {
+        query: "SELECT * FROM inventario.ufn_product_dup($corpid, $orgid, $productid, $productreferenceid, $username)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_MANUFACTURER_EXPORT: {
         query: "SELECT * FROM inventario.ufn_manufacturer_export($startdate, $enddate, $corpid, $orgid, $where, $order, $username, $offset)",
         module: "",
@@ -648,11 +653,6 @@ module.exports = {
     },
     UFN_MANUFACTURER_MAS: {
         query: "SELECT * FROM inventario.ufn_manufacturer_mas($json, $corpid, $orgid, $username)",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_PRODUCT_DUP: {
-        query: "SELECT * FROM inventario.ufn_product_dup($corpid, $orgid, $productid, $operation, $username)",
         module: "",
         protected: "INSERT"
     },
