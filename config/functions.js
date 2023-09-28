@@ -3857,4 +3857,20 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+
+    UFN_PARTNER_SEL: {
+        query: "SELECT * FROM ufn_partner_sel($id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PARTNER_INS: {
+        query: "SELECT * FROM ufn_partner_ins($id, $country, $billingcurrency, $documenttype, $documentnumber, $company, $address, $billingcontact, $email, $signaturedate, $enterprisepartner, $billingplan, $typecalculation, $numbercontactsbag, $puadditionalcontacts, $priceperbag, $automaticgenerationdrafts, $automaticperiodgeneration, $username, $status, $type, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CUSTOMER_BY_PARTNER_SEL: {
+        query: "SELECT * FROM ufn_customer_by_partner_sel($partnerid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
