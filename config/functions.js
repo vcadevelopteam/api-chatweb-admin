@@ -3873,4 +3873,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CUSTOMER_BY_PARTNER_INS: {
+        query: "SELECT * FROM ufn_customer_by_partner_ins($corpid, $orgid, $partnerid, $typepartner, $billingplan, $comissionpercentage, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
 }
