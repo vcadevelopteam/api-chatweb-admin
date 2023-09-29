@@ -88,6 +88,11 @@ exports.sendHSMcontactos = async (req, res) => {
                                    "Type": "text",
                                    "Text": parameters.text,
                                    "Name": "1"
+                               },
+                               {
+                                   "Type": "text",
+                                   "Text": parameters.variable1,
+                                   "Name": "2"
                                }
                            ],
                        }})
