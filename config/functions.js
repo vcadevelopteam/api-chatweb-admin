@@ -676,6 +676,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_ALL_INVENTORY_INVENTORYCOST_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_inventory_inventorycost_sel($corpid, $orgid, $inventoryid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
 
     UFN_INVENTORY_PAG: {
         query: "SELECT * FROM inventario.ufn_inventory_pag($corpid, $orgid, $inventoryid, $userid, $where, $order, $take, $skip, $startdate, $enddate, $offset)",
@@ -812,6 +817,26 @@ module.exports = {
         query: "SELECT * FROM inventario.ufn_manufacturer_sel($corpid, $orgid, $manufacturerid, $username )",
         module: "",
         protected: "SELECT"
+    },
+    UFN_INVENTORY_EXPORT: {
+        query: "SELECT * FROM inventario.ufn_inventory_export($startdate, $enddate,$corpid, $orgid, $where, $order, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVENTORYBALANCE_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_inventory_inventorybalance_sel($corpid, $orgid, $inventorybalanceid, $username )",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVENTORYRECOUNT_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_inventory_inventoryrecount_sel($corpid, $orgid, $inventoryid, $username )",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVENTORYBALANCE_INS: {
+        query: "SELECT * FROM inventario.ufn_inventorybalance_ins($corpid, $orgid, $inventorybalanceid, $inventoryid, $shelf, $lotecode, $currentbalance, $recountphysical, $recountphysicaldate, $isreconciled, $shelflifedays, $duedate, $status, $type, $operation, $username )",
+        module: "",
+        protected: "INSERT"
     },
     UFN_MESSAGETEMPLATE_INS: {
         query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $bodyobject, $footerenabled, $footer, $buttonsenabled, $buttons, $priority, $attachment, $fromprovider, $externalid, $externalstatus, $communicationchannelid, $communicationchanneltype, $exampleparameters, $username, $operation)",

@@ -1604,5 +1604,35 @@ module.exports = {
         currency_desc: {
             column: "cur.domaindesc"
         },
-    }
+    },
+    inventory:{
+        productcode:{
+            column: "p.productcode"
+        },
+        productdescription:{
+            column: "p.description"
+        },
+        warehousename:{
+            column: "w.name"
+        },
+        rackdefault:{
+            column: "t.rackdefault"
+        },
+        currentbalance:{
+            column: "pw.currentbalance",
+            type: "number"
+        },
+        familydescription:{
+            column: "inventario.ufn_domain_get(p.familyid)"
+        },
+        subfamilydescription:{
+            column: "inventario.ufn_domain_get(p.subfamilyid)"
+        },
+        unitdispatchdescription:{
+            column: "inventario.ufn_domain_get(p.unitdispatchid)"
+        },
+        status:{
+            column: "t.status"
+        },
+    },
 }
