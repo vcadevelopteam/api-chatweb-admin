@@ -3879,7 +3879,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_BILLINGPERIODPARTNER_ENTERPRISE: {
-        query: "SELECT * FROM ufn_billingperiodpartner_enterprise($corpid, $orgid, $year, $month, $username)",
+        query: "SELECT * FROM ufn_billingperiodpartner_enterprise($partnerid, $corpid, $orgid, $year, $month, $reporttype, $username)",
         module: "",
         protected: "SELECT"
     },
