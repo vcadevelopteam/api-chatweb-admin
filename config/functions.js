@@ -1,7 +1,7 @@
 module.exports = {
     QUERY_AUTHENTICATED: {
         query: `
-        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision
+        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision, corp.partnerid
         FROM usr us
         INNER JOIN orguser ous ON ous.userid = us.userid
         INNER JOIN org org ON org.orgid = ous.orgid
@@ -24,7 +24,7 @@ module.exports = {
     },
     QUERY_AUTHENTICATED_BY_FACEBOOKID: {
         query: `
-        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan,  string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision
+        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan,  string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision, corp.partnerid
         from usr us 
         INNER JOIN orguser ous on ous.userid = us.userid 
         INNER JOIN org org on org.orgid = ous.orgid 
@@ -49,7 +49,7 @@ module.exports = {
         ous.groups, ous.redirect, pp.plan, COALESCE(cur.symbol, 'S/') currencysymbol,
         COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi,
         cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision,
-        string_agg(role.description,',') roledesc
+        string_agg(role.description,',') roledesc, corp.partnerid
         from usr us
         INNER JOIN orguser ous on ous.userid = us.userid
         INNER JOIN org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency
@@ -4112,6 +4112,33 @@ module.exports = {
     },
     UFN_COLUMN_ORDER_SEL: {
         query: "SELECT * FROM ufn_column_order_sel($corpid, $orgid, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+
+    UFN_PARTNER_SEL: {
+        query: "SELECT * FROM ufn_partner_sel($id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PARTNER_INS: {
+        query: "SELECT * FROM ufn_partner_ins($id, $country, $billingcurrency, $documenttype, $documentnumber, $company, $address, $billingcontact, $email, $signaturedate, $enterprisepartner, $billingplan, $typecalculation, $numbercontactsbag, $puadditionalcontacts, $priceperbag, $automaticgenerationdrafts, $automaticperiodgeneration, $username, $status, $type, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CUSTOMER_BY_PARTNER_SEL: {
+        query: "SELECT * FROM ufn_customer_by_partner_sel($partnerid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CUSTOMER_BY_PARTNER_INS: {
+        query: "SELECT * FROM ufn_customer_by_partner_ins($corpid, $orgid, $partnerid, $typepartner, $billingplan, $comissionpercentage, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
+    
+    UFN_BILLINGPERIODPARTNER_ENTERPRISE: {
+        query: "SELECT * FROM ufn_billingperiodpartner_enterprise($partnerid, $corpid, $orgid, $year, $month, $reporttype, $username)",
         module: "",
         protected: "SELECT"
     },
