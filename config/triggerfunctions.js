@@ -20,17 +20,6 @@ const COS_BUCKET_NAME = process.env.COS_BUCKET;
 const REPLACEFILTERS = "###FILTERS###";
 const REPLACESEL = "###REPLACESEL###";
 
-const s3 = new IBM.S3(configCOS);
-
-AWS.config.update({
-    accessKeyId: process.env.COS_ACCESSKEYID,
-    secretAccessKey: process.env.COS_SECRETACCESSKEY,
-});
-
-const cosSigned = new AWS.S3({
-    endpoint: `https://${configCOS.endpoint}`,
-});
-
 const executeQuery = async (query, bind, _requestid) => {
     const profiler = logger.child({ ctx: bind || {}, _requestid }).startTimer();
 
@@ -743,6 +732,8 @@ exports.getQuery = (method, data, isNotPaginated) => {
 }
 
 exports.uploadBufferToCos = async (_requestid, buffer, contentType, key, presigned = false) => {
+    const s3 = new IBM.S3(configCOS);
+
     const params = {
         ACL: presigned ? undefined : 'public-read',
         Key: key,
@@ -763,6 +754,15 @@ exports.uploadBufferToCos = async (_requestid, buffer, contentType, key, presign
                 }
                 profiler1.done({ level: "debug", message: `Upload cos` });
                 if (presigned) {
+                    AWS.config.update({
+                        accessKeyId: process.env.COS_ACCESSKEYID,
+                        secretAccessKey: process.env.COS_SECRETACCESSKEY,
+                    });
+
+                    const cosSigned = new AWS.S3({
+                        endpoint: `https://${configCOS.endpoint}`,
+                    });
+
                     const signedUrl = await cosSigned.getSignedUrlPromise("getObject", {
                         Bucket: COS_BUCKET_NAME,
                         Key: key,

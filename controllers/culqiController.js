@@ -3148,6 +3148,12 @@ exports.createInvoice = async (request, response) => {
                                         case 'typecredit_90':
                                             adicional05.DescripcionDatoAdicional = 'CREDITO A 90 DIAS';
                                             break;
+                                        case 'typecredit_7':
+                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 7 DIAS';
+                                            break;
+                                        case 'typecredit_180':
+                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 180 DIAS';
+                                            break;
                                     }
 
                                     invoicedata.DataList.push(adicional05);
