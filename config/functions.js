@@ -36,7 +36,7 @@ module.exports = {
         WHERE us.facebookid = $facebookid 
         AND ous.bydefault 
         AND ous.status <> 'ELIMINADO'
-		GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision
+		GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
         LIMIT 1`,
         module: "",
         protected: false
@@ -59,7 +59,7 @@ module.exports = {
         WHERE us.googleid = $googleid
         AND ous.bydefault
         AND ous.status <> 'ELIMINADO'
-		GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision
+		GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
 		LIMIT 1`,
         module: "",
         protected: false
