@@ -1539,4 +1539,100 @@ module.exports = {
             column: "ld.company"
         },
     },
+    product: {
+        productcode: {
+            column: "t.productcode"
+        },
+        description: {
+            column: "t.description"
+        },
+        producttype: {
+            column: "t.producttype"
+        },
+        familydescription: {
+            column: "inventario.ufn_domain_get(t.familyid)"
+        },
+        subfamilydescription: {
+            column: "inventario.ufn_domain_get(t.subfamilyid)"
+        },
+        unitbuydescription: {
+            column: "inventario.ufn_domain_get(t.unitbuyid)"
+        },
+        unitdispacthdescription: {
+            column: "inventario.ufn_domain_get(t.unitdispatchid)"
+        },
+        status: {
+            column: "t.status"
+        },
+    },
+    warehouse:{
+        name: {
+            column: "t.name"
+        },
+        description: {
+            column: "t.description"
+        },
+        address: {
+            column: "t.address"
+        },
+        phone: {
+            column: "t.phone"
+        },
+        latitude: {
+            column: "t.latitude"
+        },
+        longitude: {
+            column: "t.longitude"
+        },
+    },
+    manufacturer:{
+        manufacturercode: {
+            column: "t.manufacturercode"
+        },
+        description: {
+            column: "t.description"
+        },
+        typemanufacter_desc: {
+            column: "typ.domaindesc"
+        },
+        clientenumbers: {
+            column: "t.clientenumbers"
+        },
+        beginpage: {
+            column: "t.beginpage"
+        },
+        currency_desc: {
+            column: "cur.domaindesc"
+        },
+    },
+    inventory:{
+        productcode:{
+            column: "p.productcode"
+        },
+        productdescription:{
+            column: "p.description"
+        },
+        warehousename:{
+            column: "w.name"
+        },
+        rackdefault:{
+            column: "t.rackdefault"
+        },
+        currentbalance:{
+            column: "pw.currentbalance",
+            type: "number"
+        },
+        familydescription:{
+            column: "inventario.ufn_domain_get(p.familyid)"
+        },
+        subfamilydescription:{
+            column: "inventario.ufn_domain_get(p.subfamilyid)"
+        },
+        unitdispatchdescription:{
+            column: "inventario.ufn_domain_get(p.unitdispatchid)"
+        },
+        status:{
+            column: "t.status"
+        },
+    },
 }

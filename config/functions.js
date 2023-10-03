@@ -650,6 +650,223 @@ module.exports = {
         module: ["/extras/messagetemplate"],
         protected: "SELECT"
     },
+    UFN_MANUFACTURER_PAG: {
+        query: "SELECT * FROM inventario.ufn_manufacturer_pag($corpid, $orgid, $manufacturerid, $username, $where, $order, $take, $skip, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_MANUFACTURER_TOTALRECORDS: {
+        query: "SELECT * FROM inventario.ufn_manufacturer_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PRODUCT_DUP: {
+        query: "SELECT * FROM inventario.ufn_product_dup($corpid, $orgid, $productid, $productreferenceid, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_MANUFACTURER_EXPORT: {
+        query: "SELECT * FROM inventario.ufn_manufacturer_export($startdate, $enddate, $corpid, $orgid, $where, $order, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_MANUFACTURER_INS: {
+        query: "SELECT * FROM inventario.ufn_manufacturer_ins($corpid, $orgid, $manufacturerid, $description,  $status, $type, $descriptionlarge, $clientenumbers, $beginpage, $currencyid, $taxeid, $ispaymentdelivery, $typemanufacterid, $manufacturercode, $operation, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_MANUFACTURER_MAS: {
+        query: "SELECT * FROM inventario.ufn_manufacturer_mas($json, $corpid, $orgid, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_PRODUCT_PAG: {
+        query: "SELECT * FROM inventario.ufn_product_pag($corpid, $orgid, $productid, $username, $where, $order, $take, $skip, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PRODUCT_TOTALRECORDS: {
+        query: "SELECT * FROM inventario.ufn_product_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WAREHOUSE_PAG: {
+        query: "SELECT * FROM inventario.ufn_warehouse_pag($corpid, $orgid, $warehouseid, $username, $where, $order, $take, $skip, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WAREHOUSE_TOTALRECORDS: {
+        query: "SELECT * FROM inventario.ufn_warehouse_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ALL_INVENTORY_INVENTORYCOST_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_inventory_inventorycost_sel($corpid, $orgid, $inventoryid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+
+    UFN_INVENTORY_PAG: {
+        query: "SELECT * FROM inventario.ufn_inventory_pag($corpid, $orgid, $inventoryid, $userid, $where, $order, $take, $skip, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    
+    UFN_INVENTORY_TOTALRECORDS: {
+        query: "SELECT * FROM inventario.ufn_inventory_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+
+    UFN_INVENTORY_INS: {
+        query: "SELECT * FROM inventario.ufn_inventory_ins($corpid, $orgid, $inventoryid, $productid, $warehousid, $iswharehousedefault, $rackdefault, $typecostdispatch, $familyid, $subfamilyid, $status, $type, $currentbalance, $operation, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+
+    UFN_WAREHOUSE_INS: {
+        query: "SELECT * FROM inventario.ufn_warehouse_ins($corpid, $orgid, $warehouseid, $description, $address, $latitude, $longitude, $phone, $status, $type, $name, $operation, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_ALL_PRODUCT_WAREHOUSE_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_product_warehouse_sel($corpid, $orgid, $warehouseid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ALL_PRODUCT_PRODUCT_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_product_product_sel($corpid, $orgid, $productid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PRODUCTALTERNATIVE_INS: {
+        query: "SELECT * FROM inventario.ufn_productalternative_ins($corpid, $orgid, $productalternativeid, $productid, $productaltid, $status, $type, $operation, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+
+    UFN_ALL_ATTRIBUTE_PRODUCT_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_attribute_product_sel($corpid, $orgid, $productid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PRODUCTATTRIBUTE_INS: {
+        query: "SELECT * FROM inventario.ufn_productattribute_ins($corpid, $orgid, $productattributeid, $productid, $attributeid, $value, $unitmeasureid, $status, $type, $operation, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+
+    UFN_STATUSPRODUCT_INS: {
+        query: "SELECT * FROM inventario.ufn_statusproduct_ins($corpid, $orgid, $statusid, $comment, $status, $type, $productid, $ismoveinventory, $operation, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_PRODUCT_INS: {
+        query: "SELECT * FROM inventario.ufn_product_ins($corpid, $orgid, $productid, $description, $descriptionlarge, $producttype, $familyid, $unitbuyid, $unitdispatchid, $imagereference, $status, $type, $attachments, $productcode, $loteid, $subfamilyid, $operation, $username)",
+        module: "",
+        protected: "INSERT"
+    },    
+    UFN_PRODUCT_EXPORT: {
+        query: "SELECT * FROM inventario.ufn_product_export($startdate, $enddate,$corpid, $orgid, $where, $order, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PRODUCT_SEL: {
+        query: "SELECT * FROM inventario.ufn_product_sel($corpid, $orgid, $productid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+
+    UFN_ALL_WAREHOUSE_PRODUCT_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_warehouse_product_sel($corpid, $orgid, $productid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PRODUCTWAREHOUSE_INS: {
+        query: "SELECT * FROM inventario.ufn_productwarehouse_ins($corpid,$orgid,$productwarehouseid,$productid,$warehouseid,$priceunit,$ispredeterminate,$typecostdispatch,$unitdispatchid,$unitbuyid,$lotecode,$rackcode,$status,$type,$currentbalance,$operation,$username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_WAREHOUSE_EXPORT: {
+        query: "SELECT * FROM inventario.ufn_warehouse_export($startdate, $enddate,$corpid, $orgid, $where, $order, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WAREHOUSE_SEL: {
+        query: "SELECT * FROM inventario.ufn_warehouse_sel($corpid, $orgid, $warehouseid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ALL_STATUSPRODUCT_PRODUCT_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_statusproduct_product_sel($corpid,$orgid,$id,$username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PRODUCT_MAS: {
+        query: "SELECT * FROM inventario.ufn_product_mas($json, $corpid,$orgid,$username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_PRODUCTMANUFACTURER_MAS: {
+        query: "SELECT * FROM inventario.ufn_productmanufacturer_mas($json, $corpid,$orgid,$username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_PRODUCTWAREHOUSE_MAS: {
+        query: "SELECT * FROM inventario.ufn_productwarehouse_mas($json, $corpid,$orgid,$username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_PRODUCTATTRIBUTE_MAS: {
+        query: "SELECT * FROM inventario.ufn_productattribute_mas($json, $corpid,$orgid,$username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_WAREHOUSE_MAS: {
+        query: "SELECT * FROM inventario.ufn_warehouse_mas($json, $corpid,$orgid,$username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_PRODUCTMANUFACTURER_INS: {
+        query: "SELECT * FROM inventario.ufn_productmanufacturer_ins($corpid, $orgid, $productcompanyid, $productid, $manufacturerid, $model, $catalognumber, $webpage, $taxeid, $isstockistdefault, $averagedeliverytime, $lastprice, $lastorderdate, $unitbuy, $status, $type, $distributorid, $operation, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_ALL_MANUFACTURER_PRODUCT_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_manufacturer_product_sel($corpid, $orgid, $productid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_MANUFACTURER_SEL: {
+        query: "SELECT * FROM inventario.ufn_manufacturer_sel($corpid, $orgid, $manufacturerid, $username )",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVENTORY_EXPORT: {
+        query: "SELECT * FROM inventario.ufn_inventory_export($startdate, $enddate,$corpid, $orgid, $where, $order, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVENTORYBALANCE_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_inventory_inventorybalance_sel($corpid, $orgid, $inventorybalanceid, $username )",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVENTORYRECOUNT_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_inventory_inventoryrecount_sel($corpid, $orgid, $inventoryid, $username )",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVENTORYWAREHOUSE_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_inventory_inventorywarehouse_sel($corpid, $orgid, $inventoryid, $username )",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVENTORYBALANCE_INS: {
+        query: "SELECT * FROM inventario.ufn_inventorybalance_ins($corpid, $orgid, $inventorybalanceid, $inventoryid, $shelf, $lotecode, $currentbalance, $recountphysical, $recountphysicaldate, $isreconciled, $shelflifedays, $duedate, $status, $type, $operation, $username )",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_MESSAGETEMPLATE_INS: {
         query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $bodyobject, $footerenabled, $footer, $buttonsenabled, $buttons, $priority, $attachment, $fromprovider, $externalid, $externalstatus, $communicationchannelid, $communicationchanneltype, $exampleparameters, $username, $operation)",
         module: ["/extras/messagetemplate"],
@@ -3888,4 +4105,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-};
+    UFN_CONVERSATION_SEL_ANALYTICS_V2: {
+        query: "SELECT * FROM ufn_conversation_sel_analytics_v2($conversationid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_COLUMN_ORDER_SEL: {
+        query: "SELECT * FROM ufn_column_order_sel($corpid, $orgid, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+}
