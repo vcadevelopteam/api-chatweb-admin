@@ -24,19 +24,22 @@ module.exports = {
     },
     QUERY_AUTHENTICATED_BY_FACEBOOKID: {
         query: `
-        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan,  string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision, corp.partnerid
-        from usr us 
-        INNER JOIN orguser ous on ous.userid = us.userid 
-        INNER JOIN org org on org.orgid = ous.orgid 
-        LEFT JOIN currency cur on cur.code = org.currency 
-        INNER JOIN corp corp on corp.corpid = ous.corpid 
-        LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid 
+        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid,
+		us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan,
+		string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi,
+		cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision, corp.partnerid
+        from usr us
+        INNER JOIN orguser ous on ous.userid = us.userid
+        INNER JOIN org org on org.orgid = ous.orgid
+        LEFT JOIN currency cur on cur.code = org.currency
+        INNER JOIN corp corp on corp.corpid = ous.corpid
+        LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid
         INNER JOIN role role ON role.corpid = 1 and role.orgid = 1 and role.roleid = any(string_to_array(ous.rolegroups, ',')::bigint[])
         LEFT JOIN communicationchannel cc ON cc.corpid = ous.corpid AND cc.orgid = ous.orgid AND cc.type = 'VOXI' AND us.status = 'ACTIVO'
-        WHERE us.facebookid = $facebookid 
-        AND ous.bydefault 
+        WHERE us.facebookid = $facebookid
+        AND ous.bydefault
         AND ous.status <> 'ELIMINADO'
-		GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
+        GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
         LIMIT 1`,
         module: "",
         protected: false
@@ -59,8 +62,8 @@ module.exports = {
         WHERE us.googleid = $googleid
         AND ous.bydefault
         AND ous.status <> 'ELIMINADO'
-		GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
-		LIMIT 1`,
+        GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
+        LIMIT 1`,
         module: "",
         protected: false
     },
