@@ -838,6 +838,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_INVENTORYLOTE_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_inventory_inventorylote_sel($corpid, $orgid, $inventoryid, $username )",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVENTORYBOOKING_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_inventory_inventorybooking_sel($corpid, $orgid, $inventoryid, $username )",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_INVENTORYBALANCE_INS: {
         query: "SELECT * FROM inventario.ufn_inventorybalance_ins($corpid, $orgid, $inventorybalanceid, $inventoryid, $shelf, $lotecode, $currentbalance, $recountphysical, $recountphysicaldate, $isreconciled, $shelflifedays, $duedate, $status, $type, $operation, $username )",
         module: "",
