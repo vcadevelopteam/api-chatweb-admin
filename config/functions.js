@@ -4089,4 +4089,10 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+
+    UFN_ALL_INVENTORY_INVENTORYMOVEMENT_SEL: {
+        query: "SELECT * FROM ufn_all_inventory_inventorymovement_sel($corpid, $orgid, $inventoryid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
 }
