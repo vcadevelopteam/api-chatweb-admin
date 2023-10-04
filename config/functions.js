@@ -681,6 +681,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_INVENTORBOOKING_INS: {
+        query: "SELECT * FROM inventario.ufn_inventorybooking_ins($corpid, $orgid, $inventorywarehouseid, $inventoryid, $warehouseid, $ticketid, $bookingtype, $bookingquantity, $status, $type, $applicationdate, $operation, $username)",
+        module: "",
+        protected: "INSERT"
+    },
 
     UFN_INVENTORY_PAG: {
         query: "SELECT * FROM inventario.ufn_inventory_pag($corpid, $orgid, $inventoryid, $userid, $where, $order, $take, $skip, $startdate, $enddate, $offset)",
