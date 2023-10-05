@@ -3882,4 +3882,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_API_CAMPAIGN_UPDATE: {
+        query: "SELECT * FROM ufn_api_campaign_update($corpid, $orgid, $id, $productid, $delivery_type, $delivery_coverage, $delivery_cost, $stock)",
+        module: "",
+        protected: "SELECT"
+    },
 }
