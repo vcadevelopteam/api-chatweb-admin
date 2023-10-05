@@ -45,8 +45,9 @@ exports.sendHSMcontactos = async (req, res) => {
 
         const body = templateData[0].body.replace(/\{\{1\}\}/g, "{{field2}}").replace(/\{\{2\}\}/g, "{{field3}}");
         const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 1);
         const endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 1);
+        endDate.setDate(startDate.getDate() + 2);
 
         const insertData = await executesimpletransaction("UFN_CAMPAIGN_INS", {
             corpid: parameters.corpid,
