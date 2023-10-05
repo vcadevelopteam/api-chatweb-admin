@@ -4165,4 +4165,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_API_MESSAGETEMPLATE_SEL: {
+        query: "SELECT * FROM ufn_api_messagetemplate_sel($corpid, $orgid, $id)",
+        module: "",
+        protected: "SELECT"
+    },
 }
