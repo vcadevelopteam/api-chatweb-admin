@@ -97,9 +97,9 @@ exports.sendHSMcontactos = async (req, res) => {
             corpid: parameters.corpid,
             orgid: parameters.orgid,
             id: insertData[0].p_campaignid,
-            productid: parameters.productid,
-            delivery_type: parameters.deliveryType,
-            delivery_coverage: parameters.deliveryCoverage,
+            productid: parameters.productid || '',
+            delivery_type: parameters.deliveryType || '',
+            delivery_coverage: parameters.deliveryCoverage || '',
             delivery_cost: parseFloat(parameters.deliveryCost) || 0,
             stock: parseFloat(parameters.stock) || 0,
         });
