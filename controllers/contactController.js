@@ -68,7 +68,7 @@ exports.sendHSMcontactos = async (req, res) => {
             messagetemplateid: templateData[0].id,
             messagetemplatename: templateData[0].name,
             messagetemplatenamespace: templateData[0].namespace,
-            messagetemplateheader: JSON.stringify({ type: templateData[0].headertype, value: templateData[0].header }),
+            messagetemplateheader: JSON.stringify({ type: templateData[0].headertype, value: parameters.url }),
             messagetemplatebuttons: JSON.stringify(templateData[0].buttons),
             executiontype: "MANUAL",
             batchjson: "[]",
