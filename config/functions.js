@@ -4120,7 +4120,7 @@ module.exports = {
     },
 
     UFN_PARTNER_SEL: {
-        query: "SELECT * FROM ufn_partner_sel($id, $all)",
+        query: "SELECT * FROM ufn_partner_sel($id, $all, $username)",
         module: "",
         protected: "SELECT"
     },
@@ -4135,9 +4135,14 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CUSTOMER_BY_PARTNER_INS: {
-        query: "SELECT * FROM ufn_customer_by_partner_ins($corpid, $orgid, $partnerid, $typepartner, $billingplan, $comissionpercentage, $username, $operation);",
+        query: "SELECT * FROM ufn_customer_by_partner_ins($id, $corpid, $orgid, $partnerid, $typepartner, $billingplan, $comissionpercentage, $status, $username, $operation);",
         module: "",
         protected: "INSERT"
+    },
+    UFN_CUSTOMERPARTNER_BY_USER_SEL: {
+        query: "SELECT * FROM ufn_customerpartner_by_user_sel($username)",
+        module: "",
+        protected: "SELECT"
     },
     
     UFN_BILLINGPERIODPARTNER_ENTERPRISE: {
