@@ -25,6 +25,7 @@ exports.generateOrder = async (request, response) => {
                     description: culqi_description,
                     order_number: culqi_ordernumber,
                     expiration_date: `${Math.round(new Date().setHours(new Date().getHours() + 24) / 1000)}`,
+                    confirm: false,
                     client_details: {
                         first_name: culqi_clientfirstname,
                         last_name: culqi_clientlastname,
