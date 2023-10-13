@@ -11,6 +11,8 @@ const method_allowed = [
     "UFN_TOTAL_PERSONS_BY_CATEGORY_BRAND_SEL",
     "UFN_LIST_PERSONS_BY_ORG_SEL",
     "QUERY_GET_MESSAGETEMPLATE",
+    "UFN_API_ORDER_SEL",
+    "UFN_CHANGE_ORDERSTATUS"
 ];
 
 exports.Collection = async (req, res) => {
