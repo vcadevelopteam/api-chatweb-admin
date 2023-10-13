@@ -90,6 +90,8 @@ exports.createorder = async (req, res) => {
         paymentref,
         deliverytype,
         deliveryaddress,
+        description = '',
+        paymentmethod = ''
     } = req.body;
     try {
         const insertData = await executesimpletransaction("UFN_API_ORDER_INS", {
@@ -106,6 +108,8 @@ exports.createorder = async (req, res) => {
             deliverytype,
             deliveryaddress,
             username: "admin",
+            description,
+            paymentmethod
         });
 
         if (!(insertData instanceof Array)) {

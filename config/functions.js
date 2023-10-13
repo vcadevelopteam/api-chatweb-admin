@@ -4161,7 +4161,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_API_ORDER_INS: {
-        query: "SELECT * FROM ufn_api_order_ins($corpid, $orgid, $conversationid, $personid, $personcommunicationchannel, $status, $currency, $amount, $paymentstatus, $paymentref, $deliverytype, $deliveryaddress, $username)",
+        query: "SELECT * FROM ufn_api_order_ins($corpid, $orgid, $conversationid, $personid, $personcommunicationchannel, $status, $currency, $amount, $paymentstatus, $paymentref, $deliverytype, $deliveryaddress, $username, $description, $paymentmethod)",
         module: "",
         protected: "SELECT"
     },
@@ -4177,6 +4177,11 @@ module.exports = {
     },
     UFN_API_CAMPAIGN_UPDATE: {
         query: "SELECT * FROM ufn_api_campaign_update($corpid, $orgid, $id, $productid, $delivery_type, $delivery_coverage, $delivery_cost, $stock)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_API_ORDER_SEL: {
+        query: "SELECT * FROM ufn_api_order_sel($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
