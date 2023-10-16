@@ -4094,4 +4094,29 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_ALL_PRODUCT_ORDER_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_product_order_sel($corpid, $orgid, $productid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ORDER_INS: {
+        query: "SELECT * FROM inventario.ufn_inventoryorder_ins($corpid, $orgid, $inventoryorderid, $inventoryid, $isneworder, $replenishmentpoint, $deliverytimedays, $securitystock, $economicorderquantity, $unitbuyid, $status, $type, $distributorid, $manufacturerid, $model, $catalognumber, $operation, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVENTORYBALANCE_UPD: {
+        query: "SELECT * FROM inventario.ufn_inventorybalance_upd_mas($json, $corpid, $orgid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVENTORYRECOUNT_UPD: {
+        query: "SELECT * FROM inventario.ufn_inventoryrecount_upd_mas($json, $corpid, $orgid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVENTORYCOST_UPD: {
+        query: "SELECT * FROM inventario.ufn_inventorycost_upd_mas($json, $corpid, $orgid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
 }
