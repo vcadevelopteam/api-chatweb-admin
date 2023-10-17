@@ -733,7 +733,7 @@ module.exports = {
     },
 
     UFN_WAREHOUSE_INS: {
-        query: "SELECT * FROM inventario.ufn_warehouse_ins($corpid, $orgid, $warehouseid, $description, $address, $latitude, $longitude, $phone, $status, $type, $name, $operation, $username)",
+        query: "SELECT * FROM inventario.ufn_warehouse_ins($corpid, $orgid, $warehouseid, $description, $address, $latitude, $longitude, $phone, $status, $type, $name, $descriptionlarge, $operation, $username)",
         module: "",
         protected: "INSERT"
     },
@@ -3946,11 +3946,6 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_CRON_POSTHISTORY_INSIGHT_SEL: {
-        query: "SELECT * FROM ufn_cron_posthistory_insight_sel()",
-        module: "",
-        protected: "SELECT"
-    },
     UFN_METACATALOG_INS: {
         query: "SELECT * FROM ufn_metacatalog_ins($corpid, $orgid, $metabusinessid, $id, $catalogid, $catalogname, $catalogdescription, $catalogtype, $description, $status, $type, $username, $operation)",
         module: "",
@@ -4073,16 +4068,6 @@ module.exports = {
         query: "SELECT * FROM ufn_rasa_model_ins($corpid, $orgid, $rasaid, $usr)",
         protected: "SELECT"
     },
-    UFN_DASHBOARD_KPI_SUMMARY_BY_MONTH: {
-        query: "SELECT * FROM ufn_dashboard_kpi_summary_by_month($corpid, $orgid, $date, $origin, $usergroup, $supervisorid, $offset, $userid)",
-        module: ["/dashboard"],
-        protected: "SELECT"
-    },
-    UFN_DASHBOARD_KPI_SUMMARY_GRAPH_BY_MONTH: {
-        query: "SELECT * FROM ufn_dashboard_kpi_graph_by_month($corpid, $orgid, $startdate, $enddate, $origin, $usergroup, $supervisorid, $offset, $userid)",
-        module: ["/dashboard"],
-        protected: "SELECT"
-    },
     UFN_CONVERSATION_SEL_ANALYTICS_V2: {
         query: "SELECT * FROM ufn_conversation_sel_analytics_v2($conversationid)",
         module: "",
@@ -4120,16 +4105,6 @@ module.exports = {
     },
     UFN_BILLING_REPORT_CONSULTING: {
         query: "SELECT * FROM ufn_billing_report_consulting($corpid, $orgid, $year, $month)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_CONVERSATION_SEL_ANALYTICS_V2: {
-        query: "SELECT * FROM ufn_conversation_sel_analytics_v2($conversationid)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_COLUMN_ORDER_SEL: {
-        query: "SELECT * FROM ufn_column_order_sel($corpid, $orgid, $id, $all)",
         module: "",
         protected: "SELECT"
     },
@@ -4197,6 +4172,36 @@ module.exports = {
     },
     UFN_API_ORDER_SEL: {
         query: "SELECT * FROM ufn_api_order_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ALL_INVENTORY_INVENTORYMOVEMENT_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_inventory_inventorymovement_sel($corpid, $orgid, $inventoryid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ALL_PRODUCT_ORDER_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_product_order_sel($corpid, $orgid, $productid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ORDER_INS: {
+        query: "SELECT * FROM inventario.ufn_inventoryorder_ins($corpid, $orgid, $inventoryorderid, $inventoryid, $isneworder, $replenishmentpoint, $deliverytimedays, $securitystock, $economicorderquantity, $unitbuyid, $status, $type, $distributorid, $manufacturerid, $model, $catalognumber, $operation, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVENTORYBALANCE_UPD: {
+        query: "SELECT * FROM inventario.ufn_inventorybalance_upd_mas($json, $corpid, $orgid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVENTORYRECOUNT_UPD: {
+        query: "SELECT * FROM inventario.ufn_inventoryrecount_upd_mas($json, $corpid, $orgid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVENTORYCOST_UPD: {
+        query: "SELECT * FROM inventario.ufn_inventorycost_upd_mas($json, $corpid, $orgid, $username)",
         module: "",
         protected: "SELECT"
     },
