@@ -706,7 +706,7 @@ module.exports = {
     },
 
     UFN_WAREHOUSE_INS: {
-        query: "SELECT * FROM inventario.ufn_warehouse_ins($corpid, $orgid, $warehouseid, $description, $address, $latitude, $longitude, $phone, $status, $type, $name, $operation, $username)",
+        query: "SELECT * FROM inventario.ufn_warehouse_ins($corpid, $orgid, $warehouseid, $description, $address, $latitude, $longitude, $phone, $status, $type, $name, $descriptionlarge, $operation, $username)",
         module: "",
         protected: "INSERT"
     },
