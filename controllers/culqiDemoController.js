@@ -25,6 +25,7 @@ exports.generateOrder = async (request, response) => {
                     description: culqi_description,
                     order_number: culqi_ordernumber,
                     expiration_date: `${Math.round(new Date().setHours(new Date().getHours() + 24) / 1000)}`,
+                    confirm: false, //Añadir false para que funcione el QR y demas opciones
                     client_details: {
                         first_name: culqi_clientfirstname,
                         last_name: culqi_clientlastname,
@@ -112,6 +113,72 @@ exports.generateCharge = async (request, response) => {
                 );
             }
         }
+
+        return response.status(responsedata.status).json(responsedata);
+    } catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message,
+        });
+    }
+};
+
+//Servicio para obtener el estado de la orden
+exports.checkOrder = async (request, response) => {
+    let responsedata = genericfunctions.generateResponseData(request._requestid);
+
+    try {
+        const { culqi_order_number } = request.body;
+
+        if (culqi_order_number) {
+            //Obtienes el id del carrito, asumo que se separa por un "_"
+            let carritoid = `${culqi_order_number}`.split("_")[0];
+
+            //Con el id del carrito se obtiene el carrito por BD
+            let shoppingcart = { id: carritoid, paid: true };
+
+            let redirectdata = { redirect: false };
+
+            //Si la orden esta pagada, haces la redirección
+            if (shoppingcart.paid) {
+                redirectdata.redirect = true;
+            }
+
+            responsedata = genericfunctions.changeResponseData(responsedata, null, redirectdata, "success", 200, true);
+        }
+
+        return response.status(responsedata.status).json(responsedata);
+    } catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message,
+        });
+    }
+};
+
+//Webhook para Culqi
+exports.webhookOrder = async (request, response) => {
+    let responsedata = genericfunctions.generateResponseData(request._requestid);
+
+    try {
+        const { object, id, type, creation_date, data } = request.body;
+
+        if (type && data) {
+            //Validar que sea un evento de cambio de estado
+            if (type === "order.status.changed") {
+                let orderdata = JSON.parse(data);
+
+                //Validar que la orden haya sido pagada
+                if (orderdata.fee_details && orderdata.paid_at) {
+                    //Obtener el identificador del carrito de la orden
+                    let carritoid = `${orderdata.order_number}`.split("_")[0];
+
+                    //Con el id del carrito se obtiene el carrito por BD y se actualiza el estado a pagado
+                }
+            }
+        }
+
+        responsedata = genericfunctions.changeResponseData(responsedata, null, null, "success", 200, true);
 
         return response.status(responsedata.status).json(responsedata);
     } catch (exception) {

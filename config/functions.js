@@ -609,13 +609,13 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_DOMAIN_LST_VALORES: {
-        query: "SELECT * FROM ufn_domain_lst_valores($corpid,$orgid,$domainname)",
+        query: "SELECT * FROM ufn_domain_lst_valores($corpid, $orgid, $domainname, $userid)",
         module: "",
         protected: "SELECT"
     },
     UFN_DOMAIN_LST_VALUES_ONLY_DATA: {
-        query: "SELECT * FROM ufn_domain_lst_values_only_data($corpid, $orgid, $domainname)",
-        module: ["/supervisor", "/tickets", "/message_inbox"],
+        query: "SELECT * FROM ufn_domain_lst_values_only_data($corpid, $orgid, $domainname, $userid)",
+        module: "",
         protected: "SELECT"
     },
     UFN_USERTOKEN_INS: {
@@ -4135,7 +4135,7 @@ module.exports = {
     },
 
     UFN_PARTNER_SEL: {
-        query: "SELECT * FROM ufn_partner_sel($id, $all)",
+        query: "SELECT * FROM ufn_partner_sel($id, $all, $username)",
         module: "",
         protected: "SELECT"
     },
@@ -4150,13 +4150,53 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CUSTOMER_BY_PARTNER_INS: {
-        query: "SELECT * FROM ufn_customer_by_partner_ins($corpid, $orgid, $partnerid, $typepartner, $billingplan, $comissionpercentage, $username, $operation);",
+        query: "SELECT * FROM ufn_customer_by_partner_ins($id, $corpid, $orgid, $partnerid, $typepartner, $billingplan, $comissionpercentage, $status, $username, $operation);",
         module: "",
         protected: "INSERT"
+    },
+    UFN_CUSTOMERPARTNER_BY_USER_SEL: {
+        query: "SELECT * FROM ufn_customerpartner_by_user_sel($username)",
+        module: "",
+        protected: "SELECT"
     },
     
     UFN_BILLINGPERIODPARTNER_ENTERPRISE: {
         query: "SELECT * FROM ufn_billingperiodpartner_enterprise($partnerid, $corpid, $orgid, $year, $month, $reporttype, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_API_PRODUCTCATALOG_INS: {
+        query: "SELECT * FROM ufn_api_productcatalog_ins($corpid, $orgid, $metacatalogid, $title, $description, $descriptionshort, $category, $saleprice, $imagelink, $status, $type, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_API_PRODUCTCATALOG_SEL: {
+        query: "SELECT * FROM ufn_api_productcatalog_sel($corpid, $orgid, $productid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_API_ORDER_INS: {
+        query: "SELECT * FROM ufn_api_order_ins($corpid, $orgid, $conversationid, $personid, $personcommunicationchannel, $status, $currency, $amount, $paymentstatus, $paymentref, $deliverytype, $deliveryaddress, $username, $description, $paymentmethod)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_API_ORDERLINE_INS: {
+        query: "SELECT * FROM ufn_api_orderline_ins($corpid, $orgid, $orderid, $conversationid, $personid, $personcommunicationchannel, $description, $productid, $type, $title, $imagelink, $quantity, $currency, $unitprice, $amount, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_API_MESSAGETEMPLATE_SEL: {
+        query: "SELECT * FROM ufn_api_messagetemplate_sel($corpid, $orgid, $id)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_API_CAMPAIGN_UPDATE: {
+        query: "SELECT * FROM ufn_api_campaign_update($corpid, $orgid, $id, $productid, $delivery_type, $delivery_coverage, $delivery_cost, $stock)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_API_ORDER_SEL: {
+        query: "SELECT * FROM ufn_api_order_sel($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
