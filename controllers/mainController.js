@@ -40,7 +40,8 @@ exports.GetCollectionDomainValues = async (req, res) => {
     parameters.orgid = 1;
     parameters.corpid = 1;
     parameters._requestid = req._requestid;
-
+    parameters.userid = 0;
+    
     const result = await executesimpletransaction("UFN_DOMAIN_LST_VALORES", parameters);
 
     if (result instanceof Array)
@@ -60,7 +61,8 @@ exports.GetMultiDomainsValue = async (req, res) => {
                 parameters: {
                     corpid: 1,
                     orgid: 1,
-                    domainname
+                    domainname,
+                    userid: 0
                 }
             }))
 
