@@ -1,4 +1,4 @@
-const { getErrorCode } = require("../config/helpers");
+const { getErrorCode, axiosObservable, errors } = require("../config/helpers");
 const { executesimpletransaction } = require("../config/triggerfunctions");
 const { getFileRequest, extractDataFile } = require("../config/productCatalog.helper");
 // var https = require('https');
@@ -90,8 +90,8 @@ exports.createorder = async (req, res) => {
         paymentref,
         deliverytype,
         deliveryaddress,
-        description = '',
-        paymentmethod = ''
+        description = "",
+        paymentmethod = "",
     } = req.body;
     try {
         const insertData = await executesimpletransaction("UFN_API_ORDER_INS", {
@@ -109,7 +109,7 @@ exports.createorder = async (req, res) => {
             deliveryaddress,
             username: "admin",
             description,
-            paymentmethod
+            paymentmethod,
         });
 
         if (!(insertData instanceof Array)) {
@@ -174,6 +174,48 @@ exports.createorderitem = async (req, res) => {
     }
 };
 
+exports.changeorderstatus = async (req, res) => {
+    const { corpid, orgid, conversationid, personcommunicationchannel, orderid, orderstatus } = req.body;
+
+    try {
+        const model_detail = await executesimpletransaction("UFN_API_CONVERSATION_CHECK", {
+            corpid,
+            orgid,
+            conversationid,
+            personcommunicationchannel,
+        });
+        if (!model_detail instanceof Array || !model_detail.length)
+            return res.status(400).json(getErrorCode(model_detail.code || "INVALID_DATA"));
+
+        const order_data = await executesimpletransaction("UFN_API_ORDER_SEL", { corpid, orgid, id: orderid });
+        if (!order_data instanceof Array || !order_data.length)
+            return res.status(400).json(getErrorCode(model_detail.code || "INVALID_ORDER"));
+
+        const data = getHsmData(corpid, orgid, orderstatus, order_data[0]);
+
+        const responseservices = await axiosObservable({
+            method: "post",
+            url: `${process.env.SERVICES}handler/external/sendhsm`,
+            data,
+        });
+        if (!responseservices.data.Success) {
+            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+        }
+
+        await executesimpletransaction("UFN_CHANGE_ORDERSTATUS", {
+            corpid,
+            orgid,
+            orderid,
+            orderstatus,
+            username: "admin",
+        });
+
+        return res.json({ error: false, success: true, data: "Actualizado correctamente." });
+    } catch (exception) {
+        return res.status(500).json({ message: "Error al procesar el registro.", error: true, success: false });
+    }
+};
+
 exports.getinfo = async (req, res) => {
     const { corpid, orgid, productid } = req.body;
 
@@ -192,4 +234,87 @@ exports.getinfo = async (req, res) => {
     } catch (exception) {
         return res.status(500).json({ message: "Error al procesar el registro.", error: true, success: false });
     }
+};
+
+const getHsmData = (corpid, orgid, orderstatus, order_data) => {
+    let hsm_template_id = 0;
+    let params = [];
+    const deliverytype = order_data.deliverytype.toLowerCase().trim();
+
+    if (orderstatus === "prepared" && deliverytype === "delivery") {
+        hsm_template_id = 3373;
+    } else if (orderstatus === "prepared" && deliverytype !== "delivery") {
+        hsm_template_id = 3374;
+    } else if (orderstatus === "dispatched" && deliverytype === "delivery") {
+        hsm_template_id = 3375;
+        params = [
+            {
+                Type: "text",
+                Text: order_data.quantity || "0",
+                Name: "1",
+            },
+            {
+                Type: "text",
+                Text: order_data.description || "Producto",
+                Name: "2",
+            },
+            {
+                Type: "text",
+                Text: order_data.deliveryaddress || "Direccion",
+                Name: "3",
+            },
+            {
+                Type: "text",
+                Text: order_data.ordernumber,
+                Name: "4",
+            },
+        ];
+    } else if (orderstatus === "dispatched" && deliverytype !== "delivery") {
+        hsm_template_id = 3377;
+        params = [
+            {
+                Type: "text",
+                Text: order_data.quantity || "0",
+                Name: "1",
+            },
+            {
+                Type: "text",
+                Text: order_data.description || "Producto",
+                Name: "2",
+            },
+            {
+                Type: "text",
+                Text: order_data.ordernumber,
+                Name: "3",
+            },
+        ];
+    } else if (orderstatus === "delivered") {
+        hsm_template_id = 3376;
+    } else if (orderstatus === "rejected") {
+        hsm_template_id = 3378;
+    }
+    return {
+        Corpid: corpid,
+        Orgid: orgid,
+        TransactionId: null,
+        CampaignName: null,
+        HsmTemplateId: hsm_template_id,
+        Username: "laraigo.acme@vcaperu.com",
+        Origin: "OUTBOUND",
+        CommunicationChannelId: order_data.communicationchannelid,
+        ShippingReason: "INBOX",
+        ListMembers: [
+            {
+                Phone: order_data.phone,
+                // Phone: "51980291115",
+                header: {
+                    type: "text",
+                    text: "",
+                },
+                Firstname: order_data.firstname,
+                Lastname: order_data.lastname,
+                Parameters: params,
+            },
+        ],
+    };
 };

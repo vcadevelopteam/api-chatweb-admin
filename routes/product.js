@@ -12,4 +12,6 @@ router.post("/createorder", productController.createorder);
 
 router.post("/createorderitem", productController.createorderitem);
 
+router.post("/changeorderstatus", productController.changeorderstatus);
+
 module.exports = router;
