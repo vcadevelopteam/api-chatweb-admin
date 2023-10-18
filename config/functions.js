@@ -3887,8 +3887,13 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_API_CONVERSATION_CHECK: {
+        query: "SELECT * FROM ufn_api_conversation_check($corpid, $orgid, $conversationid, $personcommunicationchannel)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_API_ORDER_SEL: {
-        query: "SELECT * FROM ufn_api_order_sel($corpid, $orgid)",
+        query: "SELECT * FROM ufn_api_order_sel($corpid, $orgid, $id)",
         module: "",
         protected: "SELECT"
     },
