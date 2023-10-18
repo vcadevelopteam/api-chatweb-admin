@@ -65,7 +65,7 @@ module.exports = {
         protected: false
     },
     UFN_CORP_ORG_SEL: {
-        query: "SELECT * FROM ufn_corp_org_sel($corpid, $id, $username, $all)",
+        query: "SELECT * FROM ufn_corp_org_sel($corpid, $id, $username, $all, $userid)",
         module: "/extras/users",
         protected: "SELECT"
     },
@@ -75,7 +75,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_USER_SEL: {
-        query: "SELECT * FROM ufn_user_sel($corpid, $orgid, $id, $username, $all)",
+        query: "SELECT * FROM ufn_user_sel($corpid, $orgid, $id, $username, $all, $userid)",
         module: "",
         protected: "SELECT"
     },
@@ -420,22 +420,22 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LOGINHISTORY_SEL: {
-        query: "SELECT * FROM ufn_loginhistory_sel($corpid , $orgid, $take, $skip, $where, $order, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_loginhistory_sel($corpid , $orgid, $take, $skip, $where, $order, $startdate, $enddate, $offset, $userid)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_LOGINHISTORY_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_loginhistory_totalrecords($corpid , $orgid, $where, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_loginhistory_totalrecords($corpid , $orgid, $where, $startdate, $enddate, $offset, $userid)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_LOGINHISTORY_EXPORT: {
-        query: "SELECT * FROM ufn_loginhistory_export($corpid , $orgid, $where, $order, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_loginhistory_export($corpid , $orgid, $where, $order, $startdate, $enddate, $offset, $userid)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_LOGINHISTORY_GRAPHIC: {
-        query: "SELECT * FROM ufn_loginhistory_graphic($corpid , $orgid, $where, $order, $startdate, $enddate, $column, $summarization, $offset)",
+        query: "SELECT * FROM ufn_loginhistory_graphic($corpid , $orgid, $where, $order, $startdate, $enddate, $column, $summarization, $offset, $userid)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -1038,22 +1038,22 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CAMPAIGNREPORT_SEL: {
-        query: "SELECT * FROM ufn_campaign_report_sel($corpid, $orgid, $startdate, $enddate, $where, $order, $skip, $take, $userid, $offset)",
+        query: "SELECT * FROM ufn_campaign_report_sel($corpid, $orgid, $startdate, $enddate, $where, $order, $skip, $take, $userid, $offset, $userid)",
         module: "",
         protected: "SELECT"
     },
     UFN_CAMPAIGNREPORT_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_campaign_report_totalrecords($corpid, $orgid, $startdate, $enddate, $where, $userid, $offset)",
+        query: "SELECT * FROM ufn_campaign_report_totalrecords($corpid, $orgid, $startdate, $enddate, $where, $userid, $offset, $userid)",
         module: "",
         protected: "SELECT"
     },
     UFN_CAMPAIGNREPORT_EXPORT: {
-        query: "SELECT * FROM ufn_campaign_report_export($corpid, $orgid, $table, $username, $offset)",
+        query: "SELECT * FROM ufn_campaign_report_export($corpid, $orgid, $table, $username, $offset, $userid)",
         module: "",
         protected: "SELECT"
     },
     UFN_CAMPAIGNREPORT_PROACTIVE_EXPORT: {
-        query: "SELECT * FROM ufn_campaign_report_proactive_export($corpid, $orgid, $table, $username, $offset)",
+        query: "SELECT * FROM ufn_campaign_report_proactive_export($corpid, $orgid, $table, $username, $offset, $userid)",
         module: "",
         protected: "SELECT"
     },
@@ -1857,32 +1857,32 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_HSMHISTORY_LST: {
-        query: "SELECT * FROM ufn_hsmhistory_lst($corpid, $orgid, $startdate, $enddate, $offset);",
+        query: "SELECT * FROM ufn_hsmhistory_lst($corpid, $orgid, $startdate, $enddate, $offset, $userid);",
         module: "",
         protected: "SELECT"
     },
     UFN_HSMHISTORY_REPORT: {
-        query: "SELECT * FROM ufn_hsmhistory_report($corpid, $orgid, $campaignname, $date, $offset);",
+        query: "SELECT * FROM ufn_hsmhistory_report($corpid, $orgid, $campaignname, $date, $offset, $userid);",
         module: "",
         protected: "SELECT"
     },
     UFN_HSMHISTORY_REPORT_EXPORT: {
-        query: "SELECT * FROM ufn_hsmhistory_report_export($corpid, $orgid, $table, $offset);",
+        query: "SELECT * FROM ufn_hsmhistory_report_export($corpid, $orgid, $table, $offset, $userid);",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_SENTMESSAGES_LST: {
-        query: "SELECT * FROM ufn_report_sentmessages_lst($corpid, $orgid, $startdate, $enddate, $offset);",
+        query: "SELECT * FROM ufn_report_sentmessages_lst($corpid, $orgid, $startdate, $enddate, $offset, $userid);",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_SENTMESSAGES_REPORT: {
-        query: "SELECT * FROM ufn_report_sentmessages_sel($corpid, $orgid, $date, $name, $from, $offset);",
+        query: "SELECT * FROM ufn_report_sentmessages_sel($corpid, $orgid, $date, $name, $from, $offset, $userid);",
         module: "",
         protected: "SELECT"
     },
     UFN_REPORT_SENTMESSAGES_GRAPHIC: {
-        query: "SELECT * FROM ufn_report_sentmessages_graphic($corpid, $orgid, $startdate, $enddate, $column, $summarization, $offset);",
+        query: "SELECT * FROM ufn_report_sentmessages_graphic($corpid, $orgid, $startdate, $enddate, $column, $summarization, $offset, $userid);",
         module: "",
         protected: "SELECT"
     },
@@ -3755,12 +3755,12 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_ORDERLINE_PRODUCT_LST : {
+    UFN_ORDERLINE_PRODUCT_LST: {
         query: "SELECT * FROM ufn_orderline_product_lst ($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
-    UFN_CHANGE_ORDERSTATUS : {
+    UFN_CHANGE_ORDERSTATUS: {
         query: "SELECT * FROM ufn_change_orderstatus($corpid, $orgid, $orderid, $orderstatus, $username)",
         module: "",
         protected: "SELECT"
