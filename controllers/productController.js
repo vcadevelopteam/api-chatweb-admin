@@ -175,18 +175,9 @@ exports.createorderitem = async (req, res) => {
 };
 
 exports.changeorderstatus = async (req, res) => {
-    const { corpid, orgid, conversationid, personcommunicationchannel, orderid, orderstatus } = req.body;
+    const { corpid, orgid, orderid, orderstatus } = req.body;
 
     try {
-        const model_detail = await executesimpletransaction("UFN_API_CONVERSATION_CHECK", {
-            corpid,
-            orgid,
-            conversationid,
-            personcommunicationchannel,
-        });
-        if (!model_detail instanceof Array || !model_detail.length)
-            return res.status(400).json(getErrorCode(model_detail.code || "INVALID_DATA"));
-
         const order_data = await executesimpletransaction("UFN_API_ORDER_SEL", { corpid, orgid, id: orderid });
         if (!order_data instanceof Array || !order_data.length)
             return res.status(400).json(getErrorCode(model_detail.code || "INVALID_ORDER"));
