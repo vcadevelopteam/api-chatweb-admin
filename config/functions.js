@@ -4175,6 +4175,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_API_CAMPAIGN_PENDING_SEL: {
+        query: "SELECT * FROM ufn_api_campaign_pending_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_API_CAMPAIGN_MANAGEMENT: {
+        query: "SELECT * FROM ufn_api_campaign_management($corpid, $orgid, $campaignid, $operation, $value)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_API_ORDER_SEL: {
         query: "SELECT * FROM ufn_api_order_sel($corpid, $orgid, $id)",
         module: "",
