@@ -12,7 +12,9 @@ const method_allowed = [
     "UFN_LIST_PERSONS_BY_ORG_SEL",
     "QUERY_GET_MESSAGETEMPLATE",
     "UFN_API_ORDER_SEL",
-    "UFN_CHANGE_ORDERSTATUS"
+    "UFN_CHANGE_ORDERSTATUS",
+    "UFN_API_CAMPAIGN_PENDING_SEL",
+    "UFN_API_CAMPAIGN_MANAGEMENT"
 ];
 
 exports.Collection = async (req, res) => {
@@ -30,6 +32,7 @@ exports.Collection = async (req, res) => {
         return res.json({ error: false, success: true, data: result });
     } else return res.status(result.rescode).json({ ...result });
 };
+
 
 exports.sendHSMcontactos = async (req, res) => {
     try {
