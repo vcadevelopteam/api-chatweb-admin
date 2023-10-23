@@ -4220,4 +4220,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_AISERVICE_PAYMENTPLAN_CHECK: {
+        query: "select * from ufn_aiservice_paymentplan_check($corpid, $orgid, 'GEODIR', 'LOCATION')",
+        module: "",
+        protected: "SELECT"
+    },
 }
