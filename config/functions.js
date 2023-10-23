@@ -585,7 +585,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_DOMAIN_LST_VALORES: {
-        query: "SELECT * FROM ufn_domain_lst_valores($corpid, $orgid, $domainname)",
+        query: "SELECT * FROM ufn_domain_lst_valores($corpid, $orgid, $domainname, $userid)",
         module: "",
         protected: "SELECT"
     },
