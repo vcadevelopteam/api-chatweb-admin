@@ -3852,6 +3852,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_AISERVICE_PAYMENTPLAN_CHECK: {
+        query: "select * from ufn_aiservice_paymentplan_check($corpid, $orgid, 'GEODIR', 'LOCATION')",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_COLUMN_ORDER_SEL: {
         query: "SELECT * FROM ufn_column_order_sel($corpid, $orgid, $id, $all)",
         module: "",
