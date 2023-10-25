@@ -3867,7 +3867,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PARTNER_INS: {
-        query: "SELECT * FROM ufn_partner_ins($id, $country, $billingcurrency, $documenttype, $documentnumber, $company, $address, $billingcontact, $email, $signaturedate, $enterprisepartner, $billingplan, $typecalculation, $numbercontactsbag, $puadditionalcontacts, $priceperbag, $automaticgenerationdrafts, $automaticperiodgeneration, $username, $status, $type, $operation);",
+        query: "SELECT * FROM ufn_partner_ins($id, $country, $billingcurrency, $documenttype, $documentnumber, $company, $address, $billingcontact, $email, $signaturedate, $enterprisepartner, $billingplan, $typecalculation, $numbercontactsbag, $puadditionalcontacts, $priceperbag, $automaticgenerationdrafts, $automaticperiodgeneration, $montlyplancost, $numberplancontacts, $username, $status, $type, $operation);",
         module: "",
         protected: "INSERT"
     },
