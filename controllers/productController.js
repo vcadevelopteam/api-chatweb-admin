@@ -281,7 +281,7 @@ const getHsmData = (corpid, orgid, orderstatus, order_data) => {
         ];
     } else if (orderstatus === "delivered") {
         hsm_template_id = 3376;
-    } else if (orderstatus === "rejected") {
+    } else if (orderstatus === "reject") {
         hsm_template_id = 3378;
     }
     return {
