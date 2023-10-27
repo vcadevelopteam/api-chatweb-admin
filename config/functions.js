@@ -4235,4 +4235,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_INVENTORY_INVENTORYBALANCE_UPD: {
+        query: "SELECT * FROM inventario.ufn_inventory_inventorybalance_update($corpid, $orgid, $inventoryid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
 }
