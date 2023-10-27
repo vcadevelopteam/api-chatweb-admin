@@ -646,6 +646,12 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_INVENTORYCONSUMPTION_INS: {
+        query: "SELECT * FROM inventario.ufn_inventoryconsumption_ins($corpid, $orgid, $inventoryconsumptionid, $description, $ordernumber, $transactiontype, $warehouseid, $status, $type, $comment, $operation, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+
     UFN_PRODUCT_DUP: {
         query: "SELECT * FROM inventario.ufn_product_dup($corpid, $orgid, $productid, $productreferenceid, $username)",
         module: "",
