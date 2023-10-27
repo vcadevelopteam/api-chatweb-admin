@@ -1404,6 +1404,21 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_LEADGRID_TRACKING_SEL: {
+        query: "select * from ufn_leadgrid_tracking_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_LEADGRID_TRACKING_TOTALRECORDS: {
+        query: "select * from ufn_leadgrid_tracking_totalrecords($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_LEADGRID_TRACKING_EXPORT: {
+        query: "select * from ufn_leadgrid_tracking_export($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_LEAD_SD_INS: {
         query: "select * from ufn_lead_sd_ins($corpid, $orgid, $id, $description, $ticketnum, $type, $personid, $company, $email, $phone, $urgency, $impact, $priority, $tags, $leadgroups, $userid, $columnid, $index, $status, $column_uuid, $operation, $username)",
         module: "",
