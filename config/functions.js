@@ -1028,7 +1028,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORTTEMPLATE_INS: {
-        query: "select * from ufn_reporttemplate_ins($id, $corpid, $orgid, $description, $status, $type, $dataorigin, $columnjson, $filterjson, $summaryjson, $communicationchannelid, $username, $operation)",
+        query: "select * from ufn_reporttemplate_ins($id, $corpid, $orgid, $description, $status, $type, $dataorigin, $columnjson, $filterjson, $summaryjson, $communicationchannelid, $nameapi, $username, $operation)",
         module: "",
         protected: "SELECT"
     },
