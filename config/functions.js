@@ -3892,4 +3892,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_BILLINGPERIODPARTNER_DEVELOPER_RESELLER: {
+        query: "SELECT * FROM ufn_billingperiodpartner_developer_reseller($partnerid, $corpid, $orgid, $year, $month, $username)",
+        module: "",
+        protected: "SELECT"
+    }
 }
