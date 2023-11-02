@@ -773,6 +773,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_INVENTORYCONSUMPTION_EXPORT: {
+        query: "SELECT * FROM inventario.ufn_inventoryconsumption_export($startdate, $enddate,$corpid, $orgid, $where, $order, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_PRODUCT_SEL: {
         query: "SELECT * FROM inventario.ufn_product_sel($corpid, $orgid, $productid, $username)",
         module: "",
