@@ -3862,5 +3862,10 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    
+
+    UFN_WAREHOUSE_SEL: {
+        query: "SELECT * FROM inventario.ufn_warehouse_sel($corpid, $orgid, $warehouseid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
 }
