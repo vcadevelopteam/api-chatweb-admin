@@ -232,7 +232,7 @@ exports.createSubscription = async (request, response) => {
         let requestSuccess = false;
 
         if (request.body) {
-            let { method, card = {}, parameters = {} } = request.body;
+            let { method, card = {}, channel = {}, parameters = {} } = request.body;
 
             let paymentcarddata = null;
             let paymentcarderror = false;
@@ -429,6 +429,14 @@ exports.createSubscription = async (request, response) => {
                             success: requestSuccess,
                         });
                     }
+                }
+
+                if (channel) {
+                    channel.corpid = corpId;
+                    channel.orgid = orgId;
+                    channel.userid = userId;
+
+                    await triggerfunctions.executesimpletransaction("UFN_SUBSCRIPTION_CREATECHANNELS", channel);
                 }
 
                 if (

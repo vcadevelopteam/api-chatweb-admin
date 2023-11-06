@@ -70,7 +70,7 @@ module.exports = {
         protected: "SELECT"
     },
     GET_CONTRACT: {
-        query: 'SELECT * FROM paymentplan where "code" = $code',
+        query: 'SELECT * FROM paymentplan where "code" = $code AND status = \'ACTIVO\';',
         module: "",
         protected: "SELECT"
     },
@@ -3859,6 +3859,11 @@ module.exports = {
     },
     UFN_COLUMN_ORDER_SEL: {
         query: "SELECT * FROM ufn_column_order_sel($corpid, $orgid, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_SUBSCRIPTION_CREATECHANNELS: {
+        query: "SELECT * FROM ufn_subscription_createchannels($corpid, $orgid, $userid, $android, $apple, $appstore, $blogger, $business, $chatWeb, $email, $facebook, $instagram, $instagramDM, $linkedin, $messenger, $metalead, $playstore, $sms, $teams, $telegram, $tiktok, $twitter, $twitterDM, $voximplantphone, $webForm, $whatsapp, $workplace, $workplaceDM, $youtube)",
         module: "",
         protected: "SELECT"
     },
