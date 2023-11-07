@@ -1,10 +1,9 @@
-const channelfunctions = require('../config/channelfunctions');
-const jwt = require('jsonwebtoken');
-const logger = require('../config/winston');
-const triggerfunctions = require('../config/triggerfunctions');
+const { axiosObservable, setSessionParameters } = require("../config/helpers");
+const { getErrorCode } = require("../config/helpers");
 
-const { axiosObservable, setSessionParameters } = require('../config/helpers');
-const { getErrorCode } = require('../config/helpers');
+const channelfunctions = require("../config/channelfunctions");
+const jwt = require("jsonwebtoken");
+const triggerfunctions = require("../config/triggerfunctions");
 
 const ayrshareEndpoint = process.env.AYRSHARE;
 const bridgeEndpoint = process.env.BRIDGE;
@@ -28,8 +27,6 @@ const whatsAppEndpoint = process.env.WHATSAPPAPI;
 
 exports.checkPaymentPlan = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
         let { method, parameters } = request.body;
 
         setSessionParameters(parameters, request.user, request._requestid);
@@ -38,747 +35,780 @@ exports.checkPaymentPlan = async (request, response) => {
 
         if (transactionCheckPaymentPlan instanceof Array) {
             if (transactionCheckPaymentPlan.length > 0) {
-                let createChannel = transactionCheckPaymentPlan[0].channelnumber < transactionCheckPaymentPlan[0].channelscontracted ? true : false;
+                let createChannel =
+                    transactionCheckPaymentPlan[0].channelnumber < transactionCheckPaymentPlan[0].channelscontracted;
 
                 return response.json({
                     createChannel: createChannel,
                     providerWhatsApp: transactionCheckPaymentPlan[0].providerwhatsapp,
-                    success: true
+                    success: true,
                 });
-            }
-            else {
+            } else {
                 return response.json({
                     createChannel: true,
-                    providerWhatsApp: 'DIALOG',
-                    success: true
+                    providerWhatsApp: "DIALOG",
+                    success: true,
                 });
             }
-        }
-        else {
+        } else {
             return response.status(400).json({
                 msg: transactionCheckPaymentPlan.code,
-                success: false
+                success: false,
             });
         }
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
         });
     }
-}
+};
 
 exports.deleteChannel = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
         let { method, parameters = {} } = request.body;
 
         setSessionParameters(parameters, request.user, request._requestid);
 
         parameters.corpid = request.user.corpid;
-        parameters.motive = 'Delete from API';
-        parameters.operation = 'DELETE';
+        parameters.motive = "Delete from API";
+        parameters.operation = "DELETE";
         parameters.orgid = request.user.orgid;
-        parameters.status = 'ELIMINADO';
+        parameters.status = "ELIMINADO";
         parameters.updintegration = null;
         parameters.username = request.user.usr;
 
         switch (parameters.type) {
-            case 'ANDR':
-            case 'APPL':
-                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+            case "ANDR":
+            case "APPL":
+                if (typeof parameters.servicecredentials !== "undefined" && parameters.servicecredentials) {
                     const requestDeleteSmooch = await axiosObservable({
-                        data: {
-                            linkType: parameters.type === 'ANDR' ? 'ANDROIDREMOVE' : 'IOSREMOVE',
-                            applicationId: parameters.communicationchannelsite,
-                            integrationId: parameters.integrationid
-                        },
-                        method: 'post',
-                        url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
                         _requestid: request._requestid,
+                        method: "post",
+                        url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
+                        data: {
+                            applicationId: parameters.communicationchannelsite,
+                            integrationId: parameters.integrationid,
+                            linkType: parameters.type === "ANDR" ? "ANDROIDREMOVE" : "IOSREMOVE",
+                        },
                     });
 
                     if (requestDeleteSmooch.data.success) {
-                        const transactionDeleteSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
+                        const transactionDeleteSmooch = await triggerfunctions.executesimpletransaction(
+                            method,
+                            parameters
+                        );
 
                         if (transactionDeleteSmooch instanceof Array) {
-                            await channelfunctions.clearHookCache('SmoochService', request._requestid);
+                            await channelfunctions.clearHookCache("SmoochService", request._requestid);
 
                             return response.json({
-                                success: true
+                                success: true,
                             });
-                        }
-                        else {
+                        } else {
                             return response.status(400).json({
                                 msg: transactionDeleteSmooch.code,
-                                success: false
+                                success: false,
                             });
                         }
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: requestDeleteSmooch.data.operationMessage,
-                            success: false
+                            success: false,
                         });
                     }
-                }
-                else {
+                } else {
                     const transactionDeleteSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionDeleteSmooch instanceof Array) {
-                        await channelfunctions.clearHookCache('SmoochService', request._requestid);
+                        await channelfunctions.clearHookCache("SmoochService", request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionDeleteSmooch.code,
-                            success: false
+                            success: false,
                         });
                     }
                 }
 
-            case 'CHAZ':
-                if (typeof parameters.communicationchannelcontact !== 'undefined' && parameters.communicationchannelcontact) {
+            case "CHAZ":
+                if (
+                    typeof parameters.communicationchannelcontact !== "undefined" &&
+                    parameters.communicationchannelcontact
+                ) {
                     await axiosObservable({
-                        data: {
-                            status: 'ELIMINADO',
-                        },
-                        method: 'put',
+                        _requestid: request._requestid,
+                        method: "put",
                         url: `${brokerEndpoint}plugins/update/${parameters.communicationchannelcontact}`,
-                        _requestid: request._requestid,
+                        data: {
+                            status: "ELIMINADO",
+                        },
                     });
                 }
 
-                if (typeof parameters.communicationchannelowner !== 'undefined' && parameters.communicationchannelowner) {
+                if (
+                    typeof parameters.communicationchannelowner !== "undefined" &&
+                    parameters.communicationchannelowner
+                ) {
                     await axiosObservable({
-                        data: {
-                            status: 'ELIMINADO'
-                        },
-                        method: 'put',
+                        _requestid: request._requestid,
+                        method: "put",
                         url: `${brokerEndpoint}webhooks/update/${parameters.communicationchannelowner}`,
-                        _requestid: request._requestid,
+                        data: {
+                            status: "ELIMINADO",
+                        },
                     });
                 }
 
-                if (typeof parameters.integrationid !== 'undefined' && parameters.integrationid) {
+                if (typeof parameters.integrationid !== "undefined" && parameters.integrationid) {
                     await axiosObservable({
-                        data: {
-                            status: 'ELIMINADO'
-                        },
-                        method: 'put',
-                        url: `${brokerEndpoint}integrations/update/${parameters.integrationid}`,
                         _requestid: request._requestid,
+                        method: "put",
+                        url: `${brokerEndpoint}integrations/update/${parameters.integrationid}`,
+                        data: {
+                            status: "ELIMINADO",
+                        },
                     });
                 }
 
                 const transactionDeleteChatWeb = await triggerfunctions.executesimpletransaction(method, parameters);
 
                 if (transactionDeleteChatWeb instanceof Array) {
-                    await channelfunctions.clearHookCache('ChatWebService', request._requestid);
+                    await channelfunctions.clearHookCache("ChatWebService", request._requestid);
 
                     return response.json({
-                        success: true
+                        success: true,
                     });
-                }
-                else {
+                } else {
                     return response.status(400).json({
                         msg: transactionDeleteChatWeb.code,
-                        success: false
+                        success: false,
                     });
                 }
-            case 'FORM':
-                if (typeof parameters.integrationid !== 'undefined' && parameters.integrationid) {
+
+            case "FORM":
+                if (typeof parameters.integrationid !== "undefined" && parameters.integrationid) {
                     await axiosObservable({
-                        data: {
-                            status: 'ELIMINADO'
-                        },
-                        method: 'put',
-                        url: `${brokerEndpoint}integrations/update/${parameters.integrationid}`,
                         _requestid: request._requestid,
+                        method: "put",
+                        url: `${brokerEndpoint}integrations/update/${parameters.integrationid}`,
+                        data: {
+                            status: "ELIMINADO",
+                        },
                     });
                 }
 
                 const transactionDeleteChatWeb1 = await triggerfunctions.executesimpletransaction(method, parameters);
 
                 if (transactionDeleteChatWeb1 instanceof Array) {
-                    await channelfunctions.clearHookCache('ChatWebService', request._requestid);
+                    await channelfunctions.clearHookCache("ChatWebService", request._requestid);
 
                     return response.json({
-                        success: true
+                        success: true,
                     });
-                }
-                else {
+                } else {
                     return response.status(400).json({
                         msg: transactionDeleteChatWeb1.code,
-                        success: false
+                        success: false,
                     });
                 }
-            case 'WORKPLACE':
-            case 'FBLD':
+
+            case "FBLD":
+            case "WORKPLACE":
                 const deleteChannelWorkplace = await triggerfunctions.executesimpletransaction(method, parameters);
 
                 if (deleteChannelWorkplace instanceof Array) {
-                    await channelfunctions.clearHookCache('EveryService', request._requestid);
+                    await channelfunctions.clearHookCache("EveryService", request._requestid);
 
                     return response.json({
-                        success: true
+                        success: true,
                     });
-                }
-                else {
+                } else {
                     return response.status(400).json({
                         msg: deleteChannelWorkplace.code,
-                        success: false
+                        success: false,
                     });
                 }
-            case 'FBDM':
-            case 'FBWA':
-            case 'INDM':
-            case 'INST':
-                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+
+            case "FBDM":
+            case "FBWA":
+            case "INDM":
+            case "INST":
+                if (typeof parameters.servicecredentials !== "undefined" && parameters.servicecredentials) {
                     let serviceCredentials = JSON.parse(parameters.servicecredentials);
-                    let linkType = '';
+                    let linkType = "";
 
                     let DeleteIntegration = true;
 
-                    if (parameters.type === 'FBDM') {
-                        linkType = 'MESSENGERREMOVE';
+                    if (parameters.type === "FBDM") {
+                        linkType = "MESSENGERREMOVE";
                     }
 
-                    if (parameters.type === 'FBWA') {
-                        linkType = 'WALLREMOVE';
+                    if (parameters.type === "FBWA") {
+                        linkType = "WALLREMOVE";
                     }
 
-                    if (parameters.type === 'INST' || parameters.type === 'INDM') {
-                        linkType = 'INSTAGRAMREMOVE';
+                    if (parameters.type === "INST" || parameters.type === "INDM") {
+                        linkType = "INSTAGRAMREMOVE";
                     }
 
-                    if (linkType === 'INSTAGRAMREMOVE') {
-                        let validateMethod = 'UFN_COMMUNICATIONCHANNELSITE_SEL';
+                    if (linkType === "INSTAGRAMREMOVE") {
                         let validateParameters = {
-                            communicationchannelsite: serviceCredentials.siteId,
-                            type: (parameters.type === 'INST' ? 'INDM' : 'INST'),
                             _requestid: request._requestid,
+                            communicationchannelsite: serviceCredentials.siteId,
+                            type: parameters.type === "INST" ? "INDM" : "INST",
                         };
 
-                        const transactionValidateInstagram = await triggerfunctions.executesimpletransaction(validateMethod, validateParameters);
+                        const transactionValidateInstagram = await triggerfunctions.executesimpletransaction(
+                            "UFN_COMMUNICATIONCHANNELSITE_SEL",
+                            validateParameters
+                        );
 
                         if (transactionValidateInstagram instanceof Array) {
                             if (transactionValidateInstagram.length > 0) {
                                 DeleteIntegration = false;
                             }
-                        }
-                        else {
+                        } else {
                             return response.status(400).json({
                                 msg: transactionValidateInstagram.code,
-                                success: false
+                                success: false,
                             });
                         }
                     }
 
                     if (DeleteIntegration) {
                         const requestDeleteFacebook = await axiosObservable({
+                            _requestid: request._requestid,
+                            method: "post",
+                            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
                             data: {
                                 accessToken: serviceCredentials.accessToken,
                                 linkType: linkType,
-                                siteId: ((parameters.type === 'INST' || parameters.type === 'INDM') ? parameters.communicationchannelowner : serviceCredentials.siteId)
+                                siteId:
+                                    parameters.type === "INST" || parameters.type === "INDM"
+                                        ? parameters.communicationchannelowner
+                                        : serviceCredentials.siteId,
                             },
-                            method: 'post',
-                            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
-                            _requestid: request._requestid,
                         });
 
                         if (!requestDeleteFacebook.data.success) {
                             return response.status(400).json({
                                 msg: requestDeleteFacebook.data.operationMessage,
-                                success: false
+                                success: false,
                             });
                         }
                     }
 
-                    const transactionDeleteFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
+                    const transactionDeleteFacebook = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionDeleteFacebook instanceof Array) {
-                        await channelfunctions.clearHookCache('FacebookService', request._requestid);
+                        await channelfunctions.clearHookCache("FacebookService", request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionDeleteFacebook.code,
-                            success: false
+                            success: false,
+                        });
+                    }
+                } else {
+                    const transactionDeleteFacebook = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
+
+                    if (transactionDeleteFacebook instanceof Array) {
+                        await channelfunctions.clearHookCache("FacebookService", request._requestid);
+
+                        return response.json({
+                            success: true,
+                        });
+                    } else {
+                        return response.status(400).json({
+                            msg: transactionDeleteFacebook.code,
+                            success: false,
                         });
                     }
                 }
-                else {
-                    const transactionDeleteFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
 
-                    if (transactionDeleteFacebook instanceof Array) {
-                        await channelfunctions.clearHookCache('FacebookService', request._requestid);
-
-                        return response.json({
-                            success: true
-                        });
-                    }
-                    else {
-                        return response.status(400).json({
-                            msg: transactionDeleteFacebook.code,
-                            success: false
-                        });
-                    }
-                }
-
-            case 'INMS':
-                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+            case "INMS":
+                if (typeof parameters.servicecredentials !== "undefined" && parameters.servicecredentials) {
                     let serviceCredentials = JSON.parse(parameters.servicecredentials);
 
                     const requestDeleteInstagramSmooch = await axiosObservable({
+                        _requestid: request._requestid,
+                        method: "post",
+                        url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
                         data: {
-                            linkType: 'WEBHOOKREMOVE',
                             apiKeyId: serviceCredentials.apiKeyId,
                             apiKeySecret: serviceCredentials.apiKeySecret,
                             applicationId: parameters.communicationchannelsite,
-                            integrationId: parameters.integrationid
+                            integrationId: parameters.integrationid,
+                            linkType: "WEBHOOKREMOVE",
                         },
-                        method: 'post',
-                        url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
-                        _requestid: request._requestid,
                     });
 
                     if (requestDeleteInstagramSmooch.data.success) {
-                        const transactionDeleteInstagramSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
+                        const transactionDeleteInstagramSmooch = await triggerfunctions.executesimpletransaction(
+                            method,
+                            parameters
+                        );
 
                         if (transactionDeleteInstagramSmooch instanceof Array) {
-                            await channelfunctions.clearHookCache('SmoochService', request._requestid);
+                            await channelfunctions.clearHookCache("SmoochService", request._requestid);
 
                             return response.json({
-                                success: true
+                                success: true,
                             });
-                        }
-                        else {
+                        } else {
                             return response.status(400).json({
                                 msg: transactionDeleteInstagramSmooch.code,
-                                success: false
+                                success: false,
                             });
                         }
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: requestDeleteInstagramSmooch.data.operationMessage,
-                            success: false
+                            success: false,
                         });
                     }
-                }
-                else {
-                    const transactionDeleteInstagramSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
+                } else {
+                    const transactionDeleteInstagramSmooch = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionDeleteInstagramSmooch instanceof Array) {
-                        await channelfunctions.clearHookCache('SmoochService', request._requestid);
+                        await channelfunctions.clearHookCache("SmoochService", request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionDeleteInstagramSmooch.code,
-                            success: false
+                            success: false,
                         });
                     }
                 }
 
-            case 'TELE':
-                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+            case "TELE":
+                if (typeof parameters.servicecredentials !== "undefined" && parameters.servicecredentials) {
                     let serviceCredentials = JSON.parse(parameters.servicecredentials);
 
                     const requestDeleteTelegram = await axiosObservable({
+                        _requestid: request._requestid,
+                        method: "post",
+                        url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`,
                         data: {
                             accessToken: serviceCredentials.token,
-                            linkType: 'TELEGRAMREMOVE',
-                            siteId: serviceCredentials.bot
+                            linkType: "TELEGRAMREMOVE",
+                            siteId: serviceCredentials.bot,
                         },
-                        method: 'post',
-                        url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`,
-                        _requestid: request._requestid,
                     });
 
                     if (requestDeleteTelegram.data.success) {
-                        const transactionDeleteTelegram = await triggerfunctions.executesimpletransaction(method, parameters);
+                        const transactionDeleteTelegram = await triggerfunctions.executesimpletransaction(
+                            method,
+                            parameters
+                        );
 
                         if (transactionDeleteTelegram instanceof Array) {
-                            await channelfunctions.clearHookCache('TelegramService', request._requestid);
+                            await channelfunctions.clearHookCache("TelegramService", request._requestid);
 
                             return response.json({
-                                success: true
+                                success: true,
                             });
-                        }
-                        else {
+                        } else {
                             return response.status(400).json({
                                 msg: transactionDeleteTelegram.code,
-                                success: false
+                                success: false,
                             });
                         }
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: requestDeleteTelegram.data.operationMessage,
-                            success: false
+                            success: false,
                         });
                     }
-                }
-                else {
-                    const transactionDeleteTelegram = await triggerfunctions.executesimpletransaction(method, parameters);
+                } else {
+                    const transactionDeleteTelegram = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionDeleteTelegram instanceof Array) {
-                        await channelfunctions.clearHookCache('TelegramService', request._requestid);
+                        await channelfunctions.clearHookCache("TelegramService", request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionDeleteTelegram.code,
-                            success: false
+                            success: false,
                         });
                     }
                 }
 
-            case 'TWIT':
-            case 'TWMS':
-                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+            case "TWIT":
+            case "TWMS":
+                if (typeof parameters.servicecredentials !== "undefined" && parameters.servicecredentials) {
                     let serviceCredentials = JSON.parse(parameters.servicecredentials);
 
-                    let validateMethod = 'UFN_COMMUNICATIONCHANNELSITE_SEL';
                     let validateParameters = {
-                        communicationchannelsite: serviceCredentials.twitterPageId,
-                        type: (parameters.type === 'TWIT' ? 'TWMS' : 'TWIT'),
                         _requestid: request._requestid,
+                        communicationchannelsite: serviceCredentials.twitterPageId,
+                        type: parameters.type === "TWIT" ? "TWMS" : "TWIT",
                     };
 
-                    const transactionValidateTwitter = await triggerfunctions.executesimpletransaction(validateMethod, validateParameters);
+                    const transactionValidateTwitter = await triggerfunctions.executesimpletransaction(
+                        "UFN_COMMUNICATIONCHANNELSITE_SEL",
+                        validateParameters
+                    );
 
                     if (transactionValidateTwitter instanceof Array) {
                         if (transactionValidateTwitter.length > 0) {
-                            const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
+                            const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(
+                                method,
+                                parameters
+                            );
 
                             if (transactionDeleteTwitter instanceof Array) {
-                                await channelfunctions.clearHookCache('TwitterService', request._requestid);
+                                await channelfunctions.clearHookCache("TwitterService", request._requestid);
 
                                 return response.json({
-                                    success: true
+                                    success: true,
                                 });
-                            }
-                            else {
+                            } else {
                                 return response.status(400).json({
                                     msg: transactionDeleteTwitter.code,
-                                    success: false
+                                    success: false,
                                 });
                             }
-                        }
-                        else {
+                        } else {
                             const requestDeleteTwitter = await axiosObservable({
+                                _requestid: request._requestid,
+                                method: "post",
+                                url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
                                 data: {
                                     accessSecret: serviceCredentials.accessSecret,
                                     accessToken: serviceCredentials.accessToken,
                                     consumerKey: serviceCredentials.consumerKey,
                                     consumerSecret: serviceCredentials.consumerSecret,
                                     developmentEnvironment: serviceCredentials.devEnvironment,
-                                    linkType: 'TWITTERREMOVE',
+                                    linkType: "TWITTERREMOVE",
                                 },
-                                method: 'post',
-                                url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
-                                _requestid: request._requestid,
                             });
 
                             if (requestDeleteTwitter.data.success) {
-                                const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
+                                const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(
+                                    method,
+                                    parameters
+                                );
 
                                 if (transactionDeleteTwitter instanceof Array) {
-                                    await channelfunctions.clearHookCache('TwitterService', request._requestid);
+                                    await channelfunctions.clearHookCache("TwitterService", request._requestid);
 
                                     return response.json({
-                                        success: true
+                                        success: true,
                                     });
-                                }
-                                else {
+                                } else {
                                     return response.status(400).json({
                                         msg: transactionDeleteTwitter.code,
-                                        success: false
+                                        success: false,
                                     });
                                 }
-                            }
-                            else {
+                            } else {
                                 return response.status(400).json({
                                     msg: requestDeleteTwitter.data.operationMessage,
-                                    success: false
+                                    success: false,
                                 });
                             }
                         }
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionValidateTwitter.code,
-                            success: false
+                            success: false,
                         });
                     }
-                }
-                else {
-                    const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
+                } else {
+                    const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionDeleteTwitter instanceof Array) {
-                        await channelfunctions.clearHookCache('TwitterService', request._requestid);
+                        await channelfunctions.clearHookCache("TwitterService", request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionDeleteTwitter.code,
-                            success: false
+                            success: false,
                         });
                     }
                 }
 
-            case 'WHAD':
-                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+            case "WHAD":
+                if (typeof parameters.servicecredentials !== "undefined" && parameters.servicecredentials) {
                     let serviceCredentials = JSON.parse(parameters.servicecredentials);
 
                     const requestDeleteWhatsApp = await axiosObservable({
+                        _requestid: request._requestid,
+                        method: "post",
+                        url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`,
                         data: {
                             accessToken: serviceCredentials.apiKey,
-                            isCloud: serviceCredentials.isCloud ? true : false,
-                            linkType: 'WHATSAPPREMOVE',
+                            isCloud: !!serviceCredentials.isCloud,
+                            linkType: "WHATSAPPREMOVE",
                             siteId: serviceCredentials.number,
                         },
-                        method: 'post',
-                        url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`,
-                        _requestid: request._requestid,
                     });
 
                     if (requestDeleteWhatsApp.data.success) {
-                        const transactionDeleteWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
+                        const transactionDeleteWhatsApp = await triggerfunctions.executesimpletransaction(
+                            method,
+                            parameters
+                        );
 
                         if (transactionDeleteWhatsApp instanceof Array) {
-                            await channelfunctions.clearHookCache('Dialog360Service', request._requestid);
+                            await channelfunctions.clearHookCache("Dialog360Service", request._requestid);
 
                             return response.json({
-                                success: true
+                                success: true,
                             });
-                        }
-                        else {
+                        } else {
                             return response.status(400).json({
                                 msg: transactionDeleteWhatsApp.code,
-                                success: false
+                                success: false,
                             });
                         }
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: requestDeleteWhatsApp.data.operationMessage,
-                            success: false
+                            success: false,
                         });
                     }
-                }
-                else {
-                    const transactionDeleteWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
+                } else {
+                    const transactionDeleteWhatsApp = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionDeleteWhatsApp instanceof Array) {
-                        await channelfunctions.clearHookCache('Dialog360Service', request._requestid);
+                        await channelfunctions.clearHookCache("Dialog360Service", request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionDeleteWhatsApp.code,
-                            success: false
+                            success: false,
                         });
                     }
                 }
 
-            case 'WHAT':
-                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+            case "WHAT":
+                if (typeof parameters.servicecredentials !== "undefined" && parameters.servicecredentials) {
                     let serviceCredentials = JSON.parse(parameters.servicecredentials);
 
-                    if (typeof serviceCredentials.apiKeyId !== 'undefined' && serviceCredentials.apiKeyId) {
+                    if (typeof serviceCredentials.apiKeyId !== "undefined" && serviceCredentials.apiKeyId) {
                         const requestDeleteWhatsAppSmooch = await axiosObservable({
+                            _requestid: request._requestid,
+                            method: "post",
+                            url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
                             data: {
-                                linkType: 'WEBHOOKCLEAR',
                                 apiKeyId: serviceCredentials.apiKeyId,
                                 apiKeySecret: serviceCredentials.apiKeySecret,
                                 applicationId: parameters.communicationchannelsite,
-                                integrationId: parameters.integrationid
+                                integrationId: parameters.integrationid,
+                                linkType: "WEBHOOKCLEAR",
                             },
-                            method: 'post',
-                            url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
-                            _requestid: request._requestid,
                         });
 
                         if (requestDeleteWhatsAppSmooch.data.success) {
-                            const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
+                            const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(
+                                method,
+                                parameters
+                            );
 
                             if (transactionDeleteWhatsAppSmooch instanceof Array) {
-                                await channelfunctions.clearHookCache('SmoochService', request._requestid);
+                                await channelfunctions.clearHookCache("SmoochService", request._requestid);
 
                                 return response.json({
-                                    success: true
+                                    success: true,
                                 });
-                            }
-                            else {
+                            } else {
                                 return response.status(400).json({
                                     msg: transactionDeleteWhatsAppSmooch.code,
-                                    success: false
+                                    success: false,
                                 });
                             }
-                        }
-                        else {
+                        } else {
                             return response.status(400).json({
                                 msg: requestDeleteWhatsAppSmooch.data.operationMessage,
-                                success: false
+                                success: false,
                             });
                         }
-                    }
-                    else {
-                        const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
+                    } else {
+                        const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(
+                            method,
+                            parameters
+                        );
 
                         if (transactionDeleteWhatsAppSmooch instanceof Array) {
-                            await channelfunctions.clearHookCache('SmoochService', request._requestid);
+                            await channelfunctions.clearHookCache("SmoochService", request._requestid);
 
                             return response.json({
-                                success: true
+                                success: true,
                             });
-                        }
-                        else {
+                        } else {
                             return response.status(400).json({
                                 msg: transactionDeleteWhatsAppSmooch.code,
-                                success: false
+                                success: false,
                             });
                         }
                     }
-                }
-                else {
-                    const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
+                } else {
+                    const transactionDeleteWhatsAppSmooch = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionDeleteWhatsAppSmooch instanceof Array) {
-                        await channelfunctions.clearHookCache('SmoochService', request._requestid);
+                        await channelfunctions.clearHookCache("SmoochService", request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionDeleteWhatsAppSmooch.code,
-                            success: false
+                            success: false,
                         });
                     }
                 }
 
-            case 'VOXI':
-                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+            case "VOXI":
+                if (typeof parameters.servicecredentials !== "undefined" && parameters.servicecredentials) {
                     let serviceCredentials = JSON.parse(parameters.servicecredentials);
 
-                    let voximplantPhoneNumber = await channelfunctions.voximplantDeletePhoneNumber(request.user.corpid, request.user.orgid, serviceCredentials.phoneid, serviceCredentials.queueid, request.originalUrl, request._requestid);
+                    let voximplantPhoneNumber = await channelfunctions.voximplantDeletePhoneNumber(
+                        request.user.corpid,
+                        request.user.orgid,
+                        serviceCredentials.phoneid,
+                        serviceCredentials.queueid,
+                        request.originalUrl,
+                        request._requestid
+                    );
 
                     if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.queueid) {
-                        const transactionDeleteVoximplant = await triggerfunctions.executesimpletransaction(method, parameters);
+                        const transactionDeleteVoximplant = await triggerfunctions.executesimpletransaction(
+                            method,
+                            parameters
+                        );
 
                         if (transactionDeleteVoximplant instanceof Array) {
                             return response.json({
-                                success: true
+                                success: true,
                             });
-                        }
-                        else {
+                        } else {
                             return response.status(400).json({
                                 msg: transactionDeleteVoximplant.code,
-                                success: false
+                                success: false,
                             });
                         }
                     }
 
                     return response.status(400).json({
-                        msg: 'voximplant_phonenumberdelete_error',
-                        success: false
+                        msg: "voximplant_phonenumberdelete_error",
+                        success: false,
                     });
-                }
-                else {
-                    const transactionDeleteVoximplant = await triggerfunctions.executesimpletransaction(method, parameters);
+                } else {
+                    const transactionDeleteVoximplant = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionDeleteVoximplant instanceof Array) {
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionDeleteVoximplant.code,
-                            success: false
+                            success: false,
                         });
                     }
                 }
 
-            case 'WHAG':
-                if (typeof parameters.servicecredentials !== 'undefined' && parameters.servicecredentials) {
+            case "WHAG":
+                if (typeof parameters.servicecredentials !== "undefined" && parameters.servicecredentials) {
                     let serviceCredentials = JSON.parse(parameters.servicecredentials);
 
                     const requestDeleteWhatsAppGupshup = await axiosObservable({
+                        _requestid: request._requestid,
+                        method: "post",
+                        url: `${bridgeEndpoint}processlaraigo/gupshup/managegupshuplink`,
                         data: {
                             apiKey: serviceCredentials.apiKey,
                             appId: parameters.communicationchannelowner,
-                            linkType: 'GUPSHUPREMOVE',
+                            linkType: "GUPSHUPREMOVE",
                         },
-                        method: 'post',
-                        url: `${bridgeEndpoint}processlaraigo/gupshup/managegupshuplink`,
-                        _requestid: request._requestid,
                     });
 
                     if (requestDeleteWhatsAppGupshup.data.success) {
-                        const transactionDeleteWhatsAppGupshup = await triggerfunctions.executesimpletransaction(method, parameters);
+                        const transactionDeleteWhatsAppGupshup = await triggerfunctions.executesimpletransaction(
+                            method,
+                            parameters
+                        );
 
                         if (transactionDeleteWhatsAppGupshup instanceof Array) {
-                            await channelfunctions.clearHookCache('GupshupService', request._requestid);
+                            await channelfunctions.clearHookCache("GupshupService", request._requestid);
 
                             return response.json({
-                                success: true
+                                success: true,
                             });
-                        }
-                        else {
+                        } else {
                             return response.status(400).json({
                                 msg: transactionDeleteWhatsAppGupshup.code,
-                                success: false
+                                success: false,
                             });
                         }
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: requestDeleteWhatsAppGupshup.data.operationMessage,
-                            success: false
+                            success: false,
                         });
                     }
-                }
-                else {
-                    const transactionDeleteWhatsAppGupshup = await triggerfunctions.executesimpletransaction(method, parameters);
+                } else {
+                    const transactionDeleteWhatsAppGupshup = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionDeleteWhatsAppGupshup instanceof Array) {
-                        await channelfunctions.clearHookCache('GupshupService', request._requestid);
+                        await channelfunctions.clearHookCache("GupshupService", request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionDeleteWhatsAppGupshup.code,
-                            success: false
+                            success: false,
                         });
                     }
                 }
@@ -787,48 +817,43 @@ exports.deleteChannel = async (request, response) => {
                 const transactionDeleteGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
 
                 if (transactionDeleteGeneric instanceof Array) {
-                    await channelfunctions.clearHookCache('EveryService', request._requestid);
+                    await channelfunctions.clearHookCache("EveryService", request._requestid);
 
                     return response.json({
-                        success: true
+                        success: true,
                     });
-                }
-                else {
+                } else {
                     return response.status(400).json({
                         msg: transactionDeleteGeneric.code,
-                        success: false
+                        success: false,
                     });
                 }
         }
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
         });
     }
-}
+};
 
 exports.getChannelService = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
         let method = null;
         let parameters = null;
 
-        if (request.body.siteType === 'SMCH') {
-            method = 'UFN_COMMUNICATIONCHANNELSITE_SMOOCH_SEL';
+        if (request.body.siteType === "SMCH") {
+            method = "UFN_COMMUNICATIONCHANNELSITE_SMOOCH_SEL";
             parameters = {
-                communicationchannelsite: request.body.siteId,
                 _requestid: request._requestid,
+                communicationchannelsite: request.body.siteId,
             };
-        }
-        else {
-            method = 'UFN_COMMUNICATIONCHANNELSITE_SEL';
+        } else {
+            method = "UFN_COMMUNICATIONCHANNELSITE_SEL";
             parameters = {
+                _requestid: request._requestid,
                 communicationchannelsite: request.body.siteId,
                 type: request.body.siteType,
-                _requestid: request._requestid,
             };
         }
 
@@ -836,244 +861,230 @@ exports.getChannelService = async (request, response) => {
 
         if (transactionSelectCredentials instanceof Array) {
             if (transactionSelectCredentials.length > 0) {
-                if (request.body.siteType !== 'TWTR') {
+                if (request.body.siteType !== "TWTR") {
                     return response.json({
                         serviceData: transactionSelectCredentials[0].servicecredentials,
-                        success: true
+                        success: true,
                     });
-                }
-                else {
+                } else {
                     return response.json({
                         serviceData: transactionSelectCredentials[0].servicedata,
-                        success: true
+                        success: true,
                     });
                 }
-            }
-            else {
+            } else {
                 return response.json({
-                    msg: 'Not found',
-                    success: false
+                    msg: "Not found",
+                    success: false,
                 });
             }
-        }
-        else {
+        } else {
             return response.status(400).json({
                 msg: transactionSelectCredentials.code,
-                success: false
+                success: false,
             });
         }
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
         });
     }
-}
+};
 
 exports.getLongToken = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
         const requestGetLongToken = await axiosObservable({
+            _requestid: request._requestid,
+            method: "post",
+            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
             data: {
                 accessToken: request.body.accessToken,
                 appId: request.body.appId,
-                linkType: 'GENERATELONGTOKEN'
+                linkType: "GENERATELONGTOKEN",
             },
-            method: 'post',
-            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
-            _requestid: request._requestid,
         });
 
         if (requestGetLongToken.data.success) {
             return response.json({
                 longToken: requestGetLongToken.data.longToken,
-                success: true
+                success: true,
             });
-        }
-        else {
+        } else {
             return response.status(400).json({
                 msg: requestGetLongToken.data.operationMessage,
-                success: false
+                success: false,
             });
         }
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
         });
     }
-}
+};
 
 exports.getPageList = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
         const requestGetPageList = await axiosObservable({
+            _requestid: request._requestid,
+            method: "post",
+            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
             data: {
                 accessToken: request.body.accessToken,
                 appId: request.body.appId,
-                linkType: 'GETPAGES'
+                linkType: "GETPAGES",
             },
-            method: 'post',
-            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
-            _requestid: request._requestid,
         });
 
         if (requestGetPageList.data.success) {
             return response.json({
                 pageData: requestGetPageList.data.pageData,
-                success: true
+                success: true,
             });
-        }
-        else {
+        } else {
             return response.status(400).json({
                 msg: requestGetPageList.data.operationMessage,
-                success: false
+                success: false,
             });
         }
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
         });
     }
-}
+};
 
 exports.getPhoneList = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
         const requestGetPhoneList = await axiosObservable({
-            data: {
-                partnerId: request.body.partnerId,
-                channelList: request.body.channelList,
-            },
-            method: 'post',
-            url: `${bridgeEndpoint}processpartner/getnumberlist`,
             _requestid: request._requestid,
+            method: "post",
+            url: `${bridgeEndpoint}processpartner/getnumberlist`,
+            data: {
+                channelList: request.body.channelList,
+                partnerId: request.body.partnerId,
+            },
         });
 
         if (requestGetPhoneList.data.success) {
             return response.json({
                 data: requestGetPhoneList.data.phoneList,
-                success: true
+                success: true,
             });
-        }
-        else {
+        } else {
             return response.status(400).json({
                 msg: requestGetPhoneList.data.operationMessage,
-                success: false
+                success: false,
             });
         }
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
         });
     }
-}
+};
 exports.getGroupList = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
         const { accesstoken } = request.body;
 
         if (!accesstoken) {
             return response.status(400).json({
-                msg: 'there is no accesstoken parameter.',
-                success: false
+                msg: "there is no accesstoken parameter.",
+                success: false,
             });
         }
 
         const requestGroupList = await axiosObservable({
-            method: 'get',
-            url: `https://graph.workplace.com/community/groups?access_token=${accesstoken}`,
             _requestid: request._requestid,
+            method: "get",
+            url: `https://graph.workplace.com/community/groups?access_token=${accesstoken}`,
         });
 
         if (requestGroupList.data) {
             return response.json({
                 data: requestGroupList.data,
-                success: true
+                success: true,
             });
         }
-
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
         });
     }
-}
+};
 
 exports.insertChannel = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
         let { method, parameters = {}, service = {} } = request.body;
 
         setSessionParameters(parameters, request.user, request._requestid);
 
+        parameters.apikey = null;
         parameters.appintegrationid = null;
         parameters.botconfigurationid = null;
         parameters.botenabled = null;
         parameters.channelparameters = null;
         parameters.chatflowenabled = true;
         parameters.coloricon = parameters.coloricon || null;
-        parameters.communicationchannelcontact = '';
+        parameters.communicationchannelcontact = "";
         parameters.communicationchanneltoken = null;
         parameters.corpid = request.user.corpid;
         parameters.country = null;
         parameters.customicon = null;
-        parameters.motive = 'Insert from API';
-        parameters.operation = 'INSERT';
+        parameters.motive = "Insert from API";
+        parameters.operation = parameters.id ? "UPDATE" : "INSERT";
         parameters.orgid = request.user.orgid;
+        parameters.phone = null;
         parameters.resolvelithium = null;
         parameters.schedule = null;
-        parameters.status = 'ACTIVO';
+        parameters.status = "ACTIVO";
         parameters.updintegration = null;
         parameters.username = request.user.usr;
-        parameters.phone = null;
-        parameters.apikey = null;
+        parameters.voximplantholdtone = null;
         parameters.voximplantrecording = null;
         parameters.voximplantwelcometone = null;
-        parameters.voximplantholdtone = null;
 
         switch (request.body.type) {
-            case 'CHATWEB':
+            case "CHATWEB":
                 const webChatData = {
                     applicationId: webChatApplication,
                     name: parameters.description,
-                    status: 'ACTIVO',
-                    type: 'CHAZ',
+                    status: "ACTIVO",
+                    type: "CHAZ",
                     metadata: {
+                        form: service.form ? service.form : null,
                         color: {
-                            chatBackgroundColor: service.color ? service.color.background : '',
-                            chatBorderColor: service.color ? service.color.border : '',
-                            chatHeaderColor: service.color ? service.color.header : '',
-                            messageBotColor: service.color ? service.color.bot : '',
-                            messageClientColor: service.color ? service.color.client : '',
-                            iconscolor: service.color ? service.color.iconscolor : ''
+                            chatBackgroundColor: service.color ? service.color.background : "",
+                            chatBorderColor: service.color ? service.color.border : "",
+                            chatHeaderColor: service.color ? service.color.header : "",
+                            iconscolor: service.color ? service.color.iconscolor : "",
+                            messageBotColor: service.color ? service.color.bot : "",
+                            messageClientColor: service.color ? service.color.client : "",
                         },
                         extra: {
                             abandonendpoint: `${webChatScriptEndpoint}smooch`,
-                            cssbody: service.extra?.customcss || '',
+                            chatTextSize: service.extra?.chatTextSize || 0,
+                            chatTextWeight: service.extra?.chatTextWeight || 0,
+                            cssbody: service.extra?.customcss || "",
                             enableabandon: service.extra ? service.extra.abandonevent : false,
                             enableformhistory: service.extra ? service.extra.formhistory : false,
                             enableidlemessage: service.bubble ? service.bubble.active : false,
-                            headermessage: service.extra ? service.extra.botnametext : '',
+                            headermessage: service.extra ? service.extra.botnametext : "",
+                            iconColorActive: service.extra?.iconColorActive || "",
+                            iconColorDisabled: service.extra?.iconColorDisabled || "",
                             inputalwaysactive: service.extra ? service.extra.persistentinput : false,
-                            jsscript: service.extra ? service.extra.customjs : '',
+                            inputTextSize: service.extra?.inputTextSize || 0,
+                            inputTextWeight: service.extra?.inputTextWeight || 0,
+                            jsscript: service.extra ? service.extra.customjs : "",
                             playalertsound: service.extra ? service.extra.alertsound : false,
                             sendmetadata: service.extra ? service.extra.enablemetadata : false,
                             showchatrestart: service.extra ? service.extra.reloadchat : false,
-                            showmessageheader: service.extra ? service.extra.botnameenabled : false,
                             showlaraigologo: service.extra ? service.extra.poweredby : false,
+                            showmessageheader: service.extra ? service.extra.botnameenabled : false,
                             showplatformlogo: false,
                             uploadaudio: service.extra ? service.extra.uploadaudio : false,
                             uploadfile: service.extra ? service.extra.uploadfile : false,
@@ -1082,63 +1093,56 @@ exports.insertChannel = async (request, response) => {
                             uploadvideo: service.extra ? service.extra.uploadvideo : false,
                             withBorder: service.extra?.withBorder || false,
                             withHour: service.extra?.withHour || false,
-                            iconColorActive: service.extra?.iconColorActive || '',
-                            iconColorDisabled: service.extra?.iconColorDisabled || '',
-                            inputTextSize: service.extra?.inputTextSize || 0,
-                            inputTextWeight: service.extra?.inputTextWeight || 0,
-                            chatTextSize: service.extra?.chatTextSize || 0,
-                            chatTextWeight: service.extra?.chatTextWeight || 0,
                         },
-                        form: service.form ? service.form : null,
                         icons: {
-                            chatBotImage: service.interface ? service.interface.iconbot : '',
-                            chatHeaderImage: service.interface ? service.interface.iconheader : '',
-                            chatIdleImage: service.bubble ? service.bubble.iconbubble : '',
-                            chatOpenImage: service.interface ? service.interface.iconbutton : ''
+                            chatBotImage: service.interface ? service.interface.iconbot : "",
+                            chatHeaderImage: service.interface ? service.interface.iconheader : "",
+                            chatIdleImage: service.bubble ? service.bubble.iconbubble : "",
+                            chatOpenImage: service.interface ? service.interface.iconbutton : "",
                         },
                         personalization: {
-                            headerMessage: service.extra ? service.extra.botnametext : '',
-                            headerSubTitle: service.interface ? service.interface.chatsubtitle : '',
-                            headerTitle: service.interface ? service.interface.chattitle : '',
-                            idleMessage: service.bubble ? service.bubble.messagebubble : ''
-                        }
-                    }
-                }
+                            headerMessage: service.extra ? service.extra.botnametext : "",
+                            headerSubTitle: service.interface ? service.interface.chatsubtitle : "",
+                            headerTitle: service.interface ? service.interface.chattitle : "",
+                            idleMessage: service.bubble ? service.bubble.messagebubble : "",
+                        },
+                    },
+                };
 
                 const requestWebChatCreate = await axiosObservable({
-                    data: webChatData,
-                    method: 'post',
-                    url: `${brokerEndpoint}integrations/save`,
                     _requestid: request._requestid,
+                    data: webChatData,
+                    method: "post",
+                    url: `${brokerEndpoint}integrations/save`,
                 });
 
-                if (typeof requestWebChatCreate.data.id !== 'undefined' && requestWebChatCreate.data.id) {
+                if (typeof requestWebChatCreate.data.id !== "undefined" && requestWebChatCreate.data.id) {
                     const requestWebChatWebhook = await axiosObservable({
+                        _requestid: request._requestid,
+                        method: "post",
+                        url: `${brokerEndpoint}webhooks/save`,
                         data: {
                             description: parameters.description,
                             integration: requestWebChatCreate.data.id,
                             name: parameters.description,
-                            status: 'ACTIVO',
-                            webUrl: `${hookEndpoint}chatweb/webhookasync`
+                            status: "ACTIVO",
+                            webUrl: `${hookEndpoint}chatweb/webhookasync`,
                         },
-                        method: 'post',
-                        url: `${brokerEndpoint}webhooks/save`,
-                        _requestid: request._requestid,
                     });
 
-                    if (typeof requestWebChatWebhook.data.id !== 'undefined' && requestWebChatWebhook.data.id) {
+                    if (typeof requestWebChatWebhook.data.id !== "undefined" && requestWebChatWebhook.data.id) {
                         const requestWebChatPlugin = await axiosObservable({
+                            _requestid: request._requestid,
+                            method: "post",
+                            url: `${brokerEndpoint}plugins/save`,
                             data: {
                                 integration: requestWebChatCreate.data.id,
                                 name: parameters.description,
-                                status: 'ACTIVO'
+                                status: "ACTIVO",
                             },
-                            method: 'post',
-                            url: `${brokerEndpoint}plugins/save`,
-                            _requestid: request._requestid,
                         });
 
-                        if (typeof requestWebChatPlugin.data.id !== 'undefined' && requestWebChatPlugin.data.id) {
+                        if (typeof requestWebChatPlugin.data.id !== "undefined" && requestWebChatPlugin.data.id) {
                             parameters.apikey = requestWebChatPlugin.data.apiKey;
                             parameters.appintegrationid = webChatApplication;
                             parameters.channelparameters = JSON.stringify(webChatData);
@@ -1147,304 +1151,303 @@ exports.insertChannel = async (request, response) => {
                             parameters.communicationchannelsite = requestWebChatCreate.data.id;
                             parameters.integrationid = requestWebChatCreate.data.id;
                             parameters.servicecredentials = JSON.stringify(service);
-                            parameters.type = 'CHAZ';
+                            parameters.type = "CHAZ";
 
-                            const transactionCreateWebChat = await triggerfunctions.executesimpletransaction(method, parameters);
+                            const transactionCreateWebChat = await triggerfunctions.executesimpletransaction(
+                                method,
+                                parameters
+                            );
 
                             if (transactionCreateWebChat instanceof Array) {
-                                await channelfunctions.clearHookCache('ChatWebService', request._requestid);
+                                await channelfunctions.clearHookCache("ChatWebService", request._requestid);
 
                                 return response.json({
                                     integrationid: requestWebChatCreate.data.id,
-                                    success: true
+                                    success: true,
                                 });
-                            }
-                            else {
+                            } else {
                                 return response.status(400).json({
                                     msg: transactionCreateWebChat.code,
-                                    success: false
+                                    success: false,
                                 });
                             }
-                        }
-                        else {
+                        } else {
                             return response.status(400).json({
-                                msg: 'Could not create plugin',
-                                success: false
+                                msg: "Could not create plugin",
+                                success: false,
                             });
                         }
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
-                            msg: 'Could not create webhook',
-                            success: false
+                            msg: "Could not create webhook",
+                            success: false,
                         });
                     }
-                }
-                else {
+                } else {
                     return response.status(400).json({
-                        msg: 'Could not create integration',
-                        success: false
+                        msg: "Could not create integration",
+                        success: false,
                     });
                 }
 
-            case 'FORM':
+            case "FORM":
                 const webChatData1 = {
                     applicationId: webChatApplication,
                     name: parameters.description,
-                    status: 'ACTIVO',
-                    type: 'FORM',
+                    status: "ACTIVO",
+                    type: "FORM",
                     metadata: {
+                        form: service.form ? service.form : null,
                         extra: {
                             ...(service.extra || {}),
                             corpid: request.user.corpid,
                             orgid: request.user.orgid,
                         },
-                        form: service.form ? service.form : null,
-                    }
-                }
+                    },
+                };
 
                 const requestWebChatCreate1 = await axiosObservable({
-                    data: webChatData1,
-                    method: 'post',
-                    url: `${brokerEndpoint}integrations/save`,
                     _requestid: request._requestid,
+                    data: webChatData1,
+                    method: "post",
+                    url: `${brokerEndpoint}integrations/save`,
                 });
 
-                if (typeof requestWebChatCreate1.data.id !== 'undefined' && requestWebChatCreate1.data.id) {
-                    parameters.apikey = '';
+                if (typeof requestWebChatCreate1.data.id !== "undefined" && requestWebChatCreate1.data.id) {
+                    parameters.apikey = "";
                     parameters.appintegrationid = webChatApplication;
                     parameters.channelparameters = JSON.stringify(webChatData1);
-                    parameters.communicationchannelcontact = '';
-                    parameters.communicationchannelowner = '';
+                    parameters.communicationchannelcontact = "";
+                    parameters.communicationchannelowner = "";
                     parameters.communicationchannelsite = requestWebChatCreate1.data.id;
                     parameters.integrationid = requestWebChatCreate1.data.id;
                     parameters.servicecredentials = JSON.stringify(service);
-                    parameters.type = 'FORM';
+                    parameters.type = "FORM";
 
-                    const transactionCreateWebChat = await triggerfunctions.executesimpletransaction(method, parameters);
+                    const transactionCreateWebChat = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionCreateWebChat instanceof Array) {
-                        await channelfunctions.clearHookCache('ChatWebService', request._requestid);
+                        await channelfunctions.clearHookCache("ChatWebService", request._requestid);
 
                         return response.json({
                             integrationid: requestWebChatCreate1.data.id,
-                            success: true
+                            success: true,
                         });
                     } else {
                         return response.status(400).json({
-                            msg: 'Could not create integration',
-                            success: false
+                            msg: "Could not create integration",
+                            success: false,
                         });
                     }
-                }
-                else {
+                } else {
                     return response.status(400).json({
-                        msg: 'Could not create integration',
-                        success: false
+                        msg: "Could not create integration",
+                        success: false,
                     });
                 }
 
-            case 'FACEBOOKWORPLACE':
+            case "FACEBOOKWORPLACE":
                 const requestTokenWorkplace = await axiosObservable({
-                    method: 'get',
-                    url: `https://graph.workplace.com/me?access_token=${service.accesstoken}`,
                     _requestid: request._requestid,
+                    method: "get",
+                    url: `https://graph.workplace.com/me?access_token=${service.accesstoken}`,
                 });
 
-                if (requestTokenWorkplace.status = 200) {
-
-                    var serviceCredentials = {
+                if (requestTokenWorkplace.status === 200) {
+                    let serviceCredentials = {
                         accessToken: service.accesstoken,
-                        endpoint: facebookEndpoint,
                         appid: service.appid || null,
                         appsecret: service.appsecret || null,
-                        serviceType: 'WORKPLACE',
-                        siteId: requestTokenWorkplace.data.id
+                        endpoint: facebookEndpoint,
+                        serviceType: "WORKPLACE",
+                        siteId: requestTokenWorkplace.data.id,
                     };
 
-                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
-                    parameters.type = 'FBWP';
                     parameters.communicationchannelowner = requestTokenWorkplace.data.id;
                     parameters.communicationchannelsite = requestTokenWorkplace.data.id;
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.type = "FBWP";
 
-                    const transactionCreateWorkplace = await triggerfunctions.executesimpletransaction(method, parameters);
+                    const transactionCreateWorkplace = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionCreateWorkplace instanceof Array) {
-                        await channelfunctions.clearHookCache('FacebookService', request._requestid);
+                        await channelfunctions.clearHookCache("FacebookService", request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
                         });
-
-                    }
-
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionCreateWorkplace.code,
-                            success: false
+                            success: false,
                         });
                     }
                 } else {
                     return response.status(400).json({
                         msg: requestTokenWorkplace.data.error.message,
-                        success: false
+                        success: false,
                     });
                 }
-                
+
             case "FBWM":
                 const requestTokenWorkplaceWall = await axiosObservable({
-                    method: 'get',
-                    url: `https://graph.workplace.com/me?access_token=${service.accesstoken}`,
                     _requestid: request._requestid,
+                    method: "get",
+                    url: `https://graph.workplace.com/me?access_token=${service.accesstoken}`,
                 });
 
-                if (requestTokenWorkplaceWall.status = 200) {
-
-                    var serviceCredentials = {
+                if (requestTokenWorkplaceWall.status === 200) {
+                    let serviceCredentials = {
                         accessToken: service.accesstoken,
-                        endpoint: facebookEndpoint,
                         appid: service.appid || null,
                         appsecret: service.appsecret || null,
-                        serviceType: 'WORKPLACE',
-                        siteId: requestTokenWorkplaceWall.data.id
+                        endpoint: facebookEndpoint,
+                        serviceType: "WORKPLACE",
+                        siteId: requestTokenWorkplaceWall.data.id,
                     };
 
-                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
-
-                    parameters.type = 'FBWM';
                     parameters.communicationchannelowner = requestTokenWorkplaceWall.data.id;
                     parameters.communicationchannelsite = service.groupid;
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.type = "FBWM";
 
-                    const transactionCreateWorkplace = await triggerfunctions.executesimpletransaction(method, parameters);
+                    const transactionCreateWorkplace = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionCreateWorkplace instanceof Array) {
-                        await channelfunctions.clearHookCache('FacebookService', request._requestid);
+                        await channelfunctions.clearHookCache("FacebookService", request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
                         });
-
-                    }
-
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionCreateWorkplace.code,
-                            success: false
+                            success: false,
                         });
                     }
                 } else {
                     return response.status(400).json({
                         msg: requestTokenWorkplaceWall.data.error.message,
-                        success: false
+                        success: false,
                     });
                 }
 
-            case 'FACEBOOK':
-            case 'INSTAGRAM':
-            case 'INSTAMESSENGER':
-            case 'MESSENGER':
-            case 'FBLD':
-                    const requestGetLongToken = await axiosObservable({
-                        data: {
-                            accessToken: service.accesstoken,
-                            appId: service.appid,
-                            linkType: 'GENERATELONGTOKEN'
-                        },
-                        method: 'post',
-                        url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
-                        _requestid: request._requestid,
-                    });
-                    if (requestGetLongToken.data.success) {
-                        let businessId = null;
-                        let channelLinkService = null;
-                        let channelType = null;
-                        let serviceType = null;
-    
-                        switch (request.body.type) {
-                            case 'FACEBOOK':
-                                channelLinkService = 'WALLADD';
-                                channelType = 'FBWA';
-                                serviceType = 'WALL';
-                                break;
-    
-                            case 'INSTAGRAM':
-                                channelLinkService = 'INSTAGRAMADD';
-                                channelType = 'INST';
-                                serviceType = 'INSTAGRAM';
-                                break;
-    
-                            case 'INSTAMESSENGER':
-                                channelLinkService = 'INSTAGRAMADD';
-                                channelType = 'INDM';
-                                serviceType = 'INSTAGRAM';
-                                break;
-    
-                            case 'MESSENGER':
-                                channelLinkService = 'MESSENGERADD';
-                                channelType = 'FBDM';
-                                serviceType = 'MESSENGER';
-                                break;
-                            case 'FBLD':
-                                    channelLinkService = 'WALLADD';
-                                    channelType = 'FBLD';
-                                    serviceType = 'FBLD';
-                                break;
-                        }
-    
-                        if (request.body.type === 'INSTAGRAM' || request.body.type === 'INSTAMESSENGER') {
-                            const requestGetBusiness = await axiosObservable({
-                                data: {
-                                    accessToken: service.accesstoken,
-                                    linkType: 'GETBUSINESS',
-                                    siteId: service.siteid
-                                },
-                                method: 'post',
-                                url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
-                                _requestid: request._requestid,
-                            });
-    
-                            if (requestGetBusiness.data.success) {
-                                businessId = requestGetBusiness.data.businessId;
-                            }
-                            else {
-                                return response.status(400).json({
-                                    msg: 'No Instagram account',
-                                    success: false
-                                });
-                            }
-                        }
-    
-                        const requestCreateFacebook = await axiosObservable({
-                            data: {
-                                linkType: channelLinkService,
-                                accessToken: requestGetLongToken.data.longToken,
-                                siteId: service.siteid
-                            },
-                            method: 'post',
-                            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
+            case "FACEBOOK":
+            case "FBLD":
+            case "INSTAGRAM":
+            case "INSTAMESSENGER":
+            case "MESSENGER":
+                const requestGetLongToken = await axiosObservable({
+                    _requestid: request._requestid,
+                    method: "post",
+                    url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
+                    data: {
+                        accessToken: service.accesstoken,
+                        appId: service.appid,
+                        linkType: "GENERATELONGTOKEN",
+                    },
+                });
+
+                if (requestGetLongToken.data.success) {
+                    let businessId = null;
+                    let channelLinkService = null;
+                    let channelType = null;
+                    let serviceType = null;
+
+                    switch (request.body.type) {
+                        case "FACEBOOK":
+                            channelLinkService = "WALLADD";
+                            channelType = "FBWA";
+                            serviceType = "WALL";
+                            break;
+
+                        case "FBLD":
+                            channelLinkService = "WALLADD";
+                            channelType = "FBLD";
+                            serviceType = "FBLD";
+                            break;
+
+                        case "INSTAGRAM":
+                            channelLinkService = "INSTAGRAMADD";
+                            channelType = "INST";
+                            serviceType = "INSTAGRAM";
+                            break;
+
+                        case "INSTAMESSENGER":
+                            channelLinkService = "INSTAGRAMADD";
+                            channelType = "INDM";
+                            serviceType = "INSTAGRAM";
+                            break;
+
+                        case "MESSENGER":
+                            channelLinkService = "MESSENGERADD";
+                            channelType = "FBDM";
+                            serviceType = "MESSENGER";
+                            break;
+                    }
+
+                    if (request.body.type === "INSTAGRAM" || request.body.type === "INSTAMESSENGER") {
+                        const requestGetBusiness = await axiosObservable({
                             _requestid: request._requestid,
+                            method: "post",
+                            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
+                            data: {
+                                accessToken: service.accesstoken,
+                                linkType: "GETBUSINESS",
+                                siteId: service.siteid,
+                            },
                         });
+
+                        if (requestGetBusiness.data.success) {
+                            businessId = requestGetBusiness.data.businessId;
+                        } else {
+                            return response.status(400).json({
+                                msg: "No Instagram account",
+                                success: false,
+                            });
+                        }
+                    }
+
+                    const requestCreateFacebook = await axiosObservable({
+                        _requestid: request._requestid,
+                        method: "post",
+                        url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
+                        data: {
+                            linkType: channelLinkService,
+                            accessToken: requestGetLongToken.data.longToken,
+                            siteId: service.siteid,
+                        },
+                    });
 
                     if (requestCreateFacebook.data.success) {
                         let serviceCredentials = {
                             accessToken: requestGetLongToken.data.longToken,
                             endpoint: facebookEndpoint,
                             serviceType: serviceType,
-                            siteId: service.siteid
+                            siteId: service.siteid,
                         };
 
-                        if (request.body.type === 'FBLD') {
+                        if (request.body.type === "FBLD") {
                             serviceCredentials = {
                                 accessToken: requestGetLongToken.data.longToken,
+                                corpid: request.user.corpid,
                                 endpoint: facebookEndpoint,
+                                org: request.user.orgid,
                                 serviceType: serviceType,
                                 siteId: service.siteid,
-                                corpid: request.user.corpid,
-                                org: request.user.orgid
                             };
                         }
 
-                        if (typeof businessId !== 'undefined' && businessId) {
+                        if (typeof businessId !== "undefined" && businessId) {
                             parameters.communicationchannelowner = service.siteid;
                             parameters.communicationchannelsite = businessId;
 
@@ -1454,46 +1457,46 @@ exports.insertChannel = async (request, response) => {
                         parameters.servicecredentials = JSON.stringify(serviceCredentials);
                         parameters.type = channelType;
 
-                        const transactionCreateFacebook = await triggerfunctions.executesimpletransaction(method, parameters);
+                        const transactionCreateFacebook = await triggerfunctions.executesimpletransaction(
+                            method,
+                            parameters
+                        );
 
                         if (transactionCreateFacebook instanceof Array) {
-                            await channelfunctions.clearHookCache('FacebookService', request._requestid);
+                            await channelfunctions.clearHookCache("FacebookService", request._requestid);
 
                             return response.json({
-                                success: true
+                                success: true,
                             });
-                        }
-                        else {
+                        } else {
                             return response.status(400).json({
                                 msg: transactionCreateFacebook.code,
-                                success: false
+                                success: false,
                             });
                         }
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: requestCreateFacebook.data.operationMessage,
-                            success: false
+                            success: false,
                         });
                     }
-                }
-                else {
+                } else {
                     return response.status(400).json({
                         msg: requestGetLongToken.data.operationMessage,
-                        success: false
+                        success: false,
                     });
                 }
 
-            case 'SMOOCHANDROID':
-            case 'SMOOCHIOS':
+            case "SMOOCHANDROID":
+            case "SMOOCHIOS":
                 const requestCreateSmooch = await axiosObservable({
+                    _requestid: request._requestid,
+                    method: "post",
+                    url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
                     data: {
-                        linkType: request.body.type === 'SMOOCHANDROID' ? 'ANDROIDADD' : 'IOSADD',
+                        linkType: request.body.type === "SMOOCHANDROID" ? "ANDROIDADD" : "IOSADD",
                         name: parameters.description,
                     },
-                    method: 'post',
-                    url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
-                    _requestid: request._requestid,
                 });
 
                 if (requestCreateSmooch.data.success) {
@@ -1503,52 +1506,52 @@ exports.insertChannel = async (request, response) => {
                         appId: requestCreateSmooch.data.applicationId,
                         endpoint: smoochEndpoint,
                         integrationId: requestCreateSmooch.data.integrationId,
-                        version: smoochVersion
+                        version: smoochVersion,
                     };
 
                     parameters.communicationchannelowner = requestCreateSmooch.data.applicationId;
                     parameters.communicationchannelsite = requestCreateSmooch.data.applicationId;
                     parameters.integrationid = requestCreateSmooch.data.integrationId;
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
-                    parameters.type = (request.body.type === 'SMOOCHANDROID' ? 'ANDR' : 'APPL');
+                    parameters.type = request.body.type === "SMOOCHANDROID" ? "ANDR" : "APPL";
 
                     const transactionCreateSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateSmooch instanceof Array) {
-                        await channelfunctions.clearHookCache('SmoochService', request._requestid);
+                        await channelfunctions.clearHookCache("SmoochService", request._requestid);
 
                         return response.json({
                             applicationId: requestCreateSmooch.data.applicationId,
                             integrationId: requestCreateSmooch.data.integrationId,
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionCreateSmooch.code,
-                            success: false
+                            success: false,
                         });
                     }
-                }
-                else {
+                } else {
                     return response.status(400).json({
                         msg: requestCreateSmooch.data.operationMessage,
-                        success: false
+                        success: false,
                     });
                 }
 
-            case 'INFOBIPEMAIL':
-            case 'INFOBIPSMS':
+            case "INFOBIPEMAIL":
+            case "INFOBIPSMS":
                 if (service) {
                     let serviceCredentials = {
                         apiKey: service.apikey,
-                        callbackEndpoint: `${hookEndpoint}infobip/${request.body.type === 'INFOBIPEMAIL' ? 'mail' : ''}webhookasync`,
-                        callbackType: 'application/json',
+                        callbackType: "application/json",
                         endpoint: service.url,
                         number: service.emittername,
+                        callbackEndpoint: `${hookEndpoint}infobip/${
+                            request.body.type === "INFOBIPEMAIL" ? "mail" : ""
+                        }webhookasync`,
                     };
 
-                    if (request.body.type === 'INFOBIPEMAIL') {
+                    if (request.body.type === "INFOBIPEMAIL") {
                         serviceCredentials.validateMail = false;
                     }
 
@@ -1556,471 +1559,676 @@ exports.insertChannel = async (request, response) => {
                     parameters.communicationchannelsite = service.emittername;
                     parameters.integrationid = service.emittername;
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
-                    parameters.type = (request.body.type === 'INFOBIPEMAIL' ? 'MAII' : 'SMSI');
+                    parameters.type = request.body.type === "INFOBIPEMAIL" ? "MAII" : "SMSI";
 
-                    const transactionCreateInfobip = await triggerfunctions.executesimpletransaction(method, parameters);
+                    const transactionCreateInfobip = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionCreateInfobip instanceof Array) {
-                        if (request.body.type === 'INFOBIPEMAIL') {
-                            await channelfunctions.clearHookCache('InfobipMailService', request._requestid);
-                        }
-                        else {
-                            await channelfunctions.clearHookCache('InfobipService', request._requestid);
+                        if (request.body.type === "INFOBIPEMAIL") {
+                            await channelfunctions.clearHookCache("InfobipMailService", request._requestid);
+                        } else {
+                            await channelfunctions.clearHookCache("InfobipService", request._requestid);
                         }
 
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionCreateInfobip.code,
-                            success: false
+                            success: false,
                         });
                     }
                 }
                 break;
 
-            case 'IMAP':
+            case "IMAP":
                 if (service) {
                     parameters.communicationchannelowner = service.imapusername;
+                    parameters.communicationchannelsite = `${service.imapusername}|IMAP|`;
                     parameters.integrationid = service.imapusername;
                     parameters.servicecredentials = JSON.stringify(service);
-                    parameters.status = 'ACTIVO';
-                    parameters.communicationchannelsite = `${service.imapusername}|IMAP|`;
-                    parameters.type = 'MAIL';
+                    parameters.status = "ACTIVO";
+                    parameters.type = "MAIL";
 
                     let extraData = {
-                        username: service.imapusername || '',
-                        password: service.imappassword || '',
-                        incomingEndpoint: service.imapincomingendpoint || '',
+                        accessToken: service.imapaccesstoken || "",
+                        host: service.imaphost || "",
+                        incomingEndpoint: service.imapincomingendpoint || "",
                         incomingPort: parseInt(service.imapincomingport || 0),
-                        accessToken: service.imapaccesstoken || '',
-                        host: service.imaphost || '',
+                        password: service.imappassword || "",
                         port: parseInt(service.imapport || 0),
-                        useSsl: service.imapssl === 'SSL' ? true : false,
-                        useStartTls: service.imapssl === 'STARTTLS' ? true : false,
+                        username: service.imapusername || "",
+                        useSsl: service.imapssl === "SSL",
+                        useStartTls: service.imapssl === "STARTTLS",
                     };
 
-                    await channelfunctions.serviceTokenUpdate(service.imapusername, '', '', JSON.stringify(extraData), 'IMAP', 'ACTIVO', request?.user?.usr, 1);
+                    await channelfunctions.serviceTokenUpdate(
+                        service.imapusername,
+                        "",
+                        "",
+                        JSON.stringify(extraData),
+                        "IMAP",
+                        "ACTIVO",
+                        request?.user?.usr,
+                        1
+                    );
 
-                    await channelfunctions.serviceSubscriptionUpdate(service.imapusername, service.imapusername, JSON.stringify(extraData), 'MAIL-IMAP', 'ACTIVO', request?.user?.usr, `${hookEndpoint}mail/imapwebhookasync`, 2);
+                    await channelfunctions.serviceSubscriptionUpdate(
+                        service.imapusername,
+                        service.imapusername,
+                        JSON.stringify(extraData),
+                        "MAIL-IMAP",
+                        "ACTIVO",
+                        request?.user?.usr,
+                        `${hookEndpoint}mail/imapwebhookasync`,
+                        2
+                    );
 
-                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionCreateGeneric.code,
-                            success: false
+                            success: false,
                         });
                     }
                 }
                 break;
 
-            case 'GMAIL':
+            case "GMAIL":
                 if (service) {
                     let informationtoken = jwt.decode(service.idtoken);
 
                     parameters.communicationchannelowner = informationtoken.name;
+                    parameters.communicationchannelsite = informationtoken.email;
                     parameters.integrationid = informationtoken.email;
                     parameters.servicecredentials = JSON.stringify(service);
-                    parameters.status = 'ACTIVO';
-                    parameters.communicationchannelsite = informationtoken.email;
-                    parameters.type = 'MAIL';
+                    parameters.status = "ACTIVO";
+                    parameters.type = "MAIL";
 
-                    await channelfunctions.serviceTokenUpdate(informationtoken.email, service.accesstoken, service.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', request?.user?.usr, 50);
+                    await channelfunctions.serviceTokenUpdate(
+                        informationtoken.email,
+                        service.accesstoken,
+                        service.refreshtoken,
+                        JSON.stringify({
+                            clientId: googleClientId,
+                            clientSecret: googleClientSecret,
+                            topicName: googleTopicName,
+                        }),
+                        "GOOGLE",
+                        "ACTIVO",
+                        request?.user?.usr,
+                        50
+                    );
 
-                    await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, informationtoken.email, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-GMAIL', 'ACTIVO', request?.user?.usr, `${hookEndpoint}mail/gmailwebhookasync`, 2880);
+                    await channelfunctions.serviceSubscriptionUpdate(
+                        informationtoken.email,
+                        informationtoken.email,
+                        JSON.stringify({
+                            clientId: googleClientId,
+                            clientSecret: googleClientSecret,
+                            topicName: googleTopicName,
+                        }),
+                        "GOOGLE-GMAIL",
+                        "ACTIVO",
+                        request?.user?.usr,
+                        `${hookEndpoint}mail/gmailwebhookasync`,
+                        2880
+                    );
 
-                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionCreateGeneric.code,
-                            success: false
+                            success: false,
                         });
                     }
                 }
                 break;
 
-            case 'BUSINESS':
+            case "BUSINESS":
                 if (service) {
-                    var informationtoken = jwt.decode(service.idtoken);
+                    let informationtoken = jwt.decode(service.idtoken);
 
                     parameters.communicationchannelowner = informationtoken.name;
                     parameters.communicationchannelsite = informationtoken.email;
                     parameters.integrationid = informationtoken.email;
                     parameters.servicecredentials = JSON.stringify(service);
-                    parameters.status = 'ACTIVO';
-                    parameters.type = 'GOBU';
+                    parameters.status = "ACTIVO";
+                    parameters.type = "GOBU";
 
-                    await channelfunctions.serviceTokenUpdate(informationtoken.email, service.accesstoken, service.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', request?.user?.usr, 50);
+                    await channelfunctions.serviceTokenUpdate(
+                        informationtoken.email,
+                        service.accesstoken,
+                        service.refreshtoken,
+                        JSON.stringify({
+                            clientId: googleClientId,
+                            clientSecret: googleClientSecret,
+                            topicName: googleTopicName,
+                        }),
+                        "GOOGLE",
+                        "ACTIVO",
+                        request?.user?.usr,
+                        50
+                    );
 
-                    await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, informationtoken.email, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-BUSINESS', 'ACTIVO', request?.user?.usr, `${hookEndpoint}business/webhookasync`, 2);
+                    await channelfunctions.serviceSubscriptionUpdate(
+                        informationtoken.email,
+                        informationtoken.email,
+                        JSON.stringify({
+                            clientId: googleClientId,
+                            clientSecret: googleClientSecret,
+                            topicName: googleTopicName,
+                        }),
+                        "GOOGLE-BUSINESS",
+                        "ACTIVO",
+                        request?.user?.usr,
+                        `${hookEndpoint}business/webhookasync`,
+                        2
+                    );
 
-                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionCreateGeneric.code,
-                            success: false
+                            success: false,
                         });
                     }
                 }
                 break;
 
-            case 'BLOGGER':
-            case 'YOUTUBE':
+            case "BLOGGER":
+            case "YOUTUBE":
                 if (service) {
                     let informationtoken = jwt.decode(service.idtoken);
 
                     parameters.communicationchannelowner = informationtoken.name;
                     parameters.integrationid = service.channel;
                     parameters.servicecredentials = JSON.stringify(service);
-                    parameters.status = 'ACTIVO';
+                    parameters.status = "ACTIVO";
 
-                    await channelfunctions.serviceTokenUpdate(informationtoken.email, service.accesstoken, service.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', request?.user?.usr, 50);
+                    await channelfunctions.serviceTokenUpdate(
+                        informationtoken.email,
+                        service.accesstoken,
+                        service.refreshtoken,
+                        JSON.stringify({
+                            clientId: googleClientId,
+                            clientSecret: googleClientSecret,
+                            topicName: googleTopicName,
+                        }),
+                        "GOOGLE",
+                        "ACTIVO",
+                        request?.user?.usr,
+                        50
+                    );
 
                     switch (request.body.type) {
-                        case 'BLOGGER':
+                        case "BLOGGER":
                             parameters.communicationchannelsite = `${informationtoken.email}&%BLOG%&${service.channel}`;
-                            parameters.type = 'BLOG';
+                            parameters.type = "BLOG";
 
-                            await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, service.channel, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-BLOGGER', 'ACTIVO', request?.user?.usr, `${hookEndpoint}blogger/webhookasync`, 2);
+                            await channelfunctions.serviceSubscriptionUpdate(
+                                informationtoken.email,
+                                service.channel,
+                                JSON.stringify({
+                                    clientId: googleClientId,
+                                    clientSecret: googleClientSecret,
+                                    topicName: googleTopicName,
+                                }),
+                                "GOOGLE-BLOGGER",
+                                "ACTIVO",
+                                request?.user?.usr,
+                                `${hookEndpoint}blogger/webhookasync`,
+                                2
+                            );
                             break;
 
-                        case 'YOUTUBE':
+                        case "YOUTUBE":
                             parameters.communicationchannelsite = `${informationtoken.email}&%YOUT%&${service.channel}`;
-                            parameters.type = 'YOUT';
+                            parameters.type = "YOUT";
 
-                            await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, service.channel, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-YOUTUBE', 'ACTIVO', request?.user?.usr, `${hookEndpoint}youtube/webhookasync`, 2);
+                            await channelfunctions.serviceSubscriptionUpdate(
+                                informationtoken.email,
+                                service.channel,
+                                JSON.stringify({
+                                    clientId: googleClientId,
+                                    clientSecret: googleClientSecret,
+                                    topicName: googleTopicName,
+                                }),
+                                "GOOGLE-YOUTUBE",
+                                "ACTIVO",
+                                request?.user?.usr,
+                                `${hookEndpoint}youtube/webhookasync`,
+                                2
+                            );
                             break;
                     }
 
-                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionCreateGeneric.code,
-                            success: false
+                            success: false,
                         });
                     }
                 }
                 break;
 
-            case 'AYRSHARE-TIKTOK':
+            case "AYRSHARE-TIKTOK":
                 if (service) {
                     const requestCreateAyrshare = await axiosObservable({
+                        _requestid: request._requestid,
+                        method: "post",
+                        url: `${bridgeEndpoint}processlaraigo/ayrshare/manageayrsharelink`,
                         data: {
                             accessToken: service.accesstoken,
                             integrationType: "TIKTOK",
                             linkType: "CHECKINTEGRATION",
                         },
-                        method: 'post',
-                        url: `${bridgeEndpoint}processlaraigo/ayrshare/manageayrsharelink`,
-                        _requestid: request._requestid,
                     });
 
                     if (requestCreateAyrshare.data.success) {
-                        var serviceCredentials = {
+                        let serviceCredentials = {
+                            accessToken: service.accesstoken,
                             endpoint: ayrshareEndpoint,
                             username: requestCreateAyrshare.data.username,
-                            accessToken: service.accesstoken,
                         };
 
                         parameters.communicationchannelowner = requestCreateAyrshare.data.username;
                         parameters.communicationchannelsite = requestCreateAyrshare.data.username;
                         parameters.integrationid = requestCreateAyrshare.data.username;
                         parameters.servicecredentials = JSON.stringify(serviceCredentials);
-                        parameters.status = 'ACTIVO';
-                        parameters.type = 'TKTA';
+                        parameters.status = "ACTIVO";
+                        parameters.type = "TKTA";
 
-                        await channelfunctions.serviceSubscriptionUpdate(requestCreateAyrshare.data.username, requestCreateAyrshare.data.username, JSON.stringify(serviceCredentials), 'AYRSHARE-TIKTOK', 'ACTIVO', request?.user?.usr, `${hookEndpoint}ayrshare/webhookasync`, 6);
+                        await channelfunctions.serviceSubscriptionUpdate(
+                            requestCreateAyrshare.data.username,
+                            requestCreateAyrshare.data.username,
+                            JSON.stringify(serviceCredentials),
+                            "AYRSHARE-TIKTOK",
+                            "ACTIVO",
+                            request?.user?.usr,
+                            `${hookEndpoint}ayrshare/webhookasync`,
+                            6
+                        );
 
-                        const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+                        const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(
+                            method,
+                            parameters
+                        );
 
                         if (transactionCreateGeneric instanceof Array) {
                             return response.json({
-                                success: true
+                                success: true,
                             });
-                        }
-                        else {
+                        } else {
                             return response.status(400).json({
                                 msg: transactionCreateGeneric.code,
-                                success: false
+                                success: false,
                             });
                         }
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: requestCreateAyrshare.data.operationMessage,
-                            success: false
+                            success: false,
                         });
                     }
                 }
                 break;
 
-            case 'TIKAPI-TIKTOK':
+            case "TIKAPI-TIKTOK":
                 if (service) {
                     const requestCreateTikApi = await axiosObservable({
+                        _requestid: request._requestid,
+                        method: "post",
+                        url: `${bridgeEndpoint}processlaraigo/tikapi/managetikapilink`,
                         data: {
-                            apiKey: service.apikey,
                             accountKey: service.accountkey,
+                            apiKey: service.apikey,
                             linkType: "CHECKINTEGRATION",
                         },
-                        method: 'post',
-                        url: `${bridgeEndpoint}processlaraigo/tikapi/managetikapilink`,
-                        _requestid: request._requestid,
                     });
 
                     if (requestCreateTikApi.data.success) {
-                        var serviceCredentials = {
+                        let serviceCredentials = {
+                            accountKey: service.accountkey,
+                            apiKey: service.apikey,
                             endpoint: tikApiEndpoint,
                             username: requestCreateTikApi.data.username,
-                            apiKey: service.apikey,
-                            accountKey: service.accountkey,
                         };
 
                         parameters.communicationchannelowner = requestCreateTikApi.data.username;
                         parameters.communicationchannelsite = requestCreateTikApi.data.username;
                         parameters.integrationid = requestCreateTikApi.data.username;
                         parameters.servicecredentials = JSON.stringify(serviceCredentials);
-                        parameters.status = 'ACTIVO';
-                        parameters.type = 'TKTT';
+                        parameters.status = "ACTIVO";
+                        parameters.type = "TKTT";
 
-                        await channelfunctions.serviceSubscriptionUpdate(requestCreateTikApi.data.username, requestCreateTikApi.data.username, JSON.stringify(serviceCredentials), 'TIKAPI-TIKTOK', 'ACTIVO', request?.user?.usr, `${hookEndpoint}tikapi/webhookasync`, 4);
+                        await channelfunctions.serviceSubscriptionUpdate(
+                            requestCreateTikApi.data.username,
+                            requestCreateTikApi.data.username,
+                            JSON.stringify(serviceCredentials),
+                            "TIKAPI-TIKTOK",
+                            "ACTIVO",
+                            request?.user?.usr,
+                            `${hookEndpoint}tikapi/webhookasync`,
+                            4
+                        );
 
-                        const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+                        const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(
+                            method,
+                            parameters
+                        );
 
                         if (transactionCreateGeneric instanceof Array) {
                             return response.json({
-                                success: true
+                                success: true,
                             });
-                        }
-                        else {
+                        } else {
                             return response.status(400).json({
                                 msg: transactionCreateGeneric.code,
-                                success: false
+                                success: false,
                             });
                         }
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: requestCreateTikApi.data.operationMessage,
-                            success: false
+                            success: false,
                         });
                     }
                 }
                 break;
 
-            case 'PLAYSTORE':
+            case "PLAYSTORE":
                 if (service) {
                     parameters.communicationchannelowner = service.mail;
                     parameters.communicationchannelsite = `${service.mail}|AC|${service.appcode}`;
                     parameters.integrationid = service.appcode;
                     parameters.servicecredentials = JSON.stringify(service);
-                    parameters.status = 'ACTIVO';
-                    parameters.type = 'PLAY';
+                    parameters.status = "ACTIVO";
+                    parameters.type = "PLAY";
 
-                    await channelfunctions.serviceTokenUpdate(service.mail, '', '', JSON.stringify(service), 'PLAYSTORE', 'ACTIVO', request?.user?.usr, 50);
+                    await channelfunctions.serviceTokenUpdate(
+                        service.mail,
+                        "",
+                        "",
+                        JSON.stringify(service),
+                        "PLAYSTORE",
+                        "ACTIVO",
+                        request?.user?.usr,
+                        50
+                    );
 
-                    await channelfunctions.serviceSubscriptionUpdate(service.mail, service.appcode, JSON.stringify(service), 'GOOGLE-PLAYSTORE', 'ACTIVO', request?.user?.usr, `${hookEndpoint}appstore/playstorewebhookasync`, 2);
+                    await channelfunctions.serviceSubscriptionUpdate(
+                        service.mail,
+                        service.appcode,
+                        JSON.stringify(service),
+                        "GOOGLE-PLAYSTORE",
+                        "ACTIVO",
+                        request?.user?.usr,
+                        `${hookEndpoint}appstore/playstorewebhookasync`,
+                        2
+                    );
 
-                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionCreateGeneric.code,
-                            success: false
+                            success: false,
                         });
                     }
                 }
                 break;
 
-            case 'LINKEDIN':
+            case "LINKEDIN":
                 if (service) {
                     parameters.communicationchannelowner = service.clientid;
                     parameters.communicationchannelsite = service.clientid;
                     parameters.integrationid = `urn:li:organization:${service.organizationid}`;
+                    parameters.status = "ACTIVO";
+                    parameters.type = "LNKD";
+
                     parameters.servicecredentials = JSON.stringify({
                         clientId: service.clientid,
                         clientSecret: service.clientsecret,
                         endpoint: linkedinEndpoint,
                         organizationId: `urn:li:organization:${service.organizationid}`,
                     });
-                    parameters.status = 'ACTIVO';
-                    parameters.type = 'LNKD';
 
-                    await channelfunctions.serviceTokenUpdate(service.clientid, service.accesstoken, service.refreshtoken, JSON.stringify({ clientId: service.clientid, clientSecret: service.clientsecret, endpoint: linkedinTokenEndpoint }), 'LINKEDIN', 'ACTIVO', request?.user?.usr, 1400);
+                    await channelfunctions.serviceTokenUpdate(
+                        service.clientid,
+                        service.accesstoken,
+                        service.refreshtoken,
+                        JSON.stringify({
+                            clientId: service.clientid,
+                            clientSecret: service.clientsecret,
+                            endpoint: linkedinTokenEndpoint,
+                        }),
+                        "LINKEDIN",
+                        "ACTIVO",
+                        request?.user?.usr,
+                        1400
+                    );
 
-                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionCreateGeneric.code,
-                            success: false
+                            success: false,
                         });
                     }
                 }
                 break;
 
-            case 'MICROSOFTTEAMS':
-            case 'TIKTOK':
+            case "MICROSOFTTEAMS":
+            case "TIKTOK":
                 if (service) {
                     parameters.communicationchannelowner = service.account;
                     parameters.communicationchannelsite = service.account;
                     parameters.integrationid = service.account;
                     parameters.servicecredentials = JSON.stringify(service);
-                    parameters.status = 'PENDIENTE';
+                    parameters.status = "PENDIENTE";
 
                     switch (request.body.type) {
-                        case 'LINKEDIN':
-                            parameters.type = 'LNKD';
+                        case "LINKEDIN":
+                            parameters.type = "LNKD";
                             break;
 
-                        case 'MICROSOFTTEAMS':
-                            parameters.type = 'TEAM';
+                        case "MICROSOFTTEAMS":
+                            parameters.type = "TEAM";
                             break;
 
-                        case 'TIKTOK':
-                            parameters.type = 'TKTK';
+                        case "TIKTOK":
+                            parameters.type = "TKTK";
                             break;
                     }
 
-                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionCreateGeneric.code,
-                            success: false
+                            success: false,
                         });
                     }
                 }
                 break;
 
-            case 'APPSTORE':
+            case "APPSTORE":
                 if (service) {
                     parameters.communicationchannelowner = service.keyid;
                     parameters.communicationchannelsite = service.issuerid;
                     parameters.integrationid = service.issuerid;
                     parameters.servicecredentials = JSON.stringify(service);
-                    parameters.status = 'ACTIVO';
-                    parameters.type = 'APPS';
+                    parameters.status = "ACTIVO";
+                    parameters.type = "APPS";
 
-                    await channelfunctions.serviceTokenUpdate(service.issuerid, '', '', JSON.stringify({ issuerId: service.issuerid, keyId: service.keyid, secretKey: service.secretkey }), 'APPSTORE', 'ACTIVO', request?.user?.usr, 15);
+                    await channelfunctions.serviceTokenUpdate(
+                        service.issuerid,
+                        "",
+                        "",
+                        JSON.stringify({
+                            issuerId: service.issuerid,
+                            keyId: service.keyid,
+                            secretKey: service.secretkey,
+                        }),
+                        "APPSTORE",
+                        "ACTIVO",
+                        request?.user?.usr,
+                        15
+                    );
 
-                    await channelfunctions.serviceSubscriptionUpdate(service.issuerid, service.keyid, JSON.stringify({ issuerId: service.issuerid, keyId: service.keyid, secretKey: service.secretkey }), 'APPLE-APPSTORE', 'ACTIVO', request?.user?.usr, `${hookEndpoint}appstore/appstorewebhookasync`, 2);
+                    await channelfunctions.serviceSubscriptionUpdate(
+                        service.issuerid,
+                        service.keyid,
+                        JSON.stringify({
+                            issuerId: service.issuerid,
+                            keyId: service.keyid,
+                            secretKey: service.secretkey,
+                        }),
+                        "APPLE-APPSTORE",
+                        "ACTIVO",
+                        request?.user?.usr,
+                        `${hookEndpoint}appstore/appstorewebhookasync`,
+                        2
+                    );
 
-                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(method, parameters);
+                    const transactionCreateGeneric = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionCreateGeneric.code,
-                            success: false
+                            success: false,
                         });
                     }
                 }
                 break;
 
-            case 'TELEGRAM':
+            case "TELEGRAM":
                 const requestCreateTelegram = await axiosObservable({
+                    _requestid: request._requestid,
+                    method: "post",
+                    url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`,
                     data: {
                         accessToken: service.accesstoken,
-                        linkType: 'TELEGRAMADD'
+                        linkType: "TELEGRAMADD",
                     },
-                    method: 'post',
-                    url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`,
-                    _requestid: request._requestid,
                 });
 
                 if (requestCreateTelegram.data.success) {
                     let serviceCredentials = {
                         bot: requestCreateTelegram.data.botName,
                         endpoint: telegramEndpoint,
-                        token: service.accesstoken
+                        token: service.accesstoken,
                     };
 
                     parameters.communicationchannelsite = requestCreateTelegram.data.botName;
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
-                    parameters.type = 'TELE';
+                    parameters.type = "TELE";
 
-                    const transactionCreateTelegram = await triggerfunctions.executesimpletransaction(method, parameters);
+                    const transactionCreateTelegram = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionCreateTelegram instanceof Array) {
-                        await channelfunctions.clearHookCache('TelegramService', request._requestid);
+                        await channelfunctions.clearHookCache("TelegramService", request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionCreateTelegram.code,
-                            success: false
+                            success: false,
                         });
                     }
-                }
-                else {
+                } else {
                     return response.status(400).json({
                         msg: requestCreateTelegram.data.operationMessage,
-                        success: false
+                        success: false,
                     });
                 }
 
-            case 'TWITTER':
-            case 'TWITTERDM':
+            case "TWITTER":
+            case "TWITTERDM":
                 const requestPageTwitter = await axiosObservable({
+                    _requestid: request._requestid,
+                    method: "post",
+                    url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
                     data: {
                         accessSecret: service.accesssecret,
                         accessToken: service.accesstoken,
                         consumerKey: service.consumerkey,
                         consumerSecret: service.consumersecret,
                         developmentEnvironment: service.devenvironment,
-                        linkType: 'GETPAGEID'
+                        linkType: "GETPAGEID",
                     },
-                    method: 'post',
-                    url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
-                    _requestid: request._requestid,
                 });
 
                 if (requestPageTwitter.data.success) {
@@ -2030,89 +2238,90 @@ exports.insertChannel = async (request, response) => {
                         consumerKey: service.consumerkey,
                         consumerSecret: service.consumersecret,
                         devEnvironment: service.devenvironment,
-                        twitterPageId: requestPageTwitter.data.pageId
+                        twitterPageId: requestPageTwitter.data.pageId,
                     };
 
                     parameters.communicationchannelsite = requestPageTwitter.data.pageId;
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
 
-                    if (request.body.type === 'TWITTER') {
-                        parameters.type = 'TWIT';
-                    }
-                    else {
-                        parameters.type = 'TWMS';
+                    if (request.body.type === "TWITTER") {
+                        parameters.type = "TWIT";
+                    } else {
+                        parameters.type = "TWMS";
                     }
 
-                    const transactionCreateTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
+                    const transactionCreateTwitter = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionCreateTwitter instanceof Array) {
                         const requestCreateTwitter = await axiosObservable({
+                            _requestid: request._requestid,
+                            method: "post",
+                            url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
                             data: {
                                 accessSecret: service.accesssecret,
                                 accessToken: service.accesstoken,
                                 consumerKey: service.consumerkey,
                                 consumerSecret: service.consumersecret,
                                 developmentEnvironment: service.devenvironment,
-                                linkType: 'TWITTERADD',
-                                pageId: requestPageTwitter.data.pageId
+                                linkType: "TWITTERADD",
+                                pageId: requestPageTwitter.data.pageId,
                             },
-                            method: 'post',
-                            url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
-                            _requestid: request._requestid,
                         });
 
                         if (requestCreateTwitter.data.success) {
-                            await channelfunctions.clearHookCache('TwitterService', request._requestid);
+                            await channelfunctions.clearHookCache("TwitterService", request._requestid);
 
                             return response.json({
-                                success: true
+                                success: true,
                             });
-                        }
-                        else {
+                        } else {
                             parameters.id = transactionCreateTwitter[0].ufn_communicationchannel_ins;
-                            parameters.motive = 'Delete from API';
-                            parameters.operation = 'DELETE';
+                            parameters.motive = "Delete from API";
+                            parameters.operation = "DELETE";
 
-                            const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(method, parameters);
+                            const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(
+                                method,
+                                parameters
+                            );
 
                             if (transactionDeleteTwitter instanceof Array) {
                                 return response.status(400).json({
                                     msg: requestCreateTwitter.data.operationMessage,
-                                    success: false
+                                    success: false,
                                 });
-                            }
-                            else {
+                            } else {
                                 return response.status(400).json({
                                     msg: transactionDeleteTwitter.code,
-                                    success: false
+                                    success: false,
                                 });
                             }
                         }
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionCreateTwitter.code,
-                            success: false
+                            success: false,
                         });
                     }
-                }
-                else {
+                } else {
                     return response.status(400).json({
                         msg: requestPageTwitter.data.operationMessage,
-                        success: false
+                        success: false,
                     });
                 }
 
-            case 'WHATSAPP':
+            case "WHATSAPP":
                 if (!service.accesstoken && service.channelid) {
                     const requestGetApiKey = await axiosObservable({
-                        data: {
-                            partnerId: service.partnerid,
-                            channelId: service.channelid,
-                        },
-                        method: 'post',
-                        url: `${bridgeEndpoint}processpartner/getapikey`,
                         _requestid: request._requestid,
+                        method: "post",
+                        url: `${bridgeEndpoint}processpartner/getapikey`,
+                        data: {
+                            channelId: service.channelid,
+                            partnerId: service.partnerid,
+                        },
                     });
 
                     if (requestGetApiKey.data.success) {
@@ -2121,100 +2330,112 @@ exports.insertChannel = async (request, response) => {
                 }
 
                 const requestCreateWhatsApp = await axiosObservable({
+                    _requestid: request._requestid,
+                    method: "post",
+                    url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`,
                     data: {
                         accessToken: service.accesstoken,
-                        isCloud: service.iscloud ? true : false,
-                        linkType: 'WHATSAPPADD'
+                        isCloud: !!service.iscloud,
+                        linkType: "WHATSAPPADD",
                     },
-                    method: 'post',
-                    url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`,
-                    _requestid: request._requestid,
                 });
 
                 if (requestCreateWhatsApp.data.success) {
                     let serviceCredentials = {
                         apiKey: service.accesstoken,
                         endpoint: service.iscloud ? whatsAppCloudEndpoint : whatsAppEndpoint,
-                        isCloud: service.iscloud ? true : false,
-                        number: requestCreateWhatsApp.data.phoneNumber
+                        isCloud: !!service.iscloud,
+                        number: requestCreateWhatsApp.data.phoneNumber,
                     };
 
                     parameters.communicationchannelsite = requestCreateWhatsApp.data.phoneNumber;
-                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
                     parameters.phone = requestCreateWhatsApp.data.phoneNumber;
-                    parameters.type = 'WHAD';
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.type = "WHAD";
 
-                    const transactionCreateWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
+                    const transactionCreateWhatsApp = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionCreateWhatsApp instanceof Array) {
-                        await channelfunctions.clearHookCache('Dialog360Service', request._requestid);
+                        await channelfunctions.clearHookCache("Dialog360Service", request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionCreateWhatsApp.code,
-                            success: false
+                            success: false,
                         });
                     }
-                }
-                else {
+                } else {
                     return response.status(400).json({
                         msg: requestCreateWhatsApp.data.operationMessage,
-                        success: false
+                        success: false,
                     });
                 }
 
-            case 'WHATSAPPSMOOCH':
-                parameters.communicationchannelowner = '';
-                parameters.communicationchannelsite = '';
+            case "WHATSAPPSMOOCH":
+                parameters.communicationchannelowner = "";
+                parameters.communicationchannelsite = "";
                 parameters.servicecredentials = JSON.stringify(service);
-                parameters.status = 'PENDIENTE';
-                parameters.type = 'WHAT';
+                parameters.status = "PENDIENTE";
+                parameters.type = "WHAT";
 
-                const transactionCreateWhatsAppSmooch = await triggerfunctions.executesimpletransaction(method, parameters);
+                const transactionCreateWhatsAppSmooch = await triggerfunctions.executesimpletransaction(
+                    method,
+                    parameters
+                );
 
                 if (transactionCreateWhatsAppSmooch instanceof Array) {
-                    if (parameters.type === 'WHAT') {
-                        let domainMethod = 'UFN_DOMAIN_VALUES_SEL';
+                    if (parameters.type === "WHAT") {
                         let domainParameters = {
+                            _requestid: request._requestid,
                             all: false,
                             corpid: 1,
-                            domainname: 'WHATSAPPRECIPIENT',
+                            domainname: "WHATSAPPRECIPIENT",
                             orgid: 0,
                             username: request.user.usr,
-                            _requestid: request._requestid,
                         };
 
-                        const transactionGetRecipient = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+                        const transactionGetRecipient = await triggerfunctions.executesimpletransaction(
+                            "UFN_DOMAIN_VALUES_SEL",
+                            domainParameters
+                        );
 
                         if (transactionGetRecipient instanceof Array) {
                             if (transactionGetRecipient.length > 0) {
                                 domainParameters = {
+                                    _requestid: request._requestid,
                                     all: false,
                                     corpid: 1,
-                                    domainname: 'WHATSAPPSUBJECT',
+                                    domainname: "WHATSAPPSUBJECT",
                                     orgid: 0,
                                     username: request.user.usr,
-                                    _requestid: request._requestid,
                                 };
 
-                                const transactionGetSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+                                const transactionGetSubject = await triggerfunctions.executesimpletransaction(
+                                    "UFN_DOMAIN_VALUES_SEL",
+                                    domainParameters
+                                );
 
                                 if (transactionGetSubject instanceof Array) {
                                     if (transactionGetSubject.length > 0) {
                                         domainParameters = {
+                                            _requestid: request._requestid,
                                             all: false,
                                             corpid: 1,
-                                            domainname: 'WHATSAPPBODY',
+                                            domainname: "WHATSAPPBODY",
                                             orgid: 0,
                                             username: request.user.usr,
-                                            _requestid: request._requestid,
                                         };
 
-                                        const transactionGetBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+                                        const transactionGetBody = await triggerfunctions.executesimpletransaction(
+                                            "UFN_DOMAIN_VALUES_SEL",
+                                            domainParameters
+                                        );
 
                                         if (transactionGetBody instanceof Array) {
                                             if (transactionGetBody.length > 0) {
@@ -2222,101 +2443,127 @@ exports.insertChannel = async (request, response) => {
                                                 let mailRecipient = transactionGetRecipient[0].domainvalue;
                                                 let mailSubject = transactionGetSubject[0].domainvalue;
 
-                                                mailBody = mailBody.split('{{brandname}}').join(service.brandname);
-                                                mailBody = mailBody.split('{{brandaddress}}').join(service.brandaddress);
-                                                mailBody = mailBody.split('{{firstname}}').join(service.firstname);
-                                                mailBody = mailBody.split('{{lastname}}').join(service.lastname);
-                                                mailBody = mailBody.split('{{email}}').join(service.email);
-                                                mailBody = mailBody.split('{{phone}}').join(service.phone);
-                                                mailBody = mailBody.split('{{customerfacebookid}}').join(service.customerfacebookid);
-                                                mailBody = mailBody.split('{{phonenumberwhatsappbusiness}}').join(service.phonenumberwhatsappbusiness);
-                                                mailBody = mailBody.split('{{nameassociatednumber}}').join(service.nameassociatednumber);
-                                                mailBody = mailBody.split('{{corpid}}').join(request.user.corpid);
-                                                mailBody = mailBody.split('{{orgid}}').join(request.user.orgid);
-                                                mailBody = mailBody.split('{{username}}').join(request.user.usr);
+                                                mailBody = mailBody.split("{{brandname}}").join(service.brandname);
+                                                mailBody = mailBody.split("{{corpid}}").join(request.user.corpid);
+                                                mailBody = mailBody.split("{{email}}").join(service.email);
+                                                mailBody = mailBody.split("{{firstname}}").join(service.firstname);
+                                                mailBody = mailBody.split("{{lastname}}").join(service.lastname);
+                                                mailBody = mailBody.split("{{orgid}}").join(request.user.orgid);
+                                                mailBody = mailBody.split("{{phone}}").join(service.phone);
+                                                mailBody = mailBody.split("{{username}}").join(request.user.usr);
 
-                                                mailSubject = mailSubject.split('{{brandname}}').join(service.brandname);
-                                                mailSubject = mailSubject.split('{{brandaddress}}').join(service.brandaddress);
-                                                mailSubject = mailSubject.split('{{firstname}}').join(service.firstname);
-                                                mailSubject = mailSubject.split('{{lastname}}').join(service.lastname);
-                                                mailSubject = mailSubject.split('{{email}}').join(service.email);
-                                                mailSubject = mailSubject.split('{{phone}}').join(service.phone);
-                                                mailSubject = mailSubject.split('{{customerfacebookid}}').join(service.customerfacebookid);
-                                                mailSubject = mailSubject.split('{{phonenumberwhatsappbusiness}}').join(service.phonenumberwhatsappbusiness);
-                                                mailSubject = mailSubject.split('{{nameassociatednumber}}').join(service.nameassociatednumber);
-                                                mailSubject = mailSubject.split('{{corpid}}').join(request.user.corpid);
-                                                mailSubject = mailSubject.split('{{orgid}}').join(request.user.orgid);
-                                                mailSubject = mailSubject.split('{{username}}').join(request.user.usr);
+                                                mailBody = mailBody
+                                                    .split("{{brandaddress}}")
+                                                    .join(service.brandaddress);
+
+                                                mailBody = mailBody
+                                                    .split("{{customerfacebookid}}")
+                                                    .join(service.customerfacebookid);
+
+                                                mailBody = mailBody
+                                                    .split("{{phonenumberwhatsappbusiness}}")
+                                                    .join(service.phonenumberwhatsappbusiness);
+
+                                                mailBody = mailBody
+                                                    .split("{{nameassociatednumber}}")
+                                                    .join(service.nameassociatednumber);
+
+                                                mailSubject = mailSubject.split("{{corpid}}").join(request.user.corpid);
+                                                mailSubject = mailSubject.split("{{email}}").join(service.email);
+                                                mailSubject = mailSubject.split("{{lastname}}").join(service.lastname);
+                                                mailSubject = mailSubject.split("{{orgid}}").join(request.user.orgid);
+                                                mailSubject = mailSubject.split("{{phone}}").join(service.phone);
+                                                mailSubject = mailSubject.split("{{username}}").join(request.user.usr);
+
+                                                mailSubject = mailSubject
+                                                    .split("{{brandname}}")
+                                                    .join(service.brandname);
+
+                                                mailSubject = mailSubject
+                                                    .split("{{brandaddress}}")
+                                                    .join(service.brandaddress);
+
+                                                mailSubject = mailSubject
+                                                    .split("{{firstname}}")
+                                                    .join(service.firstname);
+
+                                                mailSubject = mailSubject
+                                                    .split("{{customerfacebookid}}")
+                                                    .join(service.customerfacebookid);
+
+                                                mailSubject = mailSubject
+                                                    .split("{{phonenumberwhatsappbusiness}}")
+                                                    .join(service.phonenumberwhatsappbusiness);
+
+                                                mailSubject = mailSubject
+                                                    .split("{{nameassociatednumber}}")
+                                                    .join(service.nameassociatednumber);
 
                                                 const requestSendMail = await axiosObservable({
+                                                    _requestid: request._requestid,
+                                                    method: "post",
+                                                    url: `${bridgeEndpoint}processscheduler/sendmail`,
                                                     data: {
                                                         mailAddress: mailRecipient,
                                                         mailBody: mailBody,
-                                                        mailTitle: mailSubject
+                                                        mailTitle: mailSubject,
                                                     },
-                                                    method: 'post',
-                                                    url: `${bridgeEndpoint}processscheduler/sendmail`,
-                                                    _requestid: request._requestid,
                                                 });
 
                                                 if (!requestSendMail.data.success) {
                                                     return response.status(400).json({
+                                                        error: true,
                                                         msg: requestSendMail.data.operationMessage,
                                                         success: false,
-                                                        error: true
                                                     });
                                                 }
                                             }
-                                        }
-                                        else {
+                                        } else {
                                             return response.status(400).json({
+                                                error: true,
                                                 msg: transactionGetBody.code,
                                                 success: false,
-                                                error: true
                                             });
                                         }
                                     }
-                                }
-                                else {
+                                } else {
                                     return response.status(400).json({
+                                        error: true,
                                         msg: transactionGetSubject.code,
                                         success: false,
-                                        error: true
                                     });
                                 }
                             }
-                        }
-                        else {
+                        } else {
                             return response.status(400).json({
+                                error: true,
                                 msg: transactionGetRecipient.code,
                                 success: false,
-                                error: true
                             });
                         }
                     }
 
                     return response.json({
-                        success: true
+                        success: true,
                     });
-                }
-                else {
+                } else {
                     return response.status(400).json({
                         msg: transactionCreateWhatsAppSmooch.code,
-                        success: false
+                        success: false,
                     });
                 }
 
-            case 'WHATSAPPSMOOCHINSERT':
+            case "WHATSAPPSMOOCHINSERT":
                 const requestInsertWhatsAppSmooch = await axiosObservable({
+                    _requestid: request._requestid,
+                    method: "post",
+                    url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
                     data: {
                         apiKeyId: service.apikeyid,
                         apiKeySecret: service.apikeysecret,
                         applicationId: service.appid,
-                        linkType: 'WEBHOOKMIGRATE'
+                        linkType: "WEBHOOKMIGRATE",
                     },
-                    method: 'post',
-                    url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
-                    _requestid: request._requestid,
                 });
 
                 if (requestInsertWhatsAppSmooch.data.success) {
@@ -2324,9 +2571,9 @@ exports.insertChannel = async (request, response) => {
                         apiKeyId: service.apikeyid,
                         apiKeySecret: service.apikeysecret,
                         appId: service.appid,
-                        endpoint: 'https://api.smooch.io/',
+                        endpoint: "https://api.smooch.io/",
                         integrationId: requestInsertWhatsAppSmooch.data.integrationId,
-                        version: 'v1.1'
+                        version: "v1.1",
                     };
 
                     parameters.communicationchannelowner = service.appid;
@@ -2334,41 +2581,42 @@ exports.insertChannel = async (request, response) => {
                     parameters.integrationid = requestInsertWhatsAppSmooch.data.integrationId;
                     parameters.phone = requestInsertWhatsAppSmooch.data.phoneNumber;
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
-                    parameters.type = 'WHAT';
+                    parameters.type = "WHAT";
 
-                    const transactionInsertWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
+                    const transactionInsertWhatsApp = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionInsertWhatsApp instanceof Array) {
-                        await channelfunctions.clearHookCache('SmoochService', request._requestid);
+                        await channelfunctions.clearHookCache("SmoochService", request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionInsertWhatsApp.code,
-                            success: false
+                            success: false,
                         });
                     }
-                }
-                else {
+                } else {
                     return response.status(400).json({
                         msg: requestInsertWhatsAppSmooch.data.operationMessage,
-                        success: false
+                        success: false,
                     });
                 }
 
-            case 'WHATSAPPGUPSHUP':
+            case "WHATSAPPGUPSHUP":
                 const requestInsertWhatsAppGupshup = await axiosObservable({
+                    _requestid: request._requestid,
+                    method: "post",
+                    url: `${bridgeEndpoint}processlaraigo/gupshup/managegupshuplink`,
                     data: {
                         apiKey: service.apikey,
                         appId: service.appid,
-                        linkType: 'GUPSHUPADD',
+                        linkType: "GUPSHUPADD",
                     },
-                    method: 'post',
-                    url: `${bridgeEndpoint}processlaraigo/gupshup/managegupshuplink`,
-                    _requestid: request._requestid,
                 });
 
                 if (requestInsertWhatsAppGupshup.data.success) {
@@ -2379,45 +2627,46 @@ exports.insertChannel = async (request, response) => {
                         number: service.appnumber,
                     };
 
-                    parameters.communicationchannelsite = service.appname;
                     parameters.communicationchannelowner = service.appid;
+                    parameters.communicationchannelsite = service.appname;
                     parameters.phone = service.appnumber;
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
-                    parameters.type = 'WHAG';
+                    parameters.type = "WHAG";
 
-                    const transactionInsertWhatsAppGupshup = await triggerfunctions.executesimpletransaction(method, parameters);
+                    const transactionInsertWhatsAppGupshup = await triggerfunctions.executesimpletransaction(
+                        method,
+                        parameters
+                    );
 
                     if (transactionInsertWhatsAppGupshup instanceof Array) {
-                        await channelfunctions.clearHookCache('GupshupService', request._requestid);
+                        await channelfunctions.clearHookCache("GupshupService", request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionInsertWhatsAppGupshup.code,
-                            success: false
+                            success: false,
                         });
                     }
-                }
-                else {
+                } else {
                     return response.status(400).json({
                         msg: requestInsertWhatsAppGupshup.data.operationMessage,
-                        success: false
+                        success: false,
                     });
                 }
 
-            case 'WHATSAPPMETA':
+            case "WHATSAPPMETA":
                 const requestCreateMeta = await axiosObservable({
+                    _requestid: request._requestid,
+                    method: "post",
+                    url: `${bridgeEndpoint}processlaraigo/meta/managemetalink`,
                     data: {
                         accessToken: service.accesstoken,
+                        linkType: "METACHECK",
                         phoneId: service.phone,
-                        linkType: 'METACHECK'
                     },
-                    method: 'post',
-                    url: `${bridgeEndpoint}processlaraigo/meta/managemetalink`,
-                    _requestid: request._requestid,
                 });
 
                 if (requestCreateMeta.data.success) {
@@ -2429,207 +2678,246 @@ exports.insertChannel = async (request, response) => {
                     };
 
                     parameters.communicationchannelsite = requestCreateMeta.data.phoneNumber;
-                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
                     parameters.phone = requestCreateMeta.data.phoneNumber;
-                    parameters.type = 'WHAM';
+                    parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                    parameters.type = "WHAM";
 
                     const transactionCreateMeta = await triggerfunctions.executesimpletransaction(method, parameters);
 
                     if (transactionCreateMeta instanceof Array) {
-                        await channelfunctions.clearHookCache('WhatsAppService', request._requestid);
+                        await channelfunctions.clearHookCache("WhatsAppService", request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
                         });
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
                             msg: transactionCreateMeta.code,
-                            success: false
+                            success: false,
                         });
                     }
-                }
-                else {
+                } else {
                     return response.status(400).json({
                         msg: requestCreateMeta.data.operationMessage,
-                        success: false
+                        success: false,
                     });
                 }
 
-            case 'VOXIMPLANTPHONE':
-                let voximplantEnvironment = await channelfunctions.voximplantHandleEnvironment(request.user.corpid, request.user.orgid, request.originalUrl, request._requestid);
+            case "VOXIMPLANTPHONE":
+                let voximplantEnvironment = await channelfunctions.voximplantHandleEnvironment(
+                    request.user.corpid,
+                    request.user.orgid,
+                    request.originalUrl,
+                    request._requestid
+                );
 
                 if (voximplantEnvironment) {
-                    if (voximplantEnvironment.accountid && voximplantEnvironment.apikey && voximplantEnvironment.applicationid && voximplantEnvironment.userid) {
-                        let voximplantScenario = await channelfunctions.voximplantHandleScenario(request.user.corpid, request.user.orgid, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, request.originalUrl, request._requestid);
+                    if (
+                        voximplantEnvironment.accountid &&
+                        voximplantEnvironment.apikey &&
+                        voximplantEnvironment.applicationid &&
+                        voximplantEnvironment.userid
+                    ) {
+                        let voximplantScenario = await channelfunctions.voximplantHandleScenario(
+                            request.user.corpid,
+                            request.user.orgid,
+                            voximplantEnvironment.accountid,
+                            voximplantEnvironment.apikey,
+                            voximplantEnvironment.applicationid,
+                            request.originalUrl,
+                            request._requestid
+                        );
 
                         if (voximplantScenario) {
                             if (voximplantScenario.ruleid && voximplantScenario.scenarioid) {
-                                let voximplantPhoneNumber = await channelfunctions.voximplantHandlePhoneNumber(request.user.corpid, request.user.orgid, request.user.usr, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, voximplantScenario.ruleid, service.country, service.category, service.state, (service.region || 0).toString(), service.cost, service.costinstallation, voximplantEnvironment.additionalperchannel, request.originalUrl, request._requestid);
+                                let voximplantPhoneNumber = await channelfunctions.voximplantHandlePhoneNumber(
+                                    request.user.corpid,
+                                    request.user.orgid,
+                                    request.user.usr,
+                                    voximplantEnvironment.accountid,
+                                    voximplantEnvironment.apikey,
+                                    voximplantEnvironment.applicationid,
+                                    voximplantScenario.ruleid,
+                                    service.country,
+                                    service.category,
+                                    service.state,
+                                    (service.region || 0).toString(),
+                                    service.cost,
+                                    service.costinstallation,
+                                    voximplantEnvironment.additionalperchannel,
+                                    request.originalUrl,
+                                    request._requestid
+                                );
 
                                 if (voximplantPhoneNumber) {
-                                    if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.phonenumber && voximplantPhoneNumber.queueid) {
+                                    if (
+                                        voximplantPhoneNumber.phoneid &&
+                                        voximplantPhoneNumber.phonenumber &&
+                                        voximplantPhoneNumber.queueid
+                                    ) {
                                         let serviceCredentials = {
-                                            phoneid: voximplantPhoneNumber.phoneid,
-                                            phonenumber: voximplantPhoneNumber.phonenumber,
-                                            queueid: voximplantPhoneNumber.queueid,
-                                            ruleid: voximplantScenario.ruleid,
-                                            scenarioid: voximplantScenario.scenarioid,
-                                            ruleoutid: voximplantScenario.ruleoutid,
-                                            scenariooutid: voximplantScenario.scenariooutid,
                                             accountid: voximplantEnvironment.accountid,
+                                            additionalperchannel: voximplantEnvironment.additionalperchannel,
                                             apikey: voximplantEnvironment.apikey,
                                             applicationid: voximplantEnvironment.applicationid,
                                             applicationname: voximplantEnvironment.applicationname,
-                                            country: service.country,
-                                            countryname: service.countryname,
+                                            callsupervision: service.callsupervision,
                                             category: service.category,
                                             categoryname: service.categoryname,
-                                            state: service.state,
-                                            statename: service.statename,
+                                            cost: service.cost,
+                                            costinstallation: service.costinstallation,
+                                            costvca: service.costvca,
+                                            country: service.country,
+                                            countryname: service.countryname,
+                                            outbound: service.outbound,
+                                            phoneid: voximplantPhoneNumber.phoneid,
+                                            phonenumber: voximplantPhoneNumber.phonenumber,
+                                            queueid: voximplantPhoneNumber.queueid,
+                                            recording: service.recording,
+                                            recordingquality: service.recordingquality?.value,
+                                            recordingstorage: service.recordingstorage?.value,
                                             region: service.region,
                                             regionname: service.regionname,
-                                            cost: service.cost,
-                                            costvca: service.costvca,
-                                            costinstallation: service.costinstallation,
-                                            recording: service.recording,
+                                            ruleid: voximplantScenario.ruleid,
+                                            ruleoutid: voximplantScenario.ruleoutid,
+                                            scenarioid: voximplantScenario.scenarioid,
+                                            scenariooutid: voximplantScenario.scenariooutid,
                                             sms: service.sms,
-                                            outbound: service.outbound,
-                                            callsupervision: service.callsupervision,
-                                            recordingstorage: service.recordingstorage?.value,
-                                            recordingquality: service.recordingquality?.value,
-                                            additionalperchannel: voximplantEnvironment.additionalperchannel,
+                                            state: service.state,
+                                            statename: service.statename,
                                         };
 
                                         let voximplantRecording = {
                                             recording: service.recording,
-                                            recordingstorage: service.recordingstorage?.value,
                                             recordingquality: service.recordingquality?.value,
+                                            recordingstorage: service.recordingstorage?.value,
                                         };
 
-                                        parameters.communicationchannelsite = voximplantPhoneNumber.phonenumber;
                                         parameters.communicationchannelowner = voximplantEnvironment.applicationname;
-                                        parameters.servicecredentials = JSON.stringify(serviceCredentials);
-                                        parameters.voximplantrecording = JSON.stringify(voximplantRecording);
-                                        parameters.voximplantwelcometone = 'https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/VCA%20PERU/994eacd0-4520-4aec-8f4e-fe7dcab5f5ed/intel.mp3';
-                                        parameters.voximplantholdtone = 'https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/VCA%20PERU/932a8ad1-0a67-467f-aef5-e56c52e05c3f/halos-of-eternity.mp3';
+                                        parameters.communicationchannelsite = voximplantPhoneNumber.phonenumber;
                                         parameters.phone = voximplantPhoneNumber.phonenumber;
-                                        parameters.type = 'VOXI';
+                                        parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                                        parameters.type = "VOXI";
+                                        parameters.voximplantrecording = JSON.stringify(voximplantRecording);
 
-                                        const transactionCreateVoximplant = await triggerfunctions.executesimpletransaction(method, parameters);
+                                        parameters.voximplantwelcometone =
+                                            "https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/VCA%20PERU/994eacd0-4520-4aec-8f4e-fe7dcab5f5ed/intel.mp3";
+
+                                        parameters.voximplantholdtone =
+                                            "https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/VCA%20PERU/932a8ad1-0a67-467f-aef5-e56c52e05c3f/halos-of-eternity.mp3";
+
+                                        const transactionCreateVoximplant =
+                                            await triggerfunctions.executesimpletransaction(method, parameters);
 
                                         if (transactionCreateVoximplant instanceof Array) {
                                             return response.json({
                                                 integrationId: voximplantPhoneNumber.phonenumber,
-                                                success: true
+                                                success: true,
                                             });
-                                        }
-                                        else {
+                                        } else {
                                             return response.status(400).json({
                                                 msg: transactionCreateVoximplant.code,
-                                                success: false
+                                                success: false,
                                             });
                                         }
-                                    }
-                                    else {
+                                    } else {
                                         return response.status(400).json({
-                                            msg: 'voximplant_phonenumberqueue_error',
-                                            success: false
+                                            msg: "voximplant_phonenumberqueue_error",
+                                            success: false,
                                         });
                                     }
-                                }
-                                else {
+                                } else {
                                     return response.status(400).json({
-                                        msg: 'voximplant_phonenumberqueue_error',
-                                        success: false
+                                        msg: "voximplant_phonenumberqueue_error",
+                                        success: false,
                                     });
                                 }
-                            }
-                            else {
+                            } else {
                                 return response.status(400).json({
-                                    msg: 'voximplant_scenariorule_error',
-                                    success: false
+                                    msg: "voximplant_scenariorule_error",
+                                    success: false,
                                 });
                             }
-                        }
-                        else {
+                        } else {
                             return response.status(400).json({
-                                msg: 'voximplant_scenariorule_error',
-                                success: false
+                                msg: "voximplant_scenariorule_error",
+                                success: false,
                             });
                         }
-                    }
-                    else {
+                    } else {
                         return response.status(400).json({
-                            msg: 'voximplant_accountapplication_error',
-                            success: false
+                            msg: "voximplant_accountapplication_error",
+                            success: false,
                         });
                     }
-                }
-                else {
+                } else {
                     return response.status(400).json({
-                        msg: 'voximplant_accountapplication_error',
-                        success: false
+                        msg: "voximplant_accountapplication_error",
+                        success: false,
                     });
                 }
 
             default:
                 return response.status(400).json({
-                    msg: 'Channel not supported',
-                    success: false
+                    msg: "Channel not supported",
+                    success: false,
                 });
         }
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
         });
     }
-}
+};
 
 exports.updateChannel = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
         let { method, parameters = {}, service = {}, type } = request.body;
 
         setSessionParameters(parameters, request.user, request._requestid);
 
         parameters.corpid = request.user.corpid;
         parameters.orgid = request.user.orgid;
-        parameters.username = request.user.usr;
         parameters.phone = null;
+        parameters.username = request.user.usr;
 
-        if (type === 'CHATWEB') {
+        if (type === "CHATWEB") {
             const webChatData = {
                 applicationId: webChatApplication,
                 name: parameters.description,
-                status: 'ACTIVO',
-                type: 'CHAZ',
+                status: "ACTIVO",
+                type: "CHAZ",
                 metadata: {
+                    form: service.form ? service.form : null,
                     color: {
-                        chatBackgroundColor: service.color ? service.color.background : '',
-                        chatBorderColor: service.color ? service.color.border : '',
-                        chatHeaderColor: service.color ? service.color.header : '',
-                        messageBotColor: service.color ? service.color.bot : '',
-                        messageClientColor: service.color ? service.color.client : '',
-                        iconscolor: service.color ? service.color.iconscolor : ''
+                        chatBackgroundColor: service.color ? service.color.background : "",
+                        chatBorderColor: service.color ? service.color.border : "",
+                        chatHeaderColor: service.color ? service.color.header : "",
+                        iconscolor: service.color ? service.color.iconscolor : "",
+                        messageBotColor: service.color ? service.color.bot : "",
+                        messageClientColor: service.color ? service.color.client : "",
                     },
                     extra: {
                         abandonendpoint: `${webChatScriptEndpoint}smooch`,
-                        cssbody: service.extra?.customcss || '',
+                        chatTextSize: service.extra?.chatTextSize || 0,
+                        chatTextWeight: service.extra?.chatTextWeight || 0,
+                        cssbody: service.extra?.customcss || "",
                         enableabandon: service.extra ? service.extra.abandonevent : false,
                         enableformhistory: service.extra ? service.extra.formhistory : false,
                         enableidlemessage: service.bubble ? service.bubble.active : false,
-                        headermessage: service.extra ? service.extra.botnametext : '',
+                        headermessage: service.extra ? service.extra.botnametext : "",
+                        iconColorActive: service.extra?.iconColorActive || "",
+                        iconColorDisabled: service.extra?.iconColorDisabled || "",
                         inputalwaysactive: service.extra ? service.extra.persistentinput : false,
-                        jsscript: service.extra ? service.extra.customjs : '',
+                        inputTextSize: service.extra?.inputTextSize || 0,
+                        inputTextWeight: service.extra?.inputTextWeight || 0,
+                        jsscript: service.extra ? service.extra.customjs : "",
                         playalertsound: service.extra ? service.extra.alertsound : false,
                         sendmetadata: service.extra ? service.extra.enablemetadata : false,
                         showchatrestart: service.extra ? service.extra.reloadchat : false,
-                        showmessageheader: service.extra ? service.extra.botnameenabled : false,
                         showlaraigologo: service.extra ? service.extra.poweredby : false,
+                        showmessageheader: service.extra ? service.extra.botnameenabled : false,
                         showplatformlogo: false,
                         uploadaudio: service.extra ? service.extra.uploadaudio : false,
                         uploadfile: service.extra ? service.extra.uploadfile : false,
@@ -2638,37 +2926,30 @@ exports.updateChannel = async (request, response) => {
                         uploadvideo: service.extra ? service.extra.uploadvideo : false,
                         withBorder: service.extra?.withBorder || false,
                         withHour: service.extra?.withHour || false,
-                        iconColorActive: service.extra?.iconColorActive || '',
-                        iconColorDisabled: service.extra?.iconColorDisabled || '',
-                        inputTextSize: service.extra?.inputTextSize || 0,
-                        inputTextWeight: service.extra?.inputTextWeight || 0,
-                        chatTextSize: service.extra?.chatTextSize || 0,
-                        chatTextWeight: service.extra?.chatTextWeight || 0,
                     },
-                    form: service.form ? service.form : null,
                     icons: {
-                        chatBotImage: service.interface ? service.interface.iconbot : '',
-                        chatHeaderImage: service.interface ? service.interface.iconheader : '',
-                        chatIdleImage: service.bubble ? service.bubble.iconbubble : '',
-                        chatOpenImage: service.interface ? service.interface.iconbutton : ''
+                        chatBotImage: service.interface ? service.interface.iconbot : "",
+                        chatHeaderImage: service.interface ? service.interface.iconheader : "",
+                        chatIdleImage: service.bubble ? service.bubble.iconbubble : "",
+                        chatOpenImage: service.interface ? service.interface.iconbutton : "",
                     },
                     personalization: {
-                        headerMessage: service.extra ? service.extra.botnametext : '',
-                        headerSubTitle: service.interface ? service.interface.chatsubtitle : '',
-                        headerTitle: service.interface ? service.interface.chattitle : '',
-                        idleMessage: service.bubble ? service.bubble.messagebubble : ''
-                    }
-                }
-            }
+                        headerMessage: service.extra ? service.extra.botnametext : "",
+                        headerSubTitle: service.interface ? service.interface.chatsubtitle : "",
+                        headerTitle: service.interface ? service.interface.chattitle : "",
+                        idleMessage: service.bubble ? service.bubble.messagebubble : "",
+                    },
+                },
+            };
 
             const requestWebChatCreate = await axiosObservable({
-                data: webChatData,
-                method: 'put',
-                url: `${brokerEndpoint}integrations/update/${parameters.communicationchannelsite}`,
                 _requestid: request._requestid,
+                data: webChatData,
+                method: "put",
+                url: `${brokerEndpoint}integrations/update/${parameters.communicationchannelsite}`,
             });
 
-            if (typeof requestWebChatCreate.data.id !== 'undefined' && requestWebChatCreate.data.id) {
+            if (typeof requestWebChatCreate.data.id !== "undefined" && requestWebChatCreate.data.id) {
                 parameters.channelparameters = JSON.stringify(webChatData);
                 parameters.servicecredentials = JSON.stringify(service);
 
@@ -2677,46 +2958,44 @@ exports.updateChannel = async (request, response) => {
                 if (transactionCreateWebChat instanceof Array) {
                     return response.json({
                         integrationid: requestWebChatCreate.data.id,
-                        success: true
+                        success: true,
                     });
-                }
-                else {
+                } else {
                     return response.status(400).json({
                         msg: transactionCreateWebChat.code,
-                        success: false
+                        success: false,
                     });
                 }
-            }
-            else {
+            } else {
                 return response.status(400).json({
-                    msg: 'Could not update integration',
-                    success: false
+                    msg: "Could not update integration",
+                    success: false,
                 });
             }
         } else {
             const webChatData = {
                 applicationId: webChatApplication,
                 name: parameters.description,
-                status: 'ACTIVO',
-                type: 'FORM',
+                status: "ACTIVO",
+                type: "FORM",
                 metadata: {
+                    form: service.form || null,
                     extra: {
                         ...(service.extra || {}),
                         corpid: request.user.corpid,
                         orgid: request.user.orgid,
                     },
-                    form: service.form || null,
-                }
-            }
+                },
+            };
 
             const requestWebChatCreate = await axiosObservable({
-                data: webChatData,
-                method: 'put',
-                url: `${brokerEndpoint}integrations/update/${parameters.communicationchannelsite}`,
                 _requestid: request._requestid,
+                data: webChatData,
+                method: "put",
+                url: `${brokerEndpoint}integrations/update/${parameters.communicationchannelsite}`,
             });
 
-            if (typeof requestWebChatCreate.data.id !== 'undefined' && requestWebChatCreate.data.id) {
+            if (typeof requestWebChatCreate.data.id !== "undefined" && requestWebChatCreate.data.id) {
                 parameters.channelparameters = JSON.stringify(webChatData);
                 parameters.servicecredentials = JSON.stringify(service);
 
@@ -2725,121 +3004,112 @@ exports.updateChannel = async (request, response) => {
                 if (transactionCreateWebChat instanceof Array) {
                     return response.json({
                         integrationid: requestWebChatCreate.data.id,
-                        success: true
+                        success: true,
                     });
-                }
-                else {
+                } else {
                     return response.status(400).json({
                         msg: transactionCreateWebChat.code,
-                        success: false
+                        success: false,
                     });
                 }
-            }
-            else {
+            } else {
                 return response.status(400).json({
-                    msg: 'Could not update integration',
-                    success: false
+                    msg: "Could not update integration",
+                    success: false,
                 });
             }
         }
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
         });
     }
-}
+};
 
 exports.activateChannel = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
         let { method, parameters = {}, service = {} } = request.body;
 
         setSessionParameters(parameters, request.user, request._requestid);
 
-        parameters.corpid = request.user.corpid;
-        parameters.motive = 'Activate from API';
-        parameters.operation = 'UPDATE';
-        parameters.orgid = request.user.orgid;
-        parameters.status = 'ACTIVO';
-        parameters.username = request.user.usr;
-
-        parameters.communicationchannelcontact = '';
-        parameters.communicationchanneltoken = '';
-        parameters.customicon = null;
-        parameters.botenabled = true;
-        parameters.botconfigurationid = null;
-        parameters.schedule = null;
-        parameters.appintegrationid = null;
-        parameters.country = null;
-        parameters.channelparameters = null;
-        parameters.updintegration = null;
-        parameters.resolvelithium = null;
-        parameters.phone = null;
         parameters.apikey = null;
+        parameters.appintegrationid = null;
+        parameters.botconfigurationid = null;
+        parameters.botenabled = true;
+        parameters.channelparameters = null;
+        parameters.communicationchannelcontact = "";
+        parameters.communicationchanneltoken = "";
+        parameters.corpid = request.user.corpid;
+        parameters.country = null;
+        parameters.customicon = null;
+        parameters.motive = "Activate from API";
+        parameters.operation = "UPDATE";
+        parameters.orgid = request.user.orgid;
+        parameters.phone = null;
+        parameters.resolvelithium = null;
+        parameters.schedule = null;
+        parameters.status = "ACTIVO";
+        parameters.updintegration = null;
+        parameters.username = request.user.usr;
+        parameters.voximplantholdtone = null;
         parameters.voximplantrecording = null;
         parameters.voximplantwelcometone = null;
-        parameters.voximplantholdtone = null;
 
-        if (request.body.type === 'WHATSAPP') {
+        if (request.body.type === "WHATSAPP") {
             const requestCreateWhatsApp = await axiosObservable({
+                _requestid: request._requestid,
+                method: "post",
+                url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`,
                 data: {
                     accessToken: service.accesstoken,
-                    isCloud: service.iscloud ? true : false,
-                    linkType: 'WHATSAPPADD'
+                    isCloud: !!service.iscloud,
+                    linkType: "WHATSAPPADD",
                 },
-                method: 'post',
-                url: `${bridgeEndpoint}processlaraigo/whatsapp/managewhatsapplink`,
-                _requestid: request._requestid,
             });
 
             if (requestCreateWhatsApp.data.success) {
                 let serviceCredentials = {
                     apiKey: service.accesstoken,
                     endpoint: service.iscloud ? whatsAppCloudEndpoint : whatsAppEndpoint,
-                    isCloud: service.iscloud ? true : false,
-                    number: requestCreateWhatsApp.data.phoneNumber
+                    isCloud: !!service.iscloud,
+                    number: requestCreateWhatsApp.data.phoneNumber,
                 };
 
                 parameters.communicationchannelsite = requestCreateWhatsApp.data.phoneNumber;
-                parameters.servicecredentials = JSON.stringify(serviceCredentials);
                 parameters.phone = requestCreateWhatsApp.data.phoneNumber;
-                parameters.type = 'WHAD';
+                parameters.servicecredentials = JSON.stringify(serviceCredentials);
+                parameters.type = "WHAD";
 
                 const transactionActivateWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
 
                 if (transactionActivateWhatsApp instanceof Array) {
                     return response.json({
-                        success: true
+                        success: true,
                     });
-                }
-                else {
+                } else {
                     return response.status(400).json({
                         msg: transactionActivateWhatsApp.code,
-                        success: false
+                        success: false,
                     });
                 }
-            }
-            else {
+            } else {
                 return response.status(400).json({
                     msg: requestCreateWhatsApp.data.operationMessage,
-                    success: false
+                    success: false,
                 });
             }
-        }
-        else {
+        } else {
             const requestMigrateWhatsApp = await axiosObservable({
+                _requestid: request._requestid,
+                method: "post",
+                url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
                 data: {
-                    linkType: 'WEBHOOKMIGRATE',
                     apiKeyId: service.apikeyid,
                     apiKeySecret: service.apikeysecret,
-                    applicationId: service.appid
+                    applicationId: service.appid,
+                    linkType: "WEBHOOKMIGRATE",
                 },
-                method: 'post',
-                url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
-                _requestid: request._requestid,
             });
 
             if (requestMigrateWhatsApp.data.success) {
@@ -2847,60 +3117,57 @@ exports.activateChannel = async (request, response) => {
                     apiKeyId: service.apikeyid,
                     apiKeySecret: service.apikeysecret,
                     appId: service.appid,
-                    endpoint: 'https://api.smooch.io/',
+                    endpoint: "https://api.smooch.io/",
                     integrationId: requestMigrateWhatsApp.data.integrationId,
-                    version: 'v1.1'
+                    version: "v1.1",
                 });
 
                 parameters.communicationchannelowner = service.appid;
                 parameters.communicationchannelsite = service.appid;
                 parameters.integrationid = requestMigrateWhatsApp.data.integrationId;
                 parameters.phone = requestMigrateWhatsApp.data.phoneNumber;
-                parameters.type = 'WHAT';
+                parameters.type = "WHAT";
 
                 const transactionActivateWhatsApp = await triggerfunctions.executesimpletransaction(method, parameters);
 
                 if (transactionActivateWhatsApp instanceof Array) {
                     return response.json({
-                        success: true
+                        success: true,
                     });
-                }
-                else {
+                } else {
                     return response.status(400).json({
                         msg: transactionActivateWhatsApp.code,
-                        success: false
+                        success: false,
                     });
                 }
-            }
-            else {
+            } else {
                 return response.status(400).json({
                     msg: requestMigrateWhatsApp.data.operationMessage,
-                    success: false
+                    success: false,
                 });
             }
         }
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
             msg: exception.message,
         });
     }
-}
+};
 
 exports.synchronizeTemplate = async (request, response) => {
     try {
-        let requestCode = 'error_unexpected_error';
-        let requestMessage = 'error_unexpected_error';
+        let requestCode = "error_unexpected_error";
+        let requestMessage = "error_unexpected_error";
         let requestStatus = 400;
         let requestSuccess = false;
 
-        if (typeof whitelist !== 'undefined' && whitelist) {
+        if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
                 return response.status(requestStatus).json({
-                    code: 'error_auth_error',
+                    code: "error_auth_error",
                     error: !requestSuccess,
-                    message: 'error_auth_error',
+                    message: "error_auth_error",
                     success: requestSuccess,
                 });
             }
@@ -2914,26 +3181,25 @@ exports.synchronizeTemplate = async (request, response) => {
                     let templateList = null;
 
                     switch (communicationchannel.type) {
-                        case 'WHAD':
+                        case "WHAD":
                             if (communicationchannel.servicecredentials) {
                                 let serviceData = JSON.parse(communicationchannel.servicecredentials);
 
                                 const requestListDialog = await axiosObservable({
+                                    _requestid: request._requestid,
+                                    method: "post",
+                                    url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
                                     data: {
                                         ApiKey: serviceData.apiKey,
-                                        IsCloud: serviceData.isCloud ? true : false,
-                                        Type: 'LIST',
+                                        IsCloud: !!serviceData.isCloud,
+                                        Type: "LIST",
                                     },
-                                    method: 'post',
-                                    url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
-                                    _requestid: request._requestid,
                                 });
 
                                 if (requestListDialog.data.success) {
                                     templateList = requestListDialog.data.result;
-                                }
-                                else {
-                                    requestCode = requestListDialog.data.operationMessage
+                                } else {
+                                    requestCode = requestListDialog.data.operationMessage;
                                     requestMessage = requestListDialog.data.operationMessage;
                                 }
                             }
@@ -2944,21 +3210,20 @@ exports.synchronizeTemplate = async (request, response) => {
                                 let serviceData = JSON.parse(communicationchannel.servicecredentials);
 
                                 const requestListGupshup = await axiosObservable({
-                                    data: {
-                                        AppName: serviceData.app,
-                                        ApiKey: serviceData.apiKey,
-                                        Type: 'LIST',
-                                    },
-                                    method: 'post',
-                                    url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
                                     _requestid: request._requestid,
+                                    method: "post",
+                                    url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
+                                    data: {
+                                        ApiKey: serviceData.apiKey,
+                                        AppName: serviceData.app,
+                                        Type: "LIST",
+                                    },
                                 });
 
                                 if (requestListGupshup.data.success) {
                                     templateList = requestListGupshup.data.result;
-                                }
-                                else {
-                                    requestCode = requestListGupshup.data.operationMessage
+                                } else {
+                                    requestCode = requestListGupshup.data.operationMessage;
                                     requestMessage = requestListGupshup.data.operationMessage;
                                 }
                             }
@@ -2969,23 +3234,22 @@ exports.synchronizeTemplate = async (request, response) => {
                                 let serviceData = JSON.parse(communicationchannel.servicecredentials);
 
                                 const requestListSmooch = await axiosObservable({
+                                    _requestid: request._requestid,
+                                    method: "post",
+                                    url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
                                     data: {
                                         AppId: serviceData.appId,
                                         IntegrationId: communicationchannel.integrationid,
-                                        Type: 'LIST',
                                         KeyId: serviceData.apiKeyId,
                                         KeySecret: serviceData.apiKeySecret,
+                                        Type: "LIST",
                                     },
-                                    method: 'post',
-                                    url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
-                                    _requestid: request._requestid,
                                 });
 
                                 if (requestListSmooch.data.success) {
                                     templateList = requestListSmooch.data.result;
-                                }
-                                else {
-                                    requestCode = requestListSmooch.data.operationMessage
+                                } else {
+                                    requestCode = requestListSmooch.data.operationMessage;
                                     requestMessage = requestListSmooch.data.operationMessage;
                                 }
                             }
@@ -2993,7 +3257,16 @@ exports.synchronizeTemplate = async (request, response) => {
                     }
 
                     if (templateList) {
-                        await channelfunctions.messageTemplateReset(communicationchannel.corpid, communicationchannel.orgid, communicationchannel.communicationchannelid, (communicationchannel.type === "WHAD" || communicationchannel.type === "WHAG") ? templateList[0]?.id || null : null, request.user.usr, request._requestid);
+                        await channelfunctions.messageTemplateReset(
+                            communicationchannel.corpid,
+                            communicationchannel.orgid,
+                            communicationchannel.communicationchannelid,
+                            communicationchannel.type === "WHAD" || communicationchannel.type === "WHAG"
+                                ? templateList[0]?.id || null
+                                : null,
+                            request.user.usr,
+                            request._requestid
+                        );
 
                         for (const templateData of templateList) {
                             let buttonObject = [];
@@ -3001,9 +3274,9 @@ exports.synchronizeTemplate = async (request, response) => {
                             if (templateData.buttons) {
                                 for (const buttonData of templateData.buttons) {
                                     let buttonInformation = {
-                                        type: (buttonData.type || '').toLowerCase(),
-                                        title: buttonData.text || '',
-                                        payload: (buttonData.data || buttonData.text) || '',
+                                        payload: buttonData.data || buttonData.text || "",
+                                        title: buttonData.text || "",
+                                        type: (buttonData.type || "").toLowerCase(),
                                     };
 
                                     buttonObject.push(buttonInformation);
@@ -3014,22 +3287,26 @@ exports.synchronizeTemplate = async (request, response) => {
                                 communicationchannel.corpid,
                                 communicationchannel.orgid,
                                 communicationchannel.communicationchanneldesc,
-                                'HSM',
-                                'ACTIVO',
+                                "HSM",
+                                "ACTIVO",
                                 templateData.name,
-                                (communicationchannel.type === 'WHAD' || communicationchannel.type === 'WHAG') ? templateData.id : null,
+                                communicationchannel.type === "WHAD" || communicationchannel.type === "WHAG"
+                                    ? templateData.id
+                                    : null,
                                 templateData.category,
                                 templateData.language,
-                                (templateData.header || templateData.footer || templateData.buttons) ? 'MULTIMEDIA' : 'STANDARD',
-                                (templateData.header) ? true : false,
+                                templateData.header || templateData.footer || templateData.buttons
+                                    ? "MULTIMEDIA"
+                                    : "STANDARD",
+                                !!templateData.header,
                                 templateData.header?.type ? templateData.header?.type.toLowerCase() : null,
                                 templateData.header?.text || null,
                                 templateData.body?.text || null,
                                 null,
-                                (templateData.footer) ? true : false,
+                                !!templateData.footer,
                                 templateData.footer?.text || null,
-                                (templateData.buttons) ? true : false,
-                                (templateData.buttons) ? JSON.stringify(buttonObject) : null,
+                                !!templateData.buttons,
+                                templateData.buttons ? JSON.stringify(buttonObject) : null,
                                 true,
                                 templateData.id,
                                 templateData.status,
@@ -3037,7 +3314,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                 communicationchannel.type,
                                 null,
                                 request.user.usr,
-                                request._requestid,
+                                request._requestid
                             );
                         }
 
@@ -3047,188 +3324,188 @@ exports.synchronizeTemplate = async (request, response) => {
                         requestSuccess = true;
                     }
                 }
-            }
-            else {
-                if (messagetemplatelist) {
-                    messagetemplatelist = messagetemplatelist.sort((a, b) => a.communicationchannelservicecredentials > b.communicationchannelservicecredentials ? 1 : -1);
+            } else if (messagetemplatelist) {
+                messagetemplatelist = messagetemplatelist.sort((a, b) =>
+                    a.communicationchannelservicecredentials > b.communicationchannelservicecredentials ? 1 : -1
+                );
 
-                    let servicecredentials = null;
-                    let templatelist = null;
+                let servicecredentials = null;
+                let templatelist = null;
 
-                    for (const messagetemplate of messagetemplatelist) {
-                        if (messagetemplate.communicationchannelservicecredentials && messagetemplate.fromprovider) {
-                            if (messagetemplate.communicationchannelservicecredentials != servicecredentials) {
-                                servicecredentials = messagetemplate.communicationchannelservicecredentials;
+                for (const messagetemplate of messagetemplatelist) {
+                    if (messagetemplate.communicationchannelservicecredentials && messagetemplate.fromprovider) {
+                        if (messagetemplate.communicationchannelservicecredentials != servicecredentials) {
+                            servicecredentials = messagetemplate.communicationchannelservicecredentials;
 
-                                switch (messagetemplate.communicationchanneltype) {
-                                    case 'WHAD':
-                                        if (servicecredentials) {
-                                            let serviceData = JSON.parse(servicecredentials);
+                            switch (messagetemplate.communicationchanneltype) {
+                                case "WHAD":
+                                    if (servicecredentials) {
+                                        let serviceData = JSON.parse(servicecredentials);
 
-                                            const requestListDialog = await axiosObservable({
-                                                data: {
-                                                    ApiKey: serviceData.apiKey,
-                                                    IsCloud: serviceData.isCloud ? true : false,
-                                                    Type: 'LIST',
-                                                },
-                                                method: 'post',
-                                                url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
-                                                _requestid: request._requestid,
-                                            });
+                                        const requestListDialog = await axiosObservable({
+                                            _requestid: request._requestid,
+                                            method: "post",
+                                            url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
+                                            data: {
+                                                ApiKey: serviceData.apiKey,
+                                                IsCloud: !!serviceData.isCloud,
+                                                Type: "LIST",
+                                            },
+                                        });
 
-                                            if (requestListDialog.data.success) {
-                                                templatelist = requestListDialog.data.result;
-                                            }
-                                            else {
-                                                requestCode = requestListDialog.data.operationMessage
-                                                requestMessage = requestListDialog.data.operationMessage;
-                                            }
-                                        }
-                                        break;
-
-                                    case "WHAG":
-                                        if (servicecredentials) {
-                                            let serviceData = JSON.parse(servicecredentials);
-
-                                            const requestListGupshup = await axiosObservable({
-                                                data: {
-                                                    AppName: serviceData.app,
-                                                    ApiKey: serviceData.apiKey,
-                                                    Type: 'LIST',
-                                                },
-                                                method: 'post',
-                                                url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
-                                                _requestid: request._requestid,
-                                            });
-
-                                            if (requestListGupshup.data.success) {
-                                                templatelist = requestListGupshup.data.result;
-                                            }
-                                            else {
-                                                requestCode = requestListGupshup.data.operationMessage
-                                                requestMessage = requestListGupshup.data.operationMessage;
-                                            }
-                                        }
-                                        break;
-
-                                    case "WHAT":
-                                        if (servicecredentials) {
-                                            let serviceData = JSON.parse(servicecredentials);
-
-                                            const requestListSmooch = await axiosObservable({
-                                                data: {
-                                                    AppId: serviceData.appId,
-                                                    IntegrationId: messagetemplate.communicationchannelintegrationid,
-                                                    Type: 'LIST',
-                                                    KeyId: serviceData.apiKeyId,
-                                                    KeySecret: serviceData.apiKeySecret,
-                                                },
-                                                method: 'post',
-                                                url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
-                                                _requestid: request._requestid,
-                                            });
-
-                                            if (requestListSmooch.data.success) {
-                                                templatelist = requestListSmooch.data.result;
-                                            }
-                                            else {
-                                                requestCode = requestListSmooch.data.operationMessage
-                                                requestMessage = requestListSmooch.data.operationMessage;
-                                            }
-                                        }
-                                        break;
-                                }
-                            }
-
-                            if (templatelist) {
-                                const templatefound = templatelist.find(x => x.name === messagetemplate.name);
-
-                                if (templatefound) {
-                                    let buttonObject = [];
-
-                                    if (templatefound.buttons) {
-                                        for (const buttonData of templatefound.buttons) {
-                                            let buttonInformation = {
-                                                type: (buttonData.type || '').toLowerCase(),
-                                                title: buttonData.text || '',
-                                                payload: (buttonData.data || buttonData.text) || '',
-                                            };
-
-                                            buttonObject.push(buttonInformation);
+                                        if (requestListDialog.data.success) {
+                                            templatelist = requestListDialog.data.result;
+                                        } else {
+                                            requestCode = requestListDialog.data.operationMessage;
+                                            requestMessage = requestListDialog.data.operationMessage;
                                         }
                                     }
+                                    break;
 
-                                    await channelfunctions.messageTemplateUpd(
-                                        messagetemplate.corpid,
-                                        messagetemplate.orgid,
-                                        messagetemplate.description,
-                                        'HSM',
-                                        'ACTIVO',
-                                        templatefound.name,
-                                        (messagetemplate.communicationchanneltype === 'WHAD' || messagetemplate.communicationchanneltype === 'WHAG') ? templatefound.id : messagetemplate.namespace,
-                                        templatefound.category,
-                                        templatefound.language,
-                                        (templatefound.header || templatefound.footer || templatefound.buttons) ? 'MULTIMEDIA' : 'STANDARD',
-                                        (templatefound.header) ? true : false,
-                                        templatefound.header?.type ? templatefound.header?.type.toLowerCase() : null,
-                                        templatefound.header?.text || null,
-                                        templatefound.body?.text || null,
-                                        null,
-                                        (templatefound.footer) ? true : false,
-                                        templatefound.footer?.text || null,
-                                        (templatefound.buttons) ? true : false,
-                                        (templatefound.buttons) ? JSON.stringify(buttonObject) : null,
-                                        true,
-                                        templatefound.id,
-                                        templatefound.status,
-                                        messagetemplate.communicationchannelid,
-                                        messagetemplate.communicationchanneltype,
-                                        null,
-                                        request.user.usr,
-                                        request._requestid,
-                                    );
+                                case "WHAG":
+                                    if (servicecredentials) {
+                                        let serviceData = JSON.parse(servicecredentials);
 
-                                    requestCode = '';
-                                    requestMessage = '';
-                                    requestStatus = 200;
-                                    requestSuccess = true;
+                                        const requestListGupshup = await axiosObservable({
+                                            _requestid: request._requestid,
+                                            method: "post",
+                                            url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
+                                            data: {
+                                                ApiKey: serviceData.apiKey,
+                                                AppName: serviceData.app,
+                                                Type: "LIST",
+                                            },
+                                        });
+
+                                        if (requestListGupshup.data.success) {
+                                            templatelist = requestListGupshup.data.result;
+                                        } else {
+                                            requestCode = requestListGupshup.data.operationMessage;
+                                            requestMessage = requestListGupshup.data.operationMessage;
+                                        }
+                                    }
+                                    break;
+
+                                case "WHAT":
+                                    if (servicecredentials) {
+                                        let serviceData = JSON.parse(servicecredentials);
+
+                                        const requestListSmooch = await axiosObservable({
+                                            _requestid: request._requestid,
+                                            method: "post",
+                                            url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
+                                            data: {
+                                                AppId: serviceData.appId,
+                                                IntegrationId: messagetemplate.communicationchannelintegrationid,
+                                                KeyId: serviceData.apiKeyId,
+                                                KeySecret: serviceData.apiKeySecret,
+                                                Type: "LIST",
+                                            },
+                                        });
+
+                                        if (requestListSmooch.data.success) {
+                                            templatelist = requestListSmooch.data.result;
+                                        } else {
+                                            requestCode = requestListSmooch.data.operationMessage;
+                                            requestMessage = requestListSmooch.data.operationMessage;
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
+
+                        if (templatelist) {
+                            const templatefound = templatelist.find((x) => x.name === messagetemplate.name);
+
+                            if (templatefound) {
+                                let buttonObject = [];
+
+                                if (templatefound.buttons) {
+                                    for (const buttonData of templatefound.buttons) {
+                                        let buttonInformation = {
+                                            payload: buttonData.data || buttonData.text || "",
+                                            title: buttonData.text || "",
+                                            type: (buttonData.type || "").toLowerCase(),
+                                        };
+
+                                        buttonObject.push(buttonInformation);
+                                    }
                                 }
-                                else {
-                                    await channelfunctions.messageTemplateUpd(
-                                        messagetemplate.corpid,
-                                        messagetemplate.orgid,
-                                        messagetemplate.description,
-                                        messagetemplate.type,
-                                        messagetemplate.status,
-                                        messagetemplate.name,
-                                        messagetemplate.namespace,
-                                        messagetemplate.category,
-                                        messagetemplate.language,
-                                        messagetemplate.templatetype,
-                                        messagetemplate.headerenabled,
-                                        messagetemplate.headertype,
-                                        messagetemplate.header,
-                                        messagetemplate.body,
-                                        messagetemplate.bodyobject,
-                                        messagetemplate.footerenabled,
-                                        messagetemplate.footer,
-                                        messagetemplate.buttonsenabled,
-                                        messagetemplate.buttons,
-                                        messagetemplate.fromprovider,
-                                        messagetemplate.externalid,
-                                        'DELETED',
-                                        messagetemplate.communicationchannelid,
-                                        messagetemplate.communicationchanneltype,
-                                        messagetemplate.exampleparameters,
-                                        request.user.usr,
-                                        request._requestid,
-                                    );
 
-                                    requestCode = '';
-                                    requestMessage = '';
-                                    requestStatus = 200;
-                                    requestSuccess = true;
-                                }
+                                await channelfunctions.messageTemplateUpd(
+                                    messagetemplate.corpid,
+                                    messagetemplate.orgid,
+                                    messagetemplate.description,
+                                    "HSM",
+                                    "ACTIVO",
+                                    templatefound.name,
+                                    messagetemplate.communicationchanneltype === "WHAD" ||
+                                        messagetemplate.communicationchanneltype === "WHAG"
+                                        ? templatefound.id
+                                        : messagetemplate.namespace,
+                                    templatefound.category,
+                                    templatefound.language,
+                                    templatefound.header || templatefound.footer || templatefound.buttons
+                                        ? "MULTIMEDIA"
+                                        : "STANDARD",
+                                    !!templatefound.header,
+                                    templatefound.header?.type ? templatefound.header?.type.toLowerCase() : null,
+                                    templatefound.header?.text || null,
+                                    templatefound.body?.text || null,
+                                    null,
+                                    !!templatefound.footer,
+                                    templatefound.footer?.text || null,
+                                    !!templatefound.buttons,
+                                    templatefound.buttons ? JSON.stringify(buttonObject) : null,
+                                    true,
+                                    templatefound.id,
+                                    templatefound.status,
+                                    messagetemplate.communicationchannelid,
+                                    messagetemplate.communicationchanneltype,
+                                    null,
+                                    request.user.usr,
+                                    request._requestid
+                                );
+
+                                requestCode = "";
+                                requestMessage = "";
+                                requestStatus = 200;
+                                requestSuccess = true;
+                            } else {
+                                await channelfunctions.messageTemplateUpd(
+                                    messagetemplate.corpid,
+                                    messagetemplate.orgid,
+                                    messagetemplate.description,
+                                    messagetemplate.type,
+                                    messagetemplate.status,
+                                    messagetemplate.name,
+                                    messagetemplate.namespace,
+                                    messagetemplate.category,
+                                    messagetemplate.language,
+                                    messagetemplate.templatetype,
+                                    messagetemplate.headerenabled,
+                                    messagetemplate.headertype,
+                                    messagetemplate.header,
+                                    messagetemplate.body,
+                                    messagetemplate.bodyobject,
+                                    messagetemplate.footerenabled,
+                                    messagetemplate.footer,
+                                    messagetemplate.buttonsenabled,
+                                    messagetemplate.buttons,
+                                    messagetemplate.fromprovider,
+                                    messagetemplate.externalid,
+                                    "DELETED",
+                                    messagetemplate.communicationchannelid,
+                                    messagetemplate.communicationchanneltype,
+                                    messagetemplate.exampleparameters,
+                                    request.user.usr,
+                                    request._requestid
+                                );
+
+                                requestCode = "";
+                                requestMessage = "";
+                                requestStatus = 200;
+                                requestSuccess = true;
                             }
                         }
                     }
@@ -3242,28 +3519,27 @@ exports.synchronizeTemplate = async (request, response) => {
             message: requestMessage,
             success: requestSuccess,
         });
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-            message: exception.message
+            message: exception.message,
         });
     }
-}
+};
 
 exports.addTemplate = async (request, response) => {
     try {
-        let requestCode = 'error_unexpected_error';
-        let requestMessage = 'error_unexpected_error';
+        let requestCode = "error_unexpected_error";
+        let requestMessage = "error_unexpected_error";
         let requestStatus = 400;
         let requestSuccess = false;
 
-        if (typeof whitelist !== 'undefined' && whitelist) {
+        if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
                 return response.status(requestStatus).json({
-                    code: 'error_auth_error',
+                    code: "error_auth_error",
                     error: !requestSuccess,
-                    message: 'error_auth_error',
+                    message: "error_auth_error",
                     success: requestSuccess,
                 });
             }
@@ -3274,120 +3550,160 @@ exports.addTemplate = async (request, response) => {
                 let addSuccess = false;
 
                 switch (request.body.communicationchanneltype) {
-                    case 'WHAD':
+                    case "WHAD":
                         if (request.body.servicecredentials) {
                             let serviceData = JSON.parse(request.body.servicecredentials);
 
                             let createBody = {
                                 ApiKey: serviceData.apiKey,
-                                IsCloud: serviceData.isCloud ? true : false,
-                                Type: 'CREATE',
-                                Category: request.body.category,
-                                Name: request.body.name,
-                                Language: ((request.body.language || '').split('_')).length > 1 ? `${(request.body.language || '').split('_')[0].toLowerCase()}_${(request.body.language || '').split('_')[1]}` : ((request.body.language || '').split('_')[0].toLowerCase()),
-                                Header: request.body.headerenabled ? { Type: request.body.headertype, Text: request.body.headertype === 'text' ? request.body.header : null } : null,
-                                Footer: request.body.footerenabled ? { Text: request.body.footer } : null,
                                 Body: { Text: request.body.body },
-                            }
+                                Category: request.body.category,
+                                Footer: request.body.footerenabled ? { Text: request.body.footer } : null,
+                                IsCloud: !!serviceData.isCloud,
+                                Name: request.body.name,
+                                Type: "CREATE",
+                                Header: request.body.headerenabled
+                                    ? {
+                                          Type: request.body.headertype,
+                                          Text: request.body.headertype === "text" ? request.body.header : null,
+                                      }
+                                    : null,
+                                Language:
+                                    (request.body.language || "").split("_").length > 1
+                                        ? `${(request.body.language || "").split("_")[0].toLowerCase()}_${
+                                              (request.body.language || "").split("_")[1]
+                                          }`
+                                        : (request.body.language || "").split("_")[0].toLowerCase(),
+                            };
 
                             if (request.body.buttons && request.body.buttons.length > 0) {
                                 createBody.Buttons = [];
 
-                                request.body.buttons.forEach(element => {
-                                    createBody.Buttons.push({ Text: element.title, Type: element.type, Data: (element.type === 'phone_number' ? `phoneNumber: ${element.payload}` : (element.type === 'url' ? `url: ${element.payload}` : null)) });
+                                request.body.buttons.forEach((element) => {
+                                    createBody.Buttons.push({
+                                        Text: element.title,
+                                        Type: element.type,
+                                        Data:
+                                            element.type === "phone_number"
+                                                ? `phoneNumber: ${element.payload}`
+                                                : element.type === "url"
+                                                ? `url: ${element.payload}`
+                                                : null,
+                                    });
                                 });
                             }
 
                             const requestCreateDialog = await axiosObservable({
-                                data: createBody,
-                                method: 'post',
-                                url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
                                 _requestid: request._requestid,
+                                data: createBody,
+                                method: "post",
+                                url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
                             });
 
                             if (requestCreateDialog.data.success) {
                                 let parameters = request.body;
 
-                                parameters.corpid = request.user.corpid;
-                                parameters.orgid = request.user.orgid;
-                                parameters.username = request.user.usr;
                                 parameters.bodyobject = JSON.stringify(request.body.bodyobject);
                                 parameters.buttons = JSON.stringify(request.body.buttons);
-                                parameters.externalid = requestCreateDialog.data.result[0].id || '';
-                                parameters.namespace = requestCreateDialog.data.result[0].id || '';
+                                parameters.corpid = request.user.corpid;
+                                parameters.externalid = requestCreateDialog.data.result[0].id || "";
+                                parameters.namespace = requestCreateDialog.data.result[0].id || "";
+                                parameters.orgid = request.user.orgid;
+                                parameters.username = request.user.usr;
 
-                                const queryTemplateAdd = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
+                                const queryTemplateAdd = await triggerfunctions.executesimpletransaction(
+                                    "UFN_MESSAGETEMPLATE_INS",
+                                    parameters
+                                );
 
                                 if (queryTemplateAdd instanceof Array) {
                                     addSuccess = true;
-                                }
-                                else {
+                                } else {
                                     requestCode = queryTemplateAdd.code;
                                     requestMessage = queryTemplateAdd.code;
                                 }
-                            }
-                            else {
-                                requestCode = requestCreateDialog.data.operationMessage
+                            } else {
+                                requestCode = requestCreateDialog.data.operationMessage;
                                 requestMessage = requestCreateDialog.data.operationMessage;
                             }
                         }
                         break;
 
-                    case 'WHAT':
+                    case "WHAT":
                         if (request.body.servicecredentials) {
                             let serviceData = JSON.parse(request.body.servicecredentials);
 
                             let createBody = {
                                 AppId: serviceData.appId,
+                                Body: { Text: request.body.body },
+                                Category: request.body.category,
+                                Footer: request.body.footerenabled ? { Text: request.body.footer } : null,
                                 IntegrationId: request.body.integrationid,
-                                Type: 'CREATE',
                                 KeyId: serviceData.apiKeyId,
                                 KeySecret: serviceData.apiKeySecret,
-                                Category: request.body.category,
                                 Name: request.body.name,
-                                Language: ((request.body.language || '').split('_')).length > 1 ? `${(request.body.language || '').split('_')[0].toLowerCase()}_${(request.body.language || '').split('_')[1]}` : ((request.body.language || '').split('_')[0].toLowerCase()),
-                                Header: request.body.headerenabled ? { Type: request.body.headertype, Text: request.body.headertype === 'text' ? request.body.header : null } : null,
-                                Footer: request.body.footerenabled ? { Text: request.body.footer } : null,
-                                Body: { Text: request.body.body },
-                            }
+                                Type: "CREATE",
+                                Header: request.body.headerenabled
+                                    ? {
+                                          Type: request.body.headertype,
+                                          Text: request.body.headertype === "text" ? request.body.header : null,
+                                      }
+                                    : null,
+                                Language:
+                                    (request.body.language || "").split("_").length > 1
+                                        ? `${(request.body.language || "").split("_")[0].toLowerCase()}_${
+                                              (request.body.language || "").split("_")[1]
+                                          }`
+                                        : (request.body.language || "").split("_")[0].toLowerCase(),
+                            };
 
                             if (request.body.buttons && request.body.buttons.length > 0) {
                                 createBody.Buttons = [];
 
-                                request.body.buttons.forEach(element => {
-                                    createBody.Buttons.push({ Text: element.title, Type: element.type, Data: (element.type === 'phone_number' ? `phoneNumber: ${element.payload}` : (element.type === 'url' ? `url: ${element.payload}` : null)) });
+                                request.body.buttons.forEach((element) => {
+                                    createBody.Buttons.push({
+                                        Text: element.title,
+                                        Type: element.type,
+                                        Data:
+                                            element.type === "phone_number"
+                                                ? `phoneNumber: ${element.payload}`
+                                                : element.type === "url"
+                                                ? `url: ${element.payload}`
+                                                : null,
+                                    });
                                 });
                             }
 
                             const requestCreateSmooch = await axiosObservable({
-                                data: createBody,
-                                method: 'post',
-                                url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
                                 _requestid: request._requestid,
+                                data: createBody,
+                                method: "post",
+                                url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
                             });
 
                             if (requestCreateSmooch.data.success) {
                                 let parameters = request.body;
 
-                                parameters.corpid = request.user.corpid;
-                                parameters.orgid = request.user.orgid;
-                                parameters.username = request.user.usr;
                                 parameters.bodyobject = JSON.stringify(request.body.bodyobject);
                                 parameters.buttons = JSON.stringify(request.body.buttons);
-                                parameters.externalid = requestCreateSmooch.data.result[0].id || '';
+                                parameters.corpid = request.user.corpid;
+                                parameters.externalid = requestCreateSmooch.data.result[0].id || "";
+                                parameters.orgid = request.user.orgid;
+                                parameters.username = request.user.usr;
 
-                                const queryTemplateAdd = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
+                                const queryTemplateAdd = await triggerfunctions.executesimpletransaction(
+                                    "UFN_MESSAGETEMPLATE_INS",
+                                    parameters
+                                );
 
                                 if (queryTemplateAdd instanceof Array) {
                                     addSuccess = true;
-                                }
-                                else {
+                                } else {
                                     requestCode = queryTemplateAdd.code;
                                     requestMessage = queryTemplateAdd.code;
                                 }
-                            }
-                            else {
-                                requestCode = requestCreateSmooch.data.operationMessage
+                            } else {
+                                requestCode = requestCreateSmooch.data.operationMessage;
                                 requestMessage = requestCreateSmooch.data.operationMessage;
                             }
                         }
@@ -3395,8 +3711,8 @@ exports.addTemplate = async (request, response) => {
                 }
 
                 if (addSuccess) {
-                    requestCode = '';
-                    requestMessage = '';
+                    requestCode = "";
+                    requestMessage = "";
                     requestStatus = 200;
                     requestSuccess = true;
                 }
@@ -3409,28 +3725,27 @@ exports.addTemplate = async (request, response) => {
             message: requestMessage,
             success: requestSuccess,
         });
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-            message: exception.message
+            message: exception.message,
         });
     }
-}
+};
 
 exports.deleteTemplate = async (request, response) => {
     try {
-        let requestCode = 'error_unexpected_error';
-        let requestMessage = 'error_unexpected_error';
+        let requestCode = "error_unexpected_error";
+        let requestMessage = "error_unexpected_error";
         let requestStatus = 400;
         let requestSuccess = false;
 
-        if (typeof whitelist !== 'undefined' && whitelist) {
+        if (typeof whitelist !== "undefined" && whitelist) {
             if (!whitelist.includes(request.ip)) {
                 return response.status(requestStatus).json({
-                    code: 'error_auth_error',
+                    code: "error_auth_error",
                     error: !requestSuccess,
-                    message: 'error_auth_error',
+                    message: "error_auth_error",
                     success: requestSuccess,
                 });
             }
@@ -3445,27 +3760,28 @@ exports.deleteTemplate = async (request, response) => {
 
                     if (messagetemplate.deleteprovider) {
                         switch (messagetemplate.communicationchanneltype) {
-                            case 'WHAD':
+                            case "WHAD":
                                 if (messagetemplate.communicationchannelservicecredentials) {
-                                    let serviceData = JSON.parse(messagetemplate.communicationchannelservicecredentials);
+                                    let serviceData = JSON.parse(
+                                        messagetemplate.communicationchannelservicecredentials
+                                    );
 
                                     const requestDeleteDialog = await axiosObservable({
+                                        _requestid: request._requestid,
+                                        method: "post",
+                                        url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
                                         data: {
                                             ApiKey: serviceData.apiKey,
                                             DeleteName: messagetemplate.name,
-                                            IsCloud: serviceData.isCloud ? true : false,
-                                            Type: 'DELETE',
+                                            IsCloud: !!serviceData.isCloud,
+                                            Type: "DELETE",
                                         },
-                                        method: 'post',
-                                        url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
-                                        _requestid: request._requestid,
                                     });
 
                                     if (requestDeleteDialog.data.success) {
                                         deleteSuccess = true;
-                                    }
-                                    else {
-                                        requestCode = requestDeleteDialog.data.operationMessage
+                                    } else {
+                                        requestCode = requestDeleteDialog.data.operationMessage;
                                         requestMessage = requestDeleteDialog.data.operationMessage;
                                     }
                                 }
@@ -3473,41 +3789,41 @@ exports.deleteTemplate = async (request, response) => {
 
                             case "WHAT":
                                 if (messagetemplate.communicationchannelservicecredentials) {
-                                    let serviceData = JSON.parse(messagetemplate.communicationchannelservicecredentials);
+                                    let serviceData = JSON.parse(
+                                        messagetemplate.communicationchannelservicecredentials
+                                    );
 
                                     const requestDeleteSmooch = await axiosObservable({
+                                        _requestid: request._requestid,
+                                        method: "post",
+                                        url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
                                         data: {
                                             AppId: serviceData.appId,
-                                            IntegrationId: messagetemplate.communicationchannelintegrationid,
                                             DeleteName: messagetemplate.name,
-                                            Type: 'DELETE',
+                                            IntegrationId: messagetemplate.communicationchannelintegrationid,
                                             KeyId: serviceData.apiKeyId,
                                             KeySecret: serviceData.apiKeySecret,
+                                            Type: "DELETE",
                                         },
-                                        method: 'post',
-                                        url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
-                                        _requestid: request._requestid,
                                     });
 
                                     if (requestDeleteSmooch.data.success) {
                                         deleteSuccess = true;
-                                    }
-                                    else {
-                                        requestCode = requestDeleteSmooch.data.operationMessage
+                                    } else {
+                                        requestCode = requestDeleteSmooch.data.operationMessage;
                                         requestMessage = requestDeleteSmooch.data.operationMessage;
                                     }
                                 }
                                 break;
 
-                            case 'WHAG':
-                            case 'WHAM':
+                            case "WHAG":
+                            case "WHAM":
                                 if (messagetemplate.communicationchannelservicecredentials) {
                                     deleteSuccess = true;
                                 }
                                 break;
                         }
-                    }
-                    else {
+                    } else {
                         deleteSuccess = true;
                     }
 
@@ -3520,15 +3836,17 @@ exports.deleteTemplate = async (request, response) => {
                         parameters.orgid = request.user.orgid;
                         parameters.username = request.user.usr;
 
-                        const queryTemplateDelete = await triggerfunctions.executesimpletransaction('UFN_MESSAGETEMPLATE_INS', parameters);
+                        const queryTemplateDelete = await triggerfunctions.executesimpletransaction(
+                            "UFN_MESSAGETEMPLATE_INS",
+                            parameters
+                        );
 
                         if (queryTemplateDelete instanceof Array) {
-                            requestCode = '';
-                            requestMessage = '';
+                            requestCode = "";
+                            requestMessage = "";
                             requestStatus = 200;
                             requestSuccess = true;
-                        }
-                        else {
+                        } else {
                             requestCode = queryTemplateDelete.code;
                             requestMessage = queryTemplateDelete.code;
                         }
@@ -3543,11 +3861,10 @@ exports.deleteTemplate = async (request, response) => {
             message: requestMessage,
             success: requestSuccess,
         });
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-            message: exception.message
+            message: exception.message,
         });
     }
-}
+};
