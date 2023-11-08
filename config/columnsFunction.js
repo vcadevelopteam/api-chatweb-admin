@@ -36,16 +36,16 @@ module.exports = {
             type: "date"
         },
         enddate: {
-            column: "to_char(co.enddate, 'DD/MM/YYYY')"
+            column: "co.enddate"
         },
         endtime: {
-            column: "to_char(co.enddate :: time, 'HH24:MI:SS')"
+            column: "co.endtime"
         },
         firstinteractiondate: {
-            column: "to_char(co.firstinteractiondate, 'DD/MM/YYYY')"
+            column: "co.firstinteractiondate"
         },
         firstinteractiontime: {
-            column: "to_char(co.firstinteractiondate :: time, 'HH24:MI:SS')"
+            column: "co.firstinteractiontime"
         },
         person: {
             column: "co.displayname"
