@@ -652,7 +652,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVENTORYCONSUMPTION_DETAILSELECT: {
-        query: "SELECT * FROM inventario.ufn_inventoryconsumptiondetail_sel($corpid, $orgid, $inventoryconsumptionid, $username)",
+        query: "SELECT * FROM inventario.ufn_all_inventoryconsumptiondetail_inventoryconsumption_sel($corpid, $orgid, $inventoryconsumptionid, $username)",
         module: "",
         protected: "SELECT"
     },
@@ -703,7 +703,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INVENTORBOOKING_INS: {
-        query: "SELECT * FROM inventario.ufn_inventorybooking_ins($corpid, $orgid, $inventorywarehouseid, $inventoryid, $warehouseid, $ticketid, $bookingtype, $bookingquantity, $status, $type, $applicationdate, $operation, $username)",
+        query: "SELECT * FROM inventario.ufn_inventorybooking_ins($corpid, $orgid, $inventorybookingid, $inventoryid, $warehouseid, $ticketid, $bookingtype, $bookingquantity, $status, $type, $applicationdate, $operation, $username)",
         module: "",
         protected: "INSERT"
     },
