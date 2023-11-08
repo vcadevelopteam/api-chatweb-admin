@@ -149,7 +149,7 @@ exports.drawPDFSBS = async (req, res) => {
     try {
         // parameters.detalle
         // parameters.persona_natural
-
+        parameters.detalle = parameters.detalle ?? [];
         const data = parameters.detalle.map((x, i) => ({
             ...x,
             fecha_reporte: new Date().toLocaleString('es-PE', {
