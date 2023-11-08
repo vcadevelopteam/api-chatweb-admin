@@ -224,6 +224,10 @@ const createLaraigoAccount = async (
     return null;
 };
 
+const removeSpecialCharacter = (text) => {
+    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
+
 exports.createSubscription = async (request, response) => {
     try {
         let requestCode = "error_unexpected_error";
@@ -248,24 +252,23 @@ exports.createSubscription = async (request, response) => {
                         method: "post",
                         url: `${bridgeEndpoint}processculqi/handleclient`,
                         data: {
-                            address: (parameters.contactaddress || "").substring(0, 100),
-                            addressCity: (parameters.timezone || "").substring(0, 30),
+                            address: `${removeSpecialCharacter(parameters.contactaddress || "EMPTY").slice(0, 100)}`,
+                            addressCity: `${removeSpecialCharacter(parameters.timezone || "EMPTY").slice(0, 30)}`,
                             bearer: appsetting.privatekey,
-                            countryCode: parameters.contactcountry,
-                            email: (parameters.contactmail || "").substring(0, 50),
-                            firstName: (parameters.contactnameorcompany || "").substring(0, 50),
-                            lastName: (parameters.contactnameorcompany || "").substring(0, 50),
+                            countryCode: `${parameters.contactcountry || "PE"}`,
+                            email: `${parameters.contactmail || "generic@mail.com"}`,
+                            firstName: `${removeSpecialCharacter(
+                                parameters?.contactnameorcompany.replace(/[0-9]/g, "") || "EMPTY"
+                            ).slice(0, 50)}`,
+                            lastName: `${removeSpecialCharacter(
+                                parameters?.contactnameorcompany.replace(/[0-9]/g, "") || "EMPTY"
+                            ).slice(0, 50)}`,
                             operation: "CREATE",
+                            phoneNumber: `${(parameters.contactphone
+                                ? parameters.contactphone.replace(/[^0-9]/g, "")
+                                : "51999999999"
+                            ).slice(0, 15)}`,
                             url: appsetting.culqiurlclient,
-                            phoneNumber: (parameters.contactphone || "")
-                                .split("+")
-                                .join("")
-                                .split(" ")
-                                .join("")
-                                .split("(")
-                                .join("")
-                                .split(")")
-                                .join(""),
                         },
                     });
 
@@ -303,7 +306,7 @@ exports.createSubscription = async (request, response) => {
                                 }
 
                                 if (errorData.merchant_message) {
-                                    requestMessage = errorData.merchant_message;
+                                    requestMessage = errorData.merchant_message.split("https://www.culqi.com/api")[0];
                                 }
                             }
                         }
@@ -319,7 +322,7 @@ exports.createSubscription = async (request, response) => {
                             }
 
                             if (errorData.merchant_message) {
-                                requestMessage = errorData.merchant_message;
+                                requestMessage = errorData.merchant_message.split("https://www.culqi.com/api")[0];
                             }
                         }
                     }
