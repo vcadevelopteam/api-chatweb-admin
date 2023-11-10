@@ -100,7 +100,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORGUSER_INS: {
-        query: "SELECT * FROM ufn_orguser_ins($corpid, $orgid, $p_userid, $rolegroups, $usersupervisor, $bydefault, $labels, $groups, $channels, $status,$type, $defaultsort, $username, $operation, $redirect)",
+        query: "SELECT * FROM ufn_orguser_ins($corpid, $orgid, $p_userid, $rolegroups, $usersupervisor, $bydefault, $labels, $groups, $channels, $status,$type, $defaultsort, $username, $operation, $redirect, $storeid, $warehouseid)",
         module: "/extras/users",
         protected: "INSERT"
     },
@@ -3874,7 +3874,7 @@ module.exports = {
     },
 
     UFN_WAREHOUSE_SEL: {
-        query: "SELECT * FROM inventario.ufn_warehouse_sel($corpid, $orgid, $warehouseid, $username)",
+        query: "SELECT * FROM ufn_warehouse_lst($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
