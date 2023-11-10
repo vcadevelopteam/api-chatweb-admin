@@ -11,6 +11,11 @@ let options = {
     format: 'A4',
     orientation: 'portrait',
     border: 0,
+    childProcessOptions: {
+        env: {
+            OPENSSL_CONF: '/dev/null',
+        },
+    }
 };
 
 exports.draw = async (req, res) => {
