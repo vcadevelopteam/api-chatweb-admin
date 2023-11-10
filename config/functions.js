@@ -104,6 +104,16 @@ module.exports = {
         module: "/extras/users",
         protected: "INSERT"
     },
+    UFN_STORE_INS: {
+        query: "SELECT * FROM ufn_store_ins($corpid, $orgid, $id, $description, $phone, $address, $warehouseid, $coveragearea , $warehouseinstore, $type , $status, $username, $operation)",
+        module: "/extras/users",
+        protected: "INSERT"
+    },
+    UFN_STORE_SEL: {
+        query: "SELECT * FROM ufn_store_sel($id, $all)",
+        module: "/extras/users",
+        protected: "SELECT"
+    },
     QUERY_UPDATE_APIKEY: {
         query: `UPDATE orguser SET
             apikey = $apikey
