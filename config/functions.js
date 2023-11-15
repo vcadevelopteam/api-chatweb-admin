@@ -582,7 +582,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_DOMAIN_LST_VALORES: {
-        query: "SELECT * FROM ufn_domain_lst_valores($corpid, $orgid, $domainname, $username)",
+        query: "SELECT * FROM ufn_domain_lst_valores($corpid, $orgid, $domainname, $userid)",
         module: "",
         protected: "SELECT"
     },
@@ -647,7 +647,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INVENTORYCONSUMPTION_INS: {
-        query: "SELECT * FROM inventario.ufn_inventoryconsumption_ins($corpid, $orgid, $inventoryconsumptionid, $description, $ordernumber, $transactiontype, $warehouseid, $status, $type, $comment, $operation, $username)",
+        query: "SELECT * FROM inventario.ufn_inventoryconsumption_ins($corpid, $orgid, $inventoryconsumptionid, $description, $ordernumber, $transactiontype, $warehouseid, $status, $type, $comment, $inventorybookingid, $operation, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_INVENTORYCONSUMPTIONDETAIL_INS: {
+        query: "SELECT * FROM inventario.ufn_inventoryconsumptiondetail_ins($corpid, $orgid, $inventoryconsumptiondetailid, $p_tableid, $line, $productid, $description, $quantity, $onlinecost, $fromshelf, $fromlote, $unitcost, $ticketnumber, $dispatchto, $realdate, $comment, $status, $type, $operation, $username, $transactiontype)",
         module: "",
         protected: "INSERT"
     },
