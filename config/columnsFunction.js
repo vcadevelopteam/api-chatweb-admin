@@ -1539,4 +1539,39 @@ module.exports = {
             column: "ld.company"
         },
     },
+    leadgridtracking:{
+        createdate: {
+            column: "ld.createdate"
+        },
+        agent: {
+            column: "CONCAT(usr.firstname, ' ', usr.lastname)"
+        },
+        leaddescription: {
+            column: "ld.description"
+        },
+        changedate: {
+            column: "ld.changedate"
+        },
+        changeby: {
+            column: "ld.changeby"
+        },
+        phase: {
+            column: "col.description"
+        },
+        expected_revenue: {
+            column: "ld.expected_revenue"
+        },
+        tags: {
+            column: "ld.tags"
+        },
+        notes: {
+            column: "lna.notes_concatenated"
+        },
+        estimatedimplementationdate: {
+            column: "ld.estimatedimplementationdate"
+        },
+        estimatedbillingdate: {
+            column: "ld.estimatedbillingdate"
+        },
+    }
 }

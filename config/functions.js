@@ -1400,7 +1400,22 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_INS: {
-        query: "select * from ufn_lead_ins($corpid, $orgid, $leadid, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $column_uuid, $username, $index, $phone, $email, $userid, $phase, $campaignid, $leadproduct, $operation, $personid, $persontype)",
+        query: "select * from ufn_lead_ins($corpid, $orgid, $leadid, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $column_uuid, $username, $index, $phone, $email, $userid, $phase, $campaignid, $leadproduct, $operation, $personid, $persontype, $estimatedimplementationdate, $estimatedbillingdate)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_LEADGRID_TRACKING_SEL: {
+        query: "select * from ufn_leadgrid_tracking_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_LEADGRID_TRACKING_TOTALRECORDS: {
+        query: "select * from ufn_leadgrid_tracking_totalrecords($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_LEADGRID_TRACKING_EXPORT: {
+        query: "select * from ufn_leadgrid_tracking_export($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $offset)",
         module: "",
         protected: "INSERT"
     },
