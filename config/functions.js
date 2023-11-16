@@ -1,7 +1,7 @@
 module.exports = {
     QUERY_AUTHENTICATED: {
         query: `
-        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision
+        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision, corp.partnerid
         FROM usr us
         INNER JOIN orguser ous ON ous.userid = us.userid
         INNER JOIN org org ON org.orgid = ous.orgid
@@ -12,7 +12,7 @@ module.exports = {
         LEFT JOIN communicationchannel cc ON cc.corpid = ous.corpid AND cc.communicationchannelid = ANY(string_to_array(ous.channels,',')::BIGINT[]) AND cc.orgid = ous.orgid AND cc.type = 'VOXI' AND cc.status = 'ACTIVO'
         WHERE us.usr = $usr AND ous.bydefault
         AND ous.status <> 'ELIMINADO'
-		GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision
+        GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
         LIMIT 1`,
         module: "",
         protected: false
@@ -24,19 +24,22 @@ module.exports = {
     },
     QUERY_AUTHENTICATED_BY_FACEBOOKID: {
         query: `
-        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan,  string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision
-        from usr us 
-        INNER JOIN orguser ous on ous.userid = us.userid 
-        INNER JOIN org org on org.orgid = ous.orgid 
-        LEFT JOIN currency cur on cur.code = org.currency 
-        INNER JOIN corp corp on corp.corpid = ous.corpid 
-        LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid 
+        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, ous.corpid, ous.orgid, us.userid,
+		us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan,
+		string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi,
+		cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision, corp.partnerid
+        from usr us
+        INNER JOIN orguser ous on ous.userid = us.userid
+        INNER JOIN org org on org.orgid = ous.orgid
+        LEFT JOIN currency cur on cur.code = org.currency
+        INNER JOIN corp corp on corp.corpid = ous.corpid
+        LEFT JOIN paymentplan pp ON pp.paymentplanid = corp.paymentplanid
         INNER JOIN role role ON role.corpid = 1 and role.orgid = 1 and role.roleid = any(string_to_array(ous.rolegroups, ',')::bigint[])
         LEFT JOIN communicationchannel cc ON cc.corpid = ous.corpid AND cc.orgid = ous.orgid AND cc.type = 'VOXI' AND us.status = 'ACTIVO'
-        WHERE us.facebookid = $facebookid 
-        AND ous.bydefault 
+        WHERE us.facebookid = $facebookid
+        AND ous.bydefault
         AND ous.status <> 'ELIMINADO'
-		GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision
+        GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
         LIMIT 1`,
         module: "",
         protected: false
@@ -49,7 +52,7 @@ module.exports = {
         ous.groups, ous.redirect, pp.plan, COALESCE(cur.symbol, 'S/') currencysymbol,
         COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi,
         cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision,
-        string_agg(role.description,',') roledesc
+        string_agg(role.description,',') roledesc, corp.partnerid
         from usr us
         INNER JOIN orguser ous on ous.userid = us.userid
         INNER JOIN org org on org.orgid = ous.orgid left join currency cur on cur.code = org.currency
@@ -59,8 +62,8 @@ module.exports = {
         WHERE us.googleid = $googleid
         AND ous.bydefault
         AND ous.status <> 'ELIMINADO'
-		GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision
-		LIMIT 1`,
+        GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
+        LIMIT 1`,
         module: "",
         protected: false
     },
@@ -1400,7 +1403,22 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_INS: {
-        query: "select * from ufn_lead_ins($corpid, $orgid, $leadid, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $column_uuid, $username, $index, $phone, $email, $userid, $phase, $campaignid, $leadproduct, $operation, $personid, $persontype)",
+        query: "select * from ufn_lead_ins($corpid, $orgid, $leadid, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $column_uuid, $username, $index, $phone, $email, $userid, $phase, $campaignid, $leadproduct, $operation, $personid, $persontype, $estimatedimplementationdate, $estimatedbillingdate)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_LEADGRID_TRACKING_SEL: {
+        query: "select * from ufn_leadgrid_tracking_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_LEADGRID_TRACKING_TOTALRECORDS: {
+        query: "select * from ufn_leadgrid_tracking_totalrecords($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_LEADGRID_TRACKING_EXPORT: {
+        query: "select * from ufn_leadgrid_tracking_export($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $offset)",
         module: "",
         protected: "INSERT"
     },
@@ -3867,4 +3885,41 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+
+    UFN_PARTNER_SEL: {
+        query: "SELECT * FROM ufn_partner_sel($id, $all, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_PARTNER_INS: {
+        query: "SELECT * FROM ufn_partner_ins($id, $country, $billingcurrency, $documenttype, $documentnumber, $company, $address, $billingcontact, $email, $signaturedate, $enterprisepartner, $billingplan, $typecalculation, $numbercontactsbag, $puadditionalcontacts, $priceperbag, $automaticgenerationdrafts, $automaticperiodgeneration, $montlyplancost, $numberplancontacts, $username, $status, $type, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CUSTOMER_BY_PARTNER_SEL: {
+        query: "SELECT * FROM ufn_customer_by_partner_sel($partnerid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CUSTOMER_BY_PARTNER_INS: {
+        query: "SELECT * FROM ufn_customer_by_partner_ins($id, $corpid, $orgid, $partnerid, $typepartner, $billingplan, $comissionpercentage, $status, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CUSTOMERPARTNER_BY_USER_SEL: {
+        query: "SELECT * FROM ufn_customerpartner_by_user_sel($username)",
+        module: "",
+        protected: "SELECT"
+    },
+    
+    UFN_BILLINGPERIODPARTNER_ENTERPRISE: {
+        query: "SELECT * FROM ufn_billingperiodpartner_enterprise($partnerid, $corpid, $orgid, $year, $month, $reporttype, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_BILLINGPERIODPARTNER_DEVELOPER_RESELLER: {
+        query: "SELECT * FROM ufn_billingperiodpartner_developer_reseller($partnerid, $corpid, $orgid, $year, $month, $username)",
+        module: "",
+        protected: "SELECT"
+    }
 }
