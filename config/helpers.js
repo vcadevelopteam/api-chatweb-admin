@@ -274,6 +274,8 @@ exports.setSessionParameters = (parameters, user, id) => {
         parameters.corpid = user.corpid ? user.corpid : 1;
     if (parameters.orgid === null || parameters.orgid === undefined)
         parameters.orgid = user.orgid ? user.orgid : 1;
+    if (parameters.partnerid === null || parameters.partnerid === undefined)
+        parameters.partnerid = user.partnerid;
     if (parameters.username === null || parameters.username === undefined)
         parameters.username = user.usr;
     if (parameters.userid === null || parameters.userid === undefined)
