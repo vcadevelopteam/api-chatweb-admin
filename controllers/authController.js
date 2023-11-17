@@ -229,6 +229,7 @@ exports.authenticate = async (req, res) => {
 exports.getUser = async (req, res) => {
     let resultProperties = {};
     const prevdata = { _requestid: req._requestid }
+    const firstload = req.query.firstload;
 
     try {
         const resultBD = await Promise.all([
@@ -243,10 +244,12 @@ exports.getUser = async (req, res) => {
                 ...prevdata
             }),
             executesimpletransaction("UFN_DOMAIN_LST_VALUES_ONLY_DATA", { ...req.user, domainname: "TIPODESCONEXION", ...prevdata }),
-            executesimpletransaction("QUERY_SEL_PROPERTY_ENV_ON_LOGIN", { ...req.user })
+            executesimpletransaction("QUERY_SEL_PROPERTY_ENV_ON_LOGIN", { ...req.user }),
+            ...((firstload && req.user.roledesc.split(",").some(x => ["ADMINISTRADOR", "SUPERADMIN"].includes(x))) ? [executesimpletransaction("QUERY_NEW_GETCHANNELS", { ...req.user })] : [])
         ]);
         const resultBDProperties = resultBD[3];
         const propertyEnv = resultBD[5] instanceof Array && resultBD[5].length > 0 ? resultBD[5][0].propertyvalue : "";
+        const newChannels = resultBD[6] instanceof Array && resultBD[5].length > 0 ? true : false;
 
         if (!(resultBD[0] instanceof Array)) {
             return res.status(500).json(getErrorCode());
@@ -270,6 +273,7 @@ exports.getUser = async (req, res) => {
                 item.menuorder,
             ]
         }), {})
+
         jwt.sign({ user: { ...req.user, menu: { ...menu, "system-label": undefined, "/": undefined } } }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
             if (error) throw error;
             delete req.user.token;
@@ -282,6 +286,8 @@ exports.getUser = async (req, res) => {
                     menu,
                     properties: resultProperties,
                     token,
+                    redirect: (firstload && req.user.roledesc.split(",").some(x => ["ADMINISTRADOR", "SUPERADMIN"].includes(x))) ? "/channels" : req.user.roledesc,
+                    newChannels,
                     organizations: resultBD[1],
                     notifications: resultBD[2],
                     domains: {
