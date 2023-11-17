@@ -1156,7 +1156,8 @@ exports.insertChannel = async (request, response) => {
 
                                 return response.json({
                                     integrationid: requestWebChatCreate.data.id,
-                                    success: true
+                                    success: true,
+                                    result: transactionCreateWebChat[0]
                                 });
                             }
                             else {
@@ -1228,7 +1229,8 @@ exports.insertChannel = async (request, response) => {
 
                         return response.json({
                             integrationid: requestWebChatCreate1.data.id,
-                            success: true
+                            success: true,
+                            result: transactionCreateWebChat[0]
                         });
                     } else {
                         return response.status(400).json({
@@ -1273,7 +1275,8 @@ exports.insertChannel = async (request, response) => {
                         await channelfunctions.clearHookCache('FacebookService', request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
+                            result: transactionCreateWorkplace[0]
                         });
 
                     }
@@ -1321,7 +1324,8 @@ exports.insertChannel = async (request, response) => {
                         await channelfunctions.clearHookCache('FacebookService', request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
+                            result: transactionCreateWorkplace[0]
                         });
 
                     }
@@ -1460,7 +1464,8 @@ exports.insertChannel = async (request, response) => {
                             await channelfunctions.clearHookCache('FacebookService', request._requestid);
 
                             return response.json({
-                                success: true
+                                success: true,
+                                result: transactionCreateFacebook[0]
                             });
                         }
                         else {
@@ -1520,7 +1525,8 @@ exports.insertChannel = async (request, response) => {
                         return response.json({
                             applicationId: requestCreateSmooch.data.applicationId,
                             integrationId: requestCreateSmooch.data.integrationId,
-                            success: true
+                            success: true,
+                            result: transactionCreateSmooch[0]
                         });
                     }
                     else {
@@ -1569,7 +1575,8 @@ exports.insertChannel = async (request, response) => {
                         }
 
                         return response.json({
-                            success: true
+                            success: true,
+                            result: transactionCreateInfobip[0]
                         });
                     }
                     else {
@@ -1610,7 +1617,8 @@ exports.insertChannel = async (request, response) => {
 
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
-                            success: true
+                            success: true,
+                            result: transactionCreateGeneric[0]
                         });
                     }
                     else {
@@ -1641,7 +1649,8 @@ exports.insertChannel = async (request, response) => {
 
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
-                            success: true
+                            success: true,
+                            result: transactionCreateGeneric[0]
                         });
                     }
                     else {
@@ -1672,7 +1681,8 @@ exports.insertChannel = async (request, response) => {
 
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
-                            success: true
+                            success: true,
+                            result: transactionCreateGeneric[0]
                         });
                     }
                     else {
@@ -1716,7 +1726,8 @@ exports.insertChannel = async (request, response) => {
 
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
-                            success: true
+                            success: true,
+                            result: transactionCreateGeneric[0]
                         });
                     }
                     else {
@@ -1761,7 +1772,8 @@ exports.insertChannel = async (request, response) => {
 
                         if (transactionCreateGeneric instanceof Array) {
                             return response.json({
-                                success: true
+                                success: true,
+                                result: transactionCreateGeneric[0]
                             });
                         }
                         else {
@@ -1814,7 +1826,8 @@ exports.insertChannel = async (request, response) => {
 
                         if (transactionCreateGeneric instanceof Array) {
                             return response.json({
-                                success: true
+                                success: true,
+                                result: transactionCreateGeneric[0]
                             });
                         }
                         else {
@@ -1850,7 +1863,8 @@ exports.insertChannel = async (request, response) => {
 
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
-                            success: true
+                            success: true,
+                            result: transactionCreateGeneric[0]
                         });
                     }
                     else {
@@ -1882,7 +1896,8 @@ exports.insertChannel = async (request, response) => {
 
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
-                            success: true
+                            success: true,
+                            result: transactionCreateGeneric[0]
                         });
                     }
                     else {
@@ -1921,7 +1936,8 @@ exports.insertChannel = async (request, response) => {
 
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
-                            success: true
+                            success: true,
+                            result: transactionCreateGeneric[0]
                         });
                     }
                     else {
@@ -1950,7 +1966,8 @@ exports.insertChannel = async (request, response) => {
 
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
-                            success: true
+                            success: true,
+                            result: transactionCreateGeneric[0]
                         });
                     }
                     else {
@@ -1990,7 +2007,8 @@ exports.insertChannel = async (request, response) => {
                         await channelfunctions.clearHookCache('TelegramService', request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
+                            result: transactionCreateTelegram[0]
                         });
                     }
                     else {
@@ -2065,7 +2083,8 @@ exports.insertChannel = async (request, response) => {
                             await channelfunctions.clearHookCache('TwitterService', request._requestid);
 
                             return response.json({
-                                success: true
+                                success: true,
+                                result: transactionCreateTwitter[0]
                             });
                         }
                         else {
@@ -2150,7 +2169,8 @@ exports.insertChannel = async (request, response) => {
                         await channelfunctions.clearHookCache('Dialog360Service', request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
+                            result: transactionCreateWhatsApp[0]
                         });
                     }
                     else {
@@ -2296,7 +2316,8 @@ exports.insertChannel = async (request, response) => {
                     }
 
                     return response.json({
-                        success: true
+                        success: true,
+                        result: transactionCreateWhatsAppSmooch[0]
                     });
                 }
                 else {
@@ -2342,7 +2363,8 @@ exports.insertChannel = async (request, response) => {
                         await channelfunctions.clearHookCache('SmoochService', request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
+                            result: transactionInsertWhatsApp[0]
                         });
                     }
                     else {
@@ -2391,7 +2413,8 @@ exports.insertChannel = async (request, response) => {
                         await channelfunctions.clearHookCache('GupshupService', request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
+                            result: transactionInsertWhatsAppGupshup[0]
                         });
                     }
                     else {
@@ -2439,7 +2462,8 @@ exports.insertChannel = async (request, response) => {
                         await channelfunctions.clearHookCache('WhatsAppService', request._requestid);
 
                         return response.json({
-                            success: true
+                            success: true,
+                            result: transactionCreateMeta[0]
                         });
                     }
                     else {
@@ -2521,7 +2545,8 @@ exports.insertChannel = async (request, response) => {
                                         if (transactionCreateVoximplant instanceof Array) {
                                             return response.json({
                                                 integrationId: voximplantPhoneNumber.phonenumber,
-                                                success: true
+                                                success: true,
+                                                result: transactionCreateVoximplant[0]
                                             });
                                         }
                                         else {
