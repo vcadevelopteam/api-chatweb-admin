@@ -1164,6 +1164,7 @@ exports.insertChannel = async (request, response) => {
                                 return response.json({
                                     integrationid: requestWebChatCreate.data.id,
                                     success: true,
+                                    result: transactionCreateWebChat[0]
                                 });
                             } else {
                                 return response.status(400).json({
@@ -1235,6 +1236,7 @@ exports.insertChannel = async (request, response) => {
                         return response.json({
                             integrationid: requestWebChatCreate1.data.id,
                             success: true,
+                            result: transactionCreateWebChat[0]
                         });
                     } else {
                         return response.status(400).json({
@@ -1281,6 +1283,7 @@ exports.insertChannel = async (request, response) => {
 
                         return response.json({
                             success: true,
+                            result: transactionCreateWorkplace[0]
                         });
                     } else {
                         return response.status(400).json({
@@ -1327,6 +1330,7 @@ exports.insertChannel = async (request, response) => {
 
                         return response.json({
                             success: true,
+                            result: transactionCreateWorkplace[0]
                         });
                     } else {
                         return response.status(400).json({
@@ -1467,6 +1471,7 @@ exports.insertChannel = async (request, response) => {
 
                             return response.json({
                                 success: true,
+                                result: transactionCreateFacebook[0]
                             });
                         } else {
                             return response.status(400).json({
@@ -1524,6 +1529,7 @@ exports.insertChannel = async (request, response) => {
                             applicationId: requestCreateSmooch.data.applicationId,
                             integrationId: requestCreateSmooch.data.integrationId,
                             success: true,
+                            result: transactionCreateSmooch[0]
                         });
                     } else {
                         return response.status(400).json({
@@ -1575,6 +1581,7 @@ exports.insertChannel = async (request, response) => {
 
                         return response.json({
                             success: true,
+                            result: transactionCreateInfobip[0]
                         });
                     } else {
                         return response.status(400).json({
@@ -1636,6 +1643,7 @@ exports.insertChannel = async (request, response) => {
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
                             success: true,
+                            result: transactionCreateGeneric[0]
                         });
                     } else {
                         return response.status(400).json({
@@ -1695,6 +1703,7 @@ exports.insertChannel = async (request, response) => {
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
                             success: true,
+                            result: transactionCreateGeneric[0]
                         });
                     } else {
                         return response.status(400).json({
@@ -1754,6 +1763,7 @@ exports.insertChannel = async (request, response) => {
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
                             success: true,
+                            result: transactionCreateGeneric[0]
                         });
                     } else {
                         return response.status(400).json({
@@ -1839,6 +1849,7 @@ exports.insertChannel = async (request, response) => {
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
                             success: true,
+                            result: transactionCreateGeneric[0]
                         });
                     } else {
                         return response.status(400).json({
@@ -1895,6 +1906,7 @@ exports.insertChannel = async (request, response) => {
                         if (transactionCreateGeneric instanceof Array) {
                             return response.json({
                                 success: true,
+                                result: transactionCreateGeneric[0]
                             });
                         } else {
                             return response.status(400).json({
@@ -1958,6 +1970,7 @@ exports.insertChannel = async (request, response) => {
                         if (transactionCreateGeneric instanceof Array) {
                             return response.json({
                                 success: true,
+                                result: transactionCreateGeneric[0]
                             });
                         } else {
                             return response.status(400).json({
@@ -2013,6 +2026,7 @@ exports.insertChannel = async (request, response) => {
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
                             success: true,
+                            result: transactionCreateGeneric[0]
                         });
                     } else {
                         return response.status(400).json({
@@ -2061,6 +2075,7 @@ exports.insertChannel = async (request, response) => {
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
                             success: true,
+                            result: transactionCreateGeneric[0]
                         });
                     } else {
                         return response.status(400).json({
@@ -2102,6 +2117,7 @@ exports.insertChannel = async (request, response) => {
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
                             success: true,
+                            result: transactionCreateGeneric[0]
                         });
                     } else {
                         return response.status(400).json({
@@ -2159,6 +2175,7 @@ exports.insertChannel = async (request, response) => {
                     if (transactionCreateGeneric instanceof Array) {
                         return response.json({
                             success: true,
+                            result: transactionCreateGeneric[0]
                         });
                     } else {
                         return response.status(400).json({
@@ -2201,6 +2218,7 @@ exports.insertChannel = async (request, response) => {
 
                         return response.json({
                             success: true,
+                            result: transactionCreateTelegram[0]
                         });
                     } else {
                         return response.status(400).json({
@@ -2276,6 +2294,7 @@ exports.insertChannel = async (request, response) => {
 
                             return response.json({
                                 success: true,
+                                result: transactionCreateTwitter[0]
                             });
                         } else {
                             parameters.id = transactionCreateTwitter[0].ufn_communicationchannel_ins;
@@ -2363,6 +2382,7 @@ exports.insertChannel = async (request, response) => {
 
                         return response.json({
                             success: true,
+                            result: transactionCreateWhatsApp[0]
                         });
                     } else {
                         return response.status(400).json({
@@ -2545,6 +2565,7 @@ exports.insertChannel = async (request, response) => {
 
                     return response.json({
                         success: true,
+                        result: transactionCreateWhatsAppSmooch[0]
                     });
                 } else {
                     return response.status(400).json({
@@ -2593,6 +2614,7 @@ exports.insertChannel = async (request, response) => {
 
                         return response.json({
                             success: true,
+                            result: transactionInsertWhatsApp[0]
                         });
                     } else {
                         return response.status(400).json({
@@ -2643,6 +2665,7 @@ exports.insertChannel = async (request, response) => {
 
                         return response.json({
                             success: true,
+                            result: transactionInsertWhatsAppGupshup[0]
                         });
                     } else {
                         return response.status(400).json({
@@ -2689,6 +2712,7 @@ exports.insertChannel = async (request, response) => {
 
                         return response.json({
                             success: true,
+                            result: transactionCreateMeta[0]
                         });
                     } else {
                         return response.status(400).json({
@@ -2813,6 +2837,7 @@ exports.insertChannel = async (request, response) => {
                                             return response.json({
                                                 integrationId: voximplantPhoneNumber.phonenumber,
                                                 success: true,
+                                                result: transactionCreateVoximplant[0]
                                             });
                                         } else {
                                             return response.status(400).json({
