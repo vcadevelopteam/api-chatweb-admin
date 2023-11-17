@@ -68,7 +68,7 @@ module.exports = {
         protected: false
     },
     QUERY_NEW_GETCHANNELS: {
-        query: "SELECT cc.communicationchannelid, cc.description FROM communicationchannel cc WHERE cc.corpid = $corpid AND cc.orgid = $orgid AND cc.type NOT IN ('FORM', 'VOXI') AND cc.status = 'ACTIVO' AND NOT EXISTS ( SELECT 1 FROM block b WHERE b.corpid = cc.corpid AND b.orgid = cc.orgid AND b.status = 'ACTIVO' AND cc.communicationchannelid = ANY(string_to_array(b.communicationchannelid, ',')::int[]) );",
+        query: "SELECT cc.communicationchannelid, cc.description FROM communicationchannel cc WHERE cc.corpid = $corpid AND cc.orgid = $orgid AND cc.type NOT IN ('FORM', 'VOXI', 'FBWA', 'INST') AND cc.status = 'ACTIVO' AND NOT EXISTS ( SELECT 1 FROM block b WHERE b.corpid = cc.corpid AND b.orgid = cc.orgid AND b.status = 'ACTIVO' AND cc.communicationchannelid = ANY(string_to_array(b.communicationchannelid, ',')::int[]) );",
         module: "/extras/users",
         protected: "SELECT"
     },
