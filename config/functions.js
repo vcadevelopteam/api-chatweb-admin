@@ -780,7 +780,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CHATFLOW_BLOCK_TEMPLATE_CLONE: {
-        query: "SELECT * FROM ufn_chatflow_block_template_clone($corpid, $orgid, $chatblockid, $communicationchannelid, $username)",
+        query: "SELECT * FROM ufn_chatflow_block_template_clone($corpid, $orgid, $chatblockid, $communicationchannelid, $username, $prop_value)",
         module: "",
         protected: "SELECT"
     },
