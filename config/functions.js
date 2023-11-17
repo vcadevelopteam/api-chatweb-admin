@@ -774,6 +774,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CHATFLOW_BLOCK_TEMPLATES_SEL: {
+        query: "SELECT * FROM ufn_chatflow_block_templates_sel()",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CHATFLOW_BLOCK_LST: {
         query: "SELECT * FROM ufn_chatflow_block_lst($corpid, $orgid, $userid)",
         module: "",
