@@ -3916,5 +3916,20 @@ module.exports = {
         query: "SELECT * FROM ufn_billingperiodpartner_developer_reseller($partnerid, $corpid, $orgid, $year, $month, $username)",
         module: "",
         protected: "SELECT"
-    }
+    },
+    UFN_ORDERCONFIG_INS: {
+        query: "SELECT * FROM ufn_orderconfig_ins($corpid, $orgid, $id, $orderconfig, $type, $status, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_ORDERCONFIG_SEL: {
+        query: "SELECT * FROM ufn_orderconfig_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEAD_CONFIG_INS: {
+        query: "SELECT * FROM ufn_lead_config_ins($id, $maxgreen, $maxyellow);",
+        module: "",
+        protected: "INSERT"
+    },
 }
