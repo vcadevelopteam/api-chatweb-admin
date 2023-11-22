@@ -137,6 +137,14 @@ module.exports = {
         module: "/extras/users",
         protected: "INSERT"
     },
+    QUERY_WHITELIST: {
+        query: `select ipstart from ipwhitelist
+        where corpid = $corpid
+        and orgid = $orgid
+        and status = 'ACTIVO'`,
+        module: "/extras/users",
+        protected: "INSERT"
+    },
     UFN_USER_INS: {
         query: "SELECT * FROM ufn_user_ins($corpid, $orgid, $id, $usr, $doctype, $docnum, $password, $firstname, $lastname, $email, $pwdchangefirstlogin, $type, $status, $description, $username, $operation, $company, $twofactorauthentication, $registercode, $billinggroup, $image)",
         module: ["/extras/users"],
