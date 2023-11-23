@@ -1,5 +1,6 @@
 const { buildQueryDynamic2 } = require('../config/triggerfunctions');
 const { executesimpletransaction } = require('../config/triggerfunctions');
+const logger = require('../config/winston');
 const CryptoJS = require('crypto-js');
 
 const validateBearerToken = async (token) => {
@@ -28,9 +29,23 @@ const validateBearerToken = async (token) => {
     throw new Error("token is not valid")
 }
 
+const verifyIP = async (clientIP, params) => {
+    const whitelist = await executesimpletransaction("QUERY_WHITELIST", params);
+    
+    if (whitelist.length > 0) {
+        const isAllowed = whitelist.some(ipRange => clientIP === ipRange.ipstart);
+    
+        if (!isAllowed) {
+            // Si la IP no está permitida, envía una respuesta de acceso denegado
+            throw new Error("The ip is not on the whitelist")
+        }
+    }
+};
+
 exports.drawReport = async (req, res) => {
     try {
         const { reportname } = req.params;
+        logger.child({ _requestid: req._requestid, ctx: req.body, ip: req.ip }).info(`api drawReport: ${reportname}`);
 
         const filters = req.body;
 
@@ -39,6 +54,8 @@ exports.drawReport = async (req, res) => {
         }
 
         const params = await validateBearerToken(req.headers['authorization'])
+
+        await verifyIP(req.ip, params);
 
         const dataReport = await executesimpletransaction("QUERY_GET_DATA_FROM_REPORT", { ...params, reportname });
 
