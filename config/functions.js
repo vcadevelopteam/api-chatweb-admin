@@ -1742,8 +1742,8 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_SEL: {
-        query: "select * from ufn_lead_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $campaignid, $tags, $userid, $supervisorid, $persontype, $all)",
-        module: ["/crm"],
+        query: "select * from ufn_lead_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $campaignid, $tags, $userid, $supervisorid, $persontype, $ordertype, $orderby, $all)",
+        module: "",
         protected: "SELECT"
     },
     UFN_COLUMN_SD_SEL: {
@@ -4287,5 +4287,20 @@ module.exports = {
         query: "SELECT * FROM ufn_subscription_createchannels($corpid, $orgid, $userid, $android, $apple, $appstore, $blogger, $business, $chatWeb, $email, $facebook, $instagram, $instagramDM, $linkedin, $messenger, $metalead, $playstore, $sms, $teams, $telegram, $tiktok, $twitter, $twitterDM, $voximplantphone, $webForm, $whatsapp, $workplace, $workplaceDM, $youtube)",
         module: "",
         protected: "SELECT"
+    },
+    UFN_ORDERCONFIG_INS: {
+        query: "SELECT * FROM ufn_orderconfig_ins($corpid, $orgid, $id, $orderconfig, $type, $status, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_ORDERCONFIG_SEL: {
+        query: "SELECT * FROM ufn_orderconfig_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEAD_CONFIG_INS: {
+        query: "SELECT * FROM ufn_lead_config_ins($id, $maxgreen, $maxyellow);",
+        module: "",
+        protected: "INSERT"
     },
 }
