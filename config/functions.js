@@ -676,6 +676,21 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_INVENTORYCONSUMPTION_PROCESS: {
+        query: "SELECT * FROM inventario.ufn_inventoryconsumption_process($corpid, $orgid, $inventoryconsumptionid, $status, $comment, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_GUIAREMISIONDETAIL_SEL: {
+        query: "SELECT * FROM inventario.ufn_guiaremision_detail_sel($corpid, $orgid, $inventoryconsumptionid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_GUIAREMISION_SEL: {
+        query: "SELECT * FROM inventario.ufn_guiaremision_sel($corpid, $orgid, $inventoryconsumptionid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_INVENTORYCONSUMPTION_PAG: {
         query: "SELECT * FROM inventario.ufn_inventoryconsumption_pag($corpid, $orgid, $inventoryconsumptionid, $username, $where, $order, $take, $skip, $startdate, $enddate, $offset)",
         module: "",
@@ -686,6 +701,22 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_INVENTORYCONSUMPTION_INS: {
+        query: "SELECT * FROM inventario.ufn_inventoryconsumption_ins($corpid, $orgid, $inventoryconsumptionid, $description, $ordernumber, $transactiontype, $warehouseid, $status, $type, $comment, $inventorybookingid, $operation, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_INVENTORYCONSUMPTIONDETAIL_INS: {
+        query: "SELECT * FROM inventario.ufn_inventoryconsumptiondetail_ins($corpid, $orgid, $inventoryconsumptiondetailid, $p_tableid, $line, $productid, $description, $quantity, $onlinecost, $fromshelf, $fromlote, $unitcost, $ticketnumber, $dispatchto, $realdate, $comment, $status, $type, $operation, $username, $transactiontype)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_INVENTORYCONSUMPTION_DETAILSELECT: {
+        query: "SELECT * FROM inventario.ufn_all_inventoryconsumptiondetail_inventoryconsumption_sel($corpid, $orgid, $inventoryconsumptionid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+
     UFN_PRODUCT_DUP: {
         query: "SELECT * FROM inventario.ufn_product_dup($corpid, $orgid, $productid, $productreferenceid, $username)",
         module: "",
@@ -732,7 +763,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INVENTORBOOKING_INS: {
-        query: "SELECT * FROM inventario.ufn_inventorybooking_ins($corpid, $orgid, $inventorywarehouseid, $inventoryid, $warehouseid, $ticketid, $bookingtype, $bookingquantity, $status, $type, $applicationdate, $operation, $username)",
+        query: "SELECT * FROM inventario.ufn_inventorybooking_ins($corpid, $orgid, $inventorybookingid, $inventoryid, $warehouseid, $ticketid, $bookingtype, $bookingquantity, $status, $type, $applicationdate, $operation, $username)",
         module: "",
         protected: "INSERT"
     },
@@ -782,7 +813,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PRODUCTATTRIBUTE_INS: {
-        query: "SELECT * FROM inventario.ufn_productattribute_ins($corpid, $orgid, $productattributeid, $productid, $attributeid, $value, $unitmeasureid, $status, $type, $operation, $username)",
+        query: "SELECT * FROM inventario.ufn_productattribute_ins($corpid, $orgid, $productattributeid, $p_tableid, $attributeid, $value, $unitmeasureid, $status, $type, $operation, $username)",
         module: "",
         protected: "INSERT"
     },
@@ -799,6 +830,11 @@ module.exports = {
     },
     UFN_PRODUCT_EXPORT: {
         query: "SELECT * FROM inventario.ufn_product_export($startdate, $enddate,$corpid, $orgid, $where, $order, $username, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_INVENTORYCONSUMPTION_EXPORT: {
+        query: "SELECT * FROM inventario.ufn_inventoryconsumption_export($startdate, $enddate,$corpid, $orgid, $where, $order, $username, $offset)",
         module: "",
         protected: "SELECT"
     },
@@ -848,6 +884,16 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_BOOKINGWAREHOUSE_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_inventorybooking_warehouse_sel($corpid,$orgid,$warehouseid, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_GENERATE_LABEL_SEL: {
+        query: "SELECT * FROM inventario.ufn_generate_label_sel($corpid,$orgid,$inventoryconsumptionid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_PRODUCTATTRIBUTE_MAS: {
         query: "SELECT * FROM inventario.ufn_productattribute_mas($json, $corpid,$orgid,$username)",
         module: "",
@@ -859,7 +905,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_PRODUCTMANUFACTURER_INS: {
-        query: "SELECT * FROM inventario.ufn_productmanufacturer_ins($corpid, $orgid, $productcompanyid, $productid, $manufacturerid, $model, $catalognumber, $webpage, $taxeid, $isstockistdefault, $averagedeliverytime, $lastprice, $lastorderdate, $unitbuy, $status, $type, $distributorid, $operation, $username)",
+        query: "SELECT * FROM inventario.ufn_productmanufacturer_ins($corpid, $orgid, $productcompanyid, $p_tableid, $manufacturerid, $model, $catalognumber, $webpage, $taxeid, $isstockistdefault, $averagedeliverytime, $lastprice, $lastorderdate, $unitbuy, $status, $type, $distributorid, $operation, $username)",
         module: "",
         protected: "INSERT"
     },

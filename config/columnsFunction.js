@@ -1669,5 +1669,19 @@ module.exports = {
         estimatedbillingdate: {
             column: "ld.estimatedbillingdate"
         },
-    }
+    },
+    inventoryconsumption:{
+        inventoryconsumptionid:{
+            column: "t.inventoryconsumptionid"
+        },
+        description:{
+            column: "t.description"
+        },
+        transactiontype:{
+            column: "t.transactiontype"
+        },
+        status:{
+            column: "t.status"
+        },
+    },
 }
