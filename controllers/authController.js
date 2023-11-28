@@ -249,7 +249,7 @@ exports.getUser = async (req, res) => {
         ]);
         const resultBDProperties = resultBD[3];
         const propertyEnv = resultBD[5] instanceof Array && resultBD[5].length > 0 ? resultBD[5][0].propertyvalue : "";
-        const newChannels = resultBD[6] instanceof Array && resultBD[5].length > 0 ? true : false;
+        const newChannels = resultBD[6] instanceof Array && resultBD[6].length > 0 ? true : false;
 
         if (!(resultBD[0] instanceof Array)) {
             return res.status(500).json(getErrorCode());
