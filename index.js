@@ -9,6 +9,9 @@ const allowedOrigins = process.env.ADDRESSES_ALLOWED?.split(",") || [];
 
 const app = express();
 
+// Middleware para obtener la dirección IP real desde el encabezado X-Forwarded-For
+app.set('trust proxy', true);
+
 app.use(express.urlencoded({
     extended: true
 }))
