@@ -3004,7 +3004,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_REPORT_UNIQUECONTACTS_SEL: {
-        query: "SELECT * FROM ufn_report_uniquecontacts_sel($year, $channeltype, $offset)",
+        query: "SELECT * FROM ufn_report_uniquecontacts_sel($year, $channeltype, $offset, $userid)",
         module: "",
         protected: "SELECT"
     },
