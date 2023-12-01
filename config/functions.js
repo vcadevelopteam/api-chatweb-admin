@@ -3341,6 +3341,11 @@ module.exports = {
         module: ["/reports"],
         protected: "SELECT"
     },
+    UFN_DOMAIN_CHANNELTYPE_LST: {
+        query: "SELECT * FROM ufn_domain_channeltype_lst($corpid, $orgid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_WITAI_INTENT_SEL: {
         query: "SELECT * FROM ufn_witai_intent_sel($corpid, $orgid)",
         module: ["/iatraining"],
