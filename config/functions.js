@@ -716,6 +716,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_ALL_WAREHOUSE_INVENTORYCONSUMPTION_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_warehouse_inventoryconsumption_sel($corpid, $orgid, $warehouseid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
 
     UFN_PRODUCT_DUP: {
         query: "SELECT * FROM inventario.ufn_product_dup($corpid, $orgid, $productid, $operation, $username)",
@@ -824,7 +829,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_STATUSPRODUCT_MAS: {
-        query: "SELECT * FROM inventario.ufn_statusproduct_mas($json, $corpid, $orgid, $username)",
+        query: "SELECT * FROM inventario.ufn_statusproduct_upd_mas($json, $corpid, $orgid, $username)",
         module: "",
         protected: "INSERT"
     },
