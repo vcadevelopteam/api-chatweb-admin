@@ -789,7 +789,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_STATUSPRODUCT_MAS: {
-        query: "SELECT * FROM inventario.ufn_statusproduct_mas($json, $corpid, $orgid, $username)",
+        query: "SELECT * FROM inventario.ufn_statusproduct_upd_mas($json, $corpid, $orgid, $username)",
         module: "",
         protected: "INSERT"
     },
