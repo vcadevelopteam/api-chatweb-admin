@@ -1,4 +1,5 @@
 const { errors, getErrorCode, axiosObservable } = require('../config/helpers');
+const { executesimpletransaction } = require('../config/triggerfunctions');
 
 exports.geocode = async (req, res) => {
     const { lat, lng } = req.query;
@@ -22,4 +23,34 @@ exports.geocode = async (req, res) => {
     } catch (exception) {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
+}
+
+exports.polygonsinsertmassive = async (req, res) => {
+    const corpid = req.body.corpid;
+    const orgid = req.body.orgid;
+    const username = req.body.username;
+
+    const buffer = req.file.buffer;
+    const json = JSON.parse(buffer.toString());
+
+    const table = JSON.stringify([
+        {
+            "id": 0,
+            "name": "Reparto Puente 1",
+            "schedule": {},
+            "polygons": [{ "latitude": 0, "longitude": 0 }],
+            "operation": "INSERT"
+        },
+        {
+            "id": 0,
+            "name": "Reparto Puente 1",
+            "schedule": {},
+            "polygons": [{ "latitude": 0, "longitude": 0 }],
+            "operation": "INSERT"
+        }
+    ])
+
+    await executesimpletransaction("UFN_POLYGONS_INS_ARRAY", { corpid, orgid, username, table })
+
+    return res.json({ json, corpid, orgid });
 }

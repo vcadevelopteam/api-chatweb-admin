@@ -3924,5 +3924,11 @@ module.exports = {
         query: "SELECT * FROM ufn_billingperiodpartner_developer_reseller($partnerid, $corpid, $orgid, $year, $month, $username)",
         module: "",
         protected: "SELECT"
-    }
+    },
+    UFN_POLYGONS_INS_ARRAY: {
+        query: "SELECT * FROM ufn_polygons_ins_array($corpid, $orgid, $username, $table)",
+        module: "",
+        protected: "SELECT"
+    },
+    
 }
