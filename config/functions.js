@@ -667,7 +667,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVENTORYCONSUMPTIONDETAIL_INS: {
-        query: "SELECT * FROM inventario.ufn_inventoryconsumptiondetail_ins($corpid, $orgid, $inventoryconsumptiondetailid, $p_tableid, $line, $productid, $description, $quantity, $onlinecost, $fromshelf, $fromlote, $unitcost, $ticketnumber, $dispatchto, $realdate, $comment, $status, $type, $operation, $username, $transactiontype)",
+        query: "SELECT * FROM inventario.ufn_inventoryconsumptiondetail_ins($corpid, $orgid, $inventoryconsumptiondetailid, $p_tableid, $line, $productid, $description, $quantity, $onlinecost, $fromshelf, $fromlote, $unitcost, $ticketnumber, $dispatchto, $realdate, $comment, $status, $type, $operation, $username, $transactiontype, $warehouseto, $rackcodeto, $lotecodeto)",
         module: "",
         protected: "INSERT"
     },
