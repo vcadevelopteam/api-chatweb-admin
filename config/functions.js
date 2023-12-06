@@ -103,9 +103,19 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORGUSER_INS: {
-        query: "SELECT * FROM ufn_orguser_ins($corpid, $orgid, $p_userid, $rolegroups, $usersupervisor, $bydefault, $labels, $groups, $channels, $status,$type, $defaultsort, $username, $operation, $redirect, $storeid, $warehouseid,  $showbots)",
+        query: "SELECT * FROM ufn_orguser_ins($corpid, $orgid, $p_userid, $rolegroups, $usersupervisor, $bydefault, $labels, $groups, $channels, $status,$type, $defaultsort, $username, $operation, $redirect, $storeid, $warehouseid)",
         module: "/extras/users",
         protected: "INSERT"
+    },
+    UFN_STORE_INS: {
+        query: "SELECT * FROM ufn_store_ins($corpid, $orgid, $id, $description, $phone, $address, $warehouseid, $coveragearea , $warehouseinstore, $type , $status, $username, $operation)",
+        module: "/extras/users",
+        protected: "INSERT"
+    },
+    UFN_STORE_SEL: {
+        query: "SELECT * FROM ufn_store_sel($id, $all)",
+        module: "/extras/users",
+        protected: "SELECT"
     },
     QUERY_UPDATE_APIKEY: {
         query: `UPDATE orguser SET
@@ -3885,6 +3895,12 @@ module.exports = {
     },
     UFN_COLUMN_ORDER_SEL: {
         query: "SELECT * FROM ufn_column_order_sel($corpid, $orgid, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+
+    UFN_WAREHOUSE_SEL: {
+        query: "SELECT * FROM ufn_warehouse_lst($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
