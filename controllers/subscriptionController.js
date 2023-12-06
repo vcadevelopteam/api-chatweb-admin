@@ -1,69 +1,40 @@
-const logger = require('../config/winston');
-const bcryptjs = require("bcryptjs");
-const channelfunctions = require("../config/channelfunctions");
-const triggerfunctions = require("../config/triggerfunctions");
-const jwt = require("jsonwebtoken");
+const { axiosObservable, getErrorCode, setSessionParameters } = require("../config/helpers");
 
-const { getErrorCode, setSessionParameters, axiosObservable } = require('../config/helpers');
+const bcryptjs = require("bcryptjs");
+const triggerfunctions = require("../config/triggerfunctions");
 
 const cryptojs = require("crypto-js");
 
-const ayrshareEndpoint = process.env.AYRSHARE;
 const bridgeEndpoint = process.env.BRIDGE;
-const brokerEndpoint = process.env.CHATBROKER;
-const facebookEndpoint = process.env.FACEBOOKAPI;
-const googleClientId = process.env.GOOGLE_CLIENTID;
-const googleClientSecret = process.env.GOOGLE_CLIENTSECRET;
-const googleTopicName = process.env.GOOGLE_TOPICNAME;
-const hookEndpoint = process.env.HOOK;
 const laraigoEndpoint = process.env.LARAIGO;
-const linkedinEndpoint = process.env.LINKEDIN;
-const linkedinTokenEndpoint = process.env.LINKEDINTOKEN;
-const smoochEndpoint = process.env.SMOOCHAPI;
-const smoochVersion = process.env.SMOOCHVERSION;
-const telegramEndpoint = process.env.TELEGRAMAPI;
 const userSecret = process.env.USERSECRET;
-const webChatApplication = process.env.CHATAPPLICATION;
-const webChatScriptEndpoint = process.env.WEBCHATSCRIPT;
-const whitelist = process.env.WHITELIST;
 
 exports.activateUser = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
-        var requestCode = "error_unexpected_error";
-        var requestMessage = "error_unexpected_error";
-        var requestStatus = 400;
-        var requestSuccess = false;
-
-        if (typeof whitelist !== "undefined" && whitelist) {
-            if (!whitelist.includes(request.ip)) {
-                return response.status(requestStatus).json({
-                    code: "error_auth_error",
-                    error: !requestSuccess,
-                    message: "error_auth_error",
-                    success: requestSuccess,
-                });
-            }
-        }
+        let requestCode = "error_unexpected_error";
+        let requestMessage = "error_unexpected_error";
+        let requestStatus = 400;
+        let requestSuccess = false;
 
         if (request.body) {
-            var userCode = request.body.userCode;
+            let userCode = request.body.userCode;
 
             userCode = userCode.split("_EQUAL_").join("=");
             userCode = userCode.split("_PLUS_").join("+");
             userCode = userCode.split("_SLASH_").join("/");
 
-            var userData = JSON.parse(cryptojs.AES.decrypt(userCode, userSecret).toString(cryptojs.enc.Utf8));
+            let userData = JSON.parse(cryptojs.AES.decrypt(userCode, userSecret).toString(cryptojs.enc.Utf8));
 
-            var userMethod = "UFN_USER_ACTIVATE";
-            var userParameters = {
+            let userParameters = {
+                _requestid: request._requestid,
                 corpid: userData.corpid,
                 userid: userData.userid,
-                _requestid: request._requestid,
             };
 
-            const queryActivateUser = await triggerfunctions.executesimpletransaction(userMethod, userParameters);
+            const queryActivateUser = await triggerfunctions.executesimpletransaction(
+                "UFN_USER_ACTIVATE",
+                userParameters
+            );
 
             if (queryActivateUser instanceof Array) {
                 requestCode = "";
@@ -73,11 +44,7 @@ exports.activateUser = async (request, response) => {
                 if (queryActivateUser.length > 0) {
                     requestSuccess = true;
                 }
-                else {
-                    requestSuccess = false;
-                }
-            }
-            else {
+            } else {
                 requestCode = queryActivateUser.code;
             }
         }
@@ -88,68 +55,54 @@ exports.activateUser = async (request, response) => {
             message: requestMessage,
             success: requestSuccess,
         });
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-            message: exception.message
+            message: exception.message,
         });
     }
-}
+};
 
 exports.changePassword = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
-        var requestCode = "error_unexpected_error";
-        var requestMessage = "error_unexpected_error";
-        var requestStatus = 400;
-        var requestSuccess = false;
-
-        if (typeof whitelist !== "undefined" && whitelist) {
-            if (!whitelist.includes(request.ip)) {
-                return response.status(requestStatus).json({
-                    code: "error_auth_error",
-                    error: !requestSuccess,
-                    message: "error_auth_error",
-                    success: requestSuccess,
-                });
-            }
-        }
+        let requestCode = "error_unexpected_error";
+        let requestMessage = "error_unexpected_error";
+        let requestStatus = 400;
+        let requestSuccess = false;
 
         if (request.body) {
-            var userToken = request.body.token;
+            let userToken = request.body.token;
 
             userToken = userToken.split("_EQUAL_").join("=");
             userToken = userToken.split("_PLUS_").join("+");
             userToken = userToken.split("_SLASH_").join("/");
 
-            var userData = JSON.parse(cryptojs.AES.decrypt(userToken, userSecret).toString(cryptojs.enc.Utf8));
+            let userData = JSON.parse(cryptojs.AES.decrypt(userToken, userSecret).toString(cryptojs.enc.Utf8));
 
             if (userData.userid) {
-                var dateDifference = Math.abs(new Date().getTime() - new Date(userData.date).getTime()) / 3600000;
+                let dateDifference = Math.abs(new Date().getTime() - new Date(userData.date).getTime()) / 3600000;
 
                 if (dateDifference <= 24) {
-                    var passwordMethod = "UFN_USERPASSWORD_UPDATE";
-                    var passwordParameters = {
+                    let passwordParameters = {
+                        _requestid: request._requestid,
                         password: await bcryptjs.hash(request.body.password, await bcryptjs.genSalt(10)),
                         userid: userData.userid,
-                        _requestid: request._requestid,
                     };
 
-                    const queryUpdatePassword = await triggerfunctions.executesimpletransaction(passwordMethod, passwordParameters);
+                    const queryUpdatePassword = await triggerfunctions.executesimpletransaction(
+                        "UFN_USERPASSWORD_UPDATE",
+                        passwordParameters
+                    );
 
                     if (queryUpdatePassword instanceof Array) {
                         requestCode = "";
                         requestMessage = "";
                         requestStatus = 200;
                         requestSuccess = true;
-                    }
-                    else {
+                    } else {
                         requestCode = queryUpdatePassword.code;
                     }
-                }
-                else {
+                } else {
                     requestMessage = "recoverpassword_expired";
                 }
             }
@@ -161,46 +114,33 @@ exports.changePassword = async (request, response) => {
             message: requestMessage,
             success: requestSuccess,
         });
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-            message: exception.message
+            message: exception.message,
         });
     }
-}
+};
 
 exports.countryList = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
+        let requestCode = "error_unexpected_error";
+        let requestData = null;
+        let requestMessage = "error_unexpected_error";
+        let requestStatus = 400;
+        let requestSuccess = false;
 
-        var requestData = null;
-        var requestCode = "error_unexpected_error";
-        var requestMessage = "error_unexpected_error";
-        var requestStatus = 400;
-        var requestSuccess = false;
-
-        if (typeof whitelist !== "undefined" && whitelist) {
-            if (!whitelist.includes(request.ip)) {
-                return response.status(requestStatus).json({
-                    code: "error_auth_error",
-                    error: !requestSuccess,
-                    message: "error_auth_error",
-                    success: requestSuccess,
-                });
-            }
-        }
-
-        const queryCountryGet = await triggerfunctions.executesimpletransaction("UFN_COUNTRY_SEL", { _requestid: request._requestid });
+        const queryCountryGet = await triggerfunctions.executesimpletransaction("UFN_COUNTRY_SEL", {
+            _requestid: request._requestid,
+        });
 
         if (queryCountryGet instanceof Array) {
-            requestData = queryCountryGet;
             requestCode = "";
+            requestData = queryCountryGet;
             requestMessage = "";
             requestStatus = 200;
             requestSuccess = true;
-        }
-        else {
+        } else {
             requestCode = queryCountryGet.code;
         }
 
@@ -211,48 +151,95 @@ exports.countryList = async (request, response) => {
             message: requestMessage,
             success: requestSuccess,
         });
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-            message: exception.message
+            message: exception.message,
         });
     }
-}
+};
+
+const createLaraigoAccount = async (
+    method,
+    firstname,
+    lastname,
+    username,
+    password,
+    email,
+    doctype,
+    docnumber,
+    phone,
+    facebookid,
+    googleid,
+    join_reason,
+    rolecompany,
+    companysize,
+    organizationname,
+    paymentplanid,
+    currency,
+    country,
+    businessname,
+    fiscaladdress,
+    sunatcountry,
+    contactemail,
+    contact,
+    autosendinvoice,
+    timezoneoffset,
+    timezone,
+    requestId
+) => {
+    const queryResult = await triggerfunctions.executesimpletransaction(method, {
+        _requestid: requestId || null,
+        autosendinvoice: autosendinvoice || null,
+        businessname: businessname || null,
+        companysize: companysize || null,
+        contact: contact || null,
+        contactemail: contactemail || null,
+        country: country || null,
+        currency: currency || null,
+        docnumber: docnumber || null,
+        doctype: doctype || null,
+        email: email || null,
+        facebookid: facebookid || null,
+        firstname: firstname || null,
+        fiscaladdress: fiscaladdress || null,
+        googleid: googleid || null,
+        join_reason: join_reason || null,
+        lastname: lastname || null,
+        organizationname: organizationname || null,
+        password: password || null,
+        paymentplanid: paymentplanid || null,
+        phone: phone || null,
+        rolecompany: rolecompany || null,
+        sunatcountry: sunatcountry || null,
+        timezone: timezone || null,
+        timezoneoffset: timezoneoffset || null,
+        username: username || null,
+    });
+
+    if (queryResult instanceof Array) {
+        return queryResult[0];
+    }
+
+    return null;
+};
+
+const removeSpecialCharacter = (text) => {
+    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
 
 exports.createSubscription = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
-        var requestCode = "error_unexpected_error";
-        var requestMessage = "error_unexpected_error";
-        var requestStatus = 400;
-        var requestSuccess = false;
-
-        if (typeof whitelist !== "undefined" && whitelist) {
-            if (!whitelist.includes(request.ip)) {
-                return response.status(requestStatus).json({
-                    code: "error_auth_error",
-                    error: !requestSuccess,
-                    message: "error_auth_error",
-                    success: requestSuccess,
-                });
-            }
-        }
+        let requestCode = "error_unexpected_error";
+        let requestMessage = "error_unexpected_error";
+        let requestStatus = 400;
+        let requestSuccess = false;
 
         if (request.body) {
-            var { card = {}, channellist = [], method, parameters = {} } = request.body;
+            let { method, card = {}, channel = {}, parameters = {} } = request.body;
 
-            var channelMethodArray = [];
-            var channelParametersArray = [];
-            var channelServiceArray = [];
-            var channelTypeArray = [];
-
-            var channelData = "";
-            var channelTotal = "";
-
-            var cardData = null;
-            var cardError = false;
+            let paymentcarddata = null;
+            let paymentcarderror = false;
 
             if (card) {
                 const appsetting = await getAppSetting(request._requestid);
@@ -260,82 +247,95 @@ exports.createSubscription = async (request, response) => {
                 if (appsetting) {
                     card.cardnumber = card.cardnumber.split(" ").join("");
 
-                    const requestCulqiClient = await axiosObservable({
-                        data: {
-                            address: (parameters.fiscaladdress || '').substring(0, 100),
-                            addressCity: (parameters.timezone || '').substring(0, 30),
-                            bearer: appsetting.privatekey,
-                            countryCode: parameters.country,
-                            email: card.mail,
-                            firstName: card.firstname,
-                            lastName: card.lastname,
-                            operation: "CREATE",
-                            phoneNumber: ((card.phone || parameters.phone) || "").split("+").join("").split(" ").join("").split("(").join("").split(")").join(""),
-                            url: appsetting.culqiurlclient,
-                        },
+                    const requestCulqiCreateClient = await axiosObservable({
+                        _requestid: request._requestid,
                         method: "post",
                         url: `${bridgeEndpoint}processculqi/handleclient`,
-                        _requestid: request._requestid,
+                        data: {
+                            address: `${removeSpecialCharacter(parameters.contactaddress || "EMPTY").slice(0, 100)}`,
+                            addressCity: `${removeSpecialCharacter(parameters.timezone || "EMPTY").slice(0, 30)}`,
+                            bearer: appsetting.privatekey,
+                            countryCode: `${parameters.contactcountry || "PE"}`,
+                            email: `${parameters.contactmail || "generic@mail.com"}`,
+                            firstName: `${removeSpecialCharacter(
+                                parameters?.contactnameorcompany.replace(/[0-9]/g, "") || "EMPTY"
+                            ).slice(0, 50)}`,
+                            lastName: `${removeSpecialCharacter(
+                                parameters?.contactnameorcompany.replace(/[0-9]/g, "") || "EMPTY"
+                            ).slice(0, 50)}`,
+                            operation: "CREATE",
+                            phoneNumber: `${(parameters.contactphone
+                                ? parameters.contactphone.replace(/[^0-9]/g, "")
+                                : "51999999999"
+                            ).slice(0, 15)}`,
+                            url: appsetting.culqiurlclient,
+                        },
                     });
 
-                    if (requestCulqiClient.data.success) {
-                        const requestCulqiCard = await axiosObservable({
+                    if (requestCulqiCreateClient.data.success) {
+                        const requestCulqiCreateCard = await axiosObservable({
+                            _requestid: request._requestid,
+                            method: "post",
+                            url: `${bridgeEndpoint}processculqi/handlecard`,
                             data: {
                                 bearer: appsetting.privatekey,
                                 bearerToken: appsetting.publickey,
                                 cardNumber: card.cardnumber,
-                                customerId: requestCulqiClient.data.result.id,
-                                cvv: card.securitycode,
-                                email: card.mail,
-                                expirationMonth: card.expirationmonth,
-                                expirationYear: card.expirationyear,
+                                customerId: requestCulqiCreateClient.data.result.id,
+                                cvv: card.cardsecuritycode,
+                                email: parameters.contactmail,
+                                expirationMonth: card.cardmonth,
+                                expirationYear: card.cardyear,
                                 operation: "CREATE",
                                 url: appsetting.culqiurlcardcreate,
                                 urlToken: appsetting.culqiurltoken,
                             },
-                            method: "post",
-                            url: `${bridgeEndpoint}processculqi/handlecard`,
-                            _requestid: request._requestid,
                         });
 
-                        if (requestCulqiCard.data.success) {
-                            cardData = requestCulqiCard.data.result;
-                        }
-                        else {
-                            cardError = true;
+                        if (requestCulqiCreateCard.data.success) {
+                            paymentcarddata = requestCulqiCreateCard.data.result;
+                        } else {
+                            paymentcarderror = true;
                             requestMessage = "error_card_card";
 
-                            if (requestCulqiCard.data.operationMessage) {
-                                let culqiError = JSON.parse(requestCulqiCard.data.operationMessage);
+                            if (requestCulqiCreateCard.data.operationMessage) {
+                                let errorData = JSON.parse(requestCulqiCreateCard.data.operationMessage);
 
-                                if (culqiError) {
-                                    if (culqiError.user_message) {
-                                        requestMessage = culqiError.user_message;
-                                    }
+                                if (errorData.user_message) {
+                                    requestMessage = errorData.user_message;
+                                }
 
-                                    if (culqiError.merchant_message) {
-                                        requestMessage = culqiError.merchant_message;
-                                    }
+                                if (errorData.merchant_message) {
+                                    requestMessage = errorData.merchant_message.split("https://www.culqi.com/api")[0];
                                 }
                             }
                         }
-                    }
-                    else {
-                        cardError = true;
+                    } else {
+                        paymentcarderror = true;
                         requestMessage = "error_card_client";
+
+                        if (requestCulqiCreateClient.data.operationMessage) {
+                            let errorData = JSON.parse(requestCulqiCreateClient.data.operationMessage);
+
+                            if (errorData.user_message) {
+                                requestMessage = errorData.user_message;
+                            }
+
+                            if (errorData.merchant_message) {
+                                requestMessage = errorData.merchant_message.split("https://www.culqi.com/api")[0];
+                            }
+                        }
                     }
-                }
-                else {
-                    cardError = true;
+                } else {
+                    paymentcarderror = true;
                     requestMessage = "error_card_configuration";
                 }
-            }
-            else {
-                cardError = true;
+            } else {
+                paymentcarderror = true;
                 requestMessage = "error_card_missing";
             }
 
-            if (cardError) {
+            if (paymentcarderror) {
                 return response.status(requestStatus).json({
                     code: requestCode,
                     error: !requestSuccess,
@@ -344,814 +344,85 @@ exports.createSubscription = async (request, response) => {
                 });
             }
 
-            if (channellist instanceof Array) {
-                var channelError = false;
+            parameters.loginpassword = await bcryptjs.hash(parameters.loginpassword, await bcryptjs.genSalt(10));
 
-                for (const channel of channellist) {
-                    if (channel && !channelError) {
-                        var channelMethod = channel.method ? channel.method : "UFN_COMMUNICATIONCHANNEL_INS";
-                        var channelParameters = channel.parameters;
-                        var channelService = channel.service;
-
-                        channelParameters.appintegrationid = null;
-                        channelParameters.botconfigurationid = null;
-                        channelParameters.botenabled = null;
-                        channelParameters.channelparameters = null;
-                        channelParameters.chatflowenabled = true;
-                        channelParameters.coloricon = channelParameters.coloricon || null;
-                        channelParameters.communicationchannelcontact = "";
-                        channelParameters.communicationchanneltoken = null;
-                        channelParameters.country = null;
-                        channelParameters.customicon = null;
-                        channelParameters.motive = "SUBSCRIPTION";
-                        channelParameters.operation = "INSERT";
-                        channelParameters.phone = null;
-                        channelParameters.resolvelithium = null;
-                        channelParameters.schedule = null;
-                        channelParameters.status = "PENDIENTE";
-                        channelParameters.updintegration = null;
-                        channelParameters.apikey = null;
-                        channelParameters.voximplantrecording = null;
-                        channelParameters.voximplantwelcometone = null;
-                        channelParameters.voximplantholdtone = null;
-                        channelParameters.voximplantcallsupervision = null;
-                        channelParameters._requestid = request._requestid;
-
-                        requestCode = channel.type;
-
-                        switch (channel.type) {
-                            case "CHATWEB":
-                                const webChatData = {
-                                    applicationId: webChatApplication,
-                                    metadata: {
-                                        color: {
-                                            chatBackgroundColor: channelService.color ? channelService.color.background : "",
-                                            chatBorderColor: channelService.color ? channelService.color.border : "",
-                                            chatHeaderColor: channelService.color ? channelService.color.header : "",
-                                            messageBotColor: channelService.color ? channelService.color.bot : "",
-                                            messageClientColor: channelService.color ? channelService.color.client : "",
-                                        },
-                                        extra: {
-                                            abandonendpoint: `${webChatScriptEndpoint}smooch`,
-                                            cssbody: "",
-                                            enableabandon: channelService.extra ? channelService.extra.abandonevent : false,
-                                            enableformhistory: channelService.extra ? channelService.extra.formhistory : false,
-                                            enableidlemessage: channelService.bubble ? channelService.bubble.active : false,
-                                            headermessage: channelService.extra ? channelService.extra.botnametext : "",
-                                            inputalwaysactive: channelService.extra ? channelService.extra.persistentinput : false,
-                                            jsscript: channelService.extra ? channelService.extra.customjs : "",
-                                            playalertsound: channelService.extra ? channelService.extra.alertsound : false,
-                                            sendmetadata: channelService.extra ? channelService.extra.enablemetadata : false,
-                                            showchatrestart: channelService.extra ? channelService.extra.reloadchat : false,
-                                            showlaraigologo: channelService.extra ? channelService.extra.poweredby : false,
-                                            showmessageheader: channelService.extra ? channelService.extra.botnameenabled : false,
-                                            showplatformlogo: false,
-                                            uploadaudio: channelService.extra ? channelService.extra.uploadaudio : false,
-                                            uploadfile: channelService.extra ? channelService.extra.uploadfile : false,
-                                            uploadimage: channelService.extra ? channelService.extra.uploadimage : false,
-                                            uploadlocation: channelService.extra ? channelService.extra.uploadlocation : false,
-                                            uploadvideo: channelService.extra ? channelService.extra.uploadvideo : false,
-                                        },
-                                        form: channelService.form ? channelService.form : null,
-                                        icons: {
-                                            chatBotImage: channelService.interface ? channelService.interface.iconbot : "",
-                                            chatHeaderImage: channelService.interface ? channelService.interface.iconheader : "",
-                                            chatIdleImage: channelService.bubble ? channelService.bubble.iconbubble : "",
-                                            chatOpenImage: channelService.interface ? channelService.interface.iconbutton : "",
-                                        },
-                                        personalization: {
-                                            headerMessage: channelService.extra ? channelService.extra.botnametext : "",
-                                            headerSubTitle: channelService.interface ? channelService.interface.chatsubtitle : "",
-                                            headerTitle: channelService.interface ? channelService.interface.chattitle : "",
-                                            idleMessage: channelService.bubble ? channelService.bubble.messagebubble : "",
-                                        }
-                                    },
-                                    name: channelParameters.description,
-                                    status: "ACTIVO",
-                                    type: "CHAZ",
-                                }
-
-                                const requestChatwebIntegration = await axiosObservable({
-                                    data: webChatData,
-                                    method: "post",
-                                    url: `${brokerEndpoint}integrations/save`,
-                                    _requestid: request._requestid,
-                                });
-
-                                if (requestChatwebIntegration.data) {
-                                    if (typeof requestChatwebIntegration.data.id !== "undefined" && requestChatwebIntegration.data.id) {
-                                        const requestChatwebWebhook = await axiosObservable({
-                                            data: {
-                                                description: channelParameters.description,
-                                                integration: requestChatwebIntegration.data.id,
-                                                name: channelParameters.description,
-                                                status: "ACTIVO",
-                                                webUrl: `${hookEndpoint}chatweb/webhookasync`,
-                                            },
-                                            method: "post",
-                                            url: `${brokerEndpoint}webhooks/save`,
-                                            _requestid: request._requestid,
-                                        });
-
-                                        if (requestChatwebWebhook.data) {
-                                            if (typeof requestChatwebWebhook.data.id !== "undefined" && requestChatwebWebhook.data.id) {
-                                                const requestChatwebPlugin = await axiosObservable({
-                                                    data: {
-                                                        integration: requestChatwebIntegration.data.id,
-                                                        name: channelParameters.description,
-                                                        status: "ACTIVO",
-                                                    },
-                                                    method: "post",
-                                                    url: `${brokerEndpoint}plugins/save`,
-                                                    _requestid: request._requestid,
-                                                });
-
-                                                if (requestChatwebPlugin.data) {
-                                                    if (typeof requestChatwebPlugin.data.id !== "undefined" && requestChatwebPlugin.data.id) {
-                                                        channelParameters.apikey = requestChatwebPlugin.data.apiKey;
-                                                        channelParameters.appintegrationid = webChatApplication;
-                                                        channelParameters.channelparameters = JSON.stringify(webChatData);
-                                                        channelParameters.communicationchannelcontact = requestChatwebPlugin.data.id;
-                                                        channelParameters.communicationchannelowner = requestChatwebWebhook.data.id;
-                                                        channelParameters.communicationchannelsite = requestChatwebIntegration.data.id;
-                                                        channelParameters.integrationid = requestChatwebIntegration.data.id;
-                                                        channelParameters.servicecredentials = JSON.stringify(channelService);
-                                                        channelParameters.type = "CHAZ";
-
-                                                        channelMethodArray.push(channelMethod);
-                                                        channelParametersArray.push(channelParameters);
-                                                        channelServiceArray.push(channelService);
-                                                        channelTypeArray.push(channel.type);
-                                                    }
-                                                    else {
-                                                        channelError = true;
-                                                        requestMessage = "subscription_chatweb_plugin_error";
-                                                        break;
-                                                    }
-                                                }
-                                                else {
-                                                    channelError = true;
-                                                    requestMessage = "subscription_chatweb_plugin_error";
-                                                    break;
-                                                }
-                                            }
-                                            else {
-                                                channelError = true;
-                                                requestMessage = "subscription_chatweb_webhook_error";
-                                                break;
-                                            }
-                                        }
-                                        else {
-                                            channelError = true;
-                                            requestMessage = "subscription_chatweb_webhook_error";
-                                            break;
-                                        }
-                                    }
-                                    else {
-                                        channelError = true;
-                                        requestMessage = "subscription_chatweb_integration_error";
-                                        break;
-                                    }
-                                }
-                                else {
-                                    channelError = true;
-                                    requestMessage = "subscription_chatweb_integration_error";
-                                    break;
-                                }
-                                break;
-
-                            case "FACEBOOK":
-                            case "INSTAGRAM":
-                            case "INSTAMESSENGER":
-                            case "MESSENGER":
-                                if (channelService.accesstoken) {
-                                    var businessId = null;
-                                    var channelLinkService = null;
-                                    var channelType = null;
-                                    var serviceType = null;
-
-                                    switch (channel.type) {
-                                        case "FACEBOOK":
-                                            channelLinkService = "WALLADD";
-                                            channelType = "FBWA";
-                                            serviceType = "WALL";
-                                            break;
-
-                                        case "INSTAGRAM":
-                                            channelLinkService = "INSTAGRAMADD";
-                                            channelType = "INST";
-                                            serviceType = "INSTAGRAM";
-                                            break;
-
-                                        case "INSTAMESSENGER":
-                                            channelLinkService = "INSTAGRAMADD";
-                                            channelType = "INDM";
-                                            serviceType = "INSTAGRAM";
-                                            break;
-
-                                        case "MESSENGER":
-                                            channelLinkService = "MESSENGERADD";
-                                            channelType = "FBDM";
-                                            serviceType = "MESSENGER";
-                                            break;
-                                    }
-
-                                    if (channel.type === "INSTAGRAM" || channel.type === "INSTAMESSENGER") {
-                                        const requestInstagramBusiness = await axiosObservable({
-                                            data: {
-                                                accessToken: channelService.accesstoken,
-                                                linkType: "GETBUSINESS",
-                                                siteId: channelService.siteid,
-                                            },
-                                            method: "post",
-                                            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
-                                            _requestid: request._requestid,
-                                        });
-
-                                        if (requestInstagramBusiness.data.success) {
-                                            businessId = requestInstagramBusiness.data.businessId;
-                                        }
-                                        else {
-                                            channelError = true;
-                                            requestMessage = "subscription_facebook_business_error";
-                                            break;
-                                        }
-                                    }
-
-                                    const requestFacebookLink = await axiosObservable({
-                                        data: {
-                                            accessToken: channelService.accesstoken,
-                                            linkType: channelLinkService,
-                                            siteId: channelService.siteid,
-                                        },
-                                        method: "post",
-                                        url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
-                                        _requestid: request._requestid,
-                                    });
-
-                                    if (requestFacebookLink.data.success) {
-                                        var serviceCredentials = {
-                                            accessToken: channelService.accesstoken,
-                                            endpoint: facebookEndpoint,
-                                            serviceType: serviceType,
-                                            siteId: channelService.siteid,
-                                        };
-
-                                        if (typeof businessId !== "undefined" && businessId) {
-                                            channelParameters.communicationchannelowner = channelService.siteid;
-                                            channelParameters.communicationchannelsite = businessId;
-
-                                            serviceCredentials.siteId = businessId;
-                                        }
-
-                                        channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
-                                        channelParameters.type = channelType;
-
-                                        channelMethodArray.push(channelMethod);
-                                        channelParametersArray.push(channelParameters);
-                                        channelServiceArray.push(channelService);
-                                        channelTypeArray.push(channel.type);
-                                    }
-                                    else {
-                                        channelError = true;
-                                        requestMessage = "subscription_facebook_link_error";
-                                        break;
-                                    }
-                                }
-                                else {
-                                    channelError = true;
-                                    requestMessage = "subscription_facebook_token_error";
-                                    break;
-                                }
-                                break;
-
-                            case "SMOOCHANDROID":
-                            case "SMOOCHIOS":
-                                const requestSmoochLink = await axiosObservable({
-                                    data: {
-                                        linkType: channel.type === "SMOOCHANDROID" ? "ANDROIDADD" : "IOSADD",
-                                        name: channelParameters.description,
-                                    },
-                                    method: "post",
-                                    url: `${bridgeEndpoint}processlaraigo/smooch/managesmoochlink`,
-                                    _requestid: request._requestid,
-                                });
-
-                                if (requestSmoochLink.data.success) {
-                                    var serviceCredentials = {
-                                        appId: requestSmoochLink.data.applicationId,
-                                        apiKeyId: requestSmoochLink.data.appApiKey,
-                                        apiKeySecret: requestSmoochLink.data.appSecret,
-                                        endpoint: smoochEndpoint,
-                                        version: smoochVersion,
-                                    };
-
-                                    channelParameters.communicationchannelowner = requestSmoochLink.data.applicationId;
-                                    channelParameters.communicationchannelsite = requestSmoochLink.data.applicationId;
-                                    channelParameters.integrationid = requestSmoochLink.data.integrationId;
-                                    channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
-                                    channelParameters.type = (request.body.type === "SMOOCHANDROID" ? "ANDR" : "APPL");
-
-                                    channelMethodArray.push(channelMethod);
-                                    channelParametersArray.push(channelParameters);
-                                    channelServiceArray.push(channelService);
-                                    channelTypeArray.push(channel.type);
-                                }
-                                else {
-                                    channelError = true;
-                                    requestMessage = "subscription_smooch_link_error";
-                                    break;
-                                }
-                                break;
-
-                            case "TELEGRAM":
-                                const requestTelegramLink = await axiosObservable({
-                                    data: {
-                                        accessToken: channelService.accesstoken,
-                                        linkType: "TELEGRAMADD",
-                                    },
-                                    method: "post",
-                                    url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`,
-                                    _requestid: request._requestid,
-                                });
-
-                                if (requestTelegramLink.data.success) {
-                                    var serviceCredentials = {
-                                        bot: requestTelegramLink.data.botName,
-                                        endpoint: telegramEndpoint,
-                                        token: channelService.accesstoken,
-                                    };
-
-                                    channelParameters.communicationchannelsite = requestTelegramLink.data.botName;
-                                    channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
-                                    channelParameters.type = "TELE";
-
-                                    channelMethodArray.push(channelMethod);
-                                    channelParametersArray.push(channelParameters);
-                                    channelServiceArray.push(channelService);
-                                    channelTypeArray.push(channel.type);
-                                }
-                                else {
-                                    channelError = true;
-                                    requestMessage = "subscription_telegram_link_error";
-                                    break;
-                                }
-                                break;
-
-                            case "TWITTER":
-                            case "TWITTERDM":
-                                const requestTwitterBusiness = await axiosObservable({
-                                    data: {
-                                        accessSecret: channelService.accesssecret,
-                                        accessToken: channelService.accesstoken,
-                                        consumerKey: channelService.consumerkey,
-                                        consumerSecret: channelService.consumersecret,
-                                        developmentEnvironment: channelService.devenvironment,
-                                        linkType: "GETPAGEID",
-                                    },
-                                    method: "post",
-                                    url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
-                                    _requestid: request._requestid,
-                                });
-
-                                if (requestTwitterBusiness.data.success) {
-                                    var serviceCredentials = {
-                                        accessSecret: channelService.accesssecret,
-                                        accessToken: channelService.accesstoken,
-                                        consumerKey: channelService.consumerkey,
-                                        consumerSecret: channelService.consumersecret,
-                                        devEnvironment: channelService.devenvironment,
-                                        twitterPageId: requestTwitterBusiness.data.pageId
-                                    };
-
-                                    channelParameters.communicationchannelsite = requestTwitterBusiness.data.pageId;
-                                    channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
-
-                                    if (channel.type === "TWITTER") {
-                                        channelParameters.type = "TWIT";
-                                    }
-                                    else {
-                                        channelParameters.type = "TWMS";
-                                    }
-
-                                    var channelParametersDummy = channelParameters;
-
-                                    channelParametersDummy.corpid = 1;
-                                    channelParametersDummy.orgid = 1;
-                                    channelParametersDummy.status = "ACTIVO";
-                                    channelParametersDummy.username = "API";
-
-                                    const queryTwitterInsert = await triggerfunctions.executesimpletransaction(channelMethod, channelParametersDummy);
-
-                                    if (queryTwitterInsert instanceof Array) {
-                                        const requestTwitterLink = await axiosObservable({
-                                            data: {
-                                                accessSecret: channelService.accesssecret,
-                                                accessToken: channelService.accesstoken,
-                                                consumerKey: channelService.consumerkey,
-                                                consumerSecret: channelService.consumersecret,
-                                                developmentEnvironment: channelService.devenvironment,
-                                                linkType: "TWITTERADD",
-                                                pageId: requestTwitterBusiness.data.pageId,
-                                            },
-                                            method: "post",
-                                            url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
-                                            _requestid: request._requestid,
-                                        });
-
-                                        if (!requestTwitterLink.data.success) {
-                                            channelError = true;
-                                            requestMessage = "subscription_twitter_link_error";
-                                            break;
-                                        }
-
-                                        channelParametersDummy.id = queryTwitterInsert[0].ufn_communicationchannel_ins;
-                                        channelParametersDummy.operation = "UPDATE";
-                                        channelParametersDummy.status = "ELIMINADO";
-
-                                        const queryTwitterDelete = await triggerfunctions.executesimpletransaction(channelMethod, channelParametersDummy);
-
-                                        if (queryTwitterDelete instanceof Array) {
-                                            channelParameters.corpid = null;
-                                            channelParameters.id = null;
-                                            channelParameters.operation = "INSERT";
-                                            channelParameters.orgid = null;
-                                            channelParameters.status = "PENDIENTE";
-                                            channelParameters.username = null;
-
-                                            channelMethodArray.push(channelMethod);
-                                            channelParametersArray.push(channelParameters);
-                                            channelServiceArray.push(channelService);
-                                            channelTypeArray.push(channel.type);
-                                        }
-                                        else {
-                                            channelError = true;
-                                            requestMessage = "subscription_twitter_dummy_error";
-                                            break;
-                                        }
-                                    }
-                                    else {
-                                        channelError = true;
-                                        requestMessage = "subscription_twitter_dummy_error";
-                                        break;
-                                    }
-                                }
-                                else {
-                                    channelError = true;
-                                    requestMessage = "subscription_twitter_business_error";
-                                    break;
-                                }
-                                break;
-
-                            case "WHATSAPPSMOOCH":
-                                channelParameters.communicationchannelowner = "";
-                                channelParameters.communicationchannelsite = "";
-                                channelParameters.servicecredentials = JSON.stringify(channelService);
-                                channelParameters.type = "WHAT";
-
-                                channelMethodArray.push(channelMethod);
-                                channelParametersArray.push(channelParameters);
-                                channelServiceArray.push(channelService);
-                                channelTypeArray.push(channel.type);
-                                break;
-
-                            case "VOXIMPLANTPHONE":
-                                channelParameters.communicationchannelowner = "";
-                                channelParameters.communicationchannelsite = "";
-                                channelParameters.servicecredentials = JSON.stringify(channelService);
-                                channelParameters.type = "VOXI";
-
-                                channelMethodArray.push(channelMethod);
-                                channelParametersArray.push(channelParameters);
-                                channelServiceArray.push(channelService);
-                                channelTypeArray.push(channel.type);
-                                break;
-
-                            case 'INFOBIPEMAIL':
-                            case 'INFOBIPSMS':
-                                if (channelService) {
-                                    if (channelService.type && channelService.type === "IMAP") {
-                                        parameters.communicationchannelowner = channelService.imapusername;
-                                        parameters.integrationid = channelService.imapusername;
-                                        parameters.servicecredentials = JSON.stringify(channelService);
-                                        parameters.status = 'ACTIVO';
-                                        parameters.communicationchannelsite = `${channelService.imapusername}|IMAP|`;
-                                        parameters.type = 'MAIL';
-
-                                        let extraData = {
-                                            username: channelService.imapusername || '',
-                                            password: channelService.imappassword || '',
-                                            incomingEndpoint: channelService.imapincomingendpoint || '',
-                                            incomingPort: parseInt(channelService.imapincomingport || 0),
-                                            accessToken: channelService.imapaccesstoken || '',
-                                            host: channelService.imaphost || '',
-                                            port: parseInt(channelService.imapport || 0),
-                                            useSsl: channelService.imapssl === 'SSL' ? true : false,
-                                            useStartTls: channelService.imapssl === 'STARTTLS' ? true : false,
-                                        };
-
-                                        await channelfunctions.serviceTokenUpdate(channelService.imapusername, '', '', JSON.stringify(extraData), 'IMAP', 'ACTIVO', parameters.username, 1);
-
-                                        await channelfunctions.serviceSubscriptionUpdate(channelService.imapusername, channelService.imapusername, JSON.stringify(extraData), 'MAIL-IMAP', 'ACTIVO', parameters.username, `${hookEndpoint}mail/imapwebhookasync`, 2);
-
-                                        channelMethodArray.push(channelMethod);
-                                        channelParametersArray.push(channelParameters);
-                                        channelServiceArray.push(channelService);
-                                        channelTypeArray.push(channel.type);
-                                    }
-                                    else {
-                                        if (channelService.type && channelService.type === "GMAIL") {
-                                            var informationtoken = jwt.decode(channelService.idtoken);
-
-                                            channelParameters.communicationchannelowner = informationtoken.name;
-                                            channelParameters.integrationid = informationtoken.email;
-                                            channelParameters.servicecredentials = JSON.stringify(channelService);
-                                            channelParameters.status = 'ACTIVO';
-                                            channelParameters.communicationchannelsite = informationtoken.email;
-                                            channelParameters.type = 'MAIL';
-
-                                            await channelfunctions.serviceTokenUpdate(informationtoken.email, channelService.accesstoken, channelService.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', parameters.username, 50);
-
-                                            await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, informationtoken.email, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-GMAIL', 'ACTIVO', parameters.username, `${hookEndpoint}mail/gmailwebhookasync`, 2880);
-
-                                            channelMethodArray.push(channelMethod);
-                                            channelParametersArray.push(channelParameters);
-                                            channelServiceArray.push(channelService);
-                                            channelTypeArray.push(channel.type);
-                                        }
-                                        else {
-                                            var serviceCredentials = {
-                                                apiKey: channelService.apikey,
-                                                callbackEndpoint: `${hookEndpoint}infobip/${channel.type === "INFOBIPEMAIL" ? "mail" : ""}webhookasync`,
-                                                callbackType: "application/json",
-                                                endpoint: channelService.url,
-                                                number: channelService.emittername,
-                                            };
-
-                                            if (channel.type === "INFOBIPEMAIL") {
-                                                serviceCredentials.validateMail = false;
-                                            }
-
-                                            channelParameters.communicationchannelowner = channelService.emittername;
-                                            channelParameters.communicationchannelsite = channelService.emittername;
-                                            channelParameters.integrationid = channelService.emittername;
-                                            channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
-                                            channelParameters.type = (channel.type === 'INFOBIPEMAIL' ? 'MAII' : 'SMSI');
-
-                                            channelMethodArray.push(channelMethod);
-                                            channelParametersArray.push(channelParameters);
-                                            channelServiceArray.push(channelService);
-                                            channelTypeArray.push(channel.type);
-                                        }
-                                    }
-                                }
-                                break;
-
-                            case 'BUSINESS':
-                                if (channelService) {
-                                    var informationtoken = jwt.decode(channelService.idtoken);
-
-                                    channelParameters.communicationchannelowner = informationtoken.name;
-                                    channelParameters.communicationchannelsite = informationtoken.email;
-                                    channelParameters.integrationid = informationtoken.email;
-                                    channelParameters.servicecredentials = JSON.stringify(channelService);
-                                    channelParameters.status = 'ACTIVO';
-                                    channelParameters.type = 'GOBU';
-
-                                    await channelfunctions.serviceTokenUpdate(informationtoken.email, channelService.accesstoken, channelService.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', parameters.username, 50);
-
-                                    await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, informationtoken.email, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-BLOGGER', 'ACTIVO', parameters.username, `${hookEndpoint}blogger/webhookasync`, 2);
-
-                                    channelMethodArray.push(channelMethod);
-                                    channelParametersArray.push(channelParameters);
-                                    channelServiceArray.push(channelService);
-                                    channelTypeArray.push(channel.type);
-                                }
-                                break;
-
-                            case 'BLOGGER':
-                            case 'YOUTUBE':
-                                if (channelService) {
-                                    var informationtoken = jwt.decode(channelService.idtoken);
-
-                                    channelParameters.communicationchannelowner = informationtoken.name;
-                                    channelParameters.integrationid = channelService.channel;
-                                    channelParameters.servicecredentials = JSON.stringify(channelService);
-                                    channelParameters.status = 'ACTIVO';
-
-                                    await channelfunctions.serviceTokenUpdate(informationtoken.email, channelService.accesstoken, channelService.refreshtoken, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE', 'ACTIVO', parameters.username, 50);
-
-                                    switch (channel.type) {
-                                        case 'BLOGGER':
-                                            channelParameters.communicationchannelsite = `${informationtoken.email}&%BLOG%&${channelService.channel}`;
-                                            channelParameters.type = 'BLOG';
-
-                                            await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, channelService.channel, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-BLOGGER', 'ACTIVO', parameters.username, `${hookEndpoint}blogger/webhookasync`, 2);
-                                            break;
-
-                                        case 'YOUTUBE':
-                                            channelParameters.communicationchannelsite = `${informationtoken.email}&%YOUT%&${channelService.channel}`;
-                                            channelParameters.type = 'YOUT';
-
-                                            await channelfunctions.serviceSubscriptionUpdate(informationtoken.email, channelService.channel, JSON.stringify({ clientId: googleClientId, clientSecret: googleClientSecret, topicName: googleTopicName }), 'GOOGLE-YOUTUBE', 'ACTIVO', parameters.username, `${hookEndpoint}youtube/webhookasync`, 2);
-                                            break;
-                                    }
-
-                                    channelMethodArray.push(channelMethod);
-                                    channelParametersArray.push(channelParameters);
-                                    channelServiceArray.push(channelService);
-                                    channelTypeArray.push(channel.type);
-                                }
-                                break;
-
-                            case 'PLAYSTORE':
-                                if (channelService) {
-                                    channelParameters.communicationchannelowner = channelService.mail;
-                                    channelParameters.communicationchannelsite = `${channelService.mail}|AC|${channelService.appcode}`;
-                                    channelParameters.integrationid = channelService.appcode;
-                                    channelParameters.servicecredentials = JSON.stringify(channelService);
-                                    channelParameters.status = 'ACTIVO';
-                                    channelParameters.type = 'PLAY';
-
-                                    await channelfunctions.serviceTokenUpdate(channelService.mail, '', '', JSON.stringify(channelService), 'PLAYSTORE', 'ACTIVO', parameters.username, 50);
-
-                                    await channelfunctions.serviceSubscriptionUpdate(channelService.mail, channelService.appcode, JSON.stringify(channelService), 'GOOGLE-PLAYSTORE', 'ACTIVO', parameters.username, `${hookEndpoint}appstore/playstorewebhookasync`, 2);
-
-                                    channelMethodArray.push(channelMethod);
-                                    channelParametersArray.push(channelParameters);
-                                    channelServiceArray.push(channelService);
-                                    channelTypeArray.push(channel.type);
-                                }
-                                break;
-
-                            case 'APPSTORE':
-                                if (channelService) {
-                                    channelParameters.communicationchannelowner = channelService.keyid;
-                                    channelParameters.communicationchannelsite = channelService.issuerid;
-                                    channelParameters.integrationid = channelService.issuerid;
-                                    channelParameters.servicecredentials = JSON.stringify(channelService);
-                                    channelParameters.status = 'ACTIVO';
-                                    channelParameters.type = 'APPS';
-
-                                    await channelfunctions.serviceTokenUpdate(channelService.issuerid, '', '', JSON.stringify({ issuerId: channelService.issuerid, keyId: channelService.keyid, secretKey: channelService.secretkey }), 'APPSTORE', 'ACTIVO', parameters.username, 15);
-
-                                    await channelfunctions.serviceSubscriptionUpdate(channelService.issuerid, channelService.keyid, JSON.stringify({ issuerId: channelService.issuerid, keyId: channelService.keyid, secretKey: channelService.secretkey }), 'APPLE-APPSTORE', 'ACTIVO', parameters.username, `${hookEndpoint}appstore/appstorewebhookasync`, 2);
-
-                                    channelMethodArray.push(channelMethod);
-                                    channelParametersArray.push(channelParameters);
-                                    channelServiceArray.push(channelService);
-                                    channelTypeArray.push(channel.type);
-                                }
-                                break;
-
-                            case 'AYRSHARE-TIKTOK':
-                                if (channelService) {
-                                    const requestCreateAyrshare = await axiosObservable({
-                                        data: {
-                                            accessToken: channelService.accesstoken,
-                                            integrationType: "TIKTOK",
-                                            linkType: "CHECKINTEGRATION",
-                                        },
-                                        method: 'post',
-                                        url: `${bridgeEndpoint}processlaraigo/ayrshare/manageayrsharelink`,
-                                        _requestid: request._requestid,
-                                    });
-
-                                    if (requestCreateAyrshare.data.success) {
-                                        var serviceCredentials = {
-                                            endpoint: ayrshareEndpoint,
-                                            username: requestCreateAyrshare.data.username,
-                                            accessToken: channelService.accesstoken,
-                                            dayRange: -400,
-                                        };
-
-                                        channelParameters.communicationchannelowner = requestCreateAyrshare.data.username;
-                                        channelParameters.communicationchannelsite = requestCreateAyrshare.data.username;
-                                        channelParameters.integrationid = requestCreateAyrshare.data.username;
-                                        channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
-                                        channelParameters.status = 'ACTIVO';
-                                        channelParameters.type = 'TKTA';
-
-                                        await channelfunctions.serviceSubscriptionUpdate(requestCreateAyrshare.data.username, requestCreateAyrshare.data.username, JSON.stringify(serviceCredentials), 'AYRSHARE-TIKTOK', 'ACTIVO', parameters.username, `${hookEndpoint}ayrshare/webhookasync`, 6);
-
-                                        channelMethodArray.push(channelMethod);
-                                        channelParametersArray.push(channelParameters);
-                                        channelServiceArray.push(channelService);
-                                        channelTypeArray.push(channel.type);
-                                    }
-                                }
-                                break;
-
-                            case 'LINKEDIN':
-                                if (channelService) {
-                                    channelParameters.communicationchannelowner = channelService.clientid;
-                                    channelParameters.communicationchannelsite = channelService.clientid;
-                                    channelParameters.integrationid = `urn:li:organization:${channelService.organizationid}`;
-                                    channelParameters.servicecredentials = JSON.stringify({
-                                        clientId: channelService.clientid,
-                                        clientSecret: channelService.clientsecret,
-                                        endpoint: linkedinEndpoint,
-                                        organizationId: `urn:li:organization:${channelService.organizationid}`,
-                                    });
-                                    channelParameters.status = 'ACTIVO';
-                                    channelParameters.type = 'LNKD';
-
-                                    await channelfunctions.serviceTokenUpdate(channelService.clientid, channelService.accesstoken, channelService.refreshtoken, JSON.stringify({ clientId: channelService.clientid, clientSecret: channelService.clientsecret, endpoint: linkedinTokenEndpoint }), 'LINKEDIN', 'ACTIVO', request?.user?.usr, 1400);
-
-                                    channelMethodArray.push(channelMethod);
-                                    channelParametersArray.push(channelParameters);
-                                    channelServiceArray.push(channelService);
-                                    channelTypeArray.push(channel.type);
-                                }
-                                break;
-
-                            case 'MICROSOFTTEAMS':
-                            case 'TIKTOK':
-                                if (channelService) {
-                                    channelParameters.communicationchannelowner = channelService.account;
-                                    channelParameters.communicationchannelsite = channelService.account;
-                                    channelParameters.integrationid = channelService.account;
-                                    channelParameters.servicecredentials = JSON.stringify(channelService);
-                                    channelParameters.status = 'PENDIENTE';
-
-                                    switch (channel.type) {
-                                        case 'LINKEDIN':
-                                            channelParameters.type = 'LNKD';
-                                            break;
-
-                                        case 'MICROSOFTTEAMS':
-                                            channelParameters.type = 'TEAM';
-                                            break;
-
-                                        case 'TIKTOK':
-                                            channelParameters.type = 'TKTK';
-                                            break;
-                                    }
-
-                                    channelMethodArray.push(channelMethod);
-                                    channelParametersArray.push(channelParameters);
-                                    channelServiceArray.push(channelService);
-                                    channelTypeArray.push(channel.type);
-                                }
-                                break;
-                        }
-                    }
-                }
-
-                if (channelError) {
-                    return response.status(requestStatus).json({
-                        code: requestCode,
-                        error: !requestSuccess,
-                        message: requestMessage,
-                        success: requestSuccess,
-                    });
-                }
+            if (parameters.loginfacebookid) {
+                parameters.loginusername = parameters.loginfacebookid;
             }
 
-            requestCode = "";
-
-            if (typeof parameters.country === "undefined" || !parameters.country) {
-                parameters.country = null;
+            if (parameters.logingoogleid) {
+                parameters.loginusername = parameters.logingoogleid;
             }
 
-            if (typeof parameters.currency === "undefined" || !parameters.currency) {
-                parameters.currency = null;
-            }
+            const subscriptionLaraigo = await createLaraigoAccount(
+                method,
+                parameters.contactnameorcompany,
+                null,
+                parameters.loginusername,
+                parameters.loginpassword,
+                parameters.contactmail,
+                parameters.contactdocumenttype,
+                parameters.contactdocumentnumber,
+                parameters.contactphone,
+                parameters.loginfacebookid,
+                parameters.logingoogleid,
+                null,
+                null,
+                null,
+                parameters.contactnameorcompany,
+                parameters.paymentplanid,
+                parameters.contactcurrency,
+                parameters.contactcountry,
+                parameters.contactnameorcompany,
+                parameters.contactaddress,
+                parameters.contactcountry,
+                parameters.contactmail,
+                parameters.contactnameorcompany,
+                true,
+                parameters.timezoneoffset,
+                parameters.timezone,
+                request._requestid
+            );
 
-            parameters.password = await bcryptjs.hash(parameters.password, await bcryptjs.genSalt(10));
-            parameters._requestid = request._requestid;
+            if (subscriptionLaraigo) {
+                let corpId = subscriptionLaraigo.corpid;
+                let orgId = subscriptionLaraigo.orgid;
+                let userId = subscriptionLaraigo.userid;
 
-            const queryCreateSubscription = await triggerfunctions.executesimpletransaction(method, parameters);
-
-            if (queryCreateSubscription instanceof Array) {
-                var corpId = queryCreateSubscription[0].corpid;
-                var orgId = queryCreateSubscription[0].orgid;
-                var userId = queryCreateSubscription[0].userid;
-
-                if (cardData) {
-                    var cardMethod = "UFN_PAYMENTCARD_INS";
-                    var cardParameters = {
-                        corpid: corpId,
-                        orgid: orgId,
-                        id: 0,
-                        cardnumber: cardData.source.cardNumber,
-                        cardcode: cardData.id,
-                        firstname: card.firstname,
-                        lastname: card.lastname,
-                        mail: card.mail,
-                        favorite: true,
-                        clientcode: cardData.customerId,
-                        status: "ACTIVO",
-                        phone: card.phone,
-                        type: "",
-                        username: parameters.username,
-                        operation: "INSERT",
+                if (paymentcarddata) {
+                    let cardParameters = {
                         _requestid: request._requestid,
+                        cardcode: paymentcarddata.id,
+                        cardnumber: paymentcarddata.source.cardNumber,
+                        clientcode: paymentcarddata.customerId,
+                        corpid: corpId,
+                        favorite: true,
+                        firstname: (parameters.contactnameorcompany || "").substring(0, 50),
+                        id: 0,
+                        lastname: (parameters.contactnameorcompany || "").substring(0, 50),
+                        mail: (parameters.contactmail || "").substring(0, 50),
+                        operation: "INSERT",
+                        orgid: orgId,
+                        status: "ACTIVO",
+                        username: parameters.loginusername,
+                        phone: (parameters.contactphone || "")
+                            .split("+")
+                            .join("")
+                            .split(" ")
+                            .join("")
+                            .split("(")
+                            .join("")
+                            .split(")")
+                            .join(""),
+                        type: "",
                     };
 
-                    const queryCardCreate = await triggerfunctions.executesimpletransaction(cardMethod, cardParameters);
+                    const queryCardCreate = await triggerfunctions.executesimpletransaction(
+                        "UFN_PAYMENTCARD_INS",
+                        cardParameters
+                    );
 
-                    if (!queryCardCreate instanceof Array) {
+                    if (!(queryCardCreate instanceof Array)) {
                         requestMessage = "error_card_create";
 
                         return response.status(requestStatus).json({
@@ -1163,310 +434,116 @@ exports.createSubscription = async (request, response) => {
                     }
                 }
 
-                if (typeof channelMethodArray !== "undefined" && channelMethodArray) {
-                    var index = 0;
+                if (channel) {
+                    channel.corpid = corpId;
+                    channel.orgid = orgId;
+                    channel.userid = userId;
 
-                    for (const channelMethod of channelMethodArray) {
-                        if (channelTypeArray[index] === "VOXIMPLANTPHONE") {
-                            var voximplantEnvironment = await channelfunctions.voximplantHandleEnvironment(corpId, orgId, request.originalUrl, request._requestid);
-
-                            if (voximplantEnvironment) {
-                                if (voximplantEnvironment.accountid && voximplantEnvironment.apikey && voximplantEnvironment.applicationid && voximplantEnvironment.userid) {
-                                    var voximplantScenario = await channelfunctions.voximplantHandleScenario(corpId, orgId, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, request.originalUrl, request._requestid);
-
-                                    if (voximplantScenario) {
-                                        if (voximplantScenario.ruleid && voximplantScenario.scenarioid) {
-                                            var voximplantPhoneNumber = await channelfunctions.voximplantHandlePhoneNumber(corpId, orgId, parameters.username, voximplantEnvironment.accountid, voximplantEnvironment.apikey, voximplantEnvironment.applicationid, voximplantScenario.ruleid, channelServiceArray[index].country, channelServiceArray[index].category, channelServiceArray[index].state, (channelServiceArray[index].region || 0).toString(), channelServiceArray[index].cost, channelServiceArray[index].costinstallation, voximplantEnvironment.additionalperchannel, request.originalUrl, request._requestid);
-
-                                            if (voximplantPhoneNumber) {
-                                                if (voximplantPhoneNumber.phoneid && voximplantPhoneNumber.phonenumber && voximplantPhoneNumber.queueid) {
-                                                    var voximplantCredentials = {
-                                                        phoneid: voximplantPhoneNumber.phoneid,
-                                                        phonenumber: voximplantPhoneNumber.phonenumber,
-                                                        queueid: voximplantPhoneNumber.queueid,
-                                                        ruleid: voximplantScenario.ruleid,
-                                                        scenarioid: voximplantScenario.scenarioid,
-                                                        ruleoutid: voximplantScenario.ruleoutid,
-                                                        scenariooutid: voximplantScenario.scenariooutid,
-                                                        accountid: voximplantEnvironment.accountid,
-                                                        apikey: voximplantEnvironment.apikey,
-                                                        applicationid: voximplantEnvironment.applicationid,
-                                                        applicationname: voximplantEnvironment.applicationname,
-                                                        country: channelServiceArray[index].country,
-                                                        countryname: channelServiceArray[index].countryname,
-                                                        category: channelServiceArray[index].category,
-                                                        categoryname: channelServiceArray[index].categoryname,
-                                                        state: channelServiceArray[index].state,
-                                                        statename: channelServiceArray[index].statename,
-                                                        region: channelServiceArray[index].region,
-                                                        regionname: channelServiceArray[index].regionname,
-                                                        cost: channelServiceArray[index].cost,
-                                                        costvca: channelServiceArray[index].costvca,
-                                                        costinstallation: channelServiceArray[index].costinstallation,
-                                                        additionalperchannel: voximplantEnvironment.additionalperchannel,
-                                                        recording: channelServiceArray[index].recording,
-                                                        sms: channelServiceArray[index].sms,
-                                                        outbound: channelServiceArray[index].outbound,
-                                                        callsupervision: channelServiceArray[index].callsupervision,
-                                                        recordingstorage: channelServiceArray[index].recordingstorage?.value,
-                                                        recordingquality: channelServiceArray[index].recordingquality?.value,
-                                                    };
-
-                                                    var voximplantRecording = {
-                                                        recording: channelServiceArray[index].recording,
-                                                        recordingstorage: channelServiceArray[index].recordingstorage?.value,
-                                                        recordingquality: channelServiceArray[index].recordingquality?.value,
-                                                    };
-
-                                                    channelParametersArray[index].communicationchannelsite = voximplantPhoneNumber.phonenumber;
-                                                    channelParametersArray[index].communicationchannelowner = voximplantEnvironment.applicationname;
-                                                    channelParametersArray[index].servicecredentials = JSON.stringify(voximplantCredentials);
-                                                    channelParametersArray[index].voximplantrecording = JSON.stringify(voximplantRecording);
-                                                    channelParametersArray[index].voximplantwelcometone = "https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/VCA%20PERU/994eacd0-4520-4aec-8f4e-fe7dcab5f5ed/intel.mp3";
-                                                    channelParametersArray[index].voximplantholdtone = "https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/VCA%20PERU/932a8ad1-0a67-467f-aef5-e56c52e05c3f/halos-of-eternity.mp3";
-                                                    channelParametersArray[index].voximplantcallsupervision = channelServiceArray[index].voximplantcallsupervision ? true : false;
-                                                    channelParametersArray[index].phone = voximplantPhoneNumber.phonenumber;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        channelParametersArray[index].corpid = corpId;
-                        channelParametersArray[index].orgid = orgId;
-                        channelParametersArray[index].username = parameters.username;
-
-                        const queryChannelCreate = await triggerfunctions.executesimpletransaction(channelMethodArray[index], channelParametersArray[index]);
-
-                        if (queryChannelCreate instanceof Array) {
-                            channelData = `<b>${channelParametersArray[index].description}</b>;${channelData}`;
-                            channelTotal = (channelTotal === "" ? `${queryChannelCreate[0].ufn_communicationchannel_ins}` : `${channelTotal},${queryChannelCreate[0].ufn_communicationchannel_ins}`);
-                        }
-                        else {
-                            requestMessage = "error_subscription_channel_create";
-
-                            return response.status(requestStatus).json({
-                                code: requestCode,
-                                error: !requestSuccess,
-                                message: requestMessage,
-                                success: requestSuccess,
-                            });
-                        }
-
-                        if (channelParametersArray[index].type === "WHAT" || channelParametersArray[index].type === "WHAD") {
-                            if (typeof channelServiceArray[index] !== "undefined" && channelServiceArray[index]) {
-                                var domainMethod = "UFN_DOMAIN_VALUES_SEL";
-                                var domainParameters = {
-                                    all: false,
-                                    corpid: 1,
-                                    domainname: "WHATSAPPBODY",
-                                    orgid: 0,
-                                    username: parameters.username,
-                                    _requestid: request._requestid,
-                                };
-
-                                const queryDomainAlertBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
-
-                                domainParameters.domainname = "WHATSAPPRECIPIENT";
-
-                                const queryDomainAlertRecipient = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
-
-                                domainParameters.domainname = "WHATSAPPSUBJECT";
-
-                                const queryDomainAlertSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
-
-                                if (queryDomainAlertBody instanceof Array && queryDomainAlertRecipient instanceof Array && queryDomainAlertSubject instanceof Array) {
-                                    if (queryDomainAlertBody.length > 0 && queryDomainAlertRecipient.length > 0 && queryDomainAlertSubject.length > 0) {
-                                        var alertBody = queryDomainAlertBody[0].domainvalue;
-                                        var alertRecipient = queryDomainAlertRecipient[0].domainvalue;
-                                        var alertSubject = queryDomainAlertSubject[0].domainvalue;
-
-                                        alertBody = alertBody.split("{{brandaddress}}").join(parameters.fiscaladdress);
-                                        alertBody = alertBody.split("{{brandname}}").join(parameters.companybusinessname);
-                                        alertBody = alertBody.split("{{contact}}").join(parameters.contact);
-                                        alertBody = alertBody.split("{{corpid}}").join(corpId);
-                                        alertBody = alertBody.split("{{email}}").join(channelServiceArray[index].email);
-                                        alertBody = alertBody.split("{{firstname}}").join(channelServiceArray[index].firstname);
-                                        alertBody = alertBody.split("{{lastname}}").join(channelServiceArray[index].lastname);
-                                        alertBody = alertBody.split("{{nameassociatednumber}}").join(channelServiceArray[index].nameassociatednumber);
-                                        alertBody = alertBody.split("{{orgid}}").join(orgId);
-                                        alertBody = alertBody.split("{{phone}}").join(channelServiceArray[index].phone);
-                                        alertBody = alertBody.split("{{phonenumberwhatsappbusiness}}").join(channelServiceArray[index].phonenumberwhatsappbusiness);
-                                        alertBody = alertBody.split("{{username}}").join(parameters.username);
-
-                                        alertSubject = alertSubject.split("{{brandaddress}}").join(parameters.fiscaladdress);
-                                        alertSubject = alertSubject.split("{{brandname}}").join(parameters.companybusinessname);
-                                        alertSubject = alertSubject.split("{{contact}}").join(parameters.contact);
-                                        alertSubject = alertSubject.split("{{corpid}}").join(corpId);
-                                        alertSubject = alertSubject.split("{{email}}").join(channelServiceArray[index].email);
-                                        alertSubject = alertSubject.split("{{firstname}}").join(channelServiceArray[index].firstname);
-                                        alertSubject = alertSubject.split("{{lastname}}").join(channelServiceArray[index].lastname);
-                                        alertSubject = alertSubject.split("{{nameassociatednumber}}").join(channelServiceArray[index].nameassociatednumber);
-                                        alertSubject = alertSubject.split("{{orgid}}").join(orgId);
-                                        alertSubject = alertSubject.split("{{phone}}").join(channelServiceArray[index].phone);
-                                        alertSubject = alertSubject.split("{{phonenumberwhatsappbusiness}}").join(channelServiceArray[index].phonenumberwhatsappbusiness);
-                                        alertSubject = alertSubject.split("{{username}}").join(parameters.username);
-
-                                        const requestMailSend = await axiosObservable({
-                                            data: {
-                                                mailAddress: alertRecipient,
-                                                mailBody: alertBody,
-                                                mailTitle: alertSubject
-                                            },
-                                            method: "post",
-                                            url: `${bridgeEndpoint}processscheduler/sendmail`,
-                                            _requestid: request._requestid,
-                                        });
-
-                                        if (!requestMailSend.data.success) {
-                                            requestMessage = "error_subscription_alert_failure";
-
-                                            return response.status(requestStatus).json({
-                                                code: requestCode,
-                                                error: !requestSuccess,
-                                                message: requestMessage,
-                                                success: requestSuccess,
-                                            });
-                                        }
-                                    }
-                                    else {
-                                        requestMessage = "error_subscription_alert_error";
-
-                                        return response.status(requestStatus).json({
-                                            code: requestCode,
-                                            error: !requestSuccess,
-                                            message: requestMessage,
-                                            success: requestSuccess,
-                                        });
-                                    }
-                                }
-                                else {
-                                    requestMessage = "error_subscription_alert_error";
-
-                                    return response.status(requestStatus).json({
-                                        code: requestCode,
-                                        error: !requestSuccess,
-                                        message: requestMessage,
-                                        success: requestSuccess,
-                                    });
-                                }
-                            }
-                        }
-
-                        index++;
-                    }
+                    await triggerfunctions.executesimpletransaction("UFN_SUBSCRIPTION_CREATECHANNELS", channel);
                 }
 
-                if (channelTotal !== "") {
-                    var updateMethod = "UFN_ORGUSER_CHANNELS_UPDATE";
-                    var updateParameters = {
-                        channels: channelTotal,
-                        corpid: corpId,
-                        orgid: orgId,
-                        userid: userId,
+                if (
+                    (typeof parameters.loginfacebookid !== "undefined" && parameters.loginfacebookid) ||
+                    (typeof parameters.logingoogleid !== "undefined" && parameters.logingoogleid)
+                ) {
+                    let userParameters = {
                         _requestid: request._requestid,
-                    }
-
-                    const queryOrgUserUpdate = await triggerfunctions.executesimpletransaction(updateMethod, updateParameters);
-
-                    if (!queryOrgUserUpdate instanceof Array) {
-                        requestMessage = "error_subscription_orguser_update";
-
-                        return response.status(requestStatus).json({
-                            code: requestCode,
-                            error: !requestSuccess,
-                            message: requestMessage,
-                            success: requestSuccess,
-                        });
-                    }
-
-                    await channelfunctions.clearHookCache('EveryService', request._requestid);
-                }
-
-                if ((typeof parameters.facebookid !== "undefined" && parameters.facebookid) || (typeof parameters.googleid !== "undefined" && parameters.googleid)) {
-                    var userMethod = "UFN_USER_ACTIVATE";
-                    var userParameters = {
                         corpid: corpId,
                         userid: userId,
-                        _requestid: request._requestid,
                     };
 
-                    const queryActivateUser = await triggerfunctions.executesimpletransaction(userMethod, userParameters);
+                    const queryActivateUser = await triggerfunctions.executesimpletransaction(
+                        "UFN_USER_ACTIVATE",
+                        userParameters
+                    );
 
                     if (queryActivateUser instanceof Array) {
                         requestCode = "";
                         requestMessage = "";
                         requestStatus = 200;
                         requestSuccess = true;
-                    }
-                    else {
+                    } else {
                         requestMessage = "subscription_user_activate_error";
                     }
-                }
-                else {
-                    var domainMethod = "UFN_DOMAIN_VALUES_SEL";
-                    var domainParameters = {
+                } else {
+                    let domainParameters = {
+                        _requestid: request._requestid,
                         all: false,
                         corpid: 1,
                         domainname: "ACTIVATEBODY",
                         orgid: 0,
-                        username: parameters.username,
-                        _requestid: request._requestid,
+                        username: parameters.loginusername,
                     };
 
-                    const transactionGetBody = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+                    const transactionGetBody = await triggerfunctions.executesimpletransaction(
+                        "UFN_DOMAIN_VALUES_SEL",
+                        domainParameters
+                    );
 
                     domainParameters.domainname = "ACTIVATESUBJECT";
 
-                    const transactionGetSubject = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+                    const transactionGetSubject = await triggerfunctions.executesimpletransaction(
+                        "UFN_DOMAIN_VALUES_SEL",
+                        domainParameters
+                    );
 
                     if (transactionGetBody instanceof Array && transactionGetSubject instanceof Array) {
                         if (transactionGetBody.length > 0 && transactionGetSubject.length > 0) {
-                            var userCode = cryptojs.AES.encrypt(JSON.stringify({
-                                corpid: corpId,
-                                userid: userId,
-                            }), userSecret).toString();
+                            let userCode = cryptojs.AES.encrypt(
+                                JSON.stringify({
+                                    corpid: corpId,
+                                    userid: userId,
+                                }),
+                                userSecret
+                            ).toString();
 
-                            userCode = userCode.split("=").join("_EQUAL_");
-                            userCode = userCode.split("+").join("_PLUS_");
                             userCode = userCode.split("/").join("_SLASH_");
+                            userCode = userCode.split("+").join("_PLUS_");
+                            userCode = userCode.split("=").join("_EQUAL_");
 
-                            var alertBody = transactionGetBody[0].domainvalue;
-                            var alertSubject = transactionGetSubject[0].domainvalue;
+                            let alertBody = transactionGetBody[0].domainvalue;
+                            let alertSubject = transactionGetSubject[0].domainvalue;
 
-                            alertBody = alertBody.split("{{address}}").join(parameters.fiscaladdress);
-                            alertBody = alertBody.split("{{channeldata}}").join(channelData);
-                            alertBody = alertBody.split("{{country}}").join(parameters.country);
-                            alertBody = alertBody.split("{{countryname}}").join(parameters.countryname);
-                            alertBody = alertBody.split("{{firstname}}").join(parameters.firstname);
-                            alertBody = alertBody.split("{{lastname}}").join(parameters.lastname);
-                            alertBody = alertBody.split("{{link}}").join(`${laraigoEndpoint}activateuser/${encodeURIComponent(userCode)}`);
-                            alertBody = alertBody.split("{{organizationname}}").join(parameters.organizationname);
+                            alertBody = alertBody.split("{{address}}").join(parameters.contactaddress);
+                            alertBody = alertBody.split("{{channeldata}}").join("");
+                            alertBody = alertBody.split("{{country}}").join(parameters.contactcountry);
+                            alertBody = alertBody.split("{{countryname}}").join(parameters.contactcountryname);
+                            alertBody = alertBody.split("{{firstname}}").join(parameters.contactnameorcompany);
+                            alertBody = alertBody.split("{{lastname}}").join("");
+                            alertBody = alertBody.split("{{organizationname}}").join(parameters.contactcountryname);
                             alertBody = alertBody.split("{{paymentplan}}").join(parameters.paymentplan);
-                            alertBody = alertBody.split("{{username}}").join(parameters.username);
+                            alertBody = alertBody.split("{{username}}").join(parameters.loginusername);
 
-                            alertSubject = alertSubject.split("{{address}}").join(parameters.fiscaladdress);
-                            alertSubject = alertSubject.split("{{channeldata}}").join(channelData);
-                            alertSubject = alertSubject.split("{{country}}").join(parameters.country);
-                            alertSubject = alertSubject.split("{{countryname}}").join(parameters.countryname);
-                            alertSubject = alertSubject.split("{{firstname}}").join(parameters.firstname);
-                            alertSubject = alertSubject.split("{{lastname}}").join(parameters.lastname);
-                            alertSubject = alertSubject.split("{{link}}").join(`${laraigoEndpoint}activateuser/${encodeURIComponent(userCode)}`);
-                            alertSubject = alertSubject.split("{{organizationname}}").join(parameters.organizationname);
+                            alertBody = alertBody
+                                .split("{{link}}")
+                                .join(`${laraigoEndpoint}activateuser/${encodeURIComponent(userCode)}`);
+
+                            alertSubject = alertSubject.split("{{address}}").join(parameters.contactaddress);
+                            alertSubject = alertSubject.split("{{channeldata}}").join("");
+                            alertSubject = alertSubject.split("{{country}}").join(parameters.contactcountry);
+                            alertSubject = alertSubject.split("{{countryname}}").join(parameters.contactcountryname);
+                            alertSubject = alertSubject.split("{{firstname}}").join(parameters.contactnameorcompany);
+                            alertSubject = alertSubject.split("{{lastname}}").join("");
                             alertSubject = alertSubject.split("{{paymentplan}}").join(parameters.paymentplan);
-                            alertSubject = alertSubject.split("{{username}}").join(parameters.username);
+                            alertSubject = alertSubject.split("{{username}}").join(parameters.loginusername);
+
+                            alertSubject = alertSubject
+                                .split("{{link}}")
+                                .join(`${laraigoEndpoint}activateuser/${encodeURIComponent(userCode)}`);
+
+                            alertSubject = alertSubject
+                                .split("{{organizationname}}")
+                                .join(parameters.contactcountryname);
 
                             const requestMailSend = await axiosObservable({
+                                _requestid: request._requestid,
+                                method: "post",
+                                url: `${bridgeEndpoint}processscheduler/sendmail`,
                                 data: {
-                                    mailAddress: parameters.username,
+                                    mailAddress: parameters.loginusername,
                                     mailBody: alertBody,
                                     mailTitle: alertSubject,
                                 },
-                                method: "post",
-                                url: `${bridgeEndpoint}processscheduler/sendmail`,
-                                _requestid: request._requestid,
                             });
 
                             if (requestMailSend.data.success) {
@@ -1474,21 +551,17 @@ exports.createSubscription = async (request, response) => {
                                 requestMessage = "";
                                 requestStatus = 200;
                                 requestSuccess = true;
-                            }
-                            else {
+                            } else {
                                 requestMessage = "error_subscription_activation_failure";
                             }
-                        }
-                        else {
+                        } else {
                             requestMessage = "error_subscription_activation_error";
                         }
-                    }
-                    else {
+                    } else {
                         requestMessage = "error_subscription_activation_error";
                     }
                 }
-            }
-            else {
+            } else {
                 requestMessage = "subscription_user_create_error";
             }
         }
@@ -1499,38 +572,25 @@ exports.createSubscription = async (request, response) => {
             message: requestMessage,
             success: requestSuccess,
         });
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-            message: exception.message
+            message: exception.message,
         });
     }
-}
+};
 
 exports.currencyList = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
+        let requestCode = "error_unexpected_error";
+        let requestData = null;
+        let requestMessage = "error_unexpected_error";
+        let requestStatus = 400;
+        let requestSuccess = false;
 
-        var requestCode = "error_unexpected_error";
-        var requestData = null;
-        var requestMessage = "error_unexpected_error";
-        var requestStatus = 400;
-        var requestSuccess = false;
-
-        if (typeof whitelist !== "undefined" && whitelist) {
-            if (!whitelist.includes(request.ip)) {
-                return response.status(requestStatus).json({
-                    code: "error_auth_error",
-                    data: requestData,
-                    error: !requestSuccess,
-                    message: "error_auth_error",
-                    success: requestSuccess,
-                });
-            }
-        }
-
-        const queryCurrencySel = await triggerfunctions.executesimpletransaction("UFN_CURRENCY_SEL", { _requestid: request._requestid });
+        const queryCurrencySel = await triggerfunctions.executesimpletransaction("UFN_CURRENCY_SEL", {
+            _requestid: request._requestid,
+        });
 
         if (queryCurrencySel instanceof Array) {
             requestCode = "";
@@ -1538,8 +598,7 @@ exports.currencyList = async (request, response) => {
             requestMessage = "";
             requestStatus = 200;
             requestSuccess = true;
-        }
-        else {
+        } else {
             requestCode = queryCurrencySel.code;
         }
 
@@ -1550,39 +609,24 @@ exports.currencyList = async (request, response) => {
             message: requestMessage,
             success: requestSuccess,
         });
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-            message: exception.message
+            message: exception.message,
         });
     }
-}
+};
 
 exports.getContract = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
-        var requestCode = "error_unexpected_error";
-        var requestData = null;
-        var requestMessage = "error_unexpected_error";
-        var requestStatus = 400;
-        var requestSuccess = false;
-
-        if (typeof whitelist !== "undefined" && whitelist) {
-            if (!whitelist.includes(request.ip)) {
-                return response.status(requestStatus).json({
-                    code: "error_auth_error",
-                    data: requestData,
-                    error: !requestSuccess,
-                    message: "error_auth_error",
-                    success: requestSuccess,
-                });
-            }
-        }
+        let requestCode = "error_unexpected_error";
+        let requestData = null;
+        let requestMessage = "error_unexpected_error";
+        let requestStatus = 400;
+        let requestSuccess = false;
 
         if (request.body) {
-            var { parameters = {} } = request.body;
+            let { parameters = {} } = request.body;
 
             parameters._requestid = request._requestid;
 
@@ -1596,8 +640,7 @@ exports.getContract = async (request, response) => {
                     requestStatus = 200;
                     requestSuccess = true;
                 }
-            }
-            else {
+            } else {
                 requestCode = queryContractGet.code;
             }
         }
@@ -1609,47 +652,32 @@ exports.getContract = async (request, response) => {
             message: requestMessage,
             success: requestSuccess,
         });
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-            message: exception.message
+            message: exception.message,
         });
     }
-}
+};
 
 exports.getPageList = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
-        var requestCode = "error_unexpected_error";
-        var requestData = null;
-        var requestMessage = "error_unexpected_error";
-        var requestStatus = 400;
-        var requestSuccess = false;
-
-        if (typeof whitelist !== "undefined" && whitelist) {
-            if (!whitelist.includes(request.ip)) {
-                return response.status(requestStatus).json({
-                    code: "error_auth_error",
-                    error: !requestSuccess,
-                    message: "error_auth_error",
-                    pageData: requestData,
-                    success: requestSuccess,
-                });
-            }
-        }
+        let requestCode = "error_unexpected_error";
+        let requestData = null;
+        let requestMessage = "error_unexpected_error";
+        let requestStatus = 400;
+        let requestSuccess = false;
 
         if (request.body) {
             const requestFacebookPages = await axiosObservable({
+                _requestid: request._requestid,
+                method: "post",
+                url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
                 data: {
                     accessToken: request.body.accessToken,
                     appId: request.body.appId,
                     linkType: "GETPAGES",
                 },
-                method: "post",
-                url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
-                _requestid: request._requestid,
             });
 
             if (requestFacebookPages.data.success) {
@@ -1658,8 +686,7 @@ exports.getPageList = async (request, response) => {
                 requestMessage = "";
                 requestStatus = 200;
                 requestSuccess = true;
-            }
-            else {
+            } else {
                 requestMessage = "error_facebook_pages";
             }
         }
@@ -1671,47 +698,32 @@ exports.getPageList = async (request, response) => {
             pageData: requestData,
             success: requestSuccess,
         });
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-            message: exception.message
+            message: exception.message,
         });
     }
-}
+};
 
 exports.recoverPassword = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
-        var requestCode = "error_unexpected_error";
-        var requestMessage = "error_unexpected_error";
-        var requestStatus = 400;
-        var requestSuccess = false;
-
-        if (typeof whitelist !== "undefined" && whitelist) {
-            if (!whitelist.includes(request.ip)) {
-                return response.status(requestStatus).json({
-                    code: "error_auth_error",
-                    error: !requestSuccess,
-                    message: "error_auth_error",
-                    success: requestSuccess,
-                });
-            }
-        }
+        let requestCode = "error_unexpected_error";
+        let requestMessage = "error_unexpected_error";
+        let requestStatus = 400;
+        let requestSuccess = false;
 
         if (request.body) {
-            var userMethod = "UFN_USERBYUSER";
-            var userParameters = {
-                username: request.body.username,
+            let userParameters = {
                 _requestid: request._requestid,
+                username: request.body.username,
             };
 
-            const queryUserGet = await triggerfunctions.executesimpletransaction(userMethod, userParameters);
+            const queryUserGet = await triggerfunctions.executesimpletransaction("UFN_USERBYUSER", userParameters);
 
             if (queryUserGet instanceof Array) {
                 if (queryUserGet.length > 0) {
-                    var validMail = false;
+                    let validMail = false;
 
                     if (typeof queryUserGet[0].email !== "undefined" && queryUserGet[0].email) {
                         if (validateEmail(queryUserGet[0].email) !== null) {
@@ -1720,63 +732,77 @@ exports.recoverPassword = async (request, response) => {
                     }
 
                     if (validMail) {
-                        var domainMethod = "UFN_DOMAIN_VALUES_SEL";
-                        var domainParameters = {
+                        let domainParameters = {
+                            _requestid: request._requestid,
                             all: false,
                             corpid: 1,
                             domainname: "RECOVERPASSBODY",
                             orgid: 0,
                             username: request.body.username,
-                            _requestid: request._requestid,
                         };
 
-                        const queryDomainBodySel = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+                        const queryDomainBodySel = await triggerfunctions.executesimpletransaction(
+                            "UFN_DOMAIN_VALUES_SEL",
+                            domainParameters
+                        );
 
                         domainParameters.domainname = "RECOVERPASSSUBJECT";
 
-                        const queryDomainSubjectSel = await triggerfunctions.executesimpletransaction(domainMethod, domainParameters);
+                        const queryDomainSubjectSel = await triggerfunctions.executesimpletransaction(
+                            "UFN_DOMAIN_VALUES_SEL",
+                            domainParameters
+                        );
 
                         if (queryDomainBodySel instanceof Array && queryDomainSubjectSel instanceof Array) {
                             if (queryDomainBodySel.length > 0 && queryDomainSubjectSel.length > 0) {
-                                var alertBody = queryDomainBodySel[0].domainvalue;
-                                var alertSubject = queryDomainSubjectSel[0].domainvalue;
+                                let alertBody = queryDomainBodySel[0].domainvalue;
+                                let alertSubject = queryDomainSubjectSel[0].domainvalue;
 
-                                var linkCode = cryptojs.AES.encrypt(JSON.stringify({
-                                    userid: queryUserGet[0].userid,
-                                    date: new Date().getTime(),
-                                }), userSecret).toString();
+                                let linkCode = cryptojs.AES.encrypt(
+                                    JSON.stringify({
+                                        date: new Date().getTime(),
+                                        userid: queryUserGet[0].userid,
+                                    }),
+                                    userSecret
+                                ).toString();
 
-                                linkCode = linkCode.split("=").join("_EQUAL_");
-                                linkCode = linkCode.split("+").join("_PLUS_");
                                 linkCode = linkCode.split("/").join("_SLASH_");
+                                linkCode = linkCode.split("+").join("_PLUS_");
+                                linkCode = linkCode.split("=").join("_EQUAL_");
 
                                 alertBody = alertBody.split("{{docnum}}").join(queryUserGet[0].docnum);
                                 alertBody = alertBody.split("{{doctype}}").join(queryUserGet[0].doctype);
                                 alertBody = alertBody.split("{{email}}").join(queryUserGet[0].email);
                                 alertBody = alertBody.split("{{firstname}}").join(queryUserGet[0].firstname);
                                 alertBody = alertBody.split("{{lastname}}").join(queryUserGet[0].lastname);
-                                alertBody = alertBody.split("{{link}}").join(`${laraigoEndpoint}recoverpassword/${encodeURIComponent(linkCode)}`);
                                 alertBody = alertBody.split("{{userid}}").join(queryUserGet[0].userid);
                                 alertBody = alertBody.split("{{usr}}").join(queryUserGet[0].usr);
+
+                                alertBody = alertBody
+                                    .split("{{link}}")
+                                    .join(`${laraigoEndpoint}recoverpassword/${encodeURIComponent(linkCode)}`);
 
                                 alertSubject = alertSubject.split("{{docnum}}").join(queryUserGet[0].docnum);
                                 alertSubject = alertSubject.split("{{doctype}}").join(queryUserGet[0].doctype);
                                 alertSubject = alertSubject.split("{{email}}").join(queryUserGet[0].email);
                                 alertSubject = alertSubject.split("{{firstname}}").join(queryUserGet[0].firstname);
                                 alertSubject = alertSubject.split("{{lastname}}").join(queryUserGet[0].lastname);
-                                alertSubject = alertSubject.split("{{link}}").join(`${laraigoEndpoint}recoverpassword/${encodeURIComponent(linkCode)}`);
                                 alertSubject = alertSubject.split("{{userid}}").join(queryUserGet[0].userid);
                                 alertSubject = alertSubject.split("{{usr}}").join(queryUserGet[0].usr);
 
+                                alertSubject = alertSubject
+                                    .split("{{link}}")
+                                    .join(`${laraigoEndpoint}recoverpassword/${encodeURIComponent(linkCode)}`);
+
                                 const requestMailSend = await axiosObservable({
+                                    _requestid: request._requestid,
+                                    method: "post",
+                                    url: `${bridgeEndpoint}processscheduler/sendmail`,
                                     data: {
                                         mailAddress: queryUserGet[0].email,
                                         mailBody: alertBody,
                                         mailTitle: alertSubject,
                                     },
-                                    method: "post",
-                                    url: `${bridgeEndpoint}processscheduler/sendmail`,
-                                    _requestid: request._requestid,
                                 });
 
                                 if (requestMailSend.data.success) {
@@ -1784,28 +810,22 @@ exports.recoverPassword = async (request, response) => {
                                     requestMessage = "";
                                     requestStatus = 200;
                                     requestSuccess = true;
-                                }
-                                else {
+                                } else {
                                     requestMessage = "recoverpassword_sendfailure";
                                 }
-                            }
-                            else {
+                            } else {
                                 requestMessage = "recoverpassword_missingconfiguration";
                             }
-                        }
-                        else {
+                        } else {
                             requestMessage = "recoverpassword_missingconfiguration";
                         }
-                    }
-                    else {
+                    } else {
                         requestMessage = "recoverpassword_usernotmail";
                     }
-                }
-                else {
+                } else {
                     requestMessage = "recoverpassword_usernotfound";
                 }
-            }
-            else {
+            } else {
                 requestCode = queryUserGet.code;
             }
         }
@@ -1816,332 +836,22 @@ exports.recoverPassword = async (request, response) => {
             message: requestMessage,
             success: requestSuccess,
         });
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-            message: exception.message
+            message: exception.message,
         });
     }
-}
+};
 
 exports.validateChannels = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
-        var requestCode = "error_unexpected_error";
-        var requestMessage = "error_unexpected_error";
-        var requestStatus = 400;
-        var requestSuccess = false;
-
-        if (typeof whitelist !== "undefined" && whitelist) {
-            if (!whitelist.includes(request.ip)) {
-                return response.status(requestStatus).json({
-                    code: "error_auth_error",
-                    error: !requestSuccess,
-                    message: "error_auth_error",
-                    success: requestSuccess,
-                });
-            }
-        }
+        let requestCode = "error_unexpected_error";
+        let requestMessage = "error_unexpected_error";
+        let requestStatus = 400;
+        let requestSuccess = false;
 
         if (request.body) {
-            var { channellist = [] } = request.body;
-
-            var channelMethodArray = [];
-            var channelParametersArray = [];
-            var channelServiceArray = [];
-
-            if (channellist instanceof Array) {
-                var channelError = false;
-
-                for (const channel of channellist) {
-                    if (channel && !channelError) {
-                        var channelMethod = channel.method ? channel.method : "UFN_COMMUNICATIONCHANNEL_INS";
-                        var channelParameters = channel.parameters;
-                        var channelService = channel.service;
-
-                        channelParameters.appintegrationid = null;
-                        channelParameters.botconfigurationid = null;
-                        channelParameters.botenabled = null;
-                        channelParameters.channelparameters = null;
-                        channelParameters.chatflowenabled = true;
-                        channelParameters.coloricon = channelParameters.coloricon || null;
-                        channelParameters.communicationchannelcontact = "";
-                        channelParameters.communicationchanneltoken = null;
-                        channelParameters.country = null;
-                        channelParameters.customicon = null;
-                        channelParameters.motive = "SUBSCRIPTION";
-                        channelParameters.operation = "INSERT";
-                        channelParameters.phone = null;
-                        channelParameters.resolvelithium = null;
-                        channelParameters.schedule = null;
-                        channelParameters.status = "PENDIENTE";
-                        channelParameters.updintegration = null;
-                        channelParameters.apikey = null;
-                        channelParameters.voximplantrecording = null;
-                        channelParameters.voximplantwelcometone = null;
-                        channelParameters.voximplantholdtone = null;
-                        channelParameters.voximplantcallsupervision = null;
-                        channelParameters._requestid = request._requestid;
-
-                        requestCode = channel.type;
-
-                        switch (channel.type) {
-                            case "FACEBOOK":
-                            case "INSTAGRAM":
-                            case "INSTAMESSENGER":
-                            case "MESSENGER":
-                                if (channelService.accesstoken) {
-                                    var businessId = null;
-                                    var channelLinkService = null;
-                                    var channelType = null;
-                                    var serviceType = null;
-
-                                    switch (channel.type) {
-                                        case "FACEBOOK":
-                                            channelLinkService = "WALLADD";
-                                            channelType = "FBWA";
-                                            serviceType = "WALL";
-                                            break;
-
-                                        case "INSTAGRAM":
-                                            channelLinkService = "INSTAGRAMADD";
-                                            channelType = "INST";
-                                            serviceType = "INSTAGRAM";
-                                            break;
-
-                                        case "INSTAMESSENGER":
-                                            channelLinkService = "INSTAGRAMADD";
-                                            channelType = "INDM";
-                                            serviceType = "INSTAGRAM";
-                                            break;
-
-                                        case "MESSENGER":
-                                            channelLinkService = "MESSENGERADD";
-                                            channelType = "FBDM";
-                                            serviceType = "MESSENGER";
-                                            break;
-                                    }
-
-                                    if (channel.type === "INSTAGRAM" || channel.type === "INSTAMESSENGER") {
-                                        const requestInstagramBusiness = await axiosObservable({
-                                            data: {
-                                                accessToken: channelService.accesstoken,
-                                                linkType: "GETBUSINESS",
-                                                siteId: channelService.siteid,
-                                            },
-                                            method: "post",
-                                            url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
-                                            _requestid: request._requestid,
-                                        });
-
-                                        if (requestInstagramBusiness.data.success) {
-                                            businessId = requestInstagramBusiness.data.businessId;
-                                        }
-                                        else {
-                                            channelError = true;
-                                            requestMessage = "subscription_facebook_business_error";
-                                            break;
-                                        }
-                                    }
-
-                                    const requestFacebookLink = await axiosObservable({
-                                        data: {
-                                            accessToken: channelService.accesstoken,
-                                            linkType: channelLinkService,
-                                            siteId: channelService.siteid,
-                                        },
-                                        method: "post",
-                                        url: `${bridgeEndpoint}processlaraigo/facebook/managefacebooklink`,
-                                        _requestid: request._requestid,
-                                    });
-
-                                    if (requestFacebookLink.data.success) {
-                                        var serviceCredentials = {
-                                            accessToken: channelService.accesstoken,
-                                            endpoint: facebookEndpoint,
-                                            serviceType: serviceType,
-                                            siteId: channelService.siteid,
-                                        };
-
-                                        if (typeof businessId !== "undefined" && businessId) {
-                                            channelParameters.communicationchannelowner = channelService.siteid;
-                                            channelParameters.communicationchannelsite = businessId;
-
-                                            serviceCredentials.siteId = businessId;
-                                        }
-
-                                        channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
-                                        channelParameters.type = channelType;
-
-                                        channelMethodArray.push(channelMethod);
-                                        channelParametersArray.push(channelParameters);
-                                        channelServiceArray.push(channelService);
-                                    }
-                                    else {
-                                        channelError = true;
-                                        requestMessage = "subscription_facebook_link_error";
-                                        break;
-                                    }
-                                }
-                                else {
-                                    channelError = true;
-                                    requestMessage = "subscription_facebook_token_error";
-                                    break;
-                                }
-                                break;
-
-                            case "TELEGRAM":
-                                const requestTelegramLink = await axiosObservable({
-                                    data: {
-                                        accessToken: channelService.accesstoken,
-                                        linkType: "TELEGRAMADD",
-                                    },
-                                    method: "post",
-                                    url: `${bridgeEndpoint}processlaraigo/telegram/managetelegramlink`,
-                                    _requestid: request._requestid,
-                                });
-
-                                if (requestTelegramLink.data.success) {
-                                    var serviceCredentials = {
-                                        bot: requestTelegramLink.data.botName,
-                                        endpoint: telegramEndpoint,
-                                        token: channelService.accesstoken,
-                                    };
-
-                                    channelParameters.communicationchannelsite = requestTelegramLink.data.botName;
-                                    channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
-                                    channelParameters.type = "TELE";
-
-                                    channelMethodArray.push(channelMethod);
-                                    channelParametersArray.push(channelParameters);
-                                    channelServiceArray.push(channelService);
-                                }
-                                else {
-                                    channelError = true;
-                                    requestMessage = "subscription_telegram_link_error";
-                                    break;
-                                }
-                                break;
-
-                            case "TWITTER":
-                            case "TWITTERDM":
-                                const requestTwitterBusiness = await axiosObservable({
-                                    data: {
-                                        accessSecret: channelService.accesssecret,
-                                        accessToken: channelService.accesstoken,
-                                        consumerKey: channelService.consumerkey,
-                                        consumerSecret: channelService.consumersecret,
-                                        developmentEnvironment: channelService.devenvironment,
-                                        linkType: "GETPAGEID",
-                                    },
-                                    method: "post",
-                                    url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
-                                    _requestid: request._requestid,
-                                });
-
-                                if (requestTwitterBusiness.data.success) {
-                                    var serviceCredentials = {
-                                        accessSecret: channelService.accesssecret,
-                                        accessToken: channelService.accesstoken,
-                                        consumerKey: channelService.consumerkey,
-                                        consumerSecret: channelService.consumersecret,
-                                        devEnvironment: channelService.devenvironment,
-                                        twitterPageId: requestTwitterBusiness.data.pageId
-                                    };
-
-                                    channelParameters.communicationchannelsite = requestTwitterBusiness.data.pageId;
-                                    channelParameters.servicecredentials = JSON.stringify(serviceCredentials);
-
-                                    if (channel.type === "TWITTER") {
-                                        channelParameters.type = "TWIT";
-                                    }
-                                    else {
-                                        channelParameters.type = "TWMS";
-                                    }
-
-                                    var channelParametersDummy = channelParameters;
-
-                                    channelParametersDummy.corpid = 1;
-                                    channelParametersDummy.orgid = 1;
-                                    channelParametersDummy.status = "ACTIVO";
-                                    channelParametersDummy.username = "API";
-
-                                    const queryTwitterInsert = await triggerfunctions.executesimpletransaction(channelMethod, channelParametersDummy);
-
-                                    if (queryTwitterInsert instanceof Array) {
-                                        const requestTwitterLink = await axiosObservable({
-                                            data: {
-                                                accessSecret: channelService.accesssecret,
-                                                accessToken: channelService.accesstoken,
-                                                consumerKey: channelService.consumerkey,
-                                                consumerSecret: channelService.consumersecret,
-                                                developmentEnvironment: channelService.devenvironment,
-                                                linkType: "TWITTERADD",
-                                                pageId: requestTwitterBusiness.data.pageId,
-                                            },
-                                            method: "post",
-                                            url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
-                                            _requestid: request._requestid,
-                                        });
-
-                                        if (!requestTwitterLink.data.success) {
-                                            channelError = true;
-                                            requestMessage = "subscription_twitter_link_error";
-                                            break;
-                                        }
-
-                                        channelParametersDummy.id = queryTwitterInsert[0].ufn_communicationchannel_ins;
-                                        channelParametersDummy.operation = "UPDATE";
-                                        channelParametersDummy.status = "ELIMINADO";
-
-                                        const queryTwitterDelete = await triggerfunctions.executesimpletransaction(channelMethod, channelParametersDummy);
-
-                                        if (queryTwitterDelete instanceof Array) {
-                                            channelParameters.corpid = null;
-                                            channelParameters.id = null;
-                                            channelParameters.operation = "INSERT";
-                                            channelParameters.orgid = null;
-                                            channelParameters.status = "PENDIENTE";
-                                            channelParameters.username = null;
-
-                                            channelMethodArray.push(channelMethod);
-                                            channelParametersArray.push(channelParameters);
-                                            channelServiceArray.push(channelService);
-                                        }
-                                        else {
-                                            channelError = true;
-                                            requestMessage = "subscription_twitter_dummy_error";
-                                            break;
-                                        }
-                                    }
-                                    else {
-                                        channelError = true;
-                                        requestMessage = "subscription_twitter_dummy_error";
-                                        break;
-                                    }
-                                }
-                                else {
-                                    channelError = true;
-                                    requestMessage = "subscription_twitter_business_error";
-                                    break;
-                                }
-                                break;
-                        }
-                    }
-                }
-
-                if (channelError) {
-                    return response.status(requestStatus).json({
-                        code: requestCode,
-                        error: !requestSuccess,
-                        message: requestMessage,
-                        success: requestSuccess,
-                    });
-                }
-            }
-
             requestCode = "";
             requestMessage = "";
             requestStatus = 200;
@@ -2154,37 +864,23 @@ exports.validateChannels = async (request, response) => {
             message: requestMessage,
             success: requestSuccess,
         });
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-            message: exception.message
+            message: exception.message,
         });
     }
-}
+};
 
 exports.validateUserId = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
-        var requestCode = "error_unexpected_error";
-        var requestMessage = "error_unexpected_error";
-        var requestStatus = 400;
-        var requestSuccess = false;
-
-        if (typeof whitelist !== "undefined" && whitelist) {
-            if (!whitelist.includes(request.ip)) {
-                return response.status(requestStatus).json({
-                    code: "error_auth_error",
-                    error: !requestSuccess,
-                    message: "error_auth_error",
-                    success: requestSuccess,
-                });
-            }
-        }
+        let requestCode = "error_unexpected_error";
+        let requestMessage = "error_unexpected_error";
+        let requestStatus = 400;
+        let requestSuccess = false;
 
         if (request.body) {
-            var { method, parameters = {} } = request.body;
+            let { method, parameters = {} } = request.body;
 
             setSessionParameters(parameters, request.user, request._requestid);
 
@@ -2197,23 +893,23 @@ exports.validateUserId = async (request, response) => {
                 if (queryUserSel.length > 0) {
                     parameters.password = await bcryptjs.hash(parameters.newpassword, await bcryptjs.genSalt(10));
 
-                    const queryUserUpdate = await triggerfunctions.executesimpletransaction("UFN_USER_UPDATE", parameters);
+                    const queryUserUpdate = await triggerfunctions.executesimpletransaction(
+                        "UFN_USER_UPDATE",
+                        parameters
+                    );
 
                     if (queryUserUpdate instanceof Array) {
                         requestCode = "";
                         requestMessage = "";
                         requestStatus = 200;
                         requestSuccess = true;
-                    }
-                    else {
+                    } else {
                         requestCode = queryUserUpdate.code;
                     }
-                }
-                else {
+                } else {
                     requestMessage = "validateuser_mismatch";
                 }
-            }
-            else {
+            } else {
                 requestCode = queryUserSel.code;
             }
         }
@@ -2224,50 +920,35 @@ exports.validateUserId = async (request, response) => {
             message: requestMessage,
             success: requestSuccess,
         });
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-            message: exception.message
+            message: exception.message,
         });
     }
-}
+};
 
 exports.validateUsername = async (request, response) => {
     try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
-        var requestCode = "error_unexpected_error";
-        var requestIsValid = false;
-        var requestMessage = "error_unexpected_error";
-        var requestStatus = 400;
-        var requestSuccess = false;
-
-        if (typeof whitelist !== "undefined" && whitelist) {
-            if (!whitelist.includes(request.ip)) {
-                return response.status(requestStatus).json({
-                    code: "error_auth_error",
-                    error: !requestSuccess,
-                    isvalid: requestIsValid,
-                    message: "error_auth_error",
-                    success: requestSuccess,
-                });
-            }
-        }
+        let requestCode = "error_unexpected_error";
+        let requestIsValid = false;
+        let requestMessage = "error_unexpected_error";
+        let requestStatus = 400;
+        let requestSuccess = false;
 
         if (request.body) {
-            var { method, parameters = {} } = request.body;
+            let { method, parameters = {} } = request.body;
 
             if (typeof parameters.facebookid !== "undefined" && parameters.facebookid) {
+                parameters._requestid = request._requestid;
                 parameters.googleid = null;
                 parameters.usr = null;
-                parameters._requestid = request._requestid;
             }
 
             if (typeof parameters.googleid !== "undefined" && parameters.googleid) {
+                parameters._requestid = request._requestid;
                 parameters.facebookid = null;
                 parameters.usr = null;
-                parameters._requestid = request._requestid;
             }
 
             const queryUserSel = await triggerfunctions.executesimpletransaction(method, parameters);
@@ -2281,8 +962,7 @@ exports.validateUsername = async (request, response) => {
                 if (queryUserSel.length <= 0) {
                     requestIsValid = true;
                 }
-            }
-            else {
+            } else {
                 requestCode = queryUserSel.code;
             }
         }
@@ -2294,17 +974,18 @@ exports.validateUsername = async (request, response) => {
             message: requestMessage,
             success: requestSuccess,
         });
-    }
-    catch (exception) {
+    } catch (exception) {
         return response.status(500).json({
             ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-            message: exception.message
+            message: exception.message,
         });
     }
-}
+};
 
 const getAppSetting = async (requestId) => {
-    const queryAppSettingGet = await triggerfunctions.executesimpletransaction("UFN_APPSETTING_INVOICE_SEL", { _requestid: requestId });
+    const queryAppSettingGet = await triggerfunctions.executesimpletransaction("UFN_APPSETTING_INVOICE_SEL", {
+        _requestid: requestId,
+    });
 
     if (queryAppSettingGet instanceof Array) {
         if (queryAppSettingGet.length > 0) {
@@ -2313,8 +994,10 @@ const getAppSetting = async (requestId) => {
     }
 
     return null;
-}
+};
 
 const validateEmail = (email) => {
-    return String(email).toLowerCase().match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+    return /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.exec(
+        String(email).toLowerCase()
+    );
 };

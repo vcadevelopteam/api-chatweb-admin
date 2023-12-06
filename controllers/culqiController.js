@@ -1349,15 +1349,15 @@ exports.cardCreate = async (request, response) => {
 
                         const requestCulqiClient = await axiosObservable({
                             data: {
-                                address: ((org ? org.fiscaladdress : corp.fiscaladdress) || "NO INFO").substring(0, 100),
-                                addressCity: ((org ? org.timezone : "NO INFO") || "NO INFO").substring(0, 30),
+                                address: `${(removeSpecialCharacter((org ? org.fiscaladdress : corp.fiscaladdress) || "EMPTY")).slice(0, 100)}`,
+                                addressCity: `${(removeSpecialCharacter((org ? org.timezone : "EMPTY") || "EMPTY")).slice(0, 30)}`,
                                 bearer: appsetting.privatekey,
-                                countryCode: user.country || 'PE',
-                                email: mail,
-                                firstName: firstname,
-                                lastName: lastname,
+                                countryCode: `${(user.country || "PE")}`,
+                                email: `${(mail || "generic@mail.com")}`,
+                                firstName: `${(removeSpecialCharacter(firstname?.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
+                                lastName: `${(removeSpecialCharacter(lastname?.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
                                 operation: "CREATE",
-                                phoneNumber: ((phone || user.phone) || "").split("+").join("").split(" ").join("").split("(").join("").split(")").join(""),
+                                phoneNumber: `${((phone || user.phone) ? (phone || user.phone).replace(/[^0-9]/g, "") : "51999999999").slice(0, 15)}`,
                                 url: appsetting.culqiurlclient,
                             },
                             method: "post",
@@ -1409,7 +1409,7 @@ exports.cardCreate = async (request, response) => {
                                         }
 
                                         if (culqiError.merchant_message) {
-                                            errorCard = culqiError.merchant_message;
+                                            errorCard = culqiError.merchant_message.split("https://www.culqi.com/api")[0];
                                         }
                                     }
                                 }
@@ -1498,7 +1498,7 @@ exports.cardDelete = async (request, response) => {
                             }
 
                             if (culqiError.merchant_message) {
-                                errorCard = culqiError.merchant_message;
+                                errorCard = culqiError.merchant_message.split("https://www.culqi.com/api")[0];
                             }
                         }
                     }
@@ -1567,7 +1567,7 @@ exports.cardGet = async (request, response) => {
                             }
 
                             if (culqiError.merchant_message) {
-                                errorCard = culqiError.merchant_message;
+                                errorCard = culqiError.merchant_message.split("https://www.culqi.com/api")[0];
                             }
                         }
                     }
