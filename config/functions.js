@@ -67,6 +67,11 @@ module.exports = {
         module: "",
         protected: false
     },
+    QUERY_NEW_GETCHANNELS: {
+        query: "SELECT cc.communicationchannelid, cc.description FROM communicationchannel cc WHERE cc.corpid = $corpid AND cc.orgid = $orgid AND cc.type NOT IN ('FORM', 'VOXI', 'FBWA', 'INST') AND cc.status = 'INACTIVO'",
+        module: "/extras/users",
+        protected: "SELECT"
+    },
     UFN_CORP_ORG_SEL: {
         query: "SELECT * FROM ufn_corp_org_sel($corpid, $id, $username, $all, $userid)",
         module: "/extras/users",
@@ -787,6 +792,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CHATFLOW_BLOCK_TEMPLATES_SEL: {
+        query: "SELECT * FROM ufn_chatflow_block_templates_sel()",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CHATFLOW_BLOCK_TEMPLATE_CLONE: {
+        query: "SELECT * FROM ufn_chatflow_block_template_clone($corpid, $orgid, $chatblockid, $communicationchannelid, $username, $prop_value)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CHATFLOW_BLOCK_LST: {
         query: "SELECT * FROM ufn_chatflow_block_lst($corpid, $orgid, $userid)",
         module: "",
@@ -798,7 +813,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CHATFLOW_BLOCK_INS: {
-        query: "SELECT * FROM ufn_chatflow_block_ins($corpid, $orgid, $communicationchannelid, $username, $chatblockid, $title, $description, $defaultgroupid, $defaultblockid, $firstblockid, $aiblockid, $blockgroup, $variablecustom, $status, $color, $icontype, $tag, $chatblockversionid)",
+        query: "SELECT * FROM ufn_chatflow_block_ins($corpid, $orgid, $communicationchannelid, $username, $chatblockid, $title, $description, $defaultgroupid, $defaultblockid, $firstblockid, $aiblockid, $blockgroup, $variablecustom, $status, $color, $icontype, $tag, $chatblockversionid, $template_body)",
         module: "",
         protected: "INSERT"
     },
