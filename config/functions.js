@@ -3956,6 +3956,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_SUBSCRIPTION_CREATECHANNELS: {
+        query: "SELECT * FROM ufn_subscription_createchannels($corpid, $orgid, $userid, $android, $apple, $appstore, $blogger, $business, $chatWeb, $email, $facebook, $instagram, $instagramDM, $linkedin, $messenger, $metalead, $playstore, $sms, $teams, $telegram, $tiktok, $twitter, $twitterDM, $voximplantphone, $webForm, $whatsapp, $workplace, $workplaceDM, $youtube)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_ORDERCONFIG_INS: {
         query: "SELECT * FROM ufn_orderconfig_ins($corpid, $orgid, $id, $orderconfig, $type, $status, $username, $operation);",
         module: "",
