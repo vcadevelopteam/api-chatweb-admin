@@ -67,6 +67,11 @@ module.exports = {
         module: "",
         protected: false
     },
+    QUERY_NEW_GETCHANNELS: {
+        query: "SELECT cc.communicationchannelid, cc.description FROM communicationchannel cc WHERE cc.corpid = $corpid AND cc.orgid = $orgid AND cc.type NOT IN ('FORM', 'VOXI', 'FBWA', 'INST') AND cc.status = 'INACTIVO'",
+        module: "/extras/users",
+        protected: "SELECT"
+    },
     UFN_CORP_ORG_SEL: {
         query: "SELECT * FROM ufn_corp_org_sel($corpid, $id, $username, $all, $userid)",
         module: "/extras/users",
@@ -103,9 +108,19 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORGUSER_INS: {
-        query: "SELECT * FROM ufn_orguser_ins($corpid, $orgid, $p_userid, $rolegroups, $usersupervisor, $bydefault, $labels, $groups, $channels, $status,$type, $defaultsort, $username, $operation, $redirect)",
+        query: "SELECT * FROM ufn_orguser_ins($corpid, $orgid, $p_userid, $rolegroups, $usersupervisor, $bydefault, $labels, $groups, $channels, $status,$type, $defaultsort, $username, $operation, $redirect, $showbots)",
         module: "/extras/users",
         protected: "INSERT"
+    },
+    UFN_STORE_INS: {
+        query: "SELECT * FROM ufn_store_ins($corpid, $orgid, $id, $description, $phone, $address, $warehouseid, $coveragearea , $warehouseinstore, $type , $status, $username, $operation)",
+        module: "/extras/users",
+        protected: "INSERT"
+    },
+    UFN_STORE_SEL: {
+        query: "SELECT * FROM ufn_store_sel($id, $all)",
+        module: "/extras/users",
+        protected: "SELECT"
     },
     QUERY_UPDATE_APIKEY: {
         query: `UPDATE orguser SET
@@ -777,6 +792,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CHATFLOW_BLOCK_TEMPLATES_SEL: {
+        query: "SELECT * FROM ufn_chatflow_block_templates_sel()",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CHATFLOW_BLOCK_TEMPLATE_CLONE: {
+        query: "SELECT * FROM ufn_chatflow_block_template_clone($corpid, $orgid, $chatblockid, $communicationchannelid, $username, $prop_value)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_CHATFLOW_BLOCK_LST: {
         query: "SELECT * FROM ufn_chatflow_block_lst($corpid, $orgid, $userid)",
         module: "",
@@ -788,7 +813,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CHATFLOW_BLOCK_INS: {
-        query: "SELECT * FROM ufn_chatflow_block_ins($corpid, $orgid, $communicationchannelid, $username, $chatblockid, $title, $description, $defaultgroupid, $defaultblockid, $firstblockid, $aiblockid, $blockgroup, $variablecustom, $status, $color, $icontype, $tag, $chatblockversionid)",
+        query: "SELECT * FROM ufn_chatflow_block_ins($corpid, $orgid, $communicationchannelid, $username, $chatblockid, $title, $description, $defaultgroupid, $defaultblockid, $firstblockid, $aiblockid, $blockgroup, $variablecustom, $status, $color, $icontype, $tag, $chatblockversionid, $template_body)",
         module: "",
         protected: "INSERT"
     },
@@ -1461,7 +1486,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_SEL: {
-        query: "select * from ufn_lead_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $campaignid, $tags, $userid, $supervisorid, $persontype, $all)",
+        query: "select * from ufn_lead_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $campaignid, $tags, $userid, $supervisorid, $persontype, $ordertype, $orderby, $all)",
         module: "",
         protected: "SELECT"
     },
@@ -3889,6 +3914,12 @@ module.exports = {
         protected: "SELECT"
     },
 
+    UFN_WAREHOUSE_SEL: {
+        query: "SELECT * FROM ufn_warehouse_lst($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+
     UFN_PARTNER_SEL: {
         query: "SELECT * FROM ufn_partner_sel($id, $all, $username)",
         module: "",
@@ -3924,5 +3955,20 @@ module.exports = {
         query: "SELECT * FROM ufn_billingperiodpartner_developer_reseller($partnerid, $corpid, $orgid, $year, $month, $username)",
         module: "",
         protected: "SELECT"
-    }
+    },
+    UFN_ORDERCONFIG_INS: {
+        query: "SELECT * FROM ufn_orderconfig_ins($corpid, $orgid, $id, $orderconfig, $type, $status, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_ORDERCONFIG_SEL: {
+        query: "SELECT * FROM ufn_orderconfig_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEAD_CONFIG_INS: {
+        query: "SELECT * FROM ufn_lead_config_ins($id, $maxgreen, $maxyellow);",
+        module: "",
+        protected: "INSERT"
+    },
 }
