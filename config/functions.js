@@ -3930,5 +3930,10 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    SEARCH_POINT_ON_AREAS:{
+        query: "SELECT * FROM search_point_on_areas($corpid, $orgid, $latitude , $longitude)",
+        module: "",
+        protected: "SELECT"
+    }
     
 }

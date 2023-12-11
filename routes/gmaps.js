@@ -15,11 +15,8 @@ router.post("/polygons/insertmassive",
     gmapsController.polygonsinsertmassive
 )
 
-router.post("/polygons/insertmassive",  
-    gmapsController.polygonsinsertmassive
+router.post("/polygons/coordinateinpolygons",  
+    gmapsController.findcoordinateinpolygons
 )
-
-
-
 
 module.exports = router;
