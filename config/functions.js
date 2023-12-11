@@ -4379,5 +4379,16 @@ module.exports = {
         query: "SELECT * FROM ufn_lead_config_ins($id, $maxgreen, $maxyellow);",
         module: "",
         protected: "INSERT"
+    }, 
+    UFN_POLYGONS_INS_ARRAY: {
+        query: "SELECT * FROM ufn_polygons_ins_array($corpid, $orgid, $username, $table)",
+        module: "",
+        protected: "SELECT"
     },
+    SEARCH_POINT_ON_AREAS:{
+        query: "SELECT * FROM search_point_on_areas($corpid, $orgid, $latitude , $longitude)",
+        module: "",
+        protected: "SELECT"
+    }
+    
 }
