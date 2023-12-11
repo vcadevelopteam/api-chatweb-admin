@@ -3924,5 +3924,15 @@ module.exports = {
         query: "SELECT * FROM ufn_billingperiodpartner_developer_reseller($partnerid, $corpid, $orgid, $year, $month, $username)",
         module: "",
         protected: "SELECT"
-    }
+    },
+    UFN_ASSISTANTAI_INS: {
+        query: "SELECT * FROM ufn_assistantai_ins($corpid, $orgid, $id, $name, $description, $basemodel, $language, $organizationname, $querywithoutanswer, $response, $prompt, $negativeprompt, $generalprompt, $temperature, $max_tokens, $top_p, $apikey, $type, $status, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_ASSISTANTAI_SEL: {
+        query: "SELECT * FROM ufn_assistantai_sel($corpid, $orgid, $username, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
 }
