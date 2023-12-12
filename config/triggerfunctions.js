@@ -401,6 +401,8 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 ${TABLENAME}.corpid = $corpid AND ${TABLENAME}.orgid = $orgid ${queriesFilterGroups.queryWhere}
                 ${FILTERS}
             `;
+
+        console.log("query", query)
         const resultbd = await executeQuery(query, parameters, parameters._requestid);
 
         if (summaries.length > 0 && resultbd.length > 0) {
