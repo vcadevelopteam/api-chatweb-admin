@@ -3935,4 +3935,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_ASSISTANTAIDOCUMENT_SEL: {
+        query: "SELECT * FROM ufn_assistantaidocument_sel($corpid, $orgid, $assistantaiid, $username, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
 }
