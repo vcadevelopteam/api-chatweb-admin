@@ -641,6 +641,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_ALL_INVENTORYCONSUMPTIONSTATUS_INVENTORYCONSUMPTION_SEL: {
+        query: "SELECT * FROM inventario.ufn_all_inventoryconsumptionstatus_inventoryconsumption_sel($corpid, $orgid, $inventoryconsumptionid, $username)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_GUIAREMISIONDETAIL_SEL: {
         query: "SELECT * FROM inventario.ufn_guiaremision_detail_sel($corpid, $orgid, $inventoryconsumptionid, $username)",
         module: "",
