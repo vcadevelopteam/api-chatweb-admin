@@ -277,8 +277,38 @@ const DATES = ["timestamp without time zone", "date"];
     { function: 'median' },
     { function: 'mode' },
 */
-exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fromExport = false) => {
+exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fromExport = false, user = {}) => {
     try {
+        const applyFilterGroups = columns.some(x => x.tablename === "conversation") && user?.environment === "CLARO";
+        
+        if (applyFilterGroups) {
+            parameters.roles = user?.roledesc
+        }
+
+        const queriesFilterGroups = {
+            queryWith: !applyFilterGroups ? '' :
+            `WITH w1 AS (
+                SELECT DISTINCT unnest(string_to_array(groups,'','')) AS groups
+                FROM orguser ous
+                WHERE ous.corpid = $corpid
+                AND ous.orgid = $orgid
+                AND ous.userid = $userid
+            )`,
+            queryJoin: (applyFilterGroups && !columns.some(x => x.join_alias === "lastorguser")) ? `
+            LEFT JOIN orguser lastorguser ON lastorguser.corpid = conversation.corpid AND lastorguser.orgid = conversation.orgid AND lastorguser.userid = conversation.lastuserid
+            ` : '',
+            queryWhere: !applyFilterGroups ? '' :
+            `AND CASE WHEN string_to_array($roles,',') && Array['ADMINISTRADOR', 'ADMINISTRADOR P', 'SUPERADMIN']
+            THEN TRUE
+            ELSE
+                CASE WHEN (SELECT(array_length(array_agg(groups), 1)) FROM w1) IS NOT NULL THEN 
+                    (string_to_array(lastorguser.groups, ',') && (SELECT array_agg(groups) FROM w1)) OR
+                    ((string_to_array($roles, ',') && array ['SUPERVISOR CLIENTE'] AND (conversation.lastuserid = 2 OR (conversation.lastuserid = 3 AND array [conversation.usergroup::text] && (SELECT array_agg(groups) FROM w1)))))
+                ELSE TRUE 
+                END
+            END`
+        }
+
         const TABLENAME = columns[0].tablename;
         const ALLCOLUMNS = [...columns, ...filters];
 
@@ -361,12 +391,14 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
         }, "")
 
         let query = `
-            select
+            ${queriesFilterGroups.queryWith}
+            SELECT
                 ${COLUMNESSELECT}
-            from ${TABLENAME}
+            FROM ${TABLENAME}
             ${JOINNERS}
+            ${queriesFilterGroups.queryJoin}
             WHERE 
-                ${TABLENAME}.corpid = $corpid and ${TABLENAME}.orgid = $orgid
+                ${TABLENAME}.corpid = $corpid AND ${TABLENAME}.orgid = $orgid ${queriesFilterGroups.queryWhere}
                 ${FILTERS}
             `;
         const resultbd = await executeQuery(query, parameters, parameters._requestid);

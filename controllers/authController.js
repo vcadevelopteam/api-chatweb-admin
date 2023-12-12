@@ -275,7 +275,7 @@ exports.getUser = async (req, res) => {
             ]
         }), {})
 
-        jwt.sign({ user: { ...req.user, menu: { ...menu, "system-label": undefined, "/": undefined } } }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
+        jwt.sign({ user: { ...req.user, environment: propertyEnv, menu: { ...menu, "system-label": undefined, "/": undefined } } }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
             if (error) throw error;
             delete req.user.token;
             // delete req.user.corpid;
@@ -345,7 +345,7 @@ exports.changeOrganization = async (req, res) => {
             corpdesc: parameters.corpdesc,
             orgdesc: parameters.orgdesc,
             _requestid: req._requestid,
-            roledesc: req.user.roledesc.includes("SUPERADMIN") ? "SUPERADMIN" :  resultBD[0]?.roledesc,
+            roledesc: req.user.roledesc.includes("SUPERADMIN") ? "SUPERADMIN" : resultBD[0]?.roledesc,
             redirect: resultBD[0]?.redirect || '/tickets',
             plan: resultBD[0]?.plan || '',
             currencysymbol: resultBD[0]?.currencysymbol || 'S/',
@@ -364,14 +364,14 @@ exports.changeOrganization = async (req, res) => {
         }), {});
 
         newusertoken.menu = { ...menu, "system-label": undefined, "/": undefined };
-        
+
         let automaticConnection = false;
-        
+
         if (!req.user.roledesc.includes("SUPERADMIN")) {
             const resConnection = await executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...newusertoken, propertyname: 'CONEXIONAUTOMATICAINBOX' })
-            
+
             automaticConnection = validateResProperty(resConnection, 'bool');
-            
+
             if (automaticConnection) {
                 await executesimpletransaction("UFN_USERSTATUS_UPDATE", {
                     ...newusertoken,
@@ -387,7 +387,7 @@ exports.changeOrganization = async (req, res) => {
         if (req.user.origin === "MOVIL") {
             await loginGroup(req.user.token, parameters.neworgid, req.user.userid, req._requestid);
         }
-        
+
         jwt.sign({ user: newusertoken }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
             if (error) throw error;
             delete req.user.token;
