@@ -307,7 +307,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 ELSE 
                     CASE 
                         WHEN string_to_array($roles, ',') && array ['SUPERVISOR CLIENTE'] THEN TRUE
-                        ELSE co.lastuserid NOT IN (2, 3)
+                        ELSE conversation.lastuserid NOT IN (2, 3)
                     END 
                 END
             END`
