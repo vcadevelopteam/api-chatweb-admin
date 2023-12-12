@@ -3940,4 +3940,29 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_ASSISTANTAIDOCUMENT_INS: {
+        query: "SELECT * FROM ufn_assistantaidocument_ins($corpid, $orgid, $assistantaiid, $id, $description, $url, $type, $status, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_THREAD_SEL: {
+        query: "SELECT * FROM ufn_thread_sel($corpid, $orgid, $assistantaiid, $username, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_THREAD_INS: {
+        query: "SELECT * FROM ufn_thread_ins($corpid, $orgid, $assistantaiid, $id, $code, $description, $type, $status, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_MESSAGEAI_SEL: {
+        query: "SELECT * FROM ufn_messageai_sel($corpid, $orgid, $assistantaiid, $threadid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_MESSAGEAI_INS: {
+        query: "SELECT * FROM ufn_messageai_ins($corpid, $orgid, $assistantaiid, $threadid, $assistantaidocumentid, $id, $messagetext, $infosource, $type, $status, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
 }
