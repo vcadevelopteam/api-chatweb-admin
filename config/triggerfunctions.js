@@ -304,7 +304,11 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 CASE WHEN (SELECT(array_length(array_agg(groups), 1)) FROM w1) IS NOT NULL THEN 
                     (string_to_array(lastorguser.groups, ',') && (SELECT array_agg(groups) FROM w1)) OR
                     ((string_to_array($roles, ',') && array ['SUPERVISOR CLIENTE'] AND (conversation.lastuserid = 2 OR (conversation.lastuserid = 3 AND array [conversation.usergroup::text] && (SELECT array_agg(groups) FROM w1)))))
-                ELSE TRUE 
+                ELSE 
+                    CASE 
+                        WHEN string_to_array($roles, ',') && array ['SUPERVISOR CLIENTE'] THEN TRUE
+                        ELSE co.lastuserid NOT IN (2, 3)
+                    END 
                 END
             END`
         }
@@ -402,7 +406,6 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 ${FILTERS}
             `;
 
-        console.log("query", query)
         const resultbd = await executeQuery(query, parameters, parameters._requestid);
 
         if (summaries.length > 0 && resultbd.length > 0) {
