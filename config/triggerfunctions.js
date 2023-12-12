@@ -288,7 +288,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
         const queriesFilterGroups = {
             queryWith: !applyFilterGroups ? '' :
             `WITH w1 AS (
-                SELECT DISTINCT unnest(string_to_array(groups,'','')) AS groups
+                SELECT DISTINCT unnest(string_to_array(groups,',')) AS groups
                 FROM orguser ous
                 WHERE ous.corpid = $corpid
                 AND ous.orgid = $orgid
