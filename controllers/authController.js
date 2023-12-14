@@ -287,7 +287,7 @@ exports.getUser = async (req, res) => {
                     menu,
                     properties: resultProperties,
                     token,
-                    redirect: (firstload && req.user.roledesc.split(",").some(x => ["ADMINISTRADOR", "SUPERADMIN"].includes(x))) ? "/channels" : req.user.roledesc,
+                    redirect: (firstload && req.user.roledesc.split(",").some(x => ["ADMINISTRADOR", "SUPERADMIN"].includes(x))) ? "/channels" : req.user.redirect,
                     newChannels,
                     organizations: resultBD[1],
                     notifications: resultBD[2],
