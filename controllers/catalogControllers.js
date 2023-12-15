@@ -1151,7 +1151,7 @@ exports.downloadProduct = async (request, response) => {
 
         if (productlist) {
             productlist = productlist.map(obj => {
-                return { ...obj, description: obj.description.replace(/\n/g, "") };
+                return { ...obj, description: obj.description.replace(/\n/g, "").replace(/;/g, "") };
             });
             const csvresult = await triggerfunctions.exportData(productlist, 'productcatalog', 'csv', null, request._requestid);
 
