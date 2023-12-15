@@ -4150,6 +4150,11 @@ module.exports = {
         module: ["/iatraining"],
         protected: "SELECT"
     },
+    UFN_TIME_WAITING_SEL: {
+        query: "select * from ufn_time_waiting_sel($corpid, $orgid, $userid, $useridselected)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_RASA_SYNONYM_SEL: {
         query: "SELECT * FROM ufn_rasa_synonym_sel($corpid, $orgid, $rasaid)",
         module: ["/iatraining"],
