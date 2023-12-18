@@ -3200,7 +3200,7 @@ exports.synchronizeTemplate = async (request, response) => {
         if (request.body) {
             let { messagetemplatelist, communicationchannel } = request.body;
 
-            if (messagetemplatelist) {
+            if (messagetemplatelist[0]) {
                 messagetemplatelist = messagetemplatelist.sort((a, b) =>
                     a.communicationchannelservicecredentials > b.communicationchannelservicecredentials ? 1 : -1
                 );
@@ -3776,7 +3776,7 @@ exports.deleteTemplate = async (request, response) => {
         if (request.body) {
             let { messagetemplatelist } = request.body;
 
-            if (messagetemplatelist) {
+            if (messagetemplatelist[0]) {
                 for (const messagetemplate of messagetemplatelist) {
                     let deleteSuccess = false;
 
