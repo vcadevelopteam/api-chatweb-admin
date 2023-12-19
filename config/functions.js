@@ -4238,7 +4238,7 @@ module.exports = {
         protected: "SELECT"
     },
 
-    UFN_WAREHOUSE_SEL: {
+    UFN_WAREHOUSE_SEL2: {
         query: "SELECT * FROM ufn_warehouse_lst($corpid, $orgid)",
         module: "",
         protected: "SELECT"
