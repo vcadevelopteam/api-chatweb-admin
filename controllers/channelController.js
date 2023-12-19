@@ -1552,9 +1552,8 @@ exports.insertChannel = async (request, response) => {
                         callbackType: "application/json",
                         endpoint: service.url,
                         number: service.emittername,
-                        callbackEndpoint: `${hookEndpoint}infobip/${
-                            request.body.type === "INFOBIPEMAIL" ? "mail" : ""
-                        }webhookasync`,
+                        callbackEndpoint: `${hookEndpoint}infobip/${request.body.type === "INFOBIPEMAIL" ? "mail" : ""
+                            }webhookasync`,
                     };
 
                     if (request.body.type === "INFOBIPEMAIL") {
@@ -3201,155 +3200,7 @@ exports.synchronizeTemplate = async (request, response) => {
         if (request.body) {
             let { messagetemplatelist, communicationchannel } = request.body;
 
-            if (communicationchannel) {
-                if (communicationchannel.type) {
-                    let templateList = null;
-
-                    switch (communicationchannel.type) {
-                        case "WHAD":
-                            if (communicationchannel.servicecredentials) {
-                                let serviceData = JSON.parse(communicationchannel.servicecredentials);
-
-                                const requestListDialog = await axiosObservable({
-                                    _requestid: request._requestid,
-                                    method: "post",
-                                    url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
-                                    data: {
-                                        ApiKey: serviceData.apiKey,
-                                        IsCloud: !!serviceData.isCloud,
-                                        Type: "LIST",
-                                    },
-                                });
-
-                                if (requestListDialog.data.success) {
-                                    templateList = requestListDialog.data.result;
-                                } else {
-                                    requestCode = requestListDialog.data.operationMessage;
-                                    requestMessage = requestListDialog.data.operationMessage;
-                                }
-                            }
-                            break;
-
-                        case "WHAG":
-                            if (communicationchannel.servicecredentials) {
-                                let serviceData = JSON.parse(communicationchannel.servicecredentials);
-
-                                const requestListGupshup = await axiosObservable({
-                                    _requestid: request._requestid,
-                                    method: "post",
-                                    url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
-                                    data: {
-                                        ApiKey: serviceData.apiKey,
-                                        AppName: serviceData.app,
-                                        Type: "LIST",
-                                    },
-                                });
-
-                                if (requestListGupshup.data.success) {
-                                    templateList = requestListGupshup.data.result;
-                                } else {
-                                    requestCode = requestListGupshup.data.operationMessage;
-                                    requestMessage = requestListGupshup.data.operationMessage;
-                                }
-                            }
-                            break;
-
-                        case "WHAT":
-                            if (communicationchannel.servicecredentials) {
-                                let serviceData = JSON.parse(communicationchannel.servicecredentials);
-
-                                const requestListSmooch = await axiosObservable({
-                                    _requestid: request._requestid,
-                                    method: "post",
-                                    url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
-                                    data: {
-                                        AppId: serviceData.appId,
-                                        IntegrationId: communicationchannel.integrationid,
-                                        KeyId: serviceData.apiKeyId,
-                                        KeySecret: serviceData.apiKeySecret,
-                                        Type: "LIST",
-                                    },
-                                });
-
-                                if (requestListSmooch.data.success) {
-                                    templateList = requestListSmooch.data.result;
-                                } else {
-                                    requestCode = requestListSmooch.data.operationMessage;
-                                    requestMessage = requestListSmooch.data.operationMessage;
-                                }
-                            }
-                            break;
-                    }
-
-                    if (templateList) {
-                        await channelfunctions.messageTemplateReset(
-                            communicationchannel.corpid,
-                            communicationchannel.orgid,
-                            communicationchannel.communicationchannelid,
-                            communicationchannel.type === "WHAD" || communicationchannel.type === "WHAG"
-                                ? templateList[0]?.id || null
-                                : null,
-                            request.user.usr,
-                            request._requestid
-                        );
-
-                        for (const templateData of templateList) {
-                            let buttonObject = [];
-
-                            if (templateData.buttons) {
-                                for (const buttonData of templateData.buttons) {
-                                    let buttonInformation = {
-                                        payload: buttonData.data || buttonData.text || "",
-                                        title: buttonData.text || "",
-                                        type: (buttonData.type || "").toLowerCase(),
-                                    };
-
-                                    buttonObject.push(buttonInformation);
-                                }
-                            }
-
-                            await channelfunctions.messageTemplateUpd(
-                                communicationchannel.corpid,
-                                communicationchannel.orgid,
-                                communicationchannel.communicationchanneldesc,
-                                "HSM",
-                                "ACTIVO",
-                                templateData.name,
-                                communicationchannel.type === "WHAD" || communicationchannel.type === "WHAG"
-                                    ? templateData.id
-                                    : null,
-                                templateData.category,
-                                templateData.language,
-                                templateData.header || templateData.footer || templateData.buttons
-                                    ? "MULTIMEDIA"
-                                    : "STANDARD",
-                                !!templateData.header,
-                                templateData.header?.type ? templateData.header?.type.toLowerCase() : null,
-                                templateData.header?.text || null,
-                                templateData.body?.text || null,
-                                null,
-                                !!templateData.footer,
-                                templateData.footer?.text || null,
-                                !!templateData.buttons,
-                                templateData.buttons ? JSON.stringify(buttonObject) : null,
-                                true,
-                                templateData.id,
-                                templateData.status,
-                                communicationchannel.communicationchannelid,
-                                communicationchannel.type,
-                                null,
-                                request.user.usr,
-                                request._requestid
-                            );
-                        }
-
-                        requestCode = "";
-                        requestMessage = "";
-                        requestStatus = 200;
-                        requestSuccess = true;
-                    }
-                }
-            } else if (messagetemplatelist) {
+            if (messagetemplatelist[0]) {
                 messagetemplatelist = messagetemplatelist.sort((a, b) =>
                     a.communicationchannelservicecredentials > b.communicationchannelservicecredentials ? 1 : -1
                 );
@@ -3535,6 +3386,154 @@ exports.synchronizeTemplate = async (request, response) => {
                         }
                     }
                 }
+            } else if (communicationchannel) {
+                if (communicationchannel.type) {
+                    let templateList = null;
+
+                    switch (communicationchannel.type) {
+                        case "WHAD":
+                            if (communicationchannel.servicecredentials) {
+                                let serviceData = JSON.parse(communicationchannel.servicecredentials);
+
+                                const requestListDialog = await axiosObservable({
+                                    _requestid: request._requestid,
+                                    method: "post",
+                                    url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
+                                    data: {
+                                        ApiKey: serviceData.apiKey,
+                                        IsCloud: !!serviceData.isCloud,
+                                        Type: "LIST",
+                                    },
+                                });
+
+                                if (requestListDialog.data.success) {
+                                    templateList = requestListDialog.data.result;
+                                } else {
+                                    requestCode = requestListDialog.data.operationMessage;
+                                    requestMessage = requestListDialog.data.operationMessage;
+                                }
+                            }
+                            break;
+
+                        case "WHAG":
+                            if (communicationchannel.servicecredentials) {
+                                let serviceData = JSON.parse(communicationchannel.servicecredentials);
+
+                                const requestListGupshup = await axiosObservable({
+                                    _requestid: request._requestid,
+                                    method: "post",
+                                    url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
+                                    data: {
+                                        ApiKey: serviceData.apiKey,
+                                        AppName: serviceData.app,
+                                        Type: "LIST",
+                                    },
+                                });
+
+                                if (requestListGupshup.data.success) {
+                                    templateList = requestListGupshup.data.result;
+                                } else {
+                                    requestCode = requestListGupshup.data.operationMessage;
+                                    requestMessage = requestListGupshup.data.operationMessage;
+                                }
+                            }
+                            break;
+
+                        case "WHAT":
+                            if (communicationchannel.servicecredentials) {
+                                let serviceData = JSON.parse(communicationchannel.servicecredentials);
+
+                                const requestListSmooch = await axiosObservable({
+                                    _requestid: request._requestid,
+                                    method: "post",
+                                    url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
+                                    data: {
+                                        AppId: serviceData.appId,
+                                        IntegrationId: communicationchannel.integrationid,
+                                        KeyId: serviceData.apiKeyId,
+                                        KeySecret: serviceData.apiKeySecret,
+                                        Type: "LIST",
+                                    },
+                                });
+
+                                if (requestListSmooch.data.success) {
+                                    templateList = requestListSmooch.data.result;
+                                } else {
+                                    requestCode = requestListSmooch.data.operationMessage;
+                                    requestMessage = requestListSmooch.data.operationMessage;
+                                }
+                            }
+                            break;
+                    }
+
+                    if (templateList) {
+                        await channelfunctions.messageTemplateReset(
+                            communicationchannel.corpid,
+                            communicationchannel.orgid,
+                            communicationchannel.communicationchannelid,
+                            communicationchannel.type === "WHAD" || communicationchannel.type === "WHAG"
+                                ? templateList[0]?.id || null
+                                : null,
+                            request.user.usr,
+                            request._requestid
+                        );
+
+                        for (const templateData of templateList) {
+                            let buttonObject = [];
+
+                            if (templateData.buttons) {
+                                for (const buttonData of templateData.buttons) {
+                                    let buttonInformation = {
+                                        payload: buttonData.data || buttonData.text || "",
+                                        title: buttonData.text || "",
+                                        type: (buttonData.type || "").toLowerCase(),
+                                    };
+
+                                    buttonObject.push(buttonInformation);
+                                }
+                            }
+
+                            await channelfunctions.messageTemplateUpd(
+                                communicationchannel.corpid,
+                                communicationchannel.orgid,
+                                communicationchannel.communicationchanneldesc,
+                                "HSM",
+                                "ACTIVO",
+                                templateData.name,
+                                communicationchannel.type === "WHAD" || communicationchannel.type === "WHAG"
+                                    ? templateData.id
+                                    : null,
+                                templateData.category,
+                                templateData.language,
+                                templateData.header || templateData.footer || templateData.buttons
+                                    ? "MULTIMEDIA"
+                                    : "STANDARD",
+                                !!templateData.header,
+                                templateData.header?.type ? templateData.header?.type.toLowerCase() : null,
+                                templateData.header?.text || null,
+                                templateData.body?.text || null,
+                                null,
+                                !!templateData.footer,
+                                templateData.footer?.text || null,
+                                !!templateData.buttons,
+                                templateData.buttons ? JSON.stringify(buttonObject) : null,
+                                true,
+                                templateData.id,
+                                templateData.status,
+                                communicationchannel.communicationchannelid,
+                                communicationchannel.type,
+                                null,
+                                request.user.usr,
+                                request._requestid
+                            );
+                        }
+
+                        requestCode = "";
+                        requestMessage = "";
+                        requestStatus = 200;
+                        requestSuccess = true;
+                    }
+                }
             }
         }
 
@@ -3589,15 +3588,14 @@ exports.addTemplate = async (request, response) => {
                                 Type: "CREATE",
                                 Header: request.body.headerenabled
                                     ? {
-                                          Type: request.body.headertype,
-                                          Text: request.body.headertype === "text" ? request.body.header : null,
-                                      }
+                                        Type: request.body.headertype,
+                                        Text: request.body.headertype === "text" ? request.body.header : null,
+                                    }
                                     : null,
                                 Language:
                                     (request.body.language || "").split("_").length > 1
-                                        ? `${(request.body.language || "").split("_")[0].toLowerCase()}_${
-                                              (request.body.language || "").split("_")[1]
-                                          }`
+                                        ? `${(request.body.language || "").split("_")[0].toLowerCase()}_${(request.body.language || "").split("_")[1]
+                                        }`
                                         : (request.body.language || "").split("_")[0].toLowerCase(),
                             };
 
@@ -3612,8 +3610,8 @@ exports.addTemplate = async (request, response) => {
                                             element.type === "phone_number"
                                                 ? `phoneNumber: ${element.payload}`
                                                 : element.type === "url"
-                                                ? `url: ${element.payload}`
-                                                : null,
+                                                    ? `url: ${element.payload}`
+                                                    : null,
                                     });
                                 });
                             }
@@ -3670,15 +3668,14 @@ exports.addTemplate = async (request, response) => {
                                 Type: "CREATE",
                                 Header: request.body.headerenabled
                                     ? {
-                                          Type: request.body.headertype,
-                                          Text: request.body.headertype === "text" ? request.body.header : null,
-                                      }
+                                        Type: request.body.headertype,
+                                        Text: request.body.headertype === "text" ? request.body.header : null,
+                                    }
                                     : null,
                                 Language:
                                     (request.body.language || "").split("_").length > 1
-                                        ? `${(request.body.language || "").split("_")[0].toLowerCase()}_${
-                                              (request.body.language || "").split("_")[1]
-                                          }`
+                                        ? `${(request.body.language || "").split("_")[0].toLowerCase()}_${(request.body.language || "").split("_")[1]
+                                        }`
                                         : (request.body.language || "").split("_")[0].toLowerCase(),
                             };
 
@@ -3693,8 +3690,8 @@ exports.addTemplate = async (request, response) => {
                                             element.type === "phone_number"
                                                 ? `phoneNumber: ${element.payload}`
                                                 : element.type === "url"
-                                                ? `url: ${element.payload}`
-                                                : null,
+                                                    ? `url: ${element.payload}`
+                                                    : null,
                                     });
                                 });
                             }
@@ -3779,7 +3776,7 @@ exports.deleteTemplate = async (request, response) => {
         if (request.body) {
             let { messagetemplatelist } = request.body;
 
-            if (messagetemplatelist) {
+            if (messagetemplatelist[0]) {
                 for (const messagetemplate of messagetemplatelist) {
                     let deleteSuccess = false;
 
