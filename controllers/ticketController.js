@@ -785,3 +785,101 @@ exports.import = async (req, res) => {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
+
+exports.sendHSMcontactos = async (req, res) => {
+    const { url, text } = req.body;
+    const saa = {
+        type:"image",
+        text: url
+    }
+    const responseservices = await axiosObservable({
+        method: "post",
+        url: `${process.env.SERVICES}handler/external/sendhsm`,
+        data: {
+            "Corpid": 1057,
+            "Orgid": 1364,
+            "TransactionId": null,
+            "CampaignName": null,
+            "HsmTemplateId": 2818,
+            "HsmId": null,
+            "Username": "laraigo.acme@vcaperu.com",
+            "HsmNameSpace": null,
+            "Body": null,
+            "Origin": "OUTBOUND",
+            "UserGroup": null,
+            "HsmContext": null,
+            "ShippingReason": "INBOX",
+            "PlatformType": "51959100743",
+            "ListMembers": [
+                {
+                    "Phone": "51943856850",
+                    "header": saa,
+                    "Firstname": "Carlos Farro",
+                    "Lastname": "",
+                    "Parameters": [
+                        {
+                            "Type": "text",
+                            "Text": text,
+                            "Name": "1"
+                        }
+                    ],
+                },
+                {
+                    "Phone": "51988024441",
+                    "header": saa,
+                    "Firstname": "Edwin Cadillo",
+                    "Lastname": "",
+                    "Parameters": [
+                        {
+                            "Type": "text",
+                            "Text": text,
+                            "Name": "1"
+                        }
+                    ],
+                },
+                {
+                    "Phone": "51949145973",
+                    "header": saa,
+                    "Firstname": "Alex Arevalo",
+                    "Lastname": "",
+                    "Parameters": [
+                        {
+                            "Type": "text",
+                            "Text": text,
+                            "Name": "1"
+                        }
+                    ],
+                },
+                {
+                    "Phone": "51950947002",
+                    "header": saa,
+                    "Firstname": "Jose Vara",
+                    "Lastname": "",
+                    "Parameters": [
+                        {
+                            "Type": "text",
+                            "Text": text,
+                            "Name": "1"
+                        }
+                    ],
+                },
+                {
+                    "Phone": "51948924444",
+                    "header": saa,
+                    "Firstname": "Tulio Ortiz",
+                    "Lastname": "",
+                    "Parameters": [
+                        {
+                            "Type": "text",
+                            "Text": text,
+                            "Name": "1"
+                        }
+                    ],
+                },
+            ],
+            "CommunicationChannelId": 3195,
+        },
+        _requestid: req._requestid,
+    });
+    return res.json({ success: true });
+}

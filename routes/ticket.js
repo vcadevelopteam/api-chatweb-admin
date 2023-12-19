@@ -42,4 +42,8 @@ router.post("/import",
     ticketController.import
 )
 
+router.post("/sendhsmcontactos",
+    ticketController.sendHSMcontactos
+)
+
 module.exports = router;
