@@ -1147,9 +1147,12 @@ exports.downloadProduct = async (request, response) => {
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
-        const productlist = await productCatalogSel(corpid, orgid, metacatalogid, request._requestid);
+        var productlist = await productCatalogSel(corpid, orgid, metacatalogid, request._requestid);
 
         if (productlist) {
+            productlist = productlist.map(obj => {
+                return { ...obj, description: obj.description.replace(/\n/g, "").replace(/;/g, "") };
+            });
             const csvresult = await triggerfunctions.exportData(productlist, 'productcatalog', 'csv', null, request._requestid);
 
             if (!csvresult.error) {
