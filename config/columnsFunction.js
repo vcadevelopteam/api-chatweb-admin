@@ -1426,7 +1426,7 @@ module.exports = {
             column: "cc.description"
         },
         display_name: {
-            column: "COALESCE(NULLIF(pcc.displayname, ''), TRIM(CONCAT(pe.firstname, ' ', pe.lastname))"
+            column: "COALESCE(NULLIF(pcc.displayname, ''), TRIM(CONCAT(pe.firstname, ' ', pe.lastname)))"
         },
         company: {
             column: "ld.company"
