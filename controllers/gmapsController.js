@@ -1,6 +1,7 @@
 const { errors, getErrorCode, axiosObservable } = require('../config/helpers');
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { parseString } = require('xml2js');
+const moment = require('moment-timezone');
 
 
 exports.geocode = async (req, res) => {
@@ -437,18 +438,49 @@ exports.polygonsinsertmassive = async (req, res) => {
 }
 
 
-exports.findcoordinateinpolygons = async (req, res) => {
-  try {      
-      const {corpid, orgid, latitude, longitude} = req.body;
 
-      const result = await executesimpletransaction("SEARCH_POINT_ON_AREAS", { corpid, orgid, latitude, longitude });
-
-      return res.json({ corpid, orgid, result });
-  } catch (error) {
-      console.log(error);
-      return res.status(500).json({ error: 'Error en el servidor' });
+function isInsideSchedule(polygons, currentDateTime) {
+  for (const polygon of polygons) {
+    const { schedule } = polygon;
+    const dayOfWeek = currentDateTime.format('dddd').toLowerCase();
+    
+    if (schedule[dayOfWeek]) {
+      const [startTime, endTime] = schedule[dayOfWeek].split('-');
+      const startMoment = moment(startTime, 'HH:mm');
+      const endMoment = moment(endTime, 'HH:mm');
+      
+      if (currentDateTime.isBetween(startMoment, endMoment)) {
+        return true;
+      }
+    }
   }
+
+  return false;
 }
 
+exports.findcoordinateinpolygons = async (req, res) => {
+  try {
+    const { corpid, orgid, latitude, longitude } = req.body;
+   
+    const currentDateTime = moment().tz('Etc/GMT+5');
 
+    const result = await executesimpletransaction("SEARCH_POINT_ON_AREAS", { corpid, orgid, latitude, longitude });
 
+    const inside_schedule = result.length > 0 && isInsideSchedule(result, currentDateTime);
+
+    const response = { corpid, orgid,
+      result: result.map((polygon) => ({
+        polygonsid: polygon.polygonsid,
+        name: polygon.name,
+        schedule: polygon.schedule,
+      })),
+      inside_schedule,
+    };
+
+    return res.json(response);
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: 'Error en el servidor' });
+  }
+};
