@@ -6,7 +6,7 @@ exports.drawReport = async (req, res) => {
 
     setSessionParameters(parameters, req.user, req._requestid);
 
-    const result = await buildQueryDynamic2(columns, filters, parameters, summaries);
+    const result = await buildQueryDynamic2(columns, filters, parameters, summaries, false, req.user);
     if (!result.error)
         return res.json(result);
     else
@@ -18,7 +18,7 @@ exports.exportReport = async (req, res) => {
 
     setSessionParameters(parameters, req.user, req._requestid);
 
-    const resultBD = await buildQueryDynamic2(columns, filters, parameters, summaries, true);
+    const resultBD = await buildQueryDynamic2(columns, filters, parameters, summaries, true, req.user);
 
     const result = await exportData(resultBD, parameters.reportName, parameters.formatToExport, parameters.headerClient, req._requestid);
 
@@ -123,7 +123,7 @@ exports.dashboardDesigner = async (req, res) => {
                             if (indicator.interval) {
                                 return buildQueryDynamicGroupInterval(columnstmp, filterHard, parameters, indicator.interval, report.dataorigin, indicator.summarizationfunction);
                             } else {
-                                return buildQueryDynamic2(columnstmp, filterHard, parameters, []);
+                                return buildQueryDynamic2(columnstmp, filterHard, parameters, [], false, req.user);
                             }
                         }
                         else {

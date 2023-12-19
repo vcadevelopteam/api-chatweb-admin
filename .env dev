@@ -3,9 +3,31 @@ API2=https://apixreport.laraigo.com/api/
 APIKEY_GMAPS=AIzaSyDuXjjAnNl9yLKczCJtQ-5Z3GDJpxK720s
 APISERVICES=https://zyxmedev.com/zyxme/apiservices/api/
 APP_MOBILE_SOCKET=https://socket.laraigo.com/api/
+APP_MOBILE_SOCKET=https://socket.laraigo.com/api/
 APP=https://zyxmelinux2.zyxmeapp.com/zyxme/app/
 AYRSHARE=https://app.ayrshare.com/api/
+AYRSHARE=https://app.ayrshare.com/api/
 BRIDGE=https://zyxmelinux2.zyxmeapp.com/zyxme/bridge/api/
+BRIDGECLOUD=https://cloudprdbridge.laraigo.com/api/
+CHATAPPLICATION=53
+CHATBROKER=https://goo.zyxmeapp.com/api/
+COS_ACCESSKEYID=2c983a88140142159913f5c3bca6fc40
+COS_APIKEYID=LwD1YXNXSp8ZYMGIUWD2D3-wmHkmWRVcFm-5a1Wz_7G1
+COS_BUCKET=staticfileszyxme
+COS_ENDPOINT=s3.us-east.cloud-object-storage.appdomain.cloud
+COS_IBMAUTHENDPOINT=https://iam.cloud.ibm.com/identity/token
+COS_SECRETACCESSKEY=8c48037f5f34bb9c15271e5d393f414fc586e985ea899ebb
+COS_SERVICEINSTANCEID=0268699b-7d23-4e1d-9d17-e950b6804633
+
+COS_FREE_ACCESSKEYID=2c983a88140142159913f5c3bca6fc40
+COS_FREE_APIKEYID=LwD1YXNXSp8ZYMGIUWD2D3-wmHkmWRVcFm-5a1Wz_7G1
+COS_FREE_BUCKET=staticfileszyxme
+COS_FREE_ENDPOINT=s3.us-east.cloud-object-storage.appdomain.cloud
+COS_FREE_IBMAUTHENDPOINT=https://iam.cloud.ibm.com/identity/token
+
+
+BRIDGE=https://cloudprdbridge.laraigo.com/api/
+BRIDGECLOUD=https://cloudprdbridge.laraigo.com/api/
 BRIDGECLOUD=https://cloudprdbridge.laraigo.com/api/
 CHATAPPLICATION=53
 CHATBROKER=https://goo.zyxmeapp.com/api/
@@ -14,6 +36,7 @@ DBNAME=laraigodev
 DBPASSWORD=d549887c9ee5db461976c0d23ee4604235f67e6848ac2cbd2d
 DBPORT=30503
 DBUSER=admin
+
 EXCHANGE=https://api.apis.net.pe/v1/tipo-cambio-sunat?fecha=
 FACEBOOKAPI=https://graph.facebook.com/v16.0/
 GOOGLE_AUTHURI=https://oauth2.googleapis.com/token
@@ -46,6 +69,7 @@ PORT=6065
 RELEASE_DATE=2022-10-23 08:00
 RELEASE_VERSION=1.14.0
 ROOT_DELETE=false
+SECRET_RECAPTCHA=6LeOA44nAAAAAN6CLWj1zwGWX3h2-T6OXbOoOuHi
 SECRETA=palabrasecreta
 SERVICES=https://zyxmelinux2.zyxmeapp.com/zyxme/services/api/
 SMOOCHAPI=https://api.smooch.io/
