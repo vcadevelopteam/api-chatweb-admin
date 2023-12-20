@@ -2930,7 +2930,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_INVOICE_SUMMARY_SEL: {
-        query: "SELECT * FROM ufn_report_invoice_summary_sel($year, $currency)",
+        query: "SELECT * FROM ufn_report_invoice_summary_sel($year, $currency, $location)",
         module: ["/reports"],
         protected: "SELECT"
     },
