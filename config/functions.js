@@ -598,7 +598,7 @@ module.exports = {
     },
     UFN_ORG_SEL: {
         query: "SELECT * FROM ufn_org_sel($corpid , $orgid , $all)",
-        module: ["/organizations", "/timesheet", "/invoice", "/extras/properties", "/billing_setups"],
+        module: ["/organizations", "/timesheet", "/invoice", "/extras/properties", "/extras/botdesigner", "/billing_setups"],
         protected: "SELECT"
     },
     UFN_BUSINESSDOCTYPE_SEL: {
@@ -1874,12 +1874,12 @@ module.exports = {
     },
     UFN_ADVISERS_SEL: {
         query: "select * from ufn_advisers_sel($corpid, $orgid)",
-        module: ["/crm", "/servicedesk", "/person", "/extras/users"],
+        module: ["/crm", "/servicedesk", "/person", "/extras/botdesigner", "/extras/users"],
         protected: "SELECT"
     },
     UFN_USER_SD_SEL: {
         query: "select * from ufn_user_sd_sel($corpid, $orgid)",
-        module: ["/servicedesk"],
+        module: ["/servicedesk", "/extras/botdesigner"],
         protected: "SELECT"
     },
     UFN_PERSONWITHOUTDATE_TOTALRECORDS: {
@@ -2356,7 +2356,7 @@ module.exports = {
     },
     UFN_MESSAGETEMPLATE_LST: {
         query: "SELECT * FROM ufn_messagetemplate_lst($corpid, $orgid, $type, $username)",
-        module: ["/supervisor", "/message_inbox", "/calendar", "/extras/campaign", "/crm", "/servicedesk", "/automatizationrules", "/person", "/extras/users",],
+        module: ["/supervisor", "/message_inbox", "/calendar", "/extras/campaign", "/crm", "/servicedesk", "/automatizationrules", "/person", "/extras/botdesigner", "/extras/users",],
         protected: "INSERT"
     },
     QUERY_UPDATE_PERSON_BY_HSM: {
