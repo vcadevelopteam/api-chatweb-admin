@@ -1639,6 +1639,9 @@ module.exports = {
         inventoryconsumptionid:{
             column: "t.inventoryconsumptionid"
         },
+        inventoryconsumptionserial:{
+            column: "t.inventoryconsumptionserial"
+        },
         description:{
             column: "t.description"
         },
