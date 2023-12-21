@@ -3214,6 +3214,30 @@ exports.synchronizeTemplate = async (request, response) => {
                             servicecredentials = messagetemplate.communicationchannelservicecredentials;
 
                             switch (messagetemplate.communicationchanneltype) {
+                                case "WHAM":
+                                    if (servicecredentials) {
+                                        let serviceData = JSON.parse(servicecredentials);
+
+                                        const requestListDialog = await axiosObservable({
+                                            _requestid: request._requestid,
+                                            method: "post",
+                                            url: `${bridgeEndpoint}processlaraigo/meta/metamessagetemplate`,
+                                            data: {
+                                                AccessToken: serviceData.accessToken,
+                                                NumberId: serviceData.numberId,
+                                                Type: "LIST",
+                                            },
+                                        });
+
+                                        if (requestListDialog.data.success) {
+                                            templatelist = requestListDialog.data.result;
+                                        } else {
+                                            requestCode = requestListDialog.data.operationMessage;
+                                            requestMessage = requestListDialog.data.operationMessage;
+                                        }
+                                    }
+                                    break;
+
                                 case "WHAD":
                                     if (servicecredentials) {
                                         let serviceData = JSON.parse(servicecredentials);
@@ -3391,6 +3415,30 @@ exports.synchronizeTemplate = async (request, response) => {
                     let templateList = null;
 
                     switch (communicationchannel.type) {
+                        case "WHAM":
+                            if (communicationchannel.servicecredentials) {
+                                let serviceData = JSON.parse(communicationchannel.servicecredentials);
+
+                                const requestListDialog = await axiosObservable({
+                                    _requestid: request._requestid,
+                                    method: "post",
+                                    url: `${bridgeEndpoint}processlaraigo/meta/metamessagetemplate`,
+                                    data: {
+                                        AccessToken: serviceData.accessToken,
+                                        NumberId: serviceData.numberId,
+                                        Type: "LIST",
+                                    },
+                                });
+
+                                if (requestListDialog.data.success) {
+                                    templateList = requestListDialog.data.result;
+                                } else {
+                                    requestCode = requestListDialog.data.operationMessage;
+                                    requestMessage = requestListDialog.data.operationMessage;
+                                }
+                            }
+                            break;
+
                         case "WHAD":
                             if (communicationchannel.servicecredentials) {
                                 let serviceData = JSON.parse(communicationchannel.servicecredentials);
