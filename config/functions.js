@@ -3965,4 +3965,9 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_ASSISTANTAIDOCUMENT_TRAINING_UPD: {
+        query: "SELECT * FROM ufn_assistantaidocument_training_upd($corpid, $orgid, $assistantaiid, $documentsid, $username)",
+        module: "",
+        protected: "SELECT"
+    }
 }
