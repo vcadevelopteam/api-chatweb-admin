@@ -3941,7 +3941,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ASSISTANTAIDOCUMENT_INS: {
-        query: "SELECT * FROM ufn_assistantaidocument_ins($corpid, $orgid, $assistantaiid, $id, $description, $url, $type, $status, $username, $operation);",
+        query: "SELECT * FROM ufn_assistantaidocument_ins($corpid, $orgid, $assistantaiid, $id, $description, $url, $fileid, $type, $status, $username, $operation);",
         module: "",
         protected: "INSERT"
     },
