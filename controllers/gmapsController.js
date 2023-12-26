@@ -407,11 +407,9 @@ function encontrarHorario(nombre) {
         mejorSimilitud = similitud;
         mejorHorario = horarios[nombreHorario];
       }
-    }
-  
-    return mejorHorario || {};
-}
-  
+    }  
+  return mejorHorario || {};
+}  
 
 exports.polygonsinsertmassive = async (req, res) => {
     try {       
@@ -419,7 +417,6 @@ exports.polygonsinsertmassive = async (req, res) => {
 
         const buffer = req.file.buffer;
         const kmlContent = buffer.toString();
-
 
         const kmlObject = await parseKMLtoObject(kmlContent);
 
@@ -437,17 +434,18 @@ exports.polygonsinsertmassive = async (req, res) => {
     }
 }
 
-
-
 function isInsideSchedule(polygons, currentDateTime) {
   for (const polygon of polygons) {
     const { schedule } = polygon;
     const dayOfWeek = currentDateTime.format('dddd').toLowerCase();
     
     if (schedule[dayOfWeek]) {
-      const [startTime, endTime] = schedule[dayOfWeek].split('-');
-      const startMoment = moment(startTime, 'HH:mm');
-      const endMoment = moment(endTime, 'HH:mm');
+      const [startHour, endHour] = schedule[dayOfWeek].split('-');
+      const [startHourNum, startMinute] = startHour.split(':');
+      const [endHourNum, endMinute] = endHour.split(':');
+      
+      const startMoment = currentDateTime.clone().set({ hour: startHourNum, minute: startMinute });
+      const endMoment = currentDateTime.clone().set({ hour: endHourNum, minute: endMinute });
       
       if (currentDateTime.isBetween(startMoment, endMoment)) {
         return true;
@@ -462,7 +460,7 @@ exports.findcoordinateinpolygons = async (req, res) => {
   try {
     const { corpid, orgid, latitude, longitude } = req.body;
    
-    const currentDateTime = moment().tz('Etc/GMT+5');
+    const currentDateTime = moment().tz('America/Lima');    
 
     const result = await executesimpletransaction("SEARCH_POINT_ON_AREAS", { corpid, orgid, latitude, longitude });
 
@@ -475,6 +473,7 @@ exports.findcoordinateinpolygons = async (req, res) => {
         schedule: polygon.schedule,
       })),
       inside_schedule,
+      order_datetime: currentDateTime.format('YYYY-MM-DD HH:mm:ss'), 
     };
 
     return res.json(response);
