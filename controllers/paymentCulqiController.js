@@ -165,18 +165,6 @@ const insertCharge = async (corpId, orgId, paymentorderid, id, amount, capture, 
     return null;
 }
 
-const getAppSetting = async (requestId) => {
-    const queryResult = await triggerfunctions.executesimpletransaction("UFN_APPSETTING_INVOICE_SEL", { _requestid: requestId });
-
-    if (queryResult instanceof Array) {
-        if (queryResult.length > 0) {
-            return queryResult[0];
-        }
-    }
-
-    return null;
-}
-
 const removeSpecialCharacter = (text) => {
     return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }

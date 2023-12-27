@@ -2930,7 +2930,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_INVOICE_SUMMARY_SEL: {
-        query: "SELECT * FROM ufn_report_invoice_summary_sel($year, $currency)",
+        query: "SELECT * FROM ufn_report_invoice_summary_sel($year, $currency, $location)",
         module: ["/reports"],
         protected: "SELECT"
     },
@@ -2940,7 +2940,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_APPSETTING_VOXIMPLANT_SEL: {
-        query: "SELECT * FROM ufn_appsetting_voximplant_sel()",
+        query: "SELECT * FROM ufn_appsetting_voximplant_sel($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
@@ -4404,6 +4404,15 @@ module.exports = {
         query: "SELECT * FROM search_point_on_areas($corpid, $orgid, $latitude , $longitude)",
         module: "",
         protected: "SELECT"
-    }
-
+    },
+    UFN_APPSETTING_INVOICE_SEL_SINGLE: {
+        query: "SELECT * FROM ufn_appsetting_invoice_sel_single($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_APPSETTING_INVOICE_SEL_EXCHANGERATE: {
+        query: "SELECT * FROM ufn_appsetting_invoice_sel_exchangerate($code)",
+        module: "",
+        protected: "SELECT"
+    },
 }

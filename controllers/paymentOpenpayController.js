@@ -3,7 +3,10 @@ const genericfunctions = require('../config/genericfunctions');
 
 const { axiosObservable, getErrorCode } = require('../config/helpers');
 
+const openpayColombiaEndpoint = process.env.OPENPAYCOLOMBIA_ENDPOINT;
+const openpayColombiaSandboxEndpoint = process.env.OPENPAYCOLOMBIA_SANDBOX_ENDPOINT;
 const openpayEndpoint = process.env.OPENPAY_ENDPOINT;
+const openpaySandboxEndpoint = process.env.OPENPAY_SANDBOX_ENDPOINT;
 const servicesEndpoint = process.env.SERVICES;
 
 exports.getPaymentOrder = async (request, response) => {
@@ -46,9 +49,9 @@ exports.processTransaction = async (request, response) => {
     let responsedata = genericfunctions.generateResponseData(request._requestid);
 
     try {
-        const { corpid, orgid, paymentorderid, devicesessionid, transactionresponse, formdata } = request.body;
+        const { corpid, orgid, paymentorderid, devicesessionid, transactionresponse, formdata, colombia } = request.body;
 
-        if (devicesessionid) {
+        if (devicesessionid || colombia) {
             if (transactionresponse) {
                 const paymentorder = await triggerfunctions.executesimpletransaction("UFN_PAYMENTORDER_SEL", { corpid: corpid, orgid: orgid, conversationid: 0, personid: 0, paymentorderid: paymentorderid, ordercode: '' });
 
@@ -60,6 +63,25 @@ exports.processTransaction = async (request, response) => {
 
                                 const buff = Buffer.from(`${authCredentials?.privateKey}:`, 'utf-8');
 
+                                let openpayFinalEndpoint;
+
+                                if (colombia) {
+                                    if (authCredentials?.sandbox) {
+                                        openpayFinalEndpoint = openpayColombiaSandboxEndpoint;
+                                    }
+                                    else {
+                                        openpayFinalEndpoint = openpayColombiaEndpoint;
+                                    }
+                                }
+                                else {
+                                    if (authCredentials?.sandbox) {
+                                        openpayFinalEndpoint = openpaySandboxEndpoint;
+                                    }
+                                    else {
+                                        openpayFinalEndpoint = openpayEndpoint;
+                                    }
+                                }
+
                                 const requestProcessTransaction = await axiosObservable({
                                     data: {
                                         source_id: transactionresponse.data.id,
@@ -68,7 +90,7 @@ exports.processTransaction = async (request, response) => {
                                         currency: paymentorder[0].currency,
                                         description: 'OPENPAY CHARGE',
                                         order_id: paymentorder[0].paymentorderid,
-                                        device_session_id: devicesessionid,
+                                        device_session_id: colombia ? undefined : devicesessionid,
                                         customer: {
                                             name: formdata.holder_name || '',
                                             lastname: `(${paymentorder[0].userfirstname} ${paymentorder[0].userlastname})`,
@@ -78,7 +100,7 @@ exports.processTransaction = async (request, response) => {
                                     },
                                     headers: { Authorization: `Basic ${buff.toString('base64')}` },
                                     method: 'post',
-                                    url: `${openpayEndpoint}v1/${authCredentials?.merchantId}/charges`,
+                                    url: `${openpayFinalEndpoint}v1/${authCredentials?.merchantId}/charges`,
                                     _requestid: request._requestid,
                                 });
 

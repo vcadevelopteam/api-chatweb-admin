@@ -7,8 +7,25 @@ const Culqi = require('culqi-node');
 const logger = require('../config/winston');
 
 const bridgeEndpoint = process.env.BRIDGE;
-const exchangeEndpoint = process.env.EXCHANGE;
 const whitelist = process.env.WHITELIST;
+
+const getExchangeRate = async (code, requestId) => {
+    const queryString = "UFN_APPSETTING_INVOICE_SEL_EXCHANGERATE";
+    const queryParameters = {
+        code: code,
+        _requestid: requestId,
+    }
+
+    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
+
+    if (queryResult instanceof Array) {
+        if (queryResult.length > 0) {
+            return queryResult[0];
+        }
+    }
+
+    return null;
+}
 
 const changeInvoiceBalance = async (corpId, orgId, balanceId, invoiceId, username, requestId) => {
     const queryString = "UFN_BALANCE_CHANGEINVOICE";
@@ -304,9 +321,11 @@ const favoritePaymentCard = async (corpId, requestId) => {
     return false;
 }
 
-const getAppSetting = async (requestId) => {
-    const queryString = "UFN_APPSETTING_INVOICE_SEL";
+const getAppSettingSingle = async (corpid, orgid, requestId) => {
+    const queryString = "UFN_APPSETTING_INVOICE_SEL_SINGLE";
     const queryParameters = {
+        corpid: corpid,
+        orgid: orgid,
         _requestid: requestId,
     }
 
@@ -409,41 +428,6 @@ const getCorrelative = async (corpId, orgId, id, type, requestId) => {
     }
 
     return null;
-}
-
-const getExchange = async (origin, requestId) => {
-    var exchangeRate = 0;
-    var retryNumber = 0;
-
-    var currentDate = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()));
-
-    currentDate = new Date(currentDate.setDate(currentDate.getDate() + 1));
-
-    while (exchangeRate === 0 && retryNumber <= 20) {
-        try {
-            const requestGetExchange = await axiosObservable({
-                method: 'get',
-                url: `${retryNumber === 0 ? exchangeEndpoint.split('?')[0] : (exchangeEndpoint + currentDate.toISOString().split('T')[0])}`,
-                _requestid: requestId,
-            });
-
-            if (requestGetExchange.data.venta) {
-                exchangeRate = requestGetExchange.data.venta;
-            }
-            else {
-                currentDate = new Date(currentDate.setDate(currentDate.getDate() - 1));
-            }
-        }
-        catch (exception) {
-            currentDate = new Date(currentDate.setDate(currentDate.getDate() - 1));
-        }
-
-        retryNumber++;
-
-        await sleep(4000);
-    }
-
-    return exchangeRate;
 }
 
 async function sleep(msec) {
@@ -750,13 +734,15 @@ exports.automaticPayment = async (request, response) => {
                         return response.status(responsedata.status).json(responsedata);
                     }
 
-                    const appsetting = await getAppSetting(responsedata.id);
+                    const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
 
-                    if (appsetting) {
+                    if (appsetting && appsetting?.paymentprovider === 'CULQI') {
                         const invoice = await getInvoice(corpid, orgid, 0, invoiceid, responsedata.id);
 
                         if (invoice) {
                             if (invoice.paymentstatus === 'PENDING') {
+                                var exchangeratedata = await getExchangeRate(invoice.currency, responsedata.id);
+
                                 var paymentsuccess = false;
 
                                 const paymentcard = await getPaymentCard(corpid, 0, responsedata.id);
@@ -783,15 +769,14 @@ exports.automaticPayment = async (request, response) => {
                                         var culqiamount = invoice.totalamount;
                                         var detractionamount = 0;
                                         var doctype = (org ? org.doctype : corp.doctype);
-                                        var exchangerate = await getExchange(request.originalUrl, responsedata.id);
 
-                                        if (exchangerate) {
+                                        if (exchangeratedata) {
                                             if (country && doctype) {
                                                 if (country === 'PE' && doctype === '6') {
                                                     var compareamount = (culqiamount || 0);
 
-                                                    if (invoice.currency === 'USD') {
-                                                        compareamount = compareamount * (exchangerate || 0);
+                                                    if (invoice.currency !== 'PEN') {
+                                                        compareamount = (compareamount / (exchangeratedata?.exchangerate || 0) * (exchangeratedata?.exchangeratesol || 0));
                                                     }
 
                                                     if (compareamount > appsetting.detractionminimum) {
@@ -999,192 +984,196 @@ exports.automaticPayment = async (request, response) => {
 
                                         if (invoicecorrelative) {
                                             try {
-                                                var invoicedata = {
-                                                    CodigoAnexoEmisor: appsetting.annexcode,
-                                                    CodigoFormatoImpresion: appsetting.printingformat,
-                                                    CodigoMoneda: invoice.currency,
-                                                    CodigoRucReceptor: org ? org.doctype : corp.doctype,
-                                                    CodigoUbigeoEmisor: appsetting.ubigeo,
-                                                    CorrelativoDocumento: padNumber(invoicecorrelative.p_correlative, 8),
-                                                    DataList: [],
-                                                    DireccionFiscalEmisor: appsetting.fiscaladdress,
-                                                    DireccionFiscalReceptor: org ? org.fiscaladdress : corp.fiscaladdress,
-                                                    Endpoint: appsetting.sunaturl,
-                                                    EnviarSunat: org ? org.autosendinvoice : corp.autosendinvoice,
-                                                    FechaEmision: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
-                                                    FechaVencimiento: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
-                                                    MailEnvio: org ? org.contactemail : corp.contactemail,
-                                                    MontoTotal: Math.round((invoice.totalamount + Number.EPSILON) * 100) / 100,
-                                                    NombreComercialEmisor: appsetting.tradename,
-                                                    NumeroDocumentoReceptor: org ? org.docnum : corp.docnum,
-                                                    NumeroSerieDocumento: documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie,
-                                                    PaisRecepcion: org ? org.sunatcountry : corp.sunatcountry,
-                                                    ProductList: [],
-                                                    RazonSocialEmisor: appsetting.businessname,
-                                                    RazonSocialReceptor: org ? org.businessname : corp.businessname,
-                                                    RetornaPdf: appsetting.returnpdf,
-                                                    RetornaXml: appsetting.returnxml,
-                                                    RetornaXmlSunat: appsetting.returnxmlsunat,
-                                                    RucEmisor: appsetting.ruc,
-                                                    TipoCambio: invoice.currency === 'USD' ? invoice.exchangerate : '1.000',
-                                                    TipoDocumento: documenttype,
-                                                    TipoRucEmisor: appsetting.emittertype,
-                                                    Token: appsetting.token,
-                                                    Username: appsetting.sunatusername,
-                                                    VersionXml: appsetting.xmlversion,
-                                                    VersionUbl: appsetting.ublversion,
-                                                }
-
-                                                if (org) {
-                                                    invoicedata.CodigoOperacionSunat = org.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                                    invoicedata.MontoTotalGravado = org.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
-                                                    invoicedata.MontoTotalIgv = org.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
-                                                    invoicedata.MontoTotalInafecto = org.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
-                                                }
-                                                else {
-                                                    invoicedata.CodigoOperacionSunat = corp.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                                    invoicedata.MontoTotalGravado = corp.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
-                                                    invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
-                                                    invoicedata.MontoTotalInafecto = corp.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
-                                                }
-
-                                                var calcdetraction = false;
-
-                                                if (org) {
-                                                    if (org.sunatcountry === 'PE') {
-                                                        calcdetraction = true;
+                                                if (appsetting?.invoiceprovider === 'MIFACT') {
+                                                    var invoicedata = {
+                                                        CodigoAnexoEmisor: appsetting.annexcode,
+                                                        CodigoFormatoImpresion: appsetting.printingformat,
+                                                        CodigoMoneda: invoice.currency,
+                                                        CodigoRucReceptor: org ? org.doctype : corp.doctype,
+                                                        CodigoUbigeoEmisor: appsetting.ubigeo,
+                                                        CorrelativoDocumento: padNumber(invoicecorrelative.p_correlative, 8),
+                                                        DataList: [],
+                                                        DireccionFiscalEmisor: appsetting.fiscaladdress,
+                                                        DireccionFiscalReceptor: org ? org.fiscaladdress : corp.fiscaladdress,
+                                                        Endpoint: appsetting.sunaturl,
+                                                        EnviarSunat: org ? org.autosendinvoice : corp.autosendinvoice,
+                                                        FechaEmision: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
+                                                        FechaVencimiento: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
+                                                        MailEnvio: org ? org.contactemail : corp.contactemail,
+                                                        MontoTotal: Math.round((invoice.totalamount + Number.EPSILON) * 100) / 100,
+                                                        NombreComercialEmisor: appsetting.tradename,
+                                                        NumeroDocumentoReceptor: org ? org.docnum : corp.docnum,
+                                                        NumeroSerieDocumento: documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie,
+                                                        PaisRecepcion: org ? org.sunatcountry : corp.sunatcountry,
+                                                        ProductList: [],
+                                                        RazonSocialEmisor: appsetting.businessname,
+                                                        RazonSocialReceptor: org ? org.businessname : corp.businessname,
+                                                        RetornaPdf: appsetting.returnpdf,
+                                                        RetornaXml: appsetting.returnxml,
+                                                        RetornaXmlSunat: appsetting.returnxmlsunat,
+                                                        RucEmisor: appsetting.ruc,
+                                                        TipoCambio: invoice.currency === 'PEN' ? '1.000' : ((exchangeratedata?.exchangeratesol / exchangeratedata?.exchangerate) || invoice.exchangerate),
+                                                        TipoDocumento: documenttype,
+                                                        TipoRucEmisor: appsetting.emittertype,
+                                                        Token: appsetting.token,
+                                                        Username: appsetting.sunatusername,
+                                                        VersionXml: appsetting.xmlversion,
+                                                        VersionUbl: appsetting.ublversion,
                                                     }
-                                                }
-                                                else {
-                                                    if (corp.sunatcountry === 'PE') {
-                                                        calcdetraction = true;
-                                                    }
-                                                }
-
-                                                var adicional01 = {
-                                                    CodigoDatoAdicional: '05',
-                                                    DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
-                                                }
-
-                                                invoicedata.DataList.push(adicional01);
-
-                                                if (calcdetraction) {
-                                                    if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
-                                                        var compareamount = 0;
-
-                                                        if (appsetting.detractionminimum) {
-                                                            if (invoice.currency === 'USD') {
-                                                                var exchangerate = await getExchange(request.originalUrl, responsedata.id);
-
-                                                                compareamount = invoice.totalamount * exchangerate;
-                                                            }
-                                                            else {
-                                                                compareamount = invoice.totalamount;
-                                                            }
-                                                        }
-
-                                                        if (compareamount > appsetting.detractionminimum) {
-                                                            invoicedata.CodigoDetraccion = appsetting.detractioncode;
-                                                            invoicedata.CodigoOperacionSunat = '1001';
-                                                            invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100);
-                                                            invoicedata.MontoPendienteDetraccion = Math.round(((invoicedata.MontoTotal - (invoicedata.MontoTotalDetraccion || 0)) + Number.EPSILON) * 100) / 100;
-                                                            invoicedata.MontoTotalInafecto = null;
-                                                            invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
-                                                            invoicedata.PaisRecepcion = null;
-                                                            invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
-
-                                                            var adicional02 = {
-                                                                CodigoDatoAdicional: '06',
-                                                                DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount,
-                                                            }
-
-                                                            invoicedata.DataList.push(adicional02);
-                                                        }
-                                                    }
-                                                }
-
-                                                invoicedetail.forEach(async data => {
-                                                    var invoicedetaildata = {
-                                                        CantidadProducto: data.quantity,
-                                                        CodigoProducto: data.productcode,
-                                                        DescripcionProducto: data.productdescription,
-                                                        IgvTotal: Math.round((data.totaligv + Number.EPSILON) * 100) / 100,
-                                                        MontoTotal: Math.round((data.totalamount + Number.EPSILON) * 100) / 100,
-                                                        PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
-                                                        PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
-                                                        TasaIgv: Math.round((data.igvrate * 100) || 0),
-                                                        TipoVenta: data.saletype,
-                                                        UnidadMedida: data.measureunit,
-                                                        ValorNetoProducto: Math.round(((data.quantity * data.productnetprice) + Number.EPSILON) * 100) / 100,
-                                                    };
 
                                                     if (org) {
-                                                        invoicedetaildata.AfectadoIgv = org.sunatcountry === 'PE' ? '10' : '40';
-                                                        invoicedetaildata.TributoIgv = org.sunatcountry === 'PE' ? '1000' : '9998';
+                                                        invoicedata.CodigoOperacionSunat = org.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                                        invoicedata.MontoTotalGravado = org.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
+                                                        invoicedata.MontoTotalIgv = org.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
+                                                        invoicedata.MontoTotalInafecto = org.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
                                                     }
                                                     else {
-                                                        invoicedetaildata.AfectadoIgv = corp.sunatcountry === 'PE' ? '10' : '40';
-                                                        invoicedetaildata.TributoIgv = corp.sunatcountry === 'PE' ? '1000' : '9998';
+                                                        invoicedata.CodigoOperacionSunat = corp.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                                        invoicedata.MontoTotalGravado = corp.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
+                                                        invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
+                                                        invoicedata.MontoTotalInafecto = corp.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
                                                     }
 
-                                                    invoicedata.ProductList.push(invoicedetaildata);
-                                                });
+                                                    var calcdetraction = false;
 
-                                                var adicional05 = {
-                                                    CodigoDatoAdicional: '01',
-                                                    DescripcionDatoAdicional: 'AL CONTADO',
-                                                }
+                                                    if (org) {
+                                                        if (org.sunatcountry === 'PE') {
+                                                            calcdetraction = true;
+                                                        }
+                                                    }
+                                                    else {
+                                                        if (corp.sunatcountry === 'PE') {
+                                                            calcdetraction = true;
+                                                        }
+                                                    }
 
-                                                invoicedata.DataList.push(adicional05);
+                                                    var adicional01 = {
+                                                        CodigoDatoAdicional: '05',
+                                                        DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
+                                                    }
 
-                                                if (adicional05) {
-                                                    invoicedata.FechaVencimiento = null;
-                                                }
+                                                    invoicedata.DataList.push(adicional01);
 
-                                                const requestSendToSunat = await axiosObservable({
-                                                    data: invoicedata,
-                                                    method: 'post',
-                                                    url: `${bridgeEndpoint}processmifact/sendinvoice`,
-                                                    _requestid: responsedata.id,
-                                                });
+                                                    if (calcdetraction) {
+                                                        if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
+                                                            var compareamount = 0;
 
-                                                if (requestSendToSunat.data.result) {
-                                                    invoicesuccess = true;
+                                                            if (appsetting.detractionminimum) {
+                                                                if (invoice.currency !== 'PEN') {
+                                                                    var exchangeratedata = await getExchangeRate(invoice.currency, responsedata.id);
 
-                                                    await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+                                                                    if (exchangeratedata) {
+                                                                        compareamount = (invoice.totalamount / (exchangeratedata?.exchangerate || 0) * (exchangeratedata?.exchangeratesol || 0));
+                                                                    }
+                                                                }
+                                                                else {
+                                                                    compareamount = invoice.totalamount;
+                                                                }
+                                                            }
 
-                                                    const requestSendMail = await axiosObservable({
+                                                            if (compareamount > appsetting.detractionminimum) {
+                                                                invoicedata.CodigoDetraccion = appsetting.detractioncode;
+                                                                invoicedata.CodigoOperacionSunat = '1001';
+                                                                invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100);
+                                                                invoicedata.MontoPendienteDetraccion = Math.round(((invoicedata.MontoTotal - (invoicedata.MontoTotalDetraccion || 0)) + Number.EPSILON) * 100) / 100;
+                                                                invoicedata.MontoTotalInafecto = null;
+                                                                invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
+                                                                invoicedata.PaisRecepcion = null;
+                                                                invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
+
+                                                                var adicional02 = {
+                                                                    CodigoDatoAdicional: '06',
+                                                                    DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount,
+                                                                }
+
+                                                                invoicedata.DataList.push(adicional02);
+                                                            }
+                                                        }
+                                                    }
+
+                                                    invoicedetail.forEach(async data => {
+                                                        var invoicedetaildata = {
+                                                            CantidadProducto: data.quantity,
+                                                            CodigoProducto: data.productcode,
+                                                            DescripcionProducto: data.productdescription,
+                                                            IgvTotal: Math.round((data.totaligv + Number.EPSILON) * 100) / 100,
+                                                            MontoTotal: Math.round((data.totalamount + Number.EPSILON) * 100) / 100,
+                                                            PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
+                                                            PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
+                                                            TasaIgv: Math.round((data.igvrate * 100) || 0),
+                                                            TipoVenta: data.saletype,
+                                                            UnidadMedida: data.measureunit,
+                                                            ValorNetoProducto: Math.round(((data.quantity * data.productnetprice) + Number.EPSILON) * 100) / 100,
+                                                        };
+
+                                                        if (org) {
+                                                            invoicedetaildata.AfectadoIgv = org.sunatcountry === 'PE' ? '10' : '40';
+                                                            invoicedetaildata.TributoIgv = org.sunatcountry === 'PE' ? '1000' : '9998';
+                                                        }
+                                                        else {
+                                                            invoicedetaildata.AfectadoIgv = corp.sunatcountry === 'PE' ? '10' : '40';
+                                                            invoicedetaildata.TributoIgv = corp.sunatcountry === 'PE' ? '1000' : '9998';
+                                                        }
+
+                                                        invoicedata.ProductList.push(invoicedetaildata);
+                                                    });
+
+                                                    var adicional05 = {
+                                                        CodigoDatoAdicional: '01',
+                                                        DescripcionDatoAdicional: 'AL CONTADO',
+                                                    }
+
+                                                    invoicedata.DataList.push(adicional05);
+
+                                                    if (adicional05) {
+                                                        invoicedata.FechaVencimiento = null;
+                                                    }
+
+                                                    const requestSendToSunat = await axiosObservable({
                                                         data: invoicedata,
                                                         method: 'post',
-                                                        url: `${bridgeEndpoint}processmifact/sendmailinvoice`,
+                                                        url: `${bridgeEndpoint}processmifact/sendinvoice`,
                                                         _requestid: responsedata.id,
                                                     });
 
-                                                    if (!requestSendMail.data.result) {
-                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticinvoice_mailalert', responsedata.status, responsedata.success);
-                                                    }
-                                                }
-                                                else {
-                                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticinvoice_invoiceerror', responsedata.status, responsedata.success);
+                                                    if (requestSendToSunat.data.result) {
+                                                        invoicesuccess = true;
 
-                                                    await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+                                                        await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
 
-                                                    if (org) {
-                                                        if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
-                                                            await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
-                                                        }
+                                                        const requestSendMail = await axiosObservable({
+                                                            data: invoicedata,
+                                                            method: 'post',
+                                                            url: `${bridgeEndpoint}processmifact/sendmailinvoice`,
+                                                            _requestid: responsedata.id,
+                                                        });
 
-                                                        if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                            await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                        if (!requestSendMail.data.result) {
+                                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticinvoice_mailalert', responsedata.status, responsedata.success);
                                                         }
                                                     }
                                                     else {
-                                                        if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
-                                                            await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
-                                                        }
+                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_automaticinvoice_invoiceerror', responsedata.status, responsedata.success);
 
-                                                        if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                            await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                        await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+
+                                                        if (org) {
+                                                            if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
+                                                                await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                            }
+
+                                                            if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
+                                                                await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                            }
+                                                        }
+                                                        else {
+                                                            if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
+                                                                await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                            }
+
+                                                            if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
+                                                                await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -1330,9 +1319,9 @@ exports.cardCreate = async (request, response) => {
             const { firstname, lastname, mail, cardnumber, securitycode, expirationmonth, expirationyear, favorite, phone } = request.body;
             const { corpid, orgid, userid, usr } = request.user;
 
-            const appsetting = await getAppSetting(responsedata.id);
+            const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
 
-            if (appsetting) {
+            if (appsetting && appsetting?.paymentprovider === 'CULQI') {
                 const corp = await getCorporation(corpid, responsedata.id);
                 const org = await getOrganization(corpid, orgid, responsedata.id);
                 const user = await getProfile(userid, responsedata.id);
@@ -1461,9 +1450,9 @@ exports.cardDelete = async (request, response) => {
             const { corpid, orgid, paymentcardid, cardnumber, cardcode, firstname, lastname, mail, favorite, clientcode, type, phone } = request.body;
             const { usr } = request.user;
 
-            const appsetting = await getAppSetting(responsedata.id);
+            const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
 
-            if (appsetting) {
+            if (appsetting && appsetting?.paymentprovider === 'CULQI') {
                 const requestCulqiCard = await axiosObservable({
                     data: {
                         bearer: appsetting.privatekey,
@@ -1537,9 +1526,9 @@ exports.cardGet = async (request, response) => {
         if (request.body) {
             const { cardcode } = request.body;
 
-            const appsetting = await getAppSetting(responsedata.id);
+            const appsetting = await getAppSettingSingle(0, 0, responsedata.id);
 
-            if (appsetting) {
+            if (appsetting && appsetting?.paymentprovider === 'CULQI') {
                 const requestCulqiCard = await axiosObservable({
                     data: {
                         bearer: appsetting.privatekey,
@@ -1726,281 +1715,312 @@ exports.chargeInvoice = async (request, response) => {
 
                         if (invoicedetail) {
                             if (invoice.invoicestatus === 'DRAFT' && invoice.paymentstatus === 'PENDING' && invoice.currency === settings.currency && (((Math.round((invoice.totalamount * 100 + Number.EPSILON) * 100) / 100) === settings.amount) || override)) {
-                                const appsetting = await getAppSetting(responsedata.id);
-                                const userprofile = await getProfile(userid, responsedata.id);
+                                const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
 
-                                if (userprofile && appsetting) {
-                                    metadata.corpid = (corpid || '');
-                                    metadata.corporation = removeSpecialCharacter(corp.description || '');
-                                    metadata.orgid = (orgid || '');
-                                    metadata.organization = removeSpecialCharacter(invoice.orgdesc || '');
-                                    metadata.document = ((org ? org.docnum : corp.docnum) || '');
-                                    metadata.businessname = removeSpecialCharacter((org ? org.businessname : corp.businessname) || '');
-                                    metadata.invoiceid = (invoiceid || '');
-                                    metadata.seriecode = '';
-                                    metadata.emissiondate = (new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0] || '');
-                                    metadata.user = removeSpecialCharacter(usr || '');
-                                    metadata.reference = removeSpecialCharacter(invoice.description || '');
+                                if (appsetting && appsetting?.paymentprovider === 'CULQI') {
+                                    const userprofile = await getProfile(userid, responsedata.id);
 
-                                    var successPay = false;
+                                    if (userprofile) {
+                                        metadata.corpid = (corpid || '');
+                                        metadata.corporation = removeSpecialCharacter(corp.description || '');
+                                        metadata.orgid = (orgid || '');
+                                        metadata.organization = removeSpecialCharacter(invoice.orgdesc || '');
+                                        metadata.document = ((org ? org.docnum : corp.docnum) || '');
+                                        metadata.businessname = removeSpecialCharacter((org ? org.businessname : corp.businessname) || '');
+                                        metadata.invoiceid = (invoiceid || '');
+                                        metadata.seriecode = '';
+                                        metadata.emissiondate = (new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0] || '');
+                                        metadata.user = removeSpecialCharacter(usr || '');
+                                        metadata.reference = removeSpecialCharacter(invoice.description || '');
 
-                                    if (iscard) {
-                                        const paymentcard = await getPaymentCard(corpid, paymentcardid, responsedata.id);
+                                        var successPay = false;
 
-                                        const requestCulqiCharge = await axiosObservable({
-                                            data: {
-                                                amount: settings.amount,
-                                                bearer: appsetting.privatekey,
-                                                description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
-                                                currencyCode: settings.currency,
-                                                email: (paymentcard?.mail || userprofile.email),
-                                                sourceId: paymentcardcode,
-                                                operation: "CREATE",
-                                                url: appsetting.culqiurlcharge,
-                                                metadata: metadata,
-                                            },
-                                            method: "post",
-                                            url: `${bridgeEndpoint}processculqi/handlecharge`,
-                                            _requestid: request._requestid
-                                        });
+                                        if (iscard) {
+                                            const paymentcard = await getPaymentCard(corpid, paymentcardid, responsedata.id);
 
-                                        if (requestCulqiCharge.data.success) {
-                                            const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), 'INSERT', null, null, usr, 'PAID', paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
+                                            const requestCulqiCharge = await axiosObservable({
+                                                data: {
+                                                    amount: settings.amount,
+                                                    bearer: appsetting.privatekey,
+                                                    description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                                    currencyCode: settings.currency,
+                                                    email: (paymentcard?.mail || userprofile.email),
+                                                    sourceId: paymentcardcode,
+                                                    operation: "CREATE",
+                                                    url: appsetting.culqiurlcharge,
+                                                    metadata: metadata,
+                                                },
+                                                method: "post",
+                                                url: `${bridgeEndpoint}processculqi/handlecharge`,
+                                                _requestid: request._requestid
+                                            });
 
-                                            await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, responsedata.id);
+                                            if (requestCulqiCharge.data.success) {
+                                                const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), 'INSERT', null, null, usr, 'PAID', paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
 
-                                            successPay = true;
-                                        }
-                                    }
-                                    else {
-                                        const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
+                                                await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, responsedata.id);
 
-                                        if (charge.object === 'error') {
-                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, null, responsedata.status, responsedata.success);
-                                            return response.status(responsedata.status).json(responsedata);
-                                        }
-                                        else {
-                                            const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, usr, 'PAID', token.id, token, charge.object, responsedata.id)
-
-                                            await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, charge, charge.id, (settings.amount / 100), token.email, usr, token.id, token, responsedata.id);
-
-                                            successPay = true;
-                                        }
-                                    }
-
-                                    if (successPay) {
-                                        var invoicecorrelative = null;
-                                        var documenttype = null;
-
-                                        if (corp.billbyorg) {
-                                            if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
-                                                invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'INVOICE', responsedata.id);
-                                                documenttype = '01';
-                                            }
-
-                                            if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'TICKET', responsedata.id);
-                                                documenttype = '03'
+                                                successPay = true;
                                             }
                                         }
                                         else {
-                                            if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
-                                                invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'INVOICE', responsedata.id);
-                                                documenttype = '01';
-                                            }
+                                            const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
 
-                                            if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'TICKET', responsedata.id);
-                                                documenttype = '03'
+                                            if (charge.object === 'error') {
+                                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, null, responsedata.status, responsedata.success);
+                                                return response.status(responsedata.status).json(responsedata);
+                                            }
+                                            else {
+                                                const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, usr, 'PAID', token.id, token, charge.object, responsedata.id)
+
+                                                await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, charge, charge.id, (settings.amount / 100), token.email, usr, token.id, token, responsedata.id);
+
+                                                successPay = true;
                                             }
                                         }
 
-                                        if (invoicecorrelative) {
-                                            try {
-                                                var invoicedata = {
-                                                    CodigoAnexoEmisor: appsetting.annexcode,
-                                                    CodigoFormatoImpresion: appsetting.printingformat,
-                                                    CodigoMoneda: invoice.currency,
-                                                    Username: appsetting.sunatusername,
-                                                    TipoDocumento: documenttype,
-                                                    TipoRucEmisor: appsetting.emittertype,
-                                                    CodigoRucReceptor: org ? org.doctype : corp.doctype,
-                                                    CodigoUbigeoEmisor: appsetting.ubigeo,
-                                                    EnviarSunat: org ? org.autosendinvoice : corp.autosendinvoice,
-                                                    FechaEmision: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
-                                                    MailEnvio: org ? org.contactemail : corp.contactemail,
-                                                    MontoTotal: Math.round((invoice.totalamount + Number.EPSILON) * 100) / 100,
-                                                    NombreComercialEmisor: appsetting.tradename,
-                                                    RazonSocialEmisor: appsetting.businessname,
-                                                    RazonSocialReceptor: org ? org.businessname : corp.businessname,
-                                                    CorrelativoDocumento: padNumber(invoicecorrelative.p_correlative, 8),
-                                                    RucEmisor: appsetting.ruc,
-                                                    NumeroDocumentoReceptor: org ? org.docnum : corp.docnum,
-                                                    NumeroSerieDocumento: documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie,
-                                                    RetornaPdf: appsetting.returnpdf,
-                                                    RetornaXmlSunat: appsetting.returnxmlsunat,
-                                                    RetornaXml: appsetting.returnxml,
-                                                    TipoCambio: invoice.currency === 'USD' ? invoice.exchangerate : '1.000',
-                                                    Token: appsetting.token,
-                                                    DireccionFiscalEmisor: appsetting.fiscaladdress,
-                                                    DireccionFiscalReceptor: org ? org.fiscaladdress : corp.fiscaladdress,
-                                                    VersionXml: appsetting.xmlversion,
-                                                    VersionUbl: appsetting.ublversion,
-                                                    Endpoint: appsetting.sunaturl,
-                                                    PaisRecepcion: org ? org.sunatcountry : corp.sunatcountry,
-                                                    ProductList: [],
-                                                    DataList: []
+                                        if (successPay) {
+                                            var invoicecorrelative = null;
+                                            var documenttype = null;
+
+                                            if (corp.billbyorg) {
+                                                if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
+                                                    invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'INVOICE', responsedata.id);
+                                                    documenttype = '01';
                                                 }
 
-                                                if (corp.billbyorg) {
-                                                    invoicedata.CodigoOperacionSunat = org.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                                    invoicedata.MontoTotalGravado = org.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
-                                                    invoicedata.MontoTotalInafecto = org.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
-                                                    invoicedata.MontoTotalIgv = org.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
+                                                if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
+                                                    invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'TICKET', responsedata.id);
+                                                    documenttype = '03'
                                                 }
-                                                else {
-                                                    invoicedata.CodigoOperacionSunat = corp.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                                    invoicedata.MontoTotalGravado = corp.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
-                                                    invoicedata.MontoTotalInafecto = corp.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
-                                                    invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
+                                            }
+                                            else {
+                                                if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
+                                                    invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'INVOICE', responsedata.id);
+                                                    documenttype = '01';
                                                 }
 
-                                                var calcdetraction = false;
-
-                                                if (corp.billbyorg) {
-                                                    if (org.sunatcountry === 'PE') {
-                                                        calcdetraction = true;
-                                                    }
+                                                if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
+                                                    invoicecorrelative = await getCorrelative(corpid, orgid, invoiceid, 'TICKET', responsedata.id);
+                                                    documenttype = '03'
                                                 }
-                                                else {
-                                                    if (corp.sunatcountry === 'PE') {
-                                                        calcdetraction = true;
-                                                    }
-                                                }
+                                            }
 
-                                                if (calcdetraction) {
-                                                    if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
-                                                        var compareamount = 0;
+                                            if (invoicecorrelative) {
+                                                try {
+                                                    var exchangeratedata = await getExchangeRate(invoice.currency, responsedata.id);
 
-                                                        if (appsetting.detractionminimum) {
-                                                            if (invoice.currency === 'USD') {
-                                                                var exchangerate = await getExchange(request.originalUrl, responsedata.id);
+                                                    if (appsetting?.invoiceprovider === "MIFACT") {
+                                                        var invoicedata = {
+                                                            CodigoAnexoEmisor: appsetting.annexcode,
+                                                            CodigoFormatoImpresion: appsetting.printingformat,
+                                                            CodigoMoneda: invoice.currency,
+                                                            Username: appsetting.sunatusername,
+                                                            TipoDocumento: documenttype,
+                                                            TipoRucEmisor: appsetting.emittertype,
+                                                            CodigoRucReceptor: org ? org.doctype : corp.doctype,
+                                                            CodigoUbigeoEmisor: appsetting.ubigeo,
+                                                            EnviarSunat: org ? org.autosendinvoice : corp.autosendinvoice,
+                                                            FechaEmision: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
+                                                            MailEnvio: org ? org.contactemail : corp.contactemail,
+                                                            MontoTotal: Math.round((invoice.totalamount + Number.EPSILON) * 100) / 100,
+                                                            NombreComercialEmisor: appsetting.tradename,
+                                                            RazonSocialEmisor: appsetting.businessname,
+                                                            RazonSocialReceptor: org ? org.businessname : corp.businessname,
+                                                            CorrelativoDocumento: padNumber(invoicecorrelative.p_correlative, 8),
+                                                            RucEmisor: appsetting.ruc,
+                                                            NumeroDocumentoReceptor: org ? org.docnum : corp.docnum,
+                                                            NumeroSerieDocumento: documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie,
+                                                            RetornaPdf: appsetting.returnpdf,
+                                                            RetornaXmlSunat: appsetting.returnxmlsunat,
+                                                            RetornaXml: appsetting.returnxml,
+                                                            TipoCambio: invoice.currency === 'PEN' ? '1.000' : ((exchangeratedata?.exchangeratesol / exchangeratedata?.exchangerate) || invoice.exchangerate),
+                                                            Token: appsetting.token,
+                                                            DireccionFiscalEmisor: appsetting.fiscaladdress,
+                                                            DireccionFiscalReceptor: org ? org.fiscaladdress : corp.fiscaladdress,
+                                                            VersionXml: appsetting.xmlversion,
+                                                            VersionUbl: appsetting.ublversion,
+                                                            Endpoint: appsetting.sunaturl,
+                                                            PaisRecepcion: org ? org.sunatcountry : corp.sunatcountry,
+                                                            ProductList: [],
+                                                            DataList: []
+                                                        }
 
-                                                                compareamount = invoice.totalamount * exchangerate;
+                                                        if (corp.billbyorg) {
+                                                            invoicedata.CodigoOperacionSunat = org.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                                            invoicedata.MontoTotalGravado = org.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
+                                                            invoicedata.MontoTotalInafecto = org.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
+                                                            invoicedata.MontoTotalIgv = org.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
+                                                        }
+                                                        else {
+                                                            invoicedata.CodigoOperacionSunat = corp.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                                            invoicedata.MontoTotalGravado = corp.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
+                                                            invoicedata.MontoTotalInafecto = corp.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
+                                                            invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
+                                                        }
+
+                                                        var calcdetraction = false;
+
+                                                        if (corp.billbyorg) {
+                                                            if (org.sunatcountry === 'PE') {
+                                                                calcdetraction = true;
+                                                            }
+                                                        }
+                                                        else {
+                                                            if (corp.sunatcountry === 'PE') {
+                                                                calcdetraction = true;
+                                                            }
+                                                        }
+
+                                                        if (calcdetraction) {
+                                                            if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
+                                                                var compareamount = 0;
+
+                                                                if (appsetting.detractionminimum) {
+                                                                    if (invoice.currency !== 'PEN') {
+                                                                        if (exchangeratedata) {
+                                                                            compareamount = (invoice.totalamount / (exchangeratedata?.exchangerate || 0) * (exchangeratedata?.exchangeratesol || 0));
+                                                                        }
+                                                                    }
+                                                                    else {
+                                                                        compareamount = invoice.totalamount;
+                                                                    }
+                                                                }
+
+                                                                if (compareamount > appsetting.detractionminimum) {
+                                                                    invoicedata.CodigoDetraccion = appsetting.detractioncode;
+                                                                    invoicedata.CodigoOperacionSunat = '1001';
+                                                                    invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100);
+                                                                    invoicedata.MontoPendienteDetraccion = Math.round(((invoicedata.MontoTotal - (invoicedata.MontoTotalDetraccion || 0)) + Number.EPSILON) * 100) / 100;
+                                                                    invoicedata.MontoTotalInafecto = null;
+                                                                    invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
+                                                                    invoicedata.PaisRecepcion = null;
+                                                                    invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
+
+                                                                    var adicional02 = {
+                                                                        CodigoDatoAdicional: '06',
+                                                                        DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
+                                                                    }
+
+                                                                    invoicedata.DataList.push(adicional02);
+                                                                }
+                                                            }
+                                                        }
+
+                                                        if (tipocredito) {
+                                                            if (tipocredito === '0') {
+                                                                invoicedata.FechaVencimiento = invoicedata.FechaEmision;
                                                             }
                                                             else {
-                                                                compareamount = invoice.totalamount;
+                                                                invoicedata.FechaVencimiento = new Date(new Date().setDate(new Date(new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0]).getDate() + (Number.parseFloat(tipocredito)))).toISOString().substring(0, 10);
                                                             }
                                                         }
 
-                                                        if (compareamount > appsetting.detractionminimum) {
-                                                            invoicedata.CodigoDetraccion = appsetting.detractioncode;
-                                                            invoicedata.CodigoOperacionSunat = '1001';
-                                                            invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100);
-                                                            invoicedata.MontoPendienteDetraccion = Math.round(((invoicedata.MontoTotal - (invoicedata.MontoTotalDetraccion || 0)) + Number.EPSILON) * 100) / 100;
-                                                            invoicedata.MontoTotalInafecto = null;
-                                                            invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
-                                                            invoicedata.PaisRecepcion = null;
-                                                            invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
+                                                        invoicedetail.forEach(async data => {
+                                                            var invoicedetaildata = {
+                                                                CantidadProducto: data.quantity,
+                                                                CodigoProducto: data.productcode,
+                                                                TipoVenta: data.saletype,
+                                                                UnidadMedida: data.measureunit,
+                                                                IgvTotal: Math.round((data.totaligv + Number.EPSILON) * 100) / 100,
+                                                                MontoTotal: Math.round((data.totalamount + Number.EPSILON) * 100) / 100,
+                                                                TasaIgv: Math.round((data.igvrate * 100) || 0),
+                                                                PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
+                                                                DescripcionProducto: data.productdescription,
+                                                                PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
+                                                                ValorNetoProducto: Math.round(((data.quantity * data.productnetprice) + Number.EPSILON) * 100) / 100,
+                                                            };
 
-                                                            var adicional02 = {
-                                                                CodigoDatoAdicional: '06',
-                                                                DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
+                                                            if (corp.billbyorg) {
+                                                                invoicedetaildata.AfectadoIgv = org.sunatcountry === 'PE' ? '10' : '40';
+                                                                invoicedetaildata.TributoIgv = org.sunatcountry === 'PE' ? '1000' : '9998';
+                                                            }
+                                                            else {
+                                                                invoicedetaildata.AfectadoIgv = corp.sunatcountry === 'PE' ? '10' : '40';
+                                                                invoicedetaildata.TributoIgv = corp.sunatcountry === 'PE' ? '1000' : '9998';
                                                             }
 
-                                                            invoicedata.DataList.push(adicional02);
+                                                            invoicedata.ProductList.push(invoicedetaildata);
+                                                        });
+
+                                                        var adicional01 = {
+                                                            CodigoDatoAdicional: '05',
+                                                            DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
+                                                        }
+
+                                                        invoicedata.DataList.push(adicional01);
+
+                                                        if (purchaseorder) {
+                                                            var adicional03 = {
+                                                                CodigoDatoAdicional: '15',
+                                                                DescripcionDatoAdicional: purchaseorder
+                                                            }
+
+                                                            invoicedata.DataList.push(adicional03);
+                                                        }
+
+                                                        if (comments) {
+                                                            var adicional04 = {
+                                                                CodigoDatoAdicional: '07',
+                                                                DescripcionDatoAdicional: comments
+                                                            }
+
+                                                            invoicedata.DataList.push(adicional04);
+                                                        }
+
+                                                        if (tipocredito) {
+                                                            var adicional05 = {
+                                                                CodigoDatoAdicional: '01',
+                                                                DescripcionDatoAdicional: tipocredito === '0' ? 'AL CONTADO' : `CREDITO A ${tipocredito} DIAS`
+                                                            }
+
+                                                            invoicedata.DataList.push(adicional05);
+
+                                                            if (adicional05) {
+                                                                if (adicional05.DescripcionDatoAdicional === 'AL CONTADO') {
+                                                                    invoicedata.FechaVencimiento = null;
+                                                                }
+                                                            }
+                                                        }
+
+                                                        const requestSendToSunat = await axiosObservable({
+                                                            data: invoicedata,
+                                                            method: 'post',
+                                                            url: `${bridgeEndpoint}processmifact/sendinvoice`,
+                                                            _requestid: responsedata.id,
+                                                        });
+
+                                                        if (requestSendToSunat.data.result) {
+                                                            await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+                                                        }
+                                                        else {
+                                                            await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+
+                                                            if (corp.billbyorg) {
+                                                                if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
+                                                                    await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                                }
+
+                                                                if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
+                                                                    await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                                }
+                                                            }
+                                                            else {
+                                                                if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
+                                                                    await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                                }
+
+                                                                if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
+                                                                    await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 }
+                                                catch (exception) {
+                                                    printException(exception, request.originalUrl, responsedata.id);
 
-                                                if (tipocredito) {
-                                                    if (tipocredito === '0') {
-                                                        invoicedata.FechaVencimiento = invoicedata.FechaEmision;
-                                                    }
-                                                    else {
-                                                        invoicedata.FechaVencimiento = new Date(new Date().setDate(new Date(new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0]).getDate() + (Number.parseFloat(tipocredito)))).toISOString().substring(0, 10);
-                                                    }
-                                                }
-
-                                                invoicedetail.forEach(async data => {
-                                                    var invoicedetaildata = {
-                                                        CantidadProducto: data.quantity,
-                                                        CodigoProducto: data.productcode,
-                                                        TipoVenta: data.saletype,
-                                                        UnidadMedida: data.measureunit,
-                                                        IgvTotal: Math.round((data.totaligv + Number.EPSILON) * 100) / 100,
-                                                        MontoTotal: Math.round((data.totalamount + Number.EPSILON) * 100) / 100,
-                                                        TasaIgv: Math.round((data.igvrate * 100) || 0),
-                                                        PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
-                                                        DescripcionProducto: data.productdescription,
-                                                        PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
-                                                        ValorNetoProducto: Math.round(((data.quantity * data.productnetprice) + Number.EPSILON) * 100) / 100,
-                                                    };
-
-                                                    if (corp.billbyorg) {
-                                                        invoicedetaildata.AfectadoIgv = org.sunatcountry === 'PE' ? '10' : '40';
-                                                        invoicedetaildata.TributoIgv = org.sunatcountry === 'PE' ? '1000' : '9998';
-                                                    }
-                                                    else {
-                                                        invoicedetaildata.AfectadoIgv = corp.sunatcountry === 'PE' ? '10' : '40';
-                                                        invoicedetaildata.TributoIgv = corp.sunatcountry === 'PE' ? '1000' : '9998';
-                                                    }
-
-                                                    invoicedata.ProductList.push(invoicedetaildata);
-                                                });
-
-                                                var adicional01 = {
-                                                    CodigoDatoAdicional: '05',
-                                                    DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
-                                                }
-
-                                                invoicedata.DataList.push(adicional01);
-
-                                                if (purchaseorder) {
-                                                    var adicional03 = {
-                                                        CodigoDatoAdicional: '15',
-                                                        DescripcionDatoAdicional: purchaseorder
-                                                    }
-
-                                                    invoicedata.DataList.push(adicional03);
-                                                }
-
-                                                if (comments) {
-                                                    var adicional04 = {
-                                                        CodigoDatoAdicional: '07',
-                                                        DescripcionDatoAdicional: comments
-                                                    }
-
-                                                    invoicedata.DataList.push(adicional04);
-                                                }
-
-                                                if (tipocredito) {
-                                                    var adicional05 = {
-                                                        CodigoDatoAdicional: '01',
-                                                        DescripcionDatoAdicional: tipocredito === '0' ? 'AL CONTADO' : `CREDITO A ${tipocredito} DIAS`
-                                                    }
-
-                                                    invoicedata.DataList.push(adicional05);
-
-                                                    if (adicional05) {
-                                                        if (adicional05.DescripcionDatoAdicional === 'AL CONTADO') {
-                                                            invoicedata.FechaVencimiento = null;
-                                                        }
-                                                    }
-                                                }
-
-                                                const requestSendToSunat = await axiosObservable({
-                                                    data: invoicedata,
-                                                    method: 'post',
-                                                    url: `${bridgeEndpoint}processmifact/sendinvoice`,
-                                                    _requestid: responsedata.id,
-                                                });
-
-                                                if (requestSendToSunat.data.result) {
-                                                    await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
-                                                }
-                                                else {
-                                                    await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+                                                    await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', exception.message, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, responsedata.id);
 
                                                     if (corp.billbyorg) {
                                                         if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
@@ -2022,45 +2042,25 @@ exports.chargeInvoice = async (request, response) => {
                                                     }
                                                 }
                                             }
-                                            catch (exception) {
-                                                printException(exception, request.originalUrl, responsedata.id);
-
-                                                await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', exception.message, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, responsedata.id);
-
-                                                if (corp.billbyorg) {
-                                                    if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
-                                                        await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
-                                                    }
-
-                                                    if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                        await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
-                                                    }
-                                                }
-                                                else {
-                                                    if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
-                                                        await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
-                                                    }
-
-                                                    if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                        await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
-                                                    }
-                                                }
+                                            else {
+                                                await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, responsedata.id);
                                             }
+
+                                            responsedata = genericfunctions.changeResponseData(responsedata, null, { message: 'process finished' }, 'culqipaysuccess', 200, true);
+                                            return response.status(responsedata.status).json(responsedata);
                                         }
                                         else {
-                                            await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, responsedata.id);
+                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'unsuccessful payment', responsedata.status, responsedata.success);
+                                            return response.status(responsedata.status).json(responsedata);
                                         }
-
-                                        responsedata = genericfunctions.changeResponseData(responsedata, null, { message: 'process finished' }, 'culqipaysuccess', 200, true);
-                                        return response.status(responsedata.status).json(responsedata);
                                     }
                                     else {
-                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'unsuccessful payment', responsedata.status, responsedata.success);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invalid user', responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
                                 else {
-                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invalid user', responsedata.status, responsedata.success);
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invalid appsetting', responsedata.status, responsedata.success);
                                     return response.status(responsedata.status).json(responsedata);
                                 }
                             }
@@ -2086,74 +2086,81 @@ exports.chargeInvoice = async (request, response) => {
             }
             else {
                 if (((Math.round((invoice.totalamount * 100 + Number.EPSILON) * 100) / 100) === settings.amount) || override) {
-                    const appsetting = await getAppSetting(responsedata.id);
-                    const userprofile = await getProfile(userid, responsedata.id);
+                    const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
 
-                    if (userprofile && appsetting) {
-                        metadata.corpid = (corpid || '');
-                        metadata.corporation = removeSpecialCharacter(invoice.corpdesc || '');
-                        metadata.orgid = (orgid || '');
-                        metadata.organization = removeSpecialCharacter(invoice.orgdesc || '');
-                        metadata.document = (invoice.receiverdocnum || '');
-                        metadata.businessname = removeSpecialCharacter(invoice.receiverbusinessname || '');
-                        metadata.invoiceid = (invoiceid || '');
-                        metadata.seriecode = (invoice.serie ? invoice.serie : 'X000') + '-' + (invoice.correlative ? invoice.correlative.toString().padStart(8, '0') : '00000000');
-                        metadata.emissiondate = (invoice.invoicedate || '');
-                        metadata.user = removeSpecialCharacter(usr || '');
-                        metadata.reference = removeSpecialCharacter(invoice.description || '');
+                    if (appsetting && appsetting?.paymentprovider === 'CULQI') {
+                        const userprofile = await getProfile(userid, responsedata.id);
 
-                        if (iscard) {
-                            const paymentcard = await getPaymentCard(corpid, paymentcardid, responsedata.id);
+                        if (userprofile) {
+                            metadata.corpid = (corpid || '');
+                            metadata.corporation = removeSpecialCharacter(invoice.corpdesc || '');
+                            metadata.orgid = (orgid || '');
+                            metadata.organization = removeSpecialCharacter(invoice.orgdesc || '');
+                            metadata.document = (invoice.receiverdocnum || '');
+                            metadata.businessname = removeSpecialCharacter(invoice.receiverbusinessname || '');
+                            metadata.invoiceid = (invoiceid || '');
+                            metadata.seriecode = (invoice.serie ? invoice.serie : 'X000') + '-' + (invoice.correlative ? invoice.correlative.toString().padStart(8, '0') : '00000000');
+                            metadata.emissiondate = (invoice.invoicedate || '');
+                            metadata.user = removeSpecialCharacter(usr || '');
+                            metadata.reference = removeSpecialCharacter(invoice.description || '');
 
-                            const requestCulqiCharge = await axiosObservable({
-                                data: {
-                                    amount: settings.amount,
-                                    bearer: appsetting.privatekey,
-                                    description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
-                                    currencyCode: settings.currency,
-                                    email: (paymentcard?.mail || userprofile.email),
-                                    sourceId: paymentcardcode,
-                                    operation: "CREATE",
-                                    url: appsetting.culqiurlcharge,
-                                    metadata: metadata,
-                                },
-                                method: "post",
-                                url: `${bridgeEndpoint}processculqi/handlecharge`,
-                                _requestid: responsedata.id,
-                            });
+                            if (iscard) {
+                                const paymentcard = await getPaymentCard(corpid, paymentcardid, responsedata.id);
 
-                            if (requestCulqiCharge.data.success) {
-                                const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), 'INSERT', null, null, usr, 'PAID', paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
+                                const requestCulqiCharge = await axiosObservable({
+                                    data: {
+                                        amount: settings.amount,
+                                        bearer: appsetting.privatekey,
+                                        description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                        currencyCode: settings.currency,
+                                        email: (paymentcard?.mail || userprofile.email),
+                                        sourceId: paymentcardcode,
+                                        operation: "CREATE",
+                                        url: appsetting.culqiurlcharge,
+                                        metadata: metadata,
+                                    },
+                                    method: "post",
+                                    url: `${bridgeEndpoint}processculqi/handlecharge`,
+                                    _requestid: responsedata.id,
+                                });
 
-                                await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, responsedata.id);
+                                if (requestCulqiCharge.data.success) {
+                                    const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), 'INSERT', null, null, usr, 'PAID', paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
 
-                                responsedata = genericfunctions.changeResponseData(responsedata, null, requestCulqiCharge.data.result, 'successful_transaction', 200, true);
-                                return response.status(responsedata.status).json(responsedata);
+                                    await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, responsedata.id);
+
+                                    responsedata = genericfunctions.changeResponseData(responsedata, null, requestCulqiCharge.data.result, 'successful_transaction', 200, true);
+                                    return response.status(responsedata.status).json(responsedata);
+                                }
+                                else {
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'unsuccessful payment', responsedata.status, responsedata.success);
+                                    return response.status(responsedata.status).json(responsedata);
+                                }
                             }
                             else {
-                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'unsuccessful payment', responsedata.status, responsedata.success);
-                                return response.status(responsedata.status).json(responsedata);
+                                const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
+
+                                if (charge.object === 'error') {
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, null, responsedata.status, responsedata.success);
+                                    return response.status(responsedata.status).json(responsedata);
+                                }
+                                else {
+                                    const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, usr, 'PAID', token.id, token, charge.object, responsedata.id);
+
+                                    await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, charge, charge.id, (settings.amount / 100), token.email, usr, token.id, token, responsedata.id);
+
+                                    responsedata = genericfunctions.changeResponseData(responsedata, charge.outcome.code, { id: charge.id, object: charge.object }, charge.outcome.user_message, 200, true);
+                                    return response.status(responsedata.status).json(responsedata);
+                                }
                             }
                         }
                         else {
-                            const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
-
-                            if (charge.object === 'error') {
-                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, null, responsedata.status, responsedata.success);
-                                return response.status(responsedata.status).json(responsedata);
-                            }
-                            else {
-                                const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, usr, 'PAID', token.id, token, charge.object, responsedata.id);
-
-                                await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, charge, charge.id, (settings.amount / 100), token.email, usr, token.id, token, responsedata.id);
-
-                                responsedata = genericfunctions.changeResponseData(responsedata, charge.outcome.code, { id: charge.id, object: charge.object }, charge.outcome.user_message, 200, true);
-                                return response.status(responsedata.status).json(responsedata);
-                            }
+                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invalid user', responsedata.status, responsedata.success);
+                            return response.status(responsedata.status).json(responsedata);
                         }
                     }
                     else {
-                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invalid user', responsedata.status, responsedata.success);
+                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invalid appsetting', responsedata.status, responsedata.success);
                         return response.status(responsedata.status).json(responsedata);
                     }
                 }
@@ -2271,310 +2278,339 @@ exports.createBalance = async (request, response) => {
 
             if (proceedpayment) {
                 if ((Math.round((totalpay * 100 + Number.EPSILON) * 100) / 100) === settings.amount) {
-                    const appsetting = await getAppSetting(responsedata.id);
-                    const userprofile = await getProfile(userid, responsedata.id);
+                    const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
 
-                    if (userprofile && appsetting) {
-                        metadata.corpid = (corpid || '');
-                        metadata.corporation = removeSpecialCharacter(corp.description || '');
-                        metadata.orgid = (orgid || '');
-                        metadata.organization = removeSpecialCharacter(org?.orgdesc || '');
-                        metadata.document = ((billbyorg ? org.docnum : corp.docnum) || '');
-                        metadata.businessname = removeSpecialCharacter((billbyorg ? org.businessname : corp.businessname) || '');
-                        metadata.invoiceid = '';
-                        metadata.seriecode = '';
-                        metadata.emissiondate = new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0];
-                        metadata.user = removeSpecialCharacter(usr || '');
-                        metadata.reference = removeSpecialCharacter(reference || '');
+                    if (appsetting && appsetting?.paymentprovider === 'CULQI') {
+                        const userprofile = await getProfile(userid, responsedata.id);
 
-                        var successPay = false;
-                        var charge = null;
-                        var chargeBridge = null;
-                        var paymentcard = null;
+                        if (userprofile) {
+                            metadata.corpid = (corpid || '');
+                            metadata.corporation = removeSpecialCharacter(corp.description || '');
+                            metadata.orgid = (orgid || '');
+                            metadata.organization = removeSpecialCharacter(org?.orgdesc || '');
+                            metadata.document = ((billbyorg ? org.docnum : corp.docnum) || '');
+                            metadata.businessname = removeSpecialCharacter((billbyorg ? org.businessname : corp.businessname) || '');
+                            metadata.invoiceid = '';
+                            metadata.seriecode = '';
+                            metadata.emissiondate = new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0];
+                            metadata.user = removeSpecialCharacter(usr || '');
+                            metadata.reference = removeSpecialCharacter(reference || '');
 
-                        if (iscard) {
-                            paymentcard = await getPaymentCard(corpid, paymentcardid, responsedata.id);
+                            var successPay = false;
+                            var charge = null;
+                            var chargeBridge = null;
+                            var paymentcard = null;
 
-                            const requestCulqiCharge = await axiosObservable({
-                                data: {
-                                    amount: settings.amount,
-                                    bearer: appsetting.privatekey,
-                                    description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
-                                    currencyCode: settings.currency,
-                                    email: (paymentcard?.mail || userprofile.email),
-                                    sourceId: paymentcardcode,
-                                    operation: "CREATE",
-                                    url: appsetting.culqiurlcharge,
-                                    metadata: metadata,
-                                },
-                                method: "post",
-                                url: `${bridgeEndpoint}processculqi/handlecharge`,
-                                _requestid: responsedata.id,
-                            });
+                            if (iscard) {
+                                paymentcard = await getPaymentCard(corpid, paymentcardid, responsedata.id);
 
-                            if (requestCulqiCharge.data.success) {
-                                chargeBridge = requestCulqiCharge.data.result;
+                                const requestCulqiCharge = await axiosObservable({
+                                    data: {
+                                        amount: settings.amount,
+                                        bearer: appsetting.privatekey,
+                                        description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                        currencyCode: settings.currency,
+                                        email: (paymentcard?.mail || userprofile.email),
+                                        sourceId: paymentcardcode,
+                                        operation: "CREATE",
+                                        url: appsetting.culqiurlcharge,
+                                        metadata: metadata,
+                                    },
+                                    method: "post",
+                                    url: `${bridgeEndpoint}processculqi/handlecharge`,
+                                    _requestid: responsedata.id,
+                                });
 
-                                successPay = true;
-                            }
-                        }
-                        else {
-                            charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
+                                if (requestCulqiCharge.data.success) {
+                                    chargeBridge = requestCulqiCharge.data.result;
 
-                            if (charge.object === 'error') {
-                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, null, responsedata.status, responsedata.success);
-                                return response.status(responsedata.status).json(responsedata);
+                                    successPay = true;
+                                }
                             }
                             else {
-                                successPay = true;
-                            }
-                        }
+                                charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
 
-                        if (successPay) {
-                            var balanceResponse = await createBalance(corpid, orgid, 0, reference, 'ACTIVO', 'GENERAL', null, null, (totalamount || buyamount), ((org?.balance || 0) + (totalamount || buyamount)), billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, 'PAID', new Date().toISOString().split('T')[0], usr, usr, responsedata.id);
-
-                            if (balanceResponse) {
-                                var lastExchange = await getExchange(request.originalUrl, responsedata.id);
-
-                                var invoicesubtotal = 0;
-                                var invoicetaxes = 0;
-                                var invoicetotalcharge = 0;
-
-                                var producthasigv = '';
-                                var productigvtribute = '';
-                                var producttotaligv = 0;
-                                var producttotalamount = 0;
-                                var productigvrate = 0;
-                                var productprice = 0;
-                                var productnetprice = 0;
-                                var productnetworth = 0;
-
-                                if (billbyorg ? org.doctype !== '0' : org.doctype !== '0') {
-                                    invoicesubtotal = buyamount;
-                                    invoicetaxes = Math.round(((appsetting.igv * buyamount) + Number.EPSILON) * 100) / 100;
-                                    invoicetotalcharge = Math.round((((appsetting.igv * buyamount) + buyamount) + Number.EPSILON) * 100) / 100;
-
-                                    producthasigv = '10';
-                                    productigvtribute = '1000';
-                                    producttotaligv = Math.round(((appsetting.igv * buyamount) + Number.EPSILON) * 100) / 100;
-                                    producttotalamount = Math.round((((appsetting.igv * buyamount) + buyamount) + Number.EPSILON) * 100) / 100;
-                                    productigvrate = Math.round(((appsetting.igv) + Number.EPSILON) * 100) / 100;
-                                    productprice = Math.round((((appsetting.igv * buyamount) + buyamount) + Number.EPSILON) * 100) / 100;
-                                    productnetprice = buyamount;
-                                    productnetworth = buyamount;
+                                if (charge.object === 'error') {
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, null, responsedata.status, responsedata.success);
+                                    return response.status(responsedata.status).json(responsedata);
                                 }
                                 else {
-                                    invoicesubtotal = buyamount;
-                                    invoicetaxes = 0;
-                                    invoicetotalcharge = buyamount;
-
-                                    producthasigv = '40';
-                                    productigvtribute = '9998';
-                                    producttotaligv = 0;
-                                    producttotalamount = buyamount;
-                                    productigvrate = 0;
-                                    productprice = buyamount;
-                                    productnetprice = buyamount;
-                                    productnetworth = buyamount;
+                                    successPay = true;
                                 }
+                            }
 
-                                const currentDate = new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60000);
+                            if (successPay) {
+                                var balanceResponse = await createBalance(corpid, orgid, 0, reference, 'ACTIVO', 'GENERAL', null, null, (totalamount || buyamount), ((org?.balance || 0) + (totalamount || buyamount)), billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, 'PAID', new Date().toISOString().split('T')[0], usr, usr, responsedata.id);
 
-                                var invoiceResponse = await createInvoice(corpid, orgid, 0, reference, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, invoicesubtotal, invoicetaxes, invoicetotalcharge, 'USD', lastExchange, 'PENDING', null, purchaseorder, null, null, null, comments, 'typecredit_alcontado', null, null, null, null, null, usr, null, buyamount, 'PAID', false, currentDate.getFullYear(), (currentDate.getMonth() + 1), responsedata.id);
+                                if (balanceResponse) {
+                                    var lastExchangeData = await getExchangeRate('USD', responsedata.id);
 
-                                if (invoiceResponse) {
-                                    await changeInvoiceBalance(corpid, orgid, balanceResponse.balanceid, invoiceResponse.invoiceid, usr, responsedata.id);
+                                    var invoicesubtotal = 0;
+                                    var invoicetaxes = 0;
+                                    var invoicetotalcharge = 0;
 
-                                    await createInvoiceDetail(corpid, orgid, invoiceResponse.invoiceid, `COMPRA DE SALDO - ${billbyorg ? org.businessname : corp.businessname}`, 'ACTIVO', 'NINGUNO', 1, 'S001', producthasigv, '10', productigvtribute, 'ZZ', producttotaligv, producttotalamount, productigvrate, productprice, `COMPRA DE SALDO - ${billbyorg ? org.businessname : corp.businessname}`, productnetprice, productnetworth, parseFloat(buyamount), usr, responsedata.id);
+                                    var producthasigv = '';
+                                    var productigvtribute = '';
+                                    var producttotaligv = 0;
+                                    var producttotalamount = 0;
+                                    var productigvrate = 0;
+                                    var productprice = 0;
+                                    var productnetprice = 0;
+                                    var productnetworth = 0;
 
-                                    const chargedata = await insertCharge(corpid, orgid, invoiceResponse.invoiceid, null, (settings.amount / 100), true, (iscard ? chargeBridge : charge), (iscard ? chargeBridge.id : charge.id), settings.currency, settings.description, (iscard ? (paymentcard?.mail || userprofile.email) : token.email), 'INSERT', null, null, usr, 'PAID', (iscard ? paymentcardid : token.id), (iscard ? null : token), (iscard ? "REGISTEREDCARD" : charge.object), responsedata.id);
+                                    if (billbyorg ? org.doctype !== '0' : org.doctype !== '0') {
+                                        invoicesubtotal = buyamount;
+                                        invoicetaxes = Math.round(((appsetting.igv * buyamount) + Number.EPSILON) * 100) / 100;
+                                        invoicetotalcharge = Math.round((((appsetting.igv * buyamount) + buyamount) + Number.EPSILON) * 100) / 100;
 
-                                    await insertPayment(corpid, orgid, invoiceResponse.invoiceid, true, chargedata?.chargeid, (iscard ? chargeBridge : charge), (iscard ? chargeBridge.id : charge.id), (settings.amount / 100), (iscard ? (paymentcard?.mail || userprofile.email) : token.email), usr, (iscard ? paymentcardid : token.id), (iscard ? null : token), responsedata.id);
-
-                                    var invoicecorrelative = null;
-                                    var documenttype = null;
-
-                                    if (corp.billbyorg) {
-                                        if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
-                                            invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICE', responsedata.id);
-                                            documenttype = '01';
-                                        }
-
-                                        if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                            invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKET', responsedata.id);
-                                            documenttype = '03'
-                                        }
+                                        producthasigv = '10';
+                                        productigvtribute = '1000';
+                                        producttotaligv = Math.round(((appsetting.igv * buyamount) + Number.EPSILON) * 100) / 100;
+                                        producttotalamount = Math.round((((appsetting.igv * buyamount) + buyamount) + Number.EPSILON) * 100) / 100;
+                                        productigvrate = Math.round(((appsetting.igv) + Number.EPSILON) * 100) / 100;
+                                        productprice = Math.round((((appsetting.igv * buyamount) + buyamount) + Number.EPSILON) * 100) / 100;
+                                        productnetprice = buyamount;
+                                        productnetworth = buyamount;
                                     }
                                     else {
-                                        if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
-                                            invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICE', responsedata.id);
-                                            documenttype = '01';
-                                        }
+                                        invoicesubtotal = buyamount;
+                                        invoicetaxes = 0;
+                                        invoicetotalcharge = buyamount;
 
-                                        if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                            invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKET', responsedata.id);
-                                            documenttype = '03'
-                                        }
+                                        producthasigv = '40';
+                                        productigvtribute = '9998';
+                                        producttotaligv = 0;
+                                        producttotalamount = buyamount;
+                                        productigvrate = 0;
+                                        productprice = buyamount;
+                                        productnetprice = buyamount;
+                                        productnetworth = buyamount;
                                     }
 
-                                    if (invoicecorrelative) {
-                                        try {
-                                            var invoicedata = {
-                                                CodigoAnexoEmisor: appsetting.annexcode,
-                                                CodigoFormatoImpresion: appsetting.printingformat,
-                                                CodigoMoneda: 'USD',
-                                                Username: appsetting.sunatusername,
-                                                TipoDocumento: documenttype,
-                                                TipoRucEmisor: appsetting.emittertype,
-                                                CodigoRucReceptor: billbyorg ? org.doctype : corp.doctype,
-                                                CodigoUbigeoEmisor: appsetting.ubigeo,
-                                                EnviarSunat: billbyorg ? org.autosendinvoice : corp.autosendinvoice,
-                                                FechaEmision: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
-                                                FechaVencimiento: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
-                                                MailEnvio: billbyorg ? org.contactemail : corp.contactemail,
-                                                MontoTotal: Math.round((invoicetotalcharge + Number.EPSILON) * 100) / 100,
-                                                NombreComercialEmisor: appsetting.tradename,
-                                                RazonSocialEmisor: appsetting.businessname,
-                                                RazonSocialReceptor: billbyorg ? org.businessname : corp.businessname,
-                                                CorrelativoDocumento: padNumber(invoicecorrelative.p_correlative, 8),
-                                                RucEmisor: appsetting.ruc,
-                                                NumeroDocumentoReceptor: billbyorg ? org.docnum : corp.docnum,
-                                                NumeroSerieDocumento: documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie,
-                                                RetornaPdf: appsetting.returnpdf,
-                                                RetornaXmlSunat: appsetting.returnxmlsunat,
-                                                RetornaXml: appsetting.returnxml,
-                                                TipoCambio: lastExchange,
-                                                Token: appsetting.token,
-                                                DireccionFiscalEmisor: appsetting.fiscaladdress,
-                                                DireccionFiscalReceptor: billbyorg ? org.fiscaladdress : corp.fiscaladdress,
-                                                VersionXml: appsetting.xmlversion,
-                                                VersionUbl: appsetting.ublversion,
-                                                Endpoint: appsetting.sunaturl,
-                                                PaisRecepcion: billbyorg ? org.sunatcountry : corp.sunatcountry,
-                                                ProductList: [],
-                                                DataList: []
+                                    const currentDate = new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60000);
+
+                                    var invoiceResponse = await createInvoice(corpid, orgid, 0, reference, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, invoicesubtotal, invoicetaxes, invoicetotalcharge, 'USD', lastExchangeData?.exchangerate || 1, 'PENDING', null, purchaseorder, null, null, null, comments, 'typecredit_alcontado', null, null, null, null, null, usr, null, buyamount, 'PAID', false, currentDate.getFullYear(), (currentDate.getMonth() + 1), responsedata.id);
+
+                                    if (invoiceResponse) {
+                                        await changeInvoiceBalance(corpid, orgid, balanceResponse.balanceid, invoiceResponse.invoiceid, usr, responsedata.id);
+
+                                        await createInvoiceDetail(corpid, orgid, invoiceResponse.invoiceid, `COMPRA DE SALDO - ${billbyorg ? org.businessname : corp.businessname}`, 'ACTIVO', 'NINGUNO', 1, 'S001', producthasigv, '10', productigvtribute, 'ZZ', producttotaligv, producttotalamount, productigvrate, productprice, `COMPRA DE SALDO - ${billbyorg ? org.businessname : corp.businessname}`, productnetprice, productnetworth, parseFloat(buyamount), usr, responsedata.id);
+
+                                        const chargedata = await insertCharge(corpid, orgid, invoiceResponse.invoiceid, null, (settings.amount / 100), true, (iscard ? chargeBridge : charge), (iscard ? chargeBridge.id : charge.id), settings.currency, settings.description, (iscard ? (paymentcard?.mail || userprofile.email) : token.email), 'INSERT', null, null, usr, 'PAID', (iscard ? paymentcardid : token.id), (iscard ? null : token), (iscard ? "REGISTEREDCARD" : charge.object), responsedata.id);
+
+                                        await insertPayment(corpid, orgid, invoiceResponse.invoiceid, true, chargedata?.chargeid, (iscard ? chargeBridge : charge), (iscard ? chargeBridge.id : charge.id), (settings.amount / 100), (iscard ? (paymentcard?.mail || userprofile.email) : token.email), usr, (iscard ? paymentcardid : token.id), (iscard ? null : token), responsedata.id);
+
+                                        var invoicecorrelative = null;
+                                        var documenttype = null;
+
+                                        if (corp.billbyorg) {
+                                            if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
+                                                invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICE', responsedata.id);
+                                                documenttype = '01';
                                             }
 
-                                            if (billbyorg) {
-                                                invoicedata.CodigoOperacionSunat = org.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                                invoicedata.MontoTotalGravado = org.sunatcountry === 'PE' ? Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100 : null;
-                                                invoicedata.MontoTotalInafecto = org.sunatcountry === 'PE' ? '0' : Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100;
-                                                invoicedata.MontoTotalIgv = org.sunatcountry === 'PE' ? Math.round((invoicetaxes + Number.EPSILON) * 100) / 100 : null;
+                                            if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
+                                                invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKET', responsedata.id);
+                                                documenttype = '03'
                                             }
-                                            else {
-                                                invoicedata.CodigoOperacionSunat = corp.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                                invoicedata.MontoTotalGravado = corp.sunatcountry === 'PE' ? Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100 : null;
-                                                invoicedata.MontoTotalInafecto = corp.sunatcountry === 'PE' ? '0' : Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100;
-                                                invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? Math.round((invoicetaxes + Number.EPSILON) * 100) / 100 : null;
+                                        }
+                                        else {
+                                            if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
+                                                invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICE', responsedata.id);
+                                                documenttype = '01';
                                             }
 
-                                            var calcdetraction = false;
-
-                                            if (corp.billbyorg) {
-                                                if (org.sunatcountry === 'PE') {
-                                                    calcdetraction = true;
-                                                }
+                                            if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
+                                                invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKET', responsedata.id);
+                                                documenttype = '03'
                                             }
-                                            else {
-                                                if (corp.sunatcountry === 'PE') {
-                                                    calcdetraction = true;
-                                                }
-                                            }
+                                        }
 
-                                            if (calcdetraction) {
-                                                if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
-                                                    var compareamount = 0;
-
-                                                    if (appsetting.detractionminimum) {
-                                                        compareamount = invoicetotalcharge * lastExchange;
+                                        if (invoicecorrelative) {
+                                            try {
+                                                if (appsetting?.invoiceprovider === "MIFACT") {
+                                                    var invoicedata = {
+                                                        CodigoAnexoEmisor: appsetting.annexcode,
+                                                        CodigoFormatoImpresion: appsetting.printingformat,
+                                                        CodigoMoneda: 'USD',
+                                                        Username: appsetting.sunatusername,
+                                                        TipoDocumento: documenttype,
+                                                        TipoRucEmisor: appsetting.emittertype,
+                                                        CodigoRucReceptor: billbyorg ? org.doctype : corp.doctype,
+                                                        CodigoUbigeoEmisor: appsetting.ubigeo,
+                                                        EnviarSunat: billbyorg ? org.autosendinvoice : corp.autosendinvoice,
+                                                        FechaEmision: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
+                                                        FechaVencimiento: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
+                                                        MailEnvio: billbyorg ? org.contactemail : corp.contactemail,
+                                                        MontoTotal: Math.round((invoicetotalcharge + Number.EPSILON) * 100) / 100,
+                                                        NombreComercialEmisor: appsetting.tradename,
+                                                        RazonSocialEmisor: appsetting.businessname,
+                                                        RazonSocialReceptor: billbyorg ? org.businessname : corp.businessname,
+                                                        CorrelativoDocumento: padNumber(invoicecorrelative.p_correlative, 8),
+                                                        RucEmisor: appsetting.ruc,
+                                                        NumeroDocumentoReceptor: billbyorg ? org.docnum : corp.docnum,
+                                                        NumeroSerieDocumento: documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie,
+                                                        RetornaPdf: appsetting.returnpdf,
+                                                        RetornaXmlSunat: appsetting.returnxmlsunat,
+                                                        RetornaXml: appsetting.returnxml,
+                                                        TipoCambio: (lastExchangeData?.exchangeratesol / lastExchangeData?.exchangerate) || 1,
+                                                        Token: appsetting.token,
+                                                        DireccionFiscalEmisor: appsetting.fiscaladdress,
+                                                        DireccionFiscalReceptor: billbyorg ? org.fiscaladdress : corp.fiscaladdress,
+                                                        VersionXml: appsetting.xmlversion,
+                                                        VersionUbl: appsetting.ublversion,
+                                                        Endpoint: appsetting.sunaturl,
+                                                        PaisRecepcion: billbyorg ? org.sunatcountry : corp.sunatcountry,
+                                                        ProductList: [],
+                                                        DataList: []
                                                     }
 
-                                                    if (compareamount > appsetting.detractionminimum) {
-                                                        invoicedata.CodigoDetraccion = appsetting.detractioncode;
-                                                        invoicedata.CodigoOperacionSunat = '1001';
-                                                        invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoicetotalcharge * appsetting.detraction) + Number.EPSILON) * 100) / 100);
-                                                        invoicedata.MontoPendienteDetraccion = Math.round(((invoicedata.MontoTotal - (invoicedata.MontoTotalDetraccion || 0)) + Number.EPSILON) * 100) / 100;
-                                                        invoicedata.MontoTotalInafecto = null;
-                                                        invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
-                                                        invoicedata.PaisRecepcion = null;
-                                                        invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
+                                                    if (billbyorg) {
+                                                        invoicedata.CodigoOperacionSunat = org.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                                        invoicedata.MontoTotalGravado = org.sunatcountry === 'PE' ? Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100 : null;
+                                                        invoicedata.MontoTotalInafecto = org.sunatcountry === 'PE' ? '0' : Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100;
+                                                        invoicedata.MontoTotalIgv = org.sunatcountry === 'PE' ? Math.round((invoicetaxes + Number.EPSILON) * 100) / 100 : null;
+                                                    }
+                                                    else {
+                                                        invoicedata.CodigoOperacionSunat = corp.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                                        invoicedata.MontoTotalGravado = corp.sunatcountry === 'PE' ? Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100 : null;
+                                                        invoicedata.MontoTotalInafecto = corp.sunatcountry === 'PE' ? '0' : Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100;
+                                                        invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? Math.round((invoicetaxes + Number.EPSILON) * 100) / 100 : null;
+                                                    }
 
-                                                        var adicional02 = {
-                                                            CodigoDatoAdicional: '06',
-                                                            DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
+                                                    var calcdetraction = false;
+
+                                                    if (corp.billbyorg) {
+                                                        if (org.sunatcountry === 'PE') {
+                                                            calcdetraction = true;
+                                                        }
+                                                    }
+                                                    else {
+                                                        if (corp.sunatcountry === 'PE') {
+                                                            calcdetraction = true;
+                                                        }
+                                                    }
+
+                                                    if (calcdetraction) {
+                                                        if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
+                                                            var compareamount = 0;
+
+                                                            if (appsetting.detractionminimum) {
+                                                                compareamount = (invoicetotalcharge / (lastExchangeData?.exchangerate || 0) * (lastExchangeData?.exchangeratesol || 0));
+                                                            }
+
+                                                            if (compareamount > appsetting.detractionminimum) {
+                                                                invoicedata.CodigoDetraccion = appsetting.detractioncode;
+                                                                invoicedata.CodigoOperacionSunat = '1001';
+                                                                invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoicetotalcharge * appsetting.detraction) + Number.EPSILON) * 100) / 100);
+                                                                invoicedata.MontoPendienteDetraccion = Math.round(((invoicedata.MontoTotal - (invoicedata.MontoTotalDetraccion || 0)) + Number.EPSILON) * 100) / 100;
+                                                                invoicedata.MontoTotalInafecto = null;
+                                                                invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
+                                                                invoicedata.PaisRecepcion = null;
+                                                                invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
+
+                                                                var adicional02 = {
+                                                                    CodigoDatoAdicional: '06',
+                                                                    DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
+                                                                }
+
+                                                                invoicedata.DataList.push(adicional02);
+                                                            }
+                                                        }
+                                                    }
+
+                                                    var adicional01 = {
+                                                        CodigoDatoAdicional: '05',
+                                                        DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
+                                                    }
+
+                                                    invoicedata.DataList.push(adicional01);
+
+                                                    if (purchaseorder) {
+                                                        var adicional03 = {
+                                                            CodigoDatoAdicional: '15',
+                                                            DescripcionDatoAdicional: purchaseorder
                                                         }
 
-                                                        invoicedata.DataList.push(adicional02);
+                                                        invoicedata.DataList.push(adicional03);
+                                                    }
+
+                                                    if (comments) {
+                                                        var adicional04 = {
+                                                            CodigoDatoAdicional: '07',
+                                                            DescripcionDatoAdicional: comments
+                                                        }
+
+                                                        invoicedata.DataList.push(adicional04);
+                                                    }
+
+                                                    var adicional05 = {
+                                                        CodigoDatoAdicional: '01',
+                                                        DescripcionDatoAdicional: 'AL CONTADO'
+                                                    }
+
+                                                    invoicedata.DataList.push(adicional05);
+
+                                                    if (adicional05) {
+                                                        invoicedata.FechaVencimiento = null;
+                                                    }
+
+                                                    var invoicedetaildata = {
+                                                        CantidadProducto: 1,
+                                                        CodigoProducto: 'S001',
+                                                        TipoVenta: '10',
+                                                        UnidadMedida: 'ZZ',
+                                                        IgvTotal: Math.round((producttotaligv + Number.EPSILON) * 100) / 100,
+                                                        MontoTotal: Math.round((producttotalamount + Number.EPSILON) * 100) / 100,
+                                                        TasaIgv: Math.round((productigvrate * 100) || 0),
+                                                        PrecioProducto: Math.round((productprice + Number.EPSILON) * 100) / 100,
+                                                        DescripcionProducto: `COMPRA DE SALDO - ${invoicedata.RazonSocialReceptor}`,
+                                                        PrecioNetoProducto: Math.round((productnetprice + Number.EPSILON) * 100) / 100,
+                                                        ValorNetoProducto: Math.round((productnetworth + Number.EPSILON) * 100) / 100,
+                                                        AfectadoIgv: producthasigv,
+                                                        TributoIgv: productigvtribute,
+                                                    };
+
+                                                    invoicedata.ProductList.push(invoicedetaildata);
+
+                                                    const requestSendToSunat = await axiosObservable({
+                                                        data: invoicedata,
+                                                        method: 'post',
+                                                        url: `${bridgeEndpoint}processmifact/sendinvoice`,
+                                                        _requestid: responsedata.id,
+                                                    });
+
+                                                    if (requestSendToSunat.data.result) {
+                                                        await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+                                                    }
+                                                    else {
+                                                        await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+
+                                                        if (corp.billbyorg) {
+                                                            if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
+                                                                await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR', responsedata.id);
+                                                            }
+
+                                                            if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
+                                                                await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR', responsedata.id);
+                                                            }
+                                                        }
+                                                        else {
+                                                            if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
+                                                                await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR', responsedata.id);
+                                                            }
+
+                                                            if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
+                                                                await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR', responsedata.id);
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }
+                                            catch (exception) {
+                                                printException(exception, request.originalUrl, responsedata.id);
 
-                                            var adicional01 = {
-                                                CodigoDatoAdicional: '05',
-                                                DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
-                                            }
-
-                                            invoicedata.DataList.push(adicional01);
-
-                                            if (purchaseorder) {
-                                                var adicional03 = {
-                                                    CodigoDatoAdicional: '15',
-                                                    DescripcionDatoAdicional: purchaseorder
-                                                }
-
-                                                invoicedata.DataList.push(adicional03);
-                                            }
-
-                                            if (comments) {
-                                                var adicional04 = {
-                                                    CodigoDatoAdicional: '07',
-                                                    DescripcionDatoAdicional: comments
-                                                }
-
-                                                invoicedata.DataList.push(adicional04);
-                                            }
-
-                                            var adicional05 = {
-                                                CodigoDatoAdicional: '01',
-                                                DescripcionDatoAdicional: 'AL CONTADO'
-                                            }
-
-                                            invoicedata.DataList.push(adicional05);
-
-                                            if (adicional05) {
-                                                invoicedata.FechaVencimiento = null;
-                                            }
-
-                                            var invoicedetaildata = {
-                                                CantidadProducto: 1,
-                                                CodigoProducto: 'S001',
-                                                TipoVenta: '10',
-                                                UnidadMedida: 'ZZ',
-                                                IgvTotal: Math.round((producttotaligv + Number.EPSILON) * 100) / 100,
-                                                MontoTotal: Math.round((producttotalamount + Number.EPSILON) * 100) / 100,
-                                                TasaIgv: Math.round((productigvrate * 100) || 0),
-                                                PrecioProducto: Math.round((productprice + Number.EPSILON) * 100) / 100,
-                                                DescripcionProducto: `COMPRA DE SALDO - ${invoicedata.RazonSocialReceptor}`,
-                                                PrecioNetoProducto: Math.round((productnetprice + Number.EPSILON) * 100) / 100,
-                                                ValorNetoProducto: Math.round((productnetworth + Number.EPSILON) * 100) / 100,
-                                                AfectadoIgv: producthasigv,
-                                                TributoIgv: productigvtribute,
-                                            };
-
-                                            invoicedata.ProductList.push(invoicedetaildata);
-
-                                            const requestSendToSunat = await axiosObservable({
-                                                data: invoicedata,
-                                                method: 'post',
-                                                url: `${bridgeEndpoint}processmifact/sendinvoice`,
-                                                _requestid: responsedata.id,
-                                            });
-
-                                            if (requestSendToSunat.data.result) {
-                                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
-                                            }
-                                            else {
-                                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, purchaseorder || null, comments || null, 'typecredit_alcontado' || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+                                                await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', exception.message, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, billbyorg ? org.businessname : corp.businessname, billbyorg ? org.fiscaladdress : corp.fiscaladdress, billbyorg ? org.sunatcountry : corp.sunatcountry, billbyorg ? org.contactemail : corp.contactemail, documenttype, null, null, purchaseorder, comments, 'typecredit_alcontado', null, null, null, null, responsedata.id);
 
                                                 if (corp.billbyorg) {
                                                     if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
@@ -2596,61 +2632,41 @@ exports.createBalance = async (request, response) => {
                                                 }
                                             }
                                         }
-                                        catch (exception) {
-                                            printException(exception, request.originalUrl, responsedata.id);
+                                        else {
+                                            await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, billbyorg ? org.businessname : corp.businessname, billbyorg ? org.fiscaladdress : corp.fiscaladdress, billbyorg ? org.sunatcountry : corp.sunatcountry, billbyorg ? org.contactemail : corp.contactemail, documenttype, null, null, purchaseorder, comments, 'typecredit_alcontado', null, null, null, null, responsedata.id);
+                                        }
 
-                                            await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', exception.message, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, billbyorg ? org.businessname : corp.businessname, billbyorg ? org.fiscaladdress : corp.fiscaladdress, billbyorg ? org.sunatcountry : corp.sunatcountry, billbyorg ? org.contactemail : corp.contactemail, documenttype, null, null, purchaseorder, comments, 'typecredit_alcontado', null, null, null, null, responsedata.id);
-
-                                            if (corp.billbyorg) {
-                                                if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
-                                                    await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR', responsedata.id);
-                                                }
-
-                                                if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                    await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR', responsedata.id);
-                                                }
-                                            }
-                                            else {
-                                                if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
-                                                    await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR', responsedata.id);
-                                                }
-
-                                                if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                    await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR', responsedata.id);
-                                                }
-                                            }
+                                        if (iscard) {
+                                            responsedata = genericfunctions.changeResponseData(responsedata, null, { message: 'finished process' }, 'culqipaysuccess', 200, true);
+                                            return response.status(responsedata.status).json(responsedata);
+                                        }
+                                        else {
+                                            responsedata = genericfunctions.changeResponseData(responsedata, charge.outcome.code, { id: charge.id, object: charge.object }, charge.outcome.user_message, 200, true);
+                                            return response.status(responsedata.status).json(responsedata);
                                         }
                                     }
                                     else {
-                                        await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', 'Correlative not found', null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, billbyorg ? org.doctype : corp.doctype, billbyorg ? org.docnum : corp.docnum, billbyorg ? org.businessname : corp.businessname, billbyorg ? org.fiscaladdress : corp.fiscaladdress, billbyorg ? org.sunatcountry : corp.sunatcountry, billbyorg ? org.contactemail : corp.contactemail, documenttype, null, null, purchaseorder, comments, 'typecredit_alcontado', null, null, null, null, responsedata.id);
-                                    }
-
-                                    if (iscard) {
-                                        responsedata = genericfunctions.changeResponseData(responsedata, null, { message: 'finished process' }, 'culqipaysuccess', 200, true);
-                                        return response.status(responsedata.status).json(responsedata);
-                                    }
-                                    else {
-                                        responsedata = genericfunctions.changeResponseData(responsedata, charge.outcome.code, { id: charge.id, object: charge.object }, charge.outcome.user_message, 200, true);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error creating invoice', responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
                                 else {
-                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error creating invoice', responsedata.status, responsedata.success);
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error creating balance', responsedata.status, responsedata.success);
                                     return response.status(responsedata.status).json(responsedata);
                                 }
                             }
                             else {
-                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error creating balance', responsedata.status, responsedata.success);
+                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'unsuccessful payment', responsedata.status, responsedata.success);
                                 return response.status(responsedata.status).json(responsedata);
                             }
                         }
                         else {
-                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'unsuccessful payment', responsedata.status, responsedata.success);
+                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invalid user', responsedata.status, responsedata.success);
                             return response.status(responsedata.status).json(responsedata);
                         }
                     }
                     else {
-                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invalid user', responsedata.status, responsedata.success);
+                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invalid appsetting', responsedata.status, responsedata.success);
                         return response.status(responsedata.status).json(responsedata);
                     }
                 }
@@ -2700,7 +2716,7 @@ exports.createCreditNote = async (request, response) => {
 
         if (invoice) {
             if (invoice.type === 'INVOICE' && invoice.invoicestatus === 'INVOICED' && (invoice.invoicetype === '01' || invoice.invoicetype === '03')) {
-                const appsetting = await getAppSetting(responsedata.id);
+                const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
 
                 if (appsetting) {
                     const invoiceDate = new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0];
@@ -2720,123 +2736,127 @@ exports.createCreditNote = async (request, response) => {
 
                         if (invoicecorrelative) {
                             try {
-                                var invoicedata = {
-                                    CodigoAnexoEmisor: appsetting.annexcode,
-                                    CodigoFormatoImpresion: appsetting.printingformat,
-                                    CodigoMoneda: invoice.currency,
-                                    Username: appsetting.sunatusername,
-                                    TipoDocumento: '07',
-                                    TipoRucEmisor: appsetting.emittertype,
-                                    CodigoRucReceptor: invoice.receiverdoctype,
-                                    CodigoUbigeoEmisor: appsetting.ubigeo,
-                                    EnviarSunat: invoice.sendtosunat,
-                                    FechaEmision: invoiceDate,
-                                    FechaVencimiento: invoiceDate,
-                                    MailEnvio: invoice.receivermail,
-                                    MontoTotal: Math.round(((creditnotetype === '01' ? invoice.totalamount : parseFloat(creditnotediscount * (appsetting.igv + 1))) + Number.EPSILON) * 100) / 100,
-                                    NombreComercialEmisor: appsetting.tradename,
-                                    RazonSocialEmisor: appsetting.businessname,
-                                    RazonSocialReceptor: invoice.receiverbusinessname,
-                                    CorrelativoDocumento: padNumber(invoicecorrelative.p_correlative, 8),
-                                    RucEmisor: appsetting.ruc,
-                                    NumeroDocumentoReceptor: invoice.receiverdocnum,
-                                    NumeroSerieDocumento: invoice.invoicetype === '01' ? appsetting.invoicecreditserie : appsetting.ticketcreditserie,
-                                    RetornaPdf: appsetting.returnpdf,
-                                    RetornaXmlSunat: appsetting.returnxmlsunat,
-                                    RetornaXml: appsetting.returnxml,
-                                    TipoCambio: invoice.currency === 'USD' ? invoice.exchangerate : '1.000',
-                                    Token: appsetting.token,
-                                    DireccionFiscalEmisor: appsetting.fiscaladdress,
-                                    DireccionFiscalReceptor: invoice.receiverfiscaladdress,
-                                    VersionXml: appsetting.xmlversion,
-                                    VersionUbl: appsetting.ublversion,
-                                    Endpoint: appsetting.sunaturl,
-                                    PaisRecepcion: invoice.receivercountry,
-                                    CodigoOperacionSunat: invoice.sunatopecode === "1001" ? "0101" : invoice.sunatopecode,
-                                    MontoTotalGravado: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((creditnotediscount + Number.EPSILON) * 100) / 100 : null),
-                                    MontoTotalInafecto: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100) : (invoice.receivercountry === 'PE' ? '0' : Math.round((creditnotediscount * (appsetting.igv + 1) + Number.EPSILON) * 100) / 100),
-                                    MontoTotalIgv: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((creditnotediscount * appsetting.igv + Number.EPSILON) * 100) / 100 : null),
-                                    TipoNotaCredito: creditnotetype,
-                                    MotivoNotaCredito: creditnotemotive,
-                                    CodigoDocumentoNotaCredito: invoice.invoicetype,
-                                    NumeroSerieNotaCredito: invoice.serie,
-                                    NumeroCorrelativoNotaCredito: padNumber(invoice.correlative, 8),
-                                    FechaEmisionNotaCredito: invoice.invoicedate,
-                                    ProductList: []
-                                }
+                                var exchangeratedata = await getExchangeRate(invoice.currency, responsedata.id);
 
-                                const invoicedetail = await getInvoiceDetail(corpid, orgid, userid, invoice.invoiceid, responsedata.id);
+                                if (appsetting?.invoiceprovider === "MIFACT") {
+                                    var invoicedata = {
+                                        CodigoAnexoEmisor: appsetting.annexcode,
+                                        CodigoFormatoImpresion: appsetting.printingformat,
+                                        CodigoMoneda: invoice.currency,
+                                        Username: appsetting.sunatusername,
+                                        TipoDocumento: '07',
+                                        TipoRucEmisor: appsetting.emittertype,
+                                        CodigoRucReceptor: invoice.receiverdoctype,
+                                        CodigoUbigeoEmisor: appsetting.ubigeo,
+                                        EnviarSunat: invoice.sendtosunat,
+                                        FechaEmision: invoiceDate,
+                                        FechaVencimiento: invoiceDate,
+                                        MailEnvio: invoice.receivermail,
+                                        MontoTotal: Math.round(((creditnotetype === '01' ? invoice.totalamount : parseFloat(creditnotediscount * (appsetting.igv + 1))) + Number.EPSILON) * 100) / 100,
+                                        NombreComercialEmisor: appsetting.tradename,
+                                        RazonSocialEmisor: appsetting.businessname,
+                                        RazonSocialReceptor: invoice.receiverbusinessname,
+                                        CorrelativoDocumento: padNumber(invoicecorrelative.p_correlative, 8),
+                                        RucEmisor: appsetting.ruc,
+                                        NumeroDocumentoReceptor: invoice.receiverdocnum,
+                                        NumeroSerieDocumento: invoice.invoicetype === '01' ? appsetting.invoicecreditserie : appsetting.ticketcreditserie,
+                                        RetornaPdf: appsetting.returnpdf,
+                                        RetornaXmlSunat: appsetting.returnxmlsunat,
+                                        RetornaXml: appsetting.returnxml,
+                                        TipoCambio: invoice.currency === 'PEN' ? '1.000' : ((exchangeratedata?.exchangeratesol / exchangeratedata?.exchangerate) || invoice.exchangerate),
+                                        Token: appsetting.token,
+                                        DireccionFiscalEmisor: appsetting.fiscaladdress,
+                                        DireccionFiscalReceptor: invoice.receiverfiscaladdress,
+                                        VersionXml: appsetting.xmlversion,
+                                        VersionUbl: appsetting.ublversion,
+                                        Endpoint: appsetting.sunaturl,
+                                        PaisRecepcion: invoice.receivercountry,
+                                        CodigoOperacionSunat: invoice.sunatopecode === "1001" ? "0101" : invoice.sunatopecode,
+                                        MontoTotalGravado: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((creditnotediscount + Number.EPSILON) * 100) / 100 : null),
+                                        MontoTotalInafecto: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100) : (invoice.receivercountry === 'PE' ? '0' : Math.round((creditnotediscount * (appsetting.igv + 1) + Number.EPSILON) * 100) / 100),
+                                        MontoTotalIgv: creditnotetype === '01' ? (invoice.receivercountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null) : (invoice.receivercountry === 'PE' ? Math.round((creditnotediscount * appsetting.igv + Number.EPSILON) * 100) / 100 : null),
+                                        TipoNotaCredito: creditnotetype,
+                                        MotivoNotaCredito: creditnotemotive,
+                                        CodigoDocumentoNotaCredito: invoice.invoicetype,
+                                        NumeroSerieNotaCredito: invoice.serie,
+                                        NumeroCorrelativoNotaCredito: padNumber(invoice.correlative, 8),
+                                        FechaEmisionNotaCredito: invoice.invoicedate,
+                                        ProductList: []
+                                    }
 
-                                if (creditnotetype === '01') {
-                                    invoicedetail.forEach(async data => {
+                                    const invoicedetail = await getInvoiceDetail(corpid, orgid, userid, invoice.invoiceid, responsedata.id);
+
+                                    if (creditnotetype === '01') {
+                                        invoicedetail.forEach(async data => {
+                                            var invoicedetaildata = {
+                                                CantidadProducto: data.quantity,
+                                                CodigoProducto: data.productcode,
+                                                TipoVenta: data.saletype,
+                                                UnidadMedida: data.measureunit,
+                                                IgvTotal: Math.round((data.totaligv + Number.EPSILON) * 100) / 100,
+                                                MontoTotal: Math.round((data.totalamount + Number.EPSILON) * 100) / 100,
+                                                TasaIgv: Math.round((data.igvrate * 100) || 0),
+                                                PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
+                                                DescripcionProducto: data.productdescription,
+                                                PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
+                                                ValorNetoProducto: Math.round((data.productnetworth + Number.EPSILON) * 100) / 100,
+                                                AfectadoIgv: invoice.receivercountry === 'PE' ? '10' : '40',
+                                                TributoIgv: invoice.receivercountry === 'PE' ? '1000' : '9998',
+                                            };
+
+                                            invoicedata.ProductList.push(invoicedetaildata);
+                                        });
+                                    }
+                                    else {
                                         var invoicedetaildata = {
-                                            CantidadProducto: data.quantity,
-                                            CodigoProducto: data.productcode,
-                                            TipoVenta: data.saletype,
-                                            UnidadMedida: data.measureunit,
-                                            IgvTotal: Math.round((data.totaligv + Number.EPSILON) * 100) / 100,
-                                            MontoTotal: Math.round((data.totalamount + Number.EPSILON) * 100) / 100,
-                                            TasaIgv: Math.round((data.igvrate * 100) || 0),
-                                            PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
-                                            DescripcionProducto: data.productdescription,
-                                            PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
-                                            ValorNetoProducto: Math.round((data.productnetworth + Number.EPSILON) * 100) / 100,
+                                            CantidadProducto: '1',
+                                            CodigoProducto: invoicedetail[0].productcode,
+                                            TipoVenta: invoicedetail[0].saletype,
+                                            UnidadMedida: invoicedetail[0].measureunit,
+                                            IgvTotal: invoice.receivercountry === 'PE' ? Math.round((creditnotediscount * appsetting.igv + Number.EPSILON) * 100) / 100 : 0,
+                                            MontoTotal: Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100,
+                                            TasaIgv: invoice.receivercountry === 'PE' ? Math.round((appsetting.igv * 100) || 0) : 0,
+                                            PrecioProducto: Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100,
+                                            DescripcionProducto: `DISCOUNT: ${creditnotemotive}`,
+                                            PrecioNetoProducto: invoice.receivercountry === 'PE' ? (Math.round((creditnotediscount + Number.EPSILON) * 100) / 100) : (Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100),
+                                            ValorNetoProducto: invoice.receivercountry === 'PE' ? (Math.round((creditnotediscount + Number.EPSILON) * 100) / 100) : (Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100),
                                             AfectadoIgv: invoice.receivercountry === 'PE' ? '10' : '40',
                                             TributoIgv: invoice.receivercountry === 'PE' ? '1000' : '9998',
                                         };
 
                                         invoicedata.ProductList.push(invoicedetaildata);
-                                    });
-                                }
-                                else {
-                                    var invoicedetaildata = {
-                                        CantidadProducto: '1',
-                                        CodigoProducto: invoicedetail[0].productcode,
-                                        TipoVenta: invoicedetail[0].saletype,
-                                        UnidadMedida: invoicedetail[0].measureunit,
-                                        IgvTotal: invoice.receivercountry === 'PE' ? Math.round((creditnotediscount * appsetting.igv + Number.EPSILON) * 100) / 100 : 0,
-                                        MontoTotal: Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100,
-                                        TasaIgv: invoice.receivercountry === 'PE' ? Math.round((appsetting.igv * 100) || 0) : 0,
-                                        PrecioProducto: Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100,
-                                        DescripcionProducto: `DISCOUNT: ${creditnotemotive}`,
-                                        PrecioNetoProducto: invoice.receivercountry === 'PE' ? (Math.round((creditnotediscount + Number.EPSILON) * 100) / 100) : (Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100),
-                                        ValorNetoProducto: invoice.receivercountry === 'PE' ? (Math.round((creditnotediscount + Number.EPSILON) * 100) / 100) : (Math.round(((creditnotediscount * (appsetting.igv + 1)) + Number.EPSILON) * 100) / 100),
-                                        AfectadoIgv: invoice.receivercountry === 'PE' ? '10' : '40',
-                                        TributoIgv: invoice.receivercountry === 'PE' ? '1000' : '9998',
-                                    };
-
-                                    invoicedata.ProductList.push(invoicedetaildata);
-                                }
-
-                                const requestSendToSunat = await axiosObservable({
-                                    data: invoicedata,
-                                    method: 'post',
-                                    url: `${bridgeEndpoint}processmifact/sendinvoice`,
-                                    _requestid: responsedata.id,
-                                });
-
-                                if (requestSendToSunat.data.result) {
-                                    await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat, invoice.returnpdf, invoice.returnxmlsunat, invoice.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, invoiceDate, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null, invoicedata?.FechaEmision, responsedata.id);
-
-                                    if (creditnotetype === '01') {
-                                        await changeInvoiceStatus(corpid, orgid, invoiceid, 'CANCELED', usr, responsedata.id)
                                     }
 
-                                    responsedata = genericfunctions.changeResponseData(responsedata, null, requestSendToSunat.data.result, 'successinvoiced', 200, true);
-                                    return response.status(responsedata.status).json(responsedata);
-                                }
-                                else {
-                                    await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat, invoice.returnpdf, invoice.returnxmlsunat, invoice.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, invoiceDate, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null, invoicedata?.FechaEmision, responsedata.id);
+                                    const requestSendToSunat = await axiosObservable({
+                                        data: invoicedata,
+                                        method: 'post',
+                                        url: `${bridgeEndpoint}processmifact/sendinvoice`,
+                                        _requestid: responsedata.id,
+                                    });
 
-                                    if (invoice.invoicetype == '01') {
-                                        invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'CREDITINVOICEERROR', responsedata.id);
+                                    if (requestSendToSunat.data.result) {
+                                        await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat, invoice.returnpdf, invoice.returnxmlsunat, invoice.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, invoiceDate, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null, invoicedata?.FechaEmision, responsedata.id);
+
+                                        if (creditnotetype === '01') {
+                                            await changeInvoiceStatus(corpid, orgid, invoiceid, 'CANCELED', usr, responsedata.id)
+                                        }
+
+                                        responsedata = genericfunctions.changeResponseData(responsedata, null, requestSendToSunat.data.result, 'successinvoiced', 200, true);
+                                        return response.status(responsedata.status).json(responsedata);
                                     }
                                     else {
-                                        invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'CREDITTICKETERROR', responsedata.id);
-                                    }
+                                        await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, invoice.sendtosunat, invoice.returnpdf, invoice.returnxmlsunat, invoice.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, invoice.receiverdoctype, invoice.receiverdocnum, invoice.receiverbusinessname, invoice.receiverfiscaladdress, invoice.receivercountry, invoice.receivermail, '07', invoice.sunatopecode, invoiceDate, invoice.purchaseorder, invoice.comments, invoice.credittype, null, null, null, invoicedata?.FechaEmision, responsedata.id);
 
-                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'createdbutnotinvoiced', responsedata.status, responsedata.success);
-                                    return response.status(responsedata.status).json(responsedata);
+                                        if (invoice.invoicetype == '01') {
+                                            invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'CREDITINVOICEERROR', responsedata.id);
+                                        }
+                                        else {
+                                            invoicecorrelative = await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'CREDITTICKETERROR', responsedata.id);
+                                        }
+
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'createdbutnotinvoiced', responsedata.status, responsedata.success);
+                                        return response.status(responsedata.status).json(responsedata);
+                                    }
                                 }
                             }
                             catch (exception) {
@@ -2890,7 +2910,7 @@ exports.createCreditNote = async (request, response) => {
 };
 
 exports.createInvoice = async (request, response) => {
-    const { userid, usr } = request.user;
+    const { usr } = request.user;
     const { corpid, orgid, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, clientcredittype, invoicecreatedate, invoiceduedate, invoicecurrency, invoicepurchaseorder, invoicecomments, autosendinvoice, productdetail, onlyinsert, invoiceid, year, month } = request.body;
     var { invoicetotalamount } = request.body;
 
@@ -2903,7 +2923,7 @@ exports.createInvoice = async (request, response) => {
 
         if ((corpid || orgid) && clientcountry) {
             if (productdetail) {
-                const appsetting = await getAppSetting(responsedata.id);
+                const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
 
                 if (appsetting) {
                     var productinfo = [];
@@ -2912,7 +2932,7 @@ exports.createInvoice = async (request, response) => {
                     var invoicetaxes = 0;
                     var invoicetotalcharge = 0;
 
-                    var lastExchange = await getExchange(request.originalUrl, responsedata.id);
+                    var lastExchangeData = await getExchangeRate(invoicecurrency, responsedata.id);
 
                     if (clientdoctype !== '0') {
                         invoicesubtotal = invoicetotalamount;
@@ -2925,7 +2945,7 @@ exports.createInvoice = async (request, response) => {
                         invoicetotalcharge = invoicetotalamount;
                     }
 
-                    var invoiceResponse = await createInvoice(corpid, orgid, (invoiceid || 0), `GENERATED FOR ${clientdocnumber}`, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchange, (onlyinsert ? 'PENDING' : 'DRAFT'), null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, null, null, null, null, null, usr, null, invoicetotalamount, 'PENDING', false, year, month, responsedata.id);
+                    var invoiceResponse = await createInvoice(corpid, orgid, (invoiceid || 0), `GENERATED FOR ${clientdocnumber}`, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchangeData?.exchangerate || 1, (onlyinsert ? 'PENDING' : 'DRAFT'), null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, null, null, null, null, null, usr, null, invoicetotalamount, 'PENDING', false, year, month, responsedata.id);
 
                     if (invoiceResponse) {
                         if (invoiceid) {
@@ -3005,192 +3025,194 @@ exports.createInvoice = async (request, response) => {
 
                         if (invoicecorrelative) {
                             try {
-                                var invoicedata = {
-                                    CodigoAnexoEmisor: appsetting.annexcode,
-                                    CodigoFormatoImpresion: appsetting.printingformat,
-                                    CodigoMoneda: invoicecurrency,
-                                    Username: appsetting.sunatusername,
-                                    TipoDocumento: documenttype,
-                                    TipoRucEmisor: appsetting.emittertype,
-                                    CodigoRucReceptor: clientdoctype,
-                                    CodigoUbigeoEmisor: appsetting.ubigeo,
-                                    EnviarSunat: autosendinvoice ? true : false,
-                                    FechaEmision: invoicecreatedate,
-                                    MailEnvio: clientmail,
-                                    MontoTotal: Math.round((invoicetotalcharge + Number.EPSILON) * 100) / 100,
-                                    NombreComercialEmisor: appsetting.tradename,
-                                    RazonSocialEmisor: appsetting.businessname,
-                                    RazonSocialReceptor: clientbusinessname,
-                                    CorrelativoDocumento: padNumber(invoicecorrelative.p_correlative, 8),
-                                    RucEmisor: appsetting.ruc,
-                                    NumeroDocumentoReceptor: clientdocnumber,
-                                    NumeroSerieDocumento: documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie,
-                                    RetornaPdf: appsetting.returnpdf,
-                                    RetornaXmlSunat: appsetting.returnxmlsunat,
-                                    RetornaXml: appsetting.returnxml,
-                                    TipoCambio: invoicecurrency === 'USD' ? lastExchange : '1.000',
-                                    Token: appsetting.token,
-                                    DireccionFiscalEmisor: appsetting.fiscaladdress,
-                                    DireccionFiscalReceptor: clientfiscaladdress,
-                                    VersionXml: appsetting.xmlversion,
-                                    VersionUbl: appsetting.ublversion,
-                                    Endpoint: appsetting.sunaturl,
-                                    PaisRecepcion: clientcountry,
-                                    CodigoOperacionSunat: clientcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother,
-                                    MontoTotalGravado: clientcountry === 'PE' ? Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100 : null,
-                                    MontoTotalInafecto: clientcountry === 'PE' ? '0' : Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100,
-                                    MontoTotalIgv: clientcountry === 'PE' ? Math.round((invoicetaxes + Number.EPSILON) * 100) / 100 : null,
-                                    ProductList: [],
-                                    DataList: []
-                                }
+                                if (appsetting?.invoiceprovider === "MIFACT") {
+                                    var invoicedata = {
+                                        CodigoAnexoEmisor: appsetting.annexcode,
+                                        CodigoFormatoImpresion: appsetting.printingformat,
+                                        CodigoMoneda: invoicecurrency,
+                                        Username: appsetting.sunatusername,
+                                        TipoDocumento: documenttype,
+                                        TipoRucEmisor: appsetting.emittertype,
+                                        CodigoRucReceptor: clientdoctype,
+                                        CodigoUbigeoEmisor: appsetting.ubigeo,
+                                        EnviarSunat: autosendinvoice ? true : false,
+                                        FechaEmision: invoicecreatedate,
+                                        MailEnvio: clientmail,
+                                        MontoTotal: Math.round((invoicetotalcharge + Number.EPSILON) * 100) / 100,
+                                        NombreComercialEmisor: appsetting.tradename,
+                                        RazonSocialEmisor: appsetting.businessname,
+                                        RazonSocialReceptor: clientbusinessname,
+                                        CorrelativoDocumento: padNumber(invoicecorrelative.p_correlative, 8),
+                                        RucEmisor: appsetting.ruc,
+                                        NumeroDocumentoReceptor: clientdocnumber,
+                                        NumeroSerieDocumento: documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie,
+                                        RetornaPdf: appsetting.returnpdf,
+                                        RetornaXmlSunat: appsetting.returnxmlsunat,
+                                        RetornaXml: appsetting.returnxml,
+                                        TipoCambio: invoicecurrency === 'PEN' ? '1.000' : ((lastExchangeData?.exchangeratesol / lastExchangeData?.exchangerate) || 1),
+                                        Token: appsetting.token,
+                                        DireccionFiscalEmisor: appsetting.fiscaladdress,
+                                        DireccionFiscalReceptor: clientfiscaladdress,
+                                        VersionXml: appsetting.xmlversion,
+                                        VersionUbl: appsetting.ublversion,
+                                        Endpoint: appsetting.sunaturl,
+                                        PaisRecepcion: clientcountry,
+                                        CodigoOperacionSunat: clientcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother,
+                                        MontoTotalGravado: clientcountry === 'PE' ? Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100 : null,
+                                        MontoTotalInafecto: clientcountry === 'PE' ? '0' : Math.round((invoicesubtotal + Number.EPSILON) * 100) / 100,
+                                        MontoTotalIgv: clientcountry === 'PE' ? Math.round((invoicetaxes + Number.EPSILON) * 100) / 100 : null,
+                                        ProductList: [],
+                                        DataList: []
+                                    }
 
-                                if (invoiceduedate) {
-                                    invoicedata.FechaVencimiento = invoiceduedate;
-                                }
+                                    if (invoiceduedate) {
+                                        invoicedata.FechaVencimiento = invoiceduedate;
+                                    }
 
-                                if (clientcountry === 'PE') {
-                                    if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
-                                        var compareamount = 0;
+                                    if (clientcountry === 'PE') {
+                                        if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
+                                            var compareamount = 0;
 
-                                        if (appsetting.detractionminimum) {
-                                            if (invoicecurrency === 'USD') {
-                                                compareamount = invoicetotalcharge * lastExchange;
-                                            }
-                                            else {
-                                                compareamount = invoicetotalcharge;
-                                            }
-                                        }
-
-                                        if (compareamount > appsetting.detractionminimum) {
-                                            invoicedata.CodigoDetraccion = appsetting.detractioncode;
-                                            invoicedata.CodigoOperacionSunat = '1001';
-                                            invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoicetotalcharge * appsetting.detraction) + Number.EPSILON) * 100) / 100);
-                                            invoicedata.MontoPendienteDetraccion = Math.round(((invoicedata.MontoTotal - (invoicedata.MontoTotalDetraccion || 0)) + Number.EPSILON) * 100) / 100;
-                                            invoicedata.MontoTotalInafecto = null;
-                                            invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
-                                            invoicedata.PaisRecepcion = null;
-                                            invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
-
-                                            var adicional02 = {
-                                                CodigoDatoAdicional: '06',
-                                                DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
+                                            if (appsetting.detractionminimum) {
+                                                if (invoicecurrency !== 'PEN') {
+                                                    compareamount = (invoicetotalcharge / (lastExchangeData?.exchangerate || 0) * (lastExchangeData?.exchangeratesol || 0));
+                                                }
+                                                else {
+                                                    compareamount = invoicetotalcharge;
+                                                }
                                             }
 
-                                            invoicedata.DataList.push(adicional02);
+                                            if (compareamount > appsetting.detractionminimum) {
+                                                invoicedata.CodigoDetraccion = appsetting.detractioncode;
+                                                invoicedata.CodigoOperacionSunat = '1001';
+                                                invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoicetotalcharge * appsetting.detraction) + Number.EPSILON) * 100) / 100);
+                                                invoicedata.MontoPendienteDetraccion = Math.round(((invoicedata.MontoTotal - (invoicedata.MontoTotalDetraccion || 0)) + Number.EPSILON) * 100) / 100;
+                                                invoicedata.MontoTotalInafecto = null;
+                                                invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
+                                                invoicedata.PaisRecepcion = null;
+                                                invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
+
+                                                var adicional02 = {
+                                                    CodigoDatoAdicional: '06',
+                                                    DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
+                                                }
+
+                                                invoicedata.DataList.push(adicional02);
+                                            }
                                         }
                                     }
-                                }
 
-                                productinfo.forEach(async element => {
-                                    var invoicedetaildata = {
-                                        CantidadProducto: element.productquantity,
-                                        CodigoProducto: element.productcode,
-                                        TipoVenta: '10',
-                                        UnidadMedida: element.productmeasure,
-                                        IgvTotal: Math.round((element.producttotaligv + Number.EPSILON) * 100) / 100,
-                                        MontoTotal: Math.round((element.producttotalamount + Number.EPSILON) * 100) / 100,
-                                        TasaIgv: Math.round((element.productigvrate * 100) || 0),
-                                        PrecioProducto: Math.round((element.productprice + Number.EPSILON) * 100) / 100,
-                                        DescripcionProducto: element.productdescription,
-                                        PrecioNetoProducto: Math.round((element.productnetprice + Number.EPSILON) * 100) / 100,
-                                        ValorNetoProducto: Math.round((element.productnetworth + Number.EPSILON) * 100) / 100,
-                                        AfectadoIgv: element.producthasigv,
-                                        TributoIgv: element.productigvtribute,
-                                    };
+                                    productinfo.forEach(async element => {
+                                        var invoicedetaildata = {
+                                            CantidadProducto: element.productquantity,
+                                            CodigoProducto: element.productcode,
+                                            TipoVenta: '10',
+                                            UnidadMedida: element.productmeasure,
+                                            IgvTotal: Math.round((element.producttotaligv + Number.EPSILON) * 100) / 100,
+                                            MontoTotal: Math.round((element.producttotalamount + Number.EPSILON) * 100) / 100,
+                                            TasaIgv: Math.round((element.productigvrate * 100) || 0),
+                                            PrecioProducto: Math.round((element.productprice + Number.EPSILON) * 100) / 100,
+                                            DescripcionProducto: element.productdescription,
+                                            PrecioNetoProducto: Math.round((element.productnetprice + Number.EPSILON) * 100) / 100,
+                                            ValorNetoProducto: Math.round((element.productnetworth + Number.EPSILON) * 100) / 100,
+                                            AfectadoIgv: element.producthasigv,
+                                            TributoIgv: element.productigvtribute,
+                                        };
 
-                                    invoicedata.ProductList.push(invoicedetaildata);
-                                });
+                                        invoicedata.ProductList.push(invoicedetaildata);
+                                    });
 
-                                var adicional01 = {
-                                    CodigoDatoAdicional: '05',
-                                    DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
-                                }
-
-                                invoicedata.DataList.push(adicional01);
-
-                                if (invoicepurchaseorder) {
-                                    var adicional03 = {
-                                        CodigoDatoAdicional: '15',
-                                        DescripcionDatoAdicional: invoicepurchaseorder
+                                    var adicional01 = {
+                                        CodigoDatoAdicional: '05',
+                                        DescripcionDatoAdicional: 'FORMA DE PAGO: TRANSFERENCIA'
                                     }
 
-                                    invoicedata.DataList.push(adicional03);
-                                }
+                                    invoicedata.DataList.push(adicional01);
 
-                                if (invoicecomments) {
-                                    var adicional04 = {
-                                        CodigoDatoAdicional: '07',
-                                        DescripcionDatoAdicional: invoicecomments
+                                    if (invoicepurchaseorder) {
+                                        var adicional03 = {
+                                            CodigoDatoAdicional: '15',
+                                            DescripcionDatoAdicional: invoicepurchaseorder
+                                        }
+
+                                        invoicedata.DataList.push(adicional03);
                                     }
 
-                                    invoicedata.DataList.push(adicional04);
-                                }
+                                    if (invoicecomments) {
+                                        var adicional04 = {
+                                            CodigoDatoAdicional: '07',
+                                            DescripcionDatoAdicional: invoicecomments
+                                        }
 
-                                if (clientcredittype) {
-                                    var adicional05 = {
-                                        CodigoDatoAdicional: '01',
-                                        DescripcionDatoAdicional: 'AL CONTADO'
+                                        invoicedata.DataList.push(adicional04);
                                     }
 
-                                    switch (clientcredittype) {
-                                        case 'typecredit_15':
-                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 15 DIAS';
-                                            break;
-                                        case 'typecredit_30':
-                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 30 DIAS';
-                                            break;
-                                        case 'typecredit_45':
-                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 45 DIAS';
-                                            break;
-                                        case 'typecredit_60':
-                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 60 DIAS';
-                                            break;
-                                        case 'typecredit_90':
-                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 90 DIAS';
-                                            break;
-                                        case 'typecredit_7':
-                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 7 DIAS';
-                                            break;
-                                        case 'typecredit_180':
-                                            adicional05.DescripcionDatoAdicional = 'CREDITO A 180 DIAS';
-                                            break;
-                                    }
+                                    if (clientcredittype) {
+                                        var adicional05 = {
+                                            CodigoDatoAdicional: '01',
+                                            DescripcionDatoAdicional: 'AL CONTADO'
+                                        }
 
-                                    invoicedata.DataList.push(adicional05);
+                                        switch (clientcredittype) {
+                                            case 'typecredit_15':
+                                                adicional05.DescripcionDatoAdicional = 'CREDITO A 15 DIAS';
+                                                break;
+                                            case 'typecredit_30':
+                                                adicional05.DescripcionDatoAdicional = 'CREDITO A 30 DIAS';
+                                                break;
+                                            case 'typecredit_45':
+                                                adicional05.DescripcionDatoAdicional = 'CREDITO A 45 DIAS';
+                                                break;
+                                            case 'typecredit_60':
+                                                adicional05.DescripcionDatoAdicional = 'CREDITO A 60 DIAS';
+                                                break;
+                                            case 'typecredit_90':
+                                                adicional05.DescripcionDatoAdicional = 'CREDITO A 90 DIAS';
+                                                break;
+                                            case 'typecredit_7':
+                                                adicional05.DescripcionDatoAdicional = 'CREDITO A 7 DIAS';
+                                                break;
+                                            case 'typecredit_180':
+                                                adicional05.DescripcionDatoAdicional = 'CREDITO A 180 DIAS';
+                                                break;
+                                        }
 
-                                    if (adicional05) {
-                                        if (adicional05.DescripcionDatoAdicional === 'AL CONTADO') {
-                                            invoicedata.FechaVencimiento = null;
+                                        invoicedata.DataList.push(adicional05);
+
+                                        if (adicional05) {
+                                            if (adicional05.DescripcionDatoAdicional === 'AL CONTADO') {
+                                                invoicedata.FechaVencimiento = null;
+                                            }
                                         }
                                     }
-                                }
 
-                                const requestSendToSunat = await axiosObservable({
-                                    data: invoicedata,
-                                    method: 'post',
-                                    url: `${bridgeEndpoint}processmifact/sendinvoice`,
-                                    _requestid: responsedata.id,
-                                });
+                                    const requestSendToSunat = await axiosObservable({
+                                        data: invoicedata,
+                                        method: 'post',
+                                        url: `${bridgeEndpoint}processmifact/sendinvoice`,
+                                        _requestid: responsedata.id,
+                                    });
 
-                                if (requestSendToSunat.data.result) {
-                                    await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat || null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+                                    if (requestSendToSunat.data.result) {
+                                        await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat || null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
 
-                                    responsedata = genericfunctions.changeResponseData(responsedata, null, null, 'successinvoiced', 200, true);
-                                    return response.status(responsedata.status).json(responsedata);
-                                }
-                                else {
-                                    await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat || null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
-
-                                    if ((clientcountry === 'PE' && clientdoctype === '6') || (clientcountry !== 'PE' && clientdoctype === '0')) {
-                                        await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR', responsedata.id);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, null, null, 'successinvoiced', 200, true);
+                                        return response.status(responsedata.status).json(responsedata);
                                     }
+                                    else {
+                                        await invoiceSunat(corpid, orgid, invoiceResponse.invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, autosendinvoice, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, documenttype, invoicedata?.CodigoOperacionSunat || null, invoiceduedate, invoicepurchaseorder, invoicecomments, clientcredittype, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
 
-                                    if ((clientcountry === 'PE') && (clientdoctype === '1' || clientdoctype === '4' || clientdoctype === '7')) {
-                                        await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR', responsedata.id);
+                                        if ((clientcountry === 'PE' && clientdoctype === '6') || (clientcountry !== 'PE' && clientdoctype === '0')) {
+                                            await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'INVOICEERROR', responsedata.id);
+                                        }
+
+                                        if ((clientcountry === 'PE') && (clientdoctype === '1' || clientdoctype === '4' || clientdoctype === '7')) {
+                                            await getCorrelative(corpid, orgid, invoiceResponse.invoiceid, 'TICKETERROR', responsedata.id);
+                                        }
+
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'createdbutnotinvoiced', responsedata.status, responsedata.success);
+                                        return response.status(responsedata.status).json(responsedata);
                                     }
-
-                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'createdbutnotinvoiced', responsedata.status, responsedata.success);
-                                    return response.status(responsedata.status).json(responsedata);
                                 }
                             }
                             catch (exception) {
@@ -3314,7 +3336,7 @@ exports.emitInvoice = async (request, response) => {
 
                     if (proceedpayment) {
                         const invoicedetail = await getInvoiceDetail(corpid, orgid, userid, invoiceid, responsedata.id);
-                        const appsetting = await getAppSetting(responsedata.id);
+                        const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
 
                         if (invoicedetail && appsetting) {
                             var invoicecorrelative = null;
@@ -3345,216 +3367,220 @@ exports.emitInvoice = async (request, response) => {
 
                             if (invoicecorrelative) {
                                 try {
-                                    var expirationDate;
+                                    var exchangeratedata = await getExchangeRate(invoice.currency, responsedata.id);
 
-                                    if (invoice.credittype) {
-                                        var days = invoice.credittype.split("_")[1];
-                                        if (days === "alcontado") {
-                                            days = "0";
-                                        }
+                                    if (appsetting?.invoiceprovider === "MIFACT") {
+                                        var expirationDate;
 
-                                        expirationDate = new Date(new Date().setDate(new Date(new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0]).getDate() + (Number.parseFloat(days)))).toISOString().substring(0, 10);
-                                    }
-
-                                    var invoicedata = {
-                                        CodigoAnexoEmisor: appsetting.annexcode,
-                                        CodigoFormatoImpresion: appsetting.printingformat,
-                                        CodigoMoneda: invoice.currency,
-                                        Username: appsetting.sunatusername,
-                                        TipoDocumento: documenttype,
-                                        TipoRucEmisor: appsetting.emittertype,
-                                        CodigoRucReceptor: billbyorg ? org.doctype : corp.doctype,
-                                        CodigoUbigeoEmisor: appsetting.ubigeo,
-                                        EnviarSunat: billbyorg ? org.autosendinvoice : corp.autosendinvoice,
-                                        FechaEmision: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
-                                        FechaVencimiento: expirationDate,
-                                        MailEnvio: billbyorg ? org.contactemail : corp.contactemail,
-                                        MontoTotal: Math.round((invoice.totalamount + Number.EPSILON) * 100) / 100,
-                                        NombreComercialEmisor: appsetting.tradename,
-                                        RazonSocialEmisor: appsetting.businessname,
-                                        RazonSocialReceptor: billbyorg ? org.businessname : corp.businessname,
-                                        CorrelativoDocumento: padNumber(invoicecorrelative.p_correlative, 8),
-                                        RucEmisor: appsetting.ruc,
-                                        NumeroDocumentoReceptor: billbyorg ? org.docnum : corp.docnum,
-                                        NumeroSerieDocumento: documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie,
-                                        RetornaPdf: appsetting.returnpdf,
-                                        RetornaXmlSunat: appsetting.returnxmlsunat,
-                                        RetornaXml: appsetting.returnxml,
-                                        TipoCambio: invoice.currency === 'USD' ? invoice.exchangerate : '1.000',
-                                        Token: appsetting.token,
-                                        DireccionFiscalEmisor: appsetting.fiscaladdress,
-                                        DireccionFiscalReceptor: billbyorg ? org.fiscaladdress : corp.fiscaladdress,
-                                        VersionXml: appsetting.xmlversion,
-                                        VersionUbl: appsetting.ublversion,
-                                        Endpoint: appsetting.sunaturl,
-                                        PaisRecepcion: billbyorg ? org.sunatcountry : corp.sunatcountry,
-                                        ProductList: [],
-                                        DataList: []
-                                    }
-
-                                    if (corp.billbyorg) {
-                                        invoicedata.CodigoOperacionSunat = org.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                        invoicedata.MontoTotalGravado = org.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
-                                        invoicedata.MontoTotalInafecto = org.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
-                                        invoicedata.MontoTotalIgv = org.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
-                                    }
-                                    else {
-                                        invoicedata.CodigoOperacionSunat = corp.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
-                                        invoicedata.MontoTotalGravado = corp.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
-                                        invoicedata.MontoTotalInafecto = corp.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
-                                        invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
-                                    }
-
-                                    var calcdetraction = false;
-
-                                    if (corp.billbyorg) {
-                                        if (org.sunatcountry === 'PE') {
-                                            calcdetraction = true;
-                                        }
-                                    }
-                                    else {
-                                        if (corp.sunatcountry === 'PE') {
-                                            calcdetraction = true;
-                                        }
-                                    }
-
-                                    if (calcdetraction) {
-                                        if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
-                                            var compareamount = 0;
-
-                                            if (appsetting.detractionminimum) {
-                                                if (invoice.currency === 'USD') {
-                                                    var exchangerate = await getExchange(request.originalUrl, responsedata.id);
-
-                                                    compareamount = invoice.totalamount * exchangerate;
-                                                }
-                                                else {
-                                                    compareamount = invoice.totalamount;
-                                                }
+                                        if (invoice.credittype) {
+                                            var days = invoice.credittype.split("_")[1];
+                                            if (days === "alcontado") {
+                                                days = "0";
                                             }
 
-                                            if (compareamount > appsetting.detractionminimum) {
-                                                invoicedata.CodigoDetraccion = appsetting.detractioncode;
-                                                invoicedata.CodigoOperacionSunat = '1001';
-                                                invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100);
-                                                invoicedata.MontoPendienteDetraccion = Math.round(((invoicedata.MontoTotal - (invoicedata.MontoTotalDetraccion || 0)) + Number.EPSILON) * 100) / 100;
-                                                invoicedata.MontoTotalInafecto = null;
-                                                invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
-                                                invoicedata.PaisRecepcion = null;
-                                                invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
-
-                                                var adicional02 = {
-                                                    CodigoDatoAdicional: '06',
-                                                    DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
-                                                }
-
-                                                invoicedata.DataList.push(adicional02);
-                                            }
+                                            expirationDate = new Date(new Date().setDate(new Date(new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0]).getDate() + (Number.parseFloat(days)))).toISOString().substring(0, 10);
                                         }
-                                    }
 
-                                    invoicedetail.forEach(async data => {
-                                        var invoicedetaildata = {
-                                            CantidadProducto: data.quantity,
-                                            CodigoProducto: data.productcode,
-                                            TipoVenta: data.saletype,
-                                            UnidadMedida: data.measureunit,
-                                            IgvTotal: Math.round((data.totaligv + Number.EPSILON) * 100) / 100,
-                                            MontoTotal: Math.round((data.totalamount + Number.EPSILON) * 100) / 100,
-                                            TasaIgv: Math.round((data.igvrate * 100) || 0),
-                                            PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
-                                            DescripcionProducto: data.productdescription,
-                                            PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
-                                            ValorNetoProducto: Math.round(((data.quantity * data.productnetprice) + Number.EPSILON) * 100) / 100,
-                                        };
+                                        var invoicedata = {
+                                            CodigoAnexoEmisor: appsetting.annexcode,
+                                            CodigoFormatoImpresion: appsetting.printingformat,
+                                            CodigoMoneda: invoice.currency,
+                                            Username: appsetting.sunatusername,
+                                            TipoDocumento: documenttype,
+                                            TipoRucEmisor: appsetting.emittertype,
+                                            CodigoRucReceptor: billbyorg ? org.doctype : corp.doctype,
+                                            CodigoUbigeoEmisor: appsetting.ubigeo,
+                                            EnviarSunat: billbyorg ? org.autosendinvoice : corp.autosendinvoice,
+                                            FechaEmision: new Date(new Date().setHours(new Date().getHours() - 5)).toISOString().split('T')[0],
+                                            FechaVencimiento: expirationDate,
+                                            MailEnvio: billbyorg ? org.contactemail : corp.contactemail,
+                                            MontoTotal: Math.round((invoice.totalamount + Number.EPSILON) * 100) / 100,
+                                            NombreComercialEmisor: appsetting.tradename,
+                                            RazonSocialEmisor: appsetting.businessname,
+                                            RazonSocialReceptor: billbyorg ? org.businessname : corp.businessname,
+                                            CorrelativoDocumento: padNumber(invoicecorrelative.p_correlative, 8),
+                                            RucEmisor: appsetting.ruc,
+                                            NumeroDocumentoReceptor: billbyorg ? org.docnum : corp.docnum,
+                                            NumeroSerieDocumento: documenttype === '01' ? appsetting.invoiceserie : appsetting.ticketserie,
+                                            RetornaPdf: appsetting.returnpdf,
+                                            RetornaXmlSunat: appsetting.returnxmlsunat,
+                                            RetornaXml: appsetting.returnxml,
+                                            TipoCambio: invoice.currency === 'PEN' ? '1.000' : ((exchangeratedata?.exchangeratesol / exchangeratedata?.exchangerate) || invoice.exchangerate),
+                                            Token: appsetting.token,
+                                            DireccionFiscalEmisor: appsetting.fiscaladdress,
+                                            DireccionFiscalReceptor: billbyorg ? org.fiscaladdress : corp.fiscaladdress,
+                                            VersionXml: appsetting.xmlversion,
+                                            VersionUbl: appsetting.ublversion,
+                                            Endpoint: appsetting.sunaturl,
+                                            PaisRecepcion: billbyorg ? org.sunatcountry : corp.sunatcountry,
+                                            ProductList: [],
+                                            DataList: []
+                                        }
 
                                         if (corp.billbyorg) {
-                                            invoicedetaildata.AfectadoIgv = org.sunatcountry === 'PE' ? '10' : '40';
-                                            invoicedetaildata.TributoIgv = org.sunatcountry === 'PE' ? '1000' : '9998';
+                                            invoicedata.CodigoOperacionSunat = org.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                            invoicedata.MontoTotalGravado = org.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
+                                            invoicedata.MontoTotalInafecto = org.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
+                                            invoicedata.MontoTotalIgv = org.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
                                         }
                                         else {
-                                            invoicedetaildata.AfectadoIgv = corp.sunatcountry === 'PE' ? '10' : '40';
-                                            invoicedetaildata.TributoIgv = corp.sunatcountry === 'PE' ? '1000' : '9998';
+                                            invoicedata.CodigoOperacionSunat = corp.sunatcountry === 'PE' ? appsetting.operationcodeperu : appsetting.operationcodeother;
+                                            invoicedata.MontoTotalGravado = corp.sunatcountry === 'PE' ? Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100 : null;
+                                            invoicedata.MontoTotalInafecto = corp.sunatcountry === 'PE' ? '0' : Math.round((invoice.subtotal + Number.EPSILON) * 100) / 100;
+                                            invoicedata.MontoTotalIgv = corp.sunatcountry === 'PE' ? Math.round((invoice.taxes + Number.EPSILON) * 100) / 100 : null;
                                         }
 
-                                        invoicedata.ProductList.push(invoicedetaildata);
-                                    });
-
-                                    if (invoice.purchaseorder) {
-                                        var adicional03 = {
-                                            CodigoDatoAdicional: '15',
-                                            DescripcionDatoAdicional: invoice.purchaseorder
-                                        }
-
-                                        invoicedata.DataList.push(adicional03);
-                                    }
-
-                                    if (invoice.comments) {
-                                        var adicional04 = {
-                                            CodigoDatoAdicional: '07',
-                                            DescripcionDatoAdicional: invoice.comments
-                                        }
-
-                                        invoicedata.DataList.push(adicional04);
-                                    }
-
-                                    if (invoice.credittype) {
-                                        var days = invoice.credittype.split("_")[1];
-                                        if (days === "alcontado") {
-                                            days = "0";
-                                        }
-
-                                        var adicional05 = {
-                                            CodigoDatoAdicional: '01',
-                                            DescripcionDatoAdicional: days === '0' ? 'AL CONTADO' : `CREDITO A ${days} DIAS`
-                                        }
-
-                                        invoicedata.DataList.push(adicional05);
-
-                                        if (adicional05) {
-                                            if (adicional05.DescripcionDatoAdicional === 'AL CONTADO') {
-                                                invoicedata.FechaVencimiento = null;
-                                            }
-                                        }
-                                    }
-
-                                    const requestSendToSunat = await axiosObservable({
-                                        data: invoicedata,
-                                        method: 'post',
-                                        url: `${bridgeEndpoint}processmifact/sendinvoice`,
-                                        _requestid: responsedata.id,
-                                    });
-
-                                    if (requestSendToSunat.data.result) {
-                                        await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
-
-                                        responsedata = genericfunctions.changeResponseData(responsedata, null, requestSendToSunat.data.result, 'successinvoiced', 200, true);
-                                        return response.status(responsedata.status).json(responsedata);
-                                    }
-                                    else {
-                                        await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+                                        var calcdetraction = false;
 
                                         if (corp.billbyorg) {
-                                            if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
-                                                await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
-                                            }
-
-                                            if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
-                                                await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                            if (org.sunatcountry === 'PE') {
+                                                calcdetraction = true;
                                             }
                                         }
                                         else {
-                                            if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
-                                                await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
-                                            }
-
-                                            if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
-                                                await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                            if (corp.sunatcountry === 'PE') {
+                                                calcdetraction = true;
                                             }
                                         }
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invoicing error', responsedata.status, responsedata.success);
-                                        return response.status(responsedata.status).json(responsedata);
+                                        if (calcdetraction) {
+                                            if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
+                                                var compareamount = 0;
+
+                                                if (appsetting.detractionminimum) {
+                                                    if (invoice.currency !== 'PEN') {
+                                                        if (exchangeratedata) {
+                                                            compareamount = (invoice.totalamount / (exchangeratedata?.exchangerate || 0) * (exchangeratedata?.exchangeratesol || 0));
+                                                        }
+                                                    }
+                                                    else {
+                                                        compareamount = invoice.totalamount;
+                                                    }
+                                                }
+
+                                                if (compareamount > appsetting.detractionminimum) {
+                                                    invoicedata.CodigoDetraccion = appsetting.detractioncode;
+                                                    invoicedata.CodigoOperacionSunat = '1001';
+                                                    invoicedata.MontoTotalDetraccion = Math.round(Math.round(((invoice.totalamount * appsetting.detraction) + Number.EPSILON) * 100) / 100);
+                                                    invoicedata.MontoPendienteDetraccion = Math.round(((invoicedata.MontoTotal - (invoicedata.MontoTotalDetraccion || 0)) + Number.EPSILON) * 100) / 100;
+                                                    invoicedata.MontoTotalInafecto = null;
+                                                    invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
+                                                    invoicedata.PaisRecepcion = null;
+                                                    invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
+
+                                                    var adicional02 = {
+                                                        CodigoDatoAdicional: '06',
+                                                        DescripcionDatoAdicional: 'CUENTA DE DETRACCION: ' + appsetting.detractionaccount
+                                                    }
+
+                                                    invoicedata.DataList.push(adicional02);
+                                                }
+                                            }
+                                        }
+
+                                        invoicedetail.forEach(async data => {
+                                            var invoicedetaildata = {
+                                                CantidadProducto: data.quantity,
+                                                CodigoProducto: data.productcode,
+                                                TipoVenta: data.saletype,
+                                                UnidadMedida: data.measureunit,
+                                                IgvTotal: Math.round((data.totaligv + Number.EPSILON) * 100) / 100,
+                                                MontoTotal: Math.round((data.totalamount + Number.EPSILON) * 100) / 100,
+                                                TasaIgv: Math.round((data.igvrate * 100) || 0),
+                                                PrecioProducto: Math.round((data.productprice + Number.EPSILON) * 100) / 100,
+                                                DescripcionProducto: data.productdescription,
+                                                PrecioNetoProducto: Math.round((data.productnetprice + Number.EPSILON) * 100) / 100,
+                                                ValorNetoProducto: Math.round(((data.quantity * data.productnetprice) + Number.EPSILON) * 100) / 100,
+                                            };
+
+                                            if (corp.billbyorg) {
+                                                invoicedetaildata.AfectadoIgv = org.sunatcountry === 'PE' ? '10' : '40';
+                                                invoicedetaildata.TributoIgv = org.sunatcountry === 'PE' ? '1000' : '9998';
+                                            }
+                                            else {
+                                                invoicedetaildata.AfectadoIgv = corp.sunatcountry === 'PE' ? '10' : '40';
+                                                invoicedetaildata.TributoIgv = corp.sunatcountry === 'PE' ? '1000' : '9998';
+                                            }
+
+                                            invoicedata.ProductList.push(invoicedetaildata);
+                                        });
+
+                                        if (invoice.purchaseorder) {
+                                            var adicional03 = {
+                                                CodigoDatoAdicional: '15',
+                                                DescripcionDatoAdicional: invoice.purchaseorder
+                                            }
+
+                                            invoicedata.DataList.push(adicional03);
+                                        }
+
+                                        if (invoice.comments) {
+                                            var adicional04 = {
+                                                CodigoDatoAdicional: '07',
+                                                DescripcionDatoAdicional: invoice.comments
+                                            }
+
+                                            invoicedata.DataList.push(adicional04);
+                                        }
+
+                                        if (invoice.credittype) {
+                                            var days = invoice.credittype.split("_")[1];
+                                            if (days === "alcontado") {
+                                                days = "0";
+                                            }
+
+                                            var adicional05 = {
+                                                CodigoDatoAdicional: '01',
+                                                DescripcionDatoAdicional: days === '0' ? 'AL CONTADO' : `CREDITO A ${days} DIAS`
+                                            }
+
+                                            invoicedata.DataList.push(adicional05);
+
+                                            if (adicional05) {
+                                                if (adicional05.DescripcionDatoAdicional === 'AL CONTADO') {
+                                                    invoicedata.FechaVencimiento = null;
+                                                }
+                                            }
+                                        }
+
+                                        const requestSendToSunat = await axiosObservable({
+                                            data: invoicedata,
+                                            method: 'post',
+                                            url: `${bridgeEndpoint}processmifact/sendinvoice`,
+                                            _requestid: responsedata.id,
+                                        });
+
+                                        if (requestSendToSunat.data.result) {
+                                            await invoiceSunat(corpid, orgid, invoiceid, 'INVOICED', null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+
+                                            responsedata = genericfunctions.changeResponseData(responsedata, null, requestSendToSunat.data.result, 'successinvoiced', 200, true);
+                                            return response.status(responsedata.status).json(responsedata);
+                                        }
+                                        else {
+                                            await invoiceSunat(corpid, orgid, invoiceid, 'ERROR', requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting?.ruc || null, appsetting?.businessname || null, appsetting?.tradename || null, appsetting?.fiscaladdress || null, appsetting?.ubigeo || null, appsetting?.emittertype || null, appsetting?.annexcode || null, appsetting?.printingformat || null, invoicedata?.EnviarSunat || null, appsetting?.returnpdf || null, appsetting?.returnxmlsunat || null, appsetting?.returnxml || null, appsetting?.token || null, appsetting?.sunaturl || null, appsetting?.sunatusername || null, appsetting?.xmlversion || null, appsetting?.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, invoice.purchaseorder || null, invoice.comments || null, invoice.credittype || null, appsetting?.detractioncode || null, appsetting?.detraction || null, appsetting?.detractionaccount, invoicedata?.FechaEmision, responsedata.id);
+
+                                            if (corp.billbyorg) {
+                                                if ((org.sunatcountry === 'PE' && org.doctype === '6') || (org.sunatcountry !== 'PE' && org.doctype === '0')) {
+                                                    await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                }
+
+                                                if ((org.sunatcountry === 'PE') && (org.doctype === '1' || org.doctype === '4' || org.doctype === '7')) {
+                                                    await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                }
+                                            }
+                                            else {
+                                                if ((corp.sunatcountry === 'PE' && corp.doctype === '6') || (corp.sunatcountry !== 'PE' && corp.doctype === '0')) {
+                                                    await getCorrelative(corpid, orgid, invoiceid, 'INVOICEERROR', responsedata.id);
+                                                }
+
+                                                if ((corp.sunatcountry === 'PE') && (corp.doctype === '1' || corp.doctype === '4' || corp.doctype === '7')) {
+                                                    await getCorrelative(corpid, orgid, invoiceid, 'TICKETERROR', responsedata.id);
+                                                }
+                                            }
+
+                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invoicing error', responsedata.status, responsedata.success);
+                                            return response.status(responsedata.status).json(responsedata);
+                                        }
                                     }
                                 }
                                 catch (exception) {
@@ -3630,15 +3656,19 @@ exports.getExchangeRate = async (request, response) => {
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
-        var lastExchange = await getExchange(request.originalUrl, responsedata.id);
+        var lastExchangeData = await getExchangeRate(request?.body?.code || 'USD', responsedata.id);
+        var lastExchange = lastExchangeData?.exchangerate || 0;
+        var lastExchangeSol = lastExchangeData?.exchangeratesol || 0;
 
         if (lastExchange) {
             responsedata = genericfunctions.changeResponseData(responsedata, null, {}, 'success', 200, true);
             responsedata.exchangerate = lastExchange;
+            responsedata.exchangeratesol = lastExchangeSol;
         }
         else {
             responsedata = genericfunctions.changeResponseData(responsedata, null, {}, 'error', 400, false);
             responsedata.exchangerate = lastExchange;
+            responsedata.exchangeratesol = lastExchangeSol;
         }
 
         return response.status(responsedata.status).json(responsedata);
