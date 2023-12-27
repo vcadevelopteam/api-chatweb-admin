@@ -126,6 +126,267 @@ function encontrarHorario(nombre) {
         friday: "12:00-22:30",
         saturday: "12:00-22:30",
         sunday: "12:00-22:30"
+      },
+      "AVIACIÓN 24": {
+        monday: "12:00-22:00",
+        tuesday: "12:00-22:00",
+        wednesday: "12:00-22:00",
+        thursday: "12:00-22:00",
+        friday: "12:00-22:00",
+        saturday: "12:00-22:00",
+        sunday: "12:00-22:00"
+      },
+      "AVIACIÓN 29": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:00"
+      },
+      "SALAVERRY": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:30"
+      },
+      "BELLAVISTA REST": {
+        monday: "12:00-22:00",
+        tuesday: "12:00-22:00",
+        wednesday: "12:00-22:00",
+        thursday: "12:00-22:00",
+        friday: "12:00-22:00",
+        saturday: "12:00-22:00",
+        sunday: "12:00-22:00"
+      },
+      "FAUCETT": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:30"
+      },
+      "GARZON": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:30"
+      },
+      "HUANDOY": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:30"
+      },
+      "COLONIAL 2": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:30"
+      },
+      "PRO": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:30"
+      },
+      "MÉXICO 1": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-21:30"
+      },
+      "LINCE": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:30"
+      },
+      "MARINA 17": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:30"
+      },
+      "MARINA 26": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:30"
+      },
+      "MEGA PLAZA 2": {
+        monday: "12:00-22:00",
+        tuesday: "12:00-22:00",
+        wednesday: "12:00-22:00",
+        thursday: "12:00-22:00",
+        friday: "12:00-22:00",
+        saturday: "12:00-22:00",
+        sunday: "12:00-22:00"
+      },
+      "MAGDALENA": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:30"
+      },
+      "MOLINA": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:00"
+      },
+      "METRO VENEZUELA": {
+        monday: "12:00-22:00",
+        tuesday: "12:00-22:00",
+        wednesday: "12:00-22:00",
+        thursday: "12:00-22:00",
+        friday: "12:00-22:00",
+        saturday: "12:00-22:00",
+        sunday: "12:00-22:00"
+      },
+      "OLIVOS": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:30"
+      },
+      "PUENTE PIEDRA 1": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:30"
+      },
+      "VILLA MARIA": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:30"
+      },
+      "SUCRE": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:30"
+      },
+      "SANTA ANITA MALL": {
+        monday: "12:00-22:00",
+        tuesday: "12:00-22:00",
+        wednesday: "12:00-22:00",
+        thursday: "12:00-22:00",
+        friday: "12:00-22:00",
+        saturday: "12:00-22:00",
+        sunday: "12:00-22:00"
+      },
+      "GAMARRA 3": {
+        monday: "12:00-20:00",
+        tuesday: "12:00-20:00",
+        wednesday: "12:00-20:00",
+        thursday: "12:00-20:00",
+        friday: "12:00-20:00",
+        saturday: "12:00-20:00",
+        sunday: "12:00-17:30"
+      },
+      "PERÚ 2": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:30"
+      },
+      "PLAZA CASTILLA": {
+        monday: "12:00-21:00",
+        tuesday: "12:00-21:00",
+        wednesday: "12:00-21:00",
+        thursday: "12:00-21:00",
+        friday: "12:00-21:00",
+        saturday: "12:00-21:00",
+        sunday: "12:00-21:00"
+      },
+      "JESÚS MARÍA": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:30"
+      },
+      "VITARTE 2": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "00:00-22:30",
+        sunday: "12:00-22:30"
+      },
+      "ABANCAY 2": {
+        monday: "12:00-21:30",
+        tuesday: "12:00-21:30",
+        wednesday: "12:00-21:30",
+        thursday: "12:00-21:30",
+        friday: "12:00-21:30",
+        saturday: "12:00-21:30",
+        sunday: "12:00-20:30"
+      },
+      "ZARATE 1": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:30"
       }
     };
   
@@ -192,7 +453,7 @@ function isInsideSchedule(polygons, currentDateTime) {
       startMoment.tz('America/Lima');
       endMoment.tz('America/Lima');
       
-      if (currentDateTime.isBetween(startMoment, endMoment)) {
+      if (currentDateTime.isBetween(startMoment, endMoment, null, '[]')) {
         return true;
       }
     }
