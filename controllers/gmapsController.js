@@ -447,6 +447,9 @@ function isInsideSchedule(polygons, currentDateTime) {
       const startMoment = currentDateTime.clone().set({ hour: startHourNum, minute: startMinute });
       const endMoment = currentDateTime.clone().set({ hour: endHourNum, minute: endMinute });
       
+      startMoment.tz('America/Lima');
+      endMoment.tz('America/Lima');
+      
       if (currentDateTime.isBetween(startMoment, endMoment)) {
         return true;
       }
@@ -455,6 +458,7 @@ function isInsideSchedule(polygons, currentDateTime) {
 
   return false;
 }
+
 exports.findcoordinateinpolygons = async (req, res) => {
   try {
     const { corpid, orgid, latitude, longitude, order_datetime } = req.body;
@@ -496,4 +500,3 @@ exports.findcoordinateinpolygons = async (req, res) => {
     return res.status(500).json({ error: 'Error en el servidor' });
   }
 };
-
