@@ -51,7 +51,7 @@ exports.processTransaction = async (request, response) => {
     try {
         const { corpid, orgid, paymentorderid, devicesessionid, transactionresponse, formdata, colombia } = request.body;
 
-        if (devicesessionid) {
+        if (devicesessionid || colombia) {
             if (transactionresponse) {
                 const paymentorder = await triggerfunctions.executesimpletransaction("UFN_PAYMENTORDER_SEL", { corpid: corpid, orgid: orgid, conversationid: 0, personid: 0, paymentorderid: paymentorderid, ordercode: '' });
 
@@ -90,7 +90,7 @@ exports.processTransaction = async (request, response) => {
                                         currency: paymentorder[0].currency,
                                         description: 'OPENPAY CHARGE',
                                         order_id: paymentorder[0].paymentorderid,
-                                        device_session_id: devicesessionid,
+                                        device_session_id: colombia ? undefined : devicesessionid,
                                         customer: {
                                             name: formdata.holder_name || '',
                                             lastname: `(${paymentorder[0].userfirstname} ${paymentorder[0].userlastname})`,

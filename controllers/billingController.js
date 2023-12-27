@@ -10,22 +10,26 @@ exports.exchangeRate = async (req, res) => {
 
     try {
         var exchangeRate = 0;
+        var exchangeRateSol = 0;
 
         const currency = await getExchangeRate(parameters?.code || 'USD', req._requestid);
 
         if (currency) {
             exchangeRate = currency.exchangerate;
+            exchangeRateSol = currency.exchangeratesol;
         }
 
         if (exchangeRate) {
             return res.json({
                 exchangeRate: exchangeRate,
+                exchangeRateSol: exchangeRateSol,
                 success: true
             });
         }
         else {
             return res.status(400).json({
                 exchangeRate: exchangeRate,
+                exchangeRateSol: exchangeRateSol,
                 success: false
             });
         }

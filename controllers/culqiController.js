@@ -741,6 +741,8 @@ exports.automaticPayment = async (request, response) => {
 
                         if (invoice) {
                             if (invoice.paymentstatus === 'PENDING') {
+                                var exchangeratedata = await getExchangeRate(invoice.currency, responsedata.id);
+
                                 var paymentsuccess = false;
 
                                 const paymentcard = await getPaymentCard(corpid, 0, responsedata.id);
@@ -767,16 +769,14 @@ exports.automaticPayment = async (request, response) => {
                                         var culqiamount = invoice.totalamount;
                                         var detractionamount = 0;
                                         var doctype = (org ? org.doctype : corp.doctype);
-                                        var exchangeratedata = await getExchangeRate(invoice.currency, responsedata.id);
-                                        var exchangerate = exchangeratedata?.exchangerate || 0;
 
-                                        if (exchangerate) {
+                                        if (exchangeratedata) {
                                             if (country && doctype) {
                                                 if (country === 'PE' && doctype === '6') {
                                                     var compareamount = (culqiamount || 0);
 
                                                     if (invoice.currency !== 'PEN') {
-                                                        compareamount = compareamount * (exchangerate || 0);
+                                                        compareamount = (compareamount / (exchangeratedata?.exchangerate || 0) * (exchangeratedata?.exchangeratesol || 0));
                                                     }
 
                                                     if (compareamount > appsetting.detractionminimum) {
@@ -1012,7 +1012,7 @@ exports.automaticPayment = async (request, response) => {
                                                         RetornaXml: appsetting.returnxml,
                                                         RetornaXmlSunat: appsetting.returnxmlsunat,
                                                         RucEmisor: appsetting.ruc,
-                                                        TipoCambio: invoice.currency === 'PEN' ? '1.000' : invoice.exchangerate,
+                                                        TipoCambio: invoice.currency === 'PEN' ? '1.000' : ((exchangeratedata?.exchangeratesol / exchangeratedata?.exchangerate) || invoice.exchangerate),
                                                         TipoDocumento: documenttype,
                                                         TipoRucEmisor: appsetting.emittertype,
                                                         Token: appsetting.token,
@@ -1061,9 +1061,10 @@ exports.automaticPayment = async (request, response) => {
                                                             if (appsetting.detractionminimum) {
                                                                 if (invoice.currency !== 'PEN') {
                                                                     var exchangeratedata = await getExchangeRate(invoice.currency, responsedata.id);
-                                                                    var exchangerate = exchangeratedata?.exchangerate || 0;
 
-                                                                    compareamount = invoice.totalamount * exchangerate;
+                                                                    if (exchangeratedata) {
+                                                                        compareamount = (invoice.totalamount / (exchangeratedata?.exchangerate || 0) * (exchangeratedata?.exchangeratesol || 0));
+                                                                    }
                                                                 }
                                                                 else {
                                                                     compareamount = invoice.totalamount;
@@ -1807,6 +1808,8 @@ exports.chargeInvoice = async (request, response) => {
 
                                             if (invoicecorrelative) {
                                                 try {
+                                                    var exchangeratedata = await getExchangeRate(invoice.currency, responsedata.id);
+
                                                     if (appsetting?.invoiceprovider === "MIFACT") {
                                                         var invoicedata = {
                                                             CodigoAnexoEmisor: appsetting.annexcode,
@@ -1831,7 +1834,7 @@ exports.chargeInvoice = async (request, response) => {
                                                             RetornaPdf: appsetting.returnpdf,
                                                             RetornaXmlSunat: appsetting.returnxmlsunat,
                                                             RetornaXml: appsetting.returnxml,
-                                                            TipoCambio: invoice.currency === 'PEN' ? '1.000' : invoice.exchangerate,
+                                                            TipoCambio: invoice.currency === 'PEN' ? '1.000' : ((exchangeratedata?.exchangeratesol / exchangeratedata?.exchangerate) || invoice.exchangerate),
                                                             Token: appsetting.token,
                                                             DireccionFiscalEmisor: appsetting.fiscaladdress,
                                                             DireccionFiscalReceptor: org ? org.fiscaladdress : corp.fiscaladdress,
@@ -1875,10 +1878,9 @@ exports.chargeInvoice = async (request, response) => {
 
                                                                 if (appsetting.detractionminimum) {
                                                                     if (invoice.currency !== 'PEN') {
-                                                                        var exchangeratedata = await getExchangeRate(invoice.currency, responsedata.id);
-                                                                        var exchangerate = exchangeratedata?.exchangerate || 0;
-
-                                                                        compareamount = invoice.totalamount * exchangerate;
+                                                                        if (exchangeratedata) {
+                                                                            compareamount = (invoice.totalamount / (exchangeratedata?.exchangerate || 0) * (exchangeratedata?.exchangeratesol || 0));
+                                                                        }
                                                                     }
                                                                     else {
                                                                         compareamount = invoice.totalamount;
@@ -2342,7 +2344,6 @@ exports.createBalance = async (request, response) => {
 
                                 if (balanceResponse) {
                                     var lastExchangeData = await getExchangeRate('USD', responsedata.id);
-                                    var lastExchange = lastExchangeData?.exchangerate || 0;
 
                                     var invoicesubtotal = 0;
                                     var invoicetaxes = 0;
@@ -2388,7 +2389,7 @@ exports.createBalance = async (request, response) => {
 
                                     const currentDate = new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60000);
 
-                                    var invoiceResponse = await createInvoice(corpid, orgid, 0, reference, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, invoicesubtotal, invoicetaxes, invoicetotalcharge, 'USD', lastExchange, 'PENDING', null, purchaseorder, null, null, null, comments, 'typecredit_alcontado', null, null, null, null, null, usr, null, buyamount, 'PAID', false, currentDate.getFullYear(), (currentDate.getMonth() + 1), responsedata.id);
+                                    var invoiceResponse = await createInvoice(corpid, orgid, 0, reference, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, invoicesubtotal, invoicetaxes, invoicetotalcharge, 'USD', lastExchangeData?.exchangerate || 1, 'PENDING', null, purchaseorder, null, null, null, comments, 'typecredit_alcontado', null, null, null, null, null, usr, null, buyamount, 'PAID', false, currentDate.getFullYear(), (currentDate.getMonth() + 1), responsedata.id);
 
                                     if (invoiceResponse) {
                                         await changeInvoiceBalance(corpid, orgid, balanceResponse.balanceid, invoiceResponse.invoiceid, usr, responsedata.id);
@@ -2452,7 +2453,7 @@ exports.createBalance = async (request, response) => {
                                                         RetornaPdf: appsetting.returnpdf,
                                                         RetornaXmlSunat: appsetting.returnxmlsunat,
                                                         RetornaXml: appsetting.returnxml,
-                                                        TipoCambio: lastExchange,
+                                                        TipoCambio: (lastExchangeData?.exchangeratesol / lastExchangeData?.exchangerate) || 1,
                                                         Token: appsetting.token,
                                                         DireccionFiscalEmisor: appsetting.fiscaladdress,
                                                         DireccionFiscalReceptor: billbyorg ? org.fiscaladdress : corp.fiscaladdress,
@@ -2495,7 +2496,7 @@ exports.createBalance = async (request, response) => {
                                                             var compareamount = 0;
 
                                                             if (appsetting.detractionminimum) {
-                                                                compareamount = invoicetotalcharge * lastExchange;
+                                                                compareamount = (invoicetotalcharge / (lastExchangeData?.exchangerate || 0) * (lastExchangeData?.exchangeratesol || 0));
                                                             }
 
                                                             if (compareamount > appsetting.detractionminimum) {
@@ -2735,6 +2736,8 @@ exports.createCreditNote = async (request, response) => {
 
                         if (invoicecorrelative) {
                             try {
+                                var exchangeratedata = await getExchangeRate(invoice.currency, responsedata.id);
+
                                 if (appsetting?.invoiceprovider === "MIFACT") {
                                     var invoicedata = {
                                         CodigoAnexoEmisor: appsetting.annexcode,
@@ -2760,7 +2763,7 @@ exports.createCreditNote = async (request, response) => {
                                         RetornaPdf: appsetting.returnpdf,
                                         RetornaXmlSunat: appsetting.returnxmlsunat,
                                         RetornaXml: appsetting.returnxml,
-                                        TipoCambio: invoice.currency === 'PEN' ? '1.000' : invoice.exchangerate,
+                                        TipoCambio: invoice.currency === 'PEN' ? '1.000' : ((exchangeratedata?.exchangeratesol / exchangeratedata?.exchangerate) || invoice.exchangerate),
                                         Token: appsetting.token,
                                         DireccionFiscalEmisor: appsetting.fiscaladdress,
                                         DireccionFiscalReceptor: invoice.receiverfiscaladdress,
@@ -2930,7 +2933,6 @@ exports.createInvoice = async (request, response) => {
                     var invoicetotalcharge = 0;
 
                     var lastExchangeData = await getExchangeRate(invoicecurrency, responsedata.id);
-                    var lastExchange = lastExchangeData?.exchangerate || 0;
 
                     if (clientdoctype !== '0') {
                         invoicesubtotal = invoicetotalamount;
@@ -2943,7 +2945,7 @@ exports.createInvoice = async (request, response) => {
                         invoicetotalcharge = invoicetotalamount;
                     }
 
-                    var invoiceResponse = await createInvoice(corpid, orgid, (invoiceid || 0), `GENERATED FOR ${clientdocnumber}`, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchange, (onlyinsert ? 'PENDING' : 'DRAFT'), null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, null, null, null, null, null, usr, null, invoicetotalamount, 'PENDING', false, year, month, responsedata.id);
+                    var invoiceResponse = await createInvoice(corpid, orgid, (invoiceid || 0), `GENERATED FOR ${clientdocnumber}`, 'ACTIVO', 'INVOICE', null, null, null, null, null, null, null, null, null, null, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, null, null, null, null, `GENERATED FOR ${clientdocnumber}`, invoicecreatedate, invoiceduedate, invoicesubtotal, invoicetaxes, invoicetotalcharge, invoicecurrency, lastExchangeData?.exchangerate || 1, (onlyinsert ? 'PENDING' : 'DRAFT'), null, invoicepurchaseorder, null, null, null, invoicecomments, clientcredittype, null, null, null, null, null, usr, null, invoicetotalamount, 'PENDING', false, year, month, responsedata.id);
 
                     if (invoiceResponse) {
                         if (invoiceid) {
@@ -3047,7 +3049,7 @@ exports.createInvoice = async (request, response) => {
                                         RetornaPdf: appsetting.returnpdf,
                                         RetornaXmlSunat: appsetting.returnxmlsunat,
                                         RetornaXml: appsetting.returnxml,
-                                        TipoCambio: invoicecurrency === 'PEN' ? '1.000' : lastExchange,
+                                        TipoCambio: invoicecurrency === 'PEN' ? '1.000' : ((lastExchangeData?.exchangeratesol / lastExchangeData?.exchangerate) || 1),
                                         Token: appsetting.token,
                                         DireccionFiscalEmisor: appsetting.fiscaladdress,
                                         DireccionFiscalReceptor: clientfiscaladdress,
@@ -3073,7 +3075,7 @@ exports.createInvoice = async (request, response) => {
 
                                             if (appsetting.detractionminimum) {
                                                 if (invoicecurrency !== 'PEN') {
-                                                    compareamount = invoicetotalcharge * lastExchange;
+                                                    compareamount = (invoicetotalcharge / (lastExchangeData?.exchangerate || 0) * (lastExchangeData?.exchangeratesol || 0));
                                                 }
                                                 else {
                                                     compareamount = invoicetotalcharge;
@@ -3365,6 +3367,8 @@ exports.emitInvoice = async (request, response) => {
 
                             if (invoicecorrelative) {
                                 try {
+                                    var exchangeratedata = await getExchangeRate(invoice.currency, responsedata.id);
+
                                     if (appsetting?.invoiceprovider === "MIFACT") {
                                         var expirationDate;
 
@@ -3401,7 +3405,7 @@ exports.emitInvoice = async (request, response) => {
                                             RetornaPdf: appsetting.returnpdf,
                                             RetornaXmlSunat: appsetting.returnxmlsunat,
                                             RetornaXml: appsetting.returnxml,
-                                            TipoCambio: invoice.currency === 'PEN' ? '1.000' : invoice.exchangerate,
+                                            TipoCambio: invoice.currency === 'PEN' ? '1.000' : ((exchangeratedata?.exchangeratesol / exchangeratedata?.exchangerate) || invoice.exchangerate),
                                             Token: appsetting.token,
                                             DireccionFiscalEmisor: appsetting.fiscaladdress,
                                             DireccionFiscalReceptor: billbyorg ? org.fiscaladdress : corp.fiscaladdress,
@@ -3445,10 +3449,9 @@ exports.emitInvoice = async (request, response) => {
 
                                                 if (appsetting.detractionminimum) {
                                                     if (invoice.currency !== 'PEN') {
-                                                        var exchangeratedata = await getExchangeRate(invoice.currency, responsedata.id);
-                                                        var exchangerate = exchangeratedata?.exchangerate || 0;
-
-                                                        compareamount = invoice.totalamount * exchangerate;
+                                                        if (exchangeratedata) {
+                                                            compareamount = (invoice.totalamount / (exchangeratedata?.exchangerate || 0) * (exchangeratedata?.exchangeratesol || 0));
+                                                        }
                                                     }
                                                     else {
                                                         compareamount = invoice.totalamount;
@@ -3655,14 +3658,17 @@ exports.getExchangeRate = async (request, response) => {
 
         var lastExchangeData = await getExchangeRate(request?.body?.code || 'USD', responsedata.id);
         var lastExchange = lastExchangeData?.exchangerate || 0;
+        var lastExchangeSol = lastExchangeData?.exchangeratesol || 0;
 
         if (lastExchange) {
             responsedata = genericfunctions.changeResponseData(responsedata, null, {}, 'success', 200, true);
             responsedata.exchangerate = lastExchange;
+            responsedata.exchangeratesol = lastExchangeSol;
         }
         else {
             responsedata = genericfunctions.changeResponseData(responsedata, null, {}, 'error', 400, false);
             responsedata.exchangerate = lastExchange;
+            responsedata.exchangeratesol = lastExchangeSol;
         }
 
         return response.status(responsedata.status).json(responsedata);
