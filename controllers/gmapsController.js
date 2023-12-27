@@ -486,7 +486,7 @@ exports.findcoordinateinpolygons = async (req, res) => {
       orgid,
       result: modifiedResult,
       inside_schedule,
-      order_datetime: currentDateTime.format('YYYY-MM-DD HH:mm:ss'),
+      order_datetime: order_datetime,
     };
 
     return res.json(response);
