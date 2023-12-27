@@ -455,25 +455,38 @@ function isInsideSchedule(polygons, currentDateTime) {
 
   return false;
 }
-
 exports.findcoordinateinpolygons = async (req, res) => {
   try {
-    const { corpid, orgid, latitude, longitude } = req.body;
-   
-    const currentDateTime = moment().tz('America/Lima');    
+    const { corpid, orgid, latitude, longitude, order_datetime } = req.body;
+
+    const currentDateTime = order_datetime
+      ? moment(order_datetime).tz('America/Lima')
+      : moment().tz('America/Lima');
 
     const result = await executesimpletransaction("SEARCH_POINT_ON_AREAS", { corpid, orgid, latitude, longitude });
 
-    const inside_schedule = result.length > 0 && isInsideSchedule(result, currentDateTime);
+    const modifiedResult = result.map((polygon) => {
+      let modifiedName = polygon.name;
 
-    const response = { corpid, orgid,
-      result: result.map((polygon) => ({
+      if (modifiedName.includes('ZONA ROJA - ')) {
+        modifiedName = modifiedName.replace('ZONA ROJA - ', 'Reparto ');
+      }
+
+      return {
         polygonsid: polygon.polygonsid,
-        name: polygon.name,
+        name: modifiedName,
         schedule: polygon.schedule,
-      })),
+      };
+    });
+
+    const inside_schedule = modifiedResult.length > 0 && isInsideSchedule(modifiedResult, currentDateTime);
+
+    const response = {
+      corpid,
+      orgid,
+      result: modifiedResult,
       inside_schedule,
-      order_datetime: currentDateTime.format('YYYY-MM-DD HH:mm:ss'), 
+      order_datetime: currentDateTime.format('YYYY-MM-DD HH:mm:ss'),
     };
 
     return res.json(response);
@@ -483,3 +496,4 @@ exports.findcoordinateinpolygons = async (req, res) => {
     return res.status(500).json({ error: 'Error en el servidor' });
   }
 };
+
