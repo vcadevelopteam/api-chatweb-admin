@@ -736,6 +736,21 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DOCUMENTLIBRARY_SEL: {
+        query: "SELECT * FROM ufn_documentlibrary_sel($corpid, $orgid, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DOCUMENTLIBRARY_INS: {
+        query: "SELECT * FROM ufn_documentlibrary_ins($corpid, $orgid, $id, $title, $description, $category, $groups, $link, $favorite, $status, $type, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_DOCUMENTLIBRARY_INS_ARRAY: {
+        query: "SELECT * FROM ufn_documentlibrary_ins_array($corpid, $orgid, $username, $table)",
+        module: "",
+        protected: "INSERT"
+    },
 
     UFN_PRODUCT_DUP: {
         query: "SELECT * FROM inventario.ufn_product_dup($corpid, $orgid, $productid, $operation, $username)",
