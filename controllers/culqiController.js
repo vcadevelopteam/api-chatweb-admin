@@ -694,6 +694,31 @@ const removeSpecialCharacter = (text) => {
     return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
+const getCulqiError = (culqiResponse) => {
+    var culqiMessage;
+
+    try {
+        if (culqiResponse) {
+            let culqiError = JSON.parse(culqiResponse);
+
+            if (culqiError) {
+                if (culqiError.user_message) {
+                    culqiMessage = culqiError.user_message;
+                }
+
+                if (culqiError.merchant_message) {
+                    culqiMessage = culqiError.merchant_message.split("https://www.culqi.com/api")[0];
+                }
+            }
+        }
+    }
+    catch {
+        culqiMessage = null;
+    }
+
+    return culqiMessage;
+}
+
 exports.automaticPayment = async (request, response) => {
     try {
         logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
@@ -736,7 +761,7 @@ exports.automaticPayment = async (request, response) => {
 
                     const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
 
-                    if (appsetting && appsetting?.paymentprovider === 'CULQI') {
+                    if (appsetting) {
                         const invoice = await getInvoice(corpid, orgid, 0, invoiceid, responsedata.id);
 
                         if (invoice) {
@@ -791,91 +816,136 @@ exports.automaticPayment = async (request, response) => {
                                                     culqiamount = (Math.round(((culqiamount || 0) + Number.EPSILON) * 100) / 100);
                                                 }
 
-                                                const requestCulqiCharge = await axiosObservable({
-                                                    data: {
-                                                        amount: (Math.round(((culqiamount * 100) + Number.EPSILON) * 100) / 100),
-                                                        bearer: appsetting.privatekey,
-                                                        currencyCode: invoice.currency,
-                                                        description: (removeSpecialCharacter('PAYMENT: ' + (invoice.description || ''))).slice(0, 80),
-                                                        email: favoritecard.mail,
-                                                        metadata: metadata,
-                                                        operation: "CREATE",
-                                                        sourceId: favoritecard.cardcode,
-                                                        url: appsetting.culqiurlcharge,
-                                                    },
-                                                    method: "post",
-                                                    url: `${bridgeEndpoint}processculqi/handlecharge`,
-                                                    _requestid: responsedata.id,
-                                                });
+                                                var chargesuccess = false;
 
-                                                if (requestCulqiCharge.data.success) {
-                                                    responsedata = genericfunctions.changeResponseData(responsedata, null, null, 'success_automaticpayment_paymentsuccess', 200, true);
+                                                if (appsetting?.paymentprovider === 'CULQI') {
+                                                    const requestCulqiCharge = await axiosObservable({
+                                                        data: {
+                                                            amount: (Math.round(((culqiamount * 100) + Number.EPSILON) * 100) / 100),
+                                                            bearer: appsetting.privatekey,
+                                                            currencyCode: invoice.currency,
+                                                            description: (removeSpecialCharacter('PAYMENT: ' + (invoice.description || ''))).slice(0, 80),
+                                                            email: favoritecard.mail,
+                                                            metadata: metadata,
+                                                            operation: "CREATE",
+                                                            sourceId: favoritecard.cardcode,
+                                                            url: appsetting.culqiurlcharge,
+                                                        },
+                                                        method: "post",
+                                                        url: `${bridgeEndpoint}processculqi/handlecharge`,
+                                                        _requestid: responsedata.id,
+                                                    });
 
-                                                    paymentsuccess = true;
+                                                    if (requestCulqiCharge.data.success) {
+                                                        responsedata = genericfunctions.changeResponseData(responsedata, null, null, 'success_automaticpayment_paymentsuccess', 200, true);
 
-                                                    const chargedata = await insertCharge(corpid, orgid, invoiceid, null, culqiamount, true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, invoice.currency, invoice.description, favoritecard.mail, 'INSERT', null, null, 'SCHEDULER', 'PAID', favoritecard.paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
+                                                        paymentsuccess = true;
 
-                                                    const invoicepayment = await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, culqiamount, favoritecard.mail, 'SCHEDULER', favoritecard.paymentcardid, null, responsedata.id);
+                                                        const chargedata = await insertCharge(corpid, orgid, invoiceid, null, culqiamount, true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, invoice.currency, invoice.description, favoritecard.mail, 'INSERT', null, null, 'SCHEDULER', 'PAID', favoritecard.paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
 
-                                                    if (invoicepayment) {
-                                                        const alertbody = await searchDomain(1, 0, false, 'PAYMENTALERTBODY', 'SCHEDULER', responsedata.id);
-                                                        const alertsubject = await searchDomain(1, 0, false, 'PAYMENTALERTSUBJECT', 'SCHEDULER', responsedata.id);
+                                                        const invoicepayment = await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, culqiamount, favoritecard.mail, 'SCHEDULER', favoritecard.paymentcardid, null, responsedata.id);
 
-                                                        if (alertbody && alertsubject) {
-                                                            var mailbody = alertbody.domainvalue;
-                                                            var mailsubject = alertsubject.domainvalue;
-
-                                                            mailbody = mailbody.split("{{amountdetraction}}").join(detractionamount);
-                                                            mailbody = mailbody.split("{{amountpaid}}").join(culqiamount);
-                                                            mailbody = mailbody.split("{{amounttotal}}").join(invoice.totalamount);
-                                                            mailbody = mailbody.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
-                                                            mailbody = mailbody.split("{{concept}}").join(invoice.description);
-                                                            mailbody = mailbody.split("{{contact}}").join(org ? org.contact : corp.contact);
-                                                            mailbody = mailbody.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
-                                                            mailbody = mailbody.split("{{corporg}}").join(org ? org.description : corp.description);
-                                                            mailbody = mailbody.split("{{currency}}").join(invoice.currency);
-                                                            mailbody = mailbody.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
-                                                            mailbody = mailbody.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
-                                                            mailbody = mailbody.split("{{month}}").join(invoice.month);
-                                                            mailbody = mailbody.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
-                                                            mailbody = mailbody.split("{{year}}").join(invoice.year);
-
-                                                            mailsubject = mailsubject.split("{{amountdetraction}}").join(detractionamount);
-                                                            mailsubject = mailsubject.split("{{amountpaid}}").join(culqiamount);
-                                                            mailsubject = mailsubject.split("{{amounttotal}}").join(invoice.totalamount);
-                                                            mailsubject = mailsubject.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
-                                                            mailsubject = mailsubject.split("{{concept}}").join(invoice.description);
-                                                            mailsubject = mailsubject.split("{{contact}}").join(org ? org.contact : corp.contact);
-                                                            mailsubject = mailsubject.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
-                                                            mailsubject = mailsubject.split("{{corporg}}").join(org ? org.description : corp.description);
-                                                            mailsubject = mailsubject.split("{{currency}}").join(invoice.currency);
-                                                            mailsubject = mailsubject.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
-                                                            mailsubject = mailsubject.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
-                                                            mailsubject = mailsubject.split("{{month}}").join(invoice.month);
-                                                            mailsubject = mailsubject.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
-                                                            mailsubject = mailsubject.split("{{year}}").join(invoice.year);
-
-                                                            const requestMailSend = await axiosObservable({
-                                                                data: {
-                                                                    mailAddress: (org ? org.contactemail : corp.contactemail),
-                                                                    mailBody: mailbody,
-                                                                    mailTitle: mailsubject,
-                                                                },
-                                                                method: "post",
-                                                                url: `${bridgeEndpoint}processscheduler/sendmail`,
-                                                                _requestid: responsedata.id,
-                                                            });
-
-                                                            if (!requestMailSend.data.success) {
-                                                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, requestMailSend.data.operationMessage, responsedata.status, responsedata.success);
-                                                            }
+                                                        if (invoicepayment) {
+                                                            chargesuccess = true;
                                                         }
                                                         else {
-                                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticpayment_noalertdomain', responsedata.status, responsedata.success);
+                                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticpayment_invoiceupdate', responsedata.status, responsedata.success);
+                                                        }
+                                                    }
+                                                }
+                                                else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                                                    const requestOpenpayCharge = await axiosObservable({
+                                                        data: {
+                                                            amount: (Math.round(((culqiamount * 100) + Number.EPSILON) * 100) / 100),
+                                                            currencyCode: invoice.currency,
+                                                            customerId: favoritecard.clientcode,
+                                                            description: (removeSpecialCharacter('PAYMENT: ' + (invoice.description || ''))).slice(0, 80),
+                                                            igv: `${((appsetting.igv || 0) * 100)}`,
+                                                            merchantId: appsetting.culqiurl,
+                                                            operation: "CREATE",
+                                                            orderId: invoice.invoiceid,
+                                                            secretKey: appsetting.privatekey,
+                                                            sourceId: favoritecard.cardcode,
+                                                            url: appsetting.culqiurlcharge,
+                                                        },
+                                                        method: "post",
+                                                        url: `${bridgeEndpoint}processopenpay/handlecharge`,
+                                                        _requestid: responsedata.id,
+                                                    });
+
+                                                    if (requestOpenpayCharge.data.success) {
+                                                        responsedata = genericfunctions.changeResponseData(responsedata, null, null, 'success_automaticpayment_paymentsuccess', 200, true);
+
+                                                        paymentsuccess = true;
+
+                                                        const chargedata = await insertCharge(corpid, orgid, invoiceid, null, culqiamount, true, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, invoice.currency, invoice.description, favoritecard.mail, 'INSERT', null, null, 'SCHEDULER', 'PAID', favoritecard.paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
+
+                                                        const invoicepayment = await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, culqiamount, favoritecard.mail, 'SCHEDULER', favoritecard.paymentcardid, null, responsedata.id);
+
+                                                        if (invoicepayment) {
+                                                            chargesuccess = true;
+                                                        }
+                                                        else {
+                                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticpayment_invoiceupdate', responsedata.status, responsedata.success);
+                                                        }
+                                                    }
+                                                }
+
+                                                if (chargesuccess) {
+                                                    const alertbody = await searchDomain(1, 0, false, 'PAYMENTALERTBODY', 'SCHEDULER', responsedata.id);
+                                                    const alertsubject = await searchDomain(1, 0, false, 'PAYMENTALERTSUBJECT', 'SCHEDULER', responsedata.id);
+
+                                                    if (alertbody && alertsubject) {
+                                                        var mailbody = alertbody.domainvalue;
+                                                        var mailsubject = alertsubject.domainvalue;
+
+                                                        mailbody = mailbody.split("{{amountdetraction}}").join(detractionamount);
+                                                        mailbody = mailbody.split("{{amountpaid}}").join(culqiamount);
+                                                        mailbody = mailbody.split("{{amounttotal}}").join(invoice.totalamount);
+                                                        mailbody = mailbody.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
+                                                        mailbody = mailbody.split("{{concept}}").join(invoice.description);
+                                                        mailbody = mailbody.split("{{contact}}").join(org ? org.contact : corp.contact);
+                                                        mailbody = mailbody.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
+                                                        mailbody = mailbody.split("{{corporg}}").join(org ? org.description : corp.description);
+                                                        mailbody = mailbody.split("{{currency}}").join(invoice.currency);
+                                                        mailbody = mailbody.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
+                                                        mailbody = mailbody.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
+                                                        mailbody = mailbody.split("{{month}}").join(invoice.month);
+                                                        mailbody = mailbody.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
+                                                        mailbody = mailbody.split("{{year}}").join(invoice.year);
+
+                                                        mailsubject = mailsubject.split("{{amountdetraction}}").join(detractionamount);
+                                                        mailsubject = mailsubject.split("{{amountpaid}}").join(culqiamount);
+                                                        mailsubject = mailsubject.split("{{amounttotal}}").join(invoice.totalamount);
+                                                        mailsubject = mailsubject.split("{{businessname}}").join(org ? org.businessname : corp.businessname);
+                                                        mailsubject = mailsubject.split("{{concept}}").join(invoice.description);
+                                                        mailsubject = mailsubject.split("{{contact}}").join(org ? org.contact : corp.contact);
+                                                        mailsubject = mailsubject.split("{{contactemail}}").join(org ? org.contactemail : corp.contactemail);
+                                                        mailsubject = mailsubject.split("{{corporg}}").join(org ? org.description : corp.description);
+                                                        mailsubject = mailsubject.split("{{currency}}").join(invoice.currency);
+                                                        mailsubject = mailsubject.split("{{docnum}}").join(org ? org.docnum : corp.docnum);
+                                                        mailsubject = mailsubject.split("{{fiscaladdress}}").join(org ? org.fiscaladdress : corp.fiscaladdress);
+                                                        mailsubject = mailsubject.split("{{month}}").join(invoice.month);
+                                                        mailsubject = mailsubject.split("{{sunatcountry}}").join(org ? org.sunatcountry : corp.sunatcountry);
+                                                        mailsubject = mailsubject.split("{{year}}").join(invoice.year);
+
+                                                        const requestMailSend = await axiosObservable({
+                                                            data: {
+                                                                mailAddress: (org ? org.contactemail : corp.contactemail),
+                                                                mailBody: mailbody,
+                                                                mailTitle: mailsubject,
+                                                            },
+                                                            method: "post",
+                                                            url: `${bridgeEndpoint}processscheduler/sendmail`,
+                                                            _requestid: responsedata.id,
+                                                        });
+
+                                                        if (!requestMailSend.data.success) {
+                                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, requestMailSend.data.operationMessage, responsedata.status, responsedata.success);
                                                         }
                                                     }
                                                     else {
-                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticpayment_invoiceupdate', responsedata.status, responsedata.success);
+                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'alert_automaticpayment_noalertdomain', responsedata.status, responsedata.success);
                                                     }
                                                 }
                                                 else {
@@ -1321,7 +1391,7 @@ exports.cardCreate = async (request, response) => {
 
             const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
 
-            if (appsetting && appsetting?.paymentprovider === 'CULQI') {
+            if (appsetting) {
                 const corp = await getCorporation(corpid, responsedata.id);
                 const org = await getOrganization(corpid, orgid, responsedata.id);
                 const user = await getProfile(userid, responsedata.id);
@@ -1336,78 +1406,131 @@ exports.cardCreate = async (request, response) => {
                     if (canRegister) {
                         var cleancardnumber = cardnumber.split(" ").join("");
 
-                        const requestCulqiClient = await axiosObservable({
-                            data: {
-                                address: `${(removeSpecialCharacter((org ? org.fiscaladdress : corp.fiscaladdress) || "EMPTY")).slice(0, 100)}`,
-                                addressCity: `${(removeSpecialCharacter((org ? org.timezone : "EMPTY") || "EMPTY")).slice(0, 30)}`,
-                                bearer: appsetting.privatekey,
-                                countryCode: `${(user.country || "PE")}`,
-                                email: `${(mail || "generic@mail.com")}`,
-                                firstName: `${(removeSpecialCharacter(firstname?.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
-                                lastName: `${(removeSpecialCharacter(lastname?.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
-                                operation: "CREATE",
-                                phoneNumber: `${((phone || user.phone) ? (phone || user.phone).replace(/[^0-9]/g, "") : "51999999999").slice(0, 15)}`,
-                                url: appsetting.culqiurlclient,
-                            },
-                            method: "post",
-                            url: `${bridgeEndpoint}processculqi/handleclient`,
-                            _requestid: responsedata.id,
-                        });
-
-                        if (requestCulqiClient.data.success) {
-                            const requestCulqiCard = await axiosObservable({
+                        if (appsetting?.paymentprovider === 'CULQI') {
+                            const requestCulqiClient = await axiosObservable({
                                 data: {
+                                    address: `${(removeSpecialCharacter((org ? org.fiscaladdress : corp.fiscaladdress) || "EMPTY")).slice(0, 100)}`,
+                                    addressCity: `${(removeSpecialCharacter((org ? org.timezone : "EMPTY") || "EMPTY")).slice(0, 30)}`,
                                     bearer: appsetting.privatekey,
-                                    bearerToken: appsetting.publickey,
-                                    cardNumber: cleancardnumber,
-                                    customerId: requestCulqiClient.data.result.id,
-                                    cvv: securitycode,
-                                    email: mail,
-                                    expirationMonth: expirationmonth,
-                                    expirationYear: expirationyear,
+                                    countryCode: `${(user.country || "PE")}`,
+                                    email: `${(mail || "generic@mail.com")}`,
+                                    firstName: `${(removeSpecialCharacter(firstname?.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
+                                    lastName: `${(removeSpecialCharacter(lastname?.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
                                     operation: "CREATE",
-                                    url: appsetting.culqiurlcardcreate,
-                                    urlToken: appsetting.culqiurltoken,
+                                    phoneNumber: `${((phone || user.phone) ? (phone || user.phone).replace(/[^0-9]/g, "") : "51999999999").slice(0, 15)}`,
+                                    url: appsetting.culqiurlclient,
                                 },
                                 method: "post",
-                                url: `${bridgeEndpoint}processculqi/handlecard`,
+                                url: `${bridgeEndpoint}processculqi/handleclient`,
                                 _requestid: responsedata.id,
                             });
 
-                            if (requestCulqiCard.data.success) {
-                                cardData = requestCulqiCard.data.result;
+                            if (requestCulqiClient.data.success) {
+                                const requestCulqiCard = await axiosObservable({
+                                    data: {
+                                        bearer: appsetting.privatekey,
+                                        bearerToken: appsetting.publickey,
+                                        cardNumber: cleancardnumber,
+                                        customerId: requestCulqiClient.data.result.id,
+                                        cvv: securitycode,
+                                        email: mail,
+                                        expirationMonth: expirationmonth,
+                                        expirationYear: expirationyear,
+                                        operation: "CREATE",
+                                        url: appsetting.culqiurlcardcreate,
+                                        urlToken: appsetting.culqiurltoken,
+                                    },
+                                    method: "post",
+                                    url: `${bridgeEndpoint}processculqi/handlecard`,
+                                    _requestid: responsedata.id,
+                                });
 
-                                const queryPaymentCardInsert = await createPaymentCard(corpid, orgid, 0, cardData.source.cardNumber, cardData.id, firstname, lastname, mail, favorite, cardData.customerId, "ACTIVO", phone, "", usr, responsedata.id);
+                                if (requestCulqiCard.data.success) {
+                                    cardData = requestCulqiCard.data.result;
 
-                                if (queryPaymentCardInsert instanceof Array) {
-                                    responsedata = genericfunctions.changeResponseData(responsedata, null, null, null, 200, true);
+                                    const queryPaymentCardInsert = await createPaymentCard(corpid, orgid, 0, cardData.source.cardNumber, cardData.id, firstname, lastname, mail, favorite, cardData.customerId, "ACTIVO", phone, "", usr, responsedata.id);
+
+                                    if (queryPaymentCardInsert instanceof Array) {
+                                        responsedata = genericfunctions.changeResponseData(responsedata, null, null, null, 200, true);
+                                    }
+                                    else {
+                                        responsedata = genericfunctions.changeResponseData(responsedata, queryPaymentCardInsert.code, responsedata.data, 'error_card_insert', responsedata.status, responsedata.success);
+                                    }
                                 }
                                 else {
-                                    responsedata = genericfunctions.changeResponseData(responsedata, queryPaymentCardInsert.code, responsedata.data, 'error_card_insert', responsedata.status, responsedata.success);
+                                    let errorCard = getCulqiError(requestCulqiCard?.data?.operationMessage) || 'error_card_card';
+
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCard, responsedata.status, responsedata.success);
                                 }
                             }
                             else {
-                                let errorCard = 'error_card_card';
-
-                                if (requestCulqiCard.data.operationMessage) {
-                                    let culqiError = JSON.parse(requestCulqiCard.data.operationMessage);
-
-                                    if (culqiError) {
-                                        if (culqiError.user_message) {
-                                            errorCard = culqiError.user_message;
-                                        }
-
-                                        if (culqiError.merchant_message) {
-                                            errorCard = culqiError.merchant_message.split("https://www.culqi.com/api")[0];
-                                        }
-                                    }
-                                }
+                                let errorCard = getCulqiError(requestCulqiClient?.data?.operationMessage) || 'error_card_client';
 
                                 responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCard, responsedata.status, responsedata.success);
                             }
                         }
-                        else {
-                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_card_client', responsedata.status, responsedata.success);
+                        else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                            const requestOpenpayClient = await axiosObservable({
+                                data: {
+                                    address: `${(removeSpecialCharacter((org ? org.fiscaladdress : corp.fiscaladdress) || "EMPTY")).slice(0, 100)}`,
+                                    addressCity: `${(removeSpecialCharacter((org ? org.timezone : "EMPTY") || "EMPTY")).slice(0, 30)}`,
+                                    countryCode: `${(user.country || "PE")}`,
+                                    email: `${(mail || "generic@mail.com")}`,
+                                    firstName: `${(removeSpecialCharacter(firstname?.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
+                                    lastName: `${(removeSpecialCharacter(lastname?.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
+                                    merchantId: appsetting.culqiurl,
+                                    operation: "CREATE",
+                                    phoneNumber: `${((phone || user.phone) ? (phone || user.phone).replace(/[^0-9]/g, "") : "51999999999").slice(0, 15)}`,
+                                    secretKey: appsetting.privatekey,
+                                    url: appsetting.culqiurlclient,
+                                },
+                                method: "post",
+                                url: `${bridgeEndpoint}processopenpay/handleclient`,
+                                _requestid: responsedata.id,
+                            });
+
+                            if (requestOpenpayClient.data.success) {
+                                const requestOpenpayCard = await axiosObservable({
+                                    data: {
+                                        cardNumber: cleancardnumber,
+                                        customerId: requestOpenpayClient.data.result.id,
+                                        cvv: securitycode,
+                                        email: mail,
+                                        expirationMonth: expirationmonth,
+                                        expirationYear: `${expirationyear}`.slice(-2),
+                                        merchantId: appsetting.culqiurl,
+                                        operation: "CREATE",
+                                        secretKey: appsetting.privatekey,
+                                        url: appsetting.culqiurlcardcreate,
+                                    },
+                                    method: "post",
+                                    url: `${bridgeEndpoint}processopenpay/handlecard`,
+                                    _requestid: responsedata.id,
+                                });
+
+                                if (requestOpenpayCard.data.success) {
+                                    cardData = requestOpenpayCard.data.result;
+
+                                    const queryPaymentCardInsert = await createPaymentCard(corpid, orgid, 0, cardData.cardNumber, cardData.id, firstname, lastname, mail, favorite, requestOpenpayClient.data.result.id, "ACTIVO", phone, "", usr, responsedata.id);
+
+                                    if (queryPaymentCardInsert instanceof Array) {
+                                        responsedata = genericfunctions.changeResponseData(responsedata, null, null, null, 200, true);
+                                    }
+                                    else {
+                                        responsedata = genericfunctions.changeResponseData(responsedata, queryPaymentCardInsert.code, responsedata.data, 'error_card_insert', responsedata.status, responsedata.success);
+                                    }
+                                }
+                                else {
+                                    let errorCard = requestOpenpayCard?.data?.operationMessage || 'error_card_card';
+
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCard, responsedata.status, responsedata.success);
+                                }
+                            }
+                            else {
+                                let errorCard = requestOpenpayClient?.data?.operationMessage || 'error_card_client';
+
+                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, requestOpenpayClient?.data?.operationMessage || errorCard, responsedata.status, responsedata.success);
+                            }
                         }
                     }
                     else {
@@ -1452,47 +1575,66 @@ exports.cardDelete = async (request, response) => {
 
             const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
 
-            if (appsetting && appsetting?.paymentprovider === 'CULQI') {
-                const requestCulqiCard = await axiosObservable({
-                    data: {
-                        bearer: appsetting.privatekey,
-                        id: cardcode,
-                        operation: "DELETE",
-                        url: appsetting.culqiurlcarddelete,
-                    },
-                    method: "post",
-                    url: `${bridgeEndpoint}processculqi/handlecard`,
-                    _requestid: responsedata.id,
-                });
+            if (appsetting) {
+                if (appsetting?.paymentprovider === 'CULQI') {
+                    const requestCulqiCard = await axiosObservable({
+                        data: {
+                            bearer: appsetting.privatekey,
+                            id: cardcode,
+                            operation: "DELETE",
+                            url: appsetting.culqiurlcarddelete,
+                        },
+                        method: "post",
+                        url: `${bridgeEndpoint}processculqi/handlecard`,
+                        _requestid: responsedata.id,
+                    });
 
-                if (requestCulqiCard.data.success) {
-                    const queryPaymentCardUpdate = await createPaymentCard(corpid, orgid, paymentcardid, cardnumber, cardcode, firstname, lastname, mail, favorite, clientcode, "ELIMINADO", phone, type, usr, responsedata.id);
+                    if (requestCulqiCard.data.success) {
+                        const queryPaymentCardUpdate = await createPaymentCard(corpid, orgid, paymentcardid, cardnumber, cardcode, firstname, lastname, mail, favorite, clientcode, "ELIMINADO", phone, type, usr, responsedata.id);
 
-                    if (queryPaymentCardUpdate instanceof Array) {
-                        responsedata = genericfunctions.changeResponseData(responsedata, null, null, null, 200, true);
+                        if (queryPaymentCardUpdate instanceof Array) {
+                            responsedata = genericfunctions.changeResponseData(responsedata, null, null, null, 200, true);
+                        }
+                        else {
+                            responsedata = genericfunctions.changeResponseData(responsedata, queryPaymentCardUpdate.code, responsedata.data, 'error_card_update', responsedata.status, responsedata.success);
+                        }
                     }
                     else {
-                        responsedata = genericfunctions.changeResponseData(responsedata, queryPaymentCardUpdate.code, responsedata.data, 'error_card_update', responsedata.status, responsedata.success);
+                        let errorCard = getCulqiError(requestCulqiCard?.data?.operationMessage) || 'error_card_delete';
+
+                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCard, responsedata.status, responsedata.success);
                     }
                 }
-                else {
-                    let errorCard = 'error_card_delete';
+                else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                    const requestOpenpayCard = await axiosObservable({
+                        data: {
+                            customerId: clientcode,
+                            id: cardcode,
+                            merchantId: appsetting.culqiurl,
+                            operation: "DELETE",
+                            secretKey: appsetting.privatekey,
+                            url: appsetting.culqiurlcarddelete,
+                        },
+                        method: "post",
+                        url: `${bridgeEndpoint}processopenpay/handlecard`,
+                        _requestid: responsedata.id,
+                    });
 
-                    if (requestCulqiCard.data.operationMessage) {
-                        let culqiError = JSON.parse(requestCulqiCard.data.operationMessage);
+                    if (requestOpenpayCard.data.success) {
+                        const queryPaymentCardUpdate = await createPaymentCard(corpid, orgid, paymentcardid, cardnumber, cardcode, firstname, lastname, mail, favorite, clientcode, "ELIMINADO", phone, type, usr, responsedata.id);
 
-                        if (culqiError) {
-                            if (culqiError.user_message) {
-                                errorCard = culqiError.user_message;
-                            }
-
-                            if (culqiError.merchant_message) {
-                                errorCard = culqiError.merchant_message.split("https://www.culqi.com/api")[0];
-                            }
+                        if (queryPaymentCardUpdate instanceof Array) {
+                            responsedata = genericfunctions.changeResponseData(responsedata, null, null, null, 200, true);
+                        }
+                        else {
+                            responsedata = genericfunctions.changeResponseData(responsedata, queryPaymentCardUpdate.code, responsedata.data, 'error_card_update', responsedata.status, responsedata.success);
                         }
                     }
+                    else {
+                        let errorCard = requestOpenpayCard?.data?.operationMessage || 'error_card_delete';
 
-                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCard, responsedata.status, responsedata.success);
+                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCard, responsedata.status, responsedata.success);
+                    }
                 }
             }
             else {
@@ -1509,124 +1651,6 @@ exports.cardDelete = async (request, response) => {
         });
     }
 }
-
-exports.cardGet = async (request, response) => {
-    try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
-        var responsedata = genericfunctions.generateResponseData(request._requestid);
-
-        if (typeof whitelist !== "undefined" && whitelist) {
-            if (!whitelist.includes(request.ip)) {
-                responsedata = genericfunctions.changeResponseData(responsedata, 401, null, 'error_auth_error', 401, false);
-                return response.status(responsedata.status).json(responsedata);
-            }
-        }
-
-        if (request.body) {
-            const { cardcode } = request.body;
-
-            const appsetting = await getAppSettingSingle(0, 0, responsedata.id);
-
-            if (appsetting && appsetting?.paymentprovider === 'CULQI') {
-                const requestCulqiCard = await axiosObservable({
-                    data: {
-                        bearer: appsetting.privatekey,
-                        id: cardcode,
-                        operation: "GET",
-                        url: appsetting.culqiurlcarddelete,
-                    },
-                    method: "post",
-                    url: `${bridgeEndpoint}processculqi/handlecard`,
-                    _requestid: responsedata.id,
-                });
-
-                if (requestCulqiCard.data.success) {
-                    responsedata = genericfunctions.changeResponseData(responsedata, null, null, requestCulqiCard.data.result, 200, true);
-                }
-                else {
-                    let errorCard = 'error_card_get';
-
-                    if (requestCulqiCard.data.operationMessage) {
-                        let culqiError = JSON.parse(requestCulqiCard.data.operationMessage);
-
-                        if (culqiError) {
-                            if (culqiError.user_message) {
-                                errorCard = culqiError.user_message;
-                            }
-
-                            if (culqiError.merchant_message) {
-                                errorCard = culqiError.merchant_message.split("https://www.culqi.com/api")[0];
-                            }
-                        }
-                    }
-
-                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCard, responsedata.status, responsedata.success);
-                }
-            }
-            else {
-                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'error_card_configuration', responsedata.status, responsedata.success);
-            }
-        }
-
-        return response.status(responsedata.status).json(responsedata);
-    }
-    catch (exception) {
-        return response.status(500).json({
-            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-            message: exception.message,
-        });
-    }
-}
-
-exports.charge = async (request, response) => {
-    const { corpid, orgid, userid, usr } = request.user;
-    const { settings, token, metadata = {} } = request.body;
-
-    try {
-        logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
-
-        var responsedata = genericfunctions.generateResponseData(request._requestid);
-
-        const userprofile = await getProfile(userid, responsedata.id);
-
-        if (userprofile) {
-            metadata.corpid = corpid;
-            metadata.orgid = orgid;
-            metadata.userid = userid;
-
-            const charge = await createCharge(userprofile, settings, token, metadata, 'sk_test_d901e8f07d45a485');
-
-            if (charge.object === 'error') {
-                responsedata = genericfunctions.changeResponseData(responsedata, null, { object: charge.object, id: charge.charge_id, code: charge.code, message: charge.user_message }, charge.user_message, 400, false);
-                return response.status(responsedata.status).json(responsedata);
-            }
-            else {
-                await insertCharge(corpid, orgid, null, null, (settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, usr, 'PAID', token.id, token, charge.object, responsedata.id);
-
-                responsedata = genericfunctions.changeResponseData(responsedata, charge.outcome.code, { object: charge.object, id: charge.id }, charge.outcome.user_message, 200, true);
-                return response.status(responsedata.status).json(responsedata);
-            }
-        }
-        else {
-            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invalid_user', 403, responsedata.success);
-            return response.status(responsedata.status).json(responsedata);
-        }
-    } catch (exception) {
-        if (exception.charge_id) {
-            return response.status(500).json({
-                ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-                message: exception.merchant_message,
-            });
-        }
-        else {
-            return response.status(500).json({
-                ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-                message: exception.message,
-            });
-        }
-    }
-};
 
 exports.chargeInvoice = async (request, response) => {
     const { userid, usr } = request.user;
@@ -1717,7 +1741,7 @@ exports.chargeInvoice = async (request, response) => {
                             if (invoice.invoicestatus === 'DRAFT' && invoice.paymentstatus === 'PENDING' && invoice.currency === settings.currency && (((Math.round((invoice.totalamount * 100 + Number.EPSILON) * 100) / 100) === settings.amount) || override)) {
                                 const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
 
-                                if (appsetting && appsetting?.paymentprovider === 'CULQI') {
+                                if (appsetting) {
                                     const userprofile = await getProfile(userid, responsedata.id);
 
                                     if (userprofile) {
@@ -1738,36 +1762,82 @@ exports.chargeInvoice = async (request, response) => {
                                         if (iscard) {
                                             const paymentcard = await getPaymentCard(corpid, paymentcardid, responsedata.id);
 
-                                            const requestCulqiCharge = await axiosObservable({
-                                                data: {
-                                                    amount: settings.amount,
-                                                    bearer: appsetting.privatekey,
-                                                    description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
-                                                    currencyCode: settings.currency,
-                                                    email: (paymentcard?.mail || userprofile.email),
-                                                    sourceId: paymentcardcode,
-                                                    operation: "CREATE",
-                                                    url: appsetting.culqiurlcharge,
-                                                    metadata: metadata,
-                                                },
-                                                method: "post",
-                                                url: `${bridgeEndpoint}processculqi/handlecharge`,
-                                                _requestid: request._requestid
-                                            });
+                                            if (appsetting?.paymentprovider === 'CULQI') {
+                                                const requestCulqiCharge = await axiosObservable({
+                                                    data: {
+                                                        amount: settings.amount,
+                                                        bearer: appsetting.privatekey,
+                                                        description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                                        currencyCode: settings.currency,
+                                                        email: (paymentcard?.mail || userprofile.email),
+                                                        sourceId: paymentcardcode,
+                                                        operation: "CREATE",
+                                                        url: appsetting.culqiurlcharge,
+                                                        metadata: metadata,
+                                                    },
+                                                    method: "post",
+                                                    url: `${bridgeEndpoint}processculqi/handlecharge`,
+                                                    _requestid: request._requestid
+                                                });
 
-                                            if (requestCulqiCharge.data.success) {
-                                                const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), 'INSERT', null, null, usr, 'PAID', paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
+                                                if (requestCulqiCharge.data.success) {
+                                                    const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), 'INSERT', null, null, usr, 'PAID', paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
 
-                                                await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, responsedata.id);
+                                                    await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, responsedata.id);
 
-                                                successPay = true;
+                                                    successPay = true;
+                                                }
+                                                else {
+                                                    let errorCharge = getCulqiError(requestCulqiCharge?.data?.operationMessage);
+
+                                                    if (errorCharge) {
+                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCharge, responsedata.status, responsedata.success);
+                                                        return response.status(responsedata.status).json(responsedata);
+                                                    }
+                                                }
+                                            }
+                                            else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                                                const requestOpenpayCharge = await axiosObservable({
+                                                    data: {
+                                                        amount: settings.amount,
+                                                        currencyCode: settings.currency,
+                                                        customerId: paymentcard?.clientcode,
+                                                        description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                                        igv: `${((appsetting.igv || 0) * 100)}`,
+                                                        merchantId: appsetting.culqiurl,
+                                                        operation: "CREATE",
+                                                        orderId: invoiceid,
+                                                        secretKey: appsetting.privatekey,
+                                                        sourceId: paymentcardcode,
+                                                        url: appsetting.culqiurlcharge,
+                                                    },
+                                                    method: "post",
+                                                    url: `${bridgeEndpoint}processopenpay/handlecharge`,
+                                                    _requestid: request._requestid
+                                                });
+
+                                                if (requestOpenpayCharge.data.success) {
+                                                    const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), 'INSERT', null, null, usr, 'PAID', paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
+
+                                                    await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, responsedata.id);
+
+                                                    successPay = true;
+                                                }
+                                                else {
+                                                    let errorCharge = requestOpenpayCharge?.data?.operationMessage;
+
+                                                    if (errorCharge) {
+                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCharge, responsedata.status, responsedata.success);
+                                                        return response.status(responsedata.status).json(responsedata);
+                                                    }
+                                                }
                                             }
                                         }
                                         else {
                                             const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
 
                                             if (charge.object === 'error') {
-                                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, null, responsedata.status, responsedata.success);
+                                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, charge.merchant_message?.split("https://www.culqi.com/api")[0] || charge.user_message, responsedata.status, responsedata.success);
                                                 return response.status(responsedata.status).json(responsedata);
                                             }
                                             else {
@@ -2088,7 +2158,7 @@ exports.chargeInvoice = async (request, response) => {
                 if (((Math.round((invoice.totalamount * 100 + Number.EPSILON) * 100) / 100) === settings.amount) || override) {
                     const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
 
-                    if (appsetting && appsetting?.paymentprovider === 'CULQI') {
+                    if (appsetting) {
                         const userprofile = await getProfile(userid, responsedata.id);
 
                         if (userprofile) {
@@ -2107,41 +2177,80 @@ exports.chargeInvoice = async (request, response) => {
                             if (iscard) {
                                 const paymentcard = await getPaymentCard(corpid, paymentcardid, responsedata.id);
 
-                                const requestCulqiCharge = await axiosObservable({
-                                    data: {
-                                        amount: settings.amount,
-                                        bearer: appsetting.privatekey,
-                                        description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
-                                        currencyCode: settings.currency,
-                                        email: (paymentcard?.mail || userprofile.email),
-                                        sourceId: paymentcardcode,
-                                        operation: "CREATE",
-                                        url: appsetting.culqiurlcharge,
-                                        metadata: metadata,
-                                    },
-                                    method: "post",
-                                    url: `${bridgeEndpoint}processculqi/handlecharge`,
-                                    _requestid: responsedata.id,
-                                });
+                                if (appsetting?.paymentprovider === 'CULQI') {
+                                    const requestCulqiCharge = await axiosObservable({
+                                        data: {
+                                            amount: settings.amount,
+                                            bearer: appsetting.privatekey,
+                                            description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                            currencyCode: settings.currency,
+                                            email: (paymentcard?.mail || userprofile.email),
+                                            sourceId: paymentcardcode,
+                                            operation: "CREATE",
+                                            url: appsetting.culqiurlcharge,
+                                            metadata: metadata,
+                                        },
+                                        method: "post",
+                                        url: `${bridgeEndpoint}processculqi/handlecharge`,
+                                        _requestid: responsedata.id,
+                                    });
 
-                                if (requestCulqiCharge.data.success) {
-                                    const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), 'INSERT', null, null, usr, 'PAID', paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
+                                    if (requestCulqiCharge.data.success) {
+                                        const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), 'INSERT', null, null, usr, 'PAID', paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
 
-                                    await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, responsedata.id);
+                                        await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, responsedata.id);
 
-                                    responsedata = genericfunctions.changeResponseData(responsedata, null, requestCulqiCharge.data.result, 'successful_transaction', 200, true);
-                                    return response.status(responsedata.status).json(responsedata);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, null, requestCulqiCharge.data.result, 'successful_transaction', 200, true);
+                                        return response.status(responsedata.status).json(responsedata);
+                                    }
+                                    else {
+                                        let errorCharge = getCulqiError(requestCulqiCharge?.data?.operationMessage) || 'unsuccessful payment';
+
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCharge, responsedata.status, responsedata.success);
+                                        return response.status(responsedata.status).json(responsedata);
+                                    }
                                 }
-                                else {
-                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'unsuccessful payment', responsedata.status, responsedata.success);
-                                    return response.status(responsedata.status).json(responsedata);
+                                else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                                    const requestOpenpayCharge = await axiosObservable({
+                                        data: {
+                                            amount: settings.amount,
+                                            currencyCode: settings.currency,
+                                            customerId: paymentcard?.clientcode,
+                                            description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                            igv: `${((appsetting.igv || 0) * 100)}`,
+                                            merchantId: appsetting.culqiurl,
+                                            operation: "CREATE",
+                                            orderId: invoiceid,
+                                            secretKey: appsetting.privatekey,
+                                            sourceId: paymentcardcode,
+                                            url: appsetting.culqiurlcharge,
+                                        },
+                                        method: "post",
+                                        url: `${bridgeEndpoint}processopenpay/handlecharge`,
+                                        _requestid: responsedata.id,
+                                    });
+
+                                    if (requestOpenpayCharge.data.success) {
+                                        const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), 'INSERT', null, null, usr, 'PAID', paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
+
+                                        await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, responsedata.id);
+
+                                        responsedata = genericfunctions.changeResponseData(responsedata, null, requestOpenpayCharge.data.result, 'successful_transaction', 200, true);
+                                        return response.status(responsedata.status).json(responsedata);
+                                    }
+                                    else {
+                                        let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'unsuccessful payment';
+
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCharge, responsedata.status, responsedata.success);
+                                        return response.status(responsedata.status).json(responsedata);
+                                    }
                                 }
                             }
                             else {
                                 const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
 
                                 if (charge.object === 'error') {
-                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, null, responsedata.status, responsedata.success);
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, charge.merchant_message?.split("https://www.culqi.com/api")[0] || charge.user_message, responsedata.status, responsedata.success);
                                     return response.status(responsedata.status).json(responsedata);
                                 }
                                 else {
@@ -2192,7 +2301,7 @@ exports.chargeInvoice = async (request, response) => {
 
 exports.createBalance = async (request, response) => {
     const { userid, usr } = request.user;
-    const { invoiceid, settings, token, metadata = {}, corpid, orgid, reference, comments, purchaseorder, paymentcardid, paymentcardcode, iscard } = request.body;
+    const { settings, token, metadata = {}, corpid, orgid, reference, comments, purchaseorder, paymentcardid, paymentcardcode, iscard } = request.body;
     var { buyamount, totalamount, totalpay } = request.body;
 
     try {
@@ -2280,7 +2389,7 @@ exports.createBalance = async (request, response) => {
                 if ((Math.round((totalpay * 100 + Number.EPSILON) * 100) / 100) === settings.amount) {
                     const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
 
-                    if (appsetting && appsetting?.paymentprovider === 'CULQI') {
+                    if (appsetting) {
                         const userprofile = await getProfile(userid, responsedata.id);
 
                         if (userprofile) {
@@ -2304,34 +2413,73 @@ exports.createBalance = async (request, response) => {
                             if (iscard) {
                                 paymentcard = await getPaymentCard(corpid, paymentcardid, responsedata.id);
 
-                                const requestCulqiCharge = await axiosObservable({
-                                    data: {
-                                        amount: settings.amount,
-                                        bearer: appsetting.privatekey,
-                                        description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
-                                        currencyCode: settings.currency,
-                                        email: (paymentcard?.mail || userprofile.email),
-                                        sourceId: paymentcardcode,
-                                        operation: "CREATE",
-                                        url: appsetting.culqiurlcharge,
-                                        metadata: metadata,
-                                    },
-                                    method: "post",
-                                    url: `${bridgeEndpoint}processculqi/handlecharge`,
-                                    _requestid: responsedata.id,
-                                });
+                                if (appsetting?.paymentprovider === 'CULQI') {
+                                    const requestCulqiCharge = await axiosObservable({
+                                        data: {
+                                            amount: settings.amount,
+                                            bearer: appsetting.privatekey,
+                                            description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                            currencyCode: settings.currency,
+                                            email: (paymentcard?.mail || userprofile.email),
+                                            sourceId: paymentcardcode,
+                                            operation: "CREATE",
+                                            url: appsetting.culqiurlcharge,
+                                            metadata: metadata,
+                                        },
+                                        method: "post",
+                                        url: `${bridgeEndpoint}processculqi/handlecharge`,
+                                        _requestid: responsedata.id,
+                                    });
 
-                                if (requestCulqiCharge.data.success) {
-                                    chargeBridge = requestCulqiCharge.data.result;
+                                    if (requestCulqiCharge.data.success) {
+                                        chargeBridge = requestCulqiCharge.data.result;
 
-                                    successPay = true;
+                                        successPay = true;
+                                    }
+                                    else {
+                                        let errorCharge = getCulqiError(requestCulqiCharge?.data?.operationMessage) || 'unsuccessful payment';
+
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCharge, responsedata.status, responsedata.success);
+                                        return response.status(responsedata.status).json(responsedata);
+                                    }
+                                }
+                                else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                                    const requestOpenpayCharge = await axiosObservable({
+                                        data: {
+                                            amount: settings.amount,
+                                            currencyCode: settings.currency,
+                                            customerId: paymentcard?.clientcode,
+                                            description: (removeSpecialCharacter('PAYMENT: ' + (settings.description || ''))).slice(0, 80),
+                                            igv: `${((appsetting.igv || 0) * 100)}`,
+                                            merchantId: appsetting.culqiurl,
+                                            operation: "CREATE",
+                                            secretKey: appsetting.privatekey,
+                                            sourceId: paymentcardcode,
+                                            url: appsetting.culqiurlcharge,
+                                        },
+                                        method: "post",
+                                        url: `${bridgeEndpoint}processopenpay/handlecharge`,
+                                        _requestid: responsedata.id,
+                                    });
+
+                                    if (requestOpenpayCharge.data.success) {
+                                        chargeBridge = requestOpenpayCharge.data.result;
+
+                                        successPay = true;
+                                    }
+                                    else {
+                                        let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'unsuccessful payment';
+
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCharge, responsedata.status, responsedata.success);
+                                        return response.status(responsedata.status).json(responsedata);
+                                    }
                                 }
                             }
                             else {
                                 charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
 
                                 if (charge.object === 'error') {
-                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, null, responsedata.status, responsedata.success);
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, charge.merchant_message?.split("https://www.culqi.com/api")[0] || charge.user_message, responsedata.status, responsedata.success);
                                     return response.status(responsedata.status).json(responsedata);
                                 }
                                 else {
