@@ -2325,7 +2325,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVOICE_PAYMENT: {
-        query: "SELECT * FROM ufn_invoice_payment($corpid, $orgid, $invoiceid, $paidby, $email, $tokenid, $capture, $tokenjson, $chargeid, $chargetoken, $chargejson, $culqiamount)",
+        query: "SELECT * FROM ufn_invoice_payment($corpid, $orgid, $invoiceid, $paidby, $email, $tokenid, $capture, $tokenjson, $chargeid, $chargetoken, $chargejson, $culqiamount, $paymentprovider, $location)",
         module: "",
         protected: "INSERT"
     },

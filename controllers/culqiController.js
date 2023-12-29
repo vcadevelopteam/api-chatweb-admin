@@ -639,7 +639,7 @@ const insertCharge = async (corpId, orgId, invoiceId, id, amount, capture, charg
     return null;
 }
 
-const insertPayment = async (corpId, orgId, invoiceId, capture, chargeId, chargeJson, chargeToken, culqiAmount, email, paidBy, tokenId, tokenJson, requestId) => {
+const insertPayment = async (corpId, orgId, invoiceId, capture, chargeId, chargeJson, chargeToken, culqiAmount, email, paidBy, tokenId, tokenJson, paymentProvider, location, requestId) => {
     const queryString = "UFN_INVOICE_PAYMENT";
     const queryParameters = {
         capture: capture,
@@ -650,8 +650,10 @@ const insertPayment = async (corpId, orgId, invoiceId, capture, chargeId, charge
         culqiamount: culqiAmount,
         email: email,
         invoiceid: invoiceId,
+        location: location,
         orgid: orgId,
         paidby: paidBy,
+        paymentprovider: paymentProvider,
         tokenid: tokenId,
         tokenjson: tokenJson,
         _requestid: requestId,
@@ -843,7 +845,7 @@ exports.automaticPayment = async (request, response) => {
 
                                                         const chargedata = await insertCharge(corpid, orgid, invoiceid, null, culqiamount, true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, invoice.currency, invoice.description, favoritecard.mail, 'INSERT', null, null, 'SCHEDULER', 'PAID', favoritecard.paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
 
-                                                        const invoicepayment = await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, culqiamount, favoritecard.mail, 'SCHEDULER', favoritecard.paymentcardid, null, responsedata.id);
+                                                        const invoicepayment = await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, culqiamount, favoritecard.mail, 'SCHEDULER', favoritecard.paymentcardid, null, appsetting.paymentprovider, appsetting.location, responsedata.id);
 
                                                         if (invoicepayment) {
                                                             chargesuccess = true;
@@ -880,7 +882,7 @@ exports.automaticPayment = async (request, response) => {
 
                                                         const chargedata = await insertCharge(corpid, orgid, invoiceid, null, culqiamount, true, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, invoice.currency, invoice.description, favoritecard.mail, 'INSERT', null, null, 'SCHEDULER', 'PAID', favoritecard.paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
 
-                                                        const invoicepayment = await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, culqiamount, favoritecard.mail, 'SCHEDULER', favoritecard.paymentcardid, null, responsedata.id);
+                                                        const invoicepayment = await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, culqiamount, favoritecard.mail, 'SCHEDULER', favoritecard.paymentcardid, null, appsetting.paymentprovider, appsetting.location, responsedata.id);
 
                                                         if (invoicepayment) {
                                                             chargesuccess = true;
@@ -1654,7 +1656,7 @@ exports.cardDelete = async (request, response) => {
 
 exports.chargeInvoice = async (request, response) => {
     const { userid, usr } = request.user;
-    const { invoiceid, settings, token, metadata = {}, purchaseorder, comments, corpid, orgid, override, paymentcardid, paymentcardcode, iscard } = request.body;
+    const { invoiceid, settings, token, metadata = {}, purchaseorder, comments, corpid, orgid, override, paymentcardid, paymentcardcode, iscard, transaction } = request.body;
 
     try {
         logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
@@ -1783,7 +1785,7 @@ exports.chargeInvoice = async (request, response) => {
                                                 if (requestCulqiCharge.data.success) {
                                                     const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), 'INSERT', null, null, usr, 'PAID', paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
 
-                                                    await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, responsedata.id);
+                                                    await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, appsetting.paymentprovider, appsetting.location, responsedata.id);
 
                                                     successPay = true;
                                                 }
@@ -1819,7 +1821,7 @@ exports.chargeInvoice = async (request, response) => {
                                                 if (requestOpenpayCharge.data.success) {
                                                     const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), 'INSERT', null, null, usr, 'PAID', paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
 
-                                                    await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, responsedata.id);
+                                                    await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, appsetting.paymentprovider, appsetting.location, responsedata.id);
 
                                                     successPay = true;
                                                 }
@@ -1834,18 +1836,57 @@ exports.chargeInvoice = async (request, response) => {
                                             }
                                         }
                                         else {
-                                            const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
+                                            if (appsetting?.paymentprovider === 'CULQI') {
+                                                const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
 
-                                            if (charge.object === 'error') {
-                                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, charge.merchant_message?.split("https://www.culqi.com/api")[0] || charge.user_message, responsedata.status, responsedata.success);
-                                                return response.status(responsedata.status).json(responsedata);
+                                                if (charge.object === 'error') {
+                                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, charge.merchant_message?.split("https://www.culqi.com/api")[0] || charge.user_message, responsedata.status, responsedata.success);
+                                                    return response.status(responsedata.status).json(responsedata);
+                                                }
+                                                else {
+                                                    const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, usr, 'PAID', token.id, token, charge.object, responsedata.id)
+
+                                                    await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, charge, charge.id, (settings.amount / 100), token.email, usr, token.id, token, appsetting.paymentprovider, appsetting.location, responsedata.id);
+
+                                                    successPay = true;
+                                                }
                                             }
-                                            else {
-                                                const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, usr, 'PAID', token.id, token, charge.object, responsedata.id)
+                                            else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                                                const requestOpenpayCharge = await axiosObservable({
+                                                    data: {
+                                                        amount: settings.amount,
+                                                        currencyCode: settings.currency,
+                                                        description: `${(removeSpecialCharacter(settings.description || '').replace(/[^0-9A-Za-z ]/g, '')).slice(0, 80)}`,
+                                                        email: (userprofile.email || 'generic@mail.com'),
+                                                        firstName: `${(removeSpecialCharacter((transaction?.formdata?.holder_name || userprofile.firstname) || 'EMPTY')).slice(0, 50)}`,
+                                                        igv: `${((appsetting.igv || 0) * 100)}`,
+                                                        lastName: `${(removeSpecialCharacter(userprofile.lastname || 'EMPTY')).slice(0, 50)}`,
+                                                        merchantId: appsetting.culqiurl,
+                                                        operation: "CREATE",
+                                                        orderId: invoiceid,
+                                                        phoneNumber: `${(userprofile.phone ? userprofile.phone.replace(/[^0-9]/g, '') : '51999999999').slice(0, 15)}`,
+                                                        secretKey: appsetting.privatekey,
+                                                        sourceId: transaction?.transactionresponse?.data.id,
+                                                        url: appsetting.culqiurlcharge,
+                                                    },
+                                                    method: "post",
+                                                    url: `${bridgeEndpoint}processopenpay/handlecharge`,
+                                                    _requestid: responsedata.id,
+                                                });
 
-                                                await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, charge, charge.id, (settings.amount / 100), token.email, usr, token.id, token, responsedata.id);
+                                                if (requestOpenpayCharge.data.success) {
+                                                    const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, settings.currency, settings.description, userprofile.email || 'generic@mail.com', 'INSERT', null, null, usr, 'PAID', null, null, null, responsedata.id)
 
-                                                successPay = true;
+                                                    await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, (settings.amount / 100), userprofile.email || 'generic@mail.com', usr, null, null, appsetting.paymentprovider, appsetting.location, responsedata.id);
+
+                                                    successPay = true;
+                                                }
+                                                else {
+                                                    let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'generic payment error';
+
+                                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, null, errorCharge, responsedata.status, responsedata.success);
+                                                    return response.status(responsedata.status).json(responsedata);
+                                                }
                                             }
                                         }
 
@@ -2198,7 +2239,7 @@ exports.chargeInvoice = async (request, response) => {
                                     if (requestCulqiCharge.data.success) {
                                         const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), 'INSERT', null, null, usr, 'PAID', paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
 
-                                        await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, responsedata.id);
+                                        await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestCulqiCharge.data.result, requestCulqiCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, appsetting.paymentprovider, appsetting.location, responsedata.id);
 
                                         responsedata = genericfunctions.changeResponseData(responsedata, null, requestCulqiCharge.data.result, 'successful_transaction', 200, true);
                                         return response.status(responsedata.status).json(responsedata);
@@ -2233,7 +2274,7 @@ exports.chargeInvoice = async (request, response) => {
                                     if (requestOpenpayCharge.data.success) {
                                         const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, settings.currency, settings.description, (paymentcard?.mail || userprofile.email), 'INSERT', null, null, usr, 'PAID', paymentcardid, null, 'REGISTEREDCARD', responsedata.id);
 
-                                        await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, responsedata.id);
+                                        await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, (settings.amount / 100), (paymentcard?.mail || userprofile.email), usr, paymentcardid, null, appsetting.paymentprovider, appsetting.location, responsedata.id);
 
                                         responsedata = genericfunctions.changeResponseData(responsedata, null, requestOpenpayCharge.data.result, 'successful_transaction', 200, true);
                                         return response.status(responsedata.status).json(responsedata);
@@ -2247,19 +2288,59 @@ exports.chargeInvoice = async (request, response) => {
                                 }
                             }
                             else {
-                                const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
+                                if (appsetting?.paymentprovider === 'CULQI') {
+                                    const charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
 
-                                if (charge.object === 'error') {
-                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, charge.merchant_message?.split("https://www.culqi.com/api")[0] || charge.user_message, responsedata.status, responsedata.success);
-                                    return response.status(responsedata.status).json(responsedata);
+                                    if (charge.object === 'error') {
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, charge.merchant_message?.split("https://www.culqi.com/api")[0] || charge.user_message, responsedata.status, responsedata.success);
+                                        return response.status(responsedata.status).json(responsedata);
+                                    }
+                                    else {
+                                        const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, usr, 'PAID', token.id, token, charge.object, responsedata.id);
+
+                                        await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, charge, charge.id, (settings.amount / 100), token.email, usr, token.id, token, appsetting.paymentprovider, appsetting.location, responsedata.id);
+
+                                        responsedata = genericfunctions.changeResponseData(responsedata, charge.outcome.code, { id: charge.id, object: charge.object }, charge.outcome.user_message, 200, true);
+                                        return response.status(responsedata.status).json(responsedata);
+                                    }
                                 }
-                                else {
-                                    const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, charge, charge.id, settings.currency, settings.description, token.email, 'INSERT', null, null, usr, 'PAID', token.id, token, charge.object, responsedata.id);
+                                else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                                    const requestOpenpayCharge = await axiosObservable({
+                                        data: {
+                                            amount: settings.amount,
+                                            currencyCode: settings.currency,
+                                            description: `${(removeSpecialCharacter(settings.description || '').replace(/[^0-9A-Za-z ]/g, '')).slice(0, 80)}`,
+                                            email: (userprofile.email || 'generic@mail.com'),
+                                            firstName: `${(removeSpecialCharacter((transaction?.formdata?.holder_name || userprofile.firstname) || 'EMPTY')).slice(0, 50)}`,
+                                            igv: `${((appsetting.igv || 0) * 100)}`,
+                                            lastName: `${(removeSpecialCharacter(userprofile.lastname || 'EMPTY')).slice(0, 50)}`,
+                                            merchantId: appsetting.culqiurl,
+                                            operation: "CREATE",
+                                            orderId: invoiceid,
+                                            phoneNumber: `${(userprofile.phone ? userprofile.phone.replace(/[^0-9]/g, '') : '51999999999').slice(0, 15)}`,
+                                            secretKey: appsetting.privatekey,
+                                            sourceId: transaction?.transactionresponse?.data.id,
+                                            url: appsetting.culqiurlcharge,
+                                        },
+                                        method: "post",
+                                        url: `${bridgeEndpoint}processopenpay/handlecharge`,
+                                        _requestid: responsedata.id,
+                                    });
 
-                                    await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, charge, charge.id, (settings.amount / 100), token.email, usr, token.id, token, responsedata.id);
+                                    if (requestOpenpayCharge.data.success) {
+                                        const chargedata = await insertCharge(corpid, orgid, invoiceid, null, (settings.amount / 100), true, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, settings.currency, settings.description, userprofile.email || 'generic@mail.com', 'INSERT', null, null, usr, 'PAID', null, null, null, responsedata.id)
 
-                                    responsedata = genericfunctions.changeResponseData(responsedata, charge.outcome.code, { id: charge.id, object: charge.object }, charge.outcome.user_message, 200, true);
-                                    return response.status(responsedata.status).json(responsedata);
+                                        await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, (settings.amount / 100), userprofile.email || 'generic@mail.com', usr, null, null, appsetting.paymentprovider, appsetting.location, responsedata.id);
+
+                                        responsedata = genericfunctions.changeResponseData(responsedata, charge.outcome.code, null, 'successful_transaction', 200, true);
+                                        return response.status(responsedata.status).json(responsedata);
+                                    }
+                                    else {
+                                        let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'generic payment error';
+
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, null, errorCharge, responsedata.status, responsedata.success);
+                                        return response.status(responsedata.status).json(responsedata);
+                                    }
                                 }
                             }
                         }
@@ -2301,7 +2382,7 @@ exports.chargeInvoice = async (request, response) => {
 
 exports.createBalance = async (request, response) => {
     const { userid, usr } = request.user;
-    const { settings, token, metadata = {}, corpid, orgid, reference, comments, purchaseorder, paymentcardid, paymentcardcode, iscard } = request.body;
+    const { settings, token, metadata = {}, corpid, orgid, reference, comments, purchaseorder, paymentcardid, paymentcardcode, iscard, transaction } = request.body;
     var { buyamount, totalamount, totalpay } = request.body;
 
     try {
@@ -2476,14 +2557,50 @@ exports.createBalance = async (request, response) => {
                                 }
                             }
                             else {
-                                charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
+                                if (appsetting?.paymentprovider === 'CULQI') {
+                                    charge = await createCharge(userprofile, settings, token, metadata, appsetting.privatekey);
 
-                                if (charge.object === 'error') {
-                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, charge.merchant_message?.split("https://www.culqi.com/api")[0] || charge.user_message, responsedata.status, responsedata.success);
-                                    return response.status(responsedata.status).json(responsedata);
+                                    if (charge.object === 'error') {
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, charge.merchant_message?.split("https://www.culqi.com/api")[0] || charge.user_message, responsedata.status, responsedata.success);
+                                        return response.status(responsedata.status).json(responsedata);
+                                    }
+                                    else {
+                                        successPay = true;
+                                    }
                                 }
-                                else {
-                                    successPay = true;
+                                else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                                    const requestOpenpayCharge = await axiosObservable({
+                                        data: {
+                                            amount: settings.amount,
+                                            currencyCode: settings.currency,
+                                            description: `${(removeSpecialCharacter(settings.description || '').replace(/[^0-9A-Za-z ]/g, '')).slice(0, 80)}`,
+                                            email: (userprofile.email || 'generic@mail.com'),
+                                            firstName: `${(removeSpecialCharacter((transaction?.formdata?.holder_name || userprofile.firstname) || 'EMPTY')).slice(0, 50)}`,
+                                            igv: `${((appsetting.igv || 0) * 100)}`,
+                                            lastName: `${(removeSpecialCharacter(userprofile.lastname || 'EMPTY')).slice(0, 50)}`,
+                                            merchantId: appsetting.culqiurl,
+                                            operation: "CREATE",
+                                            phoneNumber: `${(userprofile.phone ? userprofile.phone.replace(/[^0-9]/g, '') : '51999999999').slice(0, 15)}`,
+                                            secretKey: appsetting.privatekey,
+                                            sourceId: transaction?.transactionresponse?.data.id,
+                                            url: appsetting.culqiurlcharge,
+                                        },
+                                        method: "post",
+                                        url: `${bridgeEndpoint}processopenpay/handlecharge`,
+                                        _requestid: responsedata.id,
+                                    });
+
+                                    if (requestOpenpayCharge.data.success) {
+                                        successPay = true;
+
+                                        charge = requestOpenpayCharge.data.result;
+                                    }
+                                    else {
+                                        let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'generic payment error';
+
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, null, errorCharge, responsedata.status, responsedata.success);
+                                        return response.status(responsedata.status).json(responsedata);
+                                    }
                                 }
                             }
 
@@ -2544,9 +2661,9 @@ exports.createBalance = async (request, response) => {
 
                                         await createInvoiceDetail(corpid, orgid, invoiceResponse.invoiceid, `COMPRA DE SALDO - ${billbyorg ? org.businessname : corp.businessname}`, 'ACTIVO', 'NINGUNO', 1, 'S001', producthasigv, '10', productigvtribute, 'ZZ', producttotaligv, producttotalamount, productigvrate, productprice, `COMPRA DE SALDO - ${billbyorg ? org.businessname : corp.businessname}`, productnetprice, productnetworth, parseFloat(buyamount), usr, responsedata.id);
 
-                                        const chargedata = await insertCharge(corpid, orgid, invoiceResponse.invoiceid, null, (settings.amount / 100), true, (iscard ? chargeBridge : charge), (iscard ? chargeBridge.id : charge.id), settings.currency, settings.description, (iscard ? (paymentcard?.mail || userprofile.email) : token.email), 'INSERT', null, null, usr, 'PAID', (iscard ? paymentcardid : token.id), (iscard ? null : token), (iscard ? "REGISTEREDCARD" : charge.object), responsedata.id);
+                                        const chargedata = await insertCharge(corpid, orgid, invoiceResponse.invoiceid, null, (settings.amount / 100), true, (iscard ? chargeBridge : charge), (iscard ? chargeBridge.id : charge.id), settings.currency, settings.description, (iscard ? (paymentcard?.mail || userprofile.email) : (token ? token.email : (userprofile.email || 'generic@mail.com'))), 'INSERT', null, null, usr, 'PAID', (iscard ? paymentcardid : (token ? token.id : null)), (iscard ? null : token || null), (iscard ? "REGISTEREDCARD" : charge.object || null), responsedata.id);
 
-                                        await insertPayment(corpid, orgid, invoiceResponse.invoiceid, true, chargedata?.chargeid, (iscard ? chargeBridge : charge), (iscard ? chargeBridge.id : charge.id), (settings.amount / 100), (iscard ? (paymentcard?.mail || userprofile.email) : token.email), usr, (iscard ? paymentcardid : token.id), (iscard ? null : token), responsedata.id);
+                                        await insertPayment(corpid, orgid, invoiceResponse.invoiceid, true, chargedata?.chargeid, (iscard ? chargeBridge : charge), (iscard ? chargeBridge.id : charge.id), (settings.amount / 100), (iscard ? (paymentcard?.mail || userprofile.email) : (token ? token.email : (userprofile.email || 'generic@mail.com'))), usr, (iscard ? paymentcardid : (token ? token.id : null)), (iscard ? null : token || null), appsetting.paymentprovider, appsetting.location, responsedata.id);
 
                                         var invoicecorrelative = null;
                                         var documenttype = null;
