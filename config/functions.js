@@ -4390,48 +4390,6 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-<<<<<<< HEAD
-    UFN_SUBSCRIPTION_CREATECHANNELS: {
-        query: "SELECT * FROM ufn_subscription_createchannels($corpid, $orgid, $userid, $android, $apple, $appstore, $blogger, $business, $chatWeb, $email, $facebook, $instagram, $instagramDM, $linkedin, $messenger, $metalead, $playstore, $sms, $teams, $telegram, $tiktok, $twitter, $twitterDM, $voximplantphone, $webForm, $whatsapp, $workplace, $workplaceDM, $youtube)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_ORDERCONFIG_INS: {
-        query: "SELECT * FROM ufn_orderconfig_ins($corpid, $orgid, $id, $orderconfig, $type, $status, $username, $operation);",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_ORDERCONFIG_SEL: {
-        query: "SELECT * FROM ufn_orderconfig_sel($corpid, $orgid)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_LEAD_CONFIG_INS: {
-        query: "SELECT * FROM ufn_lead_config_ins($id, $maxgreen, $maxyellow);",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_POLYGONS_INS_ARRAY: {
-        query: "SELECT * FROM ufn_polygons_ins_array($corpid, $orgid, $username, $table)",
-        module: "",
-        protected: "SELECT"
-    },
-    SEARCH_POINT_ON_AREAS: {
-        query: "SELECT * FROM search_point_on_areas($corpid, $orgid, $latitude , $longitude)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_APPSETTING_INVOICE_SEL_SINGLE: {
-        query: "SELECT * FROM ufn_appsetting_invoice_sel_single($corpid, $orgid)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_APPSETTING_INVOICE_SEL_EXCHANGERATE: {
-        query: "SELECT * FROM ufn_appsetting_invoice_sel_exchangerate($code)",
-        module: "",
-        protected: "SELECT"
-    },
-=======
     UFN_ASSISTANTAI_INS: {
         query: "SELECT * FROM ufn_assistantai_ins($corpid, $orgid, $id, $code, $name, $description, $basemodel, $language, $organizationname, $querywithoutanswer, $response, $prompt, $negativeprompt, $generalprompt, $temperature, $max_tokens, $top_p, $apikey, $retrieval, $codeinterpreter, $type, $status, $username, $operation);",
         module: "",
@@ -4476,6 +4434,45 @@ module.exports = {
         query: "SELECT * FROM ufn_assistantaidocument_training_upd($corpid, $orgid, $assistantaiid, $documentsid, $username)",
         module: "",
         protected: "SELECT"
-    }
->>>>>>> feature/RPYQ409
+    },
+    UFN_SUBSCRIPTION_CREATECHANNELS: {
+        query: "SELECT * FROM ufn_subscription_createchannels($corpid, $orgid, $userid, $android, $apple, $appstore, $blogger, $business, $chatWeb, $email, $facebook, $instagram, $instagramDM, $linkedin, $messenger, $metalead, $playstore, $sms, $teams, $telegram, $tiktok, $twitter, $twitterDM, $voximplantphone, $webForm, $whatsapp, $workplace, $workplaceDM, $youtube)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ORDERCONFIG_INS: {
+        query: "SELECT * FROM ufn_orderconfig_ins($corpid, $orgid, $id, $orderconfig, $type, $status, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_ORDERCONFIG_SEL: {
+        query: "SELECT * FROM ufn_orderconfig_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LEAD_CONFIG_INS: {
+        query: "SELECT * FROM ufn_lead_config_ins($id, $maxgreen, $maxyellow);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_POLYGONS_INS_ARRAY: {
+        query: "SELECT * FROM ufn_polygons_ins_array($corpid, $orgid, $username, $table)",
+        module: "",
+        protected: "SELECT"
+    },
+    SEARCH_POINT_ON_AREAS: {
+        query: "SELECT * FROM search_point_on_areas($corpid, $orgid, $latitude , $longitude)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_APPSETTING_INVOICE_SEL_SINGLE: {
+        query: "SELECT * FROM ufn_appsetting_invoice_sel_single($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_APPSETTING_INVOICE_SEL_EXCHANGERATE: {
+        query: "SELECT * FROM ufn_appsetting_invoice_sel_exchangerate($code)",
+        module: "",
+        protected: "SELECT"
+    },
 }
