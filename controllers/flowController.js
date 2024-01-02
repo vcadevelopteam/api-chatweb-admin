@@ -158,6 +158,7 @@ exports.TestRequest = async (req, res) => {
         let headersjson = headers.reduce((a, x) => ({ ...a, [x.key]: x.value }), {});
         let parametersjson = parameters.reduce((a, x) => ({ ...a, [x.key]: x.value }), {});
         let result = {}
+        console.log({headeers: { ...setConfig(authorization, headersjson, url, method) }})
         if (["POST", "PUT", "DELETE", "PATCH"].includes(method)) {
             if (postformat.toLowerCase() === 'urlencoded') {
                 const formData = new FormData();
