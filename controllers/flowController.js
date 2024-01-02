@@ -182,6 +182,7 @@ exports.TestRequest = async (req, res) => {
         return res.json(result.data);
     }
     catch (exception) {
+        console.log('ca')
         if (!!exception.response) {
             return res.json({ error: 'ERROR', status: exception.response?.status, data: exception.response?.data });
         }
@@ -193,32 +194,29 @@ exports.TestRequest = async (req, res) => {
 
 exports.bridgeOauth10 = async (req, res) => {
     try {
-        const { method, url, authorization, headers, postformat, body, parameters } = req.body;
-        let headersjson = headers.reduce((a, x) => ({ ...a, [x.key]: x.value }), {});
-        let parametersjson = parameters.reduce((a, x) => ({ ...a, [x.key]: x.value }), {});
-        let result = {}
-        validateOauthHeader(headersjson)
-        if (["POST", "PUT", "DELETE", "PATCH"].includes(method)) {
-            if (postformat.toLowerCase() === 'urlencoded') {
-                const formData = new FormData();
-                Object.keys(parametersjson).forEach(key => formData.append(key, parametersjson[key]));
-                result = await axios.post(url, formData, { ...buildAuthOauth({ ...formData.getHeaders(), ...headersjson }, url, method) });
+        const reqBody = ['method', 'url', 'body']
+        for (const prop of reqBody) {
+            if (!req.body.hasOwnProperty(prop)) {
+              throw new Error(`Missing property in body: ${prop}`);
             }
-            else {
-                if (method === "POST") {
-                    result = await axios.post(url, postformat.toLowerCase() === 'json' ? JSON.parse(body) : body, { ...buildAuthOauth(headersjson, url, method) });
-                } else if (method === "PUT") {
-                    result = await axios.put(url, postformat.toLowerCase() === 'json' ? JSON.parse(body) : body, { ...buildAuthOauth(headersjson, url, method) });
-                } else if (method === "DELETE") {
-                    result = await axios.delete(url, postformat.toLowerCase() === 'json' ? JSON.parse(body) : body, { ...buildAuthOauth(headersjson, url, method) });
-                } else if (method === "PATCH") {
-                    result = await axios.patch(url, postformat.toLowerCase() === 'json' ? JSON.parse(body) : body, { ...buildAuthOauth(headersjson, url, method) });
-                }
-            }
+        }
+
+        const { method, url, body } = req.body;
+        const finalHeaders = buildAuthOauth(req.headers, url, method)
+
+        if (method === "POST") {
+            result = await axios.post(url, body, finalHeaders);
+        } else if (method === "PUT") {
+            result = await axios.put(url, body, finalHeaders);
+        } else if (method === "DELETE") {
+            result = await axios.delete(url, body, finalHeaders);
+        } else if (method === "PATCH") {
+            result = await axios.patch(url, body, finalHeaders);
         }
         else {
-            result = await axios.get(url, { ...buildAuthOauth(headersjson, url, method) });
+            result = await axios.get(url, finalHeaders);
         }
+
         return res.json(result.data);
     } catch (exception) {
         if (!!exception.response) {
@@ -230,25 +228,22 @@ exports.bridgeOauth10 = async (req, res) => {
     }
 }
 
-const validateOauthHeader = (headers) => {
+const buildAuthOauth = (headers, url, method) => {
     const reqProperties = ['consumer_key', 'consumer_secret', 'access_token', 'secret_token', 'realm']
     for (const prop of reqProperties) {
         if (!headers.hasOwnProperty(prop)) {
           throw new Error(`Missing property: ${prop}`);
         }
     }
-}
 
-const buildAuthOauth = (headers, url, method) => {
     const { consumer_key, consumer_secret, access_token, secret_token, realm } = headers
     const defaults = { headers: headers };
 
-    delete headers.consumer_key;
-    delete headers.consumer_secret;
-    delete headers.access_token;
-    delete headers.secret_token;
-    delete headers.realm;
-
+    const deleteProperties = ['authorization', 'host', 'connection', 'accept', 'content-type', 'content-length', 'user-agent']
+    for (const prop of [...reqProperties, ...deleteProperties]) {
+        delete headers[prop]
+    }
+    
     const oauth = OAuth({
         consumer: {
             key: consumer_key,
