@@ -183,7 +183,6 @@ exports.TestRequest = async (req, res) => {
         return res.json(result.data);
     }
     catch (exception) {
-        console.log('ca')
         if (!!exception.response) {
             return res.json({ error: 'ERROR', status: exception.response?.status, data: exception.response?.data });
         }
