@@ -200,7 +200,7 @@ exports.bridgeOauth10 = async (req, res) => {
             }
         }
         const { method, url, body } = req.body;
-        const finalHeaders = buildAuthOauth(req.headers, url, method)
+        const finalHeaders = buildAuthOauth(req.headers, url, method.toUpperCase())
 
         if (method === "POST") {
             result = await axios.post(url, body, finalHeaders);
