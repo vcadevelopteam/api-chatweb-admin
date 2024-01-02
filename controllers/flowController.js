@@ -199,7 +199,6 @@ exports.bridgeOauth10 = async (req, res) => {
               throw new Error(`Missing property in body: ${prop}`);
             }
         }
-
         const { method, url, body } = req.body;
         const finalHeaders = buildAuthOauth(req.headers, url, method)
 
@@ -228,14 +227,14 @@ exports.bridgeOauth10 = async (req, res) => {
 }
 
 const buildAuthOauth = (headers, url, method) => {
-    const reqProperties = ['consumer_key', 'consumer_secret', 'access_token', 'secret_token', 'realm']
+    const reqProperties = ['consumerkey', 'consumersecret', 'accesstoken', 'secrettoken', 'realm']
     for (const prop of reqProperties) {
         if (!headers.hasOwnProperty(prop)) {
             throw new Error(`Missing property in header: ${prop}`);
         }
     }
 
-    const { consumer_key, consumer_secret, access_token, secret_token, realm } = headers
+    const { consumerkey, consumersecret, accesstoken, secrettoken, realm } = headers
     const defaults = { headers: headers };
 
     const deleteProperties = ['authorization', 'host', 'connection', 'accept', 'content-type', 'content-length', 'user-agent']
@@ -245,8 +244,8 @@ const buildAuthOauth = (headers, url, method) => {
     
     const oauth = OAuth({
         consumer: {
-            key: consumer_key,
-            secret: consumer_secret,
+            key: consumerkey,
+            secret: consumersecret,
         },
         signature_method: "HMAC-SHA256",
         hash_function(base_string, key) {
@@ -259,8 +258,8 @@ const buildAuthOauth = (headers, url, method) => {
     });
 
     const oauth_token = {
-        key: access_token,
-        secret: secret_token,
+        key: accesstoken,
+        secret: secrettoken,
     };
 
     const requestData = {
