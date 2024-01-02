@@ -749,7 +749,7 @@ module.exports = {
             AND ous.orgid = $orgid
             AND ous.userid = $userid
         )
-        SELECT dl.link, dl.title, dl.category FROM documentlibrary  dl
+        SELECT dl.link, dl.title, dl.category, dl.documentlibraryid FROM documentlibrary  dl
         WHERE dl.corpid = $corpid
         AND dl.orgid = $orgid
         AND CASE WHEN COALESCE(dl.groups, '') <> '' AND (SELECT(array_length(array_agg(groups), 1)) FROM w1) IS NOT NULL 
