@@ -158,7 +158,6 @@ exports.TestRequest = async (req, res) => {
         let headersjson = headers.reduce((a, x) => ({ ...a, [x.key]: x.value }), {});
         let parametersjson = parameters.reduce((a, x) => ({ ...a, [x.key]: x.value }), {});
         let result = {}
-        console.log({headeers: { ...setConfig(authorization, headersjson, url, method) }})
         if (["POST", "PUT", "DELETE", "PATCH"].includes(method)) {
             if (postformat.toLowerCase() === 'urlencoded') {
                 const formData = new FormData();
@@ -195,13 +194,11 @@ exports.TestRequest = async (req, res) => {
 exports.bridgeOauth10 = async (req, res) => {
     try {
         const reqBody = ['method', 'url', 'body']
-        console.log({headers_2ndaapi: req.headers})
         for (const prop of reqBody) {
             if (!req.body.hasOwnProperty(prop)) {
               throw new Error(`Missing property in body: ${prop}`);
             }
         }
-        // console.log({req_headers: req.headers})
 
         const { method, url, body } = req.body;
         const finalHeaders = buildAuthOauth(req.headers, url, method)
@@ -234,7 +231,6 @@ const buildAuthOauth = (headers, url, method) => {
     const reqProperties = ['consumer_key', 'consumer_secret', 'access_token', 'secret_token', 'realm']
     for (const prop of reqProperties) {
         if (!headers.hasOwnProperty(prop)) {
-            // console.log({headers})
             throw new Error(`Missing property in header: ${prop}`);
         }
     }
