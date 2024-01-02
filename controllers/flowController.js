@@ -196,6 +196,7 @@ exports.TestRequest = async (req, res) => {
 exports.bridgeOauth10 = async (req, res) => {
     try {
         const reqBody = ['method', 'url', 'body']
+        console.log({headers_2ndaapi: req.headers})
         for (const prop of reqBody) {
             if (!req.body.hasOwnProperty(prop)) {
               throw new Error(`Missing property in body: ${prop}`);
