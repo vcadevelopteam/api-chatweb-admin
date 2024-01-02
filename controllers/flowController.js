@@ -232,6 +232,7 @@ const buildAuthOauth = (headers, url, method) => {
     const reqProperties = ['consumer_key', 'consumer_secret', 'access_token', 'secret_token', 'realm']
     for (const prop of reqProperties) {
         if (!headers.hasOwnProperty(prop)) {
+            console.log({headers})
             throw new Error(`Missing property in header: ${prop}`);
         }
     }
