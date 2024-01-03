@@ -592,7 +592,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CORP_INS: {
-        query: "SELECT * FROM ufn_corp_ins($id, $description, $status, $type, $username, $operation, $logo, $logotype, $companysize, $paymentplanid, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $billbyorg, $credittype, $paymentmethod, $automaticpayment, $automaticperiod, $automaticinvoice, $partner, $appsettingid)",
+        query: "SELECT * FROM ufn_corp_ins($id, $description, $status, $type, $username, $operation, $logo, $logotype, $companysize, $paymentplanid, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $billbyorg, $credittype, $paymentmethod, $automaticpayment, $automaticperiod, $automaticinvoice, $partner, $appsettingid, $citybillingid)",
         module: ["/corporations"],
         protected: "INSERT"
     },
@@ -607,7 +607,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORG_INS: {
-        query: "SELECT * FROM ufn_org_ins($corpid, $id, $description, $status, $type, $username, $operation, $email, $password, $port, $host, $default_credentials, $ssl, $private_mail, $currency, $country, $timezoneoffset, $timezone, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $iconbot, $iconadvisor, $iconclient, $credittype, $automaticpayment, $automaticperiod, $automaticinvoice, $voximplantautomaticrecharge, $voximplantrechargerange, $voximplantrechargepercentage, $voximplantrechargefixed, $voximplantadditionalperchannel, $appsettingid)",
+        query: "SELECT * FROM ufn_org_ins($corpid, $id, $description, $status, $type, $username, $operation, $email, $password, $port, $host, $default_credentials, $ssl, $private_mail, $currency, $country, $timezoneoffset, $timezone, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $iconbot, $iconadvisor, $iconclient, $credittype, $automaticpayment, $automaticperiod, $automaticinvoice, $voximplantautomaticrecharge, $voximplantrechargerange, $voximplantrechargepercentage, $voximplantrechargefixed, $voximplantadditionalperchannel, $appsettingid, $citybillingid)",
         module: ["/organizations", "/extras/users"],
         protected: "INSERT"
     },
@@ -2358,7 +2358,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVOICE_PAYMENT: {
-        query: "SELECT * FROM ufn_invoice_payment($corpid, $orgid, $invoiceid, $paidby, $email, $tokenid, $capture, $tokenjson, $chargeid, $chargetoken, $chargejson, $culqiamount)",
+        query: "SELECT * FROM ufn_invoice_payment($corpid, $orgid, $invoiceid, $paidby, $email, $tokenid, $capture, $tokenjson, $chargeid, $chargetoken, $chargejson, $culqiamount, $paymentprovider, $location)",
         module: "",
         protected: "INSERT"
     },
@@ -2418,7 +2418,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INVOICE_SUNAT: {
-        query: "SELECT * FROM ufn_invoice_sunat($corpid, $orgid, $invoiceid, $status, $error, $qrcode, $hashcode, $urlcdr, $urlpdf, $urlxml, $serie, $issuerruc, $issuerbusinessname, $issuertradename, $issuerfiscaladdress, $issuerubigeo, $emittertype, $annexcode, $printingformat, $sendtosunat, $returnpdf, $returnxmlsunat, $returnxml, $token, $sunaturl, $sunatusername, $xmlversion, $ublversion, $receiverdoctype, $receiverdocnum, $receiverbusinessname, $receiverfiscaladdress, $receivercountry, $receivermail, $invoicetype, $sunatopecode, $expirationdate, $purchaseorder, $comments, $credittype, $detractioncode, $detraction, $detractionaccount, $invoicedate)",
+        query: "SELECT * FROM ufn_invoice_sunat($corpid, $orgid, $invoiceid, $status, $error, $qrcode, $hashcode, $urlcdr, $urlpdf, $urlxml, $serie, $issuerruc, $issuerbusinessname, $issuertradename, $issuerfiscaladdress, $issuerubigeo, $emittertype, $annexcode, $printingformat, $sendtosunat, $returnpdf, $returnxmlsunat, $returnxml, $token, $sunaturl, $sunatusername, $xmlversion, $ublversion, $receiverdoctype, $receiverdocnum, $receiverbusinessname, $receiverfiscaladdress, $receivercountry, $receivermail, $invoicetype, $sunatopecode, $expirationdate, $purchaseorder, $comments, $credittype, $detractioncode, $detraction, $detractionaccount, $invoicedate, $invoiceprovider)",
         module: "",
         protected: "INSERT"
     },
@@ -4490,6 +4490,11 @@ module.exports = {
     },
     UFN_APPSETTING_INVOICE_SEL_EXCHANGERATE: {
         query: "SELECT * FROM ufn_appsetting_invoice_sel_exchangerate($code)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CITYBILLING_SEL: {
+        query: "SELECT * FROM ufn_citybilling_sel();",
         module: "",
         protected: "SELECT"
     },

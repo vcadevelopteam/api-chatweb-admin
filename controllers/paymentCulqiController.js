@@ -7,7 +7,7 @@ const { getErrorCode, axiosObservable } = require('../config/helpers');
 
 const servicesEndpoint = process.env.SERVICES;
 
-exports.chargeCulqui = async (request, response) => {
+exports.newPayment = async (request, response) => {
     let responsedata = genericfunctions.generateResponseData(request._requestid);
 
     try {
