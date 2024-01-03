@@ -4420,4 +4420,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_BILLINGPERIODPARTNER_CALC: {
+        query: "SELECT * FROM ufn_billingperiodpartner_calc($partnerid, $year, $month)",
+        module: ["/invoice"],
+        protected: "INSERT"
+    },
 }
