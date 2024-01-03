@@ -1781,7 +1781,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CONVERSATION_SEL_TICKETSBYUSER_FILTER: {
-        query: "SELECT * FROM ufn_conversation_sel_ticketsbyuser_filter($corpid, $orgid, $start_createticket, $end_createticket, $channels, $conversationstatus, $displayname, $phone, $offset)",
+        query: "SELECT * FROM ufn_conversation_sel_ticketsbyuser_filter($corpid, $orgid, $userid, $start_createticket, $end_createticket, $channels, $conversationstatus, $displayname, $phone, $offset)",
         module: "",
         protected: "SELECT"
     },
