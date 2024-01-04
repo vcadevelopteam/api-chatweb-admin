@@ -152,7 +152,7 @@ exports.processTransaction = async (request, response) => {
                                 }
                             }
                             catch (error) {
-                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, error?.response?.data?.description || error?.message, responsedata.status, responsedata.success);
+                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'generic_payment_error' || (error?.response?.data?.description || error?.message), responsedata.status, responsedata.success);
                             }
                         }
                         else {
