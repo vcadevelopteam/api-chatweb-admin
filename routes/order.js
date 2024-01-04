@@ -1,15 +1,8 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const routerController = require('../controllers/orderController');
-const auth = require('../middleware/auth');
+const routerController = require("../controllers/orderController");
+const auth = require("../middleware/auth");
 
-// Base route
-router.get('/', (req, res) => {
-    res.send('Welcome to the order API!');
-});
-
-router.post('/update', auth, routerController.update);
-
-router.post('/payments', auth, routerController.payments);
+router.post("/update/info", auth, routerController.updateInfo);
 
 module.exports = router;
