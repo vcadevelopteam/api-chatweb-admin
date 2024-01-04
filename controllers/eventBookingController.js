@@ -410,6 +410,7 @@ exports.Collection = async (req, res) => {
                 reschedulenotificationemail,
                 rescheduletype
             } = resultCalendar[0]
+            console.log({parameters, resultCalendar})
 
             //si envia un calendarbookinguuid es porque quiere reprogramar, osea cancelar la antigua y crear una nueva
             if (parameters.calendarbookingid) {
