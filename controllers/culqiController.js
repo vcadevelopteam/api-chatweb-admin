@@ -1885,10 +1885,10 @@ exports.chargeInvoice = async (request, response) => {
                                                     paymenttype = requestOpenpayCharge?.data?.result?.card?.type;
                                                 }
                                                 else {
-                                                    let errorCharge = requestOpenpayCharge?.data?.operationMessage;
+                                                    let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'unsuccessful payment';
 
                                                     if (errorCharge) {
-                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCharge, responsedata.status, responsedata.success);
+                                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'generic_payment_error' || errorCharge, responsedata.status, responsedata.success);
                                                         return response.status(responsedata.status).json(responsedata);
                                                     }
                                                 }
@@ -1945,9 +1945,9 @@ exports.chargeInvoice = async (request, response) => {
                                                     paymenttype = requestOpenpayCharge?.data?.result?.card?.type;
                                                 }
                                                 else {
-                                                    let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'generic payment error';
+                                                    let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'unsuccessful payment';
 
-                                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, null, errorCharge, responsedata.status, responsedata.success);
+                                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, null, 'generic_payment_error' || errorCharge, responsedata.status, responsedata.success);
                                                     return response.status(responsedata.status).json(responsedata);
                                                 }
                                             }
@@ -2378,7 +2378,7 @@ exports.chargeInvoice = async (request, response) => {
                                     else {
                                         let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'unsuccessful payment';
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCharge, responsedata.status, responsedata.success);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'generic_payment_error' || errorCharge, responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
@@ -2432,9 +2432,9 @@ exports.chargeInvoice = async (request, response) => {
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                     else {
-                                        let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'generic payment error';
+                                        let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'unsuccessful payment';
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, null, errorCharge, responsedata.status, responsedata.success);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, null, 'generic_payment_error' || errorCharge, responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
@@ -2650,7 +2650,7 @@ exports.createBalance = async (request, response) => {
                                     else {
                                         let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'unsuccessful payment';
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, errorCharge, responsedata.status, responsedata.success);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'generic_payment_error' || errorCharge, responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
@@ -2699,9 +2699,9 @@ exports.createBalance = async (request, response) => {
                                         paymenttype = requestOpenpayCharge?.data?.result?.card?.type;
                                     }
                                     else {
-                                        let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'generic payment error';
+                                        let errorCharge = requestOpenpayCharge?.data?.operationMessage || 'unsuccessful payment';
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, null, errorCharge, responsedata.status, responsedata.success);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, null, 'generic_payment_error' || errorCharge, responsedata.status, responsedata.success);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
