@@ -100,6 +100,7 @@ exports.processTransaction = async (request, response) => {
                                     },
                                     headers: { Authorization: `Basic ${buff.toString('base64')}` },
                                     method: 'post',
+                                    retryOverride: true,
                                     url: `${openpayFinalEndpoint}v1/${authCredentials?.merchantId}/charges`,
                                     _requestid: request._requestid,
                                 });
