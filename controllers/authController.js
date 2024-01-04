@@ -59,6 +59,11 @@ const properties = [
         type: 'bool',
     },
     {
+        propertyname: "BLOQUEOENVIODOCUMENTOS",
+        key: "lock_send_file_pc",
+        type: 'bool',
+    },
+    {
         propertyname: "LIMITARREASIGNACIONGRUPO",
         key: "limit_reassign_group",
         type: 'bool',
