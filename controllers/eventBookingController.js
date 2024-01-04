@@ -42,7 +42,7 @@ const send = async (data, requestid) => {
             ]);
             const configmail = resBD[0];
             const mailtemplate = resBD[1][0];
-
+            console.log({mailtemplate, data})
             if (configmail instanceof Array && configmail.length > 0) {
                 jsonconfigmail = JSON.stringify({
                     username: configmail[0].email,
