@@ -3104,7 +3104,7 @@ exports.createBalance = async (request, response) => {
 
 exports.createCreditNote = async (request, response) => {
     const { userid, usr } = request.user;
-    const { corpid, orgid, invoiceid, creditnotetype, creditnotemotive } = request.body;
+    const { corpid, orgid, invoiceid, creditnotetype, creditnotemotive, paymentmethod } = request.body;
     var { creditnotediscount } = request.body;
 
     try {
@@ -3263,7 +3263,7 @@ exports.createCreditNote = async (request, response) => {
                                 else if (appsetting.invoiceprovider === 'SIIGO') {
                                     invoicedata.TipoDocumentoSiigo = "NC";
                                     invoicedata.TipoCambio = invoice.currency === 'COP' ? '1.000' : ((exchangeratedata?.exchangeratecop / exchangeratedata?.exchangerate) || invoice.exchangerate);
-                                    invoicedata.TipoPago = "Tarjeta Débito";
+                                    invoicedata.TipoPago = paymentmethod || "Tarjeta Débito";
                                     invoicedata.InvoiceId = invoice.hashcode;
 
                                     const corp = await getCorporation(corpid, responsedata.id);
@@ -3357,7 +3357,7 @@ exports.createCreditNote = async (request, response) => {
 
 exports.createInvoice = async (request, response) => {
     const { usr } = request.user;
-    const { corpid, orgid, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, clientcredittype, invoicecreatedate, invoiceduedate, invoicecurrency, invoicepurchaseorder, invoicecomments, autosendinvoice, productdetail, onlyinsert, invoiceid, year, month } = request.body;
+    const { corpid, orgid, clientdoctype, clientdocnumber, clientbusinessname, clientfiscaladdress, clientcountry, clientmail, clientcredittype, invoicecreatedate, invoiceduedate, invoicecurrency, invoicepurchaseorder, invoicecomments, autosendinvoice, productdetail, onlyinsert, invoiceid, year, month, paymentmethod } = request.body;
     var { invoicetotalamount } = request.body;
 
     try {
@@ -3661,7 +3661,7 @@ exports.createInvoice = async (request, response) => {
                                 else if (appsetting.invoiceprovider === 'SIIGO') {
                                     invoicedata.TipoDocumentoSiigo = "FV";
                                     invoicedata.TipoCambio = invoicecurrency === 'COP' ? '1.000' : ((lastExchangeData?.exchangeratecop / lastExchangeData?.exchangerate) || 1);
-                                    invoicedata.TipoPago = "Tarjeta Débito";
+                                    invoicedata.TipoPago = paymentmethod || "Tarjeta Débito";
 
                                     const corp = await getCorporation(corpid, responsedata.id);
                                     const org = await getOrganization(corpid, orgid, responsedata.id);
@@ -3742,8 +3742,8 @@ exports.createInvoice = async (request, response) => {
 };
 
 exports.emitInvoice = async (request, response) => {
-    const { userid, usr } = request.user;
-    const { corpid, orgid, invoiceid } = request.body;
+    const { userid } = request.user;
+    const { corpid, orgid, invoiceid, paymentmethod } = request.body;
 
     try {
         logger.child({ _requestid: request._requestid, ctx: request.body }).debug(`Request to ${request.originalUrl}`);
@@ -4062,7 +4062,7 @@ exports.emitInvoice = async (request, response) => {
                                     else if (appsetting.invoiceprovider === 'SIIGO') {
                                         invoicedata.TipoDocumentoSiigo = "FV";
                                         invoicedata.TipoCambio = invoice.currency === 'COP' ? '1.000' : ((exchangeratedata?.exchangeratecop / exchangeratedata?.exchangerate) || invoice.exchangerate);
-                                        invoicedata.TipoPago = "Tarjeta Débito";
+                                        invoicedata.TipoPago = paymentmethod || "Tarjeta Débito";
                                         invoicedata.CityCountry = corp.billbyorg ? org.countrycode : corp.countrycode;
                                         invoicedata.CityState = corp.billbyorg ? org.statecode : corp.statecode;
                                         invoicedata.CityCode = corp.billbyorg ? org.citycode : corp.citycode;
