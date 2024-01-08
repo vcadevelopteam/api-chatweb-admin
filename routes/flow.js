@@ -30,7 +30,7 @@ router.post("/triggerblock",
 )
 
 router.post('/bridgeOauth10',
-    auth,
+    // auth,
     flowController.bridgeOauth10
 )
 
