@@ -1,46 +1,17 @@
-const { getErrorCode } = require("../config/helpers");
+const { getErrorCode, setSessionParameters } = require("../config/helpers");
 const { executesimpletransaction } = require("../config/triggerfunctions");
 const logger = require("../config/winston");
 
 exports.updateInfo = async (req, res) => {
-  const {
-    order_id,
-    delivery_type,
-    delivery_date,
-    delivery_address,
-    delivery_address_reference,
-    paymentmethod,
-    payment_receipt,
-    payment_document_type,
-    payment_document_number,
-    payment_businessname,
-    payment_fiscal_address,
-    payment_date,
-    payment_amount,
-    payment_attachment,
-  } = req.body;
+  const parameters = req.body || {};
 
   try {
-    if (Object.keys(req.body).length === 0) {
+    if (Object.keys(parameters).length === 0) {
       throw new Error("Body is empty");
     }
 
-    updateData = await executesimpletransaction("UFN_API_ORDER_UPDATE_INFO", {
-      order_id,
-      delivery_type,
-      delivery_date,
-      delivery_address,
-      delivery_address_reference,
-      paymentmethod,
-      payment_receipt,
-      payment_document_type,
-      payment_document_number,
-      payment_businessname,
-      payment_fiscal_address,
-      payment_date,
-      payment_amount,
-      payment_attachment,
-    });
+    setSessionParameters(parameters, req.user, req._requestid);
+    updateData = await executesimpletransaction("UFN_API_ORDER_UPDATE_INFO", parameters);
 
     if (!(updateData instanceof Array)) {
       return res
