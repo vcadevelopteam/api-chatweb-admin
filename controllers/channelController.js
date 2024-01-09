@@ -2696,11 +2696,11 @@ exports.insertChannel = async (request, response) => {
                         accessToken: service.accesstoken,
                         endpoint: metaEndpoint,
                         numberId: service.phone,
-                        siteId: requestCreateMeta.data.phoneNumber,
+                        siteId: `${requestCreateMeta.data.phoneNumber}`.replace(/[^0-9.]/g, ''),
                     };
 
-                    parameters.communicationchannelsite = requestCreateMeta.data.phoneNumber;
-                    parameters.phone = requestCreateMeta.data.phoneNumber;
+                    parameters.communicationchannelsite = `${requestCreateMeta.data.phoneNumber}`.replace(/[^0-9.]/g, '');
+                    parameters.phone = `${requestCreateMeta.data.phoneNumber}`.replace(/[^0-9.]/g, '');
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
                     parameters.type = "WHAM";
 
