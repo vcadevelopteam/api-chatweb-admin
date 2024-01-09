@@ -500,8 +500,7 @@ exports.Collection = async (req, res) => {
                     await send(sendmessage, req._requestid);
                     await send({ ...sendmessage, type: "MAIL", body: notificationmessageemail, hsmtemplateid: messagetemplateidemail }, req._requestuestid);
                 } else if ("EMAIL" === notificationtype) {
-                    await send({ ...sendmessage, type: "MAIL", body: notificationmessageemail }, req._requestuestid);
-                    // await send({ ...sendmessage, type: "MAIL", body: notificationmessageemail, hsmtemplateid: messagetemplateidemail }, req._requestuestid);
+                    await send({ ...sendmessage, type: "MAIL" }, req._requestuestid);
                 } else {
                     await send(sendmessage, req._requestid);
                 }
