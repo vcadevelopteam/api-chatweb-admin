@@ -10,7 +10,7 @@ exports.updateInfo = async (req, res) => {
       throw new Error("Body is empty");
     }
 
-    setSessionParameters(parameters, req.user, req._requestid);
+    // setSessionParameters(parameters, req.user, req._requestid);
     updateData = await executesimpletransaction("UFN_API_ORDER_UPDATE_INFO", parameters);
 
     if (!(updateData instanceof Array)) {
