@@ -89,7 +89,7 @@ exports.processTransaction = async (request, response) => {
                                         amount: paymentorder[0].totalamount,
                                         currency: paymentorder[0].currency,
                                         description: 'OPENPAY CHARGE',
-                                        order_id: paymentorder[0].paymentorderid,
+                                        order_id: `${corpid}-${orgid}-${paymentorder[0].paymentorderid}-${Math.floor(Math.random() * 9999)}`,
                                         device_session_id: colombia ? undefined : devicesessionid,
                                         customer: {
                                             name: formdata.holder_name || '',
