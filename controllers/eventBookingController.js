@@ -1273,8 +1273,6 @@ exports.cancelEventLaraigo = async (request, response) => {
         let parameters = request.body.parameters || request.body.data || {};
         const { method, key, phone, name, email } = request.body;
 
-        // setSessionParameters(parameters, request.user, request._requestid);
-
         const result = await executesimpletransaction(method, parameters, null || {});
         if (!(result instanceof Array))
             return response.status(result.rescode).json({ ...result, key });
