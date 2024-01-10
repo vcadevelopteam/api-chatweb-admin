@@ -11,9 +11,8 @@ exports.updateInfo = async (req, res) => {
     }
 
     // setSessionParameters(parameters, req.user, req._requestid);
-    console.log({parameters})
     updateData = await executesimpletransaction("UFN_API_ORDER_UPDATE_INFO", parameters);
-    console.log({updateData})
+
     if (!(updateData instanceof Array)) {
       return res
         .status(500)
