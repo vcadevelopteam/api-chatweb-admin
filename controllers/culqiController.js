@@ -4057,7 +4057,7 @@ exports.emitInvoice = async (request, response) => {
                                                 }
                                             }
 
-                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invoicing error', responsedata.status, responsedata.success);
+                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, requestSendToSunat.data.operationMessage || 'invoicing error', responsedata.status, responsedata.success);
                                             return response.status(responsedata.status).json(responsedata);
                                         }
                                     }
@@ -4102,7 +4102,7 @@ exports.emitInvoice = async (request, response) => {
                                                 }
                                             }
 
-                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'invoicing error', responsedata.status, responsedata.success);
+                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, requestSendToSiigo.data.operationMessage || 'invoicing error', responsedata.status, responsedata.success);
                                             return response.status(responsedata.status).json(responsedata);
                                         }
                                     }
