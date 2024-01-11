@@ -500,8 +500,7 @@ exports.Collection = async (req, res) => {
                     await send(sendmessage, req._requestid);
                     await send({ ...sendmessage, type: "MAIL", body: notificationmessageemail, hsmtemplateid: messagetemplateidemail }, req._requestuestid);
                 } else if ("EMAIL" === notificationtype) {
-                    await send({ ...sendmessage, type: "MAIL", body: notificationmessageemail }, req._requestuestid);
-                    // await send({ ...sendmessage, type: "MAIL", body: notificationmessageemail, hsmtemplateid: messagetemplateidemail }, req._requestuestid);
+                    await send({ ...sendmessage, type: "MAIL" }, req._requestuestid);
                 } else {
                     await send(sendmessage, req._requestid);
                 }
@@ -1273,8 +1272,6 @@ exports.cancelEventLaraigo = async (request, response) => {
     try {
         let parameters = request.body.parameters || request.body.data || {};
         const { method, key, phone, name, email } = request.body;
-
-        setSessionParameters(parameters, request.user, request._requestid);
 
         const result = await executesimpletransaction(method, parameters, null || {});
         if (!(result instanceof Array))
