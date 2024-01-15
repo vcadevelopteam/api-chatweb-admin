@@ -2359,7 +2359,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_INVOICE_PAYMENT: {
-        query: "SELECT * FROM ufn_invoice_payment($corpid, $orgid, $invoiceid, $paidby, $email, $tokenid, $capture, $tokenjson, $chargeid, $chargetoken, $chargejson, $culqiamount, $paymentprovider, $location)",
+        query: "SELECT * FROM ufn_invoice_payment($corpid, $orgid, $invoiceid, $paidby, $email, $tokenid, $capture, $tokenjson, $chargeid, $chargetoken, $chargejson, $culqiamount, $location, $paymentprovider)",
         module: "",
         protected: "INSERT"
     },
@@ -2419,7 +2419,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INVOICE_SUNAT: {
-        query: "SELECT * FROM ufn_invoice_sunat($corpid, $orgid, $invoiceid, $status, $error, $qrcode, $hashcode, $urlcdr, $urlpdf, $urlxml, $serie, $issuerruc, $issuerbusinessname, $issuertradename, $issuerfiscaladdress, $issuerubigeo, $emittertype, $annexcode, $printingformat, $sendtosunat, $returnpdf, $returnxmlsunat, $returnxml, $token, $sunaturl, $sunatusername, $xmlversion, $ublversion, $receiverdoctype, $receiverdocnum, $receiverbusinessname, $receiverfiscaladdress, $receivercountry, $receivermail, $invoicetype, $sunatopecode, $expirationdate, $purchaseorder, $comments, $credittype, $detractioncode, $detraction, $detractionaccount, $invoicedate, $invoiceprovider)",
+        query: "SELECT * FROM ufn_invoice_sunat($corpid, $orgid, $invoiceid, $status, $error, $qrcode, $hashcode, $urlcdr, $urlpdf, $urlxml, $serie, $issuerruc, $issuerbusinessname, $issuertradename, $issuerfiscaladdress, $issuerubigeo, $emittertype, $annexcode, $printingformat, $sendtosunat, $returnpdf, $returnxmlsunat, $returnxml, $token, $sunaturl, $sunatusername, $xmlversion, $ublversion, $receiverdoctype, $receiverdocnum, $receiverbusinessname, $receiverfiscaladdress, $receivercountry, $receivermail, $invoicetype, $sunatopecode, $expirationdate, $purchaseorder, $comments, $credittype, $detractioncode, $detraction, $detractionaccount, $invoicedate, $location, $invoiceprovider)",
         module: "",
         protected: "INSERT"
     },
@@ -2723,7 +2723,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CALENDAREVENT_INS: {
-        query: "SELECT * FROM ufn_calendarevent_ins($corpid, $orgid, $id, $description, $descriptionobject, $type, $status, $code, $name, $locationtype, $location, $eventlink, $color, $notificationtype, $communicationchannelid, $messagetemplateid, $notificationmessage, $daterange, $daysduration, $daystype, $startdate, $enddate, $timeduration, $timeunit, $availability, $timebeforeeventduration, $timebeforeeventunit, $timeaftereventduration, $timeaftereventunit, $increments, $reminderenable, $remindertype, $reminderhsmtemplateid, $reminderhsmcommunicationchannelid , $reminderhsmmessage, $remindermailtemplateid, $remindermailmessage, $reminderperiod, $reminderfrecuency, $username, $operation, $maximumcapacity, $notificationmessageemail, $messagetemplateidemail, $canceltype, $canceltemplateidemail, $cancelnotificationemail, $canceltemplateidhsm, $cancelnotificationhsm, $cancelcommunicationchannelid, $rescheduletype, $rescheduletemplateidemail, $reschedulenotificationemail, $rescheduletemplateidhsm, $reschedulenotificationhsm, $reschedulecommunicationchannelid)",
+        query: "SELECT * FROM ufn_calendarevent_ins($corpid, $orgid, $id, $description, $descriptionobject, $type, $status, $code, $name, $locationtype, $location, $eventlink, $color, $notificationtype, $communicationchannelid, $messagetemplateid, $notificationmessage, $daterange, $daysduration, $daystype, $startdate, $enddate, $timeduration, $timeunit, $availability, $timebeforeeventduration, $timebeforeeventunit, $timeaftereventduration, $timeaftereventunit, $increments, $reminderenable, $remindertype, $reminderhsmtemplateid, $reminderhsmcommunicationchannelid , $reminderhsmmessage, $remindermailtemplateid, $remindermailmessage, $reminderperiod, $reminderfrecuency, $username, $operation, $maximumcapacity, $notificationmessageemail, $messagetemplateidemail, $canceltype, $canceltemplateidemail, $cancelnotificationemail, $canceltemplateidhsm, $cancelnotificationhsm, $cancelcommunicationchannelid, $rescheduletype, $rescheduletemplateidemail, $reschedulenotificationemail, $rescheduletemplateidhsm, $reschedulenotificationhsm, $reschedulecommunicationchannelid, $sendeventtype)",
         module: ["/calendar"],
         protected: "INSERT"
     },
@@ -4504,4 +4504,9 @@ module.exports = {
         module: ["/invoice"],
         protected: "INSERT"
     },
+    UFN_API_ORDER_UPDATE_INFO: {
+        query: "SELECT * FROM ufn_api_order_update_info($corpid, $orgid, $order_id, $delivery_type, $delivery_date, $delivery_address, $delivery_address_reference, $paymentmethod, $payment_receipt, $payment_document_type, $payment_document_number, $payment_businessname, $payment_fiscal_address, $payment_date, $payment_amount, $payment_attachment)",
+        module: "",
+        protected: 'SELECT'
+    }
 }

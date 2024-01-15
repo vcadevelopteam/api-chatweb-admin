@@ -89,7 +89,7 @@ exports.processTransaction = async (request, response) => {
                                         amount: paymentorder[0].totalamount,
                                         currency: paymentorder[0].currency,
                                         description: 'OPENPAY CHARGE',
-                                        order_id: paymentorder[0].paymentorderid,
+                                        order_id: `${corpid}-${orgid}-${paymentorder[0].paymentorderid}-${Math.floor(Math.random() * 9999)}`,
                                         device_session_id: colombia ? undefined : devicesessionid,
                                         customer: {
                                             name: formdata.holder_name || '',
@@ -100,6 +100,7 @@ exports.processTransaction = async (request, response) => {
                                     },
                                     headers: { Authorization: `Basic ${buff.toString('base64')}` },
                                     method: 'post',
+                                    retryOverride: true,
                                     url: `${openpayFinalEndpoint}v1/${authCredentials?.merchantId}/charges`,
                                     _requestid: request._requestid,
                                 });
@@ -151,7 +152,7 @@ exports.processTransaction = async (request, response) => {
                                 }
                             }
                             catch (error) {
-                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, error?.response?.data?.description || error?.message, responsedata.status, responsedata.success);
+                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'generic_payment_error' || (error?.response?.data?.description || error?.message), responsedata.status, responsedata.success);
                             }
                         }
                         else {
