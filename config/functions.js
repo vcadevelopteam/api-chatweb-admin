@@ -752,6 +752,7 @@ module.exports = {
         SELECT dl.link, dl.title, dl.category, dl.documentlibraryid, dl.favorite FROM documentlibrary  dl
         WHERE dl.corpid = $corpid
         AND dl.orgid = $orgid
+        AND dl.status = 'ACTIVO'
         AND CASE WHEN COALESCE(dl.groups, '') <> '' AND (SELECT(array_length(array_agg(groups), 1)) FROM w1) IS NOT NULL 
             THEN (string_to_array(dl.groups, ',') && (SELECT array_agg(groups) FROM w1))
         ELSE true
