@@ -242,7 +242,7 @@ function encontrarHorario(nombre) {
         saturday: "12:00-22:30",
         sunday: "12:00-22:30"
       },
-      "MOLINA": {
+      "REPARTO LA MOLINA": {
         monday: "12:00-22:30",
         tuesday: "12:00-22:30",
         wednesday: "12:00-22:30",
@@ -385,7 +385,106 @@ function encontrarHorario(nombre) {
         friday: "12:00-22:30",
         saturday: "12:00-22:30",
         sunday: "12:00-22:30"
-      }
+      },
+      "ZONA ROJA PERU 2": {
+        monday: "12:00-17:00",
+        tuesday: "12:00-17:00",
+        wednesday: "12:00-17:00",
+        thursday: "12:00-17:00",
+        friday: "12:00-17:00",
+        saturday: "12:00-17:00",
+        sunday: "12:00-17:00"
+      },
+      "ZONA ROJA METRO VENEZUELA": {
+        monday: "12:00-17:00",
+        tuesday: "12:00-17:00",
+        wednesday: "12:00-17:00",
+        thursday: "12:00-17:00",
+        friday: "12:00-17:00",
+        saturday: "12:00-17:00",
+        sunday: "12:00-17:00"
+      },
+      "ZONA ROJA COLONIAL 2": {
+        monday: "12:00-18:00",
+        tuesday: "12:00-18:00",
+        wednesday: "12:00-18:00",
+        thursday: "12:00-18:00",
+        friday: "12:00-18:00",
+        saturday: "12:00-18:00",
+        sunday: "12:00-18:00"
+      },
+      "ZONA ROJA FAUCETT": {
+        monday: "12:00-16:00",
+        tuesday: "12:00-16:00",
+        wednesday: "12:00-16:00",
+        thursday: "12:00-16:00",
+        friday: "12:00-16:00",
+        saturday: "12:00-16:00",
+        sunday: "12:00-16:00"
+      },
+      "ZONA ROJA MEXICO 1": {
+        monday: "12:00-18:00",
+        tuesday: "12:00-18:00",
+        wednesday: "12:00-18:00",
+        thursday: "12:00-18:00",
+        friday: "12:00-18:00",
+        saturday: "12:00-18:00",
+        sunday: "12:00-18:00"
+      },
+      "ZONA ROJA ABANCAY 2": {
+        monday: "12:00-18:00",
+        tuesday: "12:00-18:00",
+        wednesday: "12:00-18:00",
+        thursday: "12:00-18:00",
+        friday: "12:00-18:00",
+        saturday: "12:00-18:00",
+        sunday: "12:00-18:00"
+      },
+      "ZONA ROJA SANTA ANITA 2": {
+        monday: "12:00-17:00",
+        tuesday: "12:00-17:00",
+        wednesday: "12:00-17:00",
+        thursday: "12:00-17:00",
+        friday: "12:00-17:00",
+        saturday: "12:00-17:00",
+        sunday: "12:00-17:00"
+      },
+      "ZONA ROJA VITARTE 2": {
+        monday: "12:00-18:00",
+        tuesday: "12:00-18:00",
+        wednesday: "12:00-18:00",
+        thursday: "12:00-18:00",
+        friday: "12:00-18:00",
+        saturday: "12:00-18:00",
+        sunday: "12:00-18:00"
+      },
+      "ZONA ROJA MALL SANTA ANITA": {
+        monday: "12:00-18:00",
+        tuesday: "12:00-18:00",
+        wednesday: "12:00-18:00",
+        thursday: "12:00-18:00",
+        friday: "12:00-18:00",
+        saturday: "12:00-18:00",
+        sunday: "12:00-18:00"
+      },
+      "ZONA ROJA LA MOLINA": {
+        monday: "12:00-18:00",
+        tuesday: "12:00-18:00",
+        wednesday: "12:00-18:00",
+        thursday: "12:00-18:00",
+        friday: "12:00-18:00",
+        saturday: "12:00-18:00",
+        sunday: "12:00-18:00"
+      },
+      "ZONA ROJA PANAMA": {
+        monday: "12:00-17:00",
+        tuesday: "12:00-17:00",
+        wednesday: "12:00-17:00",
+        thursday: "12:00-17:00",
+        friday: "12:00-17:00",
+        saturday: "12:00-17:00",
+        sunday: "12:00-17:00"
+      },
     };
   
     const nombreEnMinusculas = quitarTildes(nombre.toLowerCase());
@@ -418,10 +517,7 @@ exports.polygonsinsertmassive = async (req, res) => {
 
         const buffer = req.file.buffer;
         const kmlContent = buffer.toString();
-
-
         const kmlObject = await parseKMLtoObject(kmlContent);
-
         const json_transformado = transformarKMLtoJSON(kmlObject);
         const formattedJson = JSON.stringify(json_transformado, null, 2);
 
