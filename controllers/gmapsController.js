@@ -101,8 +101,44 @@ function removeAccents(str) {
 }
 
 function findSchedule(nombre) {
-    const schedules = {
-        "AVIACIÓN 24": {
+    const schedules = {      
+        "REPARTO METRO VENEZUELA": {
+            monday: "12:00-22:00",
+            tuesday: "12:00-22:00",
+            wednesday: "12:00-22:00",
+            thursday: "12:00-22:00",
+            friday: "12:00-22:00",
+            saturday: "12:00-22:00",
+            sunday: "12:00-22:00"
+        },    
+ 	    "REPARTO FAUCETT": {
+            monday: "12:00-22:30",
+            tuesday: "12:00-22:30",
+            wednesday: "12:00-22:30",
+            thursday: "12:00-22:30",
+            friday: "12:00-22:30",
+            saturday: "12:00-22:30",
+            sunday: "12:00-22:30"
+        },      
+        "ZONA ROJA METRO VENEZUELA": {
+            monday: "12:00-17:00",
+            tuesday: "12:00-17:00",
+            wednesday: "12:00-17:00",
+            thursday: "12:00-17:00",
+            friday: "12:00-17:00",
+            saturday: "12:00-17:00",
+            sunday: "12:00-17:00"
+        },  
+        "ZONA ROJA FAUCETT": {
+            monday: "12:00-16:00",
+            tuesday: "12:00-16:00",
+            wednesday: "12:00-16:00",
+            thursday: "12:00-16:00",
+            friday: "12:00-16:00",
+            saturday: "12:00-16:00",
+            sunday: "12:00-16:00"
+        },  
+	    "REPARTO AVIACIÓN 24": {
             monday: "12:00-22:00",
             tuesday: "12:00-22:00",
             wednesday: "12:00-22:00",
@@ -111,7 +147,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:00",
             sunday: "12:00-22:00"
         },
-        "AVIACIÓN 29": {
+        "REPARTO AVIACIÓN 29": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -120,7 +156,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:00"
         },
-        "SALAVERRY": {
+        "REPARTO SALAVERRY": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -129,7 +165,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
         },
-        "BELLAVISTA REST": {
+        "REPARTO BELLAVISTA REST": {
             monday: "12:00-22:00",
             tuesday: "12:00-22:00",
             wednesday: "12:00-22:00",
@@ -137,8 +173,8 @@ function findSchedule(nombre) {
             friday: "12:00-22:00",
             saturday: "12:00-22:00",
             sunday: "12:00-22:00"
-        },
-        "FAUCETT": {
+        },        
+        "REPARTO GARZON": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -147,7 +183,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
         },
-        "GARZON": {
+        "REPARTO HUANDOY": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -156,7 +192,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
         },
-        "HUANDOY": {
+        "REPARTO COLONIAL 2": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -165,7 +201,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
         },
-        "COLONIAL 2": {
+        "REPARTO PRO": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -174,16 +210,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
         },
-        "PRO": {
-            monday: "12:00-22:30",
-            tuesday: "12:00-22:30",
-            wednesday: "12:00-22:30",
-            thursday: "12:00-22:30",
-            friday: "12:00-22:30",
-            saturday: "12:00-22:30",
-            sunday: "12:00-22:30"
-        },
-        "MÉXICO 1": {
+        "REPARTO MÉXICO 1": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -192,7 +219,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-21:30"
         },
-        "LINCE": {
+        "REPARTO LINCE": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -201,7 +228,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
         },
-        "MARINA 17": {
+        "REPARTO MARINA 17": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -210,7 +237,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
         },
-        "MARINA 26": {
+        "REPARTO MARINA 26": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -219,7 +246,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
         },
-        "MEGA PLAZA 2": {
+        "REPARTO MEGA PLAZA 2": {
             monday: "12:00-22:00",
             tuesday: "12:00-22:00",
             wednesday: "12:00-22:00",
@@ -228,7 +255,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:00",
             sunday: "12:00-22:00"
         },
-        "MAGDALENA": {
+        "REPARTO MAGDALENA": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -246,7 +273,43 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:00"
         },
-        "METRO VENEZUELA": {
+ 	    "REPARTO OLIVOS": {
+            monday: "12:00-22:30",
+            tuesday: "12:00-22:30",
+            wednesday: "12:00-22:30",
+            thursday: "12:00-22:30",
+            friday: "12:00-22:30",
+            saturday: "12:00-22:30",
+            sunday: "12:00-22:30"
+        },
+        "REPARTO PUENTE PIEDRA 1": {
+            monday: "12:00-22:30",
+            tuesday: "12:00-22:30",
+            wednesday: "12:00-22:30",
+            thursday: "12:00-22:30",
+            friday: "12:00-22:30",
+            saturday: "12:00-22:30",
+            sunday: "12:00-22:30"
+        },
+        "REPARTO VILLA MARIA": {
+            monday: "12:00-22:30",
+            tuesday: "12:00-22:30",
+            wednesday: "12:00-22:30",
+            thursday: "12:00-22:30",
+            friday: "12:00-22:30",
+            saturday: "12:00-22:30",
+            sunday: "12:00-22:30"
+        },
+        "REPARTO SUCRE": {
+            monday: "12:00-22:30",
+            tuesday: "12:00-22:30",
+            wednesday: "12:00-22:30",
+            thursday: "12:00-22:30",
+            friday: "12:00-22:30",
+            saturday: "12:00-22:30",
+            sunday: "12:00-22:30"
+        },
+        "REPARTO SANTA ANITA MALL": {
             monday: "12:00-22:00",
             tuesday: "12:00-22:00",
             wednesday: "12:00-22:00",
@@ -255,52 +318,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:00",
             sunday: "12:00-22:00"
         },
-        "OLIVOS": {
-            monday: "12:00-22:30",
-            tuesday: "12:00-22:30",
-            wednesday: "12:00-22:30",
-            thursday: "12:00-22:30",
-            friday: "12:00-22:30",
-            saturday: "12:00-22:30",
-            sunday: "12:00-22:30"
-        },
-        "PUENTE PIEDRA 1": {
-            monday: "12:00-22:30",
-            tuesday: "12:00-22:30",
-            wednesday: "12:00-22:30",
-            thursday: "12:00-22:30",
-            friday: "12:00-22:30",
-            saturday: "12:00-22:30",
-            sunday: "12:00-22:30"
-        },
-        "VILLA MARIA": {
-            monday: "12:00-22:30",
-            tuesday: "12:00-22:30",
-            wednesday: "12:00-22:30",
-            thursday: "12:00-22:30",
-            friday: "12:00-22:30",
-            saturday: "12:00-22:30",
-            sunday: "12:00-22:30"
-        },
-        "SUCRE": {
-            monday: "12:00-22:30",
-            tuesday: "12:00-22:30",
-            wednesday: "12:00-22:30",
-            thursday: "12:00-22:30",
-            friday: "12:00-22:30",
-            saturday: "12:00-22:30",
-            sunday: "12:00-22:30"
-        },
-        "SANTA ANITA MALL": {
-            monday: "12:00-22:00",
-            tuesday: "12:00-22:00",
-            wednesday: "12:00-22:00",
-            thursday: "12:00-22:00",
-            friday: "12:00-22:00",
-            saturday: "12:00-22:00",
-            sunday: "12:00-22:00"
-        },
-        "GAMARRA 3": {
+        "REPARTO GAMARRA 3": {
             monday: "12:00-20:00",
             tuesday: "12:00-20:00",
             wednesday: "12:00-20:00",
@@ -309,7 +327,7 @@ function findSchedule(nombre) {
             saturday: "12:00-20:00",
             sunday: "12:00-17:30"
         },
-        "PERÚ 2": {
+        "REPARTO PERÚ 2": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -318,7 +336,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
         },
-        "PLAZA CASTILLA": {
+        "REPARTO PLAZA CASTILLA": {
             monday: "12:00-21:00",
             tuesday: "12:00-21:00",
             wednesday: "12:00-21:00",
@@ -327,7 +345,7 @@ function findSchedule(nombre) {
             saturday: "12:00-21:00",
             sunday: "12:00-21:00"
         },
-        "JESÚS MARÍA": {
+        "REPARTO JESÚS MARÍA": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -336,7 +354,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
         },
-        "VITARTE 2": {
+        "REPARTO VITARTE 2": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -345,7 +363,7 @@ function findSchedule(nombre) {
             saturday: "00:00-22:30",
             sunday: "12:00-22:30"
         },
-        "ABANCAY 2": {
+        "REPARTO ABANCAY 2": {
             monday: "12:00-21:30",
             tuesday: "12:00-21:30",
             wednesday: "12:00-21:30",
@@ -354,7 +372,7 @@ function findSchedule(nombre) {
             saturday: "12:00-21:30",
             sunday: "12:00-20:30"
         },
-        "ZARATE 1": {
+        "REPARTO ZARATE 1": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -363,7 +381,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
         },
-        "SANTA ANITA 2": {
+        "REPARTO SANTA ANITA 2": {
             monday: "12:00-21:30",
             tuesday: "12:00-21:30",
             wednesday: "12:00-21:30",
@@ -372,7 +390,7 @@ function findSchedule(nombre) {
             saturday: "12:00-21:30",
             sunday: "12:00-21:30"
         },
-        "PANAMA": {
+        "REPARTO PANAMA": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -390,16 +408,7 @@ function findSchedule(nombre) {
             saturday: "12:00-17:00",
             sunday: "12:00-17:00"
         },
-        "ZONA ROJA METRO VENEZUELA": {
-            monday: "12:00-17:00",
-            tuesday: "12:00-17:00",
-            wednesday: "12:00-17:00",
-            thursday: "12:00-17:00",
-            friday: "12:00-17:00",
-            saturday: "12:00-17:00",
-            sunday: "12:00-17:00"
-        },
-        "ZONA ROJA COLONIAL 2": {
+  	    "ZONA ROJA COLONIAL 2": {
             monday: "12:00-18:00",
             tuesday: "12:00-18:00",
             wednesday: "12:00-18:00",
@@ -407,16 +416,7 @@ function findSchedule(nombre) {
             friday: "12:00-18:00",
             saturday: "12:00-18:00",
             sunday: "12:00-18:00"
-        },
-        "ZONA ROJA FAUCETT": {
-            monday: "12:00-16:00",
-            tuesday: "12:00-16:00",
-            wednesday: "12:00-16:00",
-            thursday: "12:00-16:00",
-            friday: "12:00-16:00",
-            saturday: "12:00-16:00",
-            sunday: "12:00-16:00"
-        },
+        },       
         "ZONA ROJA MEXICO 1": {
             monday: "12:00-18:00",
             tuesday: "12:00-18:00",
@@ -491,17 +491,20 @@ function findSchedule(nombre) {
         const keyWords = scheduleName.split(" ");
         const similarity = keyWords.reduce((total, word) => {
             if (lowerCaseName.includes(word.toLowerCase())) {
-            return total + 1;
+                return total + 1;
             }
             return total;
         }, 0);
+
+        if (similarity === bestSimilarity && keyWords.join("").length > bestSchedule.join("").length) {
+            bestSchedule = schedules[scheduleName];
+        }
 
         if (similarity > bestSimilarity) {
             bestSimilarity = similarity;
             bestSchedule = schedules[scheduleName];
         }
     }  
-
     return bestSchedule || {};
 }
 
@@ -551,36 +554,37 @@ function isInsideSchedule(polygons, currentDateTime) {
     }
     return false;
 }
+
 exports.findcoordinateinpolygons = async (req, res) => {
-moment.tz.setDefault('America/Lima');
-try {
-    const { corpid, orgid, latitude, longitude, order_datetime } = req.body;
-    const currentDateTime = order_datetime
-    ? moment(order_datetime).tz('America/Lima')
-    : moment().tz('America/Lima');
-    const result = await executesimpletransaction("SEARCH_POINT_ON_AREAS", { corpid, orgid, latitude, longitude });
-    const modifiedResult = result.map((polygon) => {
-    let modifiedName = polygon.name;
-    if (modifiedName.includes('ZONA ROJA - ')) {
-        modifiedName = modifiedName.replace('ZONA ROJA - ', 'Reparto ');
+    moment.tz.setDefault('America/Lima');
+    try {
+        const { corpid, orgid, latitude, longitude, order_datetime } = req.body;
+        const currentDateTime = order_datetime
+        ? moment(order_datetime).tz('America/Lima')
+        : moment().tz('America/Lima');
+        const result = await executesimpletransaction("SEARCH_POINT_ON_AREAS", { corpid, orgid, latitude, longitude });
+        const modifiedResult = result.map((polygon) => {
+            let modifiedName = polygon.name;
+            if (modifiedName.includes('ZONA ROJA - ')) {
+                modifiedName = modifiedName.replace('ZONA ROJA - ', 'Reparto ');
+            }
+            return {
+                polygonsid: polygon.polygonsid,
+                name: modifiedName,
+                schedule: polygon.schedule,
+            };
+        });
+        const inside_schedule = modifiedResult.length > 0 && isInsideSchedule(modifiedResult, currentDateTime);
+        const response = {
+            corpid,
+            orgid,
+            result: modifiedResult,
+            inside_schedule,
+            order_datetime: currentDateTime.format('YYYY-MM-DD HH:mm:ss'),
+        };
+        return res.json(response);
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: 'Error en el servidor' });
     }
-    return {
-        polygonsid: polygon.polygonsid,
-        name: modifiedName,
-        schedule: polygon.schedule,
-    };
-    });
-    const inside_schedule = modifiedResult.length > 0 && isInsideSchedule(modifiedResult, currentDateTime);
-    const response = {
-    corpid,
-    orgid,
-    result: modifiedResult,
-    inside_schedule,
-    order_datetime: currentDateTime.format('YYYY-MM-DD HH:mm:ss'),
-    };
-    return res.json(response);
-} catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: 'Error en el servidor' });
-}
 };
