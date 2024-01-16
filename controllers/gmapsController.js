@@ -1,8 +1,6 @@
-
 const { errors, getErrorCode, axiosObservable } = require('../config/helpers');
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { parseString } = require('xml2js');
-const moment = require('moment-timezone');
 
 
 exports.geocode = async (req, res) => {
@@ -108,25 +106,7 @@ function quitarTildes(str) {
 }
   
 function encontrarHorario(nombre) {
-    const horarios = {      
-      "SANTA ANITA 2": {
-        monday: "12:00-21:30",
-        tuesday: "12:00-21:30",
-        wednesday: "12:00-21:30",
-        thursday: "12:00-21:30",
-        friday: "12:00-21:30",
-        saturday: "12:00-21:30",
-        sunday: "12:00-21:30"
-      },
-      "PANAMA": {
-        monday: "12:00-22:30",
-        tuesday: "12:00-22:30",
-        wednesday: "12:00-22:30",
-        thursday: "12:00-22:30",
-        friday: "12:00-22:30",
-        saturday: "12:00-22:30",
-        sunday: "12:00-22:30"
-      },
+    const horarios = {
       "AVIACIÓN 24": {
         monday: "12:00-22:00",
         tuesday: "12:00-22:00",
@@ -262,7 +242,7 @@ function encontrarHorario(nombre) {
         saturday: "12:00-22:30",
         sunday: "12:00-22:30"
       },
-      "MOLINA": {
+      "REPARTO LA MOLINA": {
         monday: "12:00-22:30",
         tuesday: "12:00-22:30",
         wednesday: "12:00-22:30",
@@ -387,7 +367,124 @@ function encontrarHorario(nombre) {
         friday: "12:00-22:30",
         saturday: "12:00-22:30",
         sunday: "12:00-22:30"
-      }
+      },
+      "SANTA ANITA 2": {
+        monday: "12:00-21:30",
+        tuesday: "12:00-21:30",
+        wednesday: "12:00-21:30",
+        thursday: "12:00-21:30",
+        friday: "12:00-21:30",
+        saturday: "12:00-21:30",
+        sunday: "12:00-21:30"
+      },
+      "PANAMA": {
+        monday: "12:00-22:30",
+        tuesday: "12:00-22:30",
+        wednesday: "12:00-22:30",
+        thursday: "12:00-22:30",
+        friday: "12:00-22:30",
+        saturday: "12:00-22:30",
+        sunday: "12:00-22:30"
+      },
+      "ZONA ROJA PERU 2": {
+        monday: "12:00-17:00",
+        tuesday: "12:00-17:00",
+        wednesday: "12:00-17:00",
+        thursday: "12:00-17:00",
+        friday: "12:00-17:00",
+        saturday: "12:00-17:00",
+        sunday: "12:00-17:00"
+      },
+      "ZONA ROJA METRO VENEZUELA": {
+        monday: "12:00-17:00",
+        tuesday: "12:00-17:00",
+        wednesday: "12:00-17:00",
+        thursday: "12:00-17:00",
+        friday: "12:00-17:00",
+        saturday: "12:00-17:00",
+        sunday: "12:00-17:00"
+      },
+      "ZONA ROJA COLONIAL 2": {
+        monday: "12:00-18:00",
+        tuesday: "12:00-18:00",
+        wednesday: "12:00-18:00",
+        thursday: "12:00-18:00",
+        friday: "12:00-18:00",
+        saturday: "12:00-18:00",
+        sunday: "12:00-18:00"
+      },
+      "ZONA ROJA FAUCETT": {
+        monday: "12:00-16:00",
+        tuesday: "12:00-16:00",
+        wednesday: "12:00-16:00",
+        thursday: "12:00-16:00",
+        friday: "12:00-16:00",
+        saturday: "12:00-16:00",
+        sunday: "12:00-16:00"
+      },
+      "ZONA ROJA MEXICO 1": {
+        monday: "12:00-18:00",
+        tuesday: "12:00-18:00",
+        wednesday: "12:00-18:00",
+        thursday: "12:00-18:00",
+        friday: "12:00-18:00",
+        saturday: "12:00-18:00",
+        sunday: "12:00-18:00"
+      },
+      "ZONA ROJA ABANCAY 2": {
+        monday: "12:00-18:00",
+        tuesday: "12:00-18:00",
+        wednesday: "12:00-18:00",
+        thursday: "12:00-18:00",
+        friday: "12:00-18:00",
+        saturday: "12:00-18:00",
+        sunday: "12:00-18:00"
+      },
+      "ZONA ROJA SANTA ANITA 2": {
+        monday: "12:00-17:00",
+        tuesday: "12:00-17:00",
+        wednesday: "12:00-17:00",
+        thursday: "12:00-17:00",
+        friday: "12:00-17:00",
+        saturday: "12:00-17:00",
+        sunday: "12:00-17:00"
+      },
+      "ZONA ROJA VITARTE 2": {
+        monday: "12:00-18:00",
+        tuesday: "12:00-18:00",
+        wednesday: "12:00-18:00",
+        thursday: "12:00-18:00",
+        friday: "12:00-18:00",
+        saturday: "12:00-18:00",
+        sunday: "12:00-18:00"
+      },
+      "ZONA ROJA MALL SANTA ANITA": {
+        monday: "12:00-18:00",
+        tuesday: "12:00-18:00",
+        wednesday: "12:00-18:00",
+        thursday: "12:00-18:00",
+        friday: "12:00-18:00",
+        saturday: "12:00-18:00",
+        sunday: "12:00-18:00"
+      },
+      "ZONA ROJA LA MOLINA": {
+        monday: "12:00-18:00",
+        tuesday: "12:00-18:00",
+        wednesday: "12:00-18:00",
+        thursday: "12:00-18:00",
+        friday: "12:00-18:00",
+        saturday: "12:00-18:00",
+        sunday: "12:00-18:00"
+      },
+      "ZONA ROJA PANAMA": {
+        monday: "12:00-17:00",
+        tuesday: "12:00-17:00",
+        wednesday: "12:00-17:00",
+        thursday: "12:00-17:00",
+        friday: "12:00-17:00",
+        saturday: "12:00-17:00",
+        sunday: "12:00-17:00"
+      },
     };
   
     const nombreEnMinusculas = quitarTildes(nombre.toLowerCase());
@@ -408,9 +505,11 @@ function encontrarHorario(nombre) {
         mejorSimilitud = similitud;
         mejorHorario = horarios[nombreHorario];
       }
-    }  
-  return mejorHorario || {};
-}  
+    }
+  
+    return mejorHorario || {};
+}
+  
 
 exports.polygonsinsertmassive = async (req, res) => {
     try {       
@@ -418,9 +517,7 @@ exports.polygonsinsertmassive = async (req, res) => {
 
         const buffer = req.file.buffer;
         const kmlContent = buffer.toString();
-
         const kmlObject = await parseKMLtoObject(kmlContent);
-
         const json_transformado = transformarKMLtoJSON(kmlObject);
         const formattedJson = JSON.stringify(json_transformado, null, 2);
 
@@ -435,73 +532,16 @@ exports.polygonsinsertmassive = async (req, res) => {
     }
 }
 
-function isInsideSchedule(polygons, currentDateTime) {
-  moment.tz.setDefault('America/Lima');
-
-  for (const polygon of polygons) {
-    const { schedule } = polygon;
-    const dayOfWeek = currentDateTime.format('dddd').toLowerCase();
-    
-    if (schedule[dayOfWeek]) {
-      const [startHour, endHour] = schedule[dayOfWeek].split('-');
-      const [startHourNum, startMinute] = startHour.split(':');
-      const [endHourNum, endMinute] = endHour.split(':');
-      
-      const startMoment = currentDateTime.clone().set({ hour: startHourNum, minute: startMinute });
-      const endMoment = currentDateTime.clone().set({ hour: endHourNum, minute: endMinute });
-      
-      startMoment.tz('America/Lima');
-      endMoment.tz('America/Lima');
-      
-      if (currentDateTime.isBetween(startMoment, endMoment, null, '[]')) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
 
 exports.findcoordinateinpolygons = async (req, res) => {
-  moment.tz.setDefault('America/Lima');
+  try {      
+      const {corpid, orgid, latitude, longitude} = req.body;
 
-  try {
-    const { corpid, orgid, latitude, longitude, order_datetime } = req.body;
+      const result = await executesimpletransaction("SEARCH_POINT_ON_AREAS", { corpid, orgid, latitude, longitude });
 
-    const currentDateTime = order_datetime
-      ? moment(order_datetime).tz('America/Lima')
-      : moment().tz('America/Lima');
-
-    const result = await executesimpletransaction("SEARCH_POINT_ON_AREAS", { corpid, orgid, latitude, longitude });
-
-    const modifiedResult = result.map((polygon) => {
-      let modifiedName = polygon.name;
-
-      if (modifiedName.includes('ZONA ROJA - ')) {
-        modifiedName = modifiedName.replace('ZONA ROJA - ', 'Reparto ');
-      }
-
-      return {
-        polygonsid: polygon.polygonsid,
-        name: modifiedName,
-        schedule: polygon.schedule,
-      };
-    });
-
-    const inside_schedule = modifiedResult.length > 0 && isInsideSchedule(modifiedResult, currentDateTime);
-
-    const response = {
-      corpid,
-      orgid,
-      result: modifiedResult,
-      inside_schedule,
-      order_datetime: currentDateTime.format('YYYY-MM-DD HH:mm:ss'),
-    };
-
-    return res.json(response);
-
+      return res.json({ corpid, orgid, result });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: 'Error en el servidor' });
+      console.log(error);
+      return res.status(500).json({ error: 'Error en el servidor' });
   }
-};
+}
