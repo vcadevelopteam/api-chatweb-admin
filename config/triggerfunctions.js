@@ -294,15 +294,21 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                 AND ous.orgid = $orgid
                 AND ous.userid = $userid
             )`,
-            queryJoin: (applyFilterGroups && !columns.some(x => x.join_alias === "lastorguser")) ? `
+            queryJoin: ((applyFilterGroups && !columns.some(x => x.join_alias === "lastorguser")) ? `
             LEFT JOIN orguser lastorguser ON lastorguser.corpid = conversation.corpid AND lastorguser.orgid = conversation.orgid AND lastorguser.userid = conversation.lastuserid
-            ` : '',
+            ` : '') + ((applyFilterGroups && !columns.some(x => x.join_alias === "campaign")) ? `
+            LEFT JOIN campaign campaign ON campaign.corpid = conversation.corpid AND campaign.orgid = conversation.orgid AND campaign.campaignid = conversation.campaignid
+            ` : '') + `LEFT JOIN hsmhistory hh ON hh.corpid = conversation.corpid AND hh.orgid = conversation.orgid AND hh.hsmhistoryid = conversation.hsmhistoryid`,
             queryWhere: !applyFilterGroups ? '' :
             `AND CASE WHEN string_to_array($roles,',') && Array['ADMINISTRADOR', 'ADMINISTRADOR P', 'SUPERADMIN']
             THEN TRUE
             ELSE
                 CASE WHEN (SELECT(array_length(array_agg(groups), 1)) FROM w1) IS NOT NULL THEN 
-                    (string_to_array(lastorguser.groups, ',') && (SELECT array_agg(groups) FROM w1)) OR
+                    (case when conversation.origin = 'INBOUND' THEN string_to_array(lastorguser.groups,',') && (SELECT array_agg(groups) FROM w1)
+                        when conversation.origin = 'OUTBOUND' then array [campaign.usergroup::text] && (SELECT array_agg(groups) FROM w1)
+                        else array [hh.groupname::text] && (SELECT array_agg(groups) FROM w1)
+                        end
+                    ) OR
                     ((string_to_array($roles, ',') && array ['SUPERVISOR CLIENTE'] AND (conversation.lastuserid = 2 OR (conversation.lastuserid = 3 AND array [conversation.usergroup::text] && (SELECT array_agg(groups) FROM w1)))))
                 ELSE 
                     CASE 

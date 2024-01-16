@@ -1312,7 +1312,7 @@ exports.cancelEventLaraigo = async (request, response) => {
                 body: cancelnotificationhsm,
             }
             if ("HSMEMAIL" === parameters.canceltype) {
-                await send(sendmessage, req._requestid);
+                await send(sendmessage, request._requestid);
                 await send({ ...sendmessage, type: "MAIL", body: cancelnotificationemail, hsmtemplateid: canceltemplateidemail }, request._requestuestid);
             } else if ("EMAIL" === parameters.canceltype) {
                 await send({ ...sendmessage, type: "MAIL", body: cancelnotificationemail, hsmtemplateid: canceltemplateidemail }, request._requestuestid);
