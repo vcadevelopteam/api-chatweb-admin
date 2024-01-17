@@ -736,6 +736,40 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DOCUMENTLIBRARY_SEL: {
+        query: "SELECT * FROM ufn_documentlibrary_sel($corpid, $orgid, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_DOCUMENTLIBRARY_BY_USER: {
+        query: `WITH w1 AS (
+            SELECT DISTINCT unnest(string_to_array(groups,',')) AS groups
+            FROM orguser ous
+            WHERE ous.corpid = $corpid
+            AND ous.orgid = $orgid
+            AND ous.userid = $userid
+        )
+        SELECT dl.link, dl.title, dl.category, dl.documentlibraryid, dl.favorite FROM documentlibrary  dl
+        WHERE dl.corpid = $corpid
+        AND dl.orgid = $orgid
+        AND dl.status = 'ACTIVO'
+        AND CASE WHEN COALESCE(dl.groups, '') <> '' AND (SELECT(array_length(array_agg(groups), 1)) FROM w1) IS NOT NULL 
+            THEN (string_to_array(dl.groups, ',') && (SELECT array_agg(groups) FROM w1))
+        ELSE true
+        END`,
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DOCUMENTLIBRARY_INS: {
+        query: "SELECT * FROM ufn_documentlibrary_ins($corpid, $orgid, $id, $title, $description, $category, $groups, $link, $favorite, $status, $type, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_DOCUMENTLIBRARY_INS_ARRAY: {
+        query: "SELECT * FROM ufn_documentlibrary_ins_array($corpid, $orgid, $username, $table)",
+        module: "",
+        protected: "INSERT"
+    },
 
     UFN_PRODUCT_DUP: {
         query: "SELECT * FROM inventario.ufn_product_dup($corpid, $orgid, $productid, $operation, $username)",
