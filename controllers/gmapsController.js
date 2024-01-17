@@ -52,50 +52,57 @@ function formatearCoordenada(coordinate) {
 }
   
 function transformarKMLtoJSON(kmlObject) {
-    const nuevos_features = [];
-  
-    if (kmlObject.kml && kmlObject.kml.Document && kmlObject.kml.Document[0] && kmlObject.kml.Document[0].Folder) {
-      const folders = kmlObject.kml.Document[0].Folder;
-  
-      folders.forEach((folder, folderIndex) => {
-        const folderName = folder.name && folder.name[0];
-        const placemarks = folder.Placemark;
-  
-        if (folderName && placemarks) {
-          placemarks.forEach((placemark, index) => {
-            const nombre = placemark.name && placemark.name[0];
-      
-            const coordinates = placemark.Polygon && placemark.Polygon[0].outerBoundaryIs[0].LinearRing[0].coordinates[0];
-  
-            console.log('Folder:', folderName);
-            console.log('Nombre:', nombre);
-            console.log('Coordinates:', coordinates);
-            
-            if (nombre == 'ZONA ROJA - Santa Anita 2'){
-                const x = 2
-            }
-            if (nombre && coordinates) {
-              const coordenadas = coordinates.split(' ').map(formatearCoordenada).filter(coord => coord !== null);  
-  
-              const horario = encontrarHorario(nombre);
-  
-              const nuevo_json = {
-                id: 0, 
-                name: nombre,
-                schedule: horario,
-                polygons: coordenadas,
-                operation: 'INSERT'
-              };
-  
-              nuevos_features.push(nuevo_json);
-            }
-          });
-        }
-      });
-    }
-  
-    console.log('Nuevo JSON:', nuevos_features);
-    return nuevos_features;
+  const nuevos_features = [];
+
+  if (kmlObject.kml && kmlObject.kml.Document && kmlObject.kml.Document[0] && kmlObject.kml.Document[0].Folder) {
+    const folders = kmlObject.kml.Document[0].Folder;
+
+    folders.forEach((folder, folderIndex) => {
+      const folderName = folder.name && folder.name[0];
+      const placemarks = folder.Placemark;
+
+      if (folderName && placemarks) {
+        placemarks.forEach((placemark, index) => {
+          const nombre = placemark.name && placemark.name[0];
+          let coordinates;
+
+          if (placemark.Polygon) {
+            coordinates = placemark.Polygon[0].outerBoundaryIs[0].LinearRing[0].coordinates[0];
+          } else if (placemark.MultiGeometry) {
+            coordinates = placemark.MultiGeometry[0].Polygon.map(polygon => {
+              return polygon.outerBoundaryIs[0].LinearRing[0].coordinates[0];
+            }).join(' ');
+          }
+          if (!coordinates && placemark.MultiGeometry && placemark.MultiGeometry[0].Polygon) {
+            coordinates = placemark.MultiGeometry[0].Polygon[0].outerBoundaryIs[0].LinearRing[0].coordinates[0];
+          }
+
+          console.log('Folder:', folderName);
+          console.log('Nombre:', nombre);
+          console.log('Coordinates:', coordinates);
+
+          if (nombre && coordinates) {
+            const coordenadas = coordinates.split(' ').map(formatearCoordenada).filter(coord => coord !== null);
+
+            const horario = encontrarHorario(nombre);
+
+            const nuevo_json = {
+              id: 0,
+              name: nombre,
+              schedule: horario,
+              polygons: coordenadas,
+              operation: 'INSERT'
+            };
+
+            nuevos_features.push(nuevo_json);
+          }
+        });
+      }
+    });
+  }
+
+  console.log('Nuevo JSON:', nuevos_features);
+  return nuevos_features;
 }
   
 function quitarTildes(str) {
