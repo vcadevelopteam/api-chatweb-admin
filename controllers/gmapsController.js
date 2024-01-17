@@ -562,9 +562,9 @@ exports.findcoordinateinpolygons = async (req, res) => {
         const result = await executesimpletransaction("SEARCH_POINT_ON_AREAS", { corpid, orgid, latitude, longitude });
         const modifiedResult = result.map((polygon) => {
             let modifiedName = polygon.name;
-            if (modifiedName.includes('ZONA ROJA - ')) {
-                modifiedName = modifiedName.replace('ZONA ROJA - ', 'Reparto ');
-            }
+            if (modifiedName.toLowerCase().includes('zona roja - ')) {
+                modifiedName = modifiedName.replace(/zona roja - /i, 'Reparto ');
+            }            
             return {
                 polygonsid: polygon.polygonsid,
                 name: modifiedName,
