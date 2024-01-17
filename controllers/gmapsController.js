@@ -491,20 +491,17 @@ function findSchedule(nombre) {
         const keyWords = scheduleName.split(" ");
         const similarity = keyWords.reduce((total, word) => {
             if (lowerCaseName.includes(word.toLowerCase())) {
-                return total + 1;
+            return total + 1;
             }
             return total;
         }, 0);
-
-        if (similarity === bestSimilarity && keyWords.join("").length > bestSchedule.join("").length) {
-            bestSchedule = schedules[scheduleName];
-        }
 
         if (similarity > bestSimilarity) {
             bestSimilarity = similarity;
             bestSchedule = schedules[scheduleName];
         }
     }  
+
     return bestSchedule || {};
 }
 
