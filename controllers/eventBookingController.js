@@ -500,8 +500,7 @@ exports.Collection = async (req, res) => {
                     await send(sendmessage, req._requestid);
                     await send({ ...sendmessage, type: "MAIL", body: notificationmessageemail, hsmtemplateid: messagetemplateidemail }, req._requestuestid);
                 } else if ("EMAIL" === notificationtype) {
-                    await send({ ...sendmessage, type: "MAIL", body: notificationmessageemail }, req._requestuestid);
-                    // await send({ ...sendmessage, type: "MAIL", body: notificationmessageemail, hsmtemplateid: messagetemplateidemail }, req._requestuestid);
+                    await send({ ...sendmessage, type: "MAIL" }, req._requestuestid);
                 } else {
                     await send(sendmessage, req._requestid);
                 }
@@ -1274,8 +1273,6 @@ exports.cancelEventLaraigo = async (request, response) => {
         let parameters = request.body.parameters || request.body.data || {};
         const { method, key, phone, name, email } = request.body;
 
-        setSessionParameters(parameters, request.user, request._requestid);
-
         const result = await executesimpletransaction(method, parameters, null || {});
         if (!(result instanceof Array))
             return response.status(result.rescode).json({ ...result, key });
@@ -1315,7 +1312,7 @@ exports.cancelEventLaraigo = async (request, response) => {
                 body: cancelnotificationhsm,
             }
             if ("HSMEMAIL" === parameters.canceltype) {
-                await send(sendmessage, req._requestid);
+                await send(sendmessage, request._requestid);
                 await send({ ...sendmessage, type: "MAIL", body: cancelnotificationemail, hsmtemplateid: canceltemplateidemail }, request._requestuestid);
             } else if ("EMAIL" === parameters.canceltype) {
                 await send({ ...sendmessage, type: "MAIL", body: cancelnotificationemail, hsmtemplateid: canceltemplateidemail }, request._requestuestid);
