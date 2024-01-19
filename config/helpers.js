@@ -340,11 +340,11 @@ function runTimeout(ms) {
 
 const statusAllowed = [400, 200, 401, 404, 500];
 
-exports.axiosObservable = async ({ method = "post", url, data = undefined, headers = undefined, _requestid = undefined, timeout, retryOverride = false }) => {
+exports.axiosObservable = async ({ method = "post", url, data = undefined, headers = undefined, _requestid = undefined, timeout }) => {
     const profiler = logger.startTimer();
 
     let rr = null
-    let retry = retryOverride ? 0 : 3;
+    let retry = 3;
     retry = retry - 1;
 
     while (true) {
@@ -361,7 +361,7 @@ exports.axiosObservable = async ({ method = "post", url, data = undefined, heade
             }
 
             if (error?.response) {
-                if (!statusAllowed.includes(error?.response?.status) && retry > 0) {
+                if (!statusAllowed.includes(error?.response?.status) && retry !== 0) {
                     retry = retry - 1;
                     await runTimeout(3000);
                     continue;
@@ -377,7 +377,7 @@ exports.axiosObservable = async ({ method = "post", url, data = undefined, heade
 
                 throw ({ ...new Error(error), ...error, notLog: true });
             } else {
-                if (retry > 0) {
+                if (retry !== 0) {
                     retry = retry - 1;
                     await runTimeout(3000);
                     continue;
@@ -528,7 +528,7 @@ exports.formatDecimals = (num) => {
 
 exports.recaptcha = async (secret, key) => {
     const data = { secret, response: key };
-
+    
     try {
         const response = await this.axiosObservable({
             url: `https://www.google.com/recaptcha/api/siteverify`,
