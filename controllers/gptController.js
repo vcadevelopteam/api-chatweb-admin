@@ -204,3 +204,41 @@ exports.deleteAssistant = async (req, res) => {
       );
   }
 };
+
+exports.messages = async (req, res) => {
+  try {
+    const { text, assistant_id, thread_id, sources, apikey } = req.body;
+    let responseMessages = await axios({
+      method: "post",
+      url: `${process.env.GPT_SERVICES}/assistants/messages`,
+      data: {
+        text: text,
+        assistant_id: assistant_id,
+        thread_id: thread_id,
+        sources: sources,
+        apikey: apikey,
+      },
+      headers: {
+        Authorization: req.headers.authorization,
+        "Content-Type": "application/json",
+      },
+      timeout: 600000,
+    });
+
+    if (responseMessages.data && responseMessages.statusText === "OK") {
+      return res.json(responseMessages.data);
+    }
+    return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+  } catch (exception) {
+    return res
+      .status(500)
+      .json(
+        getErrorCode(
+          null,
+          exception,
+          `Request to ${req.originalUrl}`,
+          req._requestid
+        )
+      );
+  }
+};
