@@ -43,6 +43,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/person', require('./routes/person'));
 app.use('/api/channel', require('./routes/channel'));
 app.use('/api/ticket', require('./routes/ticket'));
+app.use('/api/gpt', require('./routes/gpt'));
 app.use('/api/main', require('./routes/main'));
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/load', require('./routes/load'));
