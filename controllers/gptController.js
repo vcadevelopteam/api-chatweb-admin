@@ -242,3 +242,145 @@ exports.messages = async (req, res) => {
       );
   }
 };
+
+exports.addFile = async (req, res) => {
+  try {
+    const { file_url, file_name, apikey } = req.body;
+    let responseAddFile = await axios({
+      method: "post",
+      url: `${process.env.GPT_SERVICES}/files`,
+      data: {
+        file_url: file_url,
+        file_name: file_name,
+        apikey: apikey,      
+      },
+      headers: {
+        Authorization: req.headers.authorization,
+        "Content-Type": "application/json",
+      },
+      timeout: 600000,
+    });
+
+    if (responseAddFile.data && responseAddFile.statusText === "OK") {
+      return res.json(responseAddFile.data);
+    }
+    return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+  } catch (exception) {
+    return res
+      .status(500)
+      .json(
+        getErrorCode(
+          null,
+          exception,
+          `Request to ${req.originalUrl}`,
+          req._requestid
+        )
+      );
+  }
+};
+
+exports.assignFile = async (req, res) => {
+  try {
+    const { assistant_id, file_id, apikey } = req.body;
+    let responseAssignFile = await axios({
+      method: "post",
+      url: `${process.env.GPT_SERVICES}/assistants/files`,
+      data: {
+        assistant_id: assistant_id,
+        file_id: file_id,
+        apikey: apikey,      
+      },
+      headers: {
+        Authorization: req.headers.authorization,
+        "Content-Type": "application/json",
+      },
+      timeout: 600000,
+    });
+
+    if (responseAssignFile.data && responseAssignFile.statusText === "OK") {
+      return res.json(responseAssignFile.data);
+    }
+    return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+  } catch (exception) {
+    return res
+      .status(500)
+      .json(
+        getErrorCode(
+          null,
+          exception,
+          `Request to ${req.originalUrl}`,
+          req._requestid
+        )
+      );
+  }
+};
+
+exports.verifyFile = async (req, res) => {
+  try {
+    const { assistant_id, apikey } = req.body;
+    let responseVerifyFile = await axios({
+      method: "post",
+      url: `${process.env.GPT_SERVICES}/assistants/files/list`,
+      data: {
+        assistant_id: assistant_id,
+        apikey: apikey,      
+      },
+      headers: {
+        Authorization: req.headers.authorization,
+        "Content-Type": "application/json",
+      },
+      timeout: 600000,
+    });
+
+    if (responseVerifyFile.data && responseVerifyFile.statusText === "OK") {
+      return res.json(responseVerifyFile.data);
+    }
+    return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+  } catch (exception) {
+    return res
+      .status(500)
+      .json(
+        getErrorCode(
+          null,
+          exception,
+          `Request to ${req.originalUrl}`,
+          req._requestid
+        )
+      );
+  }
+};
+
+exports.deleteFile = async (req, res) => {
+  try {
+    const { file_id, apikey } = req.body;
+    let responseDeleteFile = await axios({
+      method: "post",
+      url: `${process.env.GPT_SERVICES}/files/delete`,
+      data: {
+        file_id: file_id,
+        apikey: apikey,      
+      },
+      headers: {
+        Authorization: req.headers.authorization,
+        "Content-Type": "application/json",
+      },
+      timeout: 600000,
+    });
+
+    if (responseDeleteFile.data && responseDeleteFile.statusText === "OK") {
+      return res.json(responseDeleteFile.data);
+    }
+    return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+  } catch (exception) {
+    return res
+      .status(500)
+      .json(
+        getErrorCode(
+          null,
+          exception,
+          `Request to ${req.originalUrl}`,
+          req._requestid
+        )
+      );
+  }
+};

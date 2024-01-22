@@ -27,4 +27,20 @@ router.post('/assistants/messages',
     gptController.messages
 )
 
+router.post('/files',
+    gptController.addFile
+)
+
+router.post('/assistants/files',
+    gptController.assignFile
+)
+
+router.post('/assistants/files/list',
+    gptController.verifyFile
+)
+
+router.post('/files/delete',
+    gptController.deleteFile
+)
+
 module.exports = router;
