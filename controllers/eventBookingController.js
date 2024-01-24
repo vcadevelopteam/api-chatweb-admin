@@ -1355,10 +1355,12 @@ exports.cancelEventLaraigo = async (request, response) => {
 
 const generateIcs = async (requestid, calendarData, params) => {
     try {
+        const timestamp = Date.now();
         const icalfile = getIcalObjectInstance(
             params?.monthdate,
             params?.hourstart,
             calendarData?.timeduration,
+            calendarData?.timezone,
             params?.parameters.find(param => param?.name === 'eventname')?.text,
             calendarData?.description,
             calendarData?.location,
@@ -1369,7 +1371,7 @@ const generateIcs = async (requestid, calendarData, params) => {
     
         const buffer = Buffer.from(icalfile.toString(), 'utf8');
         const contentType = 'text/plain';
-        const key = 'invite.ics';
+        const key = `${timestamp}/invite.ics`;
     
         const rr = await uploadBufferToCos(requestid, buffer, contentType, key);
         return {url: rr.url}
@@ -1378,17 +1380,15 @@ const generateIcs = async (requestid, calendarData, params) => {
     }
 }
 
-function getIcalObjectInstance(monthdate, hourstart, eventduration, eventname, description, location, eventlink , name ,email) {
+function getIcalObjectInstance(monthdate, hourstart, eventduration, timezoneoffset, eventname, description, location, eventlink , name ,email) {
     try {
         const calendar = ical({name: 'ICal'});
-
-        // A method is required for outlook to display event as an invitation
         calendar.method(ICalCalendarMethod.REQUEST);
 
-        const startTime = new Date(`${monthdate}T${hourstart}:00`);
+        const startTime = new Date(`${monthdate}T${hourstart}:00${timezoneoffset >= 0 ? '+' : '-'}${Math.abs(timezoneoffset).toString().padStart(2, '0')}:00`);
         const endTime = new Date(startTime.getTime());
         endTime.setMinutes(endTime.getMinutes() + eventduration);
-
+        
         calendar.createEvent({
             start: startTime,
             end: endTime,

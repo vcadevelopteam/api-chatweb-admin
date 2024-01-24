@@ -2813,7 +2813,8 @@ module.exports = {
         ce.rescheduletype,
         ce.description,
         ce.timeduration,
-        ce.location
+        ce.location,
+        ce.timezone
         from calendarevent ce 
         left join communicationchannel cc1 on cc1.corpid = ce.corpid and cc1.orgid = ce.orgid and cc1.communicationchannelid = ce.communicationchannelid
         left join communicationchannel cc2 on cc2.corpid = ce.corpid and cc2.orgid = ce.orgid and cc2.communicationchannelid = ce.reminderhsmcommunicationchannelid
