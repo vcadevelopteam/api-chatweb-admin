@@ -150,29 +150,29 @@ module.exports = {
             column: "extract(hour from co.startdate + p_offset * INTERVAL '1hour')::BIGINT"
         },
         channel: {
-            column: "cc.description"
+            column: "co.channel"
         },
         origin: {
             column: "co.origin"
         },
 
         client: {
-            column: "pe.name"
+            column: "co.person"
         },
         person: {
-            column: "pcc.displayname"
+            column: "co.person"
         },
         closedby: {
-            column: "ou.type"
+            column: "co.closedby"
         },
         agent: {
-            column: "nullif(concat(us.firstname,' ',us.lastname), ' ')"
+            column: "co.agent"
         },
         ticketgroup: {
             column: "co.usergroup"
         },
         closetype: {
-            column: "coalesce(do2.domaindesc, co.closetype)"
+            column: "co.closetype"
         },
         startdate: {
             column: "to_char(co.startdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')"
@@ -1565,7 +1565,7 @@ module.exports = {
             column: "t.status"
         },
     },
-    warehouse:{
+    warehouse: {
         name: {
             column: "t.name"
         },
@@ -1585,7 +1585,7 @@ module.exports = {
             column: "t.longitude"
         },
     },
-    manufacturer:{
+    manufacturer: {
         manufacturercode: {
             column: "t.manufacturercode"
         },
@@ -1605,37 +1605,37 @@ module.exports = {
             column: "cur.domaindesc"
         },
     },
-    inventory:{
-        productcode:{
+    inventory: {
+        productcode: {
             column: "p.productcode"
         },
-        productdescription:{
+        productdescription: {
             column: "p.description"
         },
-        warehousename:{
+        warehousename: {
             column: "w.name"
         },
-        rackdefault:{
+        rackdefault: {
             column: "t.rackdefault"
         },
-        currentbalance:{
+        currentbalance: {
             column: "pw.currentbalance",
             type: "number"
         },
-        familydescription:{
+        familydescription: {
             column: "inventario.ufn_domain_get(p.familyid)"
         },
-        subfamilydescription:{
+        subfamilydescription: {
             column: "inventario.ufn_domain_get(p.subfamilyid)"
         },
-        unitdispatchdescription:{
+        unitdispatchdescription: {
             column: "inventario.ufn_domain_get(p.unitdispatchid)"
         },
-        status:{
+        status: {
             column: "t.status"
         },
     },
-    leadgridtracking:{
+    leadgridtracking: {
         createdate: {
             column: "ld.createdate"
         },
@@ -1670,17 +1670,17 @@ module.exports = {
             column: "ld.estimatedbillingdate"
         },
     },
-    inventoryconsumption:{
-        inventoryconsumptionid:{
+    inventoryconsumption: {
+        inventoryconsumptionid: {
             column: "t.inventoryconsumptionid"
         },
-        description:{
+        description: {
             column: "t.description"
         },
-        transactiontype:{
+        transactiontype: {
             column: "t.transactiontype"
         },
-        status:{
+        status: {
             column: "t.status"
         },
     },
