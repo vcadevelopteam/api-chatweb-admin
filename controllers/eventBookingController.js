@@ -714,6 +714,7 @@ const googleCalendarCredentials = async ({ params, code = null }) => {
                     credentials: JSON.stringify(credentials),
                     timezone: calendar_data.data.timeZone
                 });
+                console.log({calendarintegration})
                 return [calendar, {
                     calendarintegrationid: calendarintegration?.[0]?.calendarintegrationid,
                     email: calendar_data.data.id,
