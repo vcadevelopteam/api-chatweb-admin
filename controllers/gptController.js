@@ -252,7 +252,7 @@ exports.addFile = async (req, res) => {
       data: {
         file_url: file_url,
         file_name: file_name,
-        apikey: apikey,      
+        apikey: apikey,
       },
       headers: {
         Authorization: req.headers.authorization,
@@ -288,7 +288,7 @@ exports.assignFile = async (req, res) => {
       data: {
         assistant_id: assistant_id,
         file_id: file_id,
-        apikey: apikey,      
+        apikey: apikey,
       },
       headers: {
         Authorization: req.headers.authorization,
@@ -323,7 +323,7 @@ exports.verifyFile = async (req, res) => {
       url: `${process.env.GPT_SERVICES}/assistants/files/list`,
       data: {
         assistant_id: assistant_id,
-        apikey: apikey,      
+        apikey: apikey,
       },
       headers: {
         Authorization: req.headers.authorization,
@@ -358,7 +358,7 @@ exports.deleteFile = async (req, res) => {
       url: `${process.env.GPT_SERVICES}/files/delete`,
       data: {
         file_id: file_id,
-        apikey: apikey,      
+        apikey: apikey,
       },
       headers: {
         Authorization: req.headers.authorization,
@@ -369,6 +369,44 @@ exports.deleteFile = async (req, res) => {
 
     if (responseDeleteFile.data && responseDeleteFile.statusText === "OK") {
       return res.json(responseDeleteFile.data);
+    }
+    return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+  } catch (exception) {
+    return res
+      .status(500)
+      .json(
+        getErrorCode(
+          null,
+          exception,
+          `Request to ${req.originalUrl}`,
+          req._requestid
+        )
+      );
+  }
+};
+
+exports.massiveDelete = async (req, res) => {
+  try {
+    const { apikey, ids } = req.body;
+    let responseMassiveDelete = await axios({
+      method: "post",
+      url: `${process.env.GPT_SERVICES}/assistants/massivedelete`,
+      data: {
+        apikey: apikey,
+        ids: ids,
+      },
+      headers: {
+        Authorization: req.headers.authorization,
+        "Content-Type": "application/json",
+      },
+      timeout: 600000,
+    });
+
+    if (
+      responseMassiveDelete.data &&
+      responseMassiveDelete.statusText === "OK"
+    ) {
+      return res.json(responseMassiveDelete.data);
     }
     return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
   } catch (exception) {
