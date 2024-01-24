@@ -2887,6 +2887,11 @@ module.exports = {
         module: ["/calendar"],
         protected: "SELECT"
     },
+    UFN_CALENDAREVENT_INTEGRATION_SEL: {
+        query: "SELECT * FROM ufn_calendarevent_integration_sel($corpid, $orgid, $calendareventid)",
+        module: ["/calendar"],
+        protected: "SELECT"
+    },
     UFN_CALENDARBOOKING_CANCEL: {
         query: "SELECT * FROM ufn_calendarbooking_cancel($corpid, $orgid, $calendareventid, $id, $cancelcomment, $username, $canceltype)",
         module: "",
@@ -3668,7 +3673,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CALENDAR_INTEGRATION_CREDENTIALS_DISCONNECT: {
-        query: "SELECT * FROM ufn_calendarintegration_credentials_disconnect($corpid, $orgid, $id)",
+        query: "SELECT * FROM ufn_calendarintegration_credentials_disconnect($corpid, $orgid, $calendareventid, $calendarintegrationid)",
         module: "",
         protected: "INSERT"
     },
