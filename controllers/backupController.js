@@ -87,6 +87,7 @@ const insertMassive = async (table, rows, dt, columns, lastdate) => {
         }
         tables_success.push(tablename)
     } catch (error) {
+        tables_success = [`error_${tablename}`]
         throw error;
     }
 };
