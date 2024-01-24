@@ -36,6 +36,7 @@ const processCursor = async (cursor, table, dt, columns, lastdate) => {
 
 const insertMassive = async (table, rows, dt, columns, lastdate) => {
     const { columnpk, tablename, update, insertwhere, updatewhere, idMax } = table;
+    console.log("running", tablename)
     try {
 
         const data = update
