@@ -1391,7 +1391,6 @@ function getIcalObjectInstance(monthdate, hourstart, eventduration, eventname, d
         const startTime = new Date(`${monthdate}T${hourstart}:00`);
         const endTime = new Date(startTime.getTime());
         endTime.setMinutes(endTime.getMinutes() + eventduration);
-        console.log({endTime, eventduration, startTime})
 
         calendar.createEvent({
             start: startTime,
