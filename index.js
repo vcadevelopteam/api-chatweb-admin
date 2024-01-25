@@ -67,6 +67,7 @@ app.use('/api/campaign', require('./routes/campaign'));
 app.use('/api/catalog', require('./routes/catalog'));
 app.use('/api/witai', require('./routes/witai'));
 app.use('/api/product', require('./routes/product'));
+app.use('/api/order', require('./routes/order'));
 app.use('/api/posthistory', require('./routes/posthistory'));
 app.use('/api/rasa', require('./routes/rasa'));
 app.use('/api/report-data', require('./routes/reportdata'));

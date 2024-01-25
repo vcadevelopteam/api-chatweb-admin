@@ -4479,4 +4479,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_API_ORDER_UPDATE_INFO: {
+        query: "SELECT * FROM ufn_api_order_update_info($corpid, $orgid, $order_id, $delivery_type, $delivery_date, $delivery_address, $delivery_address_reference, $paymentmethod, $payment_receipt, $payment_document_type, $payment_document_number, $payment_businessname, $payment_fiscal_address, $payment_date, $payment_amount, $payment_attachment)",
+        module: "",
+        protected: 'SELECT'
+    }
 }
