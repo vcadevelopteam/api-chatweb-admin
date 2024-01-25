@@ -427,6 +427,7 @@ exports.Collection = async (req, res) => {
                     ...parameters,
                     cancelcomment: "RESCHEDULED BOOKING"
                 });
+                await executesimpletransaction("QUERY_CANCEL_INTEGRATION_EVENT_BY_CALENDARBOOKINGUUID", parameters);
                 await executesimpletransaction("QUERY_CANCEL_TASK_BY_CALENDARBOOKINGUUID", {
                     ...parameters,
                 });
