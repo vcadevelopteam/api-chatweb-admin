@@ -2848,6 +2848,12 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_CANCEL_INTEGRATION_EVENT_BY_CALENDARBOOKINGUUID: {
+        query: `DELETE from calendarintegrationbooking
+                WHERE id = $calendarbookingid::varchar`,
+        module: "",
+        protected: "SELECT"
+    },
     QUERY_GET_EVENT_REMINDER: {
         query: `SELECT * 
                 FROM calendarevent
