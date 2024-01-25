@@ -35,9 +35,9 @@ const processCursor = async (cursor, table, dt, columns, lastdate) => {
 };
 
 const insertMassive = async (table, rows, dt, columns, lastdate) => {
+    const { columnpk, tablename, update, insertwhere, updatewhere, idMax } = table;
     try {
-        const { columnpk, tablename, update, insertwhere, updatewhere, idMax } = table;
-
+        console.log("running", tablename)
         const data = update
             ? rows.reduce(
                 (acc, item) => {
@@ -141,7 +141,7 @@ exports.incremental = async (req, res) => {
         for (const table of tablesToBackup) {
             const { tablename, selectwhere, columnpk } = table;
             // Si desea ejecutar algunas tablas, descomentar 
-            // if (!["conversation"].includes(tablename)) continue;
+            if (!["conversation"].includes(tablename)) continue;
 
             const dtResult = await clientBackup.query(
                 `SELECT
