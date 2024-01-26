@@ -1,7 +1,8 @@
-const { errors, getErrorCode } = require('../config/helpers');
-const { setSessionParameters } = require('../config/helpers');
+const { errors, getErrorCode, axiosObservable } = require('../config/helpers');
+const { executesimpletransaction } = require('../config/triggerfunctions');;
+const { setSessionParameters, printException } = require('../config/helpers');
 
-const triggerfunctions = require('../config/triggerfunctions');
+const exchangeEndpoint = process.env.EXCHANGE;
 
 exports.exchangeRate = async (req, res) => {
     const { parameters = {} } = req.body;
@@ -10,26 +11,45 @@ exports.exchangeRate = async (req, res) => {
 
     try {
         var exchangeRate = 0;
-        var exchangeRateSol = 0;
+        var retryNumber = 0;
 
-        const currency = await getExchangeRate(parameters?.code || 'USD', req._requestid);
+        var currentDate = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()));
 
-        if (currency) {
-            exchangeRate = currency.exchangerate;
-            exchangeRateSol = currency.exchangeratesol;
+        currentDate = new Date(currentDate.setDate(currentDate.getDate() + 1));
+
+        while (exchangeRate === 0 && retryNumber <= 20) {
+            try {
+                const requestGetExchange = await axiosObservable({
+                    method: 'get',
+                    url: `${retryNumber === 0 ? exchangeEndpoint.split('?')[0] : (exchangeEndpoint + currentDate.toISOString().split('T')[0])}`,
+                    _requestid: req._requestid,
+                });
+
+                if (requestGetExchange.data.venta) {
+                    exchangeRate = requestGetExchange.data.venta;
+                }
+                else {
+                    currentDate = new Date(currentDate.setDate(currentDate.getDate() - 1));
+                }
+            }
+            catch (exception) {
+                currentDate = new Date(currentDate.setDate(currentDate.getDate() - 1));
+            }
+
+            retryNumber++;
+
+            await sleep(4000);
         }
 
         if (exchangeRate) {
             return res.json({
                 exchangeRate: exchangeRate,
-                exchangeRateSol: exchangeRateSol,
                 success: true
             });
         }
         else {
             return res.status(400).json({
                 exchangeRate: exchangeRate,
-                exchangeRateSol: exchangeRateSol,
                 success: false
             });
         }
@@ -38,20 +58,6 @@ exports.exchangeRate = async (req, res) => {
     }
 }
 
-const getExchangeRate = async (code, requestId) => {
-    const queryString = "UFN_APPSETTING_INVOICE_SEL_EXCHANGERATE";
-    const queryParameters = {
-        code: code,
-        _requestid: requestId,
-    }
-
-    const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
-
-    if (queryResult instanceof Array) {
-        if (queryResult.length > 0) {
-            return queryResult[0];
-        }
-    }
-
-    return null;
+async function sleep(msec) {
+    return new Promise(resolve => setTimeout(resolve, msec));
 }

@@ -35,9 +35,9 @@ const processCursor = async (cursor, table, dt, columns, lastdate) => {
 };
 
 const insertMassive = async (table, rows, dt, columns, lastdate) => {
+    const { columnpk, tablename, update, insertwhere, updatewhere, idMax } = table;
     try {
-        const { columnpk, tablename, update, insertwhere, updatewhere, idMax } = table;
-
+        console.log("running", tablename)
         const data = update
             ? rows.reduce(
                 (acc, item) => {
@@ -85,8 +85,8 @@ const insertMassive = async (table, rows, dt, columns, lastdate) => {
 
             await clientBackup.query(query, [JSON.stringify(data.updates)]);
         }
-        tables_success.push(tablename)
     } catch (error) {
+        tables_success = [`error_${tablename}`]
         throw error;
     }
 };
@@ -179,6 +179,7 @@ exports.incremental = async (req, res) => {
             const cursor = client.query(new Cursor(querySelect));
 
             try {
+                tables_success.push(tablename)
                 await processCursor(cursor, table, dt, columns, lastdate);
             } catch (error) {
                 throw error;

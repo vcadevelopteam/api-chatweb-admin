@@ -242,7 +242,7 @@ exports.createSubscription = async (request, response) => {
             let paymentcarderror = false;
 
             if (card) {
-                const appsetting = await getAppSettingSingle(0, 0, request._requestid);
+                const appsetting = await getAppSetting(request._requestid);
 
                 if (appsetting) {
                     card.cardnumber = card.cardnumber.split(" ").join("");
@@ -982,10 +982,8 @@ exports.validateUsername = async (request, response) => {
     }
 };
 
-const getAppSettingSingle = async (corpid, orgid, requestId) => {
-    const queryAppSettingGet = await triggerfunctions.executesimpletransaction("UFN_APPSETTING_INVOICE_SEL_SINGLE", {
-        corpid: corpid,
-        orgid: orgid,
+const getAppSetting = async (requestId) => {
+    const queryAppSettingGet = await triggerfunctions.executesimpletransaction("UFN_APPSETTING_INVOICE_SEL", {
         _requestid: requestId,
     });
 
