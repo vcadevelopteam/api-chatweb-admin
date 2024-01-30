@@ -2430,7 +2430,7 @@ exports.chargeInvoice = async (request, response) => {
 
                                         await insertPayment(corpid, orgid, invoiceid, true, chargedata?.chargeid, requestOpenpayCharge.data.result, requestOpenpayCharge.data.result.id, (settings.amount / 100), userprofile.email || 'generic@mail.com', usr, null, null, appsetting.location, appsetting.paymentprovider, responsedata.id);
 
-                                        responsedata = genericfunctions.changeResponseData(responsedata, charge.outcome.code, null, 'successful_transaction', 200, true);
+                                        responsedata = genericfunctions.changeResponseData(responsedata, requestOpenpayCharge.data.result.id, null, 'successful_transaction', 200, true);
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                     else {
@@ -3046,7 +3046,7 @@ exports.createBalance = async (request, response) => {
                                             return response.status(responsedata.status).json(responsedata);
                                         }
                                         else {
-                                            responsedata = genericfunctions.changeResponseData(responsedata, charge.outcome.code, { id: charge.id, object: charge.object }, charge.outcome.user_message, 200, true);
+                                            responsedata = genericfunctions.changeResponseData(responsedata, charge?.outcome?.code || charge?.id, charge?.object ? { id: charge.id, object: charge.object } : null, charge?.outcome?.user_message || 'successful_transaction', 200, true);
                                             return response.status(responsedata.status).json(responsedata);
                                         }
                                     }
