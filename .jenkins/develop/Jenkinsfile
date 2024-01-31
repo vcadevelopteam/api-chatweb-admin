@@ -13,8 +13,15 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh 'cd /var/www/html/api-laraigo-dev'
-                sh 'pm2 restart 0'
+                script {
+                    dir('/var/www/html/api-laraigo-dev') {
+                        // Create a temporary directory inside the target directory
+                        def tempDir = tmpDir()
+                        
+                        // Restart PM2
+                        sh "pm2 restart 0"
+                    }
+                }
             }
         }
     }
