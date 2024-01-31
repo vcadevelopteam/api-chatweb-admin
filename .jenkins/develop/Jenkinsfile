@@ -13,6 +13,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
+                sh "mkdir -p /var/www/html/api-laraigo-dev@tmp && chmod 775 /var/www/html/api-laraigo-dev@tmp"
                 dir('/var/www/html/api-laraigo-dev') {
                     sh "pm2 restart 0"
                 }
