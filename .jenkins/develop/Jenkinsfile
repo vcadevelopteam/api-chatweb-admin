@@ -11,14 +11,5 @@ pipeline {
                 sh 'rsync -av --delete * /var/www/html/api-laraigo-dev'
             }
         }
-        stage('Deploy') {
-            steps {
-                script {
-                    dir('/var/www/html/api-laraigo-dev') {
-                        sh "pm2 restart 0"
-                    }
-                }
-            }
-        }
     }
 }
