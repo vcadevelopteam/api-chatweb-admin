@@ -3814,6 +3814,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CONVERSATION_SEL_TICKETSBYCAMPAIGN: {
+        query: "SELECT * FROM ufn_conversation_sel_ticketsbycampaign($corpid, $orgid, $userid, $campaignid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_USERS_SEL_MOVIL: {
         query: "select * from ufn_users_sel($classification, $startdate, $enddate, $corporation);",
         module: "",
