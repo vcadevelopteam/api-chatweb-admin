@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    
+
     tools {
         nodejs '14.21.3'
     }
@@ -13,10 +13,8 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                script {
-                    sh 'cd /var/www/html/api-laraigo-dev'
-                    sh 'pm2 restart 0'
-                }
+                sh 'cd /var/www/html/api-laraigo-dev'
+                sh 'pm2 restart 0'
             }
         }
     }
