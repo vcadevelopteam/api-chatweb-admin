@@ -13,7 +13,6 @@ pipeline {
         stage ('Build') {
             steps {
                 sh 'cd /var/www/html/api-laraigo-test'
-                sh 'npm install'
             }
         }
         stage('Update'){
