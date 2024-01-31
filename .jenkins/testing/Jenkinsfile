@@ -1,0 +1,30 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_DEFAULT_REGION="us-south"
+    }
+    
+    tools {
+        nodejs '14.21.3'
+    }
+
+    stages {
+        stage ('Build') {
+            steps {
+                sh 'cd /var/www/html/api-laraigo-test'
+                sh 'npm install'
+            }
+        }
+        stage('Update'){
+            steps {
+                sh 'git pull'
+            }
+        }
+        stage ('Deploy') {
+            steps {
+                sh 'pm2 restart 1'
+            }
+        }
+    }
+}
