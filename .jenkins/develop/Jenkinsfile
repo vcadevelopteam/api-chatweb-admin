@@ -15,10 +15,6 @@ pipeline {
             steps {
                 script {
                     dir('/var/www/html/api-laraigo-dev') {
-                        // Create a temporary directory inside the target directory
-                        def tempDir = tmpDir()
-                        
-                        // Restart PM2
                         sh "pm2 restart 0"
                     }
                 }
