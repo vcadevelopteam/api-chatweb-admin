@@ -10,11 +10,10 @@ pipeline {
     }
 
     stages {
-        stage('Build') {
+        /*stage('Build') {
             steps {
                 script {
                     dir('/var/www/html/api-laraigo-dev') {
-                        sh 'git checkout testing'
                     }
                 }
             }
@@ -23,7 +22,7 @@ pipeline {
             steps {
                 sh 'git pull'
             }
-        }
+        }*/
         stage('Deploy') {
             steps {
                 sh 'pm2 restart 0'
