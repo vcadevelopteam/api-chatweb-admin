@@ -11,8 +11,10 @@ pipeline {
 
     stages {
         stage ('Build') {
-            steps {
-                sh 'cd /var/www/html/api-laraigo-test'
+            script {
+                dir('/var/www/html/api-laraigo-test') {
+                    sh 'git checkout testing'
+                }
             }
         }
         stage('Update'){
