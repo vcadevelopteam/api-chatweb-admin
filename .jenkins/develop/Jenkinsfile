@@ -17,7 +17,9 @@ pipeline {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'root-ssh-key', keyFileVariable: 'SSH_KEY')]) {
                         sh """
-                            ssh -i \$SSH_KEY root@your-server-ip 'cd /var/www/html/api-laraigo-dev && ls && pm2 list'
+                            cd /var/www/html/api-laraigo-dev
+                            ls
+                            pm2 list
                         """
                     }
                 }
