@@ -8,12 +8,12 @@ pipeline {
     stages {
         stage('Build') {
             steps {
+                sh 'npm i pm2'
                 sh 'rsync -av --delete * /var/www/html/api-laraigo-dev'
             }
         }
         stage('Deploy') {
             steps {
-                sh 'npm i pm2'
                 sh 'pm2 -v'
                 sh 'pm2 list'
                 //sh '/root/.nvm/versions/node/v14.21.3/bin/pm2 restart 0'
