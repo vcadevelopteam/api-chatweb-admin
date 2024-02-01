@@ -346,16 +346,18 @@ exports.IncrementalInsertToken = async (req, res) => {
 
 exports.IncrementalInvokeToken = async (req, res) => {
     try {
-        await axiosObservable({
-            method: "post",
-            url: `${process.env.INCREMENTAL_API}auth/incremental/insert/token`,
-            data: { 
-                userid: req.user.userid,
-                token: req.user.token,
-                origin: 'WEB',
-            },
-            _requestid: req._requestid,
-        });
+        if (process.env.INCREMENTAL_API) {
+            const res = await axiosObservable({
+                method: "post",
+                url: `${process.env.INCREMENTAL_API}auth/incremental/insert/token`,
+                data: { 
+                    userid: req.user.userid,
+                    token: req.user.token,
+                    origin: 'WEB',
+                },
+                _requestid: req._requestid,
+            });
+        }
         return res.json({ success: true });
     } catch (exception) {
         return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));

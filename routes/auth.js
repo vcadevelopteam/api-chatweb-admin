@@ -27,7 +27,7 @@ router.post("/incremental/insert/token",
     authController.IncrementalInsertToken
 )
 
-router.post("/incremental/invoke/token",
+router.get("/incremental/invoke/token",
     auth,
     authController.IncrementalInvokeToken
 )
