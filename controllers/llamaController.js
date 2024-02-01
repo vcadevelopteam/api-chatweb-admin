@@ -32,3 +32,38 @@ exports.uploadFile = async (req, res) => {
       );
   }
 };
+
+exports.message = async (req, res) => {
+  try {
+    const { text, assistant_id, node_id } = req.body;
+    let responseMessage = await axiosObservable({
+      data: {
+        text: text,
+        assistant_id: assistant_id,
+        node_id: node_id,
+      },
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "post",
+      url: "http://10.240.65.9:5090/message",
+      _requestid: req._requestid,
+    });
+
+    if (responseMessage.data && responseMessage.statusText === "OK") {
+      return res.json(responseMessage.data);
+    }
+    return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+  } catch (exception) {
+    return res
+      .status(500)
+      .json(
+        getErrorCode(
+          null,
+          exception,
+          `Request to ${req.originalUrl}`,
+          req._requestid
+        )
+      );
+  }
+};

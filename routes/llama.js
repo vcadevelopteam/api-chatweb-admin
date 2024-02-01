@@ -7,4 +7,8 @@ router.post('/upload',
     llamaController.uploadFile
 )
 
+router.post('/message',
+    llamaController.message    
+)
+
 module.exports = router;
