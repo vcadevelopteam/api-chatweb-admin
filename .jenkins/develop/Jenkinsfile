@@ -12,15 +12,15 @@ pipeline {
             }
         }
         stage('Deploy') {
-            steps {             
-                sshCommand remote: remoteNode,
-                            credentialsId: 'root-ssh-key',
-                            command: """
-                                cd /var/www/html/api-laraigo-dev
-                                whoami
-                                pwd
-                                pm2 list
-                            """
+            steps {                
+                script {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'root-ssh-key', usernameVariable: 'SSH_USER')]) {
+                        sh """
+                            export SSHPASS=$SSH_KEY
+                            sshpass -p $SSHPASS ssh $SSH_USER@[remoteNode] 'cd /var/www/html/api-laraigo-dev ; whoami ; pwd ; pm2 list'
+                        """
+                    }
+                }
             }
         }
     }
