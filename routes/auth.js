@@ -23,6 +23,15 @@ router.post("/changeorganization",
     authController.changeOrganization
 )
 
+router.post("/incremental/insert/token",
+    authController.IncrementalInsertToken
+)
+
+router.post("/incremental/invoke/token",
+    auth,
+    authController.IncrementalInvokeToken
+)
+
 router.get("/",
     auth,
     authController.getUser
