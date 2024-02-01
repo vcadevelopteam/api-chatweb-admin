@@ -13,12 +13,9 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                script{
-                    dir('/var/www/html/api-laraigo-dev') {
-                        sh 'ls'
-                        sh 'pm2 list'
-                    }
-                }
+                sh '/var/www/html/api-laraigo-dev'
+                sh 'ls'
+                sh 'pm2 list'
             }
         }
     }
