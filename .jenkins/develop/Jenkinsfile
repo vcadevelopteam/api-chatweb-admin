@@ -15,7 +15,7 @@ pipeline {
             steps {
                 
                 script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'root-ssh-key', keyFileVariable: 'SSH_KEY')]) {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'root-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
                         sh """
                             cd /var/www/html/api-laraigo-dev
                             whoami
