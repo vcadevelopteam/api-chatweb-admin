@@ -13,7 +13,10 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh 'groups jenkins'
+                dir('/var/www/html/api-laraigo-dev') {
+                    sh 'ls'
+                    sh 'pm2 list'
+                }
             }
         }
     }
