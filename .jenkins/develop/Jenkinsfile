@@ -13,11 +13,10 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                script {
-                    def nodePath = sh(script: 'which node', returnStdout: true).trim()
-
-                    //sh "${nodePath} /root/.nvm/versions/node/v14.21.3/bin/pm2 restart 0"
-                    sh "/var/www/html/api-laraigo-dev/node_modules/.bin/pm2 list"
+                script{
+                    dir('/var/www/html/api-laraigo-test') {
+                        sh 'pm2 list'
+                    }
                 }
             }
         }
