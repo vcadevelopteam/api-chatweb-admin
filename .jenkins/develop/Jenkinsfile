@@ -14,8 +14,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh 'cd /var/www/html/api-laraigo-dev'
-                sh 'ls'
-                sh 'sudo pm2 list'  // Use sudo to execute pm2 as root
+                sh 'sudo pm2 list'
             }
         }
     }
