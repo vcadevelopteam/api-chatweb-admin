@@ -1,8 +1,7 @@
 const logger = require('../config/winston');
-
 const { v4: uuidv4 } = require('uuid');
 const { executesimpletransaction } = require('../config/triggerfunctions');
-const { errors, getErrorCode, cleanPropertyValue, recaptcha } = require('../config/helpers');
+const { errors, getErrorCode, cleanPropertyValue, recaptcha, axiosObservable } = require('../config/helpers');
 const { addApplication } = require('./voximplantController');
 
 const bcryptjs = require("bcryptjs");
@@ -102,14 +101,14 @@ const validateResProperty = (r, type) => {
 
 exports.authenticate = async (req, res) => {
     const { data: { usr, password, facebookid, googleid, origin = "WEB", token, token_recaptcha } } = req.body;
-    
+
     logger.child({ _requestid: req._requestid, body: req.body }).info(`authenticate.body`);
 
     const secret_recaptcha = process.env.SECRET_RECAPTCHA;
 
     if (origin !== "MOVIL" && secret_recaptcha && token_recaptcha) {
         const result_recaptcha = await recaptcha(secret_recaptcha, token_recaptcha);
-    
+
         if ((result_recaptcha.error || !result_recaptcha.success)) {
             return res.status(401).json({ code: errors.RECAPTCHA_ERROR, ...result_recaptcha })
         }
@@ -277,7 +276,7 @@ exports.getUser = async (req, res) => {
                 item.applicationid_parent,
                 item.description_parent,
                 item.menuorder,
-            ]
+                ]
         }), {})
 
         jwt.sign({ user: { ...req.user, environment: propertyEnv, menu: { ...menu, "system-label": undefined, "/": undefined } } }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
@@ -335,6 +334,34 @@ exports.connect = async (req, res) => {
         logger.child({ _requestid: req._requestid, error: { detail: exception.stack, message: exception.toString() } }).error(`Request to ${req.originalUrl}`);
     }
     return res.json({ data: null, error: false })
+}
+
+exports.IncrementalInsertToken = async (req, res) => {
+    const result = await executesimpletransaction("UFN_USERTOKEN_INS", req.body);
+    if (result instanceof Array)
+        return res.json({ error: false, success: true, data: result });
+    else
+        return res.status(result.rescode).json(result);
+}
+
+exports.IncrementalInvokeToken = async (req, res) => {
+    try {
+        if (process.env.INCREMENTAL_API) {
+            const res = await axiosObservable({
+                method: "post",
+                url: `${process.env.INCREMENTAL_API}auth/incremental/insert/token`,
+                data: { 
+                    userid: req.user.userid,
+                    token: req.user.token,
+                    origin: 'WEB',
+                },
+                _requestid: req._requestid,
+            });
+        }
+        return res.json({ success: true });
+    } catch (exception) {
+        return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+    }
 }
 
 exports.changeOrganization = async (req, res) => {
