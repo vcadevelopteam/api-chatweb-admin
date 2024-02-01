@@ -1,18 +1,19 @@
 pipeline {
     agent any
 
-    environment {
-        TMPDIR = "/var/www/html/api-laraigo-test"
-    }
-
     tools {
         nodejs '14.21.3'
     }
 
     stages {
+        stage('Build') {
+            steps {
+                sh 'rsync -av --delete * /var/www/html/api-laraigo-dev'
+            }
+        }
         stage('Deploy') {
             steps {
-                sh 'pm2 list'
+                sh 'groups jenkins'
             }
         }
     }
