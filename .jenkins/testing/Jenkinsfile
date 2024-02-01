@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        AWS_DEFAULT_REGION="us-south"
-    }
-    
     tools {
         nodejs '14.21.3'
     }
@@ -12,21 +8,13 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                script {
-                    dir('/var/www/html/api-laraigo-test') {
-                        sh 'git checkout testing'
-                    }
-                }
-            }
-        }
-        stage('Update') {
-            steps {
-                sh 'git pull'
+                sh 'rsync -av --delete * /var/www/html/api-laraigo-test'
             }
         }
         stage('Deploy') {
             steps {
-                sh 'pm2 restart 1'
+                sh 'cd /var/www/html/api-laraigo-test'
+                sh 'sudo pm2 restart 1'
             }
         }
     }
