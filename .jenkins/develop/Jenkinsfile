@@ -13,10 +13,11 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                def nodePath = sh(script: 'which node', returnStdout: true).trim()
+                script {
+                    def nodePath = sh(script: 'which node', returnStdout: true).trim()
 
-                // Use sudo with full path to pm2 and node
-                sh "sudo ${nodePath} /root/.nvm/versions/node/v14.21.3/bin/pm2 restart 0"
+                    sh "sudo ${nodePath} /root/.nvm/versions/node/v14.21.3/bin/pm2 restart 0"
+                }
             }
         }
     }
