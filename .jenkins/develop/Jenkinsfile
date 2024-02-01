@@ -6,16 +6,10 @@ pipeline {
     }
 
     stages {
-        /*stage('Build') {
-            steps {
-                sh 'rsync -av --delete * /var/www/html/api-laraigo-dev'
-            }
-        }*/
         stage('Deploy') {
             steps {
-                
                 script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'root-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+                    sshagent(credentials: ['root-ssh-key']) {
                         sh """
                             cd /var/www/html/api-laraigo-dev
                             whoami
