@@ -13,6 +13,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
+                sh 'whoami'
                 sh 'sudo /root/.nvm/versions/node/v14.21.3/bin/pm2 restart 0'
             }
         }
