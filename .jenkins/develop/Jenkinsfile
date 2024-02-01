@@ -13,9 +13,14 @@ pipeline {
         }*/
         stage('Deploy') {
             steps {
-                sh 'cd /var/www/html/api-laraigo-dev'
-                sh 'ls'
-                sh 'pm2 list'
+                
+                script {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'root-ssh-key', keyFileVariable: 'SSH_KEY')]) {
+                        sh """
+                            ssh -i \$SSH_KEY root@your-server-ip 'cd /var/www/html/api-laraigo-dev && ls && pm2 list'
+                        """
+                    }
+                }
             }
         }
     }
