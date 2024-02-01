@@ -13,7 +13,8 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh ' pm2 -v'
+                sh 'npm i pm2'
+                sh 'pm2 -v'
                 //sh '/root/.nvm/versions/node/v14.21.3/bin/pm2 restart 0'
             }
         }
