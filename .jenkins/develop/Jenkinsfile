@@ -13,8 +13,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh 'which pm2'
-                //sh 'sudo /root/.nvm/versions/node/v14.21.3/bin/pm2 restart 0'
+                sh '/root/.nvm/versions/node/v14.21.3/bin/pm2 restart 0'
             }
         }
     }
