@@ -13,6 +13,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
+                sh 'npm install'
                 sh 'cd /var/www/html/api-laraigo-dev'
                 sh 'sudo pm2 restart 0'
             }
