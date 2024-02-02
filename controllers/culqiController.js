@@ -864,7 +864,7 @@ exports.automaticPayment = async (request, response) => {
                                                 else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
                                                     const requestOpenpayCharge = await axiosObservable({
                                                         data: {
-                                                            amount: (Math.round(((culqiamount * 100) + Number.EPSILON) * 100) / 100),
+                                                            amount: (Math.round(((culqiamount) + Number.EPSILON) * 100) / 100),
                                                             currencyCode: invoice.currency,
                                                             customerId: favoritecard.clientcode,
                                                             description: (removeSpecialCharacter('PAYMENT: ' + (invoice.description || ''))).slice(0, 80),
@@ -1206,7 +1206,7 @@ exports.automaticPayment = async (request, response) => {
                                                     invoicedata.FechaVencimiento = null;
                                                 }
 
-                                                if (appsetting.invoiceprovider === 'MIFACT') {
+                                                if (appsetting?.invoiceprovider === 'MIFACT') {
                                                     const requestSendToSunat = await axiosObservable({
                                                         data: invoicedata,
                                                         method: 'post',
@@ -1253,7 +1253,7 @@ exports.automaticPayment = async (request, response) => {
                                                         }
                                                     }
                                                 }
-                                                else if (appsetting.invoiceprovider === 'SIIGO') {
+                                                else if (appsetting?.invoiceprovider === 'SIIGO') {
                                                     invoicedata.TipoDocumentoSiigo = "FV";
                                                     invoicedata.TipoCambio = invoice.currency === 'COP' ? '1.000' : ((exchangeratedata?.exchangeratecop / exchangeratedata?.exchangerate) || invoice.exchangerate);
                                                     invoicedata.TipoPago = (paymenttype == "Crédito" || paymenttype == "credit") ? "Tarjeta Crédito" : "Tarjeta Débito";
@@ -2156,7 +2156,7 @@ exports.chargeInvoice = async (request, response) => {
                                                         }
                                                     }
 
-                                                    if (appsetting.invoiceprovider === 'MIFACT') {
+                                                    if (appsetting?.invoiceprovider === 'MIFACT') {
                                                         const requestSendToSunat = await axiosObservable({
                                                             data: invoicedata,
                                                             method: 'post',
@@ -2188,7 +2188,7 @@ exports.chargeInvoice = async (request, response) => {
                                                             }
                                                         }
                                                     }
-                                                    else if (appsetting.invoiceprovider === 'SIIGO') {
+                                                    else if (appsetting?.invoiceprovider === 'SIIGO') {
                                                         invoicedata.TipoDocumentoSiigo = "FV";
                                                         invoicedata.TipoCambio = invoice.currency === 'COP' ? '1.000' : ((exchangeratedata?.exchangeratecop / exchangeratedata?.exchangerate) || invoice.exchangerate);
                                                         invoicedata.TipoPago = (paymenttype == "Crédito" || paymenttype == "credit") ? "Tarjeta Crédito" : "Tarjeta Débito";
@@ -2942,7 +2942,7 @@ exports.createBalance = async (request, response) => {
 
                                                 invoicedata.ProductList.push(invoicedetaildata);
 
-                                                if (appsetting.invoiceprovider === 'MIFACT') {
+                                                if (appsetting?.invoiceprovider === 'MIFACT') {
                                                     const requestSendToSunat = await axiosObservable({
                                                         data: invoicedata,
                                                         method: 'post',
@@ -2974,7 +2974,7 @@ exports.createBalance = async (request, response) => {
                                                         }
                                                     }
                                                 }
-                                                else if (appsetting.invoiceprovider === 'SIIGO') {
+                                                else if (appsetting?.invoiceprovider === 'SIIGO') {
                                                     invoicedata.TipoDocumentoSiigo = "FV";
                                                     invoicedata.TipoCambio = (lastExchangeData?.exchangeratecop / lastExchangeData?.exchangerate) || 1;
                                                     invoicedata.TipoPago = (paymenttype == "Crédito" || paymenttype == "credit") ? "Tarjeta Crédito" : "Tarjeta Débito";
@@ -3231,7 +3231,7 @@ exports.createCreditNote = async (request, response) => {
                                     invoicedata.ProductList.push(invoicedetaildata);
                                 }
 
-                                if (appsetting.invoiceprovider === 'MIFACT') {
+                                if (appsetting?.invoiceprovider === 'MIFACT') {
                                     const requestSendToSunat = await axiosObservable({
                                         data: invoicedata,
                                         method: 'post',
@@ -3263,7 +3263,7 @@ exports.createCreditNote = async (request, response) => {
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
-                                else if (appsetting.invoiceprovider === 'SIIGO') {
+                                else if (appsetting?.invoiceprovider === 'SIIGO') {
                                     invoicedata.TipoDocumentoSiigo = "NC";
                                     invoicedata.TipoCambio = invoice.currency === 'COP' ? '1.000' : ((exchangeratedata?.exchangeratecop / exchangeratedata?.exchangerate) || invoice.exchangerate);
                                     invoicedata.TipoPago = paymentmethod || "Tarjeta Débito";
@@ -3375,6 +3375,12 @@ exports.createInvoice = async (request, response) => {
                 const appsetting = await getAppSettingSingle(corpid, orgid, responsedata.id);
 
                 if (appsetting) {
+                    if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                        if (invoicecurrency === 'COP') {
+                            invoicetotalamount = Math.round((parseFloat(invoicetotalamount) + Number.EPSILON));
+                        }
+                    }
+
                     var productinfo = [];
 
                     var invoicesubtotal = 0;
@@ -3404,6 +3410,13 @@ exports.createInvoice = async (request, response) => {
                         await Promise.all(productdetail.map(async (element) => {
                             var elementproductsubtotal = Math.round((parseFloat(element.productsubtotal) + Number.EPSILON) * 100) / 100;
                             var elementproductquantity = Math.round((parseFloat(element.productquantity) + Number.EPSILON) * 100) / 100;
+
+                            if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                                if (invoicecurrency === 'COP') {
+                                    elementproductsubtotal = Math.round((parseFloat(element.productsubtotal) + Number.EPSILON));
+                                    elementproductquantity = Math.round((parseFloat(element.productquantity) + Number.EPSILON));
+                                }
+                            }
 
                             var producthasigv = '';
                             var productigvtribute = '';
@@ -3633,7 +3646,7 @@ exports.createInvoice = async (request, response) => {
                                     }
                                 }
 
-                                if (appsetting.invoiceprovider === 'MIFACT') {
+                                if (appsetting?.invoiceprovider === 'MIFACT') {
                                     const requestSendToSunat = await axiosObservable({
                                         data: invoicedata,
                                         method: 'post',
@@ -3661,7 +3674,7 @@ exports.createInvoice = async (request, response) => {
                                         return response.status(responsedata.status).json(responsedata);
                                     }
                                 }
-                                else if (appsetting.invoiceprovider === 'SIIGO') {
+                                else if (appsetting?.invoiceprovider === 'SIIGO') {
                                     invoicedata.TipoDocumentoSiigo = "FV";
                                     invoicedata.TipoCambio = invoicecurrency === 'COP' ? '1.000' : ((lastExchangeData?.exchangeratecop / lastExchangeData?.exchangerate) || 1);
                                     invoicedata.TipoPago = paymentmethod || "Tarjeta Débito";
@@ -4024,7 +4037,7 @@ exports.emitInvoice = async (request, response) => {
                                         }
                                     }
 
-                                    if (appsetting.invoiceprovider === 'MIFACT') {
+                                    if (appsetting?.invoiceprovider === 'MIFACT') {
                                         const requestSendToSunat = await axiosObservable({
                                             data: invoicedata,
                                             method: 'post',
@@ -4062,7 +4075,7 @@ exports.emitInvoice = async (request, response) => {
                                             return response.status(responsedata.status).json(responsedata);
                                         }
                                     }
-                                    else if (appsetting.invoiceprovider === 'SIIGO') {
+                                    else if (appsetting?.invoiceprovider === 'SIIGO') {
                                         invoicedata.TipoDocumentoSiigo = "FV";
                                         invoicedata.TipoCambio = invoice.currency === 'COP' ? '1.000' : ((exchangeratedata?.exchangeratecop / exchangeratedata?.exchangerate) || invoice.exchangerate);
                                         invoicedata.TipoPago = paymentmethod || "Tarjeta Débito";
