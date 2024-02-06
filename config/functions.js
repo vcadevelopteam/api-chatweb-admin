@@ -3872,10 +3872,29 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-
     UFN_WAREHOUSE_SEL: {
         query: "SELECT * FROM ufn_warehouse_lst($corpid, $orgid)",
         module: "",
         protected: "SELECT"
+    },
+    UFN_DELIVERYCONFIGURATION_SEL: {
+        query: "SELECT * FROM ufn_deliveryconfiguration_sel($corpid, $orgid, $username, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DELIVERYCONFIGURATION_INS: {
+        query: "SELECT * FROM ufn_deliveryconfiguration_ins($corpid, $orgid, $id, $config, $status, $type, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_DELIVERYVEHICLE_SEL: {
+        query: "SELECT * FROM ufn_deliveryvehicle_sel($corpid, $orgid, $username, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DELIVERYVEHICLE_INS: {
+        query: "SELECT * FROM ufn_deliveryvehicle_ins($corpid, $orgid, $id, $status, $type, $brand, $model, $vehicleplate, $ability, $insuredamount, $averagespeed, $userid, $license, $username, $operation);",
+        module: "",
+        protected: "INSERT"
     },
 }
