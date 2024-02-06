@@ -1419,6 +1419,9 @@ module.exports = {
         sd_request: {
             column: "ld.sd_request"
         },
+        ticketnum: {
+            column: "c.ticketnum"
+        },
         type: {
             column: "ld.type"
         },
