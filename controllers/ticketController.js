@@ -1,4 +1,4 @@
-const { errors, getErrorCode, axiosObservable } = require('../config/helpers');
+const { errors, getErrorCode, axiosObservable, decryptString } = require('../config/helpers');
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { uploadToCOS, unrar, unzip, xlsxToJSON } = require('../config/filefunctions');
 const { pushNotification } = require('../config/firebase');
@@ -789,7 +789,7 @@ exports.import = async (req, res) => {
 exports.sendHSMcontactos = async (req, res) => {
     const { url, text } = req.body;
     const saa = {
-        type:"image",
+        type: "image",
         text: url
     }
     const responseservices = await axiosObservable({
@@ -882,4 +882,18 @@ exports.sendHSMcontactos = async (req, res) => {
         _requestid: req._requestid,
     });
     return res.json({ success: true });
+}
+
+
+exports.getConversationWithToken = async (req, res) => {
+    try {
+        const { token } = req.params;
+        
+        const textBody = decryptString(Buffer.from(token, "base64").toString(), "LARAIGOVSZYXMEV2QWERTYUIOP")
+        const params = JSON.parse(textBody);
+
+        res.json({ success: true, params });
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+    }
 }
