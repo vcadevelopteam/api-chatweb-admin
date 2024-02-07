@@ -1,6 +1,7 @@
 const columnsFunction = require('./columnsFunction');
 const logger = require('./winston');
 const axios = require('axios')
+const crypto = require('crypto');
 
 exports.generatefilter = (filters, origin, daterange, offset) => {
     let where = "";
@@ -540,4 +541,20 @@ exports.recaptcha = async (secret, key) => {
     } catch (error) {
         return { error: true, message: error.message, detail: error.stack, err: error };
     }
+}
+
+exports.decryptString = (encryptedText, passphrase) => {
+    const salt = Buffer.from('e436012c37657c7a1febc9ff250b2ac0', 'ascii');
+    const iv = Buffer.alloc(16, 0); // Inicializando un buffer con ceros para el IV
+    
+    // Derivando la clave usando PBKDF2
+    const key = crypto.pbkdf2Sync(passphrase, salt, 1000, 32, 'sha1');
+  
+    const encryptedTextBuffer = Buffer.from(encryptedText, 'base64');
+    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+  
+    let decrypted = decipher.update(encryptedTextBuffer, 'binary', 'utf8');
+    decrypted += decipher.final('utf8');
+  
+    return decrypted;
 }
