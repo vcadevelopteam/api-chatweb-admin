@@ -3893,7 +3893,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_DELIVERYVEHICLE_INS: {
-        query: "SELECT * FROM ufn_deliveryvehicle_ins($corpid, $orgid, $id, $status, $type, $brand, $model, $vehicleplate, $ability, $insuredamount, $averagespeed, $userid, $license, $username, $operation);",
+        query: "SELECT * FROM ufn_deliveryvehicle_ins($corpid, $orgid, $id, $status, $type, $brand, $model, $vehicleplate, $capacity, $insuredamount, $averagespeed, $userid, $license, $username, $operation);",
         module: "",
         protected: "INSERT"
     },
