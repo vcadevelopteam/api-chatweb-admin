@@ -7,7 +7,7 @@ const { getErrorCode, axiosObservable } = require('../config/helpers');
 
 const servicesEndpoint = process.env.SERVICES;
 
-exports.chargeCulqui = async (request, response) => {
+exports.newPayment = async (request, response) => {
     let responsedata = genericfunctions.generateResponseData(request._requestid);
 
     try {
@@ -155,18 +155,6 @@ const insertCharge = async (corpId, orgId, paymentorderid, id, amount, capture, 
     }
 
     const queryResult = await triggerfunctions.executesimpletransaction("UFN_CHARGE_PAYMENTORDER_INS", queryParameters);
-
-    if (queryResult instanceof Array) {
-        if (queryResult.length > 0) {
-            return queryResult[0];
-        }
-    }
-
-    return null;
-}
-
-const getAppSetting = async (requestId) => {
-    const queryResult = await triggerfunctions.executesimpletransaction("UFN_APPSETTING_INVOICE_SEL", { _requestid: requestId });
 
     if (queryResult instanceof Array) {
         if (queryResult.length > 0) {

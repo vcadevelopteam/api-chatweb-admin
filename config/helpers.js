@@ -1,6 +1,7 @@
 const columnsFunction = require('./columnsFunction');
 const logger = require('./winston');
 const axios = require('axios')
+const crypto = require('crypto');
 
 exports.generatefilter = (filters, origin, daterange, offset) => {
     let where = "";
@@ -340,11 +341,11 @@ function runTimeout(ms) {
 
 const statusAllowed = [400, 200, 401, 404, 500];
 
-exports.axiosObservable = async ({ method = "post", url, data = undefined, headers = undefined, _requestid = undefined, timeout }) => {
+exports.axiosObservable = async ({ method = "post", url, data = undefined, headers = undefined, _requestid = undefined, timeout, retryOverride = false }) => {
     const profiler = logger.startTimer();
 
     let rr = null
-    let retry = 3;
+    let retry = retryOverride ? 0 : 3;
     retry = retry - 1;
 
     while (true) {
@@ -361,7 +362,7 @@ exports.axiosObservable = async ({ method = "post", url, data = undefined, heade
             }
 
             if (error?.response) {
-                if (!statusAllowed.includes(error?.response?.status) && retry !== 0) {
+                if (!statusAllowed.includes(error?.response?.status) && retry > 0) {
                     retry = retry - 1;
                     await runTimeout(3000);
                     continue;
@@ -377,7 +378,7 @@ exports.axiosObservable = async ({ method = "post", url, data = undefined, heade
 
                 throw ({ ...new Error(error), ...error, notLog: true });
             } else {
-                if (retry !== 0) {
+                if (retry > 0) {
                     retry = retry - 1;
                     await runTimeout(3000);
                     continue;
@@ -528,7 +529,7 @@ exports.formatDecimals = (num) => {
 
 exports.recaptcha = async (secret, key) => {
     const data = { secret, response: key };
-    
+
     try {
         const response = await this.axiosObservable({
             url: `https://www.google.com/recaptcha/api/siteverify`,
@@ -540,4 +541,20 @@ exports.recaptcha = async (secret, key) => {
     } catch (error) {
         return { error: true, message: error.message, detail: error.stack, err: error };
     }
+}
+
+exports.decryptString = (encryptedText, passphrase) => {
+    const salt = Buffer.from('e436012c37657c7a1febc9ff250b2ac0', 'ascii');
+    const iv = Buffer.alloc(16, 0); // Inicializando un buffer con ceros para el IV
+    
+    // Derivando la clave usando PBKDF2
+    const key = crypto.pbkdf2Sync(passphrase, salt, 1000, 32, 'sha1');
+  
+    const encryptedTextBuffer = Buffer.from(encryptedText, 'base64');
+    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+  
+    let decrypted = decipher.update(encryptedTextBuffer, 'binary', 'utf8');
+    decrypted += decipher.final('utf8');
+  
+    return decrypted;
 }

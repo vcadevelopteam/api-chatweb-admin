@@ -1,9 +1,12 @@
-const { executesimpletransaction } = require('../config/triggerfunctions');
+const { executesimpletransaction, uploadBufferToCos } = require('../config/triggerfunctions');
 const { getErrorCode, errors, axiosObservable } = require('../config/helpers');
 const logger = require('../config/winston');
 const { setSessionParameters } = require('../config/helpers');
 const { google } = require('googleapis');
 const { v4: uuidv4 } = require('uuid');
+const ical = require('ical-generator').default;
+const { ICalCalendarMethod } = require('ical-generator');
+
 
 const method_allowed = [
     "QUERY_GET_PERSON_FROM_BOOKING",
@@ -106,10 +109,16 @@ const send = async (data, requestid) => {
                             // HsmId: data.hsmtemplatename,
                             Body: data.listmembers[0].parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (data.body || mailtemplate.body))
                         },
-                        attachments: mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
-                            type: 'FILE',
-                            value: x?.value ? x.value : x,
-                        })) : []
+                        attachments: [
+                            ...(mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
+                                type: 'FILE',
+                                value: x?.value ? x.value : x,
+                            })) : []),
+                            ...(data.ics_attachment !== '' ? [{
+                                type: 'FILE',
+                                value: data.ics_attachment,
+                            }] : []) 
+                        ]
                     }),
                     repeatflag: false,
                     repeatmode: 0,
@@ -418,6 +427,7 @@ exports.Collection = async (req, res) => {
                     ...parameters,
                     cancelcomment: "RESCHEDULED BOOKING"
                 });
+                await executesimpletransaction("QUERY_CANCEL_INTEGRATION_EVENT_BY_CALENDARBOOKINGUUID", parameters);
                 await executesimpletransaction("QUERY_CANCEL_TASK_BY_CALENDARBOOKINGUUID", {
                     ...parameters,
                 });
@@ -471,6 +481,8 @@ exports.Collection = async (req, res) => {
             }
 
             if (["EMAIL", "HSM", "HSMEMAIL"].includes(notificationtype) && !parameters.calendarbookingid) {
+                const ics_file = await generateIcs(req._requestid, resultCalendar[0], parameters);
+
                 const sendmessage = {
                     corpid: parameters.corpid,
                     orgid: parameters.orgid,
@@ -493,7 +505,8 @@ exports.Collection = async (req, res) => {
                     }],
                     body: notificationmessage,
                     messagetemplateidemail: messagetemplateidemail,
-                    notificationmessageemail: notificationmessageemail
+                    notificationmessageemail: notificationmessageemail,
+                    ics_attachment: ics_file.url || ''
                 }
 
                 if ("HSMEMAIL" === notificationtype) {
@@ -999,8 +1012,8 @@ exports.googleLogIn = async (request, response) => {
 
 exports.googleDisconnect = async (request, response) => {
     try {
-        const { id } = request.body
-        const params = { id }
+        const { calendareventid, calendarintegrationid } = request.body
+        const params = { calendareventid, calendarintegrationid }
         setSessionParameters(params, request.user, request._requestid);
 
         const bd_data = await executesimpletransaction("UFN_CALENDAR_INTEGRATION_CREDENTIALS_DISCONNECT", params);
@@ -1339,4 +1352,58 @@ exports.cancelEventLaraigo = async (request, response) => {
         });
     }
 
+}
+
+const generateIcs = async (requestid, calendarData, params) => {
+    try {
+        const timestamp = Date.now();
+        const icalfile = getIcalObjectInstance(
+            params?.monthdate,
+            params?.hourstart,
+            calendarData?.timeduration,
+            calendarData?.timezone,
+            params?.parameters.find(param => param?.name === 'eventname')?.text,
+            calendarData?.description,
+            calendarData?.location,
+            params?.parameters.find(param => param?.name === 'eventlink')?.text,
+            'Laraigo',
+            'laraigo@vcaperu.com'
+        )
+    
+        const buffer = Buffer.from(icalfile.toString(), 'utf8');
+        const contentType = 'text/plain';
+        const key = `${timestamp}/invite.ics`;
+    
+        const rr = await uploadBufferToCos(requestid, buffer, contentType, key);
+        return {url: rr.url}
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+function getIcalObjectInstance(monthdate, hourstart, eventduration, timezoneoffset, eventname, description, location, eventlink , name ,email) {
+    try {
+        const calendar = ical({name: 'ICal'});
+        calendar.method(ICalCalendarMethod.REQUEST);
+
+        const startTime = new Date(`${monthdate}T${hourstart}:00${timezoneoffset >= 0 ? '+' : '-'}${Math.abs(timezoneoffset).toString().padStart(2, '0')}:00`);
+        const endTime = new Date(startTime.getTime());
+        endTime.setMinutes(endTime.getMinutes() + eventduration);
+        
+        calendar.createEvent({
+            start: startTime,
+            end: endTime,
+            summary: eventname,
+            description: description,
+            location: location,
+            url: eventlink,
+            organizer: { 
+                name: name,
+                email: email || 'laraigo@vcaperu.com'
+            },
+        });
+        return calendar;
+    } catch (error) {
+        console.log({error})
+    }
 }

@@ -1,5 +1,7 @@
 const FormData = require('form-data');
 const axios = require('axios')
+const OAuth = require("oauth-1.0a");
+const crypto = require("crypto");
 
 const { axiosObservable, setSessionParameters } = require('../config/helpers');
 
@@ -86,6 +88,18 @@ const getHttpAuthorization = (authorization) => {
         else if (auth.type === 'basicauth') {
             return { type: 'BASIC', username: auth.username, password: auth.password }
         }
+        else if (auth.type === 'oauth1_0') {
+            return { 
+                type: 'oauth1_0',
+                oauth_config: {
+                    consumer_key: auth.consumerkey,
+                    consumer_secret: auth.consumersecret,
+                    realm: auth.realm,
+                    access_token: auth.accesstoken,
+                    token_secret: auth.tokensecret
+                }
+            }
+        }
         else {
             return { type: 'NONE' }
         }
@@ -93,21 +107,50 @@ const getHttpAuthorization = (authorization) => {
     return { type: 'NONE' }
 }
 
-const setConfig = (auth, headers) => {
-    const defaults = { headers: headers };
-    const { type, token, username, password } = getHttpAuthorization(auth);
-    if (token) {
-        defaults.headers['Authorization'] = `Bearer ${token}`;
-    }
-    if (type === 'BASIC') {
-        // defaults['Authorization'] = `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
-        defaults['auth'] = {
-            username: username,
-            password: password,
-        }
-    }
-    return defaults;
-}
+const setConfig = (auth, headers, url = null, method = null) => {
+  const defaults = { headers: headers };
+  const { type, token, username, password, oauth_config } =
+    getHttpAuthorization(auth);
+  if (token) {
+    defaults.headers["Authorization"] = `Bearer ${token}`;
+  }
+  if (type === "BASIC") {
+    defaults["auth"] = {
+      username: username,
+      password: password,
+    };
+  }
+  if (type === "oauth1_0") {
+    const oauth = OAuth({
+      consumer: {
+        key: oauth_config.consumer_key,
+        secret: oauth_config.consumer_secret,
+      },
+      signature_method: "HMAC-SHA256",
+      hash_function(base_string, key) {
+        return crypto
+          .createHmac("sha256", key)
+          .update(base_string)
+          .digest("base64");
+      },
+      realm: oauth_config.realm,
+    });
+
+    const oauth_token = {
+        key: oauth_config.access_token,
+        secret: oauth_config.token_secret,
+      };
+
+      const requestData = {
+        url: url,
+        method: method,
+      };
+
+    const authorization = oauth.toHeader(oauth.authorize(requestData, oauth_token));
+    defaults.headers["Authorization"] = authorization.Authorization
+  }
+  return defaults;
+};
 
 exports.TestRequest = async (req, res) => {
     try {
@@ -123,18 +166,18 @@ exports.TestRequest = async (req, res) => {
             }
             else {
                 if (method === "POST") {
-                    result = await axios.post(url, postformat.toLowerCase() === 'json' ? JSON.parse(body) : body, { ...setConfig(authorization, headersjson) });
+                    result = await axios.post(url, postformat.toLowerCase() === 'json' ? JSON.parse(body) : body, { ...setConfig(authorization, headersjson, url, method) });
                 } else if (method === "PUT") {
-                    result = await axios.put(url, postformat.toLowerCase() === 'json' ? JSON.parse(body) : body, { ...setConfig(authorization, headersjson) });
+                    result = await axios.put(url, postformat.toLowerCase() === 'json' ? JSON.parse(body) : body, { ...setConfig(authorization, headersjson, url, method) });
                 } else if (method === "DELETE") {
-                    result = await axios.delete(url, postformat.toLowerCase() === 'json' ? JSON.parse(body) : body, { ...setConfig(authorization, headersjson) });
+                    result = await axios.delete(url, postformat.toLowerCase() === 'json' ? JSON.parse(body) : body, { ...setConfig(authorization, headersjson, url, method) });
                 } else if (method === "PATCH") {
-                    result = await axios.patch(url, postformat.toLowerCase() === 'json' ? JSON.parse(body) : body, { ...setConfig(authorization, headersjson) });
+                    result = await axios.patch(url, postformat.toLowerCase() === 'json' ? JSON.parse(body) : body, { ...setConfig(authorization, headersjson, url, method) });
                 }
             }
         }
         else {
-            result = await axios.get(url, { ...setConfig(authorization, headersjson) });
+            result = await axios.get(url, { ...setConfig(authorization, headersjson, url, method) });
         }
         return res.json(result.data);
     }
@@ -146,4 +189,86 @@ exports.TestRequest = async (req, res) => {
             return res.json({ error: exception.message });
         }
     }
+}
+
+exports.bridgeOauth10 = async (req, res) => {
+    try {
+        const reqBody = ['method', 'url', 'body']
+        for (const prop of reqBody) {
+            if (!req.body.hasOwnProperty(prop)) {
+              throw new Error(`Missing property in body: ${prop}`);
+            }
+        }
+        const { method, url, body } = req.body;
+        const finalHeaders = buildAuthOauth(req.headers, url, method.toUpperCase())
+
+        if (method.toUpperCase() === "POST") {
+            result = await axios.post(url, body, finalHeaders);
+        } else if (method === "PUT") {
+            result = await axios.put(url, body, finalHeaders);
+        } else if (method === "DELETE") {
+            result = await axios.delete(url, body, finalHeaders);
+        } else if (method === "PATCH") {
+            result = await axios.patch(url, body, finalHeaders);
+        }
+        else {
+            result = await axios.get(url, finalHeaders);
+        }
+
+        return res.json(result.data);
+    } catch (exception) {
+        if (!!exception.response) {
+            return res.json({ error: 'ERROR', status: exception.response?.status, data: exception.response?.data });
+        }
+        else {
+            return res.json({ error: exception.message });
+        }
+    }
+}
+
+const buildAuthOauth = (headers, url, method) => {
+    const reqProperties = ['consumerkey', 'consumersecret', 'accesstoken', 'secrettoken', 'realm']
+    for (const prop of reqProperties) {
+        if (!headers.hasOwnProperty(prop)) {
+            throw new Error(`Missing property in header: ${prop}`);
+        }
+    }
+
+    const { consumerkey, consumersecret, accesstoken, secrettoken, realm } = headers
+    const defaults = { headers: headers };
+
+    const deleteProperties = ['authorization', 'host', 'connection', 'accept', 'content-type', 'content-length', 'user-agent']
+    for (const prop of [...reqProperties, ...deleteProperties]) {
+        delete headers[prop]
+    }
+    
+    const oauth = OAuth({
+        consumer: {
+            key: consumerkey,
+            secret: consumersecret,
+        },
+        signature_method: "HMAC-SHA256",
+        hash_function(base_string, key) {
+            return crypto
+            .createHmac("sha256", key)
+            .update(base_string)
+            .digest("base64");
+        },
+        realm: realm,
+    });
+
+    const oauth_token = {
+        key: accesstoken,
+        secret: secrettoken,
+    };
+
+    const requestData = {
+        url: url,
+        method: method,
+    };
+
+    const authorization = oauth.toHeader(oauth.authorize(requestData, oauth_token));
+    defaults.headers["Authorization"] = authorization.Authorization
+
+    return defaults
 }

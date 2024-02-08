@@ -93,8 +93,12 @@ const voximplantTransferSel = async (corpid, orgid, motive, startdate, enddate, 
     return null;
 }
 
-const getAppSetting = async (requestid = null) => {
-    const queryResult = await triggerfunctions.executesimpletransaction("UFN_APPSETTING_VOXIMPLANT_SEL", { _requestid: requestid });
+const getAppSettingVoximplant = async (corpid, orgid, requestid = null) => {
+    const queryResult = await triggerfunctions.executesimpletransaction("UFN_APPSETTING_VOXIMPLANT_SEL", {
+        corpid: corpid,
+        orgid: orgid,
+        _requestid: requestid,
+    });
 
     if (queryResult instanceof Array) {
         if (queryResult.length > 0) {
@@ -456,7 +460,7 @@ exports.voximplantHandleEnvironment = async (corpid, orgid, originalurl, request
 exports.voximplantUpdateScenario = async (org, requestid) => {
     try {
         if (org) {
-            const appsetting = await getAppSetting(requestid);
+            const appsetting = await getAppSettingVoximplant(org.corpid, org.orgid, requestid);
 
             if (appsetting) {
                 if (org.voximplantscenarioid) {
@@ -574,7 +578,7 @@ exports.voximplantHandleScenario = async (corpid, orgid, accountid, apikey, appl
             var createRuleOut = false;
 
             if (!orgData.voximplantscenarioid) {
-                const appsetting = await getAppSetting(requestid);
+                const appsetting = await getAppSettingVoximplant(corpid, orgid, requestid);
 
                 if (appsetting) {
                     var scenarioBody = {
@@ -630,7 +634,7 @@ exports.voximplantHandleScenario = async (corpid, orgid, accountid, apikey, appl
             }
 
             if (!orgData.voximplantscenariooutid) {
-                const appsetting = await getAppSetting(requestid);
+                const appsetting = await getAppSettingVoximplant(corpid, orgid, requestid);
 
                 if (appsetting) {
                     var scenarioBody = {

@@ -29,4 +29,9 @@ router.post("/triggerblock",
     flowController.TriggerBlock
 )
 
+router.post('/bridgeOauth10',
+    // auth,
+    flowController.bridgeOauth10
+)
+
 module.exports = router;
