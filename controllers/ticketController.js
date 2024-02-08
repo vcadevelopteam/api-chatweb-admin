@@ -897,3 +897,20 @@ exports.getConversationWithToken = async (req, res) => {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
+
+exports.getInteractionsWithToken = async (req, res) => {
+    try {
+        const { token } = req.params;        
+        const textBody = decryptString(Buffer.from(token, "base64").toString(), "LARAIGOVSZYXMEV2QWERTYUIOP")
+        const params = JSON.parse(textBody);
+        
+        const result = await executesimpletransaction("UFN_CONVERSATION_SEL_INTERACTION", {
+            conversationid:params.conversationid, lock:false, conversationold: 0, userid:1
+        });
+
+        return res.json({ error: false, success: true, data: result });
+
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+    }
+}
