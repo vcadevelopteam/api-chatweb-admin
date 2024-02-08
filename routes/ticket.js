@@ -49,8 +49,5 @@ router.post("/sendhsmcontactos",
 router.get("/:token",
 ticketController.getConversationWithToken
 )
-router.post("/:token",
-    ticketController.getInteractionsWithToken
-)
 
 module.exports = router;
