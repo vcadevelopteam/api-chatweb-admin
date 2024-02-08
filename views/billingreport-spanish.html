@@ -416,7 +416,7 @@
                         <td class="billing-table-cell-right"><%= data[0].consultingfeetax %></td>
                         <td class="billing-table-cell-right"><%= data[0].consultingfee %></td>
                     </tr>
-                    <% if (data[0].additionalservice01) { %>
+                    <% if (data[0].additionalservice01 && data[0].additionalservice01 !== 'null') { %>
                     <tr>
                         <td class="billing-table-cell-left" style="font-weight: bold">
                             <%= data[0].additionalservice01 %>
@@ -427,7 +427,7 @@
                         <td class="billing-table-cell-right"><%= data[0].additionalservice01feetax %></td>
                         <td class="billing-table-cell-right"><%= data[0].additionalservice01fee %></td>
                     </tr>
-                    <% }; %> <% if (data[0].additionalservice02) { %>
+                    <% }; %> <% if (data[0].additionalservice02 && data[0].additionalservice02 !== 'null') { %>
                     <tr>
                         <td class="billing-table-cell-left" style="font-weight: bold">
                             <%= data[0].additionalservice02 %>
@@ -438,7 +438,7 @@
                         <td class="billing-table-cell-right"><%= data[0].additionalservice02feetax %></td>
                         <td class="billing-table-cell-right"><%= data[0].additionalservice02fee %></td>
                     </tr>
-                    <% }; %> <% if (data[0].additionalservice03) { %>
+                    <% }; %> <% if (data[0].additionalservice03 && data[0].additionalservice03 !== 'null') { %>
                     <tr>
                         <td class="billing-table-cell-left" style="font-weight: bold">
                             <%= data[0].additionalservice03 %>
