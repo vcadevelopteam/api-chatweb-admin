@@ -2,8 +2,8 @@ const triggerfunctions = require('../config/triggerfunctions');
 const genericfunctions = require('../config/genericfunctions');
 
 const { axiosObservable, getErrorCode } = require('../config/helpers');
+const { createHash } = require('crypto');
 
-const epaycoEndpoint = process.env.EPAYCO_ENDPOINT;
 const epaycoScript = process.env.EPAYCO_SCRIPT;
 const servicesEndpoint = process.env.SERVICES;
 
@@ -19,6 +19,7 @@ exports.getPaymentOrder = async (request, response) => {
             if (paymentorder[0]) {
                 if (paymentorder[0].authcredentials) {
                     const authCredentials = JSON.parse(paymentorder[0].authcredentials || {});
+
                     if (authCredentials.publicKey) {
                         paymentorder[0].script = epaycoScript;
 
@@ -62,63 +63,93 @@ exports.processTransaction = async (request, response) => {
     let responsedata = genericfunctions.generateResponseData(request._requestid);
 
     try {
-        const { paymentorderdata, paymentdata } = request.body;
+        const { x_ref_payco, x_transaction_id, x_amount, x_currency_code, x_signature, x_extra1, x_extra2, x_extra3, x_cod_response } = request.query;
 
-        if (paymentorderdata && paymentdata) {
-            const corpid = paymentorderdata.corpid;
-            const orgid = paymentorderdata.orgid;
-            const paymentorderid = paymentorderdata.paymentorderid;
+        if (x_extra1 && x_extra2 && x_extra3) {
+            const corpid = parseInt(`${x_extra1}`);
+            const orgid = parseInt(`${x_extra2}`);
+            const paymentorderid = parseInt(`${x_extra3}`);
 
             const paymentorder = await triggerfunctions.executesimpletransaction("UFN_PAYMENTORDER_SEL", { corpid: corpid, orgid: orgid, conversationid: 0, personid: 0, paymentorderid: paymentorderid, ordercode: '' });
 
             if (paymentorder) {
                 if (paymentorder[0]) {
-                    if (paymentorder[0].paymentstatus === 'PENDING') {
-                        const paymentdetails = JSON.parse(paymentdata);
+                    if (paymentorder[0].paymentstatus === 'PENDING' && Number(x_amount) === paymentorder[0].totalamount && x_currency_code === paymentorder[0].currency) {
+                        const authCredentials = JSON.parse(paymentorder[0].authcredentials || {});
 
-                        const chargedata = await insertCharge(corpid, orgid, paymentorder[0].paymentorderid, null, paymentorder[0].totalamount, true, paymentdetails, paymentdetails.response.uniqueId, paymentorder[0].currency, paymentorder[0].description, paymentorder[0].usermail || '', 'INSERT', null, null, 'API', 'PAID', paymentdetails.response.signature, null, 'EPAYCO', responsedata.id);
+                        let localhash = createHash('sha256').update(authCredentials.merchantId + '^' + authCredentials.merchantKey + '^' + x_ref_payco + '^' + x_transaction_id + '^' + x_amount + '^' + x_currency_code).digest('hex');
 
-                        const queryParameters = {
-                            corpid: corpid,
-                            orgid: orgid,
-                            paymentorderid: paymentorder[0].paymentorderid,
-                            paymentby: paymentorder[0].personid,
-                            culqiamount: paymentorder[0].totalamount,
-                            chargeid: chargedata?.chargeid || null,
-                            chargetoken: paymentdetails.response.uniqueId || null,
-                            chargejson: paymentdetails || null,
-                            tokenid: paymentdetails.response.signature || null,
-                            tokenjson: null,
-                        };
+                        if (x_signature === localhash) {
+                            switch (x_cod_response) {
+                                case '1':
+                                    const paymentdetails = {
+                                        originalUrl: request.url,
+                                    };
 
-                        const paymentResult = await triggerfunctions.executesimpletransaction("UFN_PAYMENTORDER_PAYMENT", queryParameters);
+                                    const chargedata = await insertCharge(corpid, orgid, paymentorder[0].paymentorderid, null, paymentorder[0].totalamount, true, paymentdetails, x_transaction_id, paymentorder[0].currency, paymentorder[0].description, paymentorder[0].usermail || '', 'INSERT', null, null, 'API', 'PAID', x_signature, null, 'EPAYCO', responsedata.id);
 
-                        if (paymentResult instanceof Array) {
-                            const requestContinueFlow = await axiosObservable({
-                                data: {
-                                    conversationid: paymentorder[0].conversationid,
-                                    corpid: corpid,
-                                    orgid: orgid,
-                                    personid: paymentorder[0].personid,
-                                },
-                                method: 'post',
-                                url: `${servicesEndpoint}handler/continueflow`,
-                                _requestid: responsedata.id,
-                            });
+                                    const queryParameters = {
+                                        corpid: corpid,
+                                        orgid: orgid,
+                                        paymentorderid: paymentorder[0].paymentorderid,
+                                        paymentby: paymentorder[0].personid,
+                                        culqiamount: paymentorder[0].totalamount,
+                                        chargeid: chargedata?.chargeid || null,
+                                        chargetoken: x_transaction_id || null,
+                                        chargejson: paymentdetails || null,
+                                        tokenid: x_signature || null,
+                                        tokenjson: null,
+                                    };
 
-                            if (requestContinueFlow.data) {
-                                responsedata = genericfunctions.changeResponseData(responsedata, null, requestContinueFlow.data, 'success', 200, true);
+                                    const paymentResult = await triggerfunctions.executesimpletransaction("UFN_PAYMENTORDER_PAYMENT", queryParameters);
+
+                                    if (paymentResult instanceof Array) {
+                                        const requestContinueFlow = await axiosObservable({
+                                            data: {
+                                                conversationid: paymentorder[0].conversationid,
+                                                corpid: corpid,
+                                                orgid: orgid,
+                                                personid: paymentorder[0].personid,
+                                            },
+                                            method: 'post',
+                                            url: `${servicesEndpoint}handler/continueflow`,
+                                            _requestid: responsedata.id,
+                                        });
+
+                                        if (requestContinueFlow.data) {
+                                            responsedata = genericfunctions.changeResponseData(responsedata, null, requestContinueFlow.data, 'success', 200, true);
+                                        }
+                                        else {
+                                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Flow failure', responsedata.status, responsedata.success);
+                                        }
+                                    }
+                                    else {
+                                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Insert failure', responsedata.status, responsedata.success);
+                                    }
+                                    break;
+
+                                case '2':
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Refused transaction', responsedata.status, responsedata.success);
+                                    break;
+
+                                case '3':
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Pending transaction', responsedata.status, responsedata.success);
+                                    break;
+
+                                case '4':
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Failed transaction', responsedata.status, responsedata.success);
+                                    break;
+
+                                default:
+                                    responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, `Generic transaction error (${x_cod_response})`, responsedata.status, responsedata.success);
+                                    break;
                             }
-                            else {
-                                responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Flow failure', responsedata.status, responsedata.success);
-                            }
-                        }
-                        else {
-                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Insert failure', responsedata.status, responsedata.success);
+                        } else {
+                            responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Incorrect hash', responsedata.status, responsedata.success);
                         }
                     }
                     else {
-                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Payment order expired', responsedata.status, responsedata.success);
+                        responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, responsedata.data, 'Payment order invalid', responsedata.status, responsedata.success);
                     }
                 }
                 else {
