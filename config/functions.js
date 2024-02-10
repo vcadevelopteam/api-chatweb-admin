@@ -1339,7 +1339,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CAMPAIGN_START: {
-        query: "SELECT * FROM ufn_campaign_start($corpid, $orgid, $id, $offset)",
+        query: "SELECT * FROM ufn_campaign_start($corpid, $orgid, $id, $username, $offset)",
         module: ["/extras/campaign"],
         protected: "SELECT"
     },
