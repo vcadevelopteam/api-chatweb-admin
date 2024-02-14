@@ -1339,7 +1339,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CAMPAIGN_START: {
-        query: "SELECT * FROM ufn_campaign_start($corpid, $orgid, $id, $offset)",
+        query: "SELECT * FROM ufn_campaign_start($corpid, $orgid, $id, $username, $offset)",
         module: ["/extras/campaign"],
         protected: "SELECT"
     },
@@ -1435,12 +1435,12 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CAMPAIGNREPORT_SEL: {
-        query: "SELECT * FROM ufn_campaign_report_sel($corpid, $orgid, $startdate, $enddate, $where, $order, $skip, $take, $userid, $offset)",
+        query: "SELECT * FROM ufn_campaign_report_sel($corpid, $orgid, $startdate, $enddate, $channeltype, $where, $order, $skip, $take, $userid, $offset)",
         module: ["/reports", "/extras/campaign"],
         protected: "SELECT"
     },
     UFN_CAMPAIGNREPORT_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_campaign_report_totalrecords($corpid, $orgid, $startdate, $enddate, $where, $userid, $offset)",
+        query: "SELECT * FROM ufn_campaign_report_totalrecords($corpid, $orgid, $startdate, $enddate, $channeltype, $where, $userid, $offset)",
         module: ["/reports", "/extras/campaign"],
         protected: "SELECT"
     },
