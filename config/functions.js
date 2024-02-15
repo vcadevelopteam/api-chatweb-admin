@@ -3897,4 +3897,9 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_USERS_APP_DELIVERY_SEL: {
+        query: "SELECT * FROM ufn_users_app_delivery_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
