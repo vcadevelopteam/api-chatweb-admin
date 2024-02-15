@@ -2810,7 +2810,11 @@ module.exports = {
         ce.reschedulecommunicationchannelid,
         ce.rescheduletemplateidemail,
         ce.reschedulenotificationemail,
-        ce.rescheduletype
+        ce.rescheduletype,
+        ce.description,
+        ce.timeduration,
+        ce.location,
+        ce.timezone
         from calendarevent ce 
         left join communicationchannel cc1 on cc1.corpid = ce.corpid and cc1.orgid = ce.orgid and cc1.communicationchannelid = ce.communicationchannelid
         left join communicationchannel cc2 on cc2.corpid = ce.corpid and cc2.orgid = ce.orgid and cc2.communicationchannelid = ce.reminderhsmcommunicationchannelid
@@ -2883,6 +2887,12 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_CANCEL_INTEGRATION_EVENT_BY_CALENDARBOOKINGUUID: {
+        query: `DELETE from calendarintegrationbooking
+                WHERE id = $calendarbookingid::varchar`,
+        module: "",
+        protected: "SELECT"
+    },
     QUERY_GET_EVENT_REMINDER: {
         query: `SELECT * 
                 FROM calendarevent
@@ -2920,6 +2930,11 @@ module.exports = {
     },
     UFN_CALENDARBOOKING_REPORT: {
         query: "SELECT * FROM ufn_calendarbooking_report($corpid, $orgid, $calendareventid, $startdate, $enddate, $offset)",
+        module: ["/calendar"],
+        protected: "SELECT"
+    },
+    UFN_CALENDAREVENT_INTEGRATION_SEL: {
+        query: "SELECT * FROM ufn_calendarevent_integration_sel($corpid, $orgid, $calendareventid)",
         module: ["/calendar"],
         protected: "SELECT"
     },
@@ -3704,7 +3719,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CALENDAR_INTEGRATION_CREDENTIALS_DISCONNECT: {
-        query: "SELECT * FROM ufn_calendarintegration_credentials_disconnect($corpid, $orgid, $id)",
+        query: "SELECT * FROM ufn_calendarintegration_credentials_disconnect($corpid, $orgid, $calendareventid, $calendarintegrationid)",
         module: "",
         protected: "INSERT"
     },
