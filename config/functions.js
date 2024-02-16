@@ -4529,4 +4529,9 @@ module.exports = {
         module: ["/invoice"],
         protected: "INSERT"
     },
+    UFN_COMMUNICATIONCHANNEL_LST_TYPEDESC: {
+        query: "SELECT * FROM ufn_communicationchannel_lst_typedesc($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
