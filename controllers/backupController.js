@@ -131,9 +131,9 @@ exports.incremental = async (req, res) => {
         }
         logbackupid = infoSelect[0].logbackupid;
 
-        // const { lastconsulteddate: lastdate, nextconsulteddate: todate } = infoSelect[0];
-        const lastdate = '2023-08-01 00:00:00';
-        const todate = '2023-10-05 00:00:00';
+        const { lastconsulteddate: lastdate, nextconsulteddate: todate } = infoSelect[0];
+        // const lastdate = '2023-08-01 00:00:00';
+        // const todate = '2023-10-05 00:00:00';
         if (tablesToBackup.length === 0) {
             return res.status(400).json({ error: false, success: false, message: "there are not tables" });
         }
@@ -141,7 +141,7 @@ exports.incremental = async (req, res) => {
         for (const table of tablesToBackup) {
             const { tablename, selectwhere, columnpk } = table;
             // Si desea ejecutar algunas tablas, descomentar 
-            if (!["conversation"].includes(tablename)) continue;
+            // if (!["conversation"].includes(tablename)) continue;
 
             const dtResult = await clientBackup.query(
                 `SELECT
