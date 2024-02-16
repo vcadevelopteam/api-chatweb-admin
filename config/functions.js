@@ -3730,6 +3730,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_ORDER_BY_CARRIER: {
+        query: "SELECT * FROM ufn_order_by_carrier($corpid, $orgid, $orderstatus, $code)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ORDERLINE_BY_CARRIER: {
+        query: "SELECT * FROM ufn_orderline_by_carrier($corpid, $orgid, $orderid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_ORDERLINE_SEL: {
         query: "SELECT * FROM ufn_orderline_sel($corpid, $orgid, $orderid)",
         module: "",
