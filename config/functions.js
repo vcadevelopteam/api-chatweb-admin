@@ -4154,6 +4154,16 @@ module.exports = {
         module: ["/orders"],
         protected: "SELECT"
     },
+    UFN_ORDER_BY_CARRIER: {
+        query: "SELECT * FROM ufn_order_by_carrier($corpid, $orgid, $orderstatus, $code)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ORDERLINE_BY_CARRIER: {
+        query: "SELECT * FROM ufn_orderline_by_carrier($corpid, $orgid, $orderid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_ORDERLINE_SEL: {
         query: "SELECT * FROM ufn_orderline_sel($corpid, $orgid, $orderid)",
         module: ["/orders"],
@@ -4424,113 +4434,34 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_BILLINGPERIODPARTNER_DEVELOPER_RESELLER: {
-        query: "SELECT * FROM ufn_billingperiodpartner_developer_reseller($partnerid, $corpid, $orgid, $year, $month, $username)",
+
+    UFN_WAREHOUSE_SEL: {
+        query: "SELECT * FROM ufn_warehouse_lst($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
-    UFN_ASSISTANTAI_INS: {
-        query: "SELECT * FROM ufn_assistantai_ins($corpid, $orgid, $id, $code, $name, $description, $basemodel, $language, $organizationname, $querywithoutanswer, $response, $prompt, $negativeprompt, $generalprompt, $temperature, $max_tokens, $top_p, $apikey, $retrieval, $codeinterpreter, $type, $status, $username, $operation);",
+    UFN_DELIVERYCONFIGURATION_SEL: {
+        query: "SELECT * FROM ufn_deliveryconfiguration_sel($corpid, $orgid, $username, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DELIVERYCONFIGURATION_INS: {
+        query: "SELECT * FROM ufn_deliveryconfiguration_ins($corpid, $orgid, $id, $config, $status, $type, $username, $operation);",
         module: "",
         protected: "INSERT"
     },
-    UFN_ASSISTANTAI_SEL: {
-        query: "SELECT * FROM ufn_assistantai_sel($corpid, $orgid, $username, $id, $all)",
+    UFN_DELIVERYVEHICLE_SEL: {
+        query: "SELECT * FROM ufn_deliveryvehicle_sel($corpid, $orgid, $username, $id, $all)",
         module: "",
         protected: "SELECT"
     },
-    UFN_ASSISTANTAIDOCUMENT_SEL: {
-        query: "SELECT * FROM ufn_assistantaidocument_sel($corpid, $orgid, $assistantaiid, $username, $id, $all)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_ASSISTANTAIDOCUMENT_INS: {
-        query: "SELECT * FROM ufn_assistantaidocument_ins($corpid, $orgid, $assistantaiid, $id, $description, $url, $fileid, $type, $status, $username, $operation);",
+    UFN_DELIVERYVEHICLE_INS: {
+        query: "SELECT * FROM ufn_deliveryvehicle_ins($corpid, $orgid, $id, $status, $type, $brand, $model, $vehicleplate, $capacity, $insuredamount, $averagespeed, $userid, $license, $username, $operation);",
         module: "",
         protected: "INSERT"
     },
-    UFN_THREAD_SEL: {
-        query: "SELECT * FROM ufn_thread_sel($corpid, $orgid, $assistantaiid, $username, $id, $all)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_THREAD_INS: {
-        query: "SELECT * FROM ufn_thread_ins($corpid, $orgid, $assistantaiid, $id, $code, $description, $type, $status, $username, $operation);",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_MESSAGEAI_SEL: {
-        query: "SELECT * FROM ufn_messageai_sel($corpid, $orgid, $assistantaiid, $threadid)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_MESSAGEAI_INS: {
-        query: "SELECT * FROM ufn_messageai_ins($corpid, $orgid, $assistantaiid, $threadid, $assistantaidocumentid, $id, $messagetext, $infosource, $type, $status, $username, $operation);",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_ASSISTANTAIDOCUMENT_TRAINING_UPD: {
-        query: "SELECT * FROM ufn_assistantaidocument_training_upd($corpid, $orgid, $assistantaiid, $documentsid, $username)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_SUBSCRIPTION_CREATECHANNELS: {
-        query: "SELECT * FROM ufn_subscription_createchannels($corpid, $orgid, $userid, $android, $apple, $appstore, $blogger, $business, $chatWeb, $email, $facebook, $instagram, $instagramDM, $linkedin, $messenger, $metalead, $playstore, $sms, $teams, $telegram, $tiktok, $twitter, $twitterDM, $voximplantphone, $webForm, $whatsapp, $workplace, $workplaceDM, $youtube)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_ORDERCONFIG_INS: {
-        query: "SELECT * FROM ufn_orderconfig_ins($corpid, $orgid, $id, $orderconfig, $type, $status, $username, $operation);",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_ORDERCONFIG_SEL: {
-        query: "SELECT * FROM ufn_orderconfig_sel($corpid, $orgid)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_LEAD_CONFIG_INS: {
-        query: "SELECT * FROM ufn_lead_config_ins($id, $maxgreen, $maxyellow);",
-        module: "",
-        protected: "INSERT"
-    },
-    UFN_POLYGONS_INS_ARRAY: {
-        query: "SELECT * FROM ufn_polygons_ins_array($corpid, $orgid, $username, $table)",
-        module: "",
-        protected: "SELECT"
-    },
-    SEARCH_POINT_ON_AREAS: {
-        query: "SELECT * FROM search_point_on_areas($corpid, $orgid, $latitude , $longitude)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_API_ORDER_UPDATE_INFO: {
-        query: "SELECT * FROM ufn_api_order_update_info($corpid, $orgid, $order_id, $delivery_type, $delivery_date, $delivery_address, $delivery_address_reference, $paymentmethod, $payment_receipt, $payment_document_type, $payment_document_number, $payment_businessname, $payment_fiscal_address, $payment_date, $payment_amount, $payment_attachment)",
-        module: "",
-        protected: 'SELECT'
-    },
-    UFN_APPSETTING_INVOICE_SEL_SINGLE: {
-        query: "SELECT * FROM ufn_appsetting_invoice_sel_single($corpid, $orgid)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_APPSETTING_INVOICE_SEL_EXCHANGERATE: {
-        query: "SELECT * FROM ufn_appsetting_invoice_sel_exchangerate($code)",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_CITYBILLING_SEL: {
-        query: "SELECT * FROM ufn_citybilling_sel();",
-        module: "",
-        protected: "SELECT"
-    },
-    UFN_BILLINGPERIODPARTNER_CALC: {
-        query: "SELECT * FROM ufn_billingperiodpartner_calc($partnerid, $year, $month)",
-        module: ["/invoice"],
-        protected: "INSERT"
-    },
-    UFN_COMMUNICATIONCHANNEL_LST_TYPEDESC: {
-        query: "SELECT * FROM ufn_communicationchannel_lst_typedesc($corpid, $orgid)",
+    UFN_USERS_APP_DELIVERY_SEL: {
+        query: "SELECT * FROM ufn_users_app_delivery_sel($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
