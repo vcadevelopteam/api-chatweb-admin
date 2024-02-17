@@ -7,7 +7,7 @@ RUN apk --update add ttf-freefont fontconfig && rm -rf /var/cache/apk/*
 ENV PHANTOMJS_VERSION=2.1.1
 ENV OPENSSL_CONF=/etc/ssl/
 RUN apk add --no-cache curl && \
-    cd /tmp && curl -Ls https://github.com/dustinblackman/phantomized/releases/download/${PHANTOMJS_VERSION}/dockerized-phantomjs.tar.gz | tar xz && \
+    cd /tmp && curl -Ls https://github.com/topseom/phantomized/releases/download/${PHANTOMJS_VERSION}/dockerized-phantomjs.tar.gz | tar xz && \
     cp -R lib lib64 / && \
     cp -R usr/lib/x86_64-linux-gnu /usr/lib && \
     cp -R usr/share /usr/share && \
