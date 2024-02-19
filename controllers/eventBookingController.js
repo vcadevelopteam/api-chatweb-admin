@@ -8,7 +8,6 @@ const ical = require('ical-generator').default;
 const { ICalCalendarMethod } = require('ical-generator');
 const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
-const e = require('express');
 
 const method_allowed = [
     "QUERY_GET_PERSON_FROM_BOOKING",
