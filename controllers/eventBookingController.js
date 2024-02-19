@@ -1079,6 +1079,11 @@ exports.googleDisconnect = async (request, response) => {
 
         const bd_data = await executesimpletransaction("UFN_CALENDAR_INTEGRATION_CREDENTIALS_DISCONNECT", params);
         if (bd_data instanceof Array && bd_data.length > 0) {
+            const calendarToDelete = bd_data[0].v_mapping
+            calendarToDelete.forEach(element => {
+                deleteGoogleEvent({eventid: element.id, agentid: calendarintegrationid}, {}, 'externalOnly')
+            });
+
             return response.status(200).json({
                 code: '',
                 data: bd_data[0],
@@ -1533,7 +1538,7 @@ const createGoogleEvent = async (assignedAgentId, newcalendarbookingid, calendar
     }
 }
 
-const deleteGoogleEvent = async(calendarInfo, params) => {
+const deleteGoogleEvent = async(calendarInfo, params, sendUpdates = 'none') => {
     console.log("🚀 ~ [START]deleteGoogleEvent")
     try {
         params.calendarintegrationid = calendarInfo.agentid;
@@ -1543,6 +1548,7 @@ const deleteGoogleEvent = async(calendarInfo, params) => {
             const result = await calendar.events.delete({
                 calendarId: "primary",
                 eventId: calendarInfo.eventid,
+                sendUpdates
             });
             console.log("🚀 ~ [END]deleteGoogleEvent ~ result:", result?.status)
         }
