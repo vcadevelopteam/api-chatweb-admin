@@ -3912,4 +3912,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_LISTORDER_SEL: {
+        query: "SELECT * FROM ufn_listorder_sel($corpid, $orgid, $ordersinattention)",
+        module: "",
+        protected: "SELECT"
+    },
 }
