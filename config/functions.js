@@ -2893,6 +2893,18 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_INTEGRATIONEVENT_SEL_BY_CALENDARBOOKINGID: {
+        query: `select * from calendarintegrationbooking c
+                where c.calendarbookingid = $calendarbookingid
+                    and c.status = 'ACTIVO'`,
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_CALENDARINTEGRATION_INFO_SEL: {
+        query: `select * from calendarintegration c where c.calendarintegrationid = $calendarintegrationid and c.status = 'ACTIVO'`,
+        module: "",
+        protected: "SELECT"
+    },
     QUERY_GET_EVENT_REMINDER: {
         query: `SELECT * 
                 FROM calendarevent
@@ -2905,6 +2917,11 @@ module.exports = {
     },
     UFN_CALENDARYBOOKING_INS: {
         query: "SELECT * FROM ufn_calendarbooking_ins($corpid, $orgid, $calendareventid, $id, $description, $type, $status, $monthdate, $hourstart, $notes, $conversationid, $personname, $personcontact, $personmail, $persontimezone, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_CALENDARINTEGRATION_INS: {
+        query: "SELECT * FROM ufn_calendarintegration_ins($corpid, $orgid, $calendarintegrationid, $eventid, $email, $status, $type, $createdate, $changedate, $summary, $description, $timezone, $startdate, $enddate, $timeduration, $calendarbookingid)",
         module: "",
         protected: "INSERT"
     },
