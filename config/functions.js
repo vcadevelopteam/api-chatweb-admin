@@ -4465,4 +4465,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_COMMUNICATIONCHANNEL_LST_TYPEDESC: {
+        query: "SELECT * FROM ufn_communicationchannel_lst_typedesc($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
