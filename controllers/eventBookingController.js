@@ -6,7 +6,9 @@ const { google } = require('googleapis');
 const { v4: uuidv4 } = require('uuid');
 const ical = require('ical-generator').default;
 const { ICalCalendarMethod } = require('ical-generator');
-
+const dayjs = require("dayjs");
+const utc = require("dayjs/plugin/utc");
+const e = require('express');
 
 const method_allowed = [
     "QUERY_GET_PERSON_FROM_BOOKING",
@@ -85,47 +87,51 @@ const send = async (data, requestid) => {
             }
 
             if (send) {
-                executesimpletransaction("QUERY_INSERT_TASK_SCHEDULER", {
-                    corpid: data.corpid,
-                    orgid: data.orgid,
-                    tasktype: "sendmail",
-                    taskbody: JSON.stringify({
-                        messagetype: "OWNERBODY",
-                        receiver: data.listmembers[0].email,
-                        subject: mailtemplate.header,
-                        priority: mailtemplate.priority,
-                        body: data.listmembers[0].parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (data.body || mailtemplate.body)),
-                        blindreceiver: "",
-                        copyreceiver: "",
-                        credentials: jsonconfigmail,
-                        config: {
-                            CommunicationChannelSite: "",
-                            FirstName: data.listmembers[0].firstname,
-                            LastName: data.listmembers[0].lastname,
-                            HsmTo: data.listmembers[0].email,
-                            Origin: "EXTERNAL",
-                            MessageTemplateId: data.hsmtemplateid,
-                            ShippingReason: data.shippingreason,
-                            // HsmId: data.hsmtemplatename,
-                            Body: data.listmembers[0].parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (data.body || mailtemplate.body))
-                        },
-                        attachments: [
-                            ...(mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
-                                type: 'FILE',
-                                value: x?.value ? x.value : x,
-                            })) : []),
-                            ...(data.ics_attachment !== '' ? [{
-                                type: 'FILE',
-                                value: data.ics_attachment,
-                            }] : []) 
-                        ]
-                    }),
-                    repeatflag: false,
-                    repeatmode: 0,
-                    repeatinterval: 0,
-                    completed: false,
-                    _requestid: requestid,
-                })
+                if (data.listmembers.length) {
+                    data.listmembers.forEach(async (member) => {
+                        executesimpletransaction("QUERY_INSERT_TASK_SCHEDULER", {
+                            corpid: data.corpid,
+                            orgid: data.orgid,
+                            tasktype: "sendmail",
+                            taskbody: JSON.stringify({
+                                messagetype: "OWNERBODY",
+                                receiver: member.email,
+                                subject: mailtemplate.header,
+                                priority: mailtemplate.priority,
+                                body: member.parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (data.body || mailtemplate.body)),
+                                blindreceiver: "",
+                                copyreceiver: "",
+                                credentials: jsonconfigmail,
+                                config: {
+                                    CommunicationChannelSite: "",
+                                    FirstName: member.firstname,
+                                    LastName: member.lastname,
+                                    HsmTo: member.email,
+                                    Origin: "EXTERNAL",
+                                    MessageTemplateId: data.hsmtemplateid,
+                                    ShippingReason: data.shippingreason,
+                                    // HsmId: data.hsmtemplatename,
+                                    Body: member.parameters.reduce((acc, item) => acc.replace(eval(`/{{${item.name}}}/gi`), item.text), (data.body || mailtemplate.body))
+                                },
+                                attachments: [
+                                    ...(mailtemplate.attachment ? mailtemplate.attachment.split(",").map(x => ({
+                                        type: 'FILE',
+                                        value: x?.value ? x.value : x,
+                                    })) : []),
+                                    ...(data.ics_attachment !== '' ? [{
+                                        type: 'FILE',
+                                        value: data.ics_attachment,
+                                    }] : []) 
+                                ]
+                            }),
+                            repeatflag: false,
+                            repeatmode: 0,
+                            repeatinterval: 0,
+                            completed: false,
+                            _requestid: requestid,
+                        })
+                    })
+                }
             }
             else {
                 executesimpletransaction("QUERY_INSERT_HSM_HISTORY", {
@@ -381,6 +387,7 @@ const setReminder = async (data, requestid) => {
 
 exports.Collection = async (req, res) => {
     const { parameters = {}, method, key } = req.body;
+    let agentListMember = {}
 
     if (!method_allowed.includes(method)) {
         const resError = getErrorCode(errors.FORBIDDEN);
@@ -391,9 +398,21 @@ exports.Collection = async (req, res) => {
 
     const result = await executesimpletransaction(method, parameters);
     const newcalendarbookingid = result?.[0]?.calendarbookingid;
-
+    const assignedAgentId = result?.[0]?.agentid;
+    
     if (!result.error) {
         if (method === "UFN_CALENDARYBOOKING_INS") {
+            if (assignedAgentId) {
+                const agentInformation = await executesimpletransaction("QUERY_CALENDARINTEGRATION_INFO_SEL", { calendarintegrationid: assignedAgentId }) 
+                agentListMember = {
+                    phone: '',
+                    firstname: agentInformation[0].email,
+                    email: agentInformation[0].email,
+                    lastname: "",
+                    parameters: parameters.parameters
+                }
+            }
+            
             const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
             const {
                 messagetemplateid,
@@ -427,7 +446,14 @@ exports.Collection = async (req, res) => {
                     ...parameters,
                     cancelcomment: "RESCHEDULED BOOKING"
                 });
-                await executesimpletransaction("QUERY_CANCEL_INTEGRATION_EVENT_BY_CALENDARBOOKINGUUID", parameters);
+                
+                // cancel google event if exists
+                const eventToCancel = await executesimpletransaction("QUERY_INTEGRATIONEVENT_SEL_BY_CALENDARBOOKINGID", parameters);
+                if (eventToCancel instanceof Array && eventToCancel.length > 0) deleteGoogleEvent({eventid: eventToCancel[0].id, agentid: eventToCancel[0].calendarintegrationid}, parameters);
+                
+                // create google event if theres any1 assinged
+                if (assignedAgentId) createGoogleEvent(assignedAgentId, newcalendarbookingid, resultCalendar[0], parameters)
+                
                 await executesimpletransaction("QUERY_CANCEL_TASK_BY_CALENDARBOOKINGUUID", {
                     ...parameters,
                 });
@@ -459,9 +485,27 @@ exports.Collection = async (req, res) => {
 
                         if ("HSMEMAIL" === rescheduletype) {
                             await send(sendmessage, req._requestid);
-                            await send({ ...sendmessage, type: "MAIL", body: reschedulenotificationemail, hsmtemplateid: rescheduletemplateidemail }, req._requestuestid);
+                            await send(
+                              {
+                                ...sendmessage,
+                                type: "MAIL",
+                                body: reschedulenotificationemail,
+                                hsmtemplateid: rescheduletemplateidemail,
+                                listmembers: sendmessage.listmembers.concat(agentListMember)
+                              },
+                              req._requestuestid
+                            );
                         } else if ("EMAIL" === rescheduletype) {
-                            await send({ ...sendmessage, type: "MAIL", body: reschedulenotificationemail, hsmtemplateid: rescheduletemplateidemail }, req._requestuestid);
+                            await send(
+                              {
+                                ...sendmessage,
+                                type: "MAIL",
+                                body: reschedulenotificationemail,
+                                hsmtemplateid: rescheduletemplateidemail,
+                                listmembers: sendmessage.listmembers.concat(agentListMember)
+                              },
+                              req._requestuestid
+                            );
                         } else {
                             await send(sendmessage, req._requestid);
                         }
@@ -482,6 +526,7 @@ exports.Collection = async (req, res) => {
 
             if (["EMAIL", "HSM", "HSMEMAIL"].includes(notificationtype) && !parameters.calendarbookingid) {
                 const ics_file = await generateIcs(req._requestid, resultCalendar[0], parameters);
+                if (assignedAgentId) createGoogleEvent(assignedAgentId, newcalendarbookingid, resultCalendar[0], parameters)
 
                 const sendmessage = {
                     corpid: parameters.corpid,
@@ -511,9 +556,26 @@ exports.Collection = async (req, res) => {
 
                 if ("HSMEMAIL" === notificationtype) {
                     await send(sendmessage, req._requestid);
-                    await send({ ...sendmessage, type: "MAIL", body: notificationmessageemail, hsmtemplateid: messagetemplateidemail }, req._requestuestid);
+                    await send(
+                      {
+                        ...sendmessage,
+                        type: "MAIL",
+                        body: notificationmessageemail,
+                        hsmtemplateid: messagetemplateidemail,
+                        listmembers: sendmessage.listmembers.concat(agentListMember)
+                      },
+                      req._requestuestid
+                    );
                 } else if ("EMAIL" === notificationtype) {
-                    await send({ ...sendmessage, type: "MAIL" }, req._requestuestid);
+                    await send(
+                      {
+                        ...sendmessage,
+                        type: "MAIL",
+                        listmembers:
+                          sendmessage.listmembers.concat(agentListMember),
+                      },
+                      req._requestuestid
+                    );
                 } else {
                     await send(sendmessage, req._requestid);
                 }
@@ -1290,6 +1352,8 @@ exports.cancelEventLaraigo = async (request, response) => {
         if (!(result instanceof Array))
             return response.status(result.rescode).json({ ...result, key });
 
+        parameters._requestid = request._requestid;
+        if (result?.[0]?.agentid) deleteGoogleEvent(result?.[0], parameters)
         if (["HSM", "HSMEMAIL", "EMAIL"].includes(parameters.canceltype)) {
 
             const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
@@ -1405,5 +1469,85 @@ function getIcalObjectInstance(monthdate, hourstart, eventduration, timezoneoffs
         return calendar;
     } catch (error) {
         console.log({error})
+    }
+}
+
+const createGoogleEvent = async (assignedAgentId, newcalendarbookingid, calendarData, params) => {
+    try {
+        console.log("🚀 ~ [START]createGoogleEvent")
+        dayjs.extend(utc);
+        params.calendarintegrationid = assignedAgentId;
+        const [calendar, extradata] = await googleCalendarCredentials({ params })
+
+        const eventInfo = {
+            summary: params?.parameters.find(param => param?.name === 'eventname')?.text,
+            location: calendarData?.location,
+            description: calendarData?.description,
+            start: {
+                dateTime: dayjs(`${params?.monthdate} ${params?.hourstart}`).utcOffset(calendarData.timezone, true).format(),
+            },
+            end: {
+                dateTime: dayjs(`${params?.monthdate} ${params?.hourstart}`).add(calendarData.timeduration, 'minute').utcOffset(-5, true).format(),
+            },
+            attendees: [
+                { email: params.email },
+            ],
+            conferenceData: {
+                createRequest: { requestId: uuidv4() },
+            },
+        }
+        
+        const eventData = await calendar.events.insert({
+            calendarId: "primary",
+            conferenceDataVersion: 1,
+            sendNotifications: true,
+            resource: eventInfo,
+        });
+        if (eventData?.status === 200 ){
+
+            const params2 = {
+                corpid: params.corpid,
+                orgid: params.orgid,
+                calendarintegrationid: extradata.calendarintegrationid,
+                eventid: eventData?.data?.id,
+                email: extradata.email,
+                status: 'ACTIVO',
+                type: 'default',
+                createdate: eventData?.data?.created,
+                changedate: eventData?.data?.updated,
+                summary: eventData?.data?.summary,
+                description: eventData?.data?.description,
+                timezone: calendarData?.timezone,
+                startdate: eventData?.data?.start?.dateTime,
+                enddate: eventData?.data?.end?.dateTime,
+                timeduration: calendarData?.timeduration,
+                calendarbookingid: newcalendarbookingid
+            }
+
+            const result = await executesimpletransaction("UFN_CALENDARINTEGRATION_INS", {...params2});
+            console.log("🚀 ~ [END]createGoogleEvent ~ result:", result)
+        }
+
+        console.log({newcalendarbookingid, eventid: eventData?.data?.id})
+    } catch (error) {
+        console.log({error})
+    }
+}
+
+const deleteGoogleEvent = async(calendarInfo, params) => {
+    console.log("🚀 ~ [START]deleteGoogleEvent")
+    try {
+        params.calendarintegrationid = calendarInfo.agentid;
+        const [calendar, extradata] = await googleCalendarCredentials({ params })
+
+        if (calendar) {
+            const result = await calendar.events.delete({
+                calendarId: "primary",
+                eventId: calendarInfo.eventid,
+            });
+            console.log("🚀 ~ [END]deleteGoogleEvent ~ result:", result?.status)
+        }
+    } catch (error) {
+        console.log("🚀 ~ [ERROR]deleteGoogleEvent ~ result:", error?.response?.status)
     }
 }
