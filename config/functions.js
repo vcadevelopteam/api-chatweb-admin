@@ -3740,6 +3740,11 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_CALENDAR_INTEGRATION_TO_CREATE_SEL: {
+        query: "SELECT * FROM ufn_calendar_integration_to_create_sel($calendarintegrationid, $calendareventid)",
+        module: "",
+        protected: "INSERT"
+    },
     UFN_CALENDAR_INTEGRATION_CREDENTIALS_CLEAN: {
         query: "SELECT * FROM ufn_calendarintegration_credentials_clean($id, $email)",
         module: "",

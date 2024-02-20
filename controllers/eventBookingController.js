@@ -448,7 +448,7 @@ exports.Collection = async (req, res) => {
                 
                 // cancel google event if exists
                 const eventToCancel = await executesimpletransaction("QUERY_INTEGRATIONEVENT_SEL_BY_CALENDARBOOKINGID", parameters);
-                if (eventToCancel instanceof Array && eventToCancel.length > 0) deleteGoogleEvent({eventid: eventToCancel[0].id, agentid: eventToCancel[0].calendarintegrationid}, parameters);
+                if (eventToCancel instanceof Array && eventToCancel.length > 0) deleteGoogleEvent({eventid: eventToCancel[0].id, agentid: eventToCancel[0].calendarintegrationid}, parameters, 'externalOnly');
                 
                 // create google event if theres any1 assinged
                 if (assignedAgentId) createGoogleEvent(assignedAgentId, newcalendarbookingid, resultCalendar[0], parameters)
@@ -1043,6 +1043,7 @@ exports.googleLogIn = async (request, response) => {
         if (calendar) {
             const nextSyncToken = await googleCalendarSync({ params, calendar, extradata })
             if (nextSyncToken) {
+                createAutomaticAssignedBookings({ params, calendar, extradata })
                 await googleCalendarWatch({ params, calendar, extradata })
             }
             return response.status(200).json({
@@ -1079,6 +1080,11 @@ exports.googleDisconnect = async (request, response) => {
 
         const bd_data = await executesimpletransaction("UFN_CALENDAR_INTEGRATION_CREDENTIALS_DISCONNECT", params);
         if (bd_data instanceof Array && bd_data.length > 0) {
+            const calendarToDelete = bd_data[0].v_mapping
+            calendarToDelete.forEach(element => {
+                deleteGoogleEvent({eventid: element.id, agentid: calendarintegrationid}, {}, 'externalOnly')
+            });
+
             return response.status(200).json({
                 code: '',
                 data: bd_data[0],
@@ -1352,7 +1358,7 @@ exports.cancelEventLaraigo = async (request, response) => {
             return response.status(result.rescode).json({ ...result, key });
 
         parameters._requestid = request._requestid;
-        if (result?.[0]?.agentid) deleteGoogleEvent(result?.[0], parameters)
+        if (result?.[0]?.agentid) deleteGoogleEvent(result?.[0], parameters, 'externalOnly')
         if (["HSM", "HSMEMAIL", "EMAIL"].includes(parameters.canceltype)) {
 
             const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
@@ -1471,12 +1477,18 @@ function getIcalObjectInstance(monthdate, hourstart, eventduration, timezoneoffs
     }
 }
 
-const createGoogleEvent = async (assignedAgentId, newcalendarbookingid, calendarData, params) => {
+const createGoogleEvent = async (assignedAgentId, newcalendarbookingid, calendarData, params, googleCalendarData = null) => {
+    dayjs.extend(utc);
     try {
         console.log("🚀 ~ [START]createGoogleEvent")
-        dayjs.extend(utc);
-        params.calendarintegrationid = assignedAgentId;
-        const [calendar, extradata] = await googleCalendarCredentials({ params })
+        let calendar = null, extradata = null;
+
+        if (googleCalendarData) {
+            [calendar, extradata] = googleCalendarData
+        } else {
+            params.calendarintegrationid = assignedAgentId;
+            [calendar, extradata] = await googleCalendarCredentials({ params })
+        }
 
         const eventInfo = {
             summary: params?.parameters.find(param => param?.name === 'eventname')?.text,
@@ -1495,16 +1507,16 @@ const createGoogleEvent = async (assignedAgentId, newcalendarbookingid, calendar
                 createRequest: { requestId: uuidv4() },
             },
         }
-        
+
         const eventData = await calendar.events.insert({
             calendarId: "primary",
             conferenceDataVersion: 1,
-            sendNotifications: true,
+            sendUpdates: 'all',
             resource: eventInfo,
         });
-        if (eventData?.status === 200 ){
 
-            const params2 = {
+        if (eventData?.status === 200 ){
+            const result = await executesimpletransaction("UFN_CALENDARINTEGRATION_INS", {
                 corpid: params.corpid,
                 orgid: params.orgid,
                 calendarintegrationid: extradata.calendarintegrationid,
@@ -1521,19 +1533,15 @@ const createGoogleEvent = async (assignedAgentId, newcalendarbookingid, calendar
                 enddate: eventData?.data?.end?.dateTime,
                 timeduration: calendarData?.timeduration,
                 calendarbookingid: newcalendarbookingid
-            }
-
-            const result = await executesimpletransaction("UFN_CALENDARINTEGRATION_INS", {...params2});
-            console.log("🚀 ~ [END]createGoogleEvent ~ result:", result)
+            });
         }
-
-        console.log({newcalendarbookingid, eventid: eventData?.data?.id})
+        console.log("🚀 ~ [END]createGoogleEvent ~ eventid:", eventData?.data?.id)
     } catch (error) {
         console.log({error})
     }
 }
 
-const deleteGoogleEvent = async(calendarInfo, params) => {
+const deleteGoogleEvent = async(calendarInfo, params, sendUpdates = 'none') => {
     console.log("🚀 ~ [START]deleteGoogleEvent")
     try {
         params.calendarintegrationid = calendarInfo.agentid;
@@ -1543,10 +1551,40 @@ const deleteGoogleEvent = async(calendarInfo, params) => {
             const result = await calendar.events.delete({
                 calendarId: "primary",
                 eventId: calendarInfo.eventid,
+                sendUpdates
             });
             console.log("🚀 ~ [END]deleteGoogleEvent ~ result:", result?.status)
         }
     } catch (error) {
         console.log("🚀 ~ [ERROR]deleteGoogleEvent ~ result:", error?.response?.status)
+    }
+}
+
+const createAutomaticAssignedBookings = async ({ params, calendar, extradata = null }) => {
+    try {
+        console.log("🚀 ~ [START]deleteGoogleEvent")
+
+        let prevCalendar = extradata?.calendarintegrationid;
+        const bd_data = await executesimpletransaction("UFN_CALENDAR_INTEGRATION_TO_CREATE_SEL", {
+            calendarintegrationid: extradata?.calendarintegrationid,
+            calendareventid: params?.id
+        });
+        
+        if (bd_data instanceof Array && bd_data.length > 0) {
+            bd_data.forEach(event => {
+                createGoogleEvent(
+                    event.calendarintegrationid,
+                    event.calendarbookingid,
+                    event,
+                    {...event, email: event.personmail, hourstart: event.hourstart.toString(), parameters: [{name: 'eventname', text: event.name}]},
+                    prevCalendar === event.calendarintegrationid ? [calendar, extradata] : null
+                )
+                prevCalendar = event.calendarintegrationid
+            })
+        }
+
+        console.log("🚀 ~ [END]createAutomaticAssignedBookings")
+    } catch (error) {
+        console.log({error})
     }
 }
