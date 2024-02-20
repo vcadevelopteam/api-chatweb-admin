@@ -1511,7 +1511,7 @@ const createGoogleEvent = async (assignedAgentId, newcalendarbookingid, calendar
         const eventData = await calendar.events.insert({
             calendarId: "primary",
             conferenceDataVersion: 1,
-            sendNotifications: 'all',
+            sendUpdates: 'all',
             resource: eventInfo,
         });
 
