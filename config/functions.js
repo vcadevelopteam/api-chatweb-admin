@@ -4139,6 +4139,21 @@ module.exports = {
         module: ["/orders"],
         protected: "SELECT"
     },
+    UFN_ORDER_BY_CARRIER: {
+        query: "SELECT * FROM ufn_order_by_carrier($corpid, $orgid, $orderstatus, $code)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ORDERLINE_BY_CARRIER: {
+        query: "SELECT * FROM ufn_orderline_by_carrier($corpid, $orgid, $orderid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DELIVERYCONFIG_PHOTOS_SEL: {
+        query: "SELECT * FROM ufn_deliveryconfig_photos_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_ORDERLINE_SEL: {
         query: "SELECT * FROM ufn_orderline_sel($corpid, $orgid, $orderid)",
         module: ["/orders"],
@@ -4409,8 +4424,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_BILLINGPERIODPARTNER_DEVELOPER_RESELLER: {
-        query: "SELECT * FROM ufn_billingperiodpartner_developer_reseller($partnerid, $corpid, $orgid, $year, $month, $username)",
+
+    UFN_WAREHOUSE_SEL: {
+        query: "SELECT * FROM ufn_warehouse_lst($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
@@ -4513,5 +4529,35 @@ module.exports = {
         query: "SELECT * FROM ufn_billingperiodpartner_calc($partnerid, $year, $month)",
         module: ["/invoice"],
         protected: "INSERT"
+    },
+    UFN_DELIVERYCONFIGURATION_SEL: {
+        query: "SELECT * FROM ufn_deliveryconfiguration_sel($corpid, $orgid, $username, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DELIVERYCONFIGURATION_INS: {
+        query: "SELECT * FROM ufn_deliveryconfiguration_ins($corpid, $orgid, $id, $config, $status, $type, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_DELIVERYVEHICLE_SEL: {
+        query: "SELECT * FROM ufn_deliveryvehicle_sel($corpid, $orgid, $username, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DELIVERYVEHICLE_INS: {
+        query: "SELECT * FROM ufn_deliveryvehicle_ins($corpid, $orgid, $id, $status, $type, $brand, $model, $vehicleplate, $capacity, $insuredamount, $averagespeed, $userid, $license, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_USERS_APP_DELIVERY_SEL: {
+        query: "SELECT * FROM ufn_users_app_delivery_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LISTORDER_SEL: {
+        query: "SELECT * FROM ufn_listorder_sel($corpid, $orgid, $ordersinattention)",
+        module: "",
+        protected: "SELECT"
     },
 }
