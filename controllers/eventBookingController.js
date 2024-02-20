@@ -448,7 +448,7 @@ exports.Collection = async (req, res) => {
                 
                 // cancel google event if exists
                 const eventToCancel = await executesimpletransaction("QUERY_INTEGRATIONEVENT_SEL_BY_CALENDARBOOKINGID", parameters);
-                if (eventToCancel instanceof Array && eventToCancel.length > 0) deleteGoogleEvent({eventid: eventToCancel[0].id, agentid: eventToCancel[0].calendarintegrationid}, parameters);
+                if (eventToCancel instanceof Array && eventToCancel.length > 0) deleteGoogleEvent({eventid: eventToCancel[0].id, agentid: eventToCancel[0].calendarintegrationid}, parameters, 'externalOnly');
                 
                 // create google event if theres any1 assinged
                 if (assignedAgentId) createGoogleEvent(assignedAgentId, newcalendarbookingid, resultCalendar[0], parameters)
