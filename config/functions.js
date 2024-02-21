@@ -380,17 +380,17 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_TIPIFICATION_SEL: {
-        query: "SELECT * FROM ufn_report_tipification_sel($corpid , $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_tipification_sel($corpid , $orgid, $take, $skip, $where, $order, $channel, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_TIPIFICATION_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_tipification_totalrecords($corpid , $orgid, $where, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_tipification_totalrecords($corpid , $orgid, $where, $channel, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_TIPIFICATION_EXPORT: {
-        query: "SELECT * FROM ufn_report_tipification_export($corpid , $orgid, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_tipification_export($corpid , $orgid, $where, $order, $channel, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
