@@ -400,17 +400,17 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_INTERACTION_SEL: {
-        query: "SELECT * FROM ufn_report_interaction_sel($corpid , $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_interaction_sel($corpid , $orgid, $take, $skip, $where, $order, $channel, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_INTERACTION_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_interaction_totalrecords($corpid , $orgid, $where, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_interaction_totalrecords($corpid , $orgid, $where, $channel, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_INTERACTION_EXPORT: {
-        query: "SELECT * FROM ufn_report_interaction_export($corpid , $orgid, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_interaction_export($corpid , $orgid, $where, $order, $channel, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
