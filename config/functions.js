@@ -420,17 +420,17 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_PRODUCTIVITY_SEL: {
-        query: "SELECT * FROM ufn_report_productivity_sel($corpid , $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_productivity_sel($corpid , $orgid, $take, $skip, $where, $order, $channel,$userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_PRODUCTIVITY_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_productivity_totalrecords($corpid , $orgid, $where, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_productivity_totalrecords($corpid , $orgid, $where, $channel, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_PRODUCTIVITY_EXPORT: {
-        query: "SELECT * FROM ufn_report_productivity_export($corpid , $orgid, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_productivity_export($corpid , $orgid, $where, $order, $channel, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
