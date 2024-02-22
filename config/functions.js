@@ -67,6 +67,15 @@ module.exports = {
         module: "",
         protected: false
     },
+    QUERY_VALIDATE_CUR: {
+        query: `
+        SELECT * from deliveryroutecode drc
+        WHERE drc.userid = $userid and drc.status = 'ACTIVO' and drc.code = $cur
+        LIMIT 10
+        `,
+        module: "/extras/users",
+        protected: "SELECT"
+    },
     QUERY_NEW_GETCHANNELS: {
         query: "SELECT cc.communicationchannelid, cc.description FROM communicationchannel cc WHERE cc.corpid = $corpid AND cc.orgid = $orgid AND cc.type NOT IN ('FORM', 'VOXI', 'FBWA', 'INST') AND cc.status = 'INACTIVO'",
         module: "/extras/users",

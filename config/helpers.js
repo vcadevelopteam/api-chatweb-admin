@@ -279,6 +279,8 @@ exports.setSessionParameters = (parameters, user, id) => {
         parameters.partnerid = user.partnerid;
     if (parameters.username === null || parameters.username === undefined)
         parameters.username = user.usr;
+    if ((parameters.code === null || parameters.code === undefined) && user?.code)
+        parameters.code = user.code;
     if (parameters.userid === null || parameters.userid === undefined)
         parameters.userid = user.userid;
     if (parameters.agentid === null || parameters.agentid === undefined)
@@ -298,6 +300,7 @@ const errorstmp = {
     FORBIDDEN: "E-ZYX-FORBIDDEN",
 
     LOGIN_USER_INCORRECT: "LOGIN_USER_INCORRECT",
+    CUR_USER_INCORRECT: "CUR_USER_INCORRECT",
     LOGIN_USER_PENDING: "LOGIN_USER_PENDING",
     LOGIN_LOCKED_BY_ATTEMPTS_FAILED_PASSWORD: "LOGIN_LOCKED_BY_ATTEMPTS_FAILED_PASSWORD",
     LOGIN_LOCKED_BY_INACTIVED: "LOGIN_LOCKED_BY_INACTIVED",
