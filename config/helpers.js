@@ -276,6 +276,8 @@ exports.setSessionParameters = (parameters, user, id) => {
         parameters.orgid = user.orgid ? user.orgid : 1;
     if (parameters.username === null || parameters.username === undefined)
         parameters.username = user.usr;
+    if ((parameters.code === null || parameters.code === undefined) && user?.code)
+        parameters.code = user.code;
     if (parameters.userid === null || parameters.userid === undefined)
         parameters.userid = user.userid;
     if (parameters.agentid === null || parameters.agentid === undefined)
@@ -295,6 +297,7 @@ const errorstmp = {
     FORBIDDEN: "E-ZYX-FORBIDDEN",
 
     LOGIN_USER_INCORRECT: "LOGIN_USER_INCORRECT",
+    CUR_USER_INCORRECT: "CUR_USER_INCORRECT",
     LOGIN_USER_PENDING: "LOGIN_USER_PENDING",
     LOGIN_LOCKED_BY_ATTEMPTS_FAILED_PASSWORD: "LOGIN_LOCKED_BY_ATTEMPTS_FAILED_PASSWORD",
     LOGIN_LOCKED_BY_INACTIVED: "LOGIN_LOCKED_BY_INACTIVED",
@@ -526,7 +529,7 @@ exports.formatDecimals = (num) => {
 
 exports.recaptcha = async (secret, key) => {
     const data = { secret, response: key };
-    
+
     try {
         const response = await this.axiosObservable({
             url: `https://www.google.com/recaptcha/api/siteverify`,

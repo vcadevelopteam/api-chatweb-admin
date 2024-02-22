@@ -64,6 +64,15 @@ module.exports = {
         module: "",
         protected: false
     },
+    QUERY_VALIDATE_CUR: {
+        query: `
+        SELECT * from deliveryroutecode drc
+        WHERE drc.userid = $userid and drc.status = 'ACTIVO' and drc.code = $cur
+        LIMIT 10
+        `,
+        module: "/extras/users",
+        protected: "SELECT"
+    },
     UFN_CORP_ORG_SEL: {
         query: "SELECT * FROM ufn_corp_org_sel($corpid, $id, $username, $all, $userid)",
         module: "/extras/users",

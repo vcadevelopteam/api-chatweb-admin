@@ -95,15 +95,15 @@ const validateResProperty = (r, type) => {
 }
 
 exports.authenticate = async (req, res) => {
-    const { data: { usr, password, facebookid, googleid, origin = "WEB", token, token_recaptcha } } = req.body;
-    
+    const { data: { usr, password, facebookid, googleid, origin = "WEB", token, token_recaptcha, cur } } = req.body;
+
     logger.child({ _requestid: req._requestid, body: req.body }).info(`authenticate.body`);
 
     const secret_recaptcha = process.env.SECRET_RECAPTCHA;
 
     if (origin !== "MOVIL" && secret_recaptcha && token_recaptcha) {
         const result_recaptcha = await recaptcha(secret_recaptcha, token_recaptcha);
-    
+
         if ((result_recaptcha.error || !result_recaptcha.success)) {
             return res.status(401).json({ code: errors.RECAPTCHA_ERROR, ...result_recaptcha })
         }
@@ -132,6 +132,15 @@ exports.authenticate = async (req, res) => {
         }
 
         const user = result[0];
+
+        if (cur) {
+            const resultCUR = await executesimpletransaction("QUERY_VALIDATE_CUR", { ...result[0], cur });
+            if (!(resultCUR instanceof Array) || resultCUR.length === 0) {
+                return res.status(401).json({ code: errors.CUR_USER_INCORRECT });
+            }
+            user.code = cur;
+        }
+        
 
         if (!integration) {
             const ispasswordmatch = await bcryptjs.compare(password, user.pwd)
@@ -268,7 +277,7 @@ exports.getUser = async (req, res) => {
                 item.applicationid_parent,
                 item.description_parent,
                 item.menuorder,
-            ]
+                ]
         }), {})
         jwt.sign({ user: { ...req.user, menu: { ...menu, "system-label": undefined, "/": undefined } } }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
             if (error) throw error;
@@ -338,7 +347,7 @@ exports.changeOrganization = async (req, res) => {
             corpdesc: parameters.corpdesc,
             orgdesc: parameters.orgdesc,
             _requestid: req._requestid,
-            roledesc: req.user.roledesc.includes("SUPERADMIN") ? "SUPERADMIN" :  resultBD[0]?.roledesc,
+            roledesc: req.user.roledesc.includes("SUPERADMIN") ? "SUPERADMIN" : resultBD[0]?.roledesc,
             redirect: resultBD[0]?.redirect || '/tickets',
             plan: resultBD[0]?.plan || '',
             currencysymbol: resultBD[0]?.currencysymbol || 'S/',
@@ -357,14 +366,14 @@ exports.changeOrganization = async (req, res) => {
         }), {});
 
         newusertoken.menu = { ...menu, "system-label": undefined, "/": undefined };
-        
+
         let automaticConnection = false;
-        
+
         if (!req.user.roledesc.includes("SUPERADMIN")) {
             const resConnection = await executesimpletransaction("UFN_PROPERTY_SELBYNAME", { ...newusertoken, propertyname: 'CONEXIONAUTOMATICAINBOX' })
-            
+
             automaticConnection = validateResProperty(resConnection, 'bool');
-            
+
             if (automaticConnection) {
                 await executesimpletransaction("UFN_USERSTATUS_UPDATE", {
                     ...newusertoken,
@@ -380,7 +389,7 @@ exports.changeOrganization = async (req, res) => {
         if (req.user.origin === "MOVIL") {
             await loginGroup(req.user.token, parameters.neworgid, req.user.userid, req._requestid);
         }
-        
+
         jwt.sign({ user: newusertoken }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
             if (error) throw error;
             delete req.user.token;
