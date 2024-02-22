@@ -255,23 +255,28 @@ exports.getBusinessList = async (request, response) => {
 exports.manageCatalog = async (request, response) => {
     try {
         const { corpid, orgid, usr } = request.user;
-        const { operation, metabusinessid } = request.body;
+        const { operation, metabusinessid, haslink } = request.body;
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
         const businessresponse = await metaBusinessSel(corpid, orgid, metabusinessid, request._requestid);
 
         if (businessresponse) {
-            let accessToken = businessresponse[0].accesstoken;
-            let businessid = businessresponse[0].businessid;
+            let accessToken = null;
+            let businessid = null;
+
+            if (haslink) {
+                accessToken = businessresponse[0].accesstoken;
+                businessid = businessresponse[0].businessid;
+            }
 
             const config = { Authorization: 'Bearer ' + accessToken };
 
             switch (operation) {
                 case "CREATE":
                 case "INSERT":
-                    if (accessToken) {
-                        const { catalogdescription, catalogname, catalogtype, description, id, operation, status, type, haslink } = request.body;
+                    if (accessToken || !haslink) {
+                        const { catalogdescription, catalogname, catalogtype, description, id, operation, status, type } = request.body;
 
                         let result = null;
 
@@ -300,7 +305,7 @@ exports.manageCatalog = async (request, response) => {
                                 metacatalogid = result.data.id;
                             }
 
-                            let catalogResponse = await metaCatalogIns(corpid, orgid, metabusinessid, id, metacatalogid, catalogname, catalogdescription, catalogtype, description, status, type, haslink, usr, operation);
+                            let catalogResponse = await metaCatalogIns(corpid, orgid, haslink ? metabusinessid : 0, id, metacatalogid, catalogname, catalogdescription, catalogtype, description, status, type, haslink, usr, operation);
 
                             responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                         }
@@ -311,8 +316,8 @@ exports.manageCatalog = async (request, response) => {
                     break;
 
                 case "EDIT":
-                    if (accessToken) {
-                        const { catalogdescription, catalogid, catalogname, catalogtype, description, id, metabusinessid, operation, status, type, haslink } = request.body;
+                    if (accessToken || !haslink) {
+                        const { catalogdescription, catalogid, catalogname, catalogtype, description, id, metabusinessid, operation, status, type } = request.body;
 
                         let result = null;
 
@@ -345,8 +350,8 @@ exports.manageCatalog = async (request, response) => {
                     break;
 
                 case "DELETE":
-                    if (accessToken) {
-                        const { metabusinessid, metacatalogid, catalogid, catalogname, catalogdescription, catalogtype, description, status, type, haslink } = request.body;
+                    if (accessToken || !haslink) {
+                        const { metabusinessid, metacatalogid, catalogid, catalogname, catalogdescription, catalogtype, description, status, type } = request.body;
 
                         let result = null;
 
