@@ -100,7 +100,7 @@ const validateResProperty = (r, type) => {
 }
 
 exports.authenticate = async (req, res) => {
-    const { data: { usr, password, facebookid, googleid, origin = "WEB", token, token_recaptcha } } = req.body;
+    const { data: { usr, password, facebookid, googleid, origin = "WEB", token, token_recaptcha, cur } } = req.body;
 
     logger.child({ _requestid: req._requestid, body: req.body }).info(`authenticate.body`);
 
