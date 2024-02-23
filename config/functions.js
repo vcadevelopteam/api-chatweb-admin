@@ -4152,7 +4152,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_METACATALOG_INS: {
-        query: "SELECT * FROM ufn_metacatalog_ins($corpid, $orgid, $metabusinessid, $id, $catalogid, $catalogname, $catalogdescription, $catalogtype, $description, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_metacatalog_ins($corpid, $orgid, $metabusinessid, $id, $catalogid, $catalogname, $catalogdescription, $catalogtype, $description, $status, $type, $haslink, $username, $operation)",
         module: "",
         protected: "SELECT"
     },
