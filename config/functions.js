@@ -4606,4 +4606,24 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_REASONNONDELIVERY_SEL: {
+        query: "SELECT * FROM ufn_reasonnondelivery_sel($corpid, $orgid, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REASONNONDELIVERY_INS: {
+        query: "SELECT * FROM ufn_reasonnondelivery_ins($corpid, $orgid, $id, $status, $type, $description, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_SUBREASONNONDELIVERY_SEL: {
+        query: "SELECT * FROM ufn_subreasonnondelivery_sel($corpid, $orgid, $reasonnondeliveryid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_SUBREASONNONDELIVERY_INS: {
+        query: "SELECT * FROM ufn_subreasonnondelivery_ins($corpid, $orgid, $id, $reasonnondeliveryid, $status, $type, $description, $statustypified, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
 }
