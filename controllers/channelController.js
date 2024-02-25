@@ -2143,6 +2143,8 @@ exports.insertChannel = async (request, response) => {
                 if (requestPageTwitter.data.success) {
                     let serviceCredentials = {
                         accessToken: (service.code ? requestPageTwitter.data.accessToken : service.accesstoken) || null,
+                        clientId: requestPageTwitter.data.clientId,
+                        clientSecret: requestPageTwitter.data.clientSecret,
                         code: service.code || null,
                         refreshToken: (service.code ? requestPageTwitter.data.refreshToken : service.refreshtoken) || null,
                         userId: requestPageTwitter.data.userId,
@@ -2165,7 +2167,7 @@ exports.insertChannel = async (request, response) => {
                         "TWITTER",
                         "ACTIVO",
                         request?.user?.usr,
-                        50
+                        50,
                     );
 
                     await channelfunctions.serviceSubscriptionUpdate(
@@ -2176,7 +2178,7 @@ exports.insertChannel = async (request, response) => {
                         "ACTIVO",
                         request?.user?.usr,
                         `${hookEndpoint}twitter/webhookasync`,
-                        2
+                        1,
                     );
 
                     const transactionCreateTwitter = await triggerfunctions.executesimpletransaction(
