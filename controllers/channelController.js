@@ -2134,7 +2134,7 @@ exports.insertChannel = async (request, response) => {
                     method: "post",
                     url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
                     data: {
-                        accesstoken: service.accestoken || null,
+                        accesstoken: service.accesstoken || null,
                         code: service.code || null,
                         linkType: service.code ? "EXCHANGECODE" : "GETUSERID",
                     },
