@@ -65,7 +65,7 @@ const metaCatalogSel = async (corpid, orgid, metabusinessid, id, requestid) => {
     return null;
 }
 
-const metaCatalogIns = async (corpid, orgid, metabusinessid, id, catalogid, catalogname, catalogdescription, catalogtype, description, status, type, username, operation, requestid) => {
+const metaCatalogIns = async (corpid, orgid, metabusinessid, id, catalogid, catalogname, catalogdescription, catalogtype, description, status, type, haslink, username, operation, requestid) => {
     const queryResult = await triggerfunctions.executesimpletransaction("UFN_METACATALOG_INS", {
         corpid: corpid,
         orgid: orgid,
@@ -78,6 +78,7 @@ const metaCatalogIns = async (corpid, orgid, metabusinessid, id, catalogid, cata
         description: description,
         status: status,
         type: type,
+        haslink: haslink,
         username: username,
         operation: operation,
         _requestid: requestid,
@@ -254,44 +255,57 @@ exports.getBusinessList = async (request, response) => {
 exports.manageCatalog = async (request, response) => {
     try {
         const { corpid, orgid, usr } = request.user;
-        const { operation, metabusinessid } = request.body;
+        const { operation, metabusinessid, haslink } = request.body;
 
         var responsedata = genericfunctions.generateResponseData(request._requestid);
 
         const businessresponse = await metaBusinessSel(corpid, orgid, metabusinessid, request._requestid);
 
         if (businessresponse) {
-            let accessToken = businessresponse[0].accesstoken;
-            let businessid = businessresponse[0].businessid;
+            let accessToken = null;
+            let businessid = null;
+
+            if (haslink) {
+                accessToken = businessresponse[0].accesstoken;
+                businessid = businessresponse[0].businessid;
+            }
 
             const config = { Authorization: 'Bearer ' + accessToken };
 
             switch (operation) {
                 case "CREATE":
                 case "INSERT":
-                    if (accessToken) {
+                    if (accessToken || !haslink) {
                         const { catalogdescription, catalogname, catalogtype, description, id, operation, status, type } = request.body;
 
-                        const result = await axiosObservable({
-                            data: {
+                        let result = null;
+
+                        if (haslink) {
+                            result = await axiosObservable({
                                 data: {
-                                    description: catalogdescription,
-                                    name: catalogname,
-                                    vertical: catalogtype,
+                                    data: {
+                                        description: catalogdescription,
+                                        name: catalogname,
+                                        vertical: catalogtype,
+                                    },
+                                    config: config,
+                                    method: 'post',
+                                    url: `${facebookEndpoint}${businessid}/owned_product_catalogs?access_token=${accessToken}`,
                                 },
-                                config: config,
                                 method: 'post',
-                                url: `${facebookEndpoint}${businessid}/owned_product_catalogs?access_token=${accessToken}`,
-                            },
-                            method: 'post',
-                            url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
-                            _requestid: request._requestid,
-                        });
+                                url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
+                                _requestid: request._requestid,
+                            });
+                        }
 
-                        if (result?.data?.id) {
-                            const metacatalogid = result.data.id
+                        if (result?.data?.id || !haslink) {
+                            let metacatalogid = null;
 
-                            let catalogResponse = await metaCatalogIns(corpid, orgid, metabusinessid, id, metacatalogid, catalogname, catalogdescription, catalogtype, description, status, type, usr, operation);
+                            if (haslink) {
+                                metacatalogid = result.data.id;
+                            }
+
+                            let catalogResponse = await metaCatalogIns(corpid, orgid, haslink ? metabusinessid : 0, id, metacatalogid, catalogname, catalogdescription, catalogtype, description, status, type, haslink, usr, operation);
 
                             responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                         }
@@ -302,26 +316,30 @@ exports.manageCatalog = async (request, response) => {
                     break;
 
                 case "EDIT":
-                    if (accessToken) {
+                    if (accessToken || !haslink) {
                         const { catalogdescription, catalogid, catalogname, catalogtype, description, id, metabusinessid, operation, status, type } = request.body;
 
-                        const result = await axiosObservable({
-                            data: {
-                                data: {
-                                    name: catalogname,
-                                    vertical: catalogtype
-                                },
-                                config: config,
-                                method: 'post',
-                                url: `${facebookEndpoint}${catalogid}?access_token=${accessToken}`,
-                            },
-                            method: 'post',
-                            url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
-                            _requestid: request._requestid,
-                        });
+                        let result = null;
 
-                        if (result?.data) {
-                            let catalogResponse = await metaCatalogIns(corpid, orgid, metabusinessid, id, catalogid, catalogname, catalogdescription, catalogtype, description, status, type, usr, operation);
+                        if (haslink) {
+                            result = await axiosObservable({
+                                data: {
+                                    data: {
+                                        name: catalogname,
+                                        vertical: catalogtype
+                                    },
+                                    config: config,
+                                    method: 'post',
+                                    url: `${facebookEndpoint}${catalogid}?access_token=${accessToken}`,
+                                },
+                                method: 'post',
+                                url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
+                                _requestid: request._requestid,
+                            });
+                        }
+
+                        if (result?.data || !haslink) {
+                            let catalogResponse = await metaCatalogIns(corpid, orgid, metabusinessid, id, catalogid, catalogname, catalogdescription, catalogtype, description, status, type, haslink, usr, operation);
 
                             responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                         }
@@ -332,22 +350,26 @@ exports.manageCatalog = async (request, response) => {
                     break;
 
                 case "DELETE":
-                    if (accessToken) {
+                    if (accessToken || !haslink) {
                         const { metabusinessid, metacatalogid, catalogid, catalogname, catalogdescription, catalogtype, description, status, type } = request.body;
 
-                        const result = await axiosObservable({
-                            data: {
-                                config: config,
-                                method: 'delete',
-                                url: `${facebookEndpoint}${catalogid}?access_token=${accessToken}`,
-                            },
-                            method: 'post',
-                            url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
-                            _requestid: request._requestid,
-                        });
+                        let result = null;
 
-                        if (result?.data) {
-                            let catalogResponse = await metaCatalogIns(corpid, orgid, metabusinessid, metacatalogid, catalogid, catalogname, catalogdescription, catalogtype, description, status, type, usr, operation);
+                        if (haslink) {
+                            result = await axiosObservable({
+                                data: {
+                                    config: config,
+                                    method: 'delete',
+                                    url: `${facebookEndpoint}${catalogid}?access_token=${accessToken}`,
+                                },
+                                method: 'post',
+                                url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
+                                _requestid: request._requestid,
+                            });
+                        }
+
+                        if (result?.data || !haslink) {
+                            let catalogResponse = await metaCatalogIns(corpid, orgid, metabusinessid, metacatalogid, catalogid, catalogname, catalogdescription, catalogtype, description, status, type, haslink, usr, operation);
 
                             responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                         }
@@ -439,7 +461,7 @@ exports.synchroCatalog = async (request, response) => {
                 await metaCatalogClean(corpid, orgid, metabusinessid, usr);
 
                 for (const catalog of listCatalog) {
-                    await metaCatalogIns(corpid, orgid, metabusinessid, businessid, catalog.id, catalog.name, catalog.description || "", catalog.vertical, "", "ACTIVO", "", usr, "CREATE");
+                    await metaCatalogIns(corpid, orgid, metabusinessid, businessid, catalog.id, catalog.name, catalog.description || "", catalog.vertical, "", "ACTIVO", "", true, usr, "CREATE");
                 };
 
                 responsedata = genericfunctions.changeResponseData(responsedata, null, listCatalog, null, 200, true);
@@ -474,142 +496,38 @@ exports.manageProduct = async (request, response) => {
         const catalogresponse = await metaCatalogSel(corpid, orgid, 0, metacatalogid, request._requestid);
 
         if (catalogresponse) {
-            const businessresponse = await metaBusinessSel(corpid, orgid, catalogresponse[0].metabusinessid, request._requestid);
+            const haslink = catalogresponse[0].haslink;
 
-            if (businessresponse) {
-                let accessToken = businessresponse[0].accesstoken;
+            let businessresponse = null;
+
+            if (haslink) {
+                businessresponse = await metaBusinessSel(corpid, orgid, catalogresponse[0].metabusinessid, request._requestid);
+            }
+
+            if (businessresponse || !haslink) {
+                let accessToken = null;
+
+                if (haslink) {
+                    accessToken = businessresponse[0].accesstoken;
+                }
+
                 let catalogid = catalogresponse[0].catalogid;
 
                 switch (operation) {
                     case "CREATE":
                     case "INSERT":
-                        if (accessToken) {
+                        if (accessToken || !haslink) {
                             const { productid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, unitmeasurement, quantity } = request.body;
 
-                            const config = { headers: { Authorization: 'Bearer ' + accessToken } };
+                            let result = null;
 
-                            const result = await axiosObservable({
-                                data: {
-                                    data: JSON.parse(JSON.stringify({
-                                        retailer_id: productid || null,
-                                        name: title || null,
-                                        description: description || null,
-                                        short_description: descriptionshort || null,
-                                        availability: availability || null,
-                                        category: category || null,
-                                        condition: condition || null,
-                                        currency: currency || null,
-                                        price: (price * 100) || null,
-                                        sale_price: (saleprice * 100) || null,
-                                        url: link || null,
-                                        image_url: imagelink || null,
-                                        additional_image_urls: additionalimagelink ? [additionalimagelink] : null,
-                                        brand: brand || null,
-                                        color: color || null,
-                                        gender: gender || null,
-                                        material: material || null,
-                                        pattern: pattern || null,
-                                        size: size || null,
-                                        start_date: datestart || null,
-                                        launch_date: datelaunch || null,
-                                        expiration_date: dateexpiration || null,
-                                        custom_label_0: customlabel0 || null,
-                                        custom_label_1: customlabel1 || null,
-                                        custom_label_2: customlabel2 || null,
-                                        custom_label_3: customlabel3 || null,
-                                        custom_label_4: customlabel4 || null,
-                                        custom_number_0: customnumber0 || null,
-                                        custom_number_1: customnumber1 || null,
-                                        custom_number_2: customnumber2 || null,
-                                        custom_number_3: customnumber3 || null,
-                                        custom_number_4: customnumber4 || null,
-                                        category_specific_fields: standardfeatures0 ? { "item_sub_type": "CELL_PHONES_AND_SMART_WATCHES", "standard_features": [standardfeatures0] } : null,
-                                    }, (k, v) => v ?? undefined)),
-                                    config: config,
-                                    method: 'post',
-                                    url: `${facebookEndpoint}${catalogid}/products?access_token=${accessToken}`,
-                                },
-                                method: 'post',
-                                url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
-                                _requestid: request._requestid,
-                            });
+                            if (haslink) {
+                                const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
-                            if (result?.data?.id) {
-                                const productcatalogid = result.data.id
-
-                                let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, 0, productid, productcatalogid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, usr, operation, unitmeasurement, quantity, request._requestid);
-
-                                responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
-                            }
-                            else {
-                                responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_productcreate', result?.data, 'Error creating product', 400, false);
-                            }
-                        }
-                        break;
-
-                    case "EDIT":
-                        if (accessToken) {
-                            const { productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, unitmeasurement, quantity } = request.body;
-
-                            const config = { headers: { Authorization: 'Bearer ' + accessToken } };
-
-                            let facebookretailerid = retailerid;
-
-                            if (!facebookretailerid) {
-                                let requestUrl = `${facebookEndpoint}${catalogid}/products?access_token=${accessToken}`;
-                                let continueLoop = true;
-
-                                while (continueLoop) {
-                                    const result = await axiosObservable({
-                                        data: {
-                                            config: config,
-                                            method: 'get',
-                                            url: requestUrl,
-                                        },
-                                        method: 'post',
-                                        url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
-                                        _requestid: request._requestid,
-                                    });
-
-                                    if (result.data) {
-                                        if (result.data.data) {
-                                            if (result.data.data.length > 0) {
-                                                facebookretailerid = result.data.data.find(x => x.retailer_id === productid)?.id;
-
-                                                if (facebookretailerid) {
-                                                    continueLoop = false;
-                                                }
-                                            }
-                                            else {
-                                                continueLoop = false;
-                                            }
-
-                                            if (result.data.paging) {
-                                                if (result.data.paging.next) {
-                                                    requestUrl = result.data.paging.next;
-                                                }
-                                                else {
-                                                    continueLoop = false;
-                                                }
-                                            }
-                                            else {
-                                                continueLoop = false;
-                                            }
-                                        }
-                                        else {
-                                            continueLoop = false;
-                                        }
-                                    }
-                                    else {
-                                        continueLoop = false;
-                                    }
-                                }
-                            }
-
-                            if (facebookretailerid) {
-                                const result = await axiosObservable({
+                                result = await axiosObservable({
                                     data: {
                                         data: JSON.parse(JSON.stringify({
+                                            retailer_id: productid || null,
                                             name: title || null,
                                             description: description || null,
                                             short_description: descriptionshort || null,
@@ -642,17 +560,149 @@ exports.manageProduct = async (request, response) => {
                                             custom_number_3: customnumber3 || null,
                                             custom_number_4: customnumber4 || null,
                                             category_specific_fields: standardfeatures0 ? { "item_sub_type": "CELL_PHONES_AND_SMART_WATCHES", "standard_features": [standardfeatures0] } : null,
-                                        })),
+                                        }, (k, v) => v ?? undefined)),
                                         config: config,
                                         method: 'post',
-                                        url: `${facebookEndpoint}${facebookretailerid}?access_token=${accessToken}`,
+                                        url: `${facebookEndpoint}${catalogid}/products?access_token=${accessToken}`,
                                     },
                                     method: 'post',
                                     url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
                                     _requestid: request._requestid,
                                 });
+                            }
 
-                                if (result?.data) {
+                            if (result?.data?.id || !haslink) {
+                                let productcatalogid = null;
+
+                                if (haslink) {
+                                    productcatalogid = result.data.id;
+                                }
+                                else {
+                                    productcatalogid = `${Date.now()}`;
+                                }
+
+                                let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, 0, productid, productcatalogid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, usr, operation, unitmeasurement, quantity, request._requestid);
+
+                                responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
+                            }
+                            else {
+                                responsedata = genericfunctions.changeResponseData(responsedata, 'catalog_error_productcreate', result?.data, 'Error creating product', 400, false);
+                            }
+                        }
+                        break;
+
+                    case "EDIT":
+                        if (accessToken || !haslink) {
+                            const { productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, unitmeasurement, quantity } = request.body;
+
+                            let facebookretailerid = retailerid;
+
+                            if (haslink) {
+                                const config = { headers: { Authorization: 'Bearer ' + accessToken } };
+
+                                if (!facebookretailerid) {
+                                    let requestUrl = `${facebookEndpoint}${catalogid}/products?access_token=${accessToken}`;
+                                    let continueLoop = true;
+
+                                    while (continueLoop) {
+                                        const result = await axiosObservable({
+                                            data: {
+                                                config: config,
+                                                method: 'get',
+                                                url: requestUrl,
+                                            },
+                                            method: 'post',
+                                            url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
+                                            _requestid: request._requestid,
+                                        });
+
+                                        if (result.data) {
+                                            if (result.data.data) {
+                                                if (result.data.data.length > 0) {
+                                                    facebookretailerid = result.data.data.find(x => x.retailer_id === productid)?.id;
+
+                                                    if (facebookretailerid) {
+                                                        continueLoop = false;
+                                                    }
+                                                }
+                                                else {
+                                                    continueLoop = false;
+                                                }
+
+                                                if (result.data.paging) {
+                                                    if (result.data.paging.next) {
+                                                        requestUrl = result.data.paging.next;
+                                                    }
+                                                    else {
+                                                        continueLoop = false;
+                                                    }
+                                                }
+                                                else {
+                                                    continueLoop = false;
+                                                }
+                                            }
+                                            else {
+                                                continueLoop = false;
+                                            }
+                                        }
+                                        else {
+                                            continueLoop = false;
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (facebookretailerid || !haslink) {
+                                let result = null;
+
+                                if (haslink) {
+                                    result = await axiosObservable({
+                                        data: {
+                                            data: JSON.parse(JSON.stringify({
+                                                name: title || null,
+                                                description: description || null,
+                                                short_description: descriptionshort || null,
+                                                availability: availability || null,
+                                                category: category || null,
+                                                condition: condition || null,
+                                                currency: currency || null,
+                                                price: (price * 100) || null,
+                                                sale_price: (saleprice * 100) || null,
+                                                url: link || null,
+                                                image_url: imagelink || null,
+                                                additional_image_urls: additionalimagelink ? [additionalimagelink] : null,
+                                                brand: brand || null,
+                                                color: color || null,
+                                                gender: gender || null,
+                                                material: material || null,
+                                                pattern: pattern || null,
+                                                size: size || null,
+                                                start_date: datestart || null,
+                                                launch_date: datelaunch || null,
+                                                expiration_date: dateexpiration || null,
+                                                custom_label_0: customlabel0 || null,
+                                                custom_label_1: customlabel1 || null,
+                                                custom_label_2: customlabel2 || null,
+                                                custom_label_3: customlabel3 || null,
+                                                custom_label_4: customlabel4 || null,
+                                                custom_number_0: customnumber0 || null,
+                                                custom_number_1: customnumber1 || null,
+                                                custom_number_2: customnumber2 || null,
+                                                custom_number_3: customnumber3 || null,
+                                                custom_number_4: customnumber4 || null,
+                                                category_specific_fields: standardfeatures0 ? { "item_sub_type": "CELL_PHONES_AND_SMART_WATCHES", "standard_features": [standardfeatures0] } : null,
+                                            })),
+                                            config: config,
+                                            method: 'post',
+                                            url: `${facebookEndpoint}${facebookretailerid}?access_token=${accessToken}`,
+                                        },
+                                        method: 'post',
+                                        url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
+                                        _requestid: request._requestid,
+                                    });
+                                }
+
+                                if (result?.data || !haslink) {
                                     let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, usr, operation, unitmeasurement, quantity, request._requestid);
 
                                     responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
@@ -668,45 +718,50 @@ exports.manageProduct = async (request, response) => {
                         break;
 
                     case "DELETE":
-                        if (accessToken) {
+                        if (accessToken || !haslink) {
                             const { productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, unitmeasurement, quantity } = request.body;
-
-                            const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
                             let facebookretailerid = retailerid;
 
-                            if (!facebookretailerid) {
-                                let requestUrl = `${facebookEndpoint}${catalogid}/products?access_token=${accessToken}`;
-                                let continueLoop = true;
+                            if (haslink) {
+                                const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
-                                while (continueLoop) {
-                                    const result = await axiosObservable({
-                                        data: {
-                                            config: config,
-                                            method: 'get',
-                                            url: requestUrl,
-                                        },
-                                        method: 'post',
-                                        url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
-                                        _requestid: request._requestid,
-                                    });
+                                if (!facebookretailerid) {
+                                    let requestUrl = `${facebookEndpoint}${catalogid}/products?access_token=${accessToken}`;
+                                    let continueLoop = true;
 
-                                    if (result.data) {
-                                        if (result.data.data) {
-                                            if (result.data.data.length > 0) {
-                                                facebookretailerid = result.data.data.find(x => x.retailer_id === productid)?.id;
+                                    while (continueLoop) {
+                                        const result = await axiosObservable({
+                                            data: {
+                                                config: config,
+                                                method: 'get',
+                                                url: requestUrl,
+                                            },
+                                            method: 'post',
+                                            url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
+                                            _requestid: request._requestid,
+                                        });
 
-                                                if (facebookretailerid) {
+                                        if (result.data) {
+                                            if (result.data.data) {
+                                                if (result.data.data.length > 0) {
+                                                    facebookretailerid = result.data.data.find(x => x.retailer_id === productid)?.id;
+
+                                                    if (facebookretailerid) {
+                                                        continueLoop = false;
+                                                    }
+                                                }
+                                                else {
                                                     continueLoop = false;
                                                 }
-                                            }
-                                            else {
-                                                continueLoop = false;
-                                            }
 
-                                            if (result.data.paging) {
-                                                if (result.data.paging.next) {
-                                                    requestUrl = result.data.paging.next;
+                                                if (result.data.paging) {
+                                                    if (result.data.paging.next) {
+                                                        requestUrl = result.data.paging.next;
+                                                    }
+                                                    else {
+                                                        continueLoop = false;
+                                                    }
                                                 }
                                                 else {
                                                     continueLoop = false;
@@ -720,25 +775,26 @@ exports.manageProduct = async (request, response) => {
                                             continueLoop = false;
                                         }
                                     }
-                                    else {
-                                        continueLoop = false;
-                                    }
                                 }
                             }
 
-                            if (facebookretailerid) {
-                                const result = await axiosObservable({
-                                    data: {
-                                        config: config,
-                                        method: 'delete',
-                                        url: `${facebookEndpoint}${facebookretailerid}?access_token=${accessToken}`,
-                                    },
-                                    method: 'post',
-                                    url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
-                                    _requestid: request._requestid,
-                                });
+                            if (facebookretailerid || !haslink) {
+                                let result = null;
 
-                                if (result?.data) {
+                                if (haslink) {
+                                    await axiosObservable({
+                                        data: {
+                                            config: config,
+                                            method: 'delete',
+                                            url: `${facebookEndpoint}${facebookretailerid}?access_token=${accessToken}`,
+                                        },
+                                        method: 'post',
+                                        url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
+                                        _requestid: request._requestid,
+                                    });
+                                }
+
+                                if (result?.data || !haslink) {
                                     let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, usr, operation, unitmeasurement, quantity, request._requestid);
 
                                     responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
@@ -924,48 +980,64 @@ exports.deleteProduct = async (request, response) => {
                 const catalogresponse = await metaCatalogSel(corpid, orgid, 0, productdata.metacatalogid, request._requestid);
 
                 if (catalogresponse) {
-                    const businessresponse = await metaBusinessSel(corpid, orgid, catalogresponse[0].metabusinessid, request._requestid);
+                    const haslink = catalogresponse[0].haslink;
 
-                    if (businessresponse) {
-                        let accessToken = businessresponse[0].accesstoken;
+                    let businessresponse = null;
+
+                    if (haslink) {
+                        businessresponse = await metaBusinessSel(corpid, orgid, catalogresponse[0].metabusinessid, request._requestid);
+                    }
+
+                    if (businessresponse || !haslink) {
+                        let accessToken = null;
+
+                        if (haslink) {
+                            accessToken = businessresponse[0].accesstoken;
+                        }
+
                         let catalogid = catalogresponse[0].catalogid;
-
-                        const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
                         let facebookretailerid = productdata.retailerid;
 
-                        if (!facebookretailerid) {
-                            let requestUrl = `${facebookEndpoint}${catalogid}/products?bulk_pagination=true&access_token=${accessToken}`;
-                            let continueLoop = true;
+                        if (haslink) {
+                            const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
-                            while (continueLoop) {
-                                const result = await axiosObservable({
-                                    data: {
-                                        config: config,
-                                        method: 'get',
-                                        url: requestUrl,
-                                    },
-                                    method: 'post',
-                                    url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
-                                    _requestid: request._requestid,
-                                });
+                            if (!facebookretailerid) {
+                                let requestUrl = `${facebookEndpoint}${catalogid}/products?bulk_pagination=true&access_token=${accessToken}`;
+                                let continueLoop = true;
 
-                                if (result.data) {
-                                    if (result.data.data) {
-                                        if (result.data.data.length > 0) {
-                                            facebookretailerid = result.data.data.find(x => x.retailer_id === productid)?.id;
+                                while (continueLoop) {
+                                    const result = await axiosObservable({
+                                        data: {
+                                            config: config,
+                                            method: 'get',
+                                            url: requestUrl,
+                                        },
+                                        method: 'post',
+                                        url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
+                                        _requestid: request._requestid,
+                                    });
 
-                                            if (facebookretailerid) {
+                                    if (result.data) {
+                                        if (result.data.data) {
+                                            if (result.data.data.length > 0) {
+                                                facebookretailerid = result.data.data.find(x => x.retailer_id === productid)?.id;
+
+                                                if (facebookretailerid) {
+                                                    continueLoop = false;
+                                                }
+                                            }
+                                            else {
                                                 continueLoop = false;
                                             }
-                                        }
-                                        else {
-                                            continueLoop = false;
-                                        }
 
-                                        if (result.data.paging) {
-                                            if (result.data.paging.next) {
-                                                requestUrl = result.data.paging.next;
+                                            if (result.data.paging) {
+                                                if (result.data.paging.next) {
+                                                    requestUrl = result.data.paging.next;
+                                                }
+                                                else {
+                                                    continueLoop = false;
+                                                }
                                             }
                                             else {
                                                 continueLoop = false;
@@ -979,25 +1051,26 @@ exports.deleteProduct = async (request, response) => {
                                         continueLoop = false;
                                     }
                                 }
-                                else {
-                                    continueLoop = false;
-                                }
                             }
                         }
 
-                        if (facebookretailerid) {
-                            const result = await axiosObservable({
-                                data: {
-                                    config: config,
-                                    method: 'delete',
-                                    url: `${facebookEndpoint}${facebookretailerid}?access_token=${accessToken}`,
-                                },
-                                method: 'post',
-                                url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
-                                _requestid: request._requestid,
-                            });
+                        if (facebookretailerid || !haslink) {
+                            let result = null;
 
-                            if (result?.data) {
+                            if (haslink) {
+                                result = await axiosObservable({
+                                    data: {
+                                        config: config,
+                                        method: 'delete',
+                                        url: `${facebookEndpoint}${facebookretailerid}?access_token=${accessToken}`,
+                                    },
+                                    method: 'post',
+                                    url: `${bridgeCloudEndpoint}processlaraigo/sendrequest`,
+                                    _requestid: request._requestid,
+                                });
+                            }
+
+                            if (result?.data || !haslink) {
                                 let catalogResponse = await productCatalogIns(corpid, orgid, productdata.metacatalogid, productdata.productcatalogid, productdata.productid, facebookretailerid, productdata.title, productdata.description, productdata.descriptionshort, productdata.availability, productdata.category, productdata.condition, productdata.currency, productdata.price, productdata.saleprice, productdata.link, productdata.imagelink, productdata.additionalimagelink, productdata.brand, productdata.color, productdata.gender, productdata.material, productdata.pattern, productdata.size, productdata.datestart, productdata.datelaunch, productdata.dateexpiration, productdata.labels, productdata.customlabel0, productdata.customlabel1, productdata.customlabel2, productdata.customlabel3, productdata.customlabel4, productdata.customnumber0, productdata.customnumber1, productdata.customnumber2, productdata.customnumber3, productdata.customnumber4, productdata.standardfeatures0, productdata.reviewstatus, productdata.reviewdescription, productdata.status, productdata.type, usr, 'DELETE', "", 0, request._requestid);
 
                                 responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
