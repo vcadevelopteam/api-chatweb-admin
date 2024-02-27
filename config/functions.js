@@ -4626,4 +4626,14 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_REPORT_CONFIGURATION_INS: {
+        query: "SELECT * FROM ufn_report_configuration_ins($corpid, $orgid, $reportname, $configuration, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_REPORT_CONFIGURATION_SEL: {
+        query: "SELECT * FROM ufn_report_configuration_sel($corpid, $orgid, $reportname)",
+        module: "",
+        protected: "SELECT"
+    },
 }
