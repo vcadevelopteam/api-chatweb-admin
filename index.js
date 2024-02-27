@@ -74,6 +74,7 @@ app.use('/api/posthistory', require('./routes/posthistory'));
 app.use('/api/rasa', require('./routes/rasa'));
 app.use('/api/report-data', require('./routes/reportdata'));
 app.use('/api/culqidemo', require('./routes/culqidemo'));
+app.use('/api/norkys', require('./routes/norkys'));
 //mobile
 app.use('/api/mobile/auth', require('./routes/mobile/auth'));
 app.use('/api/mobile/ticket', require('./routes/mobile/ticket'));
