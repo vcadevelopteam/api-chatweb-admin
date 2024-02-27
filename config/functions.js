@@ -739,13 +739,13 @@ module.exports = {
     },
 
     UFN_INVENTORY_PAG: {
-        query: "SELECT * FROM inventario.ufn_inventory_pag($corpid, $orgid, $inventoryid, $userid, $where, $order, $take, $skip, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM inventario.ufn_inventory_pag($corpid, $orgid, $inventoryid, $username, $where, $order, $take, $skip, $startdate, $enddate, $offset)",
         module: "",
         protected: "SELECT"
     },
     
     UFN_INVENTORY_TOTALRECORDS: {
-        query: "SELECT * FROM inventario.ufn_inventory_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM inventario.ufn_inventory_totalrecords($corpid, $orgid, $username, $where, $startdate, $enddate, $offset)",
         module: "",
         protected: "SELECT"
     },
