@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    </head>
+    <style>
+        .blue-highlight {
+            color: rgb(12, 124, 197);
+            font-weight: bold;
+            font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+        }
+
+        .general-row {
+            display: flex;
+            font-size: 10px;
+        }
+
+        .general-column-first {
+            padding: 2px;
+            font-size: 8px;
+            width: 100%;
+        }
+
+        .billing-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+
+        .billing-table-header {
+            padding: 2px;
+            text-align: right;
+            width: 50px;
+            max-width: 50px;
+            font-size: 8px;
+            font-weight: bold;
+            font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+        }
+
+        .billing-table-cell-right {
+            font-size: 8px;
+            padding: 2px;
+            text-align: right;
+            font-family: "Times New Roman", Times, serif;
+            width: 50px;
+            max-width: 50px;
+        }
+    </style>
+
+    <body>
+        <div style="width: 90%; margin-left: auto; margin-right: auto; margin-top: 10px; position: relative">
+            <img
+                src="https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/Laraigo-logo-name.svg"
+                width="100px"
+                style="position: absolute; right: 0; top: 20px"
+            />
+            <div style="text-align: center; font-size: 16px" class="blue-highlight"><%= data[0].reporttitle %></div>
+            <div>
+                <div class="blue-highlight general-row" style="margin-top: 16px">
+                    <div class="general-column-first">Nro Pedido: 202020</div>
+                </div>
+            </div>
+            <div style="margin-top: 16px">
+                <table class="billing-table">
+                    <tr style="background-color: rgb(223, 237, 249)">
+                        <th class="billing-table-header">Pedido</th>
+                        <th class="billing-table-header">Monto</th>
+                    </tr>
+                    <% }; %>
+                    <% var totalAmount = data[0].orders.reduce(function (acc, order) { return acc + order.amount; }, 0); %>
+                    <% data[0].orders.forEach(function(element){ %>
+                    <tr>
+                        <td class="billing-table-cell-right"><%= element.code %></td>
+                        <td class="billing-table-cell-right"><%= element.amount %></td>
+                    </tr>
+                    <% }); %>
+                    <tr>
+                        <td class="billing-table-cell-right">.</td>
+                        <td class="billing-table-cell-right"><%= totalAmount %></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </body>
+</html>
