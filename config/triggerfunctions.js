@@ -2,10 +2,9 @@ const logger = require('./winston');
 const sequelize = require('./database');
 const functionsbd = require('./functions');
 const XLSX = require('xlsx');
-const { generatefilter, generateSort, errors, getErrorSeq, getErrorCode, stringToSeconds, secondsToTime } = require('./helpers');
+const { generatefilter, generateSort, errors, getErrorSeq, getErrorCode, stringToSeconds, secondsToTime, getColumnFromKey } = require('./helpers');
 const { QueryTypes } = require('sequelize');
 require('pg').defaults.parseInt8 = true;
-
 const IBM = require('ibm-cos-sdk');
 const AWS = require('aws-sdk');
 
@@ -63,6 +62,7 @@ exports.executesimpletransaction = async (method, data, permissions = false, rep
 
 exports.getCollectionPagination = async (methodcollection, methodcount, data, permissions, _requestid) => {
     try {
+        //data/parameters tendra distinct para el agrupamiento
         let functionMethod = functionsbd[methodcollection];
 
         if (functionMethod && functionsbd[methodcount]) {
@@ -80,12 +80,13 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
             if (data instanceof Object) {
                 data.where = generatefilter(data.filters, data.origin, data.daterange, data.offset);
                 data.order = generateSort(data.sorts, data.origin);
-
+                data.distinct = getColumnFromKey(data.distinct, data.origin, data.offset);
+                
                 const queryCollectionCleaned = querycollection.replace("###WHERE###", data.where || "").replace("###ORDER###", data.order ? " order by " + data.order : "");
                 const queryCountCleaned = querycount.replace("###WHERE###", data.where || "");
-
+                
                 const profiler = logger.child({ ctx: data, _requestid: data._requestid }).startTimer();
-
+                console.log("dataaaa", data)
                 const results = await Promise.all([
                     sequelize.query(queryCollectionCleaned, {
                         type: QueryTypes.SELECT,
