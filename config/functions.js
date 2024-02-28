@@ -3754,6 +3754,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DELIVERYPHOTO_INS: {
+        query: "SELECT * FROM ufn_deliveryphoto_ins($corpid, $orgid, $id, $orderid, $status, $type, $description, $url, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_DELIVERYPHOTO_SEL: {
+        query: "SELECT * FROM ufn_deliveryphoto_sel($corpid, $orgid, $orderid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_ORDERLINE_SEL: {
         query: "SELECT * FROM ufn_orderline_sel($corpid, $orgid, $orderid)",
         module: "",
@@ -3761,6 +3771,11 @@ module.exports = {
     },
     UFN_ORDERHISTORY_SEL: {
         query: "SELECT * FROM ufn_orderhistory_sel($corpid, $orgid, $orderid, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ORDER_UPDATE: {
+        query: "SELECT * FROM ufn_update_order($corpid, $orgid, $orderid, $orderid, $subreasonnondeliveryid, $orderstatus, $username)",
         module: "",
         protected: "SELECT"
     },
