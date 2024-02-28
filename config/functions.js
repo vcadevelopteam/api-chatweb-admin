@@ -4621,6 +4621,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_LISTORDER_SEL: {
+        query: "SELECT * FROM ufn_listorder_sel($corpid, $orgid, $ordersinattention)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_REASONNONDELIVERY_SEL: {
         query: "SELECT * FROM ufn_reasonnondelivery_sel($corpid, $orgid, $id, $all)",
         module: "",
