@@ -4221,7 +4221,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORDER_UPDATE: {
-        query: "SELECT * FROM ufn_update_order($corpid, $orgid, $orderid, $orderid, $subreasonnondeliveryid, $orderstatus, $username)",
+        query: "SELECT * FROM ufn_update_order($corpid, $orgid, $orderid, $subreasonnondeliveryid, $orderstatus, $username)",
         module: "",
         protected: "SELECT"
     },
