@@ -429,12 +429,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_PRODUCTIVITY_SEL: {
-        query: "SELECT * FROM ufn_report_productivity_sel($corpid , $orgid, $take, $skip, $where, $order, $channel,$userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_productivity_sel($corpid , $orgid, $take, $skip, $where, $order, $channel,$userid, $startdate, $enddate, $offset, $distinct)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_PRODUCTIVITY_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_productivity_totalrecords($corpid , $orgid, $where, $channel, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_productivity_totalrecords($corpid , $orgid, $where, $channel, $userid, $startdate, $enddate, $offset, $distinct)",
         module: "/reports",
         protected: "SELECT"
     },

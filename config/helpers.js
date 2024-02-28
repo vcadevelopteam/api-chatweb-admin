@@ -268,6 +268,11 @@ exports.generateSort = (sorts, origin) => {
     return order;
 }
 
+exports.getColumnFromKey = (accessor, origin, offset) => {
+    if (!accessor) return '';
+    return columnsFunction[origin][accessor].column.replace(/###OFFSET###/gi, offset.toString());
+}
+
 exports.setSessionParameters = (parameters, user, id) => {
     if (id)
         parameters._requestid = id;
