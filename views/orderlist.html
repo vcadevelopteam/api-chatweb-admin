@@ -68,7 +68,6 @@
                         <th class="billing-table-header">Pedido</th>
                         <th class="billing-table-header">Monto</th>
                     </tr>
-                    <% }; %>
                     <% var totalAmount = data[0].orders.reduce(function (acc, order) { return acc + order.amount; }, 0); %>
                     <% data[0].orders.forEach(function(element){ %>
                     <tr>
