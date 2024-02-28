@@ -50,48 +50,48 @@ function transformKMLtoJSON(kmlObject) {
     const newFeatures = [];
 
     if (kmlObject.kml && kmlObject.kml.Document && kmlObject.kml.Document[0] && kmlObject.kml.Document[0].Folder) {
-    const folders = kmlObject.kml.Document[0].Folder;
+        const folders = kmlObject.kml.Document[0].Folder;
 
-    folders.forEach((folder, folderIndex) => {
-        const folderName = folder.name && folder.name[0];
-        const placemarks = folder.Placemark;
+        folders.forEach((folder, folderIndex) => {
+            const folderName = folder.name && folder.name[0];
+            const placemarks = folder.Placemark;
 
-        if (folderName && placemarks) {
-        placemarks.forEach((placemark, index) => {
-            const nombre = placemark.name && placemark.name[0];
-    
-            const coordinates = placemark.Polygon && placemark.Polygon[0].outerBoundaryIs[0].LinearRing[0].coordinates[0];
+            if (folderName && placemarks) {
+                placemarks.forEach((placemark, index) => {
+                    const nombre = placemark.name && placemark.name[0];
+                    const coordinates = placemark.Polygon && placemark.Polygon[0].outerBoundaryIs[0].LinearRing[0].coordinates[0];
 
-            console.log('Folder:', folderName);
-            console.log('Nombre:', nombre);
-            console.log('Coordinates:', coordinates);
-            
-            if (nombre == 'ZONA ROJA - Santa Anita 2'){
-                const x = 2
-            }
-            if (nombre && coordinates) {
-            const coordenadas = coordinates.split(' ').map(formatCoordinate).filter(coord => coord !== null);  
+                    console.log('Folder:', folderName);
+                    console.log('Nombre:', nombre);
+                    console.log('Coordinates:', coordinates);
 
-            const horario = findSchedule(nombre);
+                    if (nombre == 'ZONA ROJA - Santa Anita 2') {
+                        const x = 2
+                    }
+                    if (nombre && coordinates) {
+                        const storeid = findStoreId(nombre);  
+                        const coordenadas = coordinates.split(' ').map(formatCoordinate).filter(coord => coord !== null);
 
-            const newJSON = {
-                id: 0, 
-                name: nombre,
-                schedule: horario,
-                polygons: coordenadas,
-                operation: 'INSERT'
-            };
+                        const horario = findSchedule(nombre);
 
-            newFeatures.push(newJSON);
+                        const newJSON = {
+                            id: 0,
+                            name: nombre,
+                            storeid: storeid,  
+                            schedule: horario,
+                            polygons: coordenadas,
+                            operation: 'INSERT'
+                        };
+
+                        newFeatures.push(newJSON);
+                    }
+                });
             }
         });
-        }
-    });
     }
     console.log('Nuevo JSON:', newFeatures);
     return newFeatures;
 }
-
 
 function removeAccents(str) {
     if (!str) {
@@ -505,6 +505,61 @@ function findSchedule(nombre) {
     return bestSchedule || {};
 }
 
+function findStoreId(nombre) {
+    const storeData = {
+        "REPARTO METRO VENEZUELA": 110,
+        "REPARTO FAUCETT": 44,       
+        "ZONA ROJA METRO VENEZUELA": 110,
+        "ZONA ROJA FAUCETT": 44,
+	    "REPARTO AVIACIÓN 24": 1,
+        "REPARTO AVIACIÓN 29": 15,
+        "REPARTO SALAVERRY": 22,
+        "REPARTO BELLAVISTA REST": 0,
+        "REPARTO GARZON": 45,
+        "REPARTO HUANDOY": 56,
+        "REPARTO COLONIAL 2": 64,
+        "REPARTO PRO": 78,
+        "REPARTO MÉXICO 1": 80,
+        "REPARTO LINCE": 89,
+        "REPARTO MARINA 17": 91,
+        "REPARTO MARINA 26": 93,
+        "REPARTO MEGA PLAZA 2": 99,
+        "REPARTO MAGDALENA": 101,
+        "REPARTO LA MOLINA": 106,
+ 	    "REPARTO OLIVOS": 113,
+        "REPARTO PUENTE PIEDRA 1": 122,
+        "REPARTO VILLA MARIA": 126,
+        "REPARTO SUCRE": 129,
+        "REPARTO SANTA ANITA MALL": 137,
+        "REPARTO GAMARRA 3": 139,
+        "REPARTO PERÚ 2": 143,
+        "REPARTO PLAZA CASTILLA": 144,
+        "REPARTO JESÚS MARÍA": 154,
+        "REPARTO VITARTE 2": 164,
+        "REPARTO ABANCAY 2": 167,
+        "REPARTO ZARATE 1": 169,
+        "REPARTO SANTA ANITA 2": 210,
+        "REPARTO PANAMA": 103,
+        "ZONA ROJA PERU 2": 143,
+  	    "ZONA ROJA COLONIAL 2": 64,
+        "ZONA ROJA MEXICO 1": 80,
+        "ZONA ROJA ABANCAY 2": 167,    
+        "ZONA ROJA SANTA ANITA 2": 210,
+        "ZONA ROJA VITARTE 2": 164,
+        "ZONA ROJA MALL SANTA ANITA": 137,
+        "ZONA ROJA LA MOLINA": 106,
+        "ZONA ROJA PANAMA": 103, 
+    };
+
+    const lowerCaseName = removeAccents(nombre.toLowerCase());
+    for (const storeName in storeData) {
+        if (lowerCaseName.includes(storeName.toLowerCase())) {
+            return storeData[storeName];
+        }
+    }
+    return null;  
+}
+
 exports.polygonsinsertmassive = async (req, res) => {
     try {       
         const {corpid, orgid, username} = req.body;
@@ -525,7 +580,6 @@ exports.polygonsinsertmassive = async (req, res) => {
         return res.status(500).json({ error: 'Error en el servidor' });
     }
 }
-
 
 function isInsideSchedule(polygons, currentDateTime) {
     moment.tz.setDefault('America/Lima');
@@ -557,16 +611,19 @@ exports.findcoordinateinpolygons = async (req, res) => {
     try {
         const { corpid, orgid, latitude, longitude, order_datetime } = req.body;
         const currentDateTime = order_datetime
-        ? moment(order_datetime).tz('America/Lima')
-        : moment().tz('America/Lima');
+            ? moment(order_datetime).tz('America/Lima')
+            : moment().tz('America/Lima');
         const result = await executesimpletransaction("SEARCH_POINT_ON_AREAS", { corpid, orgid, latitude, longitude });
         const modifiedResult = result.map((polygon) => {
             let modifiedName = polygon.name;
             if (modifiedName.toLowerCase().includes('zona roja - ')) {
                 modifiedName = modifiedName.replace(/zona roja - /i, 'Reparto ');
-            }            
+            }
+
+            const storeid = findStoreId(modifiedName);
             return {
                 polygonsid: polygon.polygonsid,
+                storeid: storeid,
                 name: modifiedName,
                 schedule: polygon.schedule,
             };
