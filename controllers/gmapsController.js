@@ -327,7 +327,7 @@ function findSchedule(nombre) {
             saturday: "12:00-20:00",
             sunday: "12:00-17:30"
         },
-        "REPARTO PERÚ 2": {
+        "REPARTO PERU 2": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -532,15 +532,15 @@ function findStoreId(nombre) {
         "REPARTO SUCRE": 129,
         "REPARTO SANTA ANITA MALL": 137,
         "REPARTO GAMARRA 3": 139,
-        "REPARTO PERÚ 2": 143,
+        "REPARTO PERU 2": 143,
+        "ZONA ROJA PERU 2": 143,
         "REPARTO PLAZA CASTILLA": 144,
         "REPARTO JESÚS MARÍA": 154,
         "REPARTO VITARTE 2": 164,
         "REPARTO ABANCAY 2": 167,
         "REPARTO ZARATE 1": 169,
         "REPARTO SANTA ANITA 2": 210,
-        "REPARTO PANAMA": 103,
-        "ZONA ROJA PERU 2": 143,
+        "REPARTO PANAMA": 103,      
   	    "ZONA ROJA COLONIAL 2": 64,
         "ZONA ROJA MEXICO 1": 80,
         "ZONA ROJA ABANCAY 2": 167,    
@@ -557,7 +557,7 @@ function findStoreId(nombre) {
             return storeData[storeName];
         }
     }
-    return null;  
+    return 0;  
 }
 
 exports.polygonsinsertmassive = async (req, res) => {
