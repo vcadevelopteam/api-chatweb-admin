@@ -380,12 +380,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_TIPIFICATION_SEL: {
-        query: "SELECT * FROM ufn_report_tipification_sel($corpid , $orgid, $take, $skip, $where, $order, $channel, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_tipification_sel($corpid , $orgid, $take, $skip, $where, $order, $channel, $userid, $startdate, $enddate, $offset, $distinct)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_TIPIFICATION_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_tipification_totalrecords($corpid , $orgid, $where, $channel, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_tipification_totalrecords($corpid , $orgid, $where, $channel, $userid, $startdate, $enddate, $offset, $distinct)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -400,12 +400,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_INTERACTION_SEL: {
-        query: "SELECT * FROM ufn_report_interaction_sel($corpid , $orgid, $take, $skip, $where, $order, $channel, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_interaction_sel($corpid , $orgid, $take, $skip, $where, $order, $channel, $userid, $startdate, $enddate, $offset, $distinct)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_INTERACTION_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_interaction_totalrecords($corpid , $orgid, $where, $channel, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_interaction_totalrecords($corpid , $orgid, $where, $channel, $userid, $startdate, $enddate, $offset, $distinct)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -420,7 +420,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_PRODUCTIVITY_SEL: {
-        query: "SELECT * FROM ufn_report_productivity_sel($corpid , $orgid, $take, $skip, $where, $order, $channel,$userid, $startdate, $enddate, $offset, $distinct)",
+        query: "SELECT * FROM ufn_report_productivity_sel($corpid, $orgid, $take, $skip, $where, $order, $channel, $userid, $startdate, $enddate, $offset, $distinct)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -440,12 +440,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_USERPRODUCTIVITYHOURS_SEL: {
-        query: "SELECT * FROM ufn_report_userproductivityhours_sel($corpid , $orgid, $startdate, $enddate, $channel, $hours, $asesorid, $take, $skip, $where, $order, $userid, $offset)",
+        query: "SELECT * FROM ufn_report_userproductivityhours_sel($corpid , $orgid, $startdate, $enddate, $channel, $hours, $asesorid, $take, $skip, $where, $order, $userid, $offset, $distinct)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_USERPRODUCTIVITYHOURS_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_userproductivityhours_totalrecords($corpid , $orgid, $startdate, $enddate, $channel, $hours, $asesorid, $where, $userid, $offset)",
+        query: "SELECT * FROM ufn_report_userproductivityhours_totalrecords($corpid , $orgid, $startdate, $enddate, $channel, $hours, $asesorid, $where, $userid, $offset, $distinct)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -1435,12 +1435,12 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CAMPAIGNREPORT_SEL: {
-        query: "SELECT * FROM ufn_campaign_report_sel($corpid, $orgid, $startdate, $enddate, $channeltype, $where, $order, $skip, $take, $userid, $offset)",
+        query: "SELECT * FROM ufn_campaign_report_sel($corpid, $orgid, $startdate, $enddate, $channeltype, $where, $order, $skip, $take, $userid, $offset, $distinct)",
         module: ["/reports", "/extras/campaign"],
         protected: "SELECT"
     },
     UFN_CAMPAIGNREPORT_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_campaign_report_totalrecords($corpid, $orgid, $startdate, $enddate, $channeltype, $where, $userid, $offset)",
+        query: "SELECT * FROM ufn_campaign_report_totalrecords($corpid, $orgid, $startdate, $enddate, $channeltype, $where, $userid, $offset, $distinct)",
         module: ["/reports", "/extras/campaign"],
         protected: "SELECT"
     },
@@ -3236,12 +3236,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_REQUESTSD_SEL: {
-        query: "SELECT * FROM ufn_report_requestsd_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $channeltype, $company, $offset)",
+        query: "SELECT * FROM ufn_report_requestsd_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $channeltype, $company, $offset, $distinct)",
         module: ["/reports"],
         protected: "SELECT"
     },
     UFN_REPORT_REQUESTSD_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_requestsd_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $channeltype, $company, $offset)",
+        query: "SELECT * FROM ufn_report_requestsd_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $channeltype, $company, $offset, $distinct)",
         module: ["/reports"],
         protected: "SELECT"
     },
