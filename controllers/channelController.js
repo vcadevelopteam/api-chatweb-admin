@@ -2178,7 +2178,7 @@ exports.insertChannel = async (request, response) => {
                         "ACTIVO",
                         request?.user?.usr,
                         `${hookEndpoint}twitter/webhookasync`,
-                        1,
+                        request.body.type === "TWITTER" ? 1 : 5,
                     );
 
                     const transactionCreateTwitter = await triggerfunctions.executesimpletransaction(
