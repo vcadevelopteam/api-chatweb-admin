@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    </head>
+    <style>
+        .title {
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: bold;
+        }
+    </style>
+
+    <body>
+        <div style="width: 90%; margin-left: auto; margin-right: auto; margin-top: 10px; position: relative">
+            <div style="margin-top: 30px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <th style="width: 50%;">
+                            <img
+                                src="https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/Laraigo-logo-name.svg"
+                                width="200px"
+                            />
+                        </th>
+                        <th style="width: 50%; text-align: center;">
+                            <div style="border: 1px solid rgb(97, 97, 97); border-radius: 15px; background-color: rgb(218, 218, 218); padding: 30px;">
+                                <div class="title">R.U.C. Nº <%= data[0].ruc %></div>
+                                <div class="title"><%= data[0].reporttitle %></div>
+                                <div class="title"><%= data[0].ordernumber %></div>
+                            </div>
+                        </th>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </body>
+</html>
