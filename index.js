@@ -21,9 +21,16 @@ app.use(morganMiddleware);
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) === -1) {
-            const msg = 'The CORS policy for this site does not ' +
-                'allow access from the specified Origin.';
+        const isAllowed = allowedOrigins.some(allowedOrigin => {
+            if (allowedOrigin === origin) return true;
+            if (allowedOrigin.includes('*')) {
+                const regex = new RegExp("^" + allowedOrigin.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + "$");
+                return regex.test(origin);
+            }
+            return false;
+        });
+        if (!isAllowed) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
             return callback(new Error(msg), false);
         }
         return callback(null, true);
