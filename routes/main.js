@@ -71,8 +71,4 @@ router.post("/managesplit",
     mainController.SplitFirst
 )
 
-router.get("/openDNS",
-    mainController.openDNS
-)
-
 module.exports = router;

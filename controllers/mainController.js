@@ -5,9 +5,7 @@ const { setSessionParameters, getErrorCode, axiosObservable } = require('../conf
 const { Pool } = require('pg')
 const Cursor = require('pg-cursor')
 const { processCursor } = require("../config/pg-cursor");
-const axios = require('axios')
-const FormData = require('form-data');
-const qs = require('qs');
+
 
 exports.GetCollection = async (req, res) => {
     let parameters = req.body.parameters || req.body.data || {};
@@ -270,97 +268,4 @@ exports.exportWithCursor = async (req, res) => {
     } catch (exception) {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
-}
-
-const iamToken = async () => {
-    try {
-        let data = qs.stringify({
-            'apikey': 'XCtIfNU00Dg-sd3Fk1Cj7I0rg9AxkFxzDL505ljpuD6A',
-            'response_type': 'cloud_iam',
-            'grant_type': 'urn:ibm:params:oauth:grant-type:apikey'
-        });
-
-        const res = await axios.post("https://iam.cloud.ibm.com/oidc/token", data, {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        });
-
-        return res.data.access_token;
-    } catch (error) {
-        console.log("iamToken", error.response.data)
-        throw error
-    }
-}
-
-const createDNS = async (token) => {
-    try {
-        const url = 'https://api.cis.cloud.ibm.com/v1/crn:v1:bluemix:public:internet-svcs:global:a/61297f27ec46139ff210e5d08fba1502:79ef4817-c0c5-42f7-a281-44bc3d92efa4::/zones/6660d3e54a6085fa5f56240703b93892/dns_records';
-        const data = {
-            name: "sbdtest9",
-            type: "CNAME",
-            content: "test-multidominio-02.s3-web.us-south.cloud-object-storage.appdomain.cloud",
-            proxied: true
-        };
-        const config = {
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        };
-        const res = await axios.post(url, data, config)
-        return res.data;
-
-    } catch (error) {
-        console.log("createDNS", error.response.data)
-        throw error
-    }
-}
-
-const createPageRule = async (token, endpoint, name) => {
-    try {
-        const url = 'https://api.cis.cloud.ibm.com/v1/crn:v1:bluemix:public:internet-svcs:global:a/61297f27ec46139ff210e5d08fba1502:79ef4817-c0c5-42f7-a281-44bc3d92efa4::/zones/6660d3e54a6085fa5f56240703b93892/pagerules';
-        const data = {
-            targets: [
-                {
-                    "target": "url",
-                    "constraint": {
-                        "operator": "matches",
-                        "value": `${name}/*`
-                    }
-                }
-            ],
-            actions: [
-                {
-                    "id": "host_header_override",
-                    "value": endpoint
-                },
-            ],
-            "priority": 1,
-            "status": "active"
-        };
-        console.log("createPageRule", JSON.stringify(data))
-        const config = {
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        };
-        const res = await axios.post(url, data, config)
-        return res.data;
-
-    } catch (error) {
-        console.log("createPageRule", error.response.data)
-        throw error
-    }
-}
-
-
-
-exports.openDNS = async (req, res) => {
-    const token = await iamToken();
-    const DNS = await createDNS(token);
-    const pageRule = await createPageRule(token, DNS.result.content, DNS.result.name);
-
-    return res.json({ error: false, success: true, token, DNS, pageRule });
 }
