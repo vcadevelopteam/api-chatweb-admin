@@ -19,14 +19,14 @@
                         <th style="width: 50%;">
                             <img
                                 src="https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/Laraigo-logo-name.svg"
-                                width="200px"
+                                width="150px"
                             />
                         </th>
                         <th style="width: 50%; text-align: center;">
                             <div style="border: 1px solid rgb(97, 97, 97); border-radius: 9px; background-color: rgb(218, 218, 218); padding: 30px;">
-                                <div class="text" style="font-weight: bold;">R.U.C. Nº <%= data[0].ruc %></div>
-                                <div class="text" style="font-weight: bold;">BOLETA DE VENTA ELECTRÓNICA</div>
-                                <div class="text" style="font-weight: bold;"><%= data[0].ordernumber %></div>
+                                <div class="text" style="font-weight: bold; font-size: 12px;">R.U.C. Nº <%= data[0].ruc %></div>
+                                <div class="text" style="font-weight: bold; font-size: 12px;">BOLETA DE VENTA ELECTRÓNICA</div>
+                                <div class="text" style="font-weight: bold; font-size: 12px;"><%= data[0].ordernumber %></div>
                             </div>
                         </th>
                     </tr>
@@ -34,8 +34,8 @@
                     <tr>
                         <th style="width: 50%; text-align: left;">
                             <div>
-                                <div class="text" style="font-weight: bold; font-size: 15px;"><%= data[0].companyname %></div>
-                                <div class="text" style="font-weight: normal; font-size: 13px;"><%= data[0].address %></div>
+                                <div class="text" style="font-weight: bold; font-size: 12px;"><%= data[0].companyname %></div>
+                                <div class="text" style="font-weight: normal; font-size: 10px;"><%= data[0].address %></div>
                                 <div style="height: 35px;"></div>
                             </div>
                         </th>
@@ -43,16 +43,16 @@
                             <div style="border: 1px solid black; border-radius: 9px; padding: 10px;">
                                 <table style="width: 100%; border-collapse: collapse;">
                                     <tr style="text-align: left;">
-                                        <th class="text" style="font-weight: bold; font-size: 13px; width: 40%;">Fecha de emision</th>
-                                        <th class="text" style="font-weight: normal; font-size: 13px;">: <%= data[0].date %></th>
+                                        <th class="text" style="font-weight: bold; font-size: 10px; width: 40%;">Fecha de emision</th>
+                                        <th class="text" style="font-weight: normal; font-size: 10px;">: <%= data[0].date %></th>
                                     </tr>
                                     <tr style="text-align: left;">
-                                        <th class="text" style="font-weight: bold; font-size: 13px; width: 40%;">Cliente</th>
-                                        <th class="text" style="font-weight: normal; font-size: 13px;">: <%= data[0].client %></th>
+                                        <th class="text" style="font-weight: bold; font-size: 10px; width: 40%;">Cliente</th>
+                                        <th class="text" style="font-weight: normal; font-size: 10px;">: <%= data[0].client %></th>
                                     </tr>
                                     <tr style="text-align: left;">
-                                        <th class="text" style="font-weight: bold; font-size: 13px; width: 40%;">DNI</th>
-                                        <th class="text" style="font-weight: normal; font-size: 13px;">: <%= data[0].docnumber %></th>
+                                        <th class="text" style="font-weight: bold; font-size: 10px; width: 40%;">DNI</th>
+                                        <th class="text" style="font-weight: normal; font-size: 10px;">: <%= data[0].docnumber %></th>
                                     </tr>
                                     <tr style="text-align: left;">
                                         <th class="text" style="font-weight: bold; font-size: 13px; width: 40%;">Dirección</th>
@@ -67,12 +67,12 @@
             <div style="margin-top: 10px;">
                 <table style="width: 100%; border-collapse: collapse;">
                     <tr style="text-align: left; border: 1px solid black;">
-                        <th class="text" style="width: 10%; padding: 8px; font-size: 13px; text-align: right;">Cant.</th>
-                        <th class="text" style="width: 10%; padding: 8px; font-size: 13px; text-align: right;">Unidad</th>
-                        <th class="text" style="width: 20%; padding: 8px; font-size: 13px;">Código</th>
-                        <th class="text" style="width: 40%; padding: 8px; font-size: 13px;">Descripción</th>
-                        <th class="text" style="width: 10%; padding: 8px; font-size: 13px; text-align: right;">P.U.</th>
-                        <th class="text" style="width: 10%; padding: 8px; font-size: 13px; text-align: right;">Total</th>
+                        <th class="text" style="width: 10%; padding: 8px; font-size: 10px; text-align: right;">Cant.</th>
+                        <th class="text" style="width: 10%; padding: 8px; font-size: 10px; text-align: right;">Unidad</th>
+                        <th class="text" style="width: 20%; padding: 8px; font-size: 10px;">Código</th>
+                        <th class="text" style="width: 40%; padding: 8px; font-size: 10px;">Descripción</th>
+                        <th class="text" style="width: 10%; padding: 8px; font-size: 10px; text-align: right;">P.U.</th>
+                        <th class="text" style="width: 10%; padding: 8px; font-size: 10px; text-align: right;">Total</th>
                     </tr>
                     <%
                         var totalSum = 0;
@@ -80,19 +80,19 @@
                             totalSum += element.amount;
                     %>
                         <tr style="text-align: left; border: 1px solid black; border-top: none; border-bottom: none;">
-                            <td class="text" style="width: 10%; padding: 8px; font-weight: normal; font-size: 13px; text-align: right;"><%= element.quantity %></td>
-                            <td class="text" style="width: 10%; padding: 8px; font-weight: normal; font-size: 13px; text-align: right;">Unidad</td>
-                            <td class="text" style="width: 20%; padding: 8px; font-weight: normal; font-size: 13px;"><%= element.productmetaid %></td>
-                            <td class="text" style="width: 40%; padding: 8px; font-weight: normal; font-size: 13px;"><%= element.description %></td>
-                            <td class="text" style="width: 10%; padding: 8px; font-weight: normal; font-size: 13px; text-align: right;"><%= element.unitprice %></td>
-                            <td class="text" style="width: 10%; padding: 8px; font-weight: normal; font-size: 13px; text-align: right;"><%= element.amount %></td>
+                            <td class="text" style="width: 10%; padding: 8px; font-weight: normal; font-size: 10px; text-align: right;"><%= element.quantity %></td>
+                            <td class="text" style="width: 10%; padding: 8px; font-weight: normal; font-size: 10px; text-align: right;">Unidad</td>
+                            <td class="text" style="width: 20%; padding: 8px; font-weight: normal; font-size: 10px;"><%= element.productmetaid %></td>
+                            <td class="text" style="width: 40%; padding: 8px; font-weight: normal; font-size: 10px;"><%= element.description %></td>
+                            <td class="text" style="width: 10%; padding: 8px; font-weight: normal; font-size: 10px; text-align: right;"><%= element.unitprice %></td>
+                            <td class="text" style="width: 10%; padding: 8px; font-weight: normal; font-size: 10px; text-align: right;"><%= element.amount %></td>
                         </tr>
                     <% }); %>
                 </table>
                 <table style="width: 100%; border-collapse: collapse;">
                     <tr style="text-align: left; border: 1px solid black;">
                         <th style="width: 70%;"></th>
-                        <th class="text" style="width: 30%; padding: 8px; font-weight: bold; font-size: 13px; text-align: right;">TOTAL S/ <%= totalSum %></th>
+                        <th class="text" style="width: 30%; padding: 8px; font-weight: bold; font-size: 10px; text-align: right;">TOTAL S/ <%= totalSum.toFixed(2) %></th>
                     </tr>
                 </table>
             </div>
@@ -100,9 +100,9 @@
                 <table style="width: 100%; border-collapse: collapse;">
                     <tr style="text-align: left;">
                         <div style="border: 1px solid black; border-bottom: none; padding: 8px;">
-                            <div class="text" style="font-size: 13px;">IMPORTE EN LETRAS: SETENTA Y CINCO CON 50/100 SOLES</div>
-                            <div class="text" style="font-size: 13px;">VENTA EXONERADA DEL IGV-ISC-IPM. PROHIBIDA LA VENTA FUERA DE LA ZONA COMERCIAL DE TACNA</div>
-                            <div class="text" style="font-size: 13px;">RESUMEN: znGR4myRC2qPokwXgHABgQXKsnM=</div>
+                            <div class="text" style="font-size: 10px;">IMPORTE EN LETRAS: SETENTA Y CINCO CON 50/100 SOLES</div>
+                            <div class="text" style="font-size: 10px;">VENTA EXONERADA DEL IGV-ISC-IPM. PROHIBIDA LA VENTA FUERA DE LA ZONA COMERCIAL DE TACNA</div>
+                            <div class="text" style="font-size: 10px;">RESUMEN: znGR4myRC2qPokwXgHABgQXKsnM=</div>
                         </div>
                     </tr>
                     <tr>
