@@ -55,8 +55,8 @@
                                         <th class="text" style="font-weight: normal; font-size: 10px;">: <%= data[0].docnumber %></th>
                                     </tr>
                                     <tr style="text-align: left;">
-                                        <th class="text" style="font-weight: bold; font-size: 13px; width: 40%;">Dirección</th>
-                                        <th class="text" style="font-weight: normal; font-size: 13px;">: <%= data[0].address %></th>
+                                        <th class="text" style="font-weight: bold; font-size: 10px; width: 40%;">Dirección</th>
+                                        <th class="text" style="font-weight: normal; font-size: 10px;">: <%= data[0].address %></th>
                                     </tr>
                                 </table>
                             </div>
@@ -92,7 +92,24 @@
                 <table style="width: 100%; border-collapse: collapse;">
                     <tr style="text-align: left; border: 1px solid black;">
                         <th style="width: 70%;"></th>
-                        <th class="text" style="width: 30%; padding: 8px; font-weight: bold; font-size: 10px; text-align: right;">TOTAL S/ <%= totalSum.toFixed(2) %></th>
+                        <%
+                            var subtotal = (totalSum / 1.18).toFixed(2);
+                            var igv = (totalSum - subtotal).toFixed(2);
+                        %>
+                        <th class="text" style="width: 17%; padding: 8px; font-size: 10px; text-align: right;">
+                            <div>
+                                <div style="font-weight: normal;">SUBTOTAL</div>
+                                <div style="font-weight: normal;">I.G.V.</div>
+                                <div style="font-weight: bold;">TOTAL</div>
+                            </div>
+                        </th>
+                        <th class="text" style="width: 12%; padding: 8px; font-size: 10px; text-align: right;">
+                            <div>
+                                <div style="font-weight: normal;"><%= subtotal %></div>
+                                <div style="font-weight: normal;"><%= igv %></div>
+                                <div style="font-weight: bold;"><%= totalSum.toFixed(2) %></div>
+                            </div>
+                        </th>
                     </tr>
                 </table>
             </div>
