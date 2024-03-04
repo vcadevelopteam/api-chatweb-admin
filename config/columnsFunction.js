@@ -506,7 +506,7 @@ module.exports = {
             column: "pe.type"
         },
         name: {
-            column: "CONCAT(pe.name, pe.email, pe.phone)",
+            column: "TRIM(pe.name)",
             advance_search: true
         },
         persontype: {
