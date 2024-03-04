@@ -3966,4 +3966,9 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_ORDERLINE_SEL: {
+        query: "SELECT * FROM ufn_orderline_sel($corpid, $orgid, $orderid)",
+        module: "",
+        protected: "SELECT"
+    },
 }

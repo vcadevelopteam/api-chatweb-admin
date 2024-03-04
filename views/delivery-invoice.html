@@ -77,16 +77,15 @@
                     <%
                         var totalSum = 0;
                         data[0].products.forEach(function(element, index){
-                            var subtotal = element.quantity * element.unitprice;
-                            totalSum += subtotal;
+                            totalSum += element.amount;
                     %>
                         <tr style="text-align: left; border: 1px solid black; border-top: none; border-bottom: none;">
                             <td class="text" style="width: 10%; padding: 8px; font-weight: normal; font-size: 13px; text-align: right;"><%= element.quantity %></td>
-                            <td class="text" style="width: 10%; padding: 8px; font-weight: normal; font-size: 13px; text-align: right;"><%= element.unit %></td>
-                            <td class="text" style="width: 20%; padding: 8px; font-weight: normal; font-size: 13px;"><%= element.code %></td>
+                            <td class="text" style="width: 10%; padding: 8px; font-weight: normal; font-size: 13px; text-align: right;">Unidad</td>
+                            <td class="text" style="width: 20%; padding: 8px; font-weight: normal; font-size: 13px;"><%= element.productmetaid %></td>
                             <td class="text" style="width: 40%; padding: 8px; font-weight: normal; font-size: 13px;"><%= element.description %></td>
                             <td class="text" style="width: 10%; padding: 8px; font-weight: normal; font-size: 13px; text-align: right;"><%= element.unitprice %></td>
-                            <td class="text" style="width: 10%; padding: 8px; font-weight: normal; font-size: 13px; text-align: right;"><%= subtotal %></td>
+                            <td class="text" style="width: 10%; padding: 8px; font-weight: normal; font-size: 13px; text-align: right;"><%= element.amount %></td>
                         </tr>
                     <% }); %>
                 </table>
