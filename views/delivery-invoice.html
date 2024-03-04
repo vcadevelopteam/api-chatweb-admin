@@ -25,7 +25,7 @@
                         <th style="width: 50%; text-align: center;">
                             <div style="border: 1px solid rgb(97, 97, 97); border-radius: 9px; background-color: rgb(218, 218, 218); padding: 30px;">
                                 <div class="text" style="font-weight: bold;">R.U.C. Nº <%= data[0].ruc %></div>
-                                <div class="text" style="font-weight: bold;">BOLETA DE VENTA ELECTRÓNICA</div>
+                                <div class="text" style="font-weight: bold;">FACTURA ELECTRÓNICA</div>
                                 <div class="text" style="font-weight: bold;"><%= data[0].ordernumber %></div>
                             </div>
                         </th>
@@ -93,7 +93,24 @@
                 <table style="width: 100%; border-collapse: collapse;">
                     <tr style="text-align: left; border: 1px solid black;">
                         <th style="width: 70%;"></th>
-                        <th class="text" style="width: 30%; padding: 8px; font-weight: bold; font-size: 13px; text-align: right;">TOTAL S/ <%= totalSum %></th>
+                        <%
+                            var subtotal = (totalSum / 1.18).toFixed(2);
+                            var igv = (totalSum - subtotal).toFixed(2);
+                        %>
+                        <th class="text" style="width: 17%; padding: 8px; font-size: 13px; text-align: right;">
+                            <div>
+                                <div style="font-weight: normal;">SUBTOTAL</div>
+                                <div style="font-weight: normal;">I.G.V.</div>
+                                <div style="font-weight: bold;">TOTAL</div>
+                            </div>
+                        </th>
+                        <th class="text" style="width: 12%; padding: 8px; font-size: 13px; text-align: right;">
+                            <div>
+                                <div style="font-weight: normal;"><%= subtotal %></div>
+                                <div style="font-weight: normal;"><%= igv %></div>
+                                <div style="font-weight: bold;"><%= totalSum.toFixed(2) %></div>
+                            </div>
+                        </th>
                     </tr>
                 </table>
             </div>
@@ -101,9 +118,8 @@
                 <table style="width: 100%; border-collapse: collapse;">
                     <tr style="text-align: left;">
                         <div style="border: 1px solid black; border-bottom: none; padding: 8px;">
-                            <div class="text" style="font-size: 13px;">IMPORTE EN LETRAS: SETENTA Y CINCO CON 50/100 SOLES</div>
-                            <div class="text" style="font-size: 13px;">VENTA EXONERADA DEL IGV-ISC-IPM. PROHIBIDA LA VENTA FUERA DE LA ZONA COMERCIAL DE TACNA</div>
-                            <div class="text" style="font-size: 13px;">RESUMEN: znGR4myRC2qPokwXgHABgQXKsnM=</div>
+                            <div class="text" style="font-size: 13px;">IMPORTE EN LETRAS: CIENTO TRES CON 22/100 SOLES</div>
+                            <div class="text" style="font-size: 13px;">RESUMEN: chMIkT6cawosXi8Ln8wmEPtr088=</div>
                         </div>
                     </tr>
                     <tr>
