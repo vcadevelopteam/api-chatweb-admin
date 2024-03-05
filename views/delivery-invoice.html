@@ -116,9 +116,8 @@
             <div style="margin-top: 10px;">
                 <table style="width: 100%; border-collapse: collapse;">
                     <tr style="text-align: left;">
-                        <div style="border: 1px solid black; border-bottom: none; padding: 8px;">
-                            <div class="text" style="font-size: 10px;">IMPORTE EN LETRAS: CIENTO TRES CON 22/100 SOLES</div>
-                            <div class="text" style="font-size: 10px;">RESUMEN: chMIkT6cawosXi8Ln8wmEPtr088=</div>
+                        <div class="text" style="border: 1px solid black; border-bottom: none; padding: 8px; font-size: 10px;">
+                            IMPORTE EN LETRAS: <%= Math.floor(totalSum) %> CON <%= ((totalSum - Math.floor(totalSum)) * 100).toFixed(0).padStart(2, '0') %>/100 SOLES
                         </div>
                     </tr>
                     <tr>
