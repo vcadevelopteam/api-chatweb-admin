@@ -116,10 +116,8 @@
             <div style="margin-top: 10px;">
                 <table style="width: 100%; border-collapse: collapse;">
                     <tr style="text-align: left;">
-                        <div style="border: 1px solid black; border-bottom: none; padding: 8px;">
-                            <div class="text" style="font-size: 10px;">IMPORTE EN LETRAS: <%= convertirNumeroALetras(totalSum.toFixed(2)) %> SOLES</div>
-                            <div class="text" style="font-size: 10px;">VENTA EXONERADA DEL IGV-ISC-IPM. PROHIBIDA LA VENTA FUERA DE LA ZONA COMERCIAL DE TACNA</div>
-                            <div class="text" style="font-size: 10px;">RESUMEN: znGR4myRC2qPokwXgHABgQXKsnM=</div>
+                        <div class="text" style="border: 1px solid black; border-bottom: none; padding: 8px; font-size: 10px;">
+                            IMPORTE EN LETRAS: <%= Math.floor(totalSum) %> CON <%= ((totalSum - Math.floor(totalSum)) * 100).toFixed(0).padStart(2, '0') %>/100 SOLES
                         </div>
                     </tr>
                     <tr>
@@ -134,58 +132,4 @@
             </div>
         </div>
     </body>
-    <script>
-        function convertirNumeroALetras(numero) {
-            const unidades = ['', 'UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
-            const especiales = ['', 'ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE', 'DIECISEIS', 'DIECISIETE', 'DIECIOCHO', 'DIECINUEVE'];
-            const decenas = ['', 'DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
-            const centenas = ['', 'CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
-
-            let letras = '';
-
-            let num = Math.floor(numero);
-            let dec = Math.round((numero - num) * 100);
-
-            if (num === 0) {
-                letras = 'CERO';
-            } else {
-                if (num >= 1000 && num < 2000) {
-                    letras += ' MIL ';
-                    num %= 1000;
-                } else if (num >= 2000 && num < 10000) {
-                    letras += `${unidades[Math.floor(num / 1000)]} MIL `;
-                    num %= 1000;
-                }
-
-                if (num >= 100) {
-                    letras += `${centenas[Math.floor(num / 100)]} `;
-                    num %= 100;
-                }
-
-                if (num >= 20) {
-                    letras += `${decenas[Math.floor(num / 10)]} `;
-                    num %= 10;
-                }
-
-                if (num >= 10 && num <= 19) {
-                    letras += `${especiales[num - 10]} `;
-                    num = 0;
-                }
-
-                if (num > 0) {
-                    letras += `${unidades[num]} `;
-                }
-            }
-
-            if (dec > 0) {
-                letras += `CON ${dec < 10 ? 'CERO' + dec : dec} / 100 `;
-            } else {
-                letras += 'CON 00 / 100 ';
-            }
-
-            letras += 'SOLES';
-
-            return letras.trim();
-        }
-    </script>
 </html>
