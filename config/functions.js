@@ -596,6 +596,11 @@ module.exports = {
         module: ["/corporations"],
         protected: "INSERT"
     },
+    QUERY_GET_INFO_DOMAIN: {
+        query: "select domainname, iconurl, logourl, startlogourl, ispoweredbylaraigo from corp where domainname = $subdomain",
+        module: ["/corporations"],
+        protected: "INSERT"
+    },
     UFN_ORG_SEL: {
         query: "SELECT * FROM ufn_org_sel($corpid , $orgid , $all)",
         module: ["/organizations", "/timesheet", "/invoice", "/extras/properties", "/extras/botdesigner", "/billing_setups"],

@@ -9,4 +9,8 @@ router.post("/",
     corpController.insCorp
 )
 
+router.post("/getinfodomain",
+    corpController.getInfoDomain
+)
+
 module.exports = router;

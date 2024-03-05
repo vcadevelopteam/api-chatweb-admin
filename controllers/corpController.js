@@ -35,3 +35,15 @@ exports.insCorp = async (req, res) => {
     else
         return res.status(result.rescode).json({ ...result, key });
 }
+
+exports.getInfoDomain = async (req, res) => {
+    const { subdomain } = req.body;
+
+    const result = await executesimpletransaction("QUERY_GET_INFO_DOMAIN", { subdomain });
+
+    if (result instanceof Array) {
+        return res.json({ error: false, success: true, data: result });
+    }
+    else
+        return res.status(result.rescode).json({ ...result, key });
+}
