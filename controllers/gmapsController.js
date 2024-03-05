@@ -138,7 +138,7 @@ function findSchedule(nombre) {
             saturday: "12:00-16:00",
             sunday: "12:00-16:00"
         },  
-	    "REPARTO AVIACIÓN 24": {
+	    "REPARTO AVIACION 24": {
             monday: "12:00-22:00",
             tuesday: "12:00-22:00",
             wednesday: "12:00-22:00",
@@ -147,7 +147,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:00",
             sunday: "12:00-22:00"
         },
-        "REPARTO AVIACIÓN 29": {
+        "REPARTO AVIACION 29": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -210,7 +210,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
         },
-        "REPARTO MÉXICO 1": {
+        "REPARTO MEXICO 1": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -345,7 +345,7 @@ function findSchedule(nombre) {
             saturday: "12:00-21:00",
             sunday: "12:00-21:00"
         },
-        "REPARTO JESÚS MARÍA": {
+        "REPARTO JESUS MARIA": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -511,15 +511,15 @@ function findStoreId(nombre) {
         "REPARTO FAUCETT": 44,       
         "ZONA ROJA METRO VENEZUELA": 110,
         "ZONA ROJA FAUCETT": 44,
-	    "REPARTO AVIACIÓN 24": 1,
-        "REPARTO AVIACIÓN 29": 15,
+	    "REPARTO AVIACION 24": 1,
+        "REPARTO AVIACION 29": 15,
         "REPARTO SALAVERRY": 22,
         "REPARTO BELLAVISTA REST": 0,
         "REPARTO GARZON": 45,
         "REPARTO HUANDOY": 56,
         "REPARTO COLONIAL 2": 64,
         "REPARTO PRO": 78,
-        "REPARTO MÉXICO 1": 80,
+        "REPARTO MEXICO 1": 80,
         "REPARTO LINCE": 89,
         "REPARTO MARINA 17": 91,
         "REPARTO MARINA 26": 93,
@@ -535,7 +535,7 @@ function findStoreId(nombre) {
         "REPARTO PERU 2": 143,
         "ZONA ROJA PERU 2": 143,
         "REPARTO PLAZA CASTILLA": 144,
-        "REPARTO JESÚS MARÍA": 154,
+        "REPARTO JESUS MARIA": 154,
         "REPARTO VITARTE 2": 164,
         "REPARTO ABANCAY 2": 167,
         "REPARTO ZARATE 1": 169,
