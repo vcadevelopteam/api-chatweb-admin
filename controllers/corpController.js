@@ -26,18 +26,23 @@ exports.insCorp = async (req, res) => {
                 throw new Error("Error to get iam token")
             }
             const DNS = await createDNS(token, parameters.domainname, req._requestid);
-            // if (DNS.error) {
-            //     throw new Error("Error to insert DNS")
-            // }
             const pageRule = await createPageRule(token, DNS.result.content, DNS.result.name, req._requestid);
-            // if (pageRule.error) {
-            //     throw new Error("Error to insert pageRule")
-            // }
             succesdomain = true;
             await updateDomainRecaptcha(DNS.result.name)
-            console.log("pageRule", pageRule)
         }
         return res.json({ error: false, success: true, data: result, key, succesdomain });
+    }
+    else
+        return res.status(result.rescode).json({ ...result, key });
+}
+
+exports.getInfoDomain = async (req, res) => {
+    const { subdomain } = req.body;
+
+    const result = await executesimpletransaction("QUERY_GET_INFO_DOMAIN", { subdomain });
+
+    if (result instanceof Array) {
+        return res.json({ error: false, success: true, data: result });
     }
     else
         return res.status(result.rescode).json({ ...result, key });
