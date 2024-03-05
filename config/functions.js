@@ -12,7 +12,7 @@ module.exports = {
         LEFT JOIN communicationchannel cc ON cc.corpid = ous.corpid AND cc.communicationchannelid = ANY(string_to_array(ous.channels,',')::BIGINT[]) AND cc.orgid = ous.orgid AND cc.type = 'VOXI' AND cc.status = 'ACTIVO'
         WHERE us.usr = $usr AND ous.bydefault
         AND ous.status <> 'ELIMINADO'
-        GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
+        GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
         LIMIT 1`,
         module: "",
         protected: false
@@ -67,6 +67,15 @@ module.exports = {
         module: "",
         protected: false
     },
+    QUERY_VALIDATE_CUR: {
+        query: `
+        SELECT * from deliveryroutecode drc
+        WHERE drc.userid = $userid and drc.status = 'ACTIVO' and drc.code = $cur
+        LIMIT 10
+        `,
+        module: "/extras/users",
+        protected: "SELECT"
+    },
     QUERY_NEW_GETCHANNELS: {
         query: "SELECT cc.communicationchannelid, cc.description FROM communicationchannel cc WHERE cc.corpid = $corpid AND cc.orgid = $orgid AND cc.type NOT IN ('FORM', 'VOXI', 'FBWA', 'INST') AND cc.status = 'INACTIVO'",
         module: "/extras/users",
@@ -108,7 +117,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORGUSER_INS: {
-        query: "SELECT * FROM ufn_orguser_ins($corpid, $orgid, $p_userid, $rolegroups, $usersupervisor, $bydefault, $labels, $groups, $channels, $status,$type, $defaultsort, $username, $operation, $redirect, $showbots)",
+        query: "SELECT * FROM ufn_orguser_ins($corpid, $orgid, $p_userid, $rolegroups, $usersupervisor, $bydefault, $labels, $groups, $channels, $status,$type, $defaultsort, $username, $operation, $redirect, $storeid, $warehouseid, $showbots)",
         module: "/extras/users",
         protected: "INSERT"
     },
@@ -380,17 +389,17 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_TIPIFICATION_SEL: {
-        query: "SELECT * FROM ufn_report_tipification_sel($corpid , $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_tipification_sel($corpid , $orgid, $take, $skip, $where, $order, $channel, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_TIPIFICATION_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_tipification_totalrecords($corpid , $orgid, $where, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_tipification_totalrecords($corpid , $orgid, $where, $channel, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_TIPIFICATION_EXPORT: {
-        query: "SELECT * FROM ufn_report_tipification_export($corpid , $orgid, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_tipification_export($corpid , $orgid, $where, $order, $channel, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -400,17 +409,17 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_INTERACTION_SEL: {
-        query: "SELECT * FROM ufn_report_interaction_sel($corpid , $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_interaction_sel($corpid , $orgid, $take, $skip, $where, $order, $channel, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_INTERACTION_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_interaction_totalrecords($corpid , $orgid, $where, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_interaction_totalrecords($corpid , $orgid, $where, $channel, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_INTERACTION_EXPORT: {
-        query: "SELECT * FROM ufn_report_interaction_export($corpid , $orgid, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_interaction_export($corpid , $orgid, $where, $order, $channel, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -420,17 +429,17 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_PRODUCTIVITY_SEL: {
-        query: "SELECT * FROM ufn_report_productivity_sel($corpid , $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_productivity_sel($corpid, $orgid, $take, $skip, $where, $order, $channel, $userid, $startdate, $enddate, $offset, $distinct)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_PRODUCTIVITY_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_productivity_totalrecords($corpid , $orgid, $where, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_productivity_totalrecords($corpid , $orgid, $where, $channel, $userid, $startdate, $enddate, $offset, $distinct)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_PRODUCTIVITY_EXPORT: {
-        query: "SELECT * FROM ufn_report_productivity_export($corpid , $orgid, $where, $order, $userid, $startdate, $enddate, $offset)",
+        query: "SELECT * FROM ufn_report_productivity_export($corpid , $orgid, $where, $order, $channel, $userid, $startdate, $enddate, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -1344,7 +1353,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CAMPAIGN_START: {
-        query: "SELECT * FROM ufn_campaign_start($corpid, $orgid, $id, $offset)",
+        query: "SELECT * FROM ufn_campaign_start($corpid, $orgid, $id, $username, $offset)",
         module: ["/extras/campaign"],
         protected: "SELECT"
     },
@@ -1440,12 +1449,12 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_CAMPAIGNREPORT_SEL: {
-        query: "SELECT * FROM ufn_campaign_report_sel($corpid, $orgid, $startdate, $enddate, $where, $order, $skip, $take, $userid, $offset)",
+        query: "SELECT * FROM ufn_campaign_report_sel($corpid, $orgid, $startdate, $enddate, $channeltype, $where, $order, $skip, $take, $userid, $offset)",
         module: ["/reports", "/extras/campaign"],
         protected: "SELECT"
     },
     UFN_CAMPAIGNREPORT_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_campaign_report_totalrecords($corpid, $orgid, $startdate, $enddate, $where, $userid, $offset)",
+        query: "SELECT * FROM ufn_campaign_report_totalrecords($corpid, $orgid, $startdate, $enddate, $channeltype, $where, $userid, $offset)",
         module: ["/reports", "/extras/campaign"],
         protected: "SELECT"
     },
@@ -2723,7 +2732,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEADAUTOMATIZATIONRULES_INS: {
-        query: "SELECT * FROM ufn_leadautomatizationrules_ins($corpid, $orgid, $id, $description, $status, $type, $order, $orderstatus , $columnid, $communicationchannelid, $messagetemplateid, $messagetemplateparameters, $shippingtype, $xdays, $schedule, $tags, $products, $username, $operation)",
+        query: "SELECT * FROM ufn_leadautomatizationrules_ins($corpid, $orgid, $id, $description, $status, $type, $order, $orderstatus , $columnid, $communicationchannelid, $communicationchannelorigin, $messagetemplateid, $messagetemplateparameters, $shippingtype, $xdays, $schedule, $tags, $products, $username, $operation)",
         module: ["/automatizationrules"],
         protected: "INSERT"
     },
@@ -3258,17 +3267,17 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_REQUESTSD_SEL: {
-        query: "SELECT * FROM ufn_report_requestsd_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $company, $offset)",
+        query: "SELECT * FROM ufn_report_requestsd_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $channeltype, $company, $offset)",
         module: ["/reports"],
         protected: "SELECT"
     },
     UFN_REPORT_REQUESTSD_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_requestsd_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $company, $offset)",
+        query: "SELECT * FROM ufn_report_requestsd_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $channeltype, $company, $offset)",
         module: ["/reports"],
         protected: "SELECT"
     },
     UFN_REPORT_REQUESTSD_EXPORT: {
-        query: "SELECT * FROM ufn_report_requestsd_export($corpid, $orgid, $where, $order, $startdate, $enddate, $company, $offset)",
+        query: "SELECT * FROM ufn_report_requestsd_export($corpid, $orgid, $where, $order, $startdate, $enddate, $channeltype, $company, $offset)",
         module: ["/reports"],
         protected: "SELECT"
     },
@@ -4196,6 +4205,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DELIVERYPHOTO_INS: {
+        query: "SELECT * FROM ufn_deliveryphoto_ins($corpid, $orgid, $id, $orderid, $status, $type, $description, $url, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_DELIVERYPHOTO_SEL: {
+        query: "SELECT * FROM ufn_deliveryphoto_sel($corpid, $orgid, $orderid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_ORDERLINE_SEL: {
         query: "SELECT * FROM ufn_orderline_sel($corpid, $orgid, $orderid)",
         module: ["/orders"],
@@ -4204,6 +4223,11 @@ module.exports = {
     UFN_ORDERHISTORY_SEL: {
         query: "SELECT * FROM ufn_orderhistory_sel($corpid, $orgid, $orderid, $offset)",
         module: ["/orders"],
+        protected: "SELECT"
+    },
+    UFN_ORDER_UPDATE: {
+        query: "SELECT * FROM ufn_update_order($corpid, $orgid, $orderid, $subreasonnondeliveryid, $orderstatus, $username)",
+        module: "",
         protected: "SELECT"
     },
     UFN_METACATALOG_CLEAN: {
@@ -4339,7 +4363,7 @@ module.exports = {
         protected: "SELECT"
     },
 
-    UFN_WAREHOUSE_SEL: {
+    UFN_WAREHOUSE_SEL2: {
         query: "SELECT * FROM ufn_warehouse_lst($corpid, $orgid)",
         module: "",
         protected: "SELECT"
@@ -4597,8 +4621,43 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_COMMUNICATIONCHANNEL_LST_TYPEDESC: {
+        query: "SELECT * FROM ufn_communicationchannel_lst_typedesc($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_LISTORDER_SEL: {
         query: "SELECT * FROM ufn_listorder_sel($corpid, $orgid, $ordersinattention)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REASONNONDELIVERY_SEL: {
+        query: "SELECT * FROM ufn_reasonnondelivery_sel($corpid, $orgid, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REASONNONDELIVERY_INS: {
+        query: "SELECT * FROM ufn_reasonnondelivery_ins($corpid, $orgid, $id, $status, $type, $description, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_SUBREASONNONDELIVERY_SEL: {
+        query: "SELECT * FROM ufn_subreasonnondelivery_sel($corpid, $orgid, $reasonnondeliveryid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_SUBREASONNONDELIVERY_INS: {
+        query: "SELECT * FROM ufn_subreasonnondelivery_ins($corpid, $orgid, $id, $reasonnondeliveryid, $status, $type, $description, $statustypified, $username, $operation);",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_REPORT_CONFIGURATION_INS: {
+        query: "SELECT * FROM ufn_report_configuration_ins($corpid, $orgid, $reportname, $configuration, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_REPORT_CONFIGURATION_SEL: {
+        query: "SELECT * FROM ufn_report_configuration_sel($corpid, $orgid, $reportname)",
         module: "",
         protected: "SELECT"
     },
