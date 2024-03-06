@@ -236,11 +236,11 @@ exports.exportWithCursor = async (req, res) => {
         const formatDownload = resultFormatDownload?.[0]?.propertyvalue || "CSV";
 
         const pool = new Pool({
-            user: process.env.DBUSER,
-            host: process.env.DBHOST,
-            database: process.env.DBNAME,
-            password: process.env.DBPASSWORD,
-            port: process.env.DBPORT || "30503",
+            user: process.env.BACKUP_DBUSER || process.env.DBUSER,
+            host: process.env.BACKUP_DBHOST || process.env.DBHOST,
+            database: process.env.BACKUP_DBNAME || process.env.DBNAME,
+            password: process.env.BACKUP_DBPASS ||WORD process.env.DBPASSWORD,
+            port: process.env.BACKUP_DBPORT || process.env.DBPORT || "30503",
             max: 50,
             idleTimeoutMillis: 5000,
             allowExitOnIdle: true,
