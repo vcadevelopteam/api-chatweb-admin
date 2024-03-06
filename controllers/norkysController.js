@@ -4,7 +4,7 @@ const { getErrorCode, errors, axiosObservable } = require("../config/helpers");
 
 exports.SendInfo = async (req, res) => {
     try {
-        const { shopping_order_id, IdTipoPedido, phone, firstname, lastname, address, referencia, IdTipoEmision, TipoEmision, documentnumber, factura_razonsocial, factura_direccionfiscal, factura_ruc, factura_email, observacion, shopping_cart_products, IdTipoPago, Metodo, MontoTotalPagar, IdTarjeta, Tipo, idlocal, NombreLocal } = req.body;
+        const { shopping_order_id, IdTipoPedido, phone, firstname, lastname, address, referencia, IdTipoEmision, TipoEmision, documentnumber, factura_razonsocial, factura_direccionfiscal, factura_ruc, factura_email, observacion, shopping_cart_products, IdTipoPago, Metodo, MontoTotalPagar, MontoPagar, MontoVuelto, Numero, IdTarjeta, Tipo, idlocal, NombreLocal } = req.body;
 
         const newData = {
             "CodigoOrden": shopping_order_id,
@@ -38,10 +38,13 @@ exports.SendInfo = async (req, res) => {
             "Pago": {
                 "IdTipoPago": IdTipoPago,
                 "Metodo": Metodo,
-                "Total": parseFloat(MontoTotalPagar),
+                "TotalOrden": parseFloat(MontoTotalPagar),
+                "TotalPago": `${Metodo}`.toLocaleLowerCase() === "efectivo" ? parseFloat(MontoPagar) : parseFloat(MontoTotalPagar),
+                "Vuelto": `${Metodo}`.toLocaleLowerCase() === "efectivo" ? parseFloat(MontoVuelto) : 0,
                 "Tarjeta": {
-                    "IdTarjeta": IdTarjeta,
-                    "Tipo": Tipo
+                    "IdTarjeta": `${Metodo}`.toLocaleLowerCase() === "efectivo" ? "" : IdTarjeta,
+                    "Tipo": `${Metodo}`.toLocaleLowerCase() === "efectivo" ? "" : Tipo,
+                    "Numero": `${Metodo}`.toLocaleLowerCase() === "online" ? Numero : ""
                 }
             },
             "Restaurante": {
