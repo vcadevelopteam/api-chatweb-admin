@@ -1480,6 +1480,7 @@ const generateIcs = async (requestid, calendarData, params) => {
 
 function getIcalObjectInstance(monthdate, hourstart, eventduration, timezoneoffset, eventname, description, location, eventlink, name, email) {
     try {
+        logger.error('eventBookingController.Collection getIcalObjectInstance')
         const calendar = ical({ name: 'ICal' });
         calendar.method(ICalCalendarMethod.REQUEST);
 
@@ -1487,6 +1488,7 @@ function getIcalObjectInstance(monthdate, hourstart, eventduration, timezoneoffs
         const endTime = new Date(startTime.getTime());
         endTime.setMinutes(endTime.getMinutes() + eventduration);
 
+        logger.error('eventBookingController.Collection getIcalObjectInstance createEvent start')
         calendar.createEvent({
             start: startTime,
             end: endTime,
@@ -1499,6 +1501,7 @@ function getIcalObjectInstance(monthdate, hourstart, eventduration, timezoneoffs
                 email: email || 'laraigo@vcaperu.com'
             },
         });
+        logger.error('eventBookingController.Collection getIcalObjectInstance createEvent end')
         return calendar;
     } catch (error) {
         console.log({ error })
