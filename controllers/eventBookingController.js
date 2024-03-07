@@ -396,12 +396,14 @@ exports.Collection = async (req, res) => {
 
         parameters._requestid = req._requestid;
 
+        logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection executesimpletransaction')
         const result = await executesimpletransaction(method, parameters);
         const newcalendarbookingid = result?.[0]?.calendarbookingid;
         const assignedAgentId = result?.[0]?.agentid;
 
         if (!result.error) {
             if (method === "UFN_CALENDARYBOOKING_INS") {
+                logger.child({ _requestid: req._requestid }).error(`eventBookingController.Collection executesimpletransaction assignedAgentId: ${assignedAgentId}`)
                 if (assignedAgentId) {
                     const agentInformation = await executesimpletransaction("QUERY_CALENDARINTEGRATION_INFO_SEL", { calendarintegrationid: assignedAgentId })
                     agentListMember = {
@@ -413,6 +415,7 @@ exports.Collection = async (req, res) => {
                     }
                 }
 
+                logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection resultCalendar')
                 const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
                 const {
                     messagetemplateid,
@@ -525,6 +528,7 @@ exports.Collection = async (req, res) => {
                 }
 
                 if (["EMAIL", "HSM", "HSMEMAIL"].includes(notificationtype) && !parameters.calendarbookingid) {
+                    logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection notificationtype includes EMAIL')
                     const ics_file = await generateIcs(req._requestid, resultCalendar[0], parameters);
                     if (assignedAgentId) createGoogleEvent(assignedAgentId, newcalendarbookingid, resultCalendar[0], parameters)
 
@@ -567,6 +571,7 @@ exports.Collection = async (req, res) => {
                             req._requestuestid
                         );
                     } else if ("EMAIL" === notificationtype) {
+                        logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection notificationtype EMAIL')
                         await send(
                             {
                                 ...sendmessage,
@@ -582,6 +587,7 @@ exports.Collection = async (req, res) => {
                 }
 
                 //Inicio - Envio de recordatorio - JR
+                logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection reminderData')
                 const reminderData = {
                     corpid: parameters.corpid,
                     orgid: parameters.orgid,
