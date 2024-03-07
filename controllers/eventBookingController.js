@@ -396,7 +396,6 @@ exports.Collection = async (req, res) => {
 
         parameters._requestid = req._requestid;
 
-        logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection executesimpletransaction')
         const result = await executesimpletransaction(method, parameters);
         const newcalendarbookingid = result?.[0]?.calendarbookingid;
         const assignedAgentId = result?.[0]?.agentid;
@@ -415,7 +414,6 @@ exports.Collection = async (req, res) => {
                     }
                 }
 
-                logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection resultCalendar')
                 const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
                 const {
                     messagetemplateid,
@@ -528,13 +526,8 @@ exports.Collection = async (req, res) => {
                 }
 
                 if (["EMAIL", "HSM", "HSMEMAIL"].includes(notificationtype) && !parameters.calendarbookingid) {
-                    logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection notificationtype includes EMAIL')
-                    logger.child({ _requestid: req._requestid }).error(resultCalendar)
-                    logger.child({ _requestid: req._requestid }).error(parameters)
                     const ics_file = await generateIcs(req._requestid, resultCalendar[0], parameters);
-                    logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection ics_file')
                     if (assignedAgentId) createGoogleEvent(assignedAgentId, newcalendarbookingid, resultCalendar[0], parameters)
-                    logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection createGoogleEvent')
 
                     const sendmessage = {
                         corpid: parameters.corpid,
@@ -575,7 +568,6 @@ exports.Collection = async (req, res) => {
                             req._requestuestid
                         );
                     } else if ("EMAIL" === notificationtype) {
-                        logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection notificationtype EMAIL')
                         await send(
                             {
                                 ...sendmessage,
@@ -591,7 +583,6 @@ exports.Collection = async (req, res) => {
                 }
 
                 //Inicio - Envio de recordatorio - JR
-                logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection reminderData')
                 const reminderData = {
                     corpid: parameters.corpid,
                     orgid: parameters.orgid,
@@ -653,7 +644,6 @@ exports.Collection = async (req, res) => {
             return res.json({ error: false, success: true, data: result, key });
         }
         else
-            logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection result.error')
             return res.status(result.rescode).json(({ ...result, key }));
     } catch (exception) {
         logger.child({ _requestid: req._requestid }).error(exception)
@@ -1445,7 +1435,6 @@ exports.cancelEventLaraigo = async (request, response) => {
 
 const generateIcs = async (requestid, calendarData, params) => {
     try {
-        logger.error('eventBookingController.Collection generateIcs')
         const timestamp = Date.now();
         const icalfile = getIcalObjectInstance(
             params?.monthdate,
@@ -1460,19 +1449,13 @@ const generateIcs = async (requestid, calendarData, params) => {
             'laraigo@vcaperu.com'
         )
 
-        logger.error('eventBookingController.Collection generateIcs buffer')
-
         const buffer = Buffer.from(icalfile.toString(), 'utf8');
-        logger.error('eventBookingController.Collection generateIcs buffer contentType')
         const contentType = 'text/plain';
         const key = `${timestamp}/invite.ics`;
 
         const rr = await uploadBufferToCos(requestid, buffer, contentType, key);
-        logger.error('eventBookingController.Collection generateIcs uploadBufferToCos')
-        logger.error(rr)
         return { url: rr.url }
     } catch (error) {
-        logger.error('eventBookingController.Collection generateIcs catch error')
         console.log(error)
         return { url: ''}
     }
@@ -1480,7 +1463,6 @@ const generateIcs = async (requestid, calendarData, params) => {
 
 function getIcalObjectInstance(monthdate, hourstart, eventduration, timezoneoffset, eventname, description, location, eventlink, name, email) {
     try {
-        logger.error('eventBookingController.Collection getIcalObjectInstance')
         const calendar = ical({ name: 'ICal' });
         calendar.method(ICalCalendarMethod.REQUEST);
 
@@ -1488,7 +1470,6 @@ function getIcalObjectInstance(monthdate, hourstart, eventduration, timezoneoffs
         const endTime = new Date(startTime.getTime());
         endTime.setMinutes(endTime.getMinutes() + eventduration);
 
-        logger.error('eventBookingController.Collection getIcalObjectInstance createEvent start')
         calendar.createEvent({
             start: startTime,
             end: endTime,
@@ -1501,7 +1482,6 @@ function getIcalObjectInstance(monthdate, hourstart, eventduration, timezoneoffs
                 email: email || 'laraigo@vcaperu.com'
             },
         });
-        logger.error('eventBookingController.Collection getIcalObjectInstance createEvent end')
         return calendar;
     } catch (error) {
         console.log({ error })
