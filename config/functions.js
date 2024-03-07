@@ -4661,4 +4661,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_UPDATE_ORDERSCHEDULE: {
+        query: "select * from ufn_update_order_schedule($corpid, $orgid, $orderid, $deliveryshift, $deliverydate, $orderstatus, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_UPDATE_ORDERSTATUS: {
+        query: "select * from ufn_update_order_onlystatus($corpid, $orgid, $orderid, $orderstatus, $username)",
+        module: "",
+        protected: "INSERT"
+    },
 }
