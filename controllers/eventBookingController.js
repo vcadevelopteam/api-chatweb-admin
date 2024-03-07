@@ -529,6 +529,8 @@ exports.Collection = async (req, res) => {
 
                 if (["EMAIL", "HSM", "HSMEMAIL"].includes(notificationtype) && !parameters.calendarbookingid) {
                     logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection notificationtype includes EMAIL')
+                    logger.child({ _requestid: req._requestid }).error(resultCalendar)
+                    logger.child({ _requestid: req._requestid }).error(parameters)
                     const ics_file = await generateIcs(req._requestid, resultCalendar[0], parameters);
                     logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection ics_file')
                     if (assignedAgentId) createGoogleEvent(assignedAgentId, newcalendarbookingid, resultCalendar[0], parameters)
@@ -1443,6 +1445,7 @@ exports.cancelEventLaraigo = async (request, response) => {
 
 const generateIcs = async (requestid, calendarData, params) => {
     try {
+        logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection generateIcs')
         const timestamp = Date.now();
         const icalfile = getIcalObjectInstance(
             params?.monthdate,
@@ -1457,11 +1460,16 @@ const generateIcs = async (requestid, calendarData, params) => {
             'laraigo@vcaperu.com'
         )
 
+        logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection generateIcs buffer')
+
         const buffer = Buffer.from(icalfile.toString(), 'utf8');
+        logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection generateIcs buffer contentType')
         const contentType = 'text/plain';
         const key = `${timestamp}/invite.ics`;
 
         const rr = await uploadBufferToCos(requestid, buffer, contentType, key);
+        logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection generateIcs uploadBufferToCos')
+        logger.child({ _requestid: req._requestid }).error(rr)
         return { url: rr.url }
     } catch (error) {
         logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection generateIcs catch error')
