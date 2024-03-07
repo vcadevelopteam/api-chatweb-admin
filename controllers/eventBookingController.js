@@ -492,7 +492,7 @@ exports.Collection = async (req, res) => {
                                         type: "MAIL",
                                         body: reschedulenotificationemail,
                                         hsmtemplateid: rescheduletemplateidemail,
-                                        listmembers: sendmessage.listmembers.concat(agentListMember)
+                                        listmembers: Object.keys(agentListMember).length === 0 ? sendmessage.listmembers : sendmessage.listmembers.concat(agentListMember)
                                     },
                                     req._requestuestid
                                 );
@@ -503,7 +503,7 @@ exports.Collection = async (req, res) => {
                                         type: "MAIL",
                                         body: reschedulenotificationemail,
                                         hsmtemplateid: rescheduletemplateidemail,
-                                        listmembers: sendmessage.listmembers.concat(agentListMember)
+                                        listmembers: Object.keys(agentListMember).length === 0 ? sendmessage.listmembers : sendmessage.listmembers.concat(agentListMember)
                                     },
                                     req._requestuestid
                                 );
@@ -563,7 +563,7 @@ exports.Collection = async (req, res) => {
                                 type: "MAIL",
                                 body: notificationmessageemail,
                                 hsmtemplateid: messagetemplateidemail,
-                                listmembers: Object.keys({}).length === 0 ? sendmessage.listmembers : sendmessage.listmembers.concat(agentListMember)
+                                listmembers: Object.keys(agentListMember).length === 0 ? sendmessage.listmembers : sendmessage.listmembers.concat(agentListMember)
                             },
                             req._requestuestid
                         );
@@ -572,8 +572,7 @@ exports.Collection = async (req, res) => {
                             {
                                 ...sendmessage,
                                 type: "MAIL",
-                                listmembers:
-                                    Object.keys({}).length === 0 ? sendmessage.listmembers : sendmessage.listmembers.concat(agentListMember)
+                                listmembers: Object.keys(agentListMember).length === 0 ? sendmessage.listmembers : sendmessage.listmembers.concat(agentListMember)
                             },
                             req._requestuestid
                         );
