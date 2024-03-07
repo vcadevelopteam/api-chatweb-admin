@@ -3972,7 +3972,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_UPDATE_ORDERSCHEDULE: {
-        query: "select * from ufn_update_order_schedule($corpid, $orgid, $orderid, $deliveryshift, $deliverydate, $orderstatus, $username)",
+        query: "select * from ufn_update_order_schedule($corpid, $orgid, $orderid, $deliveryshift, $scheduledeliverydate, $orderstatus, $username)",
         module: "",
         protected: "INSERT"
     },
