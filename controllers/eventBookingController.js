@@ -530,7 +530,9 @@ exports.Collection = async (req, res) => {
                 if (["EMAIL", "HSM", "HSMEMAIL"].includes(notificationtype) && !parameters.calendarbookingid) {
                     logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection notificationtype includes EMAIL')
                     const ics_file = await generateIcs(req._requestid, resultCalendar[0], parameters);
+                    logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection ics_file')
                     if (assignedAgentId) createGoogleEvent(assignedAgentId, newcalendarbookingid, resultCalendar[0], parameters)
+                    logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection createGoogleEvent')
 
                     const sendmessage = {
                         corpid: parameters.corpid,
@@ -555,7 +557,7 @@ exports.Collection = async (req, res) => {
                         body: notificationmessage,
                         messagetemplateidemail: messagetemplateidemail,
                         notificationmessageemail: notificationmessageemail,
-                        ics_attachment: ics_file.url || ''
+                        ics_attachment: ics_file?.url || ''
                     }
 
                     if ("HSMEMAIL" === notificationtype) {
@@ -1462,7 +1464,9 @@ const generateIcs = async (requestid, calendarData, params) => {
         const rr = await uploadBufferToCos(requestid, buffer, contentType, key);
         return { url: rr.url }
     } catch (error) {
+        logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection generateIcs catch error')
         console.log(error)
+        return { url: ''}
     }
 }
 
