@@ -169,7 +169,7 @@ module.exports = {
             column: "co.agent"
         },
         ticketgroup: {
-            column: "co.usergroup"
+            column: "COALESCE(co.usergroup, '')"
         },
         closetype: {
             column: "co.closetype"
@@ -181,7 +181,7 @@ module.exports = {
             column: "to_char(co.startdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')"
         },
         enddate: {
-            column: "to_char(co.enddate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')"
+            column: "co.enddate"
         },
         endtime: {
             column: "to_char(co.finishdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')"
