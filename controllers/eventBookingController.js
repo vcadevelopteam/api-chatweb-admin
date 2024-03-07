@@ -649,6 +649,7 @@ exports.Collection = async (req, res) => {
             return res.json({ error: false, success: true, data: result, key });
         }
         else
+            logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection result.error')
             return res.status(result.rescode).json(({ ...result, key }));
     } catch (exception) {
         logger.child({ _requestid: req._requestid }).error(exception)
