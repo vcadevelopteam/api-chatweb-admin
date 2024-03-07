@@ -181,7 +181,7 @@ module.exports = {
             column: "to_char(co.startdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')"
         },
         enddate: {
-            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')"
+            column: "to_char(co.enddate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')"
         },
         endtime: {
             column: "to_char(co.finishdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')"
@@ -220,7 +220,7 @@ module.exports = {
             column: "pe.email"
         },
         phone: {
-            column: "pe.phone"
+            column: "co.phone"
         },
         swingingtimes: {
             column: "co.balancetimes"
