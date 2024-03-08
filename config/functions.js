@@ -4647,7 +4647,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_SUBREASONNONDELIVERY_INS: {
-        query: "SELECT * FROM ufn_subreasonnondelivery_ins($corpid, $orgid, $id, $reasonnondeliveryid, $status, $type, $description, $statustypified, $username, $operation);",
+        query: "SELECT * FROM ufn_subreasonnondelivery_ins($corpid, $orgid, $id, $reasonnondeliveryid, $status, $type, $description, $statustypified, $viewappmovil, $username, $operation);",
         module: "",
         protected: "INSERT"
     },
