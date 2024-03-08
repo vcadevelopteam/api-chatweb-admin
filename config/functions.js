@@ -4671,4 +4671,9 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_UPDATE_ORDERNONDELIVERY: {
+        query: "select * from ufn_update_order_nondelivery($corpid, $orgid, $orderid, $subreasonnondeliveryid, $orderstatus, $latitudecarrier, $longitudecarrier, $username)",
+        module: "",
+        protected: "INSERT"
+    },
 }
