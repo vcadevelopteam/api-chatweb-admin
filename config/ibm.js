@@ -88,7 +88,6 @@ exports.createPageRule = async (token, endpoint, name, _requestid) => {
 
         return res.data;
     } catch (exception) {
-        console.log
         return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing createPageRule", _requestid);;
     }
 }

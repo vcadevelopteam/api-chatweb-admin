@@ -606,7 +606,12 @@ module.exports = {
         protected: "INSERT"
     },
     QUERY_GET_INFO_DOMAIN: {
-        query: "select domainname, iconurl, logourl, startlogourl, ispoweredbylaraigo from corp where domainname = $subdomain",
+        query: "select domainname, iconurl, logourl, startlogourl, ispoweredbylaraigo from corp where LOWER(domainname) = LOWER($subdomain)",
+        module: ["/corporations"],
+        protected: "INSERT"
+    },
+    QUERY_GET_UPDATE_DOMAIN: {
+        query: "select domainname from corp where corpid = $corpid",
         module: ["/corporations"],
         protected: "INSERT"
     },
