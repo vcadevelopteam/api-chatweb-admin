@@ -4686,4 +4686,14 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_ORDERSINATTENTION_SEL: {
+        query: "SELECT * FROM ufn_ordersinattention_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ORDERSINSTORE_SEL: {
+        query: "SELECT * FROM ufn_ordersinstore_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
