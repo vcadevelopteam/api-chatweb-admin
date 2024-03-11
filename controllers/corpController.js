@@ -12,13 +12,13 @@ exports.insCorp = async (req, res) => {
     let succesdomain = false;
     const { key } = req.body;
     const method = "UFN_CORP_INS";
-    let triggerDomain = parameters.domainname && parameters.operation === "INSERT";
+    let triggerDomain = parameters.olddomainname !== parameters.domainname;
 
     setSessionParameters(parameters, req.user, req._requestid);
 
     logger.child({ _requestid: req._requestid, ctx: parameters }).info(`${method}: ${parameters.username}`);
     
-    if (parameters.operation !== "INSERT" && parameters.domainname) {
+    if (!triggerDomain && parameters.domainname !== "") {
         const resultDomain = await executesimpletransaction("QUERY_GET_UPDATE_DOMAIN", parameters, req.user.menu || {});
         triggerDomain = !resultDomain[0]?.domainname;
     }
