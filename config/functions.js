@@ -4676,4 +4676,9 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_UPDATE_ORDERCANCELED: {
+        query: "select * from ufn_update_order_canceled($corpid, $orgid, $orderid, $descriptionreason, $orderstatus, $username)",
+        module: "",
+        protected: "INSERT"
+    },
 }
