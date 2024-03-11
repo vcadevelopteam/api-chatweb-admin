@@ -19,8 +19,8 @@ exports.insCorp = async (req, res) => {
     logger.child({ _requestid: req._requestid, ctx: parameters }).info(`${method}: ${parameters.username}`);
     
     if (!triggerDomain && parameters.domainname !== "") {
-        const resultDomain = await executesimpletransaction("QUERY_GET_UPDATE_DOMAIN", parameters, req.user.menu || {});
-        triggerDomain = !resultDomain[0]?.domainname;
+        await executesimpletransaction("QUERY_GET_UPDATE_DOMAIN", parameters, req.user.menu || {});
+        triggerDomain = false;
     }
     const result = await executesimpletransaction(method, parameters, req.user.menu || {});
 
