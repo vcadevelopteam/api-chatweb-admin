@@ -3996,4 +3996,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_ORDERSINSTORE_SEL: {
+        query: "SELECT * FROM ufn_ordersinstore_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
