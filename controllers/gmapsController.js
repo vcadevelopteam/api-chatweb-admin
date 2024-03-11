@@ -246,7 +246,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
         },
-        "REPARTO MEGA PLAZA 2": {
+        "REPARTO MEGA 2": {
             monday: "12:00-22:00",
             tuesday: "12:00-22:00",
             wednesday: "12:00-22:00",
@@ -282,7 +282,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
         },
-        "REPARTO PUENTE PIEDRA 1": {
+        "REPARTO PUENTE 1": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -381,7 +381,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
         },
-        "REPARTO SANTA ANITA 2": {
+        "REPARTO Norky's SANTA ANITA 2": {
             monday: "12:00-21:30",
             tuesday: "12:00-21:30",
             wednesday: "12:00-21:30",
@@ -523,11 +523,11 @@ function findStoreId(nombre) {
         "REPARTO LINCE": 89,
         "REPARTO MARINA 17": 91,
         "REPARTO MARINA 26": 93,
-        "REPARTO MEGA PLAZA 2": 99,
+        "REPARTO MEGA 2": 99,
         "REPARTO MAGDALENA": 101,
         "REPARTO LA MOLINA": 106,
  	    "REPARTO OLIVOS": 113,
-        "REPARTO PUENTE PIEDRA 1": 122,
+        "REPARTO PUENTE 1": 122,
         "REPARTO VILLA MARIA": 126,
         "REPARTO SUCRE": 129,
         "REPARTO SANTA ANITA MALL": 137,
@@ -539,6 +539,7 @@ function findStoreId(nombre) {
         "REPARTO VITARTE 2": 164,
         "REPARTO ABANCAY 2": 167,
         "REPARTO ZARATE 1": 169,
+        "REPARTO Norky's SANTA ANITA 2": 210,
         "REPARTO SANTA ANITA 2": 210,
         "REPARTO PANAMA": 103,      
   	    "ZONA ROJA COLONIAL 2": 64,
