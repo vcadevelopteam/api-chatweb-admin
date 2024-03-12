@@ -94,12 +94,12 @@ exports.routing = async (req, res) => {
 
         const groupedOrders = await Promise.all(Object.values(stores).map(async (store, index) => {
             const config = store[0].deliveryconfiguration[0];
-            config.insuredamount = 40//parseFloat(config.insuredamount);
+            config.insuredamount = parseFloat(config.insuredamount);
             config.capacity = parseFloat(config.capacity);
             const groupedOrders = recursiveCoordinated(true, store, config, [], 0)
-            const ordersGrouped = groupedOrders.filter(x => x).map(group => group.map(order => order.amount))
-            // console.log("ordersGrouped", ordersGrouped)
-            // return ordersGrouped
+            const ordersGrouped = groupedOrders.filter(x => x).map(group => group.map(order => order.orderid))
+            console.log("ordersGrouped", ordersGrouped)
+            // return ordersGrouped;
             const res = await executesimpletransaction("UFN_DELIVERYROUTECODE_INS_ARRAY", { ...parameters, orders: JSON.stringify(ordersGrouped) })
         }))
 
