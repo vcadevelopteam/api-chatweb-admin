@@ -75,15 +75,15 @@ module.exports = {
             column: "co.description3"
         },
     },
-    interaction: {
+    interaction: { 
         ticketnum: {
             column: "co.ticketnum"
         },
         ticketyear: {
-            column: "co.startdate"
+            column: "COALESCE(to_char(co.startdate + $offset * INTERVAL '1hour', 'YYYY'), '')"
         },
         ticketmonth: {
-            column: "co.startdate"
+            column: "COALESCE(to_char(co.startdate + $offset * INTERVAL '1hour', 'MM'), '')"
         },
         ticketdatehour: {
             column: "co.startdate",
