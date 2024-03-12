@@ -111,8 +111,8 @@ module.exports = {
         intent: {
             column: "inter.intent"
         },
-        ticketgroup: {
-            column: "co.usergroup"
+        ticketgroup: {            
+            column: "COALESCE(co.usergroup, '')"
         },
         email: {
             column: "pe.email"
