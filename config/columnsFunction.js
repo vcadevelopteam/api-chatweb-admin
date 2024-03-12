@@ -75,15 +75,15 @@ module.exports = {
             column: "co.description3"
         },
     },
-    interaction: {
+    interaction: { //copio el UFN_REPORT_INTERACTION_SEL en la luptia, le doy buscar, click derecho al ufn y script create
         ticketnum: {
             column: "co.ticketnum"
         },
         ticketyear: {
-            column: "to_char(co.startdate + $offset * INTERVAL '1hour','YYYY')"
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','YYYY')"
         },
         ticketmonth: {
-            column: "to_char(co.startdate + $offset * INTERVAL '1hour','MM')"
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','MM')"
         },
         ticketdatehour: {
             column: "co.startdate",
@@ -111,8 +111,8 @@ module.exports = {
         intent: {
             column: "inter.intent"
         },
-        ticketgroup: {
-            column: "co.usergroup"
+        ticketgroup: {            
+            column: "COALESCE(co.usergroup, '')"
         },
         email: {
             column: "pe.email"
