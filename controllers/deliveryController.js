@@ -25,40 +25,50 @@ function getDistanceBetweenPoints(point1, point2) {
     return d;
 }
 
-const recursiveCoordinated = (listPoint, maxItems, limitGroup, result, positionResult = 0) => {
-    if (listPoint.length > 1 && limitGroup >= result.length) {
-        const ordersSorted = listPoint.map(x => ({ ...x, distance: getDistanceBetweenPoints(listPoint[0], x) })).sort((a, b) => a.distance - b.distance);
-        const resultGroupTmp = [...(result[positionResult] || [ordersSorted[0]]), ordersSorted[1]];
+// const recursiveCoordinated = (listPoint, maxItems, limitGroup, result, positionResult = 0) => {
+//     if (listPoint.length > 1 && limitGroup >= result.length) {
+//         const ordersSorted = listPoint.map(x => ({ ...x, distance: getDistanceBetweenPoints(listPoint[0], x) })).sort((a, b) => a.distance - b.distance);
+//         const resultGroupTmp = [...(result[positionResult] || [ordersSorted[0]]), ordersSorted[1]];
 
-        if (resultGroupTmp.length <= maxItems) {
-            result[positionResult] = resultGroupTmp;
-            return recursiveCoordinated(ordersSorted.slice(1), maxItems, limitGroup, result, positionResult);
-        } else {
-            if (result.length <= limitGroup) {
-                return recursiveCoordinated(ordersSorted.slice(1), maxItems, limitGroup, result, positionResult + 1);
+//         if (resultGroupTmp.length <= maxItems) {
+//             result[positionResult] = resultGroupTmp;
+//             return recursiveCoordinated(ordersSorted.slice(1), maxItems, limitGroup, result, positionResult);
+//         } else {
+//             if (result.length <= limitGroup) {
+//                 return recursiveCoordinated(ordersSorted.slice(1), maxItems, limitGroup, result, positionResult + 1);
+//             }
+//         }
+//     }
+//     return result;
+// }
+const recursiveCoordinated = (init, listPoint, config, result, positionResult = 0) => {
+    if (listPoint.length > 1) {
+        const ordersSorted = listPoint.map(x => ({ ...x, distance: getDistanceBetweenPoints(listPoint[0], x) })).sort((a, b) => a.distance - b.distance);
+
+        let resultGroupTmp = [];
+
+        if (!result[positionResult]) {
+            if (ordersSorted[0].amount <= config.insuredamount) {
+                result[positionResult] = [ordersSorted[0]];
+            } else {
+                return recursiveCoordinated(false, ordersSorted.slice(1), config, result, positionResult + 1);
             }
         }
+
+        resultGroupTmp = [...result[positionResult], ordersSorted[1]];
+        const totalamount = resultGroupTmp.reduce((acc, item) => acc + item.amount, 0);
+        if (totalamount <= config.insuredamount) {
+            result[positionResult] = resultGroupTmp;
+            return recursiveCoordinated(false, ordersSorted.slice(1), config, result, positionResult);
+        } else {
+            return recursiveCoordinated(false, ordersSorted.slice(1), config, result, positionResult + 1);
+        }
+    }
+    else if (listPoint.length === 1 && init) {
+        result[positionResult] = [...(result[positionResult] || []), listPoint[0]]
     }
     return result;
 }
-
-const coordenadas = [
-    { latitude: -12.0453, longitude: -77.0300, city: "Lima" },
-    { latitude: -6.7711, longitude: -79.8563, city: "Chiclayo" },
-    { latitude: -7.1617, longitude: -78.5122, city: "Cajamarca" },
-    { latitude: -12.0976, longitude: -77.0365, city: "Lima" },
-    { latitude: -6.7704, longitude: -79.8375, city: "Chiclayo" },
-    { latitude: -7.1500, longitude: -78.5300, city: "Cajamarca" },
-    { latitude: -12.046374, longitude: -77.042793, city: "Lima" },
-    { latitude: -6.7596, longitude: -79.8323, city: "Chiclayo" },
-    { latitude: -7.1800, longitude: -78.5000, city: "Cajamarca" },
-    { latitude: -12.0560, longitude: -77.0844, city: "Lima" },
-    { latitude: -6.7766, longitude: -79.8443, city: "Chiclayo" },
-    { latitude: -7.1690, longitude: -78.4950, city: "Cajamarca" },
-    { latitude: -12.0259, longitude: -77.0501, city: "Lima" },
-    { latitude: -6.7823, longitude: -79.8445, city: "Chiclayo" },
-    { latitude: -7.1580, longitude: -78.4820, city: "Cajamarca" }
-];
 
 exports.routing = async (req, res) => {
     const { parameters } = req.body;
@@ -73,19 +83,27 @@ exports.routing = async (req, res) => {
             element.latitude = parseFloat(element.latitude);
             element.longitude = parseFloat(element.longitude);
             delete element.coveragearea;
-            delete element.deliveryconfiguration;
+            // delete element.deliveryconfiguration;
             return element
         });
-
+        console.log("orders.length", orders.length)
         const stores = orders.reduce((acc, ordd) => ({
             ...acc,
             [`${ordd.storeid}`]: [...(acc[`${ordd.storeid}`] || []), ordd]
-        }), {})
+        }), {});
 
-        const aa = recursiveCoordinated(coordenadas, 5, 9, [], 0)
+        const groupedOrders = await Promise.all(Object.values(stores).map(async (store, index) => {
+            const config = store[0].deliveryconfiguration[0];
+            config.insuredamount = 40//parseFloat(config.insuredamount);
+            config.capacity = parseFloat(config.capacity);
+            const groupedOrders = recursiveCoordinated(true, store, config, [], 0)
+            const ordersGrouped = groupedOrders.filter(x => x).map(group => group.map(order => order.amount))
+            // console.log("ordersGrouped", ordersGrouped)
+            // return ordersGrouped
+            const res = await executesimpletransaction("UFN_DELIVERYROUTECODE_INS_ARRAY", { ...parameters, orders: JSON.stringify(ordersGrouped) })
+        }))
 
-        // console.log("result", JSON.stringify(orders))
-        return res.json({ aa })
+        return res.json({ groupedOrders })
     } catch (exception) {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }

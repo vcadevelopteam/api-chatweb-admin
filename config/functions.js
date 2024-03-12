@@ -3754,6 +3754,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DELIVERYROUTECODE_INS_ARRAY: {
+        query: "SELECT * FROM ufn_deliveryroutecode_ins_array($corpid, $orgid, $orders, $username)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_DELIVERYCONFIG_PHOTOS_SEL: {
         query: "SELECT * FROM ufn_deliveryconfig_photos_sel($corpid, $orgid)",
         module: "",
