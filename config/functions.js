@@ -606,7 +606,12 @@ module.exports = {
         protected: "INSERT"
     },
     QUERY_GET_INFO_DOMAIN: {
-        query: "select domainname, iconurl, logourl, startlogourl, ispoweredbylaraigo from corp where domainname = $subdomain",
+        query: "select domainname, iconurl, logourl, startlogourl, ispoweredbylaraigo from corp where LOWER(domainname) = LOWER($subdomain)",
+        module: ["/corporations"],
+        protected: "INSERT"
+    },
+    QUERY_GET_UPDATE_DOMAIN: {
+        query: "select domainname from corp where corpid = $corpid",
         module: ["/corporations"],
         protected: "INSERT"
     },
@@ -4675,5 +4680,20 @@ module.exports = {
         query: "select * from ufn_update_order_nondelivery($corpid, $orgid, $orderid, $subreasonnondeliveryid, $orderstatus, $latitudecarrier, $longitudecarrier, $username)",
         module: "",
         protected: "INSERT"
+    },
+    UFN_UPDATE_ORDERCANCELED: {
+        query: "select * from ufn_update_order_canceled($corpid, $orgid, $orderid, $descriptionreason, $orderstatus, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_ORDERSINATTENTION_SEL: {
+        query: "SELECT * FROM ufn_ordersinattention_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ORDERSINSTORE_SEL: {
+        query: "SELECT * FROM ufn_ordersinstore_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
     },
 }
