@@ -3749,6 +3749,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_ORDERS_BY_CONFIGURATION_SEL: {
+        query: "SELECT * FROM ufn_orders_by_configuration_sel($corpid, $orgid, $listorderid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_DELIVERYCONFIG_PHOTOS_SEL: {
         query: "SELECT * FROM ufn_deliveryconfig_photos_sel($corpid, $orgid)",
         module: "",
