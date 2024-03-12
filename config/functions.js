@@ -4011,9 +4011,4 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
-    UFN_ORDERS_BY_CONFIGURATION_SEL: {
-        query: "SELECT * FROM ufn_orders_by_configuration_sel($corpid, $orgid, $listorderid)",
-        module: "",
-        protected: "SELECT"
-    },
 }
