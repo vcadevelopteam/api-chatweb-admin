@@ -75,12 +75,12 @@ module.exports = {
             column: "co.description3"
         },
     },
-    interaction: { //copio el UFN_REPORT_INTERACTION_SEL en la luptia, le doy buscar, click derecho al ufn y script create script
+    interaction: {
         ticketnum: {
             column: "co.ticketnum"
         },
         ticketyear: {
-            column: "to_char(co.startdate + $offset * INTERVAL '1hour','YYYY')"
+            column: "co.startdate"
         },
         ticketmonth: {
             column: "co.startdate"
