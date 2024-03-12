@@ -83,6 +83,7 @@ app.use('/api/report-data', require('./routes/reportdata'));
 app.use('/api/culqidemo', require('./routes/culqidemo'));
 app.use('/api/norkys', require('./routes/norkys'));
 app.use('/api/corp', require('./routes/corp'));
+app.use('/api/delivery', require('./routes/delivery'));
 //mobile
 app.use('/api/mobile/auth', require('./routes/mobile/auth'));
 app.use('/api/mobile/ticket', require('./routes/mobile/ticket'));
