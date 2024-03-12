@@ -99,8 +99,10 @@ exports.routing = async (req, res) => {
             const groupedOrders = recursiveCoordinated(true, store, config, [], 0)
             const ordersGrouped = groupedOrders.filter(x => x).map(group => group.map(order => order.orderid))
             console.log("ordersGrouped", ordersGrouped)
-            // return ordersGrouped;
+            
             const res = await executesimpletransaction("UFN_DELIVERYROUTECODE_INS_ARRAY", { ...parameters, orders: JSON.stringify(ordersGrouped) })
+
+            return ordersGrouped;
         }))
 
         return res.json({ groupedOrders })
