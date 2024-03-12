@@ -80,10 +80,10 @@ module.exports = {
             column: "co.ticketnum"
         },
         ticketyear: {
-            column: "COALESCE(to_char(co.startdate + $offset * INTERVAL '1hour', 'YYYY'), '')"
+            column: "NULLIF(to_char(co.startdate + $offset * INTERVAL '1hour', 'YYYY'), '')"
         },
         ticketmonth: {
-            column: "COALESCE(to_char(co.startdate + $offset * INTERVAL '1hour', 'MM'), '')"
+            column: "NULLIF(to_char(co.startdate + $offset * INTERVAL '1hour', 'MM'), '')"
         },
         ticketdatehour: {
             column: "co.startdate",
