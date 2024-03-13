@@ -3618,7 +3618,7 @@ module.exports = {
         where intt.personid = $personid
         and intt.corpid = $corpid
         and intt.orgid = $orgid
-        and intt.interactiontype IN ('file', 'video') order by intt.createdate desc`,
+        and intt.interactiontype IN ('file', 'video', 'audio') order by intt.createdate desc`,
         module: ["/message_inbox", "/supervisor"],
         protected: "SELECT"
     },
