@@ -32,7 +32,7 @@ module.exports = {
             column: "co.ticketnum"
         },
         datehour: {
-            column: "co.startdate",
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','YYYY-MM-DD')",
             type: "date"
         },
         enddate: {
