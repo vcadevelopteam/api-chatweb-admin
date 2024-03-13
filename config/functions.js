@@ -3982,22 +3982,22 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_UPDATE_ORDERSCHEDULE: {
-        query: "select * from ufn_update_order_schedule($corpid, $orgid, $orderid, $deliveryshift, $scheduledeliverydate, $orderstatus, $username)",
+        query: "select * from ufn_update_order_schedule($corpid, $orgid, $listorderid, $deliveryshift, $scheduledeliverydate, $orderstatus, $username)",
         module: "",
         protected: "INSERT"
     },
     UFN_UPDATE_ORDERSTATUS: {
-        query: "select * from ufn_update_order_onlystatus($corpid, $orgid, $orderid, $orderstatus, $username)",
+        query: "select * from ufn_update_order_onlystatus($corpid, $orgid, $listorderid, $orderstatus, $username)",
         module: "",
         protected: "INSERT"
     },
     UFN_UPDATE_ORDERNONDELIVERY: {
-        query: "select * from ufn_update_order_nondelivery($corpid, $orgid, $orderid, $subreasonnondeliveryid, $orderstatus, $latitudecarrier, $longitudecarrier, $username)",
+        query: "select * from ufn_update_order_nondelivery($corpid, $orgid, $listorderid, $subreasonnondeliveryid, $orderstatus, $latitudecarrier, $longitudecarrier, $username)",
         module: "",
         protected: "INSERT"
     },
     UFN_UPDATE_ORDERCANCELED: {
-        query: "select * from ufn_update_order_canceled($corpid, $orgid, $orderid, $descriptionreason, $orderstatus, $username)",
+        query: "select * from ufn_update_order_canceled($corpid, $orgid, $listorderid, $descriptionreason, $orderstatus, $username)",
         module: "",
         protected: "INSERT"
     },
