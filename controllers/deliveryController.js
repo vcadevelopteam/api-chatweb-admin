@@ -1,13 +1,6 @@
 const { errors, getErrorCode, axiosObservable, setSessionParameters } = require('../config/helpers');
 const { executesimpletransaction } = require('../config/triggerfunctions');
 
-// ufn_orders_by_configuration_sel(
-// 	p_corpid bigint,
-// 	p_orgid bigint,
-// 	p_listorderid text)
-//     RETURNS TABLE (orderid bigint, latitude numeric, longitude numeric, amount double precision,
-// 				   storeid bigint, coveragearea jsonb, deliveryconfiguration json)
-
 function getDistanceBetweenPoints(point1, point2) {
     var radLat1 = Math.PI * point1.latitude / 180;
     var radLat2 = Math.PI * point2.latitude / 180;
@@ -61,11 +54,34 @@ const recursiveCoordinated = (init, listPoint, config, result, positionResult = 
             result[positionResult] = resultGroupTmp;
             return recursiveCoordinated(false, ordersSorted.slice(1), config, result, positionResult);
         } else {
-            return recursiveCoordinated(false, ordersSorted.slice(1), config, result, positionResult + 1);
+            if (ordersSorted.length > 2) {
+                let k = 1;
+                let foundNext = false;
+                while (true) {
+                    k++;
+                    if (k === ordersSorted.length) {
+                        break;
+                    }
+
+                    const posibleamount = [...result[positionResult], ordersSorted[k]].reduce((acc, item) => acc + item.amount, 0);
+                    if (posibleamount <= config.insuredamount) {
+                        foundNext = true;
+                        break;
+                    }
+                }
+                if (foundNext) {
+                    ordersSorted.splice(1, 0, ordersSorted.splice(k, 1)[0]);
+                    result[positionResult] = [...result[positionResult], ordersSorted[1]];
+                    return recursiveCoordinated(false, ordersSorted.slice(1), config, result, positionResult);
+                }
+                return recursiveCoordinated(false, ordersSorted.slice(1), config, result, positionResult + 1);
+            } else {
+                return recursiveCoordinated(false, ordersSorted.slice(1), config, result, positionResult + 1);
+            }
         }
     }
-    else if (listPoint.length === 1 && init) {
-        result[positionResult] = [...(result[positionResult] || []), listPoint[0]]
+    else if (listPoint.length === 1 && !result[positionResult]) {
+        result[positionResult] = [listPoint[0]]
     }
     return result;
 }
@@ -99,9 +115,9 @@ exports.routing = async (req, res) => {
             const groupedOrders = recursiveCoordinated(true, store, config, [], 0)
             const ordersGrouped = groupedOrders.filter(x => x).map(group => group.map(order => order.orderid))
             console.log("ordersGrouped", ordersGrouped)
-            
-            const res = await executesimpletransaction("UFN_DELIVERYROUTECODE_INS_ARRAY", { ...parameters, orders: JSON.stringify(ordersGrouped) })
 
+            const res = await executesimpletransaction("UFN_DELIVERYROUTECODE_INS_ARRAY", { ...parameters, orders: JSON.stringify(ordersGrouped) })
+            
             return ordersGrouped;
         }))
 
@@ -110,4 +126,3 @@ exports.routing = async (req, res) => {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }
-
