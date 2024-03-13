@@ -3,6 +3,9 @@ const ibm = require('ibm-cos-sdk');
 
 const { v4: uuidv4 } = require('uuid');
 const { getErrorCode, axiosObservable, printException } = require('../config/helpers');
+const ffmpeg = require('fluent-ffmpeg');
+const { PassThrough } = require('stream');
+const ffmpegStatic = require('ffmpeg-static');
 
 const logger = require('../config/winston');
 
@@ -19,6 +22,10 @@ const COS_BUCKET_NAME = process.env.COS_FREE_BUCKET;
 
 exports.upload = async (req, res) => {
     try {
+        if (req.file && req.file.mimetype.startsWith('audio/') && req.body.convert) {
+            req.file.buffer = await convertToOgg(req.file.buffer);
+            req.file.originalname = req.file.originalname.replace(/\.[^/.]+$/, '.ogg');
+        }
         const s3 = new ibm.S3(config);
         
         const params = {
@@ -108,4 +115,33 @@ exports.uploadMetadata = async (req, res) => {
     catch (exception) {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
+}
+
+function convertToOgg(buffer) {
+    return new Promise((resolve, reject) => {
+        ffmpeg.setFfmpegPath(ffmpegStatic);
+
+        const inputStream = new PassThrough();
+        inputStream.end(buffer);
+        const outputStream = new PassThrough();
+
+        const chunks = [];
+
+        ffmpeg()
+            .input(inputStream)
+            .outputFormat('mp3')
+            .on('end', () => {
+                console.log('Conversion finished');
+                const convertedBuffer = Buffer.concat(chunks);
+                resolve(convertedBuffer);
+            })
+            .on('error', function (err) {
+                console.error('Error during conversion:', err);
+                reject(err);
+            })
+            .pipe(outputStream)
+            .on('data', (chunk) => {
+                chunks.push(chunk);
+            });
+    });
 }
