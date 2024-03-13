@@ -8,4 +8,8 @@ router.post("/routing",
     deliveryController.routing
 )
 
+router.get("/imaco",
+    deliveryController.imaco
+)
+
 module.exports = router;
