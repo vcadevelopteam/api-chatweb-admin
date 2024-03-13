@@ -24,7 +24,7 @@ exports.upload = async (req, res) => {
     try {
         if (req.file && req.file.mimetype.startsWith('audio/') && req.body.convert) {
             req.file.buffer = await convertToOgg(req.file.buffer);
-            req.file.originalname = req.file.originalname.replace(/\.[^/.]+$/, '.ogg');
+            req.file.originalname = req.file.originalname.replace(/\.[^/.]+$/, '.mp3');
         }
         const s3 = new ibm.S3(config);
         
