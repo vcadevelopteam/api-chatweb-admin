@@ -3226,22 +3226,22 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_ASESOR_VS_TICKET_SEL: {
-        query: "SELECT * FROM ufn_report_asesor_vs_ticket_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $userid, $channel, $offset)",
+        query: "SELECT * FROM ufn_report_asesor_vs_ticket_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $userid, $channel, $offset, $distinct)",
         module: ["/reports"],
         protected: "SELECT"
     },
     UFN_REPORT_ASESOR_VS_TICKET_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_asesor_vs_ticket_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $userid, $channel, $offset)",
+        query: "SELECT * FROM ufn_report_asesor_vs_ticket_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $userid, $channel, $offset, $distinct)",
         module: ["/reports"],
         protected: "SELECT"
     },
     UFN_REPORT_REQUESTSD_SEL: {
-        query: "SELECT * FROM ufn_report_requestsd_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $channeltype, $company, $offset,$distinct)",
+        query: "SELECT * FROM ufn_report_requestsd_sel($corpid, $orgid, $take, $skip, $where, $order, $startdate, $enddate, $channeltype, $company, $offset, $distinct)",
         module: ["/reports"],
         protected: "SELECT"
     },
     UFN_REPORT_REQUESTSD_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_requestsd_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $channeltype, $company, $offset,$distinct)",
+        query: "SELECT * FROM ufn_report_requestsd_totalrecords($corpid, $orgid, $where, $startdate, $enddate, $channeltype, $company, $offset, $distinct)",
         module: ["/reports"],
         protected: "SELECT"
     },
@@ -3341,12 +3341,12 @@ module.exports = {
         protected: "UPDATE"
     },
     UFN_REPORT_VOICECALL_SEL: {
-        query: "SELECT * FROM ufn_report_voicecall_sel($corpid, $orgid, $startdate, $enddate, $take, $skip, $where, $order, $userid, $offset)",
+        query: "SELECT * FROM ufn_report_voicecall_sel($corpid, $orgid, $startdate, $enddate, $take, $skip, $where, $order, $userid, $offset, $distinct)",
         module: ["/reports"],
         protected: "SELECT"
     },
     UFN_REPORT_VOICECALL_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_voicecall_totalrecords($corpid, $orgid, $startdate, $enddate, $where, $userid, $offset)",
+        query: "SELECT * FROM ufn_report_voicecall_totalrecords($corpid, $orgid, $startdate, $enddate, $where, $userid, $offset, $distinct)",
         module: ["/reports"],
         protected: "SELECT"
     },
