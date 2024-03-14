@@ -3257,7 +3257,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_ASESOR_VS_TICKET_EXPORT: {
-        query: "SELECT * FROM ufn_report_asesor_vs_ticket_export($corpid, $orgid, $where, $order, $startdate, $enddate, $userid, $offset)",
+        query: "SELECT * FROM ufn_report_asesor_vs_ticket_export($corpid, $orgid, $where, $order, $startdate, $enddate, $userid, $offset, $channel)",
         module: ["/reports"],
         protected: "SELECT"
     },

@@ -998,7 +998,7 @@ module.exports = {
     },
     voicecall: {
         ticketdate: {
-            column: "to_char(co.startdate + $offset * INTERVAL '1hour','DD/MM/YYYY')"
+            column: "to_char(co.startdate + ' || p_offset || ' * INTERVAL ''1hour'',''DD/MM/YYYY'')"
         },
         tickettime: {
             column: "to_char(co.startdate + p_offset * INTERVAL '1hour','HH24:MI:SS')"
