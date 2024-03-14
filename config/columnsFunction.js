@@ -1451,6 +1451,9 @@ module.exports = {
             column: "ld.resolution_date",
             type: "date"
         },
+        resolution: {
+            column: "ld.resolution_date",           
+        },
     },
     reportcompliancesla: {
         sd_request: {
