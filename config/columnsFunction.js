@@ -816,7 +816,7 @@ module.exports = {
             type: "number"
         },
         executionuserprofile: {
-            column: "select string_agg(description, ',') from 'role' where corpid = 1 and orgid = 1 and roleid = any(string_to_array(caous.rolegroups,',')::bigint[])",
+            column: "select string_agg(description, ',') from role where corpid = 1 and orgid = 1 and roleid = any(string_to_array(caous.rolegroups,',')::bigint[])",
             type: "number"
         },
     },
