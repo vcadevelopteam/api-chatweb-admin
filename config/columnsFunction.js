@@ -815,7 +815,7 @@ module.exports = {
             column: "causr.firstname||' '||causr.lastname",
             type: "number"
         },
-        executingUserProfile: {
+        executionuserprofile: {
             column: "select string_agg(description, ',') from 'role' where corpid = 1 and orgid = 1 and roleid = any(string_to_array(caous.rolegroups,',')::bigint[])",
             type: "number"
         },
