@@ -808,16 +808,13 @@ module.exports = {
             type: "number"
         },        
         executiontype: {
-            column: "ca.executiontype",
-            type: "number"
+            column: "ca.executiontype",           
         },
         executionuser: {
-            column: "causr.firstname||' '||causr.lastname",
-            type: "number"
+            column: "causr.firstname||' '||causr.lastname",           
         },
         executionuserprofile: {
             column: "(select string_agg(description, ',') from role where corpid = 1 and orgid = 1 and roleid = any(string_to_array(caous.rolegroups,',')::bigint[]))",
-            type: "number"
         },
     },
     lead: {
@@ -1327,7 +1324,7 @@ module.exports = {
             column: "cc.description"
         },
         ticketdate: {
-            column: "co.startdate + p_offset * INTERVAL '1hour'",
+            column: "co.startdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY'",
             type: "date"
         },
         tickettime: {
