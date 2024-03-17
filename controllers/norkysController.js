@@ -26,10 +26,10 @@ exports.SendInfo = async (req, res) => {
                 "Ruc": IdTipoEmision === "01" ? factura_ruc : documentnumber
             },
             "Observacion": observacion,
-            "Details": [...shopping_cart_products].map(({ Title, Code, Quantity, Item_price }) => ({
+            "Details": [...shopping_cart_products].map(({ Title, CustomLabel1, Quantity, Item_price }) => ({
                 "Producto": {
                     "Name": Title,
-                    "CodigoProducto": Code
+                    "CodigoProducto": CustomLabel1
                 },
                 "Cantidad": parseInt(Quantity),
                 "PrecioUnitario": parseFloat(Item_price),
