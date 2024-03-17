@@ -459,107 +459,6 @@ exports.deleteChannel = async (request, response) => {
                     }
                 }
 
-            case "TWIT":
-            case "TWMS":
-                if (typeof parameters.servicecredentials !== "undefined" && parameters.servicecredentials) {
-                    let serviceCredentials = JSON.parse(parameters.servicecredentials);
-
-                    let validateParameters = {
-                        _requestid: request._requestid,
-                        communicationchannelsite: serviceCredentials.twitterPageId,
-                        type: parameters.type === "TWIT" ? "TWMS" : "TWIT",
-                    };
-
-                    const transactionValidateTwitter = await triggerfunctions.executesimpletransaction(
-                        "UFN_COMMUNICATIONCHANNELSITE_SEL",
-                        validateParameters
-                    );
-
-                    if (transactionValidateTwitter instanceof Array) {
-                        if (transactionValidateTwitter.length > 0) {
-                            const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(
-                                method,
-                                parameters
-                            );
-
-                            if (transactionDeleteTwitter instanceof Array) {
-                                await channelfunctions.clearHookCache("TwitterService", request._requestid);
-
-                                return response.json({
-                                    success: true,
-                                });
-                            } else {
-                                return response.status(400).json({
-                                    msg: transactionDeleteTwitter.code,
-                                    success: false,
-                                });
-                            }
-                        } else {
-                            const requestDeleteTwitter = await axiosObservable({
-                                _requestid: request._requestid,
-                                method: "post",
-                                url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
-                                data: {
-                                    accessSecret: serviceCredentials.accessSecret,
-                                    accessToken: serviceCredentials.accessToken,
-                                    consumerKey: serviceCredentials.consumerKey,
-                                    consumerSecret: serviceCredentials.consumerSecret,
-                                    developmentEnvironment: serviceCredentials.devEnvironment,
-                                    linkType: "TWITTERREMOVE",
-                                },
-                            });
-
-                            if (requestDeleteTwitter.data.success) {
-                                const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(
-                                    method,
-                                    parameters
-                                );
-
-                                if (transactionDeleteTwitter instanceof Array) {
-                                    await channelfunctions.clearHookCache("TwitterService", request._requestid);
-
-                                    return response.json({
-                                        success: true,
-                                    });
-                                } else {
-                                    return response.status(400).json({
-                                        msg: transactionDeleteTwitter.code,
-                                        success: false,
-                                    });
-                                }
-                            } else {
-                                return response.status(400).json({
-                                    msg: requestDeleteTwitter.data.operationMessage,
-                                    success: false,
-                                });
-                            }
-                        }
-                    } else {
-                        return response.status(400).json({
-                            msg: transactionValidateTwitter.code,
-                            success: false,
-                        });
-                    }
-                } else {
-                    const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(
-                        method,
-                        parameters
-                    );
-
-                    if (transactionDeleteTwitter instanceof Array) {
-                        await channelfunctions.clearHookCache("TwitterService", request._requestid);
-
-                        return response.json({
-                            success: true,
-                        });
-                    } else {
-                        return response.status(400).json({
-                            msg: transactionDeleteTwitter.code,
-                            success: false,
-                        });
-                    }
-                }
-
             case "WHAD":
                 if (typeof parameters.servicecredentials !== "undefined" && parameters.servicecredentials) {
                     let serviceCredentials = JSON.parse(parameters.servicecredentials);
@@ -2095,10 +1994,6 @@ exports.insertChannel = async (request, response) => {
                     parameters.status = "PENDIENTE";
 
                     switch (request.body.type) {
-                        case "LINKEDIN":
-                            parameters.type = "LNKD";
-                            break;
-
                         case "MICROSOFTTEAMS":
                             parameters.type = "TEAM";
                             break;
@@ -2239,26 +2134,23 @@ exports.insertChannel = async (request, response) => {
                     method: "post",
                     url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
                     data: {
-                        accessSecret: service.accesssecret,
-                        accessToken: service.accesstoken,
-                        consumerKey: service.consumerkey,
-                        consumerSecret: service.consumersecret,
-                        developmentEnvironment: service.devenvironment,
-                        linkType: "GETPAGEID",
+                        accesstoken: service.accesstoken || null,
+                        code: service.code || null,
+                        linkType: service.code ? "EXCHANGECODE" : "GETUSERID",
                     },
                 });
 
                 if (requestPageTwitter.data.success) {
                     let serviceCredentials = {
-                        accessSecret: service.accesssecret,
-                        accessToken: service.accesstoken,
-                        consumerKey: service.consumerkey,
-                        consumerSecret: service.consumersecret,
-                        devEnvironment: service.devenvironment,
-                        twitterPageId: requestPageTwitter.data.pageId,
+                        accessToken: (service.code ? requestPageTwitter.data.accessToken : service.accesstoken) || null,
+                        clientId: requestPageTwitter.data.clientId,
+                        clientSecret: requestPageTwitter.data.clientSecret,
+                        code: service.code || null,
+                        refreshToken: (service.code ? requestPageTwitter.data.refreshToken : service.refreshtoken) || null,
+                        userId: requestPageTwitter.data.userId,
                     };
 
-                    parameters.communicationchannelsite = requestPageTwitter.data.pageId;
+                    parameters.communicationchannelsite = requestPageTwitter.data.userId;
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
 
                     if (request.body.type === "TWITTER") {
@@ -2267,56 +2159,38 @@ exports.insertChannel = async (request, response) => {
                         parameters.type = "TWMS";
                     }
 
+                    await channelfunctions.serviceTokenUpdate(
+                        requestPageTwitter.data.userId,
+                        (service.code ? requestPageTwitter.data.accessToken : service.accesstoken) || "",
+                        (service.code ? requestPageTwitter.data.refreshToken : service.refreshtoken) || "",
+                        JSON.stringify(serviceCredentials),
+                        "TWITTER",
+                        "ACTIVO",
+                        request?.user?.usr,
+                        50,
+                    );
+
+                    await channelfunctions.serviceSubscriptionUpdate(
+                        requestPageTwitter.data.userId,
+                        requestPageTwitter.data.userId,
+                        JSON.stringify(serviceCredentials),
+                        request.body.type === "TWITTER" ? "TWITTER-WALL" : "TWITTER-MESSENGER",
+                        "ACTIVO",
+                        request?.user?.usr,
+                        `${hookEndpoint}twitter/webhookasync`,
+                        request.body.type === "TWITTER" ? 1 : 3,
+                    );
+
                     const transactionCreateTwitter = await triggerfunctions.executesimpletransaction(
                         method,
                         parameters
                     );
 
                     if (transactionCreateTwitter instanceof Array) {
-                        const requestCreateTwitter = await axiosObservable({
-                            _requestid: request._requestid,
-                            method: "post",
-                            url: `${bridgeEndpoint}processlaraigo/twitter/managetwitterlink`,
-                            data: {
-                                accessSecret: service.accesssecret,
-                                accessToken: service.accesstoken,
-                                consumerKey: service.consumerkey,
-                                consumerSecret: service.consumersecret,
-                                developmentEnvironment: service.devenvironment,
-                                linkType: "TWITTERADD",
-                                pageId: requestPageTwitter.data.pageId,
-                            },
+                        return response.json({
+                            result: transactionCreateTwitter[0],
+                            success: true,
                         });
-
-                        if (requestCreateTwitter.data.success) {
-                            await channelfunctions.clearHookCache("TwitterService", request._requestid);
-
-                            return response.json({
-                                success: true,
-                                result: transactionCreateTwitter[0]
-                            });
-                        } else {
-                            parameters.id = transactionCreateTwitter[0].ufn_communicationchannel_ins;
-                            parameters.motive = "Delete from API";
-                            parameters.operation = "DELETE";
-
-                            const transactionDeleteTwitter = await triggerfunctions.executesimpletransaction(
-                                method,
-                                parameters
-                            );
-
-                            if (transactionDeleteTwitter instanceof Array) {
-                                return response.status(400).json({
-                                    msg: requestCreateTwitter.data.operationMessage,
-                                    success: false,
-                                });
-                            } else {
-                                return response.status(400).json({
-                                    msg: transactionDeleteTwitter.code,
-                                    success: false,
-                                });
-                            }
-                        }
                     } else {
                         return response.status(400).json({
                             msg: transactionCreateTwitter.code,

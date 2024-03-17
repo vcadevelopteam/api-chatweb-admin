@@ -75,15 +75,15 @@ module.exports = {
             column: "co.description3"
         },
     },
-    interaction: {
+    interaction: { //copio el UFN_REPORT_INTERACTION_SEL en la luptia, le doy buscar, click derecho al ufn y script create
         ticketnum: {
             column: "co.ticketnum"
         },
         ticketyear: {
-            column: "to_char(co.startdate + $offset * INTERVAL '1hour','YYYY')"
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','YYYY')"
         },
         ticketmonth: {
-            column: "to_char(co.startdate + $offset * INTERVAL '1hour','MM')"
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','MM')"
         },
         ticketdatehour: {
             column: "co.startdate",
@@ -111,8 +111,8 @@ module.exports = {
         intent: {
             column: "inter.intent"
         },
-        ticketgroup: {
-            column: "co.usergroup"
+        ticketgroup: {            
+            column: "COALESCE(co.usergroup, '')"
         },
         email: {
             column: "pe.email"
@@ -506,7 +506,7 @@ module.exports = {
             column: "pe.type"
         },
         name: {
-            column: "CONCAT(pe.name, pe.email, pe.phone)",
+            column: "TRIM(pe.name)",
             advance_search: true
         },
         persontype: {
@@ -806,7 +806,19 @@ module.exports = {
         attended: {
             column: "ch.attended",
             type: "number"
-        }
+        },        
+        executiontype: {
+            column: "ca.executiontype",
+            type: "number"
+        },
+        executionuser: {
+            column: "causr.firstname||' '||causr.lastname",
+            type: "number"
+        },
+        executionuserprofile: {
+            column: "(select string_agg(description, ',') from role where corpid = 1 and orgid = 1 and roleid = any(string_to_array(caous.rolegroups,',')::bigint[]))",
+            type: "number"
+        },
     },
     lead: {
         opportunity: {
@@ -998,7 +1010,7 @@ module.exports = {
     },
     voicecall: {
         ticketdate: {
-            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','DD/MM/YYYY')"
+            column: "to_char(co.startdate + ' || p_offset || ' * INTERVAL ''1hour'',''DD/MM/YYYY'')"
         },
         tickettime: {
             column: "to_char(co.startdate + p_offset * INTERVAL '1hour','HH24:MI:SS')"
@@ -1450,6 +1462,9 @@ module.exports = {
         resolution_date: {
             column: "ld.resolution_date",
             type: "date"
+        },
+        resolution: {
+            column: "ld.resolution_date",           
         },
     },
     reportcompliancesla: {

@@ -6,6 +6,7 @@ const { Pool } = require('pg')
 const Cursor = require('pg-cursor')
 const { processCursor } = require("../config/pg-cursor");
 
+
 exports.GetCollection = async (req, res) => {
     let parameters = req.body.parameters || req.body.data || {};
     const { method, key } = req.body;
@@ -41,7 +42,7 @@ exports.GetCollectionDomainValues = async (req, res) => {
     parameters.corpid = 1;
     parameters._requestid = req._requestid;
     parameters.userid = 0;
-    
+
     const result = await executesimpletransaction("UFN_DOMAIN_LST_VALORES", parameters);
 
     if (result instanceof Array)
@@ -165,7 +166,7 @@ exports.SplitFirst = async (req, res) => {
 
 exports.getToken = async (req, res) => {
     let data = req.body.parameters || req.body.data;
-    
+
     const result = await executesimpletransaction("UFN_GET_TOKEN_LOGGED_MOVIL", { ...data, _requestid: req._requestid });
 
     if (result instanceof Array) {
@@ -236,11 +237,11 @@ exports.exportWithCursor = async (req, res) => {
         const formatDownload = resultFormatDownload?.[0]?.propertyvalue || "CSV";
 
         const pool = new Pool({
-            user: process.env.DBUSER,
-            host: process.env.DBHOST,
-            database: process.env.DBNAME,
-            password: process.env.DBPASSWORD,
-            port: process.env.DBPORT || "30503",
+            user: process.env.BACKUP_DBUSER || process.env.DBUSER,
+            host: process.env.BACKUP_DBHOST || process.env.DBHOST,
+            database: process.env.BACKUP_DBNAME || process.env.DBNAME,
+            password: process.env.BACKUP_DBPASSWORD || process.env.DBPASSWORD,
+            port: process.env.BACKUP_DBPORT || process.env.DBPORT || "30503",
             max: 50,
             idleTimeoutMillis: 5000,
             allowExitOnIdle: true,

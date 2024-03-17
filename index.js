@@ -21,9 +21,16 @@ app.use(morganMiddleware);
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) === -1) {
-            const msg = 'The CORS policy for this site does not ' +
-                'allow access from the specified Origin.';
+        const isAllowed = allowedOrigins.some(allowedOrigin => {
+            if (allowedOrigin === origin) return true;
+            if (allowedOrigin.includes('*')) {
+                const regex = new RegExp("^" + allowedOrigin.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + "$");
+                return regex.test(origin);
+            }
+            return false;
+        });
+        if (!isAllowed) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
             return callback(new Error(msg), false);
         }
         return callback(null, true);
@@ -59,6 +66,7 @@ app.use('/api/payment', require('./routes/payment'));
 app.use('/api/paymentniubiz', require('./routes/paymentniubiz'));
 app.use('/api/paymentopenpay', require('./routes/paymentopenpay'));
 app.use('/api/paymentizipay', require('./routes/paymentizipay'));
+app.use('/api/paymentepayco', require('./routes/paymentepayco'));
 app.use('/api/drawpdf', require('./routes/draw-pdf'));
 app.use('/api/billing', require('./routes/billing'));
 app.use('/api/gmaps', require('./routes/gmaps'));
@@ -73,6 +81,9 @@ app.use('/api/posthistory', require('./routes/posthistory'));
 app.use('/api/rasa', require('./routes/rasa'));
 app.use('/api/report-data', require('./routes/reportdata'));
 app.use('/api/culqidemo', require('./routes/culqidemo'));
+app.use('/api/norkys', require('./routes/norkys'));
+app.use('/api/corp', require('./routes/corp'));
+app.use('/api/delivery', require('./routes/delivery'));
 //mobile
 app.use('/api/mobile/auth', require('./routes/mobile/auth'));
 app.use('/api/mobile/ticket', require('./routes/mobile/ticket'));

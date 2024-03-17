@@ -111,3 +111,5 @@ queries/
 
 # VSCode settings
 .vscode/settings.json
+
+googleauth.json

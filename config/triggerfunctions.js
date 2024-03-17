@@ -771,7 +771,8 @@ exports.getQuery = (method, data, isNotPaginated) => {
             return getErrorCode(errors.NOT_FUNCTION_ERROR);
         }
     } catch (exception) {
-        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing buildQueryWithFilterAndSort", data._requestid);
+        exception.stack = `Method: ${method}\n${JSON.stringify(data)}\n${exception.stack}`
+        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing getQuery", data._requestid);
     }
 }
 
