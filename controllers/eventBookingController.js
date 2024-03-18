@@ -1435,7 +1435,6 @@ exports.cancelEventLaraigo = async (request, response) => {
 
 const generateIcs = async (requestid, calendarData, params) => {
     try {
-        logger.error('eventBookingController.Collection generateIcs')
         const timestamp = Date.now();
         const icalfile = getIcalObjectInstance(
             params?.monthdate,
@@ -1450,19 +1449,15 @@ const generateIcs = async (requestid, calendarData, params) => {
             'laraigo@vcaperu.com'
         )
 
-        logger.error('eventBookingController.Collection generateIcs buffer')
 
         const buffer = Buffer.from(icalfile.toString(), 'utf8');
-        logger.error('eventBookingController.Collection generateIcs buffer contentType')
         const contentType = 'text/plain';
         const key = `${timestamp}/invite.ics`;
 
         const rr = await uploadBufferToCos(requestid, buffer, contentType, key);
-        logger.error('eventBookingController.Collection generateIcs uploadBufferToCos')
         logger.error(rr)
         return { url: rr.url }
     } catch (error) {
-        logger.error('eventBookingController.Collection generateIcs catch error')
         console.log(error)
         return { url: ''}
     }
