@@ -120,7 +120,7 @@ const send = async (data, requestid) => {
                                     ...(data.ics_attachment !== '' ? [{
                                         type: 'FILE',
                                         value: data.ics_attachment,
-                                    }] : []) 
+                                    }] : [])
                                 ]
                             }),
                             repeatflag: false,
@@ -385,102 +385,105 @@ const setReminder = async (data, requestid) => {
 }
 
 exports.Collection = async (req, res) => {
-    const { parameters = {}, method, key } = req.body;
-    let agentListMember = {}
+    try {
+        const { parameters = {}, method, key } = req.body;
+        let agentListMember = {}
 
-    if (!method_allowed.includes(method)) {
-        const resError = getErrorCode(errors.FORBIDDEN);
-        return res.status(resError.rescode).json(resError);
-    }
+        if (!method_allowed.includes(method)) {
+            const resError = getErrorCode(errors.FORBIDDEN);
+            return res.status(resError.rescode).json(resError);
+        }
 
-    parameters._requestid = req._requestid;
+        parameters._requestid = req._requestid;
 
-    const result = await executesimpletransaction(method, parameters);
-    const newcalendarbookingid = result?.[0]?.calendarbookingid;
-    const assignedAgentId = result?.[0]?.agentid;
-    
-    if (!result.error) {
-        if (method === "UFN_CALENDARYBOOKING_INS") {
-            if (assignedAgentId) {
-                const agentInformation = await executesimpletransaction("QUERY_CALENDARINTEGRATION_INFO_SEL", { calendarintegrationid: assignedAgentId }) 
-                agentListMember = {
-                    phone: '',
-                    firstname: agentInformation[0].email,
-                    email: agentInformation[0].email,
-                    lastname: "",
-                    parameters: parameters.parameters
+        const result = await executesimpletransaction(method, parameters);
+        const newcalendarbookingid = result?.[0]?.calendarbookingid;
+        const assignedAgentId = result?.[0]?.agentid;
+
+        if (!result.error) {
+            if (method === "UFN_CALENDARYBOOKING_INS") {
+                logger.child({ _requestid: req._requestid }).error(`eventBookingController.Collection executesimpletransaction assignedAgentId: ${assignedAgentId}`)
+                if (assignedAgentId) {
+                    const agentInformation = await executesimpletransaction("QUERY_CALENDARINTEGRATION_INFO_SEL", { calendarintegrationid: assignedAgentId })
+                    agentListMember = {
+                        phone: '',
+                        firstname: agentInformation[0].email,
+                        email: agentInformation[0].email,
+                        lastname: "",
+                        parameters: parameters.parameters
+                    }
                 }
-            }
-            
-            const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
-            const {
-                messagetemplateid,
-                communicationchannelid,
-                communicationchanneltype,
-                notificationtype,
-                notificationmessage,
-                reminderhsmcommunicationchannelid,
-                reminderhsmcommunicationchanneltype,
-                reminderperiod,
-                reminderfrecuency,
-                remindermailmessage,
-                remindermailtemplateid,
-                reminderhsmmessage,
-                reminderhsmtemplateid,
-                remindertype,
-                notificationmessageemail,
-                messagetemplateidemail,
-                rescheduletemplateidhsm,
-                reschedulenotificationhsm,
-                reschedulecommunicationchannelid,
-                rescheduletemplateidemail,
-                reschedulenotificationemail,
-                rescheduletype
-            } = resultCalendar[0]
 
-            //si envia un calendarbookinguuid es porque quiere reprogramar, osea cancelar la antigua y crear una nueva
-            if (parameters.calendarbookingid) {
+                logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection resultCalendar')
+                const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
+                const {
+                    messagetemplateid,
+                    communicationchannelid,
+                    communicationchanneltype,
+                    notificationtype,
+                    notificationmessage,
+                    reminderhsmcommunicationchannelid,
+                    reminderhsmcommunicationchanneltype,
+                    reminderperiod,
+                    reminderfrecuency,
+                    remindermailmessage,
+                    remindermailtemplateid,
+                    reminderhsmmessage,
+                    reminderhsmtemplateid,
+                    remindertype,
+                    notificationmessageemail,
+                    messagetemplateidemail,
+                    rescheduletemplateidhsm,
+                    reschedulenotificationhsm,
+                    reschedulecommunicationchannelid,
+                    rescheduletemplateidemail,
+                    reschedulenotificationemail,
+                    rescheduletype
+                } = resultCalendar[0]
 
-                await executesimpletransaction("QUERY_CANCEL_EVENT_BY_CALENDARBOOKINGUUID", {
-                    ...parameters,
-                    cancelcomment: "RESCHEDULED BOOKING"
-                });
-                
-                // cancel google event if exists
-                const eventToCancel = await executesimpletransaction("QUERY_INTEGRATIONEVENT_SEL_BY_CALENDARBOOKINGID", parameters);
-                if (eventToCancel instanceof Array && eventToCancel.length > 0) deleteGoogleEvent({eventid: eventToCancel[0].id, agentid: eventToCancel[0].calendarintegrationid}, parameters, 'externalOnly');
-                
-                // create google event if theres any1 assinged
-                if (assignedAgentId) createGoogleEvent(assignedAgentId, newcalendarbookingid, resultCalendar[0], parameters)
-                
-                await executesimpletransaction("QUERY_CANCEL_TASK_BY_CALENDARBOOKINGUUID", {
-                    ...parameters,
-                });
-                try {
+                //si envia un calendarbookinguuid es porque quiere reprogramar, osea cancelar la antigua y crear una nueva
+                if (parameters.calendarbookingid) {
 
-                    //Reschedulde start
-                    if (["HSM", "HSMEMAIL", "EMAIL"].includes(rescheduletype)) {
-                        const sendmessage = {
-                            type: "HSM",
-                            corpid: parameters.corpid,
-                            orgid: parameters.orgid,
-                            username: parameters.username,
-                            communicationchannelid: reschedulecommunicationchannelid,
-                            hsmtemplateid: rescheduletemplateidhsm,
-                            shippingreason: "BOOKING",
-                            _requestid: req._requestid,
-                            communicationchanneltype: communicationchanneltype,
-                            platformtype: communicationchanneltype,
-                            userid: 0,
-                            listmembers: [{
-                                phone: parameters.phone,
-                                firstname: parameters.name,
-                                email: parameters.email,
-                                lastname: "",
-                                parameters: parameters.parameters
-                            }],
-                            body: reschedulenotificationhsm
-                        }
+                    await executesimpletransaction("QUERY_CANCEL_EVENT_BY_CALENDARBOOKINGUUID", {
+                        ...parameters,
+                        cancelcomment: "RESCHEDULED BOOKING"
+                    });
+
+                    // cancel google event if exists
+                    const eventToCancel = await executesimpletransaction("QUERY_INTEGRATIONEVENT_SEL_BY_CALENDARBOOKINGID", parameters);
+                    if (eventToCancel instanceof Array && eventToCancel.length > 0) deleteGoogleEvent({ eventid: eventToCancel[0].id, agentid: eventToCancel[0].calendarintegrationid }, parameters, 'externalOnly');
+
+                    // create google event if theres any1 assinged
+                    if (assignedAgentId) createGoogleEvent(assignedAgentId, newcalendarbookingid, resultCalendar[0], parameters)
+
+                    await executesimpletransaction("QUERY_CANCEL_TASK_BY_CALENDARBOOKINGUUID", {
+                        ...parameters,
+                    });
+                    try {
+
+                        //Reschedulde start
+                        if (["HSM", "HSMEMAIL", "EMAIL"].includes(rescheduletype)) {
+                            const sendmessage = {
+                                type: "HSM",
+                                corpid: parameters.corpid,
+                                orgid: parameters.orgid,
+                                username: parameters.username,
+                                communicationchannelid: reschedulecommunicationchannelid,
+                                hsmtemplateid: rescheduletemplateidhsm,
+                                shippingreason: "BOOKING",
+                                _requestid: req._requestid,
+                                communicationchanneltype: communicationchanneltype,
+                                platformtype: communicationchanneltype,
+                                userid: 0,
+                                listmembers: [{
+                                    phone: parameters.phone,
+                                    firstname: parameters.name,
+                                    email: parameters.email,
+                                    lastname: "",
+                                    parameters: parameters.parameters
+                                }],
+                                body: reschedulenotificationhsm
+                            }
 
                         if ("HSMEMAIL" === rescheduletype) {
                             await send(sendmessage, req._requestid);
@@ -511,47 +514,52 @@ exports.Collection = async (req, res) => {
                     }
                     //Reschedule end
 
-                } catch (exception) {
-                    logger.child({ _requestid: req._requestid }).error(exception)
-                    return res.status(500).json({
-                        code: "error_unexpected_error",
-                        error: true,
-                        message: exception.message,
-                        success: false,
-                    });
+                    } catch (exception) {
+                        logger.child({ _requestid: req._requestid }).error(exception)
+                        return res.status(500).json({
+                            code: "error_unexpected_error",
+                            error: true,
+                            message: exception.message,
+                            success: false,
+                        });
+                    }
+
                 }
 
-            }
+                if (["EMAIL", "HSM", "HSMEMAIL"].includes(notificationtype) && !parameters.calendarbookingid) {
+                    logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection notificationtype includes EMAIL')
+                    logger.child({ _requestid: req._requestid }).error(resultCalendar)
+                    logger.child({ _requestid: req._requestid }).error(parameters)
+                    const ics_file = await generateIcs(req._requestid, resultCalendar[0], parameters);
+                    logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection ics_file')
+                    if (assignedAgentId) createGoogleEvent(assignedAgentId, newcalendarbookingid, resultCalendar[0], parameters)
+                    logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection createGoogleEvent')
 
-            if (["EMAIL", "HSM", "HSMEMAIL"].includes(notificationtype) && !parameters.calendarbookingid) {
-                const ics_file = await generateIcs(req._requestid, resultCalendar[0], parameters);
-                if (assignedAgentId) createGoogleEvent(assignedAgentId, newcalendarbookingid, resultCalendar[0], parameters)
-
-                const sendmessage = {
-                    corpid: parameters.corpid,
-                    orgid: parameters.orgid,
-                    username: parameters.username,
-                    communicationchannelid: communicationchannelid,
-                    hsmtemplateid: messagetemplateid,
-                    type: "HSM",
-                    shippingreason: "BOOKING",
-                    _requestid: req._requestid,
-                    // hsmtemplatename: messagetemplatename,
-                    communicationchanneltype: communicationchanneltype,
-                    platformtype: communicationchanneltype,
-                    userid: 0,
-                    listmembers: [{
-                        phone: parameters.phone,
-                        firstname: parameters.name,
-                        email: parameters.email,
-                        lastname: "",
-                        parameters: parameters.parameters
-                    }],
-                    body: notificationmessage,
-                    messagetemplateidemail: messagetemplateidemail,
-                    notificationmessageemail: notificationmessageemail,
-                    ics_attachment: ics_file.url || ''
-                }
+                    const sendmessage = {
+                        corpid: parameters.corpid,
+                        orgid: parameters.orgid,
+                        username: parameters.username,
+                        communicationchannelid: communicationchannelid,
+                        hsmtemplateid: messagetemplateid,
+                        type: "HSM",
+                        shippingreason: "BOOKING",
+                        _requestid: req._requestid,
+                        // hsmtemplatename: messagetemplatename,
+                        communicationchanneltype: communicationchanneltype,
+                        platformtype: communicationchanneltype,
+                        userid: 0,
+                        listmembers: [{
+                            phone: parameters.phone,
+                            firstname: parameters.name,
+                            email: parameters.email,
+                            lastname: "",
+                            parameters: parameters.parameters
+                        }],
+                        body: notificationmessage,
+                        messagetemplateidemail: messagetemplateidemail,
+                        notificationmessageemail: notificationmessageemail,
+                        ics_attachment: ics_file?.url || ''
+                    }
 
                 if ("HSMEMAIL" === notificationtype) {
                     await send(sendmessage, req._requestid);
@@ -579,70 +587,80 @@ exports.Collection = async (req, res) => {
                 }
             }
 
-            //Inicio - Envio de recordatorio - JR
-            const reminderData = {
-                corpid: parameters.corpid,
-                orgid: parameters.orgid,
-                username: parameters.username,
-                communicationchannelid: communicationchannelid,
-                hsmtemplateid: messagetemplateid,
-                type: notificationtype,
-                shippingreason: "BOOKING",
-                _requestid: req._requestid,
-                // hsmtemplatename: messagetemplatename,
-                communicationchanneltype: communicationchanneltype,
-                platformtype: communicationchanneltype,
-                userid: 0,
-                listmembers: [{
-                    phone: parameters.phone,
-                    firstname: parameters.name,
-                    email: parameters.email,
-                    lastname: "",
-                    parameters: parameters.parameters
-                }],
-                bodyMailMessage: remindermailmessage,
-                bodyHsmMessage: reminderhsmmessage,
-                reminderhsmcommunicationchannelid: reminderhsmcommunicationchannelid,
-                reminderhsmcommunicationchanneltype: reminderhsmcommunicationchanneltype,
-                reminderperiod: reminderperiod,
-                reminderfrecuency: reminderfrecuency,
-                remindermailtemplateid: remindermailtemplateid,
-                reminderhsmtemplateid: reminderhsmtemplateid,
-                // reminderhsmtemplatename: reminderhsmtemplatename,
-                remindertype: remindertype,
-                monthdate: parameters.monthdate,
-                hourstart: parameters.hourstart,
-                offset: parameters.persontimezone,
-                calendareventid: parameters.calendareventid,
-                calendarbookingid: newcalendarbookingid,
-                variables: parameters.parameters
-            }
-
-            await setReminder(reminderData, req._requestid);
-            //Fin - Envio de recordatorio - JR
-
-            if (!!parameters.conversationid && !!parameters.personid) {
-                const dataServices = {
+                //Inicio - Envio de recordatorio - JR
+                logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection reminderData')
+                const reminderData = {
                     corpid: parameters.corpid,
                     orgid: parameters.orgid,
-                    conversationid: parameters.conversationid,
-                    personid: parameters.personid,
-                    ...(parameters.parameters.reduce((acc, item) => ({ ...acc, [item.name]: item.text }), {}))
+                    username: parameters.username,
+                    communicationchannelid: communicationchannelid,
+                    hsmtemplateid: messagetemplateid,
+                    type: notificationtype,
+                    shippingreason: "BOOKING",
+                    _requestid: req._requestid,
+                    // hsmtemplatename: messagetemplatename,
+                    communicationchanneltype: communicationchanneltype,
+                    platformtype: communicationchanneltype,
+                    userid: 0,
+                    listmembers: [{
+                        phone: parameters.phone,
+                        firstname: parameters.name,
+                        email: parameters.email,
+                        lastname: "",
+                        parameters: parameters.parameters
+                    }],
+                    bodyMailMessage: remindermailmessage,
+                    bodyHsmMessage: reminderhsmmessage,
+                    reminderhsmcommunicationchannelid: reminderhsmcommunicationchannelid,
+                    reminderhsmcommunicationchanneltype: reminderhsmcommunicationchanneltype,
+                    reminderperiod: reminderperiod,
+                    reminderfrecuency: reminderfrecuency,
+                    remindermailtemplateid: remindermailtemplateid,
+                    reminderhsmtemplateid: reminderhsmtemplateid,
+                    // reminderhsmtemplatename: reminderhsmtemplatename,
+                    remindertype: remindertype,
+                    monthdate: parameters.monthdate,
+                    hourstart: parameters.hourstart,
+                    offset: parameters.persontimezone,
+                    calendareventid: parameters.calendareventid,
+                    calendarbookingid: newcalendarbookingid,
+                    variables: parameters.parameters
                 }
 
-                await axiosObservable({
-                    url: `${process.env.SERVICES}handler/sendbooking`,
-                    data: dataServices,
-                    method: "post",
-                    _requestid: req._requestid,
-                });
-            }
-        }
-        return res.json({ error: false, success: true, data: result, key });
-    }
-    else
-        return res.status(result.rescode).json(({ ...result, key }));
+                await setReminder(reminderData, req._requestid);
+                //Fin - Envio de recordatorio - JR
 
+                if (!!parameters.conversationid && !!parameters.personid) {
+                    const dataServices = {
+                        corpid: parameters.corpid,
+                        orgid: parameters.orgid,
+                        conversationid: parameters.conversationid,
+                        personid: parameters.personid,
+                        ...(parameters.parameters.reduce((acc, item) => ({ ...acc, [item.name]: item.text }), {}))
+                    }
+
+                    await axiosObservable({
+                        url: `${process.env.SERVICES}handler/sendbooking`,
+                        data: dataServices,
+                        method: "post",
+                        _requestid: req._requestid,
+                    });
+                }
+            }
+            return res.json({ error: false, success: true, data: result, key });
+        }
+        else
+            logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection result.error')
+            return res.status(result.rescode).json(({ ...result, key }));
+    } catch (exception) {
+        logger.child({ _requestid: req._requestid }).error(exception)
+        return res.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
 }
 
 exports.EventsPerPerson = async (req, res) => {
@@ -1081,7 +1099,7 @@ exports.googleDisconnect = async (request, response) => {
         if (bd_data instanceof Array && bd_data.length > 0) {
             const calendarToDelete = bd_data[0].v_mapping
             calendarToDelete.forEach(element => {
-                deleteGoogleEvent({eventid: element.id, agentid: calendarintegrationid}, {}, 'externalOnly')
+                deleteGoogleEvent({ eventid: element.id, agentid: calendarintegrationid }, {}, 'externalOnly')
             });
 
             return response.status(200).json({
@@ -1424,6 +1442,7 @@ exports.cancelEventLaraigo = async (request, response) => {
 
 const generateIcs = async (requestid, calendarData, params) => {
     try {
+        logger.error('eventBookingController.Collection generateIcs')
         const timestamp = Date.now();
         const icalfile = getIcalObjectInstance(
             params?.monthdate,
@@ -1437,27 +1456,34 @@ const generateIcs = async (requestid, calendarData, params) => {
             'Laraigo',
             'laraigo@vcaperu.com'
         )
-    
+
+        logger.error('eventBookingController.Collection generateIcs buffer')
+
         const buffer = Buffer.from(icalfile.toString(), 'utf8');
+        logger.error('eventBookingController.Collection generateIcs buffer contentType')
         const contentType = 'text/plain';
         const key = `${timestamp}/invite.ics`;
-    
+
         const rr = await uploadBufferToCos(requestid, buffer, contentType, key);
-        return {url: rr.url}
+        logger.error('eventBookingController.Collection generateIcs uploadBufferToCos')
+        logger.error(rr)
+        return { url: rr.url }
     } catch (error) {
+        logger.error('eventBookingController.Collection generateIcs catch error')
         console.log(error)
+        return { url: ''}
     }
 }
 
-function getIcalObjectInstance(monthdate, hourstart, eventduration, timezoneoffset, eventname, description, location, eventlink , name ,email) {
+function getIcalObjectInstance(monthdate, hourstart, eventduration, timezoneoffset, eventname, description, location, eventlink, name, email) {
     try {
-        const calendar = ical({name: 'ICal'});
+        const calendar = ical({ name: 'ICal' });
         calendar.method(ICalCalendarMethod.REQUEST);
 
         const startTime = new Date(`${monthdate}T${hourstart}:00${timezoneoffset >= 0 ? '+' : '-'}${Math.abs(timezoneoffset).toString().padStart(2, '0')}:00`);
         const endTime = new Date(startTime.getTime());
         endTime.setMinutes(endTime.getMinutes() + eventduration);
-        
+
         calendar.createEvent({
             start: startTime,
             end: endTime,
@@ -1465,14 +1491,14 @@ function getIcalObjectInstance(monthdate, hourstart, eventduration, timezoneoffs
             description: description,
             location: location,
             url: eventlink,
-            organizer: { 
+            organizer: {
                 name: name,
                 email: email || 'laraigo@vcaperu.com'
             },
         });
         return calendar;
     } catch (error) {
-        console.log({error})
+        console.log({ error })
     }
 }
 
@@ -1514,7 +1540,7 @@ const createGoogleEvent = async (assignedAgentId, newcalendarbookingid, calendar
             resource: eventInfo,
         });
 
-        if (eventData?.status === 200 ){
+        if (eventData?.status === 200) {
             const result = await executesimpletransaction("UFN_CALENDARINTEGRATION_INS", {
                 corpid: params.corpid,
                 orgid: params.orgid,
@@ -1536,11 +1562,11 @@ const createGoogleEvent = async (assignedAgentId, newcalendarbookingid, calendar
         }
         console.log("🚀 ~ [END]createGoogleEvent ~ eventid:", eventData?.data?.id)
     } catch (error) {
-        console.log({error})
+        console.log({ error })
     }
 }
 
-const deleteGoogleEvent = async(calendarInfo, params, sendUpdates = 'none') => {
+const deleteGoogleEvent = async (calendarInfo, params, sendUpdates = 'none') => {
     console.log("🚀 ~ [START]deleteGoogleEvent")
     try {
         params.calendarintegrationid = calendarInfo.agentid;
@@ -1568,14 +1594,14 @@ const createAutomaticAssignedBookings = async ({ params, calendar, extradata = n
             calendarintegrationid: extradata?.calendarintegrationid,
             calendareventid: params?.id
         });
-        
+
         if (bd_data instanceof Array && bd_data.length > 0) {
             bd_data.forEach(event => {
                 createGoogleEvent(
                     event.calendarintegrationid,
                     event.calendarbookingid,
                     event,
-                    {...event, email: event.personmail, hourstart: event.hourstart.toString(), parameters: [{name: 'eventname', text: event.name}]},
+                    { ...event, email: event.personmail, hourstart: event.hourstart.toString(), parameters: [{ name: 'eventname', text: event.name }] },
                     prevCalendar === event.calendarintegrationid ? [calendar, extradata] : null
                 )
                 prevCalendar = event.calendarintegrationid
@@ -1584,6 +1610,6 @@ const createAutomaticAssignedBookings = async ({ params, calendar, extradata = n
 
         console.log("🚀 ~ [END]createAutomaticAssignedBookings")
     } catch (error) {
-        console.log({error})
+        console.log({ error })
     }
 }
