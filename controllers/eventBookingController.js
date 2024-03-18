@@ -402,7 +402,6 @@ exports.Collection = async (req, res) => {
 
         if (!result.error) {
             if (method === "UFN_CALENDARYBOOKING_INS") {
-                logger.child({ _requestid: req._requestid }).error(`eventBookingController.Collection executesimpletransaction assignedAgentId: ${assignedAgentId}`)
                 if (assignedAgentId) {
                     const agentInformation = await executesimpletransaction("QUERY_CALENDARINTEGRATION_INFO_SEL", { calendarintegrationid: assignedAgentId })
                     agentListMember = {
@@ -1436,7 +1435,6 @@ exports.cancelEventLaraigo = async (request, response) => {
 
 const generateIcs = async (requestid, calendarData, params) => {
     try {
-        logger.error('eventBookingController.Collection generateIcs')
         const timestamp = Date.now();
         const icalfile = getIcalObjectInstance(
             params?.monthdate,
@@ -1451,19 +1449,15 @@ const generateIcs = async (requestid, calendarData, params) => {
             'laraigo@vcaperu.com'
         )
 
-        logger.error('eventBookingController.Collection generateIcs buffer')
 
         const buffer = Buffer.from(icalfile.toString(), 'utf8');
-        logger.error('eventBookingController.Collection generateIcs buffer contentType')
         const contentType = 'text/plain';
         const key = `${timestamp}/invite.ics`;
 
         const rr = await uploadBufferToCos(requestid, buffer, contentType, key);
-        logger.error('eventBookingController.Collection generateIcs uploadBufferToCos')
         logger.error(rr)
         return { url: rr.url }
     } catch (error) {
-        logger.error('eventBookingController.Collection generateIcs catch error')
         console.log(error)
         return { url: ''}
     }
