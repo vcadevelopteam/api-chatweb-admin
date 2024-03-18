@@ -414,7 +414,6 @@ exports.Collection = async (req, res) => {
                     }
                 }
 
-                logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection resultCalendar')
                 const resultCalendar = await executesimpletransaction("QUERY_EVENT_BY_CALENDAR_EVENT_ID", parameters);
                 const {
                     messagetemplateid,
@@ -527,13 +526,10 @@ exports.Collection = async (req, res) => {
                 }
 
                 if (["EMAIL", "HSM", "HSMEMAIL"].includes(notificationtype) && !parameters.calendarbookingid) {
-                    logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection notificationtype includes EMAIL')
                     logger.child({ _requestid: req._requestid }).error(resultCalendar)
                     logger.child({ _requestid: req._requestid }).error(parameters)
                     const ics_file = await generateIcs(req._requestid, resultCalendar[0], parameters);
-                    logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection ics_file')
                     if (assignedAgentId) createGoogleEvent(assignedAgentId, newcalendarbookingid, resultCalendar[0], parameters)
-                    logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection createGoogleEvent')
 
                     const sendmessage = {
                         corpid: parameters.corpid,
@@ -588,7 +584,6 @@ exports.Collection = async (req, res) => {
             }
 
                 //Inicio - Envio de recordatorio - JR
-                logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection reminderData')
                 const reminderData = {
                     corpid: parameters.corpid,
                     orgid: parameters.orgid,
@@ -650,7 +645,6 @@ exports.Collection = async (req, res) => {
             return res.json({ error: false, success: true, data: result, key });
         }
         else
-            logger.child({ _requestid: req._requestid }).error('eventBookingController.Collection result.error')
             return res.status(result.rescode).json(({ ...result, key }));
     } catch (exception) {
         logger.child({ _requestid: req._requestid }).error(exception)
