@@ -402,7 +402,6 @@ exports.Collection = async (req, res) => {
 
         if (!result.error) {
             if (method === "UFN_CALENDARYBOOKING_INS") {
-                logger.child({ _requestid: req._requestid }).error(`eventBookingController.Collection executesimpletransaction assignedAgentId: ${assignedAgentId}`)
                 if (assignedAgentId) {
                     const agentInformation = await executesimpletransaction("QUERY_CALENDARINTEGRATION_INFO_SEL", { calendarintegrationid: assignedAgentId })
                     agentListMember = {
