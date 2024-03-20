@@ -483,31 +483,32 @@ exports.Collection = async (req, res) => {
                                 body: reschedulenotificationhsm
                             }
 
-                        if ("HSMEMAIL" === rescheduletype) {
-                            await send(sendmessage, req._requestid);
-                            await send(
-                              {
-                                ...sendmessage,
-                                type: "MAIL",
-                                body: reschedulenotificationemail,
-                                hsmtemplateid: rescheduletemplateidemail,
-                                listmembers: Object.keys(agentListMember).length === 0 ? sendmessage.listmembers : sendmessage.listmembers.concat(agentListMember)
-                              },
-                              req._requestuestid
-                            );
-                        } else if ("EMAIL" === rescheduletype) {
-                            await send(
-                              {
-                                ...sendmessage,
-                                type: "MAIL",
-                                body: reschedulenotificationemail,
-                                hsmtemplateid: rescheduletemplateidemail,
-                                listmembers: Object.keys(agentListMember).length === 0 ? sendmessage.listmembers : sendmessage.listmembers.concat(agentListMember)
-                              },
-                              req._requestuestid
-                            );
-                        } else {
-                            await send(sendmessage, req._requestid);
+                            if ("HSMEMAIL" === rescheduletype) {
+                                await send(sendmessage, req._requestid);
+                                await send(
+                                    {
+                                        ...sendmessage,
+                                        type: "MAIL",
+                                        body: reschedulenotificationemail,
+                                        hsmtemplateid: rescheduletemplateidemail,
+                                        listmembers: Object.keys(agentListMember).length === 0 ? sendmessage.listmembers : sendmessage.listmembers.concat(agentListMember)
+                                    },
+                                    req._requestuestid
+                                );
+                            } else if ("EMAIL" === rescheduletype) {
+                                await send(
+                                    {
+                                        ...sendmessage,
+                                        type: "MAIL",
+                                        body: reschedulenotificationemail,
+                                        hsmtemplateid: rescheduletemplateidemail,
+                                        listmembers: Object.keys(agentListMember).length === 0 ? sendmessage.listmembers : sendmessage.listmembers.concat(agentListMember)
+                                    },
+                                    req._requestuestid
+                                );
+                            } else {
+                                await send(sendmessage, req._requestid);
+                            }
                         }
                     }
                     //Reschedule end
@@ -525,8 +526,6 @@ exports.Collection = async (req, res) => {
                 }
 
                 if (["EMAIL", "HSM", "HSMEMAIL"].includes(notificationtype) && !parameters.calendarbookingid) {
-                    logger.child({ _requestid: req._requestid }).error(resultCalendar)
-                    logger.child({ _requestid: req._requestid }).error(parameters)
                     const ics_file = await generateIcs(req._requestid, resultCalendar[0], parameters);
                     if (assignedAgentId) createGoogleEvent(assignedAgentId, newcalendarbookingid, resultCalendar[0], parameters)
 
@@ -556,29 +555,30 @@ exports.Collection = async (req, res) => {
                         ics_attachment: ics_file?.url || ''
                     }
 
-                if ("HSMEMAIL" === notificationtype) {
-                    await send(sendmessage, req._requestid);
-                    await send(
-                      {
-                        ...sendmessage,
-                        type: "MAIL",
-                        body: notificationmessageemail,
-                        hsmtemplateid: messagetemplateidemail,
-                        listmembers: Object.keys(agentListMember).length === 0 ? sendmessage.listmembers : sendmessage.listmembers.concat(agentListMember)
-                      },
-                      req._requestuestid
-                    );
-                } else if ("EMAIL" === notificationtype) {
-                    await send(
-                      {
-                        ...sendmessage,
-                        type: "MAIL",
-                        listmembers: Object.keys(agentListMember).length === 0 ? sendmessage.listmembers : sendmessage.listmembers.concat(agentListMember)
-                      },
-                      req._requestuestid
-                    );
-                } else {
-                    await send(sendmessage, req._requestid);
+                    if ("HSMEMAIL" === notificationtype) {
+                        await send(sendmessage, req._requestid);
+                        await send(
+                            {
+                                ...sendmessage,
+                                type: "MAIL",
+                                body: notificationmessageemail,
+                                hsmtemplateid: messagetemplateidemail,
+                                listmembers: Object.keys(agentListMember).length === 0 ? sendmessage.listmembers : sendmessage.listmembers.concat(agentListMember)
+                            },
+                            req._requestuestid
+                        );
+                    } else if ("EMAIL" === notificationtype) {
+                        await send(
+                            {
+                                ...sendmessage,
+                                type: "MAIL",
+                                listmembers: Object.keys(agentListMember).length === 0 ? sendmessage.listmembers : sendmessage.listmembers.concat(agentListMember)
+                            },
+                            req._requestuestid
+                        );
+                    } else {
+                        await send(sendmessage, req._requestid);
+                    }
                 }
             }
 
@@ -1449,13 +1449,11 @@ const generateIcs = async (requestid, calendarData, params) => {
             'laraigo@vcaperu.com'
         )
 
-
         const buffer = Buffer.from(icalfile.toString(), 'utf8');
         const contentType = 'text/plain';
         const key = `${timestamp}/invite.ics`;
 
         const rr = await uploadBufferToCos(requestid, buffer, contentType, key);
-        logger.error(rr)
         return { url: rr.url }
     } catch (error) {
         console.log(error)
