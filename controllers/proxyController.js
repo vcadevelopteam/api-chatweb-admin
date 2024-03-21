@@ -1,4 +1,8 @@
-exports.sendRequest = async (req, res) => {
+const { getErrorCode } = require("../config/helpers");
+
+const https = require("https");
+
+exports.sendRequest = async (request, response) => {
     const data = JSON.stringify({
         CompanyDB: "SBODEMOUS",
         Password: "1234",
@@ -32,18 +36,20 @@ exports.sendRequest = async (req, res) => {
                 // Aquí puedes procesar la respuesta recibida
                 console.log(responseBody);
                 // Responder al cliente HTTP original con el resultado
-                res.status(response.statusCode).json(JSON.parse(responseBody));
+                response.status(response.statusCode).json(JSON.parse(responseBody));
             });
         });
 
         request.on("error", (error) => {
             console.error(error);
-            res.status(500).json({ error });
+            response.status(500).json({ error });
         });
 
         request.write(data);
         request.end();
     } catch (exception) {
-        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+        return response
+            .status(500)
+            .json(getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid));
     }
 };
