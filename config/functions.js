@@ -330,7 +330,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INTELLIGENTMODELS_INS: {
-        query: "SELECT * FROM ufn_intelligentmodels_ins($corpid, $orgid, $id, $operation, $description, $endpoint , $modelid , $provider , $apikey , $type , $status , $username) ",
+        query: "SELECT * FROM ufn_intelligentmodels_ins($corpid, $orgid, $id, $operation, $description, $endpoint, $modelid, $provider, $name, $apikey, $type, $status, $username) ",
         module: ["/iaconectors"],
         protected: "INSERT"
     },
