@@ -3,50 +3,42 @@ const { getErrorCode } = require("../config/helpers");
 const https = require("https");
 
 exports.sendRequest = async (request, response) => {
-    const data = JSON.stringify({
-        CompanyDB: "SBODEMOUS",
-        Password: "1234",
-        UserName: "manager",
-    });
-
-    const options = {
-        hostname: "190.12.86.123",
-        port: 50000,
-        path: "/b1s/v1/Login",
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Cookie: "ROUTEID=.node3",
-            "Content-Length": data.length,
-        },
-        rejectUnauthorized: false, // Ignorar errores de certificado SSL
-        // Forzar el uso de TLS 1.0; solo para diagnóstico o entornos controlados
-        secureProtocol: "TLSv1_method",
-    };
-
     try {
-        const request = https.request(options, (response) => {
+        const { hostname, method, path, port, authorization, data } = request.body;
+
+        const requestConfiguration = {
+            hostname: hostname,
+            method: method,
+            path: path,
+            port: port,
+            rejectUnauthorized: false,
+            secureProtocol: "TLSv1_method",
+            headers: {
+                Authorization: authorization || "",
+                "Content-Length": JSON.stringify(data || {}).length,
+                "Content-Type": "application/json",
+                Cookie: "ROUTEID=.node3",
+            },
+        };
+
+        const requestProcess = https.request(requestConfiguration, (responseData) => {
             let responseBody = "";
 
-            response.on("data", (chunk) => {
+            responseData.on("data", (chunk) => {
                 responseBody += chunk;
             });
 
-            response.on("end", () => {
-                // Aquí puedes procesar la respuesta recibida
-                console.log(responseBody);
-                // Responder al cliente HTTP original con el resultado
-                response.status(response.statusCode).json(JSON.parse(responseBody));
+            responseData.on("end", () => {
+                return response.status(responseData.statusCode).json(JSON.parse(responseBody));
             });
         });
 
-        request.on("error", (error) => {
-            console.error(error);
-            response.status(500).json({ error });
+        requestProcess.on("error", (error) => {
+            return response.status(500).json({ error });
         });
 
-        request.write(data);
-        request.end();
+        requestProcess.write(JSON.stringify(data || {}));
+        requestProcess.end();
     } catch (exception) {
         return response
             .status(500)
