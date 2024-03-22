@@ -225,7 +225,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PROPERTY_INS: {
-        query: "SELECT * FROM ufn_property_ins($corpid, $orgid, $communicationchannelid, $id, $propertyname, $propertyvalue, $description, $status, $type, $category, $domainname, $group, $level, $username, $operation)",
+        query: "SELECT * FROM ufn_property_ins($corpid, $orgid, $communicationchannelid, $id, $propertyname, $propertyvalue, $description, $status, $type, $category, $domainname, $group, $level, $username, $operation, $config)",
         module: ["/extras/properties"],
         protected: "SELECT"
     },
@@ -1165,6 +1165,11 @@ module.exports = {
     },
     UFN_CHATFLOW_BLOCK_LST: {
         query: "SELECT * FROM ufn_chatflow_block_lst($corpid, $orgid, $userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CHATFLOW_BLOCK_ACTIVE_SEL: {
+        query: "SELECT * FROM ufn_chatflow_block_active_sel($corpid, $orgid, $userid)",
         module: "",
         protected: "SELECT"
     },
