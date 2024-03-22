@@ -15,7 +15,7 @@ pipeline {
             steps {
                 sh 'cd /var/www/html/api-laraigo-test'
                 sh 'npm install'
-                sh 'sudo pm2 restart 1'
+                sh 'sudo pm2 restart 0'
             }
         }
     }
