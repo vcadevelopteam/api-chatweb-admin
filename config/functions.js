@@ -4618,12 +4618,12 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_ASSIGNMENTRULE_BY_GROUP_SEL: {
-        query: "SELECT * FROM ufn_assignmentrule_by_group_sel($corpid, $orgid, $group)",
+        query: "SELECT * FROM ufn_assignmentrule_by_group_sel($corpid, $orgid, $group, $usergroups)",
         module: "",
         protected: "SELECT"
     },
     UFN_DOMAIN_BY_DOMAINNAME: {
-        query: "SELECT * FROM ufn_domain_by_domainname($corpid, $orgid, $domainname, $usergroups)",
+        query: "SELECT * FROM ufn_domain_by_domainname($corpid, $orgid, $domainname)",
         module: "",
         protected: "SELECT"
     },
