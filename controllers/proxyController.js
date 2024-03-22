@@ -9,15 +9,14 @@ exports.sendRequest = async (request, response) => {
         const requestConfiguration = {
             hostname: hostname,
             method: method,
-            path: path,
+            path: encodeURI(path),
             port: port,
             rejectUnauthorized: false,
             secureProtocol: "TLSv1_method",
             headers: {
                 Authorization: authorization || "",
-                "Content-Length": JSON.stringify(data || {}).length,
                 "Content-Type": "application/json",
-                Cookie: "ROUTEID=.node3",
+                Cookie: authorization ? `B1SESSION=${authorization}` : "ROUTEID=.node3",
             },
         };
 
@@ -29,7 +28,11 @@ exports.sendRequest = async (request, response) => {
             });
 
             responseData.on("end", () => {
-                return response.status(responseData.statusCode).json(JSON.parse(responseBody));
+                if (checkJson(responseBody)) {
+                    return response.status(responseData.statusCode).json(JSON.parse(responseBody));
+                } else {
+                    return response.status(responseData.statusCode).json({ responseBody });
+                }
             });
         });
 
@@ -37,7 +40,10 @@ exports.sendRequest = async (request, response) => {
             return response.status(500).json({ error });
         });
 
-        requestProcess.write(JSON.stringify(data || {}));
+        if (data) {
+            requestProcess.write(JSON.stringify(data || {}));
+        }
+
         requestProcess.end();
     } catch (exception) {
         return response
@@ -45,3 +51,13 @@ exports.sendRequest = async (request, response) => {
             .json(getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid));
     }
 };
+
+function checkJson(stringData) {
+    try {
+        JSON.parse(stringData);
+    } catch (exception) {
+        return false;
+    }
+
+    return true;
+}
