@@ -4622,4 +4622,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DOMAIN_BY_DOMAINNAME: {
+        query: "SELECT * FROM ufn_domain_by_domainname($corpid, $orgid, $domainname)",
+        module: "",
+        protected: "SELECT"
+    },
 }
