@@ -108,7 +108,7 @@ const connectToDB = async (backup = false) => {
     return await pool.connect();
 };
 
-exports.incremental = async (req, res) => {
+const triggerBackup = async (req) => {
     let infoSelect = null;
     const client = await connectToDB();
     clientBackup = await connectToDB(true);
@@ -127,7 +127,7 @@ exports.incremental = async (req, res) => {
         infoSelect = ResultInfoSelect.rows;
 
         if (!Array.isArray(tablesToBackup) || !Array.isArray(infoSelect)) {
-            return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+            return getErrorCode(errors.UNEXPECTED_ERROR)
         }
         logbackupid = infoSelect[0].logbackupid;
 
@@ -135,7 +135,7 @@ exports.incremental = async (req, res) => {
         // const lastdate = '2023-08-01 00:00:00';
         // const todate = '2023-10-05 00:00:00';
         if (tablesToBackup.length === 0) {
-            return res.status(400).json({ error: false, success: false, message: "there are not tables" });
+            return { error: false, success: false, message: "there are not tables" };
         }
 
         for (const table of tablesToBackup) {
@@ -193,14 +193,20 @@ exports.incremental = async (req, res) => {
 
         client.release();
         clientBackup.release();
-        return res.status(200).json({ success: true, logbackupid });
+        // return res.status(200).json({ success: true, logbackupid });
+        return { success: true }
     } catch (exception) {
         client.query(`select * FROM ufn_logbackup_upd($1, $2, $3, $4)`, [logbackupid, `${exception}`, tables_success.join(","), "ERROR"])
         logger.child({ ctx: infoSelect?.[0].logbackupid, _requestid: req._requestid }).error(`Finish backup incremental ERROR`)
 
         client.release();
         clientBackup.release();
-
-        return res.status(500).json(getErrorCode(null, exception, `Finish backup incremental ERROR ${req.originalUrl}`, req._requestid));
+        // return res.status(500).json();
+        return getErrorCode(null, exception, `Finish backup incremental ERROR ${req.originalUrl}`, req._requestid)
     }
+}
+
+exports.incremental = async (req, res) => {
+    triggerBackup(req);
+    return res.status(200).json({ message: "Backup process started" });
 };
