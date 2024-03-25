@@ -131,6 +131,8 @@ exports.processTransaction = async (request, response) => {
                                                 orgid: orgid,
                                                 personid: paymentorder[0].personid,
                                                 variables: {
+                                                    card_mask: `${requestProcessTransaction?.data?.card?.card_number}`,
+                                                    id_payment: `${requestProcessTransaction.data.id}`,
                                                     last4numbers: `${requestProcessTransaction?.data?.card?.card_number}`.split('&x_quotas=')[0]?.slice(-4),
                                                     syspaymentnotification: "1",
                                                 }
