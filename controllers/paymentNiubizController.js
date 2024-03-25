@@ -165,6 +165,12 @@ exports.authorizeTransaction = async (request, response) => {
                                                 corpid: corpid,
                                                 orgid: orgid,
                                                 personid: paymentorder[0].personid,
+                                                variables: {
+                                                    card_mask: `${requestAuthorizeTransaction?.data?.dataMap?.CARD}`,
+                                                    id_payment: `${requestAuthorizeTransaction.data.header?.ecoreTransactionUUID}`,
+                                                    last4numbers: `${requestAuthorizeTransaction?.data?.dataMap?.CARD}`.split('&x_quotas=')[0]?.slice(-4),
+                                                    syspaymentnotification: "1",
+                                                }
                                             },
                                             method: 'post',
                                             url: `${servicesEndpoint}handler/continueflow`,
