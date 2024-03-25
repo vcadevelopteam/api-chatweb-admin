@@ -369,12 +369,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_INPUTRETRY_SEL: {
-        query: "SELECT * FROM ufn_report_inputretry_sel($corpid , $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset, $distinct)",
+        query: "SELECT * FROM ufn_report_inputretry_sel($corpid , $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $maxx, $maxy, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_INPUTRETRY_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_inputretry_totalrecords($corpid , $orgid, $where, $userid, $startdate, $enddate, $offset, $distinct)",
+        query: "SELECT * FROM ufn_report_inputretry_totalrecords($corpid , $orgid, $where, $userid, $startdate, $enddate, $maxx, $maxy, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
