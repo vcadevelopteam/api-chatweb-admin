@@ -1,14 +1,5 @@
 module.exports = {
-    inputretry: {
-        ticketnum: {
-            column: "co.ticketnum"
-        },
-        channel: {
-            column: "cc.description"
-        },
-        person: {
-            column: "pe.name"
-        },
+    inputretry: {        
         datehour: {
             column: "inter.createdate",
             type: "date"
@@ -25,8 +16,21 @@ module.exports = {
         valid: {
             column: "inter.validinput",
             type: "boolean"
+        },       
+        flow: {
+            column: "inter.flow"
+        },
+        maxxattempts: {
+            column: "count(1) filter (where inter.attempts <= ' || maxx || ')",
+        },
+        maxyattempts: {
+            column: "count(1) filter (where inter.attempts > ' || maxx || ' AND inter.attempts <= ' || maxy || ')"
+        },
+        moreyattempts: {
+            column: "count(1) filter (where inter.attempts > ' || maxy || ')"
         },
     },
+
     tipification: {
         ticket: {
             column: "co.ticketnum"
