@@ -4597,4 +4597,34 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_ASSIGNMENTRULE_SEl: {
+        query: "SELECT * FROM ufn_assignmentrule_sel($corpid, $orgid, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ASSIGNMENTRULE_INS: {
+        query: "SELECT * FROM ufn_assignmentrule_ins($corpid, $orgid, $id, $description, $group, $assignedgroup, $type, $status, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ASSIGNMENTRULE_INS: {
+        query: "SELECT * FROM ufn_assignmentrule_ins($corpid, $orgid, $id, $description, $group, $assignedgroup, $type, $status, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_ASSIGNMENTRULE_MASSIVE_DEL: {
+        query: "SELECT * FROM ufn_assignmentrule_massive_del($corpid, $orgid, $groupslistassignmentruleid, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_ASSIGNMENTRULE_BY_GROUP_SEL: {
+        query: "SELECT * FROM ufn_assignmentrule_by_group_sel($corpid, $orgid, $group, $usergroups)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DOMAIN_BY_DOMAINNAME: {
+        query: "SELECT * FROM ufn_domain_by_domainname($corpid, $orgid, $domainname)",
+        module: "",
+        protected: "SELECT"
+    },
 }
