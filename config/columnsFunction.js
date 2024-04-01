@@ -1,14 +1,5 @@
 module.exports = {
-    inputretry: {
-        ticketnum: {
-            column: "co.ticketnum"
-        },
-        channel: {
-            column: "cc.description"
-        },
-        person: {
-            column: "pe.name"
-        },
+    inputretry: {        
         datehour: {
             column: "inter.createdate",
             type: "date"
@@ -25,14 +16,27 @@ module.exports = {
         valid: {
             column: "inter.validinput",
             type: "boolean"
+        },       
+        flow: {
+            column: "inter.flow"
+        },
+        maxxattempts: {
+            column: "count(1) filter (where inter.attempts <= ' || maxx || ')",
+        },
+        maxyattempts: {
+            column: "count(1) filter (where inter.attempts > ' || maxx || ' AND inter.attempts <= ' || maxy || ')"
+        },
+        moreyattempts: {
+            column: "count(1) filter (where inter.attempts > ' || maxy || ')"
         },
     },
+
     tipification: {
         ticket: {
             column: "co.ticketnum"
         },
         datehour: {
-            column: "co.startdate",
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','YYYY-MM-DD')",
             type: "date"
         },
         enddate: {
@@ -75,15 +79,15 @@ module.exports = {
             column: "co.description3"
         },
     },
-    interaction: {
+    interaction: { //copio el UFN_REPORT_INTERACTION_SEL en la luptia, le doy buscar, click derecho al ufn y script create
         ticketnum: {
             column: "co.ticketnum"
         },
         ticketyear: {
-            column: "to_char(co.startdate + $offset * INTERVAL '1hour','YYYY')"
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','YYYY')"
         },
         ticketmonth: {
-            column: "to_char(co.startdate + $offset * INTERVAL '1hour','MM')"
+            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','MM')"
         },
         ticketdatehour: {
             column: "co.startdate",
@@ -111,8 +115,8 @@ module.exports = {
         intent: {
             column: "inter.intent"
         },
-        ticketgroup: {
-            column: "co.usergroup"
+        ticketgroup: {            
+            column: "COALESCE(co.usergroup, '')"
         },
         email: {
             column: "pe.email"
@@ -169,7 +173,7 @@ module.exports = {
             column: "co.agent"
         },
         ticketgroup: {
-            column: "co.usergroup"
+            column: "COALESCE(co.usergroup, '')"
         },
         closetype: {
             column: "co.closetype"
@@ -181,7 +185,7 @@ module.exports = {
             column: "to_char(co.startdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')"
         },
         enddate: {
-            column: "to_char(co.finishdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY')"
+            column: "co.enddate"
         },
         endtime: {
             column: "to_char(co.finishdate + p_offset * INTERVAL '1hour' :: time, 'HH24:MI:SS')"
@@ -220,7 +224,7 @@ module.exports = {
             column: "pe.email"
         },
         phone: {
-            column: "pe.phone"
+            column: "co.phone"
         },
         swingingtimes: {
             column: "co.balancetimes"
@@ -806,7 +810,16 @@ module.exports = {
         attended: {
             column: "ch.attended",
             type: "number"
-        }
+        },        
+        executiontype: {
+            column: "ca.executiontype",           
+        },
+        executionuser: {
+            column: "causr.firstname||' '||causr.lastname",           
+        },
+        executionuserprofile: {
+            column: "(select string_agg(description, ',') from role where corpid = 1 and orgid = 1 and roleid = any(string_to_array(caous.rolegroups,',')::bigint[]))",
+        },
     },
     lead: {
         opportunity: {
@@ -998,7 +1011,7 @@ module.exports = {
     },
     voicecall: {
         ticketdate: {
-            column: "to_char(co.startdate + p_offset * INTERVAL '1hour','DD/MM/YYYY')"
+            column: "to_char(co.startdate + ' || p_offset || ' * INTERVAL ''1hour'',''DD/MM/YYYY'')"
         },
         tickettime: {
             column: "to_char(co.startdate + p_offset * INTERVAL '1hour','HH24:MI:SS')"
@@ -1315,7 +1328,7 @@ module.exports = {
             column: "cc.description"
         },
         ticketdate: {
-            column: "co.startdate + p_offset * INTERVAL '1hour'",
+            column: "co.startdate + p_offset * INTERVAL '1hour', 'DD/MM/YYYY'",
             type: "date"
         },
         tickettime: {
@@ -1450,6 +1463,9 @@ module.exports = {
         resolution_date: {
             column: "ld.resolution_date",
             type: "date"
+        },
+        resolution: {
+            column: "ld.resolution_date",           
         },
     },
     reportcompliancesla: {
@@ -1676,6 +1692,9 @@ module.exports = {
     inventoryconsumption: {
         inventoryconsumptionid: {
             column: "t.inventoryconsumptionid"
+        },
+        inventoryconsumptionserial: {
+            column: "t.inventoryconsumptionserial"
         },
         description: {
             column: "t.description"

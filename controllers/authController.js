@@ -110,7 +110,7 @@ const validateResProperty = (r, type) => {
 }
 
 exports.authenticate = async (req, res) => {
-    const { data: { usr, password, facebookid, googleid, origin = "WEB", token, token_recaptcha } } = req.body;
+    const { data: { usr, password, facebookid, googleid, origin = "WEB", token, token_recaptcha, cur } } = req.body;
 
     logger.child({ _requestid: req._requestid, body: req.body }).info(`authenticate.body`);
 
@@ -118,6 +118,7 @@ exports.authenticate = async (req, res) => {
 
     if (origin !== "MOVIL" && secret_recaptcha && token_recaptcha) {
         const result_recaptcha = await recaptcha(secret_recaptcha, token_recaptcha);
+
 
         if ((result_recaptcha.error || !result_recaptcha.success)) {
             return res.status(401).json({ code: errors.RECAPTCHA_ERROR, ...result_recaptcha })
@@ -147,6 +148,15 @@ exports.authenticate = async (req, res) => {
         }
 
         const user = result[0];
+
+        if (cur) {
+            const resultCUR = await executesimpletransaction("QUERY_VALIDATE_CUR", { ...result[0], cur });
+            if (!(resultCUR instanceof Array) || resultCUR.length === 0) {
+                return res.status(401).json({ code: errors.CUR_USER_INCORRECT });
+            }
+            user.code = cur;
+        }
+        
 
         if (!integration) {
             const ispasswordmatch = await bcryptjs.compare(password, user.pwd)

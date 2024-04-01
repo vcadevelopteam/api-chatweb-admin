@@ -114,7 +114,7 @@ exports.getCollectionPagination = async (req, res) => {
     setSessionParameters(parameters, req.user, req._requestid);
 
     logger.child({ _requestid: req._requestid, ctx: parameters }).info(`${methodCollection}: ${parameters.username}`);
-
+    //data/parameters tendra distinct para el agrupamiento
     const result = await getCollectionPagination(methodCollection, methodCount, parameters, req.user.menu || {}, req._requestid);
 
     if (!result.error) {

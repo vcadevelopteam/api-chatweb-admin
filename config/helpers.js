@@ -1,6 +1,7 @@
 const columnsFunction = require('./columnsFunction');
 const logger = require('./winston');
 const axios = require('axios')
+const crypto = require('crypto');
 
 exports.generatefilter = (filters, origin, daterange, offset) => {
     let where = "";
@@ -267,6 +268,11 @@ exports.generateSort = (sorts, origin) => {
     return order;
 }
 
+exports.getColumnFromKey = (accessor, origin, offset) => {
+    if (!accessor) return '';
+    return columnsFunction[origin][accessor].column.replace(/###OFFSET###/gi, offset.toString());
+}
+
 exports.setSessionParameters = (parameters, user, id) => {
     if (id)
         parameters._requestid = id;
@@ -278,6 +284,8 @@ exports.setSessionParameters = (parameters, user, id) => {
         parameters.partnerid = user.partnerid;
     if (parameters.username === null || parameters.username === undefined)
         parameters.username = user.usr;
+    if ((parameters.code === null || parameters.code === undefined) && user?.code)
+        parameters.code = user.code;
     if (parameters.userid === null || parameters.userid === undefined)
         parameters.userid = user.userid;
     if (parameters.agentid === null || parameters.agentid === undefined)
@@ -297,6 +305,7 @@ const errorstmp = {
     FORBIDDEN: "E-ZYX-FORBIDDEN",
 
     LOGIN_USER_INCORRECT: "LOGIN_USER_INCORRECT",
+    CUR_USER_INCORRECT: "CUR_USER_INCORRECT",
     LOGIN_USER_PENDING: "LOGIN_USER_PENDING",
     LOGIN_LOCKED_BY_ATTEMPTS_FAILED_PASSWORD: "LOGIN_LOCKED_BY_ATTEMPTS_FAILED_PASSWORD",
     LOGIN_LOCKED_BY_INACTIVED: "LOGIN_LOCKED_BY_INACTIVED",
@@ -540,4 +549,20 @@ exports.recaptcha = async (secret, key) => {
     } catch (error) {
         return { error: true, message: error.message, detail: error.stack, err: error };
     }
+}
+
+exports.decryptString = (encryptedText, passphrase) => {
+    const salt = Buffer.from('e436012c37657c7a1febc9ff250b2ac0', 'ascii');
+    const iv = Buffer.alloc(16, 0); // Inicializando un buffer con ceros para el IV
+    
+    // Derivando la clave usando PBKDF2
+    const key = crypto.pbkdf2Sync(passphrase, salt, 1000, 32, 'sha1');
+  
+    const encryptedTextBuffer = Buffer.from(encryptedText, 'base64');
+    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+  
+    let decrypted = decipher.update(encryptedTextBuffer, 'binary', 'utf8');
+    decrypted += decipher.final('utf8');
+  
+    return decrypted;
 }

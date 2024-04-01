@@ -1,4 +1,4 @@
-const { errors, getErrorCode, axiosObservable } = require('../config/helpers');
+const { errors, getErrorCode, axiosObservable, decryptString } = require('../config/helpers');
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { uploadToCOS, unrar, unzip, xlsxToJSON } = require('../config/filefunctions');
 const { pushNotification } = require('../config/firebase');
@@ -789,7 +789,7 @@ exports.import = async (req, res) => {
 exports.sendHSMcontactos = async (req, res) => {
     const { url, text } = req.body;
     const saa = {
-        type:"image",
+        type: "image",
         text: url
     }
     const responseservices = await axiosObservable({
@@ -882,4 +882,24 @@ exports.sendHSMcontactos = async (req, res) => {
         _requestid: req._requestid,
     });
     return res.json({ success: true });
+}
+
+
+exports.getConversationWithToken = async (req, res) => {
+    try {
+        const { token } = req.params;
+        
+        const textBody = decryptString(Buffer.from(token, "base64").toString(), "LARAIGOVSZYXMEV2QWERTYUIOP")
+        const params = JSON.parse(textBody);
+        
+        const result = await executesimpletransaction("UFN_CONVERSATION_SEL_INTERACTION", {
+            conversationid:params.conversationid, lock:false, conversationold: 0, userid:1
+        });
+        const resultTicket = await executesimpletransaction("UFN_CONVERSATION_PERSON_SEL", params);
+
+        return res.json({ error: false, success: true, interactions: result, ticket: resultTicket });
+
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+    }
 }
