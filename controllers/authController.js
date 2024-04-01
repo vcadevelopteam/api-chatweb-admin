@@ -393,6 +393,11 @@ exports.changeOrganization = async (req, res) => {
             currencysymbol: resultBD[0]?.currencysymbol || 'S/',
             countrycode: resultBD[0]?.countrycode || 'PE',
             paymentmethod: resultBD[0]?.paymentmethod || 'POSTPAGO',
+            domainname: resultBD[0]?.domainname,
+            iconurl: resultBD[0]?.iconurl,
+            logourl: resultBD[0]?.logourl,
+            startlogourl: resultBD[0]?.startlogourl,
+            ispoweredbylaraigo: resultBD[0]?.ispoweredbylaraigo,
         };
 
         const resBDMenu = await executesimpletransaction("UFN_APPLICATION_SEL", newusertoken);
