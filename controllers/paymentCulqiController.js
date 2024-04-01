@@ -53,6 +53,12 @@ exports.newPayment = async (request, response) => {
                                         corpid: paymentorder.corpid,
                                         orgid: paymentorder.orgid,
                                         personid: paymentorder.personid,
+                                        variables: {
+                                            card_mask: `${charge?.source?.card_number}`,
+                                            id_payment: `${charge?.id}`,
+                                            last4numbers: `${charge?.source?.card_number}`.slice(-4),
+                                            syspaymentnotification: "1",
+                                        }
                                     },
                                     method: 'post',
                                     url: `${servicesEndpoint}handler/continueflow`,
