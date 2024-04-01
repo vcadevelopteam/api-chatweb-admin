@@ -54,6 +54,8 @@ exports.newPayment = async (request, response) => {
                                         orgid: paymentorder.orgid,
                                         personid: paymentorder.personid,
                                         variables: {
+                                            card_mask: `${charge?.source?.card_number}`,
+                                            id_payment: `${charge?.id}`,
                                             last4numbers: `${charge?.source?.card_number}`.slice(-4),
                                             syspaymentnotification: "1",
                                         }

@@ -82,6 +82,16 @@ const properties = [
         key: "origin_label",
         type: 'bool',
     },
+    {
+        propertyname: "HABILITARENVIO_AUDIOS",
+        key: "enable_send_audio",
+        type: 'bool',
+    },
+    {
+        propertyname: "TIPIFICACION",
+        key: "obligatory_tipification_close_ticket",
+        type: 'bool',
+    },
 ];
 
 const validateResProperty = (r, type) => {

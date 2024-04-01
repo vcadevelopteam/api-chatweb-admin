@@ -369,12 +369,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_INPUTRETRY_SEL: {
-        query: "SELECT * FROM ufn_report_inputretry_sel($corpid , $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $offset, $distinct)",
+        query: "SELECT * FROM ufn_report_inputretry_sel($corpid , $orgid, $take, $skip, $where, $order, $userid, $startdate, $enddate, $maxx, $maxy, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_INPUTRETRY_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_inputretry_totalrecords($corpid , $orgid, $where, $userid, $startdate, $enddate, $offset, $distinct)",
+        query: "SELECT * FROM ufn_report_inputretry_totalrecords($corpid , $orgid, $where, $userid, $startdate, $enddate, $maxx, $maxy, $offset)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -388,13 +388,18 @@ module.exports = {
         module: "/reports",
         protected: "SELECT"
     },
+    UFN_INTERACTION_CHATFLOWCARDID: {
+        query: "SELECT * FROM ufn_interaction_chatflowcardid($corpid , $orgid, $startdate, $enddate, $chatflowcardid, $offset)",
+        module: "/reports",
+        protected: "SELECT"
+    },
     UFN_REPORT_TIPIFICATION_SEL: {
-        query: "SELECT * FROM ufn_report_tipification_sel($corpid , $orgid, $take, $skip, $where, $order, $channel, $userid, $startdate, $enddate, $offset,$distinct)",
+        query: "SELECT * FROM ufn_report_tipification_sel($corpid , $orgid, $take, $skip, $where, $order, $channel, $userid, $startdate, $enddate, $offset, $distinct)",
         module: "/reports",
         protected: "SELECT"
     },
     UFN_REPORT_TIPIFICATION_TOTALRECORDS: {
-        query: "SELECT * FROM ufn_report_tipification_totalrecords($corpid , $orgid, $where, $channel, $userid, $startdate, $enddate, $offset,$distinct)",
+        query: "SELECT * FROM ufn_report_tipification_totalrecords($corpid , $orgid, $where, $channel, $userid, $startdate, $enddate, $offset, $distinct)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -409,7 +414,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_INTERACTION_SEL: {
-        query: "SELECT * FROM ufn_report_interaction_sel($corpid , $orgid, $take, $skip, $where, $order, $channel, $userid, $startdate, $enddate, $offset,$distinct)",
+        query: "SELECT * FROM ufn_report_interaction_sel($corpid , $orgid, $take, $skip, $where, $order, $channel, $userid, $startdate, $enddate, $offset, $distinct)",
         module: "/reports",
         protected: "SELECT"
     },
@@ -2742,7 +2747,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEADAUTOMATIZATIONRULES_INS: {
-        query: "SELECT * FROM ufn_leadautomatizationrules_ins($corpid, $orgid, $id, $description, $status, $type, $order, $orderstatus , $columnid, $communicationchannelid, $communicationchannelorigin, $messagetemplateid, $messagetemplateparameters, $shippingtype, $xdays, $schedule, $tags, $products, $username, $operation)",
+        query: "SELECT * FROM ufn_leadautomatizationrules_ins($corpid, $orgid, $id, $description, $status, $type, $order, $orderstatus , $columnid, $communicationchannelid, $communicationchannelorigin, $communicationchannelorigin, $messagetemplateid, $messagetemplateparameters, $shippingtype, $xdays, $schedule, $tags, $products, $username, $operation)",
         module: ["/automatizationrules"],
         protected: "INSERT"
     },
@@ -4678,6 +4683,36 @@ module.exports = {
     },
     UFN_REPORT_CONFIGURATION_SEL: {
         query: "SELECT * FROM ufn_report_configuration_sel($corpid, $orgid, $reportname)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ASSIGNMENTRULE_SEl: {
+        query: "SELECT * FROM ufn_assignmentrule_sel($corpid, $orgid, $id, $all)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ASSIGNMENTRULE_INS: {
+        query: "SELECT * FROM ufn_assignmentrule_ins($corpid, $orgid, $id, $description, $group, $assignedgroup, $type, $status, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ASSIGNMENTRULE_INS: {
+        query: "SELECT * FROM ufn_assignmentrule_ins($corpid, $orgid, $id, $description, $group, $assignedgroup, $type, $status, $username, $operation)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_ASSIGNMENTRULE_MASSIVE_DEL: {
+        query: "SELECT * FROM ufn_assignmentrule_massive_del($corpid, $orgid, $groupslistassignmentruleid, $username)",
+        module: "",
+        protected: "INSERT"
+    },
+    UFN_ASSIGNMENTRULE_BY_GROUP_SEL: {
+        query: "SELECT * FROM ufn_assignmentrule_by_group_sel($corpid, $orgid, $group, $usergroups)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DOMAIN_BY_DOMAINNAME: {
+        query: "SELECT * FROM ufn_domain_by_domainname($corpid, $orgid, $domainname)",
         module: "",
         protected: "SELECT"
     },
