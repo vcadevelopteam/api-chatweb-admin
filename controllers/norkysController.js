@@ -4,7 +4,7 @@ const { getErrorCode, errors, axiosObservable } = require("../config/helpers");
 
 exports.SendInfo = async (req, res) => {
     try {
-        const { shopping_order_id, IdTipoPedido, phone, firstname, lastname, address, referencia, IdTipoEmision, TipoEmision, documentnumber, factura_razonsocial, factura_direccionfiscal, factura_ruc, factura_email, observacion, shopping_cart_products, IdTipoPago, Metodo, MontoTotalPagar, MontoPagar, MontoVuelto, Numero, IdTarjeta, Tipo, idlocal, NombreLocal } = req.body;
+        const { shopping_order_id, IdTipoPedido, phone, firstname, lastname, address, referencia, IdTipoEmision, TipoEmision, documentnumber, factura_razonsocial, factura_direccionfiscal, factura_ruc, factura_email, observacion, shopping_cart_products, IdTipoPago, Metodo, MontoTotalPagar, MontoPagar, MontoVuelto, Numero, IdTarjeta, Tipo, idlocal, NombreLocal, Coordenada } = req.body;
 
         const newData = {
             "CodigoOrden": shopping_order_id,
@@ -15,7 +15,8 @@ exports.SendInfo = async (req, res) => {
                 "Nombres": firstname,
                 "Apellidos": lastname,
                 "Direccion": address,
-                "Referencia": referencia
+                "Referencia": referencia,
+                "Coordenada": Coordenada
             },
             "IdTipoEmision": IdTipoEmision,
             "TipoEmision": TipoEmision,
