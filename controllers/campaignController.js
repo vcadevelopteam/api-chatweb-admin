@@ -63,7 +63,7 @@ exports.voxiTrigger = async (req, res) => {
 
 exports.voxiTriggerUnique = async (req, res) => {
     try {
-        const { corpid, orgid, firstname, lastname, phone, message, communicationchannelid } = req.body;
+        const { corpid, orgid, firstname, lastname, phone, message, communicationchannelid, flow } = req.body;
 
         logger.child({ ctx: { corpid, orgid, communicationchannelid, firstname, lastname, phone }, _requestid: req._requestid }).debug(`Request from ${req.originalUrl}`)
 
@@ -73,6 +73,7 @@ exports.voxiTriggerUnique = async (req, res) => {
             script_custom_data: JSON.stringify({
                 onlybot: true,
                 firstname,
+                flow,
                 corpid, orgid, communicationchannelid,
                 lastname,
                 phone,
