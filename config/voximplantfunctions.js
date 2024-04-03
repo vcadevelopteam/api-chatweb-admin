@@ -1046,6 +1046,27 @@ exports.createCallList = async ({ account_id, account_name, child_apikey, rule_i
     }
 }
 
+exports.createTriggerCall = async ({ account_id, account_name, script_custom_data, child_apikey, rule_id, name = new Date().toISOString() }) => {
+    try {
+        const data = {};
+        setChildData({ data, account_id, account_name });
+        data['rule_id'] = rule_id
+        data['script_custom_data'] = script_custom_data
+        
+        data['name'] = name
+        if (child_apikey) {
+            data['child_apikey'] = child_apikey;
+        }
+        console.log("data", data)
+        const result = await voximplantRequest('StartScenarios', data);
+        return result.data;
+    }
+    catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
 exports.createManualCallList = async ({ account_id, account_name, child_apikey, rule_id, name = new Date().toISOString(), file_content, queue_id }) => {
     try {
         const data = {};

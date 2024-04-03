@@ -2111,7 +2111,7 @@ module.exports = {
         protected: "SELECT"
     },
     QUERY_GET_NUMBER_FROM_COMMUNICATIONCHANNEL: {
-        query: "SELECT communicationchannelsite FROM communicationchannel WHERE corpid = $corpid AND orgid = $orgid AND communicationchannelid = $communicationchannelid;",
+        query: "SELECT communicationchannelsite, configsip FROM communicationchannel WHERE corpid = $corpid AND orgid = $orgid AND communicationchannelid = $communicationchannelid;",
         module: "",
         protected: "SELECT"
     },

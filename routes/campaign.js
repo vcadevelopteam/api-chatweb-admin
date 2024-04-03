@@ -23,4 +23,8 @@ router.post("/voxiTrigger",
     campaignController.voxiTrigger
 )
 
+router.post("/voxiTriggerUnique",
+    campaignController.voxiTriggerUnique
+)
+
 module.exports = router;
