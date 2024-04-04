@@ -121,7 +121,13 @@ function findSchedule(nombre) {
             sunday: "12:00-18:00"
         },
         "REPARTO ALFONSO UGARTE": {  
-            //no hay horario       
+            monday: "12:00-22:30",
+            tuesday: "12:00-22:30",
+            wednesday: "12:00-22:30",
+            thursday: "12:00-22:30",
+            friday: "12:00-22:30",
+            saturday: "12:00-22:30",
+            sunday: "12:00-22:30"
         }, 
         "REPARTO AVIACION 24": {
             monday: "12:00-22:00",
@@ -151,16 +157,40 @@ function findSchedule(nombre) {
             sunday: "12:00-22:00"
         },  
         "ZONA ROJA BELLAVISTA RESTAURANTE": {
-            //no hay horario  
+            monday: "12:00-17:00",
+            tuesday: "12:00-17:00",
+            wednesday: "12:00-17:00",
+            thursday: "12:00-17:00",
+            friday: "12:00-17:00",
+            saturday: "12:00-17:00",
+            sunday: "12:00-17:00"
         },  
         "REPARTO CANADA": {  
-            //no hay horario       
+            monday: "12:00-22:00",
+            tuesday: "12:00-22:00",
+            wednesday: "12:00-22:00",
+            thursday: "12:00-22:00",
+            friday: "12:00-22:00",
+            saturday: "12:00-22:00",
+            sunday: "12:00-22:00"    
         },  
         "ZONA ROJA CANADA": {  
-            //no hay horario       
+            monday: "12:00-18:00",
+            tuesday: "12:00-18:00",
+            wednesday: "12:00-18:00",
+            thursday: "12:00-18:00",
+            friday: "12:00-18:00",
+            saturday: "12:00-18:00",
+            sunday: "12:00-18:00"      
         },  
         "REPARTO CANTA CALLAO PATIO": {  
-            //no hay horario       
+            monday: "12:00-22:30",
+            tuesday: "12:00-22:30",
+            wednesday: "12:00-22:30",
+            thursday: "12:00-22:30",
+            friday: "12:00-22:30",
+            saturday: "12:00-22:30",
+            sunday: "12:00-22:30"
         }, 
         "ZONA ROJA CANTA CALLAO PATIO": {  
             //no hay horario       
@@ -184,13 +214,40 @@ function findSchedule(nombre) {
             sunday: "12:00-18:00"
         }, 
         "REPARTO COMAS 2": {  
-            //no hay horario       
+            monday: "12:00-22:30",
+            tuesday: "12:00-22:30",
+            wednesday: "12:00-22:30",
+            thursday: "12:00-22:30",
+            friday: "12:00-22:30",
+            saturday: "12:00-22:30",
+            sunday: "12:00-22:30"     
+        }, 
+        "ZONA ROJA COMAS 2": {
+            monday: "12:00-17:00",
+            tuesday: "12:00-17:00",
+            wednesday: "12:00-17:00",
+            thursday: "12:00-17:00",
+            friday: "12:00-17:00",
+            saturday: "12:00-17:00",
+            sunday: "12:00-17:00"
         }, 
         "REPARTO COMAS 4 SANTA LUZMILA": {  
-            //no hay horario       
+            monday: "12:00-22:30",
+            tuesday: "12:00-22:30",
+            wednesday: "12:00-22:30",
+            thursday: "12:00-22:30",
+            friday: "12:00-22:30",
+            saturday: "12:00-22:30",
+            sunday: "12:00-22:30"         
         },
         "ZONA ROJA COMAS 4 SANTA LUZMILA": {  
-            //no hay horario       
+            monday: "12:00-16:00",
+            tuesday: "12:00-16:00",
+            wednesday: "12:00-16:00",
+            thursday: "12:00-16:00",
+            friday: "12:00-16:00",
+            saturday: "12:00-16:00",
+            sunday: "12:00-16:00"     
         },
         "REPARTO GAMARRA 3": {
             monday: "12:00-20:00",
@@ -211,7 +268,13 @@ function findSchedule(nombre) {
             sunday: "12:00-22:30"
         },
         "REPARTO HABICH": {  
-            //no hay horario       
+            monday: "12:00-22:30",
+            tuesday: "12:00-22:30",
+            wednesday: "12:00-22:30",
+            thursday: "12:00-22:30",
+            friday: "12:00-22:30",
+            saturday: "12:00-22:30",
+            sunday: "12:00-22:30"
         },
         "REPARTO HUANDOY": {
             monday: "12:00-22:30",
@@ -267,6 +330,15 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
         },
+        "ZONA ROJA MARINA 26": {
+            monday: "12:00-19:00",
+            tuesday: "12:00-19:00",
+            wednesday: "12:00-19:00",
+            thursday: "12:00-19:00",
+            friday: "12:00-19:00",
+            saturday: "12:00-19:00",
+            sunday: "12:00-19:00"
+        },
         "REPARTO MEGA PLAZA 2": {
             monday: "12:00-22:00",
             tuesday: "12:00-22:00",
@@ -277,22 +349,16 @@ function findSchedule(nombre) {
             sunday: "12:00-22:00"
         },  
         "REPARTO METRO VENEZUELA": {
-            monday: "12:00-22:00",
-            tuesday: "12:00-22:00",
-            wednesday: "12:00-22:00",
-            thursday: "12:00-22:00",
-            friday: "12:00-22:00",
-            saturday: "12:00-22:00",
-            sunday: "12:00-22:00"
+            monday: "12:00-22:30",
+            tuesday: "12:00-22:30",
+            wednesday: "12:00-22:30",
+            thursday: "12:00-22:30",
+            friday: "12:00-22:30",
+            saturday: "12:00-22:30",
+            sunday: "12:00-22:30"
         },    
         "ZONA ROJA METRO VENEZUELA": {
-            monday: "12:00-17:00",
-            tuesday: "12:00-17:00",
-            wednesday: "12:00-17:00",
-            thursday: "12:00-17:00",
-            friday: "12:00-17:00",
-            saturday: "12:00-17:00",
-            sunday: "12:00-17:00"
+             //no hay horario 
         },  
         "REPARTO MEXICO 1": { 
             monday: "12:00-22:30",
@@ -319,16 +385,16 @@ function findSchedule(nombre) {
             thursday: "12:00-22:30",
             friday: "12:00-22:30",
             saturday: "12:00-22:30",
-            sunday: "12:00-22:00"
+            sunday: "12:00-22:30"
         },
         "ZONA ROJA LA MOLINA": {
-            monday: "12:00-18:00",
-            tuesday: "12:00-18:00",
-            wednesday: "12:00-18:00",
-            thursday: "12:00-18:00",
-            friday: "12:00-18:00",
-            saturday: "12:00-18:00",
-            sunday: "12:00-18:00"
+            monday: "12:00-17:00",
+            tuesday: "12:00-17:00",
+            wednesday: "12:00-17:00",
+            thursday: "12:00-17:00",
+            friday: "12:00-17:00",
+            saturday: "12:00-17:00",
+            sunday: "12:00-17:00"
         },
         "REPARTO OLIVOS": {
             monday: "12:00-22:30",
@@ -358,9 +424,15 @@ function findSchedule(nombre) {
             sunday: "12:00-17:00"
         },
         "REPARTO PERU 1": {  
-            //no hay horario       
+            monday: "12:00-22:30",
+            tuesday: "12:00-22:30",
+            wednesday: "12:00-22:30",
+            thursday: "12:00-22:30",
+            friday: "12:00-22:30",
+            saturday: "12:00-22:30",
+            sunday: "12:00-22:30"     
         },
-        "REPARTO PERU 2": { //PREGUNTAR si horario Perú 2 es para tienda Norkys Perú (este se vinculó actualmente a tienda Norkys Perú 2)
+        "REPARTO PERU 2": { 
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
             wednesday: "12:00-22:30",
@@ -397,7 +469,13 @@ function findSchedule(nombre) {
             sunday: "12:00-22:30"
         },
         "REPARTO RIMAC": {  
-            //no hay horario       
+            monday: "12:00-22:30",
+            tuesday: "12:00-22:30",
+            wednesday: "12:00-22:30",
+            thursday: "12:00-22:30",
+            friday: "12:00-22:30",
+            saturday: "12:00-22:30",
+            sunday: "12:00-22:30"     
         },
         "ZONA ROJA RIMAC": {  
             //no hay horario       
@@ -421,24 +499,6 @@ function findSchedule(nombre) {
             sunday: "12:00-22:00"
         },
         "ZONA ROJA SANTA ANITA MALL": {
-            monday: "12:00-18:00",
-            tuesday: "12:00-18:00",
-            wednesday: "12:00-18:00",
-            thursday: "12:00-18:00",
-            friday: "12:00-18:00",
-            saturday: "12:00-18:00",
-            sunday: "12:00-18:00"
-        },
-        "REPARTO Norky's SANTA ANITA 2": { //PREGUNTAR si se excluye horario, no tiene store id en lista
-            monday: "12:00-21:30",
-            tuesday: "12:00-21:30",
-            wednesday: "12:00-21:30",
-            thursday: "12:00-21:30",
-            friday: "12:00-21:30",
-            saturday: "12:00-21:30",
-            sunday: "12:00-21:30"
-        },
-        "ZONA ROJA SANTA ANITA 2": { //PREGUNTAR si se excluye horario, no tiene store id en lista
             monday: "12:00-17:00",
             tuesday: "12:00-17:00",
             wednesday: "12:00-17:00",
@@ -446,7 +506,7 @@ function findSchedule(nombre) {
             friday: "12:00-17:00",
             saturday: "12:00-17:00",
             sunday: "12:00-17:00"
-        },
+        },      
         "REPARTO SUCRE": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
@@ -456,20 +516,44 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
         },
-        "REPARTO VENEZUELA": {   // PPREGUNTAR si horario Metro Venezuela es para tienda Norkys Venezuela
-            //no hay horario       
+        "REPARTO VENEZUELA": {  
+            monday: "12:00-22:30",
+            tuesday: "12:00-22:30",
+            wednesday: "12:00-22:30",
+            thursday: "12:00-22:30",
+            friday: "12:00-22:30",
+            saturday: "12:00-22:30",
+            sunday: "12:00-22:30"   
         },
         "REPARTO VENTANILLA": {
-            //no hay horario       
+            monday: "12:00-22:30",
+            tuesday: "12:00-22:30",
+            wednesday: "12:00-22:30",
+            thursday: "12:00-22:30",
+            friday: "12:00-22:30",
+            saturday: "12:00-22:30",
+            sunday: "12:00-22:30"    
         },
         "ZONA ROJA VENTANILLA": {
-            //no hay horario       
+            monday: "12:00-20:00",
+            tuesday: "12:00-20:00",
+            wednesday: "12:00-20:00",
+            thursday: "12:00-20:00",
+            friday: "12:00-20:00",
+            saturday: "12:00-20:00",
+            sunday: "12:00-20:00"   
         },
         "REPARTO VILLA EL SALVADOR 1": {
             //no hay horario       
         },
         "REPARTO VILLA EL SALVADOR 2": {
-            //no hay horario       
+            monday: "13:00-22:30",
+            tuesday: "13:00-22:30",
+            wednesday: "13:00-22:30",
+            thursday: "13:00-22:30",
+            friday: "13:00-22:30",
+            saturday: "13:00-22:30",
+            sunday: "13:00-22:30"             
         },
         "REPARTO VILLA MARIA": {
             monday: "12:00-22:30",
@@ -481,13 +565,13 @@ function findSchedule(nombre) {
             sunday: "12:00-22:30"
         },
         "REPARTO VITARTE 2": {
-            monday: "12:00-22:30",
-            tuesday: "12:00-22:30",
-            wednesday: "12:00-22:30",
-            thursday: "12:00-22:30",
-            friday: "12:00-22:30",
-            saturday: "00:00-22:30",
-            sunday: "12:00-22:30"
+            monday: "13:00-22:30",
+            tuesday: "13:00-22:30",
+            wednesday: "13:00-22:30",
+            thursday: "13:00-22:30",
+            friday: "13:00-22:30",
+            saturday: "13:00-22:30",
+            sunday: "13:00-22:30"     
         },
         "ZONA ROJA VITARTE 2": {
             monday: "12:00-18:00",
@@ -506,34 +590,7 @@ function findSchedule(nombre) {
             friday: "12:00-22:30",
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
-        },
-         "REPARTO FAUCETT": { //PREGUNTAR si se excluye horario, no tiene store id en lista
-            monday: "12:00-22:30",
-            tuesday: "12:00-22:30",
-            wednesday: "12:00-22:30",
-            thursday: "12:00-22:30",
-            friday: "12:00-22:30",
-            saturday: "12:00-22:30",
-            sunday: "12:00-22:30"
-        },     
-        "ZONA ROJA FAUCETT": { //PREGUNTAR si se excluye horario, no tiene store id en lista
-            monday: "12:00-16:00",
-            tuesday: "12:00-16:00",
-            wednesday: "12:00-16:00",
-            thursday: "12:00-16:00",
-            friday: "12:00-16:00",
-            saturday: "12:00-16:00",
-            sunday: "12:00-16:00"
-        },             
-        "REPARTO PLAZA CASTILLA": { //PREGUNTAR si se excluye horario, no tiene store id en lista
-            monday: "12:00-21:00",
-            tuesday: "12:00-21:00",
-            wednesday: "12:00-21:00",
-            thursday: "12:00-21:00",
-            friday: "12:00-21:00",
-            saturday: "12:00-21:00",
-            sunday: "12:00-21:00"
-        },         
+        },       
     };
 
     const lowerCaseName = removeAccents(nombre.toLowerCase());
