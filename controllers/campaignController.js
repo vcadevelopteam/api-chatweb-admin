@@ -60,6 +60,57 @@ exports.voxiTrigger = async (req, res) => {
     }
 }
 
+
+exports.voxiTriggerUnique = async (req, res) => {
+    try {
+        const { corpid, orgid, firstname, lastname, phone, message, communicationchannelid, flow } = req.body;
+
+        logger.child({ ctx: { corpid, orgid, communicationchannelid, firstname, lastname, phone }, _requestid: req._requestid }).debug(`Request from ${req.originalUrl}`)
+
+        const voxinumber = await executesimpletransaction("QUERY_GET_NUMBER_FROM_COMMUNICATIONCHANNEL", { corpid, orgid, communicationchannelid });
+
+        const bodyToSend = {
+            script_custom_data: JSON.stringify({
+                onlybot: true,
+                firstname,
+                flow,
+                corpid, orgid, communicationchannelid,
+                lastname,
+                phone,
+                personcommunicationchannelowner: phone,
+                caller_id: voxinumber[0].communicationchannelsite,
+                configSIP: voxinumber[0].configsip,
+                message
+            })
+        };
+
+        // Try to get information of VOXI in org table
+        const voxiorgdata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_ORG", { corpid, orgid });
+
+        // If exists info of VOXI in org
+        if (voxiorgdata instanceof Array && voxiorgdata.length > 0) {
+            bodyToSend['account_id'] = voxiorgdata[0].voximplantaccountid;
+            bodyToSend['child_apikey'] = voxiorgdata[0].voximplantapikey;
+            bodyToSend['application_id'] = voxiorgdata[0].voximplantapplicationid;
+            bodyToSend['rule_id'] = voxiorgdata[0].voximplantcampaignruleid;
+        }
+
+        let callListResult = await voximplant.createTriggerCall(bodyToSend)
+        console.log("callListResult", callListResult)
+        if (callListResult?.result) {
+            bodyToSend['list_id'] = callListResult?.list_id;
+            result = [callListResult?.list_id];
+
+            return res.json({ error: false, result });
+        }
+
+        return res.json({ error: true });
+    }
+    catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request from ${req.originalUrl}`, req._requestid));
+    }
+}
+
 // parameters = {
 // firstname,
 // lastname,
@@ -132,7 +183,7 @@ exports.voxiTriggerHSM = async (req, res) => {
                 return res.status(500).json({
                     error: false,
                     message: 'No information of VOXI in org table'
-                });    
+                });
             }
 
             let callListResult = await voximplant.createCallList(bodyToSend)
@@ -333,7 +384,7 @@ exports.stop = async (req, res) => {
                     }
 
                     let callListResult = await voximplant.stopCallListProcessing(req.body)
-                    
+
                     result = await executesimpletransaction("QUERY_CAMPAIGN_STOP", {
                         corpid: req.body.corpid,
                         orgid: req.body.orgid,
