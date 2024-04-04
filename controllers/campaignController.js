@@ -63,7 +63,7 @@ exports.voxiTrigger = async (req, res) => {
 
 exports.voxiTriggerUnique = async (req, res) => {
     try {
-        const { corpid, orgid, firstname, lastname, phone, message, communicationchannelid, flow } = req.body;
+        const { corpid, orgid, firstname, lastname, phone, variables, communicationchannelid, flow } = req.body;
 
         logger.child({ ctx: { corpid, orgid, communicationchannelid, firstname, lastname, phone }, _requestid: req._requestid }).debug(`Request from ${req.originalUrl}`)
 
@@ -80,7 +80,7 @@ exports.voxiTriggerUnique = async (req, res) => {
                 personcommunicationchannelowner: phone,
                 caller_id: voxinumber[0].communicationchannelsite,
                 configSIP: voxinumber[0].configsip,
-                message
+                variables
             })
         };
 
