@@ -18,6 +18,7 @@ pipeline {
                 sh 'cd /var/www/html/api-laraigo-dev'
                 sh 'npm install'
                 sh 'sudo pm2 restart 1'
+                //comment test
             }
         }
     }
