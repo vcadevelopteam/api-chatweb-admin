@@ -9,6 +9,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'cd /var/www/html/api-laraigo-dev'
+                sh 'pwd'
                 sh 'sudo git checkout testing'
                 sh 'sudo git pull'
             }
