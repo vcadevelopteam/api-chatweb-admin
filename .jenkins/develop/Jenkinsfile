@@ -14,7 +14,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh 'cd /var/www/html/api-laraigo-dev'
-                sh 'sudo git pull'
+                sh 'sudo git branch'
                 sh 'npm install'
                 sh 'sudo pm2 restart 1'
             }
