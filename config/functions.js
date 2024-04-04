@@ -1223,7 +1223,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_TABLE_VARIABLE_LST: {
-        query: "SELECT * FROM ufn_tablevariable_sel()",
+        query: "SELECT * FROM ufn_tablevariable_sel($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
