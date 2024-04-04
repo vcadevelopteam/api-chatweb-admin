@@ -8,15 +8,11 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'cd /var/www/html/api-laraigo-test'
-                sh 'sudo git checkout testing'
-                sh 'sudo git pull'
+                sh 'cd /var/www/html/api-laraigo-test && sudo git checkout testing && sudo git pull && sudo npm install'
             }
         }
         stage('Deploy') {
             steps {
-                sh 'cd /var/www/html/api-laraigo-test'
-                sh 'npm install'
                 sh 'sudo pm2 restart 2'
             }
         }
