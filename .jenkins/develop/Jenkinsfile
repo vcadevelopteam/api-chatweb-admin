@@ -6,14 +6,15 @@ pipeline {
     }
 
     stages {
-        stage('Build') {
+        /*stage('Build') {
             steps {
                 sh 'sudo rsync -av --delete * /var/www/html/api-laraigo-dev'
             }
-        }
+        }*/
         stage('Deploy') {
             steps {
                 sh 'cd /var/www/html/api-laraigo-dev'
+                sh 'git pull'
                 sh 'npm install'
                 sh 'sudo pm2 restart 1'
             }
