@@ -551,16 +551,7 @@ function findSchedule(nombre) {
             friday: "12:00-20:00",
             saturday: "12:00-20:00",
             sunday: "12:00-20:00"   
-        },
-        "REPARTO VILLA EL SALVADOR 1": {
-            monday: "13:00-22:30",
-            tuesday: "13:00-22:30",
-            wednesday: "13:00-22:30",
-            thursday: "13:00-22:30",
-            friday: "13:00-22:30",
-            saturday: "13:00-22:30",
-            sunday: "13:00-22:30"      
-        },
+        },      
         "REPARTO VILLA EL SALVADOR 2": {
             monday: "13:00-22:30",
             tuesday: "13:00-22:30",
@@ -674,14 +665,26 @@ function findStoreId(nombre) {
         "REPARTO ZARATE": 169,  
     };
     
-
     const lowerCaseName = removeAccents(nombre.toLowerCase());
+    let bestSimilarity = 0;
+    let bestStoreId = null;
+
     for (const storeName in storeData) {
-        if (lowerCaseName.includes(storeName.toLowerCase())) {
-            return storeData[storeName];
+        const keyWords = storeName.split(" ");
+        const similarity = keyWords.reduce((total, word) => {
+            if (lowerCaseName.includes(word.toLowerCase())) {
+                return total + 1;
+            }
+            return total;
+        }, 0);
+
+        if (similarity > bestSimilarity) {
+            bestSimilarity = similarity;
+            bestStoreId = storeData[storeName];
         }
     }
-    return 0;  
+
+    return bestStoreId !== null ? bestStoreId : 0;
 }
 
 exports.polygonsinsertmassive = async (req, res) => {
