@@ -1227,6 +1227,21 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CUSTOM_VARIABLE_APPLICATION_SEL: {
+        query: "SELECT * FROM public.ufn_custom_variable_application_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CUSTOM_VARIABLE_SEL: {
+        query: "SELECT * FROM public.ufn_custom_variable_sel($corpid, $orgid, $customvariableapplicationid)",
+        module: "",
+        protected: "SELECT"
+    },
+    ufn_custom_variable_ins: {
+        query: "SELECT * FROM public.ufn_custom_variable_ins($id, $corpid, $orgid, $customvariableapplicationid, $variablename, $description, $variabletype, $status, $operation, $username)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_DOMAIN_LST: {
         query: "SELECT * FROM ufn_domain_lst($corpid, $orgid)",
         module: "",
