@@ -165,7 +165,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_USER_INS: {
-        query: "SELECT * FROM ufn_user_ins($corpid, $orgid, $id, $usr, $doctype, $docnum, $password, $firstname, $lastname, $email, $pwdchangefirstlogin, $type, $status, $description, $username, $operation, $company, $twofactorauthentication, $registercode, $billinggroup, $image)",
+        query: "SELECT * FROM ufn_user_ins($corpid, $orgid, $id, $usr, $doctype, $docnum, $password, $firstname, $lastname, $email, $pwdchangefirstlogin, $type, $status, $description, $username, $operation, $company, $twofactorauthentication, $registercode, $billinggroup, $image, '', $variablecontext)",
         module: ["/extras/users"],
         protected: "INSERT"
     },
