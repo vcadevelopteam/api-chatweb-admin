@@ -18,7 +18,7 @@ router.post('/query',
     llamaController.query
 )
 
-router.delete('/delete_collection',
+router.post('/delete_collection',
     auth,
     llamaController.deleteCollection
 )

@@ -15,8 +15,8 @@ exports.createCollection = async (req, res) => {
       _requestid: req._requestid,
     });
 
-    if (responseCollection.data && responseCollection.statusText === "OK") {
-      return res.json(responseCollection.data);
+    if (responseCollection.data && responseCollection.statusText === "CREATED") {
+      return res.json({...responseCollection.data, success: true});
     }
     return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
   } catch (exception) {
@@ -47,7 +47,7 @@ exports.addFile = async (req, res) => {
 		_requestid: req._requestid,
 	});
 
-	if (responseAddFile.data && responseAddFile.statusText === "OK") {
+	if (responseAddFile.data && responseAddFile.statusText === "CREATED") {
 		return res.json(responseAddFile.data);
 	}
 	return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
@@ -80,7 +80,7 @@ exports.query = async (req, res) => {
 	  });
   
 	  if (responseQuery.data && responseQuery.statusText === "OK") {
-		  return res.json(responseQuery.data);
+		  return res.json({data: responseQuery.data});
 	  }
 	  return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
 	} catch (exception) {
@@ -106,7 +106,7 @@ exports.query = async (req, res) => {
 		  Authorization: req.headers.authorization,
 		  "Content-Type": "application/json",
 		},
-		method: "delete",
+		method: "post",
 		url: `${process.env.LLAMA}/delete_collection`,
 		_requestid: req._requestid,
 	  });
