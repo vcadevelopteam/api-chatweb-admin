@@ -8,19 +8,29 @@ router.post('/create_collection',
     llamaController.createCollection
 )
 
+router.post('/delete_collection',
+    auth,
+    llamaController.deleteCollection
+)
+
+router.post('/edit_collection',
+    auth,
+    llamaController.editCollection
+)
+
 router.post('/add_file',
     auth,
     llamaController.addFile
 )
 
+router.post('/delete_file',
+    auth,
+    llamaController.deleteFile
+)
+
 router.post('/query',
     auth,
     llamaController.query
-)
-
-router.post('/delete_collection',
-    auth,
-    llamaController.deleteCollection
 )
 
 module.exports = router;
