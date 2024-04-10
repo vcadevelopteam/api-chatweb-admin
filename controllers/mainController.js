@@ -253,7 +253,7 @@ exports.exportWithCursor = async (req, res) => {
 
         const { query, values } = getQuery(method, parameters, parameters.isNotPaginated);
 
-        logger.debug(`executing ${query}`)
+        logger.debug(`executing ${query} parameters: ${JSON.stringify(parameters)}`)
 
         const cursor = client.query(new Cursor(query, values));
 
