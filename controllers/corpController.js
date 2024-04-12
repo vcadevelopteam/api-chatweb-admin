@@ -39,7 +39,7 @@ exports.insCorp = async (req, res) => {
             if (pageRule.error) {
                 succesdomain = false;
             }
-            await updateDomainRecaptcha(DNS.result.name)
+            await updateDomainRecaptcha(DNS.result.name, req._requestid)
         }
         return res.json({ error: false, success: true, data: result, key, succesdomain });
     }

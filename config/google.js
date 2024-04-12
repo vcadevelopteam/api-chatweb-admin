@@ -14,12 +14,11 @@ async function getTokenAuth() {
         console.log("accessToken", accessToken)
         return accessToken.token;
     } catch (error) {
-        console.error('Error al obtener el token de autenticación:', error);
         return null;
     }
 }
 
-const getDomains = async (token, projectId, keyid) => {
+const getDomains = async (token, projectId, keyid, _requestid) => {
     const url = `https://recaptchaenterprise.googleapis.com/v1/projects/${projectId}/keys/${keyid}`;
 
     try {
@@ -37,7 +36,7 @@ const getDomains = async (token, projectId, keyid) => {
     }
 };
 
-async function AddDomainToKey(token, projectId, keyId, domains) {
+async function AddDomainToKey(token, projectId, keyId, domains, _requestid) {
     const url = `https://recaptchaenterprise.googleapis.com/v1/projects/${projectId}/keys/${keyId}?updateMask=webSettings.allowedDomains`;
     const body = {
         webSettings: {
@@ -58,7 +57,7 @@ async function AddDomainToKey(token, projectId, keyId, domains) {
     }
 }
 
-exports.updateDomainRecaptcha = async (newdomain) => {
+exports.updateDomainRecaptcha = async (newdomain, _requestid) => {
     const projectId = 'zyxme-263623';
     const keyId = '6LeOA44nAAAAAMsIQ5QyEg-gx6_4CUP3lekPbT0n';
 
@@ -67,16 +66,16 @@ exports.updateDomainRecaptcha = async (newdomain) => {
         if (token.error) {
             throw new Error("Error to get auth token")
         }
-        const webdomains = await getDomains(token, projectId, keyId);
+        const webdomains = await getDomains(token, projectId, keyId, _requestid);
         if (webdomains.error) {
             throw new Error("Error to get webdomains")
         }
-        const resx = await AddDomainToKey(token, projectId, keyId, [...webdomains, newdomain]);
+        const resx = await AddDomainToKey(token, projectId, keyId, [...webdomains, newdomain], _requestid);
         if (resx.error) {
             throw new Error("Error to update domains")
         }
         return resx
     } catch (exception) {
-        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing createDNS", _requestid);;
+        return getErrorCode(errors.UNEXPECTED_ERROR, exception, "Executing updateDomainRecaptcha", _requestid);;
     }
 };
