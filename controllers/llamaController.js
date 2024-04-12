@@ -33,6 +33,38 @@ exports.createCollection = async (req, res) => {
   }
 };
 
+exports.createCollectionDocument = async (req, res) => {
+  try {
+    const { collection, url } = req.body;
+    let responseCollectionDocument = await axiosObservable({
+      data: { collection: collection, url: url },
+      headers: {
+        Authorization: req.headers.authorization,
+        "Content-Type": "application/json",
+      },
+      method: "post",
+      url: `${process.env.LLAMA}/create_collection_document`,
+      _requestid: req._requestid,
+    });
+
+    if (responseCollectionDocument.data && responseCollectionDocument.statusText === "OK") {
+      return res.json({ ...responseCollectionDocument.data, success: true });
+    }
+    return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+  } catch (exception) {
+    return res
+      .status(500)
+      .json(
+        getErrorCode(
+          null,
+          exception,
+          `Request to ${req.originalUrl}`,
+          req._requestid
+        )
+      );
+  }
+};
+
 exports.deleteCollection = async (req, res) => {
   try {
     const { name } = req.body;

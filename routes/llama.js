@@ -8,6 +8,11 @@ router.post('/create_collection',
     llamaController.createCollection
 )
 
+router.post('/create_collection_document',
+    auth,
+    llamaController.createCollectionDocument
+)
+
 router.post('/delete_collection',
     auth,
     llamaController.deleteCollection
