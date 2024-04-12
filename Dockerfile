@@ -24,5 +24,6 @@ RUN npm install --${NODE_ENV}
 COPY . .
 EXPOSE ${PORT}
 COPY "${CONFIGFILE}" ./.env
+COPY "googleauth.json" ./googleauth.json
 COPY "voximplant_credentials.json" ./voximplant_credentials.json
 CMD npm run start
