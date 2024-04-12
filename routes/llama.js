@@ -13,6 +13,11 @@ router.post('/delete_collection',
     llamaController.deleteCollection
 )
 
+router.post('/massive_delete',
+    auth,
+    llamaController.massiveDeleteCollection
+)
+
 router.post('/edit_collection',
     auth,
     llamaController.editCollection

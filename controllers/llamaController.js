@@ -68,6 +68,41 @@ exports.deleteCollection = async (req, res) => {
   }
 };
 
+exports.massiveDeleteCollection = async (req, res) => {
+  try {
+    const { names } = req.body;
+    let responseMassiveDeleteCollection = await axiosObservable({
+      data: { names: names },
+      headers: {
+        Authorization: req.headers.authorization,
+        "Content-Type": "application/json",
+      },
+      method: "post",
+      url: `${process.env.LLAMA}/massive_delete`,
+      _requestid: req._requestid,
+    });
+
+    if (
+      responseMassiveDeleteCollection.data &&
+      responseMassiveDeleteCollection.statusText === "OK"
+    ) {
+      return res.json(responseMassiveDeleteCollection.data);
+    }
+    return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+  } catch (exception) {
+    return res
+      .status(500)
+      .json(
+        getErrorCode(
+          null,
+          exception,
+          `Request to ${req.originalUrl}`,
+          req._requestid
+        )
+      );
+  }
+};
+
 exports.editCollection = async (req, res) => {
   try {
     const { name, new_name } = req.body;
@@ -169,12 +204,13 @@ exports.deleteFile = async (req, res) => {
 
 exports.query = async (req, res) => {
   try {
-    const { collection, query, system_prompt } = req.body;
+    const { collection, query, system_prompt, model } = req.body;
     let responseQuery = await axiosObservable({
       data: {
         collection: collection,
         query: query,
         system_prompt: system_prompt,
+        model: model
       },
       headers: {
         Authorization: req.headers.authorization,
