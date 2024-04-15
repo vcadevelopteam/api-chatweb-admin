@@ -12,7 +12,11 @@ exports.insCorp = async (req, res) => {
     let succesdomain = false;
     const { key } = req.body;
     const method = "UFN_CORP_INS";
-    let triggerDomain = parameters.olddomainname !== parameters.domainname;
+    let triggerDomain = parameters.operation !== "DELETE" && parameters.olddomainname !== parameters.domainname;
+
+    if (parameters.operation === "DELETE") {
+        parameters.domainname = null;
+    }
 
     setSessionParameters(parameters, req.user, req._requestid);
 
@@ -39,7 +43,7 @@ exports.insCorp = async (req, res) => {
             if (pageRule.error) {
                 succesdomain = false;
             }
-            await updateDomainRecaptcha(DNS.result.name)
+            await updateDomainRecaptcha(DNS.result.name, req._requestid)
         }
         return res.json({ error: false, success: true, data: result, key, succesdomain });
     }
