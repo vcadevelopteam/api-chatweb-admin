@@ -140,6 +140,7 @@ const getXlsxFile = (data, metacatalogid, override) => {
 
     let simplifiedData = dataRows.map((field) => {
         let customlabels = [field.custom_label_0, field.custom_label_1, field.custom_label_2, field.custom_label_3, field.custom_label_4];
+        let customnumbers = [field.custom_number_0, field.custom_number_1, field.custom_number_2, field.custom_number_3, field.custom_number_4];
 
         var table = {
             metacatalogid: metacatalogid || 0,
@@ -167,6 +168,7 @@ const getXlsxFile = (data, metacatalogid, override) => {
             datelaunch: field.launch_date || null,
             dateexpiration: field.expiration_date || null,
             labels: customlabels ? customlabels.join(',') : '',
+            numbers: customnumbers ? customnumbers.join(',') : '',
             customlabel0: field.custom_label_0 || '',
             customlabel1: field.custom_label_1 || '',
             customlabel2: field.custom_label_2 || '',
