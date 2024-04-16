@@ -1238,7 +1238,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CUSTOM_VARIABLE_INS: {
-        query: "SELECT * FROM public.ufn_custom_variable_ins($id, $corpid, $orgid, $customvariableapplicationid, $variablename, $description, $variabletype, $status, $operation, $username)",
+        query: "SELECT * FROM public.ufn_custom_variable_ins($id, $corpid, $orgid, $customvariableapplicationid, $variablename, $description, $variabletype, $status, $operation, $username, $domainname)",
         module: "",
         protected: "SELECT"
     },
