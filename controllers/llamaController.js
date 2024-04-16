@@ -236,13 +236,14 @@ exports.deleteFile = async (req, res) => {
 
 exports.query = async (req, res) => {
   try {
-    const { collection, query, system_prompt, model } = req.body;
+    const { collection, query, system_prompt, model, threadid } = req.body;
     let responseQuery = await axiosObservable({
       data: {
         collection: collection,
         query: query,
         system_prompt: system_prompt,
-        model: model
+        model: model,
+        threadid: threadid
       },
       headers: {
         Authorization: req.headers.authorization,
@@ -255,6 +256,41 @@ exports.query = async (req, res) => {
 
     if (responseQuery.data && responseQuery.statusText === "OK") {
       return res.json({ data: responseQuery.data });
+    }
+    return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+  } catch (exception) {
+    return res
+      .status(500)
+      .json(
+        getErrorCode(
+          null,
+          exception,
+          `Request to ${req.originalUrl}`,
+          req._requestid
+        )
+      );
+  }
+};
+
+exports.deleteThread = async (req, res) => {
+  try {
+    const { threadid } = req.body;
+    let responseDeleteThread = await axiosObservable({
+      data: { threadid: threadid },
+      headers: {
+        Authorization: req.headers.authorization,
+        "Content-Type": "application/json",
+      },
+      method: "post",
+      url: `${process.env.LLAMA}/delete_thread`,
+      _requestid: req._requestid,
+    });
+
+    if (
+      responseDeleteThread.data &&
+      responseDeleteThread.statusText === "OK"
+    ) {
+      return res.json(responseDeleteThread.data);
     }
     return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
   } catch (exception) {

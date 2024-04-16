@@ -43,4 +43,9 @@ router.post('/query',
     llamaController.query
 )
 
+router.post('/delete_thread',
+    auth,
+    llamaController.deleteThread
+)
+
 module.exports = router;
