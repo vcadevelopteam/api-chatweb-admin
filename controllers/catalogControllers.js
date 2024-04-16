@@ -923,7 +923,7 @@ exports.synchroProduct = async (request, response) => {
                             datelaunch: data?.launch_date || null,
                             dateexpiration: data?.expiration_date || null,
                             labels: `${data?.custom_label_0},${data?.custom_label_1},${data?.custom_label_2},${data?.custom_label_3},${data?.custom_label_4}`,
-                            numbers: `${data?.custom_label_0},${data?.custom_number_1},${data?.custom_number_2},${data?.custom_number_3},${data?.custom_number_4}`,
+                            numbers: `${data?.custom_number_0},${data?.custom_number_1},${data?.custom_number_2},${data?.custom_number_3},${data?.custom_number_4}`,
                             customlabel0: data?.custom_label_0 || '',
                             customlabel1: data?.custom_label_1 || '',
                             customlabel2: data?.custom_label_2 || '',
