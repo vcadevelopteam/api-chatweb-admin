@@ -598,9 +598,9 @@ exports.manageProduct = async (request, response) => {
 
                             let facebookretailerid = retailerid;
 
-                            if (haslink) {
-                                const config = { headers: { Authorization: 'Bearer ' + accessToken } };
+                            const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
+                            if (haslink) {
                                 if (!facebookretailerid) {
                                     let requestUrl = `${facebookEndpoint}${catalogid}/products?access_token=${accessToken}`;
                                     let continueLoop = true;
@@ -724,9 +724,9 @@ exports.manageProduct = async (request, response) => {
 
                             let facebookretailerid = retailerid;
 
-                            if (haslink) {
-                                const config = { headers: { Authorization: 'Bearer ' + accessToken } };
+                            const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
+                            if (haslink) {
                                 if (!facebookretailerid) {
                                     let requestUrl = `${facebookEndpoint}${catalogid}/products?access_token=${accessToken}`;
                                     let continueLoop = true;
@@ -1001,9 +1001,9 @@ exports.deleteProduct = async (request, response) => {
 
                         let facebookretailerid = productdata.retailerid;
 
-                        if (haslink) {
-                            const config = { headers: { Authorization: 'Bearer ' + accessToken } };
+                        const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
+                        if (haslink) {
                             if (!facebookretailerid) {
                                 let requestUrl = `${facebookEndpoint}${catalogid}/products?bulk_pagination=true&access_token=${accessToken}`;
                                 let continueLoop = true;
