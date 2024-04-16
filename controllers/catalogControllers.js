@@ -245,7 +245,7 @@ exports.getBusinessList = async (request, response) => {
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
             let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
-            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`.split('https://developers.facebook.com/docs/').join(''), exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
             return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
@@ -389,7 +389,7 @@ exports.manageCatalog = async (request, response) => {
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
             let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
-            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`.split('https://developers.facebook.com/docs/').join(''), exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
             return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
@@ -479,7 +479,7 @@ exports.synchroCatalog = async (request, response) => {
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
             let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
-            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`.split('https://developers.facebook.com/docs/').join(''), exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
             return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
@@ -823,7 +823,7 @@ exports.manageProduct = async (request, response) => {
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
             let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
-            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`.split('https://developers.facebook.com/docs/').join(''), exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
             return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
@@ -962,7 +962,7 @@ exports.synchroProduct = async (request, response) => {
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
             let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
-            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`.split('https://developers.facebook.com/docs/').join(''), exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
             return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
@@ -1099,7 +1099,7 @@ exports.deleteProduct = async (request, response) => {
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
             let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
-            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`.split('https://developers.facebook.com/docs/').join(''), exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
             return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
@@ -1207,7 +1207,7 @@ exports.importProduct = async (request, response) => {
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
             let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
-            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`.split('https://developers.facebook.com/docs/').join(''), exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
             return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
@@ -1245,7 +1245,7 @@ exports.downloadProduct = async (request, response) => {
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
             let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
-            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`.split('https://developers.facebook.com/docs/').join(''), exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
             return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
