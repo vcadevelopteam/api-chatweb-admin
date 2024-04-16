@@ -127,7 +127,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_STORE_SEL: {
-        query: "SELECT * FROM ufn_store_sel($id, $all)",
+        query: "SELECT * FROM ufn_store_sel($corpid, $orgid, $id, $all)",
         module: "/extras/users",
         protected: "SELECT"
     },
