@@ -1242,6 +1242,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_DOMAIN_VALUE_SEL_BY_LIST: {
+        query: "SELECT * FROM public.ufn_domain_value_sel_by_list($corpid, $orgid, $domainnamelist)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_DOMAIN_LST: {
         query: "SELECT * FROM ufn_domain_lst($corpid, $orgid)",
         module: "",
