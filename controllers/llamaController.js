@@ -236,14 +236,14 @@ exports.deleteFile = async (req, res) => {
 
 exports.query = async (req, res) => {
   try {
-    const { collection, query, system_prompt, model, threadid } = req.body;
+    const { assistant_name, query, system_prompt, model, thread_id } = req.body;
     let responseQuery = await axiosObservable({
       data: {
-        collection: collection,
+        assistant_name: assistant_name,
         query: query,
         system_prompt: system_prompt,
         model: model,
-        threadid: threadid
+        thread_id: thread_id
       },
       headers: {
         Authorization: req.headers.authorization,
