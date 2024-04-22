@@ -3017,7 +3017,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CALENDARBOOKING_EDIT: {
-        query: "SELECT * FROM ufn_calendarbooking_edit($corpid, $orgid, $calendarbookingid, $personmail, $personname, $notes)",
+        query: "SELECT * FROM ufn_calendarbooking_edit($corpid, $orgid, $calendarbookingid, $personmail, $personname, $notes, $comments)",
         module: "",
         protected: "SELECT"
     },    
