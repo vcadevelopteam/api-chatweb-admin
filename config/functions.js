@@ -2996,6 +2996,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CALENDARBOOKING_EDIT: {
+        query: "SELECT * FROM ufn_calendarbooking_edit($corpid, $orgid, $calendarbookingid, $personmail, $personname, $notes)",
+        module: "",
+        protected: "SELECT"
+    },    
     UFN_PERSONS_BY_CATEGORY_SEL: {
         query: "SELECT * FROM ufn_persons_by_category_sel($corpid, $orgid)",
         module: "",
