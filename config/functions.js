@@ -2135,6 +2135,13 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+
+    QUERY_UPDATE_FLOW_COMMUNICATIONCHANNEL: {
+        query: "update communicationchannel set flow = $flow::json WHERE corpid = $corpid AND orgid = $orgid AND communicationchannelid = $communicationchannelid;",
+        module: "",
+        protected: "SELECT"
+    },
+
     QUERY_GET_VOXIMPLANT_VALIDATION: {
         query: "SELECT cc.corpid, cc.orgid, cc.communicationchannelsite, cc.communicationchannelowner FROM communicationchannel cc JOIN org ON org.corpid = cc.corpid AND org.orgid = cc.orgid WHERE cc.corpid = $corpid AND cc.orgid = $orgid AND cc.communicationchannelid = ANY(string_to_array($channels,',')::BIGINT[]) AND cc.type = 'VOXI';",
         module: "",
@@ -3009,6 +3016,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CALENDARBOOKING_EDIT: {
+        query: "SELECT * FROM ufn_calendarbooking_edit($corpid, $orgid, $calendarbookingid, $personmail, $personname, $notes)",
+        module: "",
+        protected: "SELECT"
+    },    
     UFN_PERSONS_BY_CATEGORY_SEL: {
         query: "SELECT * FROM ufn_persons_by_category_sel($corpid, $orgid)",
         module: "",

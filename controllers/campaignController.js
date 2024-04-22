@@ -63,11 +63,19 @@ exports.voxiTrigger = async (req, res) => {
 
 exports.voxiTriggerUnique = async (req, res) => {
     try {
-        const { corpid, orgid, firstname, lastname, phone, variables, communicationchannelid, flow } = req.body;
+        const { corpid, orgid, firstname, lastname, phone, variables, communicationchannelid, flow, updateflow } = req.body;
 
         logger.child({ ctx: { corpid, orgid, communicationchannelid, firstname, lastname, phone }, _requestid: req._requestid }).debug(`Request from ${req.originalUrl}`)
 
         const voxinumber = await executesimpletransaction("QUERY_GET_NUMBER_FROM_COMMUNICATIONCHANNEL", { corpid, orgid, communicationchannelid });
+
+        if (voxinumber.length === 0) {
+            return res.status(500).json({ success: false, error: true, message: `Not found corpid, orgid, communicationchannelid: ${corpid}, ${orgid}, ${communicationchannelid}` });
+        }
+
+        if (updateflow && flow) {
+            const aa = await executesimpletransaction("QUERY_UPDATE_FLOW_COMMUNICATIONCHANNEL", { corpid, orgid, communicationchannelid, flow: JSON.stringify(flow) });
+        }
 
         const bodyToSend = {
             script_custom_data: JSON.stringify({
