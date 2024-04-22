@@ -124,7 +124,7 @@ const productCatalogInsArray = async (corpid, orgid, metacatalogid, username, ta
     return null;
 }
 
-const productCatalogIns = async (corpid, orgid, metacatalogid, id, productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, username, operation, unitmeasurement, quantity, requestid) => {
+const productCatalogIns = async (corpid, orgid, metacatalogid, id, productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, numbers, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, username, operation, unitmeasurement, quantity, requestid) => {
     const queryResult = await triggerfunctions.executesimpletransaction("UFN_PRODUCTCATALOG_INS", {
         corpid: corpid,
         orgid: orgid,
@@ -154,6 +154,7 @@ const productCatalogIns = async (corpid, orgid, metacatalogid, id, productid, re
         datelaunch: datelaunch,
         dateexpiration: dateexpiration,
         labels: labels,
+        numbers: numbers,
         customlabel0: customlabel0,
         customlabel1: customlabel1,
         customlabel2: customlabel2,
@@ -244,7 +245,7 @@ exports.getBusinessList = async (request, response) => {
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
             let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
-            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`.split('https://developers.facebook.com/docs/').join(''), exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
             return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
@@ -388,7 +389,7 @@ exports.manageCatalog = async (request, response) => {
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
             let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
-            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`.split('https://developers.facebook.com/docs/').join(''), exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
             return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
@@ -478,7 +479,7 @@ exports.synchroCatalog = async (request, response) => {
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
             let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
-            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`.split('https://developers.facebook.com/docs/').join(''), exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
             return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
@@ -517,7 +518,7 @@ exports.manageProduct = async (request, response) => {
                     case "CREATE":
                     case "INSERT":
                         if (accessToken || !haslink) {
-                            const { productid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, unitmeasurement, quantity } = request.body;
+                            const { productid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, numbers, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, unitmeasurement, quantity } = request.body;
 
                             let result = null;
 
@@ -581,7 +582,7 @@ exports.manageProduct = async (request, response) => {
                                     productcatalogid = `${Date.now()}`;
                                 }
 
-                                let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, 0, productid, productcatalogid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, usr, operation, unitmeasurement, quantity, request._requestid);
+                                let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, 0, productid, productcatalogid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, numbers, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, usr, operation, unitmeasurement, quantity, request._requestid);
 
                                 responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                             }
@@ -593,13 +594,13 @@ exports.manageProduct = async (request, response) => {
 
                     case "EDIT":
                         if (accessToken || !haslink) {
-                            const { productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, unitmeasurement, quantity } = request.body;
+                            const { productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, numbers, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, unitmeasurement, quantity } = request.body;
 
                             let facebookretailerid = retailerid;
 
-                            if (haslink) {
-                                const config = { headers: { Authorization: 'Bearer ' + accessToken } };
+                            const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
+                            if (haslink) {
                                 if (!facebookretailerid) {
                                     let requestUrl = `${facebookEndpoint}${catalogid}/products?access_token=${accessToken}`;
                                     let continueLoop = true;
@@ -703,7 +704,7 @@ exports.manageProduct = async (request, response) => {
                                 }
 
                                 if (result?.data || !haslink) {
-                                    let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, usr, operation, unitmeasurement, quantity, request._requestid);
+                                    let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, numbers, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, usr, operation, unitmeasurement, quantity, request._requestid);
 
                                     responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                                 }
@@ -719,13 +720,13 @@ exports.manageProduct = async (request, response) => {
 
                     case "DELETE":
                         if (accessToken || !haslink) {
-                            const { productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, unitmeasurement, quantity } = request.body;
+                            const { productid, retailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, numbers, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, unitmeasurement, quantity } = request.body;
 
                             let facebookretailerid = retailerid;
 
-                            if (haslink) {
-                                const config = { headers: { Authorization: 'Bearer ' + accessToken } };
+                            const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
+                            if (haslink) {
                                 if (!facebookretailerid) {
                                     let requestUrl = `${facebookEndpoint}${catalogid}/products?access_token=${accessToken}`;
                                     let continueLoop = true;
@@ -795,7 +796,7 @@ exports.manageProduct = async (request, response) => {
                                 }
 
                                 if (result?.data || !haslink) {
-                                    let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, usr, operation, unitmeasurement, quantity, request._requestid);
+                                    let catalogResponse = await productCatalogIns(corpid, orgid, metacatalogid, id, productid, facebookretailerid, title, description, descriptionshort, availability, category, condition, currency, price, saleprice, link, imagelink, additionalimagelink, brand, color, gender, material, pattern, size, datestart, datelaunch, dateexpiration, labels, numbers, customlabel0, customlabel1, customlabel2, customlabel3, customlabel4, customnumber0, customnumber1, customnumber2, customnumber3, customnumber4, standardfeatures0, reviewstatus, reviewdescription, status, type, usr, operation, unitmeasurement, quantity, request._requestid);
 
                                     responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                                 }
@@ -822,7 +823,7 @@ exports.manageProduct = async (request, response) => {
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
             let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
-            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`.split('https://developers.facebook.com/docs/').join(''), exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
             return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
@@ -922,6 +923,7 @@ exports.synchroProduct = async (request, response) => {
                             datelaunch: data?.launch_date || null,
                             dateexpiration: data?.expiration_date || null,
                             labels: `${data?.custom_label_0},${data?.custom_label_1},${data?.custom_label_2},${data?.custom_label_3},${data?.custom_label_4}`,
+                            numbers: `${data?.custom_number_0},${data?.custom_number_1},${data?.custom_number_2},${data?.custom_number_3},${data?.custom_number_4}`,
                             customlabel0: data?.custom_label_0 || '',
                             customlabel1: data?.custom_label_1 || '',
                             customlabel2: data?.custom_label_2 || '',
@@ -960,7 +962,7 @@ exports.synchroProduct = async (request, response) => {
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
             let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
-            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`.split('https://developers.facebook.com/docs/').join(''), exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
             return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
@@ -999,9 +1001,9 @@ exports.deleteProduct = async (request, response) => {
 
                         let facebookretailerid = productdata.retailerid;
 
-                        if (haslink) {
-                            const config = { headers: { Authorization: 'Bearer ' + accessToken } };
+                        const config = { headers: { Authorization: 'Bearer ' + accessToken } };
 
+                        if (haslink) {
                             if (!facebookretailerid) {
                                 let requestUrl = `${facebookEndpoint}${catalogid}/products?bulk_pagination=true&access_token=${accessToken}`;
                                 let continueLoop = true;
@@ -1071,7 +1073,7 @@ exports.deleteProduct = async (request, response) => {
                             }
 
                             if (result?.data || !haslink) {
-                                let catalogResponse = await productCatalogIns(corpid, orgid, productdata.metacatalogid, productdata.productcatalogid, productdata.productid, facebookretailerid, productdata.title, productdata.description, productdata.descriptionshort, productdata.availability, productdata.category, productdata.condition, productdata.currency, productdata.price, productdata.saleprice, productdata.link, productdata.imagelink, productdata.additionalimagelink, productdata.brand, productdata.color, productdata.gender, productdata.material, productdata.pattern, productdata.size, productdata.datestart, productdata.datelaunch, productdata.dateexpiration, productdata.labels, productdata.customlabel0, productdata.customlabel1, productdata.customlabel2, productdata.customlabel3, productdata.customlabel4, productdata.customnumber0, productdata.customnumber1, productdata.customnumber2, productdata.customnumber3, productdata.customnumber4, productdata.standardfeatures0, productdata.reviewstatus, productdata.reviewdescription, productdata.status, productdata.type, usr, 'DELETE', "", 0, request._requestid);
+                                let catalogResponse = await productCatalogIns(corpid, orgid, productdata.metacatalogid, productdata.productcatalogid, productdata.productid, facebookretailerid, productdata.title, productdata.description, productdata.descriptionshort, productdata.availability, productdata.category, productdata.condition, productdata.currency, productdata.price, productdata.saleprice, productdata.link, productdata.imagelink, productdata.additionalimagelink, productdata.brand, productdata.color, productdata.gender, productdata.material, productdata.pattern, productdata.size, productdata.datestart, productdata.datelaunch, productdata.dateexpiration, productdata.labels, productdata.numbers, productdata.customlabel0, productdata.customlabel1, productdata.customlabel2, productdata.customlabel3, productdata.customlabel4, productdata.customnumber0, productdata.customnumber1, productdata.customnumber2, productdata.customnumber3, productdata.customnumber4, productdata.standardfeatures0, productdata.reviewstatus, productdata.reviewdescription, productdata.status, productdata.type, usr, 'DELETE', "", 0, request._requestid);
 
                                 responsedata = genericfunctions.changeResponseData(responsedata, null, catalogResponse, null, 200, true);
                             }
@@ -1097,7 +1099,7 @@ exports.deleteProduct = async (request, response) => {
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
             let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
-            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`.split('https://developers.facebook.com/docs/').join(''), exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
             return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
@@ -1205,7 +1207,7 @@ exports.importProduct = async (request, response) => {
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
             let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
-            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`.split('https://developers.facebook.com/docs/').join(''), exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
             return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
@@ -1243,7 +1245,7 @@ exports.downloadProduct = async (request, response) => {
     } catch (exception) {
         if (exception?.response?.data?.error?.message) {
             let errordescription = (exception?.response?.data?.error?.error_user_msg || exception?.response?.data?.error?.error_user_title) || '';
-            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
+            return response.status(500).json({ ...getErrorCode(`${exception?.response?.data?.error?.message}${errordescription ? ' - ' + errordescription : ''}`.split('https://developers.facebook.com/docs/').join(''), exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });
         }
         else {
             return response.status(500).json({ ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid), msg: exception.message });

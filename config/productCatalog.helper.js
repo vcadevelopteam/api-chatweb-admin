@@ -33,6 +33,7 @@ const getXmlFile = (data, metacatalogid, override) => {
 
     let simplifiedData = jsondata.rss.channel.item.map(x => {
         let customlabels = Object.keys(x).filter(y => y.indexOf("custom_label") >= 0);
+        let customnumbers = Object.keys(x).filter(y => y.indexOf("custom_number") >= 0);
 
         var table = {
             metacatalogid: metacatalogid || 0,
@@ -60,6 +61,7 @@ const getXmlFile = (data, metacatalogid, override) => {
             datelaunch: x["g:launch_date"] || null,
             dateexpiration: x["g:expiration_date"] || null,
             labels: customlabels ? customlabels.map(y => typeof x[y] === "object" ? JSON.stringify(x[y]) : x[y]).join(',') : '',
+            numbers: customnumbers ? customnumbers.map(y => typeof x[y] === "object" ? JSON.stringify(x[y]) : x[y]).join(',') : '',
             customlabel0: x["g:custom_label_0"] || '',
             customlabel1: x["g:custom_label_1"] || '',
             customlabel2: x["g:custom_label_2"] || '',
@@ -138,6 +140,7 @@ const getXlsxFile = (data, metacatalogid, override) => {
 
     let simplifiedData = dataRows.map((field) => {
         let customlabels = [field.custom_label_0, field.custom_label_1, field.custom_label_2, field.custom_label_3, field.custom_label_4];
+        let customnumbers = [field.custom_number_0, field.custom_number_1, field.custom_number_2, field.custom_number_3, field.custom_number_4];
 
         var table = {
             metacatalogid: metacatalogid || 0,
@@ -165,6 +168,7 @@ const getXlsxFile = (data, metacatalogid, override) => {
             datelaunch: field.launch_date || null,
             dateexpiration: field.expiration_date || null,
             labels: customlabels ? customlabels.join(',') : '',
+            numbers: customnumbers ? customnumbers.join(',') : '',
             customlabel0: field.custom_label_0 || '',
             customlabel1: field.custom_label_1 || '',
             customlabel2: field.custom_label_2 || '',
