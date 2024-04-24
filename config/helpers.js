@@ -384,7 +384,7 @@ exports.axiosObservable = async ({ method = "post", url, data = undefined, heade
 
                 profiler.done(errorLog);
 
-                throw ({ ...new Error(error), ...error, notLog: true });
+                throw error
             } else {
                 if (retry > 0) {
                     retry = retry - 1;
@@ -396,7 +396,7 @@ exports.axiosObservable = async ({ method = "post", url, data = undefined, heade
 
                 profiler.done(errorLog);
 
-                throw ({ ...new Error(error), ...error, notLog: true });
+                throw error
             }
         }
         break;
