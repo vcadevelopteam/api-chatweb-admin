@@ -6,4 +6,10 @@ router.post('/sendinfo',
     norkysController.SendInfo
 )
 
+router.post('/rokys/sendinfo',
+    norkysController.RockysSendInfo
+)
+
+
+
 module.exports = router;
