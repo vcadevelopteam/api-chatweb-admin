@@ -229,7 +229,7 @@ exports.RockysSendInfo = async (req, res) => {
 
         // Codificar en Base64 las credenciales
         const token = Buffer.from(`${username || '1xju2o6eay81vuylorpa'}:${password || 'xt8p8agzmee22sa4ab11'}`, 'utf8').toString('base64');
-        console.log("dasda")
+
         const response = await axiosObservable({
             method: "post",
             url: `${BASEURL}${path}`,
@@ -246,7 +246,7 @@ exports.RockysSendInfo = async (req, res) => {
 
         return res.json({ success: true, data: newData, result: response.data });
     } catch (exception) {
-        console.log("exception", exception.response)
-        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+        getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid)
+        return res.status(500).json(exception.response.data);
     }
 };
