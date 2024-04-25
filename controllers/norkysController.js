@@ -239,6 +239,7 @@ exports.RockysSendInfo = async (req, res) => {
             },
             data: newData,
             _requestid: req._requestid,
+            responseError: true
         });
 
         if (!response.data)
