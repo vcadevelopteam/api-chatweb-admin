@@ -184,7 +184,7 @@ exports.addFile = async (req, res) => {
       _requestid: req._requestid,
     });
 
-    if (responseAddFile.data && responseAddFile.statusText === "CREATED") {
+    if (responseAddFile.data && responseAddFile.status === 201) {
       return res.json(responseAddFile.data);
     }
     return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
