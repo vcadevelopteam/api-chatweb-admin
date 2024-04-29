@@ -235,7 +235,7 @@ exports.RockysSendInfo = async (req, res) => {
             url: `${BASEURL}${path}`,
             headers: {
                 'Authorization': `Basic ${token}`,
-                // 'x-api-key': `lWioGDBjDv9ANDrtSEWyw85IMP4bcfUY8Eo1E4d8`,
+                'x-api-key': `lWioGDBjDv9ANDrtSEWyw85IMP4bcfUY8Eo1E4d8`,
             },
             data: newData,
             _requestid: req._requestid,
