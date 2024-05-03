@@ -1135,6 +1135,11 @@ module.exports = {
         module: ["/extras/integrationmanager"],
         protected: "INSERT"
     },
+    QUERY_INTEGRATIONMANAGER_SYNC_UPDATE: {
+        query: "UPDATE integrationmanager set datasource_syncinfo = $info where integrationmanagerid = $id and corpid = $corpid and orgid = $orgid;",
+        module: [""],
+        protected: "INSERT"
+    },
     UFN_INTEGRATION_MANAGER_DATASOURCE_INS: {
         query: "SELECT * FROM ufn_integration_manager_datasource_ins($corpid, $orgid, $id, $datasource, $config, $username)",
         module: ["/extras/integrationmanager"],
