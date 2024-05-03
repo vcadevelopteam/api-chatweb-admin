@@ -1125,6 +1125,11 @@ module.exports = {
         module: ["/extras/integrationmanager"],
         protected: "SELECT"
     },
+    QUERY_INTEGRATIONMANAGER_SYNC_SEL: {
+        query: "SELECT corpid, orgid, integrationmanagerid, datasource_config, status FROM integrationmanager where corpid = $corpid and orgid = $orgid and integrationmanagerid = $id;",
+        module: ["/extras/integrationmanager"],
+        protected: "SELECT"
+    },
     UFN_INTEGRATIONMANAGER_INS: {
         query: "SELECT * FROM ufn_integrationmanager_ins($corpid, $orgid, $id, $description, $type, $status, $name, $method, $url, $authorization, $headers, $bodytype, $body, $parameters, $variables, $level, $fields, $apikey, $username, $operation, $url_params, $results)",
         module: ["/extras/integrationmanager"],

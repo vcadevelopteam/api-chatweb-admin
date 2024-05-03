@@ -11,7 +11,7 @@ exports.sync = async (req, res) => {
     try {
         const { corpid, orgid, integrationmanagerid } = req.body;
 
-        const integration_data = await executesimpletransaction("UFN_INTEGRATIONMANAGER_SEL", {
+        const integration_data = await executesimpletransaction("QUERY_INTEGRATIONMANAGER_SYNC_SEL", {
             corpid,
             orgid,
             username: "task",
