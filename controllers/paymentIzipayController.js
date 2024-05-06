@@ -105,7 +105,7 @@ exports.processTransaction = async (request, response) => {
                     if (paymentorder[0].paymentstatus === 'PENDING') {
                         const paymentdetails = JSON.parse(paymentdata);
 
-                        const chargedata = await insertCharge(corpid, orgid, paymentorder[0].paymentorderid, null, paymentorder[0].totalamount, true, paymentdetails, paymentdetails.response.uniqueId, paymentorder[0].currency, paymentorder[0].description, paymentorder[0].usermail || '', 'INSERT', null, null, 'API', 'PAID', paymentdetails.response.signature, null, 'IZIPAY', responsedata.id);
+                        const chargedata = await insertCharge(corpid, orgid, paymentorder[0].paymentorderid, null, paymentorder[0].totalamount, true, paymentdetails, ((paymentdetails.response.uniqueId || paymentdetails.response.order[0]?.uniqueId) || null), paymentorder[0].currency, paymentorder[0].description, paymentorder[0].usermail || '', 'INSERT', null, null, 'API', 'PAID', ((paymentdetails.response.signature || paymentdetails.signature) || null), null, 'IZIPAY', responsedata.id);
 
                         const queryParameters = {
                             corpid: corpid,
@@ -114,9 +114,9 @@ exports.processTransaction = async (request, response) => {
                             paymentby: paymentorder[0].personid,
                             culqiamount: paymentorder[0].totalamount,
                             chargeid: chargedata?.chargeid || null,
-                            chargetoken: paymentdetails.response.uniqueId || null,
+                            chargetoken: ((paymentdetails.response.uniqueId || paymentdetails.response.order[0]?.uniqueId) || null),
                             chargejson: paymentdetails || null,
-                            tokenid: paymentdetails.response.signature || null,
+                            tokenid: ((paymentdetails.response.signature || paymentdetails.signature) || null),
                             tokenjson: null,
                         };
 
@@ -131,7 +131,7 @@ exports.processTransaction = async (request, response) => {
                                     personid: paymentorder[0].personid,
                                     variables: {
                                         card_mask: `${paymentdetails?.response?.card?.pan}`,
-                                        id_payment: `${paymentdetails.response.uniqueId}`,
+                                        id_payment: `${paymentdetails.response.uniqueId || paymentdetails.response.order[0]?.uniqueId}`,
                                         last4numbers: `${paymentdetails?.response?.card?.pan}`.split('&x_quotas=')[0]?.slice(-4),
                                         syspaymentnotification: "1",
                                     }
