@@ -1126,7 +1126,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INTEGRATIONMANAGER_INS: {
-        query: "SELECT * FROM ufn_integrationmanager_ins($corpid, $orgid, $id, $description, $type, $status, $name, $method, $url, $authorization, $headers, $bodytype, $body, $parameters, $variables, $level, $fields, $apikey, $username, $operation, $url_params, $results)",
+        query: "SELECT * FROM ufn_integrationmanager_ins($corpid, $orgid, $id, $description, $type, $status, $name, $method, $url, $authorization, $headers, $bodytype, $body, $parameters, $variables, $level, $fields, $apikey, $username, $operation, $url_params, $results, $code_table, $person_table)",
         module: ["/extras/integrationmanager"],
         protected: "INSERT"
     },
