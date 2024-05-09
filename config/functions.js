@@ -2004,7 +2004,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEADACTIVITY_INS: {
-        query: "select * from ufn_leadactivity_ins($corpid, $orgid, $leadid, $leadactivityid, $description, $duedate, $assigneduser, $assignto, $type, $status, $username, $operation, $feedback, $detailjson, $calendar, $sendhsm, $communicationchannelid, $hsmtemplateid)",
+        query: "select * from ufn_leadactivity_ins($corpid, $orgid, $leadid, $leadactivityid, $description, $duedate, $assigneduser, $assignto, $type, $status, $username, $operation, $feedback, $detailjson, $calendar, $sendhsm, $communicationchannelid, $hsmtemplateid, $calendarbookingid)",
         module: ["/crm", "/servicedesk"],
         protected: "INSERT"
     },
@@ -3019,6 +3019,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CALENDARBOOKING_EDIT: {
+        query: "SELECT * FROM ufn_calendarbooking_edit($corpid, $orgid, $calendarbookingid, $personmail, $personname, $notes, $comments)",
+        module: "",
+        protected: "SELECT"
+    },    
     UFN_PERSONS_BY_CATEGORY_SEL: {
         query: "SELECT * FROM ufn_persons_by_category_sel($corpid, $orgid)",
         module: "",
