@@ -168,7 +168,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_USER_INS: {
-        query: "SELECT * FROM ufn_user_ins($corpid, $orgid, $id, $usr, $doctype, $docnum, $password, $firstname, $lastname, $email, $pwdchangefirstlogin, $type, $status, $description, $username, $operation, $company, $twofactorauthentication, $registercode, $billinggroup, $image)",
+        query: "SELECT * FROM ufn_user_ins($corpid, $orgid, $id, $usr, $doctype, $docnum, $password, $firstname, $lastname, $email, $pwdchangefirstlogin, $type, $status, $description, $username, $operation, $company, $twofactorauthentication, $registercode, $billinggroup, $image, '', $variablecontext)",
         module: ["/extras/users"],
         protected: "INSERT"
     },
@@ -634,7 +634,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORG_INS: {
-        query: "SELECT * FROM ufn_org_ins($corpid, $id, $description, $status, $type, $username, $operation, $email, $password, $port, $host, $default_credentials, $ssl, $private_mail, $currency, $country, $timezoneoffset, $timezone, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $iconbot, $iconadvisor, $iconclient, $credittype, $automaticpayment, $automaticperiod, $automaticinvoice, $voximplantautomaticrecharge, $voximplantrechargerange, $voximplantrechargepercentage, $voximplantrechargefixed, $voximplantadditionalperchannel, $appsettingid, $citybillingid)",
+        query: "SELECT * FROM ufn_org_ins($corpid, $id, $description, $status, $type, $username, $operation, $email, $password, $port, $host, $default_credentials, $ssl, $private_mail, $currency, $country, $timezoneoffset, $timezone, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $iconbot, $iconadvisor, $iconclient, $credittype, $automaticpayment, $automaticperiod, $automaticinvoice, $voximplantautomaticrecharge, $voximplantrechargerange, $voximplantrechargepercentage, $voximplantrechargefixed, $voximplantadditionalperchannel, $appsettingid, $citybillingid, $variablecontext)",
         module: ["/organizations", "/extras/users"],
         protected: "INSERT"
     },
@@ -1041,7 +1041,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_MESSAGETEMPLATE_INS: {
-        query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $bodyobject, $footerenabled, $footer, $buttonsenabled, $buttons, $priority, $attachment, $fromprovider, $externalid, $externalstatus, $communicationchannelid, $communicationchanneltype, $exampleparameters, $username, $operation)",
+        query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $bodyobject, $footerenabled, $footer, $buttonsenabled, $buttons, $priority, $attachment, $fromprovider, $externalid, $externalstatus, $communicationchannelid, $communicationchanneltype, $exampleparameters, $username, $operation, $variablecontext)",
         module: ["/extras/messagetemplate"],
         protected: "INSERT"
     },
@@ -1226,7 +1226,27 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_TABLE_VARIABLE_LST: {
-        query: "SELECT * FROM ufn_tablevariable_sel()",
+        query: "SELECT * FROM ufn_tablevariable_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CUSTOM_VARIABLE_APPLICATION_SEL: {
+        query: "SELECT * FROM public.ufn_custom_variable_application_sel($corpid, $orgid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CUSTOM_VARIABLE_SEL: {
+        query: "SELECT * FROM public.ufn_custom_variable_sel($corpid, $orgid, $customvariableapplicationid, $tablename)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CUSTOM_VARIABLE_INS: {
+        query: "SELECT * FROM public.ufn_custom_variable_ins($id, $corpid, $orgid, $customvariableapplicationid, $variablename, $description, $variabletype, $status, $operation, $username, $domainname)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DOMAIN_VALUE_SEL_BY_LIST: {
+        query: "SELECT * FROM public.ufn_domain_value_sel_by_list($corpid, $orgid, $domainnamelist)",
         module: "",
         protected: "SELECT"
     },
@@ -1824,12 +1844,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_PERSON_PCC_INS: {
-        query: "select * from ufn_person_pcc_ins( $id, $corpid, $orgid, $groups, $status, $type, $persontype, $personstatus, $phone, $email, $birthday, $alternativephone, $alternativeemail, $documenttype, $documentnumber, $firstname, $lastname, $sex, $gender, $civilstatus, $occupation, $educationlevel, $referringpersonid, $observation, $address, $healthprofessional, $referralchannel, $district, $username, $operation)",
+        query: "select * from ufn_person_pcc_ins( $id, $corpid, $orgid, $groups, $status, $type, $persontype, $personstatus, $phone, $email, $birthday, $alternativephone, $alternativeemail, $documenttype, $documentnumber, $firstname, $lastname, $sex, $gender, $civilstatus, $occupation, $educationlevel, $referringpersonid, $observation, $address, $healthprofessional, $referralchannel, $district, $username, $operation, $variablecontext)",
         module: ["/person"],
         protected: "SELECT"
     },
     UFN_LEAD_INS: {
-        query: "select * from ufn_lead_ins($corpid, $orgid, $leadid, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $column_uuid, $username, $index, $phone, $email, $userid, $phase, $campaignid, $leadproduct, $operation, $personid, $persontype, $estimatedimplementationdate, $estimatedbillingdate)",
+        query: "select * from ufn_lead_ins($corpid, $orgid, $leadid, $description, $type, $status, $expected_revenue, $date_deadline, $tags, $personcommunicationchannel, $priority, $conversationid, $columnid, $column_uuid, $username, $index, $phone, $email, $userid, $phase, $campaignid, $leadproduct, $operation, $personid, $persontype, $estimatedimplementationdate, $estimatedbillingdate, $variablecontext)",
         module: ["/crm", "/message_inbox", "/supervisor"],
         protected: "INSERT"
     },
