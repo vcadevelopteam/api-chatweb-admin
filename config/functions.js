@@ -3411,6 +3411,11 @@ module.exports = {
         module: ["/extras/messagetemplate"],
         protected: "SELECT"
     },
+    UFN_COMMUNICATIONCHANNEL_SEL_VOICE: {
+        query: "SELECT * FROM ufn_communicationchannel_sel_voice($corpid, $orgid)",
+        module: ["/extras/messagetemplate"],
+        protected: "SELECT"
+    },
     UFN_MESSAGETEMPLATE_UPD: {
         query: "SELECT * FROM ufn_messagetemplate_upd($corpid, $orgid, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $bodyobject, $footerenabled, $footer, $buttonsenabled, $buttons, $fromprovider, $externalid, $externalstatus, $communicationchannelid, $communicationchanneltype, $exampleparameters, $username)",
         module: "",
