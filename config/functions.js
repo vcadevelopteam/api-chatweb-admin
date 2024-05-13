@@ -3413,7 +3413,7 @@ module.exports = {
     },
     UFN_COMMUNICATIONCHANNEL_SEL_VOICE: {
         query: "SELECT * FROM ufn_communicationchannel_sel_voice($corpid, $orgid)",
-        module: ["/extras/messagetemplate"],
+        module: "",
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_UPD: {
