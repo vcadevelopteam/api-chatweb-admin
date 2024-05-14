@@ -1135,6 +1135,11 @@ module.exports = {
         module: ["/extras/integrationmanager"],
         protected: "INSERT"
     },
+    UFN_INTEGRATIONMANAGER_BULKLOAD_INS: {
+        query: "SELECT * FROM ufn_integrationmanager_bulkload_ins($corpid, $orgid, $integrationmanagerid, $table, $type, $username)",
+        module: ["/extras/integrationmanager"],
+        protected: "INSERT"
+    },
     UFN_INTEGRATIONMANAGER_IMPORT: {
         query: "SELECT * FROM ufn_integrationmanager_importdata($corpid, $orgid, $id, $table)",
         module: ["/extras/integrationmanager"],
