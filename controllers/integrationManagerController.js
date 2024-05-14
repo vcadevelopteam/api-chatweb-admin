@@ -77,29 +77,39 @@ exports.sync = async (req, res) => {
 
 const getFileDataFromGoogle = async (params) => {
     try {
+        let workbook = null;
         const oauth2Client = new google.auth.OAuth2(GOOGLE_CLIENTID, GOOGLE_CLIENTSECRET, GOOGLE_REDIRECTURI);
         const credentials = params?.datasource_config?.credentials;
         const fileId = params?.datasource_config?.fileid;
         oauth2Client.setCredentials(credentials);
         const drive = google.drive({ version: "v3", auth: oauth2Client });
 
-        const response = await drive.files.get({ fileId, alt: "media" }, { responseType: "stream" });
-        const buffers = [];
-        response.data.on("data", (chunk) => {
-            buffers.push(chunk);
-        });
-
-        await new Promise((resolve, reject) => {
-            response.data.on("end", () => {
-                resolve();
+        if (params?.datasource_config?.filename.includes(".xlsx")) {
+            const response = await drive.files.get({ fileId, alt: "media" }, { responseType: "stream" });
+            const buffers = [];
+            response.data.on("data", (chunk) => {
+                buffers.push(chunk);
             });
-            response.data.on("error", (err) => {
-                reject(err);
-            });
-        });
 
-        const fileBuffer = Buffer.concat(buffers);
-        const workbook = xlsx.read(fileBuffer, { type: "buffer" });
+            await new Promise((resolve, reject) => {
+                response.data.on("end", () => {
+                    resolve();
+                });
+                response.data.on("error", (err) => {
+                    reject(err);
+                });
+            });
+
+            const fileBuffer = Buffer.concat(buffers);
+            workbook = xlsx.read(fileBuffer, { type: "buffer" });
+        } else {
+            const { data } = await drive.files.export({
+                fileId: fileId,
+                mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            }, { responseType: 'arraybuffer' });
+            workbook = xlsx.read(data, { type: "buffer" });
+        }
+        
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
         const jsonData = xlsx.utils.sheet_to_json(sheet);
