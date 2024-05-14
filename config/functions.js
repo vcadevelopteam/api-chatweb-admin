@@ -1145,8 +1145,8 @@ module.exports = {
         module: ["/extras/integrationmanager"],
         protected: "INSERT"
     },
-    UFN_INTEGRATIONMANAGER_CODE_PERSON_EXPORTDATA: {
-        query: "SELECT * FROM ufn_integrationmanager_code_person_exportdata($corpid, $orgid, $integrationmanagerid, $type)",
+    UFN_INTEGRATIONMANAGER_CODE_PERSON_SEL: {
+        query: "SELECT * FROM ufn_integrationmanager_code_person_sel($corpid, $orgid, $integrationmanagerid, $type)",
         module: ["/extras/integrationmanager"],
         protected: "INSERT"
     },
