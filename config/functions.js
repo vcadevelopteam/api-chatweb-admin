@@ -1125,6 +1125,11 @@ module.exports = {
         module: ["/extras/integrationmanager"],
         protected: "SELECT"
     },
+    QUERY_INTEGRATIONMANAGER_SYNC_SEL: {
+        query: "SELECT corpid, orgid, integrationmanagerid, datasource_config, status FROM integrationmanager where corpid = $corpid and orgid = $orgid and integrationmanagerid = $id;",
+        module: ["/extras/integrationmanager"],
+        protected: "SELECT"
+    },
     UFN_INTEGRATIONMANAGER_INS: {
         query: "SELECT * FROM ufn_integrationmanager_ins($corpid, $orgid, $id, $description, $type, $status, $name, $method, $url, $authorization, $headers, $bodytype, $body, $parameters, $variables, $level, $fields, $apikey, $username, $operation, $url_params, $results, $code_table, $person_table)",
         module: ["/extras/integrationmanager"],
@@ -1137,6 +1142,16 @@ module.exports = {
     },
     UFN_INTEGRATIONMANAGER_IMPORT: {
         query: "SELECT * FROM ufn_integrationmanager_importdata($corpid, $orgid, $id, $table)",
+        module: ["/extras/integrationmanager"],
+        protected: "INSERT"
+    },
+    QUERY_INTEGRATIONMANAGER_SYNC_UPDATE: {
+        query: "UPDATE integrationmanager set datasource_syncinfo = $info where integrationmanagerid = $id and corpid = $corpid and orgid = $orgid;",
+        module: [""],
+        protected: "INSERT"
+    },
+    UFN_INTEGRATION_MANAGER_DATASOURCE_INS: {
+        query: "SELECT * FROM ufn_integration_manager_datasource_ins($corpid, $orgid, $id, $datasource, $config, $username)",
         module: ["/extras/integrationmanager"],
         protected: "INSERT"
     },
