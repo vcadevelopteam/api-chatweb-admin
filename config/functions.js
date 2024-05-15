@@ -1387,7 +1387,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CAMPAIGN_LST: {
-        query: "SELECT * FROM ufn_campaign_lst($corpid, $orgid, $username)",
+        query: "SELECT * FROM ufn_campaign_lst($corpid, $orgid, $username, $startdate, $enddate, $offset)",
         module: ["/tickets", "/crm", "/extras/campaign"],
         protected: "SELECT"
     },
