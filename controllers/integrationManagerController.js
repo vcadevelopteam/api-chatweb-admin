@@ -1,3 +1,4 @@
+const { setSessionParameters, axiosObservable } = require("../config/helpers");
 const { executesimpletransaction } = require("../config/triggerfunctions");
 const logger = require("../config/winston");
 const { google } = require("googleapis");
@@ -6,6 +7,7 @@ const xlsx = require("xlsx");
 const GOOGLE_CLIENTID = process.env.GOOGLE_CLIENTID;
 const GOOGLE_CLIENTSECRET = process.env.GOOGLE_CLIENTSECRET;
 const GOOGLE_REDIRECTURI = process.env.GOOGLE_REDIRECTURI;
+const bridgeEndpoint = process.env.BRIDGE;
 
 exports.sync = async (req, res) => {
     try {
@@ -104,12 +106,12 @@ const getFileDataFromGoogle = async (params) => {
             workbook = xlsx.read(fileBuffer, { type: "buffer" });
         } else {
             const { data } = await drive.files.export({
-                fileId: fileId,
+                    fileId: fileId,
                 mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             }, { responseType: 'arraybuffer' });
             workbook = xlsx.read(data, { type: "buffer" });
         }
-        
+
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
         const jsonData = xlsx.utils.sheet_to_json(sheet);
@@ -132,4 +134,62 @@ const updateIntegrationSyncStatus = async ({ orgid, corpid, integrationmanagerid
             last_sync_message: message,
         }),
     });
+};
+
+exports.file_upload = async (req, res) => {
+    try {
+        const { fileurl, integrationmanagerid } = req.body;
+        const params = { id: integrationmanagerid, fileurl };
+        setSessionParameters(params, req.user, req._requestid);
+
+        const integration_data = await executesimpletransaction("UFN_INTEGRATIONMANAGER_SEL", {
+            ...params,
+            all: false,
+        });
+
+        if (
+            !(integration_data instanceof Array) ||
+            integration_data[0].status !== "ACTIVO" ||
+            integration_data[0].type !== "CODE_PERSON"
+        ) {
+            return res.status(400).json({
+                code: "error_unexpected_error",
+                error: true,
+                message: "Invalid data",
+                success: false,
+            });
+        }
+
+        const result = await axiosObservable({
+            _requestid: req._requestid,
+            method: "post",
+            url: `${bridgeEndpoint}processlaraigo/processzipintegration`,
+            data: {
+                fileurl,
+                integrationManagerId: integrationmanagerid,
+            },
+        });
+
+        return res.status(200).json({
+            code: "",
+            error: false,
+            message: "",
+            success: true,
+        });
+    } catch (exception) {
+        logger.child({ _requestid: req._requestid, ctx: req.body }).error(exception);
+        if (exception.isAxiosError)
+            return res.status(exception.response?.status ?? 400).json({
+                code: "error_unexpected_error",
+                error: true,
+                data: exception.response?.data ?? "Invalid zip data",
+                success: false,
+            });
+        return res.status(500).json({
+            code: "error_unexpected_error",
+            error: true,
+            message: exception.message,
+            success: false,
+        });
+    }
 };
