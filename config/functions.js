@@ -1125,8 +1125,18 @@ module.exports = {
         module: ["/extras/integrationmanager"],
         protected: "SELECT"
     },
+    QUERY_INTEGRATIONMANAGER_SYNC_SEL: {
+        query: "SELECT corpid, orgid, integrationmanagerid, datasource_config, status FROM integrationmanager where corpid = $corpid and orgid = $orgid and integrationmanagerid = $id;",
+        module: ["/extras/integrationmanager"],
+        protected: "SELECT"
+    },
     UFN_INTEGRATIONMANAGER_INS: {
-        query: "SELECT * FROM ufn_integrationmanager_ins($corpid, $orgid, $id, $description, $type, $status, $name, $method, $url, $authorization, $headers, $bodytype, $body, $parameters, $variables, $level, $fields, $apikey, $username, $operation, $url_params, $results)",
+        query: "SELECT * FROM ufn_integrationmanager_ins($corpid, $orgid, $id, $description, $type, $status, $name, $method, $url, $authorization, $headers, $bodytype, $body, $parameters, $variables, $level, $fields, $apikey, $username, $operation, $url_params, $results, $code_table, $person_table)",
+        module: ["/extras/integrationmanager"],
+        protected: "INSERT"
+    },
+    UFN_INTEGRATIONMANAGER_BULKLOAD_INS: {
+        query: "SELECT * FROM ufn_integrationmanager_bulkload_ins($corpid, $orgid, $integrationmanagerid, $table, $type, $username)",
         module: ["/extras/integrationmanager"],
         protected: "INSERT"
     },
@@ -1135,8 +1145,28 @@ module.exports = {
         module: ["/extras/integrationmanager"],
         protected: "INSERT"
     },
+    QUERY_INTEGRATIONMANAGER_SYNC_UPDATE: {
+        query: "UPDATE integrationmanager set datasource_syncinfo = $info where integrationmanagerid = $id and corpid = $corpid and orgid = $orgid;",
+        module: [""],
+        protected: "INSERT"
+    },
+    UFN_INTEGRATION_MANAGER_DATASOURCE_INS: {
+        query: "SELECT * FROM ufn_integration_manager_datasource_ins($corpid, $orgid, $id, $datasource, $config, $username)",
+        module: ["/extras/integrationmanager"],
+        protected: "INSERT"
+    },
     UFN_INTEGRATIONMANAGER_EXPORT: {
         query: "SELECT * FROM ufn_integrationmanager_exportdata($corpid, $orgid, $id)",
+        module: ["/extras/integrationmanager"],
+        protected: "INSERT"
+    },
+    UFN_INTEGRATIONMANAGER_CODE_PERSON_SEL: {
+        query: "SELECT * FROM ufn_integrationmanager_code_person_sel($corpid, $orgid, $integrationmanagerid, $type)",
+        module: ["/extras/integrationmanager"],
+        protected: "INSERT"
+    },
+    UFN_INTEGRATIONMANAGER_CODE_PERSON_DELETE: {
+        query: "SELECT * FROM ufn_integrationmanager_code_person_delete($corpid, $orgid, $integrationmanagerid, $type, $ids, $username)",
         module: ["/extras/integrationmanager"],
         protected: "INSERT"
     },

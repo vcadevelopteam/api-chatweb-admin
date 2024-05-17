@@ -90,6 +90,7 @@ app.use('/api/mobile/auth', require('./routes/mobile/auth'));
 app.use('/api/mobile/ticket', require('./routes/mobile/ticket'));
 // app.use('/api/mobile/notification', require('./routes/mobile/notification'));
 app.use('/api/contact', require('./routes/contact'));
+app.use('/api/integrationmanager', require('./routes/integrationmanager'));
 
 // Definir la pagina principal
 app.get('/', (req, res) => {
