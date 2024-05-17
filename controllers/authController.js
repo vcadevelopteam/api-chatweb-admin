@@ -7,7 +7,7 @@ const { addApplication } = require('./voximplantController');
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { loginGroup, exitFromAllGroup1 } = require('../config/firebase');
-const passport = require('passport');
+// const passport = require('passport');
 
 //type: int|string|bool
 const properties = [
