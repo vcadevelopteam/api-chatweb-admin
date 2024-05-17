@@ -948,6 +948,7 @@ exports.insertChannel = async (request, response) => {
         parameters.voximplantwelcometone = null;
 
         switch (request.body.type) {
+            case "SMOOCHANDROID":
             case "CHATWEB":
                 const webChatData = {
                     applicationId: webChatApplication,
@@ -1391,7 +1392,6 @@ exports.insertChannel = async (request, response) => {
                     });
                 }
 
-            case "SMOOCHANDROID":
             case "SMOOCHIOS":
                 const requestCreateSmooch = await axiosObservable({
                     _requestid: request._requestid,

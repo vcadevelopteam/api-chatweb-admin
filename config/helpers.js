@@ -349,7 +349,7 @@ function runTimeout(ms) {
 
 const statusAllowed = [400, 200, 401, 404, 500];
 
-exports.axiosObservable = async ({ method = "post", url, data = undefined, headers = undefined, _requestid = undefined, timeout, retryOverride = false }) => {
+exports.axiosObservable = async ({ method = "post", url, data = undefined, headers = undefined, _requestid = undefined, timeout, retryOverride = false, responseError = false }) => {
     const profiler = logger.startTimer();
 
     let rr = null
@@ -383,20 +383,25 @@ exports.axiosObservable = async ({ method = "post", url, data = undefined, heade
                 }
 
                 profiler.done(errorLog);
-
-                throw ({ ...new Error(error), ...error, notLog: true });
+                if (responseError) {
+                    throw error
+                } else {
+                    throw ({ ...new Error(error), ...error, notLog: true });
+                }
             } else {
                 if (retry > 0) {
                     retry = retry - 1;
                     await runTimeout(3000);
                     continue;
                 }
-
                 errorLog.detail = error.request || error.message;
-
                 profiler.done(errorLog);
 
-                throw ({ ...new Error(error), ...error, notLog: true });
+                if (responseError) {
+                    throw error
+                } else {
+                    throw ({ ...new Error(error), ...error, notLog: true });
+                }
             }
         }
         break;
