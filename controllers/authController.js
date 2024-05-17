@@ -7,6 +7,7 @@ const { addApplication } = require('./voximplantController');
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { loginGroup, exitFromAllGroup1 } = require('../config/firebase');
+const passport = require('passport');
 
 //type: int|string|bool
 const properties = [
@@ -453,5 +454,26 @@ exports.changeOrganization = async (req, res) => {
         })
     } else {
         return res.status(400).json(getErrorCode());
+    }
+}
+
+exports.samlSsoLogin = async (req, res) => {
+    try {
+        passport.authenticate('samlStrategy', { failureRedirect: '/login' })(req, res, () => {
+            res.redirect('/');
+        })
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+    }
+}
+
+exports.samlSso = async (req, res) => {
+    try {
+        passport.authenticate('samlStrategy', { failureRedirect: '/', failureFlash: true, session: false })(req, res, () => {
+            console.log('user :', req.user)
+            res.redirect('/');
+        })
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
 }

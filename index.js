@@ -3,6 +3,7 @@ const logger = require('./config/winston');
 const morganMiddleware = require("./config/morgan.middleware");
 const express = require('express');
 const cors = require('cors');
+const passport = require('passport');
 const { v4: uuidv4 } = require('uuid');
 
 const allowedOrigins = process.env.ADDRESSES_ALLOWED?.split(",") || [];
@@ -36,6 +37,10 @@ app.use(cors({
         return callback(null, true);
     }
 }));
+
+require('./config/samlSso')
+app.use(passport.initialize())
+
 
 app.use(express.json({ limit: '100mb' }));//to accept json
 

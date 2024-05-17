@@ -37,4 +37,8 @@ router.get("/",
     authController.getUser
 )
 
+router.get('/idps/saml20/sso/login', authController.samlSsoLogin)
+
+router.post('/idps/saml20/sso', authController.samlSso)
+
 module.exports = router;
