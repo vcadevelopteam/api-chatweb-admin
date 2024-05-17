@@ -22,7 +22,8 @@ const samlStrategy = new SamlStrategy(
     // (profile, done) => done(null, profile)
 	function (profile, done) {
 		console.log({ xml: profile.getAssertionXml() })
-		return done(null, defaultUser)
+		console.log("🚀 ~ profile:", profile)
+		return done(null, profile)
 	}
 )
 
