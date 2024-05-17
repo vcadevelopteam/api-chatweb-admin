@@ -525,8 +525,6 @@ exports.Collection = async (req, res) => {
                 }
 
                 if (["EMAIL", "HSM", "HSMEMAIL"].includes(notificationtype) && !parameters.calendarbookingid) {
-                    logger.child({ _requestid: req._requestid }).error(resultCalendar)
-                    logger.child({ _requestid: req._requestid }).error(parameters)
                     const ics_file = await generateIcs(req._requestid, resultCalendar[0], parameters);
                     if (assignedAgentId) createGoogleEvent(assignedAgentId, newcalendarbookingid, resultCalendar[0], parameters)
 
@@ -1516,15 +1514,15 @@ const createGoogleEvent = async (assignedAgentId, newcalendarbookingid, calendar
         const personmail = params?.parameters.find(param => param?.name === 'personmail')?.text;
 
         const description = `${calendarData?.description}`
-                            .replaceAll("{{eventname}}", eventname)
-                            .replaceAll("{{eventdate}}", eventdate)
-                            .replaceAll("{{eventtime}}", eventtime)
-                            .replaceAll("{{eventcode}}", eventcode)
-                            .replaceAll("{{eventlinkcode}}", eventlinkcode)
-                            .replaceAll("{{personcontact}}", personcontact)
-                            .replaceAll("{{eventlocation}}", eventlocation)
-                            .replaceAll("{{personname}}", personname)
-                            .replaceAll("{{personmail}}", personmail)
+                            .replace("{{eventname}}", eventname)
+                            .replace("{{eventdate}}", eventdate)
+                            .replace("{{eventtime}}", eventtime)
+                            .replace("{{eventcode}}", eventcode)
+                            .replace("{{eventlinkcode}}", eventlinkcode)
+                            .replace("{{personcontact}}", personcontact)
+                            .replace("{{eventlocation}}", eventlocation)
+                            .replace("{{personname}}", personname)
+                            .replace("{{personmail}}", personmail)
 
         const eventInfo = {
             summary: params?.parameters.find(param => param?.name === 'eventname')?.text,
