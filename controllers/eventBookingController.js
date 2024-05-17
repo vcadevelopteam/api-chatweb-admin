@@ -1503,10 +1503,33 @@ const createGoogleEvent = async (assignedAgentId, newcalendarbookingid, calendar
             [calendar, extradata] = await googleCalendarCredentials({ params })
         }
 
+        const eventname = params?.parameters.find(param => param?.name === 'eventname')?.text;
+        const eventdate = params?.parameters.find(param => param?.name === 'monthdate')?.text;
+        const eventtime = params?.parameters.find(param => param?.name === 'hourstart')?.text;
+        const eventcode = params?.parameters.find(param => param?.name === 'eventcode')?.text;
+        const eventlinkcode = params?.parameters.find(param => param?.name === 'eventlink')?.text;
+        const personcontact = params?.parameters.find(param => param?.name === 'personcontact')?.text;
+        
+        const eventlocation = params?.parameters.find(param => param?.name === 'eventlocation')?.text;
+        const hourend = params?.parameters.find(param => param?.name === 'hourend')?.text;
+        const personname = params?.parameters.find(param => param?.name === 'personname')?.text;
+        const personmail = params?.parameters.find(param => param?.name === 'personmail')?.text;
+
+        const description = `${calendarData?.description}`
+                            .replaceAll("{{eventname}}", eventname)
+                            .replaceAll("{{eventdate}}", eventdate)
+                            .replaceAll("{{eventtime}}", eventtime)
+                            .replaceAll("{{eventcode}}", eventcode)
+                            .replaceAll("{{eventlinkcode}}", eventlinkcode)
+                            .replaceAll("{{personcontact}}", personcontact)
+                            .replaceAll("{{eventlocation}}", eventlocation)
+                            .replaceAll("{{personname}}", personname)
+                            .replaceAll("{{personmail}}", personmail)
+
         const eventInfo = {
             summary: params?.parameters.find(param => param?.name === 'eventname')?.text,
             location: calendarData?.location,
-            description: calendarData?.description,
+            description: description,
             start: {
                 dateTime: dayjs(`${params?.monthdate} ${params?.hourstart}`).utcOffset(calendarData.timezone, true).format(),
             },
