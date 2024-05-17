@@ -38,8 +38,8 @@ app.use(cors({
     }
 }));
 
-require('./config/samlSso')
-app.use(passport.initialize())
+// require('./config/samlSso')
+// app.use(passport.initialize())
 
 
 app.use(express.json({ limit: '100mb' }));//to accept json
