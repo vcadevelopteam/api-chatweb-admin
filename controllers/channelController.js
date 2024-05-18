@@ -3315,7 +3315,7 @@ exports.synchronizeTemplate = async (request, response) => {
 
                                                                     if (templatecarouselcomponent.type === 'BUTTONS') {
                                                                         if (templatecarouselcomponent.buttons) {
-                                                                            for (const templatecarouselcomponentbutton of templatecarousel.buttons) {
+                                                                            for (const templatecarouselcomponentbutton of templatecarouselcomponent.buttons) {
                                                                                 carouselComponent.buttons.push({
                                                                                     type: templatecarouselcomponentbutton.type,
                                                                                     btn: {
