@@ -471,7 +471,7 @@ exports.samlSso = async (req, res) => {
     try {
         passport.authenticate('samlStrategy', { failureRedirect: '/', failureFlash: true, session: false })(req, res, () => {
             console.log('user :', req.user)
-            res.redirect('/');
+            return res.redirect('/idps/saml20/sso/success')
         })
     } catch (exception) {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));

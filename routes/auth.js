@@ -41,4 +41,13 @@ router.get('/idps/saml20/sso/login', authController.samlSsoLogin)
 
 router.post('/idps/saml20/sso', authController.samlSso)
 
+router.get("/idps/saml20/sso/success", (req, res) => {
+    return res.send(`
+        <script>   
+            window.opener.postMessage({ success: true, code: "1234" }, '*');
+            window.close();
+        </script>
+    `);
+});
+
 module.exports = router;
