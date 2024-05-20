@@ -3278,6 +3278,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                                                 buttonGenericData.push({
                                                                     type: templatebutton.type,
                                                                     btn: {
+                                                                        code: templatebutton.countryCode,
                                                                         phone_number: templatebutton.phoneNumber,
                                                                         text: templatebutton.text,
                                                                         type: templatebutton.example ? 'dynamic' : 'static',
@@ -3332,6 +3333,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                                                                     type: templatecarouselcomponentbutton.type,
                                                                                     btn: {
                                                                                         payload: templatecarouselcomponentbutton.text,
+                                                                                        code: templatecarouselcomponentbutton.countryCode,
                                                                                         phone_number: templatecarouselcomponentbutton.phoneNumber,
                                                                                         text: templatecarouselcomponentbutton.text,
                                                                                         type: templatecarouselcomponentbutton.example ? 'dynamic' : 'static',
