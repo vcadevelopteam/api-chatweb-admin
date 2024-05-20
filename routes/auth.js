@@ -41,7 +41,7 @@ router.get('/idps/saml20/sso/login', authController.samlSsoLogin)
 
 router.post('/idps/saml20/sso', authController.samlSso)
 
-router.get("/api/sso/success", (req, res) => {
+router.get("/idps/saml20/sso/success", (req, res) => {
     const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? '*';
     return res.send(`
         <script>
