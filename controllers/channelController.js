@@ -2570,11 +2570,11 @@ exports.insertChannel = async (request, response) => {
                         accessToken: service.accesstoken,
                         endpoint: metaEndpoint,
                         numberId: service.phone,
-                        siteId: `${requestCreateMeta.data.phoneNumber}`.replace(/[^0-9.]/g, ''),
+                        siteId: `${requestCreateMeta.data.phoneNumber}`.replace(/[^0-9.]/g, ""),
                     };
 
-                    parameters.communicationchannelsite = `${requestCreateMeta.data.phoneNumber}`.replace(/[^0-9.]/g, '');
-                    parameters.phone = `${requestCreateMeta.data.phoneNumber}`.replace(/[^0-9.]/g, '');
+                    parameters.communicationchannelsite = `${requestCreateMeta.data.phoneNumber}`.replace(/[^0-9.]/g, "");
+                    parameters.phone = `${requestCreateMeta.data.phoneNumber}`.replace(/[^0-9.]/g, "");
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
                     parameters.type = "WHAM";
 
@@ -3168,7 +3168,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                     orgid,
                                     communicationchannel.communicationchannelid,
                                     templatelist[0].namespace || null,
-                                    request.user?.usr || 'scheduler',
+                                    request.user?.usr || "scheduler",
                                     request._requestid,
                                 );
 
@@ -3181,7 +3181,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                     let footerData = null;
                                     let headerData = null;
 
-                                    if (templatedata.category === 'AUTHENTICATION') {
+                                    if (templatedata.category === "AUTHENTICATION") {
                                         authenticationData = {
                                             buttonautofilltext: null,
                                             buttonotptype: null,
@@ -3198,15 +3198,15 @@ exports.synchronizeTemplate = async (request, response) => {
 
                                         if (templatedata.components) {
                                             for (const templatecomponent of templatedata.components) {
-                                                if (templatecomponent.type === 'BODY') {
+                                                if (templatecomponent.type === "BODY") {
                                                     authenticationData.safetyrecommendation = templatecomponent.addSecurityRecommendation;
                                                 }
 
-                                                if (templatecomponent.type === 'FOOTER') {
+                                                if (templatecomponent.type === "FOOTER") {
                                                     authenticationData.codeexpirationminutes = templatecomponent.codeExpirationMinutes;
                                                 }
 
-                                                if (templatecomponent.type === 'BUTTONS') {
+                                                if (templatecomponent.type === "BUTTONS") {
                                                     if (templatecomponent.buttons) {
                                                         for (const templatebutton of templatecomponent.buttons) {
                                                             authenticationData.buttonautofilltext = templatebutton.autofillText;
@@ -3223,7 +3223,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                     } else {
                                         if (templatedata.components) {
                                             for (const templatecomponent of templatedata.components) {
-                                                if (templatecomponent.type === 'BODY') {
+                                                if (templatecomponent.type === "BODY") {
                                                     bodyData = {
                                                         text: templatecomponent.text,
                                                     }
@@ -3235,13 +3235,13 @@ exports.synchronizeTemplate = async (request, response) => {
                                                     }
                                                 }
 
-                                                if (templatecomponent.type === 'FOOTER') {
+                                                if (templatecomponent.type === "FOOTER") {
                                                     footerData = {
                                                         text: templatecomponent.text,
                                                     }
                                                 }
 
-                                                if (templatecomponent.type === 'HEADER') {
+                                                if (templatecomponent.type === "HEADER") {
                                                     headerData = {
                                                         text: templatecomponent.text,
                                                         type: templatecomponent.format,
@@ -3259,13 +3259,13 @@ exports.synchronizeTemplate = async (request, response) => {
                                                     }
                                                 }
 
-                                                if (templatecomponent.type === 'BUTTONS') {
+                                                if (templatecomponent.type === "BUTTONS") {
                                                     buttonGenericData = [];
                                                     buttonQuickReplyData = [];
 
                                                     if (templatecomponent.buttons) {
                                                         for (const templatebutton of templatecomponent.buttons) {
-                                                            if (templatebutton.type === 'QUICK_REPLY') {
+                                                            if (templatebutton.type === "QUICK_REPLY") {
                                                                 buttonQuickReplyData.push({
                                                                     type: templatebutton.type,
                                                                     btn: {
@@ -3281,7 +3281,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                                                         code: templatebutton.countryCode,
                                                                         phone_number: templatebutton.phoneNumber,
                                                                         text: templatebutton.text,
-                                                                        type: templatebutton.example ? 'dynamic' : 'static',
+                                                                        type: templatebutton.example ? "dynamic" : "static",
                                                                         url: templatebutton.url,
                                                                         variables: templatebutton.example,
                                                                     }
@@ -3291,7 +3291,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                                     }
                                                 }
 
-                                                if (templatecomponent.type === 'CAROUSEL') {
+                                                if (templatecomponent.type === "CAROUSEL") {
                                                     if (templatecomponent.cards) {
                                                         carouselData = [];
 
@@ -3305,7 +3305,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                                                 };
 
                                                                 for (const templatecarouselcomponent of templatecarousel.components) {
-                                                                    if (templatecarouselcomponent.type === 'BODY') {
+                                                                    if (templatecarouselcomponent.type === "BODY") {
                                                                         carouselComponent.body = templatecarouselcomponent.text;
 
                                                                         if (templatecarouselcomponent.example) {
@@ -3315,7 +3315,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                                                         }
                                                                     }
 
-                                                                    if (templatecarouselcomponent.type === 'HEADER') {
+                                                                    if (templatecarouselcomponent.type === "HEADER") {
                                                                         carouselComponent.header = templatecarouselcomponent.text;
                                                                         carouselComponent.headertype = templatecarouselcomponent.format;
 
@@ -3326,7 +3326,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                                                         }
                                                                     }
 
-                                                                    if (templatecarouselcomponent.type === 'BUTTONS') {
+                                                                    if (templatecarouselcomponent.type === "BUTTONS") {
                                                                         if (templatecarouselcomponent.buttons) {
                                                                             for (const templatecarouselcomponentbutton of templatecarouselcomponent.buttons) {
                                                                                 carouselComponent.buttons.push({
@@ -3336,7 +3336,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                                                                         code: templatecarouselcomponentbutton.countryCode,
                                                                                         phone_number: templatecarouselcomponentbutton.phoneNumber,
                                                                                         text: templatecarouselcomponentbutton.text,
-                                                                                        type: templatecarouselcomponentbutton.example ? 'dynamic' : 'static',
+                                                                                        type: templatecarouselcomponentbutton.example ? "dynamic" : "static",
                                                                                         url: templatecarouselcomponentbutton.url,
                                                                                         variables: templatecarouselcomponentbutton.example,
                                                                                     }
@@ -3355,14 +3355,14 @@ exports.synchronizeTemplate = async (request, response) => {
                                         }
                                     }
 
-                                    const templateType = carouselData ? 'CAROUSEL' : ((authenticationData || buttonGenericData || buttonQuickReplyData || footerData || headerData) ? 'MULTIMEDIA' : 'STANDARD');
+                                    const templateType = carouselData ? "CAROUSEL" : ((authenticationData || buttonGenericData || buttonQuickReplyData || footerData || headerData) ? "MULTIMEDIA" : "STANDARD");
 
                                     await channelfunctions.messageTemplateUpd(
                                         corpid,
                                         orgid,
                                         templatedata.name || null,
-                                        'HSM',
-                                        'ACTIVO',
+                                        "HSM",
+                                        "ACTIVO",
                                         templatedata.name || null,
                                         templatedata.namespace || null,
                                         templatedata.category || null,
@@ -3392,7 +3392,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                         templatedata.partnerId || null,
                                         null,
                                         templatedata.status || null,
-                                        request.user?.usr || 'scheduler',
+                                        request.user?.usr || "scheduler",
                                         request._requestid,
                                     );
                                 }
@@ -3649,74 +3649,69 @@ exports.deleteTemplate = async (request, response) => {
 
             if (messagetemplatelist) {
                 for (const messagetemplate of messagetemplatelist) {
-                    let deletesuccess = false;
+                    let deletesuccess = true;
 
-                    if (messagetemplate.communicationchannelid && messagetemplate.deleteprovider) {
+                    if (messagetemplate.communicationchannelid) {
+                        const channellist = await getChannelData(request.user.corpid, request.user.orgid, messagetemplate.communicationchannelid, request._requestid);
 
+                        if (channellist) {
+                            if (channellist[0]) {
+                                const channeldata = channellist[0];
 
-                        switch (messagetemplate.communicationchanneltype) {
-                            case "WHAD":
-                                if (messagetemplate.communicationchannelservicecredentials) {
-                                    let serviceData = JSON.parse(
-                                        messagetemplate.communicationchannelservicecredentials
-                                    );
+                                if (channeldata.servicecredentials) {
+                                    deletesuccess = false;
 
-                                    const requestDeleteDialog = await axiosObservable({
-                                        _requestid: request._requestid,
-                                        method: "post",
-                                        url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
-                                        data: {
-                                            ApiKey: serviceData.apiKey,
-                                            DeleteName: messagetemplate.name,
-                                            IsCloud: !!serviceData.isCloud,
-                                            Type: "DELETE",
-                                        },
-                                    });
+                                    const servicecredentials = JSON.parse(channeldata.servicecredentials);
 
-                                    if (requestDeleteDialog.data.success) {
-                                        deletesuccess = true;
-                                    } else {
-                                        requestCode = requestDeleteDialog.data.operationMessage;
-                                        requestMessage = requestDeleteDialog.data.operationMessage;
+                                    switch (messagetemplate.communicationchanneltype) {
+                                        case "WHAD":
+                                            const requestDeleteDialog = await axiosObservable({
+                                                _requestid: request._requestid,
+                                                method: "post",
+                                                url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
+                                                data: {
+                                                    ApiKey: servicecredentials.apiKey,
+                                                    IsCloud: !!servicecredentials.isCloud,
+                                                    TemplateName: messagetemplate.name,
+                                                    Type: "DELETE",
+                                                },
+                                            });
+
+                                            if (requestDeleteDialog.data.success) {
+                                                deletesuccess = true;
+                                            } else {
+                                                requestCode = requestDeleteDialog.data.operationMessage;
+                                                requestMessage = requestDeleteDialog.data.operationMessage;
+                                            }
+                                            break;
+
+                                        case "WHAM":
+                                            const requestDeleteMeta = await axiosObservable({
+                                                _requestid: request._requestid,
+                                                method: "post",
+                                                url: `${bridgeEndpoint}processlaraigo/meta/metamessagetemplate`,
+                                                data: {
+                                                    AccessToken: servicecredentials.accessToken,
+                                                    NumberId: servicecredentials.numberId,
+                                                    TemplateName: messagetemplate.name,
+                                                    Type: "DELETE",
+                                                },
+                                            });
+
+                                            if (requestDeleteMeta.data.success) {
+                                                deletesuccess = true;
+                                            } else {
+                                                requestCode = requestDeleteMeta.data.operationMessage;
+                                                requestMessage = requestDeleteMeta.data.operationMessage;
+                                            }
+                                            break;
+
+                                        default:
+                                            deletesuccess = true;
+                                            break;
                                     }
                                 }
-                                break;
-
-                            case "WHAT":
-                                if (messagetemplate.communicationchannelservicecredentials) {
-                                    let serviceData = JSON.parse(
-                                        messagetemplate.communicationchannelservicecredentials
-                                    );
-
-                                    const requestDeleteSmooch = await axiosObservable({
-                                        _requestid: request._requestid,
-                                        method: "post",
-                                        url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
-                                        data: {
-                                            AppId: serviceData.appId,
-                                            DeleteName: messagetemplate.name,
-                                            IntegrationId: messagetemplate.communicationchannelintegrationid,
-                                            KeyId: serviceData.apiKeyId,
-                                            KeySecret: serviceData.apiKeySecret,
-                                            Type: "DELETE",
-                                        },
-                                    });
-
-                                    if (requestDeleteSmooch.data.success) {
-                                        deletesuccess = true;
-                                    } else {
-                                        requestCode = requestDeleteSmooch.data.operationMessage;
-                                        requestMessage = requestDeleteSmooch.data.operationMessage;
-                                    }
-                                }
-                                break;
-
-                            case "WHAG":
-                            case "WHAM":
-                                if (messagetemplate.communicationchannelservicecredentials) {
-                                    deletesuccess = true;
-                                }
-                                break;
+                            }
                         }
                     } else {
                         deletesuccess = true;
@@ -3725,25 +3720,29 @@ exports.deleteTemplate = async (request, response) => {
                     if (deletesuccess) {
                         let parameters = messagetemplate;
 
-                        parameters.bodyobject = JSON.stringify(messagetemplate.bodyobject);
-                        parameters.buttons = JSON.stringify(messagetemplate.buttons);
                         parameters.corpid = request.user.corpid;
                         parameters.orgid = request.user.orgid;
                         parameters.username = request.user.usr;
+                        parameters.authenticationdata = messagetemplate.authenticationdata ? JSON.stringify(messagetemplate.authenticationdata) : null;
+                        parameters.bodyvariables = messagetemplate.bodyvariables ? JSON.stringify(messagetemplate.bodyvariables) : null;
+                        parameters.buttonsgeneric = messagetemplate.buttonsgeneric ? JSON.stringify(messagetemplate.buttonsgeneric) : null;
+                        parameters.buttonsquickreply = messagetemplate.buttonsquickreply ? JSON.stringify(messagetemplate.buttonsquickreply) : null;
+                        parameters.carouseldata = messagetemplate.carouseldata ? JSON.stringify(messagetemplate.carouseldata) : null;
+                        parameters.headervariables = messagetemplate.headervariables ? JSON.stringify(messagetemplate.headervariables) : null;
 
-                        const queryTemplateDelete = await triggerfunctions.executesimpletransaction(
+                        const queryMessageTemplateDelete = await triggerfunctions.executesimpletransaction(
                             "UFN_MESSAGETEMPLATE_INS",
-                            parameters
+                            parameters,
                         );
 
-                        if (queryTemplateDelete instanceof Array) {
+                        if (queryMessageTemplateDelete instanceof Array) {
                             requestCode = "";
                             requestMessage = "";
                             requestStatus = 200;
                             requestSuccess = true;
                         } else {
-                            requestCode = queryTemplateDelete.code;
-                            requestMessage = queryTemplateDelete.code;
+                            requestCode = queryMessageTemplateDelete.code;
+                            requestMessage = queryMessageTemplateDelete.code;
                         }
                     }
                 }
