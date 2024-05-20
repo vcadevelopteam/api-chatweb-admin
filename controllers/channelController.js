@@ -3345,6 +3345,8 @@ exports.synchronizeTemplate = async (request, response) => {
                                                                         }
                                                                     }
                                                                 }
+
+                                                                carouselData.push(carouselComponent);
                                                             }
                                                         }
                                                     }
@@ -3353,7 +3355,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                         }
                                     }
 
-                                    const templateType = (authenticationData || buttonGenericData || buttonQuickReplyData || carouselData || footerData || headerData) ? 'MULTIMEDIA' : 'STANDARD';
+                                    const templateType = carouselData ? 'CAROUSEL' : ((authenticationData || buttonGenericData || buttonQuickReplyData || footerData || headerData) ? 'MULTIMEDIA' : 'STANDARD');
 
                                     await channelfunctions.messageTemplateUpd(
                                         corpid,
@@ -3643,13 +3645,15 @@ exports.deleteTemplate = async (request, response) => {
         }
 
         if (request.body) {
-            let { messagetemplatelist } = request.body;
+            const { messagetemplatelist } = request.body;
 
-            if (messagetemplatelist[0]) {
+            if (messagetemplatelist) {
                 for (const messagetemplate of messagetemplatelist) {
-                    let deleteSuccess = false;
+                    let deletesuccess = false;
 
-                    if (messagetemplate.deleteprovider) {
+                    if (messagetemplate.communicationchannelid && messagetemplate.deleteprovider) {
+
+
                         switch (messagetemplate.communicationchanneltype) {
                             case "WHAD":
                                 if (messagetemplate.communicationchannelservicecredentials) {
@@ -3670,7 +3674,7 @@ exports.deleteTemplate = async (request, response) => {
                                     });
 
                                     if (requestDeleteDialog.data.success) {
-                                        deleteSuccess = true;
+                                        deletesuccess = true;
                                     } else {
                                         requestCode = requestDeleteDialog.data.operationMessage;
                                         requestMessage = requestDeleteDialog.data.operationMessage;
@@ -3699,7 +3703,7 @@ exports.deleteTemplate = async (request, response) => {
                                     });
 
                                     if (requestDeleteSmooch.data.success) {
-                                        deleteSuccess = true;
+                                        deletesuccess = true;
                                     } else {
                                         requestCode = requestDeleteSmooch.data.operationMessage;
                                         requestMessage = requestDeleteSmooch.data.operationMessage;
@@ -3710,15 +3714,15 @@ exports.deleteTemplate = async (request, response) => {
                             case "WHAG":
                             case "WHAM":
                                 if (messagetemplate.communicationchannelservicecredentials) {
-                                    deleteSuccess = true;
+                                    deletesuccess = true;
                                 }
                                 break;
                         }
                     } else {
-                        deleteSuccess = true;
+                        deletesuccess = true;
                     }
 
-                    if (deleteSuccess) {
+                    if (deletesuccess) {
                         let parameters = messagetemplate;
 
                         parameters.bodyobject = JSON.stringify(messagetemplate.bodyobject);
