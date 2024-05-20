@@ -3227,6 +3227,12 @@ exports.synchronizeTemplate = async (request, response) => {
                                                     bodyData = {
                                                         text: templatecomponent.text,
                                                     }
+
+                                                    if (templatecomponent.example) {
+                                                        if (templatecomponent.example.bodyText) {
+                                                            bodyData.example = templatecomponent.example.bodyText;
+                                                        }
+                                                    }
                                                 }
 
                                                 if (templatecomponent.type === 'FOOTER') {
@@ -3300,6 +3306,12 @@ exports.synchronizeTemplate = async (request, response) => {
                                                                 for (const templatecarouselcomponent of templatecarousel.components) {
                                                                     if (templatecarouselcomponent.type === 'BODY') {
                                                                         carouselComponent.body = templatecarouselcomponent.text;
+
+                                                                        if (templatecarouselcomponent.example) {
+                                                                            if (templatecarouselcomponent.example.bodyText) {
+                                                                                carouselComponent.bodyvariables = templatecarouselcomponent.example.bodyText;
+                                                                            }
+                                                                        }
                                                                     }
 
                                                                     if (templatecarouselcomponent.type === 'HEADER') {
@@ -3364,7 +3376,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                         communicationchannel.communicationchannelid,
                                         communicationchannel.type,
                                         authenticationData ? JSON.stringify(authenticationData) : null,
-                                        null,
+                                        bodyData ? (bodyData.example ? JSON.stringify(bodyData.example) : null) : null,
                                         buttonGenericData ? JSON.stringify(buttonGenericData) : null,
                                         buttonQuickReplyData ? JSON.stringify(buttonQuickReplyData) : null,
                                         carouselData ? JSON.stringify(carouselData) : null,
