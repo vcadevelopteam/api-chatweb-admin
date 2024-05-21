@@ -3384,7 +3384,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                         buttonGenericData ? JSON.stringify(buttonGenericData) : null,
                                         buttonQuickReplyData ? JSON.stringify(buttonQuickReplyData) : null,
                                         carouselData ? JSON.stringify(carouselData) : null,
-                                        headerData ? headerData.example : null,
+                                        headerData ? JSON.stringify(headerData.example) : null,
                                         templatedata.wabaAccountId || null,
                                         templatedata.externalId || null,
                                         templatedata.id || null,
