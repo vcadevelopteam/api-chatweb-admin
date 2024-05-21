@@ -579,6 +579,9 @@ exports.Collection = async (req, res) => {
                     await send(sendmessage, req._requestid);
                 }
             }
+                else if (!parameters.calendarbookingid && assignedAgentId) {
+                    createGoogleEvent(assignedAgentId, newcalendarbookingid, resultCalendar[0], parameters)
+                }
 
                 //Inicio - Envio de recordatorio - JR
                 const reminderData = {
@@ -1572,6 +1575,7 @@ const createGoogleEvent = async (assignedAgentId, newcalendarbookingid, calendar
         console.log("🚀 ~ [END]createGoogleEvent ~ eventid:", eventData?.data?.id)
     } catch (error) {
         console.log({ error })
+        logger.child({ _requestid: params?._requestid ?? '' }).error(error)
     }
 }
 
