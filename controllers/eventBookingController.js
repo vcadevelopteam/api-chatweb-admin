@@ -352,7 +352,7 @@ const setReminder = async (data, requestid) => {
                         phone: data.listmembers[0].phone,
                         firstname: data.listmembers[0].firstname,
                         lastname: "",
-                        parameters: data.bodyHsmMessage.match(/({{)(.*?)(}})/g)
+                        parameters: (data.bodyHsmMessage.match(/({{)(.*?)(}})/g) || [])
                             .map(x => x.substring(x.indexOf("{{") + 2, x.indexOf("}}")))
                             .map(x => ({ text: variables_keys[x] }))
                     }]
