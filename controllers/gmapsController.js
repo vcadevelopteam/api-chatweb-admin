@@ -191,10 +191,7 @@ function findSchedule(nombre) {
             friday: "12:00-22:30",
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
-        }, 
-        "ZONA ROJA CANTA CALLAO PATIO": {  
-            //no hay horario       
-        }, 
+        },         
         "REPARTO COLONIAL 2": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
@@ -356,9 +353,6 @@ function findSchedule(nombre) {
             friday: "12:00-22:30",
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
-        },    
-        "ZONA ROJA METRO VENEZUELA": {
-             //no hay horario 
         },  
         "REPARTO MEXICO 1": { 
             monday: "12:00-22:30",
@@ -476,10 +470,7 @@ function findSchedule(nombre) {
             friday: "12:00-22:30",
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"     
-        },
-        "ZONA ROJA RIMAC": {  
-            //no hay horario       
-        },
+        },      
         "REPARTO SALAVERRY": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
@@ -542,10 +533,7 @@ function findSchedule(nombre) {
             friday: "12:00-20:00",
             saturday: "12:00-20:00",
             sunday: "12:00-20:00"   
-        },
-        "REPARTO VILLA EL SALVADOR 1": {
-            //no hay horario       
-        },
+        },      
         "REPARTO VILLA EL SALVADOR 2": {
             monday: "13:00-22:30",
             tuesday: "13:00-22:30",
