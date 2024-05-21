@@ -98,7 +98,7 @@ exports.RockysSendInfo = async (req, res) => {
             "order_type": 0,
             "pos_status": "",
             "tax_amount": 0,
-            "total_paid": Number(total_paid),
+            "total_paid": Number(total_paid) - 0.01,
             "coupon_code": "",
             "customer_id": null,
             "grand_total": 0,
