@@ -3464,7 +3464,7 @@ exports.addTemplate = async (request, response) => {
                             templatebody.carouseldata = templatebody.carouseldata ? JSON.parse(templatebody.carouseldata) : null;
                             templatebody.headervariables = templatebody.headervariables ? JSON.parse(templatebody.headervariables) : null;
 
-                            switch (messagetemplate.communicationchanneltype) {
+                            switch (channeldata.type) {
                                 case "WHAD":
                                     const requestCreateDialog = await axiosObservable({
                                         _requestid: request._requestid,
