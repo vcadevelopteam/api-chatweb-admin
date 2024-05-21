@@ -3360,7 +3360,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                     await channelfunctions.messageTemplateUpd(
                                         corpid,
                                         orgid,
-                                        templatedata.name || null,
+                                        '',
                                         "HSM",
                                         "ACTIVO",
                                         templatedata.name || null,
@@ -3441,169 +3441,113 @@ exports.addTemplate = async (request, response) => {
         }
 
         if (request.body) {
-            if (request.body.communicationchanneltype) {
-                let addSuccess = false;
+            const { communicationchannelid } = request.body;
 
-                switch (request.body.communicationchanneltype) {
-                    case "WHAD":
-                        if (request.body.servicecredentials) {
-                            let serviceData = JSON.parse(request.body.servicecredentials);
+            if (communicationchannelid) {
+                let createsuccess = false;
 
-                            let createBody = {
-                                ApiKey: serviceData.apiKey,
-                                Body: { Text: request.body.body },
-                                Category: request.body.category,
-                                Footer: request.body.footerenabled ? { Text: request.body.footer } : null,
-                                IsCloud: !!serviceData.isCloud,
-                                Name: request.body.name,
-                                Type: "CREATE",
-                                Header: request.body.headerenabled
-                                    ? {
-                                        Type: request.body.headertype,
-                                        Text: request.body.headertype === "text" ? request.body.header : null,
-                                    }
-                                    : null,
-                                Language:
-                                    (request.body.language || "").split("_").length > 1
-                                        ? `${(request.body.language || "").split("_")[0].toLowerCase()}_${(request.body.language || "").split("_")[1]
-                                        }`
-                                        : (request.body.language || "").split("_")[0].toLowerCase(),
-                            };
+                const channellist = await getChannelData(request.user.corpid, request.user.orgid, communicationchannelid, request._requestid);
 
-                            if (request.body.buttons && request.body.buttons.length > 0) {
-                                createBody.Buttons = [];
+                if (channellist) {
+                    if (channellist[0]) {
+                        const channeldata = channellist[0];
 
-                                request.body.buttons.forEach((element) => {
-                                    createBody.Buttons.push({
-                                        Text: element.title,
-                                        Type: element.type,
-                                        Data:
-                                            element.type === "phone_number"
-                                                ? `phoneNumber: ${element.payload}`
-                                                : element.type === "url"
-                                                    ? `url: ${element.payload}`
-                                                    : null,
+                        if (channeldata.servicecredentials) {
+                            const servicecredentials = JSON.parse(channeldata.servicecredentials);
+
+                            let templatebody = request.body;
+
+                            templatebody.authenticationdata = templatebody.authenticationdata ? JSON.parse(templatebody.authenticationdata) : null;
+                            templatebody.bodyvariables = templatebody.bodyvariables ? JSON.parse(templatebody.bodyvariables) : null;
+                            templatebody.buttonsgeneric = templatebody.buttonsgeneric ? JSON.parse(templatebody.buttonsgeneric) : null;
+                            templatebody.buttonsquickreply = templatebody.buttonsquickreply ? JSON.parse(templatebody.buttonsquickreply) : null;
+                            templatebody.carouseldata = templatebody.carouseldata ? JSON.parse(templatebody.carouseldata) : null;
+                            templatebody.headervariables = templatebody.headervariables ? JSON.parse(templatebody.headervariables) : null;
+
+                            switch (messagetemplate.communicationchanneltype) {
+                                case "WHAD":
+                                    const requestCreateDialog = await axiosObservable({
+                                        _requestid: request._requestid,
+                                        method: "post",
+                                        url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
+                                        data: {
+                                            ApiKey: servicecredentials.apiKey,
+                                            IsCloud: !!servicecredentials.isCloud,
+                                            TemplateData: templatebody,
+                                            Type: "CREATE",
+                                        },
                                     });
-                                });
-                            }
 
-                            const requestCreateDialog = await axiosObservable({
-                                _requestid: request._requestid,
-                                data: createBody,
-                                method: "post",
-                                url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
-                            });
+                                    if (requestCreateDialog.data.success) {
+                                        let parameters = request.body;
 
-                            if (requestCreateDialog.data.success) {
-                                let parameters = request.body;
+                                        parameters.corpid = request.user.corpid;
+                                        parameters.orgid = request.user.orgid;
+                                        parameters.username = request.user.usr;
+                                        parameters.namespace = requestCreateDialog.data.namespace || null;
+                                        parameters.status = requestCreateDialog.data.status || null;
 
-                                parameters.bodyobject = JSON.stringify(request.body.bodyobject);
-                                parameters.buttons = JSON.stringify(request.body.buttons);
-                                parameters.corpid = request.user.corpid;
-                                parameters.externalid = requestCreateDialog.data.result[0].id || "";
-                                parameters.namespace = requestCreateDialog.data.result[0].id || "";
-                                parameters.orgid = request.user.orgid;
-                                parameters.username = request.user.usr;
+                                        const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
+                                            "UFN_MESSAGETEMPLATE_INS",
+                                            parameters,
+                                        );
 
-                                const queryTemplateAdd = await triggerfunctions.executesimpletransaction(
-                                    "UFN_MESSAGETEMPLATE_INS",
-                                    parameters
-                                );
+                                        if (queryMessageTemplateCreate instanceof Array) {
+                                            createsuccess = true;
+                                        } else {
+                                            requestCode = queryMessageTemplateCreate.code;
+                                            requestMessage = queryMessageTemplateCreate.code;
+                                        }
+                                    } else {
+                                        requestCode = requestCreateDialog.data.operationMessage;
+                                        requestMessage = requestCreateDialog.data.operationMessage;
+                                    }
+                                    break;
 
-                                if (queryTemplateAdd instanceof Array) {
-                                    addSuccess = true;
-                                } else {
-                                    requestCode = queryTemplateAdd.code;
-                                    requestMessage = queryTemplateAdd.code;
-                                }
-                            } else {
-                                requestCode = requestCreateDialog.data.operationMessage;
-                                requestMessage = requestCreateDialog.data.operationMessage;
+                                case "WHAM":
+                                    const requestCreateMeta = await axiosObservable({
+                                        _requestid: request._requestid,
+                                        method: "post",
+                                        url: `${bridgeEndpoint}processlaraigo/meta/metamessagetemplate`,
+                                        data: {
+                                            AccessToken: servicecredentials.accessToken,
+                                            NumberId: servicecredentials.numberId,
+                                            TemplateData: templatebody,
+                                            Type: "CREATE",
+                                        },
+                                    });
+
+                                    if (requestCreateMeta.data.success) {
+                                        let parameters = request.body;
+
+                                        parameters.corpid = request.user.corpid;
+                                        parameters.orgid = request.user.orgid;
+                                        parameters.username = request.user.usr;
+                                        parameters.namespace = requestCreateMeta.data.namespace || null;
+                                        parameters.status = requestCreateMeta.data.status || null;
+
+                                        const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
+                                            "UFN_MESSAGETEMPLATE_INS",
+                                            parameters,
+                                        );
+
+                                        if (queryMessageTemplateCreate instanceof Array) {
+                                            createsuccess = true;
+                                        } else {
+                                            requestCode = queryMessageTemplateCreate.code;
+                                            requestMessage = queryMessageTemplateCreate.code;
+                                        }
+                                    } else {
+                                        requestCode = requestCreateMeta.data.operationMessage;
+                                        requestMessage = requestCreateMeta.data.operationMessage;
+                                    }
+                                    break;
                             }
                         }
-                        break;
-
-                    case "WHAT":
-                        if (request.body.servicecredentials) {
-                            let serviceData = JSON.parse(request.body.servicecredentials);
-
-                            let createBody = {
-                                AppId: serviceData.appId,
-                                Body: { Text: request.body.body },
-                                Category: request.body.category,
-                                Footer: request.body.footerenabled ? { Text: request.body.footer } : null,
-                                IntegrationId: request.body.integrationid,
-                                KeyId: serviceData.apiKeyId,
-                                KeySecret: serviceData.apiKeySecret,
-                                Name: request.body.name,
-                                Type: "CREATE",
-                                Header: request.body.headerenabled
-                                    ? {
-                                        Type: request.body.headertype,
-                                        Text: request.body.headertype === "text" ? request.body.header : null,
-                                    }
-                                    : null,
-                                Language:
-                                    (request.body.language || "").split("_").length > 1
-                                        ? `${(request.body.language || "").split("_")[0].toLowerCase()}_${(request.body.language || "").split("_")[1]
-                                        }`
-                                        : (request.body.language || "").split("_")[0].toLowerCase(),
-                            };
-
-                            if (request.body.buttons && request.body.buttons.length > 0) {
-                                createBody.Buttons = [];
-
-                                request.body.buttons.forEach((element) => {
-                                    createBody.Buttons.push({
-                                        Text: element.title,
-                                        Type: element.type,
-                                        Data:
-                                            element.type === "phone_number"
-                                                ? `phoneNumber: ${element.payload}`
-                                                : element.type === "url"
-                                                    ? `url: ${element.payload}`
-                                                    : null,
-                                    });
-                                });
-                            }
-
-                            const requestCreateSmooch = await axiosObservable({
-                                _requestid: request._requestid,
-                                data: createBody,
-                                method: "post",
-                                url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
-                            });
-
-                            if (requestCreateSmooch.data.success) {
-                                let parameters = request.body;
-
-                                parameters.bodyobject = JSON.stringify(request.body.bodyobject);
-                                parameters.buttons = JSON.stringify(request.body.buttons);
-                                parameters.corpid = request.user.corpid;
-                                parameters.externalid = requestCreateSmooch.data.result[0].id || "";
-                                parameters.orgid = request.user.orgid;
-                                parameters.username = request.user.usr;
-
-                                const queryTemplateAdd = await triggerfunctions.executesimpletransaction(
-                                    "UFN_MESSAGETEMPLATE_INS",
-                                    parameters
-                                );
-
-                                if (queryTemplateAdd instanceof Array) {
-                                    addSuccess = true;
-                                } else {
-                                    requestCode = queryTemplateAdd.code;
-                                    requestMessage = queryTemplateAdd.code;
-                                }
-                            } else {
-                                requestCode = requestCreateSmooch.data.operationMessage;
-                                requestMessage = requestCreateSmooch.data.operationMessage;
-                            }
-                        }
-                        break;
+                    }
                 }
 
-                if (addSuccess) {
+                if (createsuccess) {
                     requestCode = "";
                     requestMessage = "";
                     requestStatus = 200;
