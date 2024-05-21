@@ -1041,7 +1041,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_MESSAGETEMPLATE_INS: {
-        query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $bodyobject, $footerenabled, $footer, $buttonsenabled, $buttons, $priority, $attachment, $fromprovider, $externalid, $externalstatus, $communicationchannelid, $communicationchanneltype, $exampleparameters, $username, $operation, $variablecontext)",
+        query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $footerenabled, $footer, $buttonsenabled, $priority, $attachment, $communicationchannelid, $communicationchanneltype, $authenticationdata, $bodyvariables, $buttonsgeneric, $buttonsquickreply, $carouseldata, $headervariables, $provideraccountid, $providerexternalid, $providerid, $providermessagelimit, $providerpartnerid, $providerquality, $providerstatus, $username, $operation)",
         module: ["/extras/messagetemplate"],
         protected: "INSERT"
     },

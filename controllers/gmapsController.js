@@ -184,23 +184,14 @@ function findSchedule(nombre) {
             sunday: "12:00-18:00"      
         },  
         "REPARTO CANTA CALLAO PATIO": {  
-            monday: "12:00-22:30",
-            tuesday: "12:00-22:30",
-            wednesday: "12:00-22:30",
-            thursday: "12:00-22:30",
-            friday: "12:00-22:30",
-            saturday: "12:00-22:30",
-            sunday: "12:00-22:30"
-        }, 
-        "ZONA ROJA CANTA CALLAO PATIO": {  
-            monday: "12:00-18:00",
-            tuesday: "12:00-18:00",
-            wednesday: "12:00-18:00",
-            thursday: "12:00-18:00",
-            friday: "12:00-18:00",
-            saturday: "12:00-18:00",
-            sunday: "12:00-18:00"
-        }, 
+            monday: "12:00-20:30",
+            tuesday: "12:00-20:30",
+            wednesday: "12:00-20:30",
+            thursday: "12:00-20:30",
+            friday: "12:00-20:30",
+            saturday: "12:00-20:30",
+            sunday: "12:00-20:30"
+        },            
         "REPARTO COLONIAL 2": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
@@ -362,7 +353,7 @@ function findSchedule(nombre) {
             friday: "12:00-22:30",
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
-        },   
+        },  
         "REPARTO MEXICO 1": { 
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
@@ -479,16 +470,7 @@ function findSchedule(nombre) {
             friday: "12:00-22:30",
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"     
-        },
-        "ZONA ROJA RIMAC": {  
-            monday: "12:00-18:00",
-            tuesday: "12:00-18:00",
-            wednesday: "12:00-18:00",
-            thursday: "12:00-18:00",
-            friday: "12:00-18:00",
-            saturday: "12:00-18:00",
-            sunday: "12:00-18:00"      
-        },
+        },      
         "REPARTO SALAVERRY": {
             monday: "12:00-22:30",
             tuesday: "12:00-22:30",
@@ -498,7 +480,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
         },
-        "REPARTO SANTA ANITA MALL": {
+        "REPARTO MALL SANTA ANITA": {
             monday: "12:00-22:00",
             tuesday: "12:00-22:00",
             wednesday: "12:00-22:00",
@@ -507,7 +489,7 @@ function findSchedule(nombre) {
             saturday: "12:00-22:00",
             sunday: "12:00-22:00"
         },
-        "ZONA ROJA SANTA ANITA MALL": {
+        "ZONA ROJA MALL SANTA ANITA": {
             monday: "12:00-17:00",
             tuesday: "12:00-17:00",
             wednesday: "12:00-17:00",
@@ -652,10 +634,10 @@ function findStoreId(nombre) {
         "REPARTO PERU": 114,
         "REPARTO PERU 2": 143,
         "REPARTO PRO": 78,
-        "REPARTO PUENTE PIEDRA": 122,
+        "REPARTO PUENTE 1": 122,
         "REPARTO RIMAC": 125,
         "REPARTO SALAVERRY": 22,
-        "REPARTO SANTA ANITA MALL": 137,
+        "REPARTO MALL SANTA ANITA": 137,
         "REPARTO SUCRE": 129,
         "REPARTO VENEZUELA": 162,
         "REPARTO VENTANILLA": 107,
