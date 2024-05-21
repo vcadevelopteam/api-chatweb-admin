@@ -3198,12 +3198,21 @@ exports.synchronizeTemplate = async (request, response) => {
 
                                         if (templatedata.components) {
                                             for (const templatecomponent of templatedata.components) {
+                                                if (templatedata.messageSendTtlSeconds) {
+                                                    authenticationData.configurevalidityperiod = true;
+                                                    authenticationData.validityperiod = templatedata.messageSendTtlSeconds;
+                                                }
+
                                                 if (templatecomponent.type === "BODY") {
                                                     authenticationData.safetyrecommendation = templatecomponent.addSecurityRecommendation;
                                                 }
 
                                                 if (templatecomponent.type === "FOOTER") {
                                                     authenticationData.codeexpirationminutes = templatecomponent.codeExpirationMinutes;
+
+                                                    if (authenticationData.codeexpirationminutes) {
+                                                        authenticationData.showexpirationdate = true;
+                                                    }
                                                 }
 
                                                 if (templatecomponent.type === "BUTTONS") {
