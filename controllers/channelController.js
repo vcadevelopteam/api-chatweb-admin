@@ -3486,6 +3486,12 @@ exports.addTemplate = async (request, response) => {
                                         parameters.username = request.user.usr;
                                         parameters.namespace = requestCreateDialog.data.namespace || null;
                                         parameters.status = requestCreateDialog.data.status || null;
+                                        parameters.authenticationdata = parameters.authenticationdata ? JSON.stringify(parameters.authenticationdata) : null;
+                                        parameters.bodyvariables = parameters.bodyvariables ? JSON.stringify(parameters.bodyvariables) : null;
+                                        parameters.buttonsgeneric = parameters.buttonsgeneric ? JSON.stringify(parameters.buttonsgeneric) : null;
+                                        parameters.buttonsquickreply = parameters.buttonsquickreply ? JSON.stringify(parameters.buttonsquickreply) : null;
+                                        parameters.carouseldata = parameters.carouseldata ? JSON.stringify(parameters.carouseldata) : null;
+                                        parameters.headervariables = parameters.headervariables ? JSON.stringify(parameters.headervariables) : null;
 
                                         const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
                                             "UFN_MESSAGETEMPLATE_INS",
@@ -3525,6 +3531,12 @@ exports.addTemplate = async (request, response) => {
                                         parameters.username = request.user.usr;
                                         parameters.namespace = requestCreateMeta.data.namespace || null;
                                         parameters.status = requestCreateMeta.data.status || null;
+                                        parameters.authenticationdata = parameters.authenticationdata ? JSON.stringify(parameters.authenticationdata) : null;
+                                        parameters.bodyvariables = parameters.bodyvariables ? JSON.stringify(parameters.bodyvariables) : null;
+                                        parameters.buttonsgeneric = parameters.buttonsgeneric ? JSON.stringify(parameters.buttonsgeneric) : null;
+                                        parameters.buttonsquickreply = parameters.buttonsquickreply ? JSON.stringify(parameters.buttonsquickreply) : null;
+                                        parameters.carouseldata = parameters.carouseldata ? JSON.stringify(parameters.carouseldata) : null;
+                                        parameters.headervariables = parameters.headervariables ? JSON.stringify(parameters.headervariables) : null;
 
                                         const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
                                             "UFN_MESSAGETEMPLATE_INS",
