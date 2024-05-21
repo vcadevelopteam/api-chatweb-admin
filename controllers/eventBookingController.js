@@ -380,7 +380,7 @@ const setReminder = async (data, requestid) => {
         })
     }
     catch (exception) {
-        getErrorCode(null, exception, `Request to ${req.originalUrl}`, data._requestid);
+        getErrorCode(null, exception, `Request to setReminder`, data._requestid);
     }
 }
 
