@@ -1,5 +1,5 @@
 module.exports = {
-    inputretry: {        
+    inputretry: {
         datehour: {
             column: "inter.createdate",
             type: "date"
@@ -16,7 +16,7 @@ module.exports = {
         valid: {
             column: "inter.validinput",
             type: "boolean"
-        },       
+        },
         flow: {
             column: "inter.flow"
         },
@@ -115,7 +115,7 @@ module.exports = {
         intent: {
             column: "inter.intent"
         },
-        ticketgroup: {            
+        ticketgroup: {
             column: "COALESCE(co.usergroup, '')"
         },
         email: {
@@ -810,12 +810,12 @@ module.exports = {
         attended: {
             column: "ch.attended",
             type: "number"
-        },        
+        },
         executiontype: {
-            column: "ca.executiontype",           
+            column: "ca.executiontype",
         },
         executionuser: {
-            column: "causr.firstname||' '||causr.lastname",           
+            column: "causr.firstname||' '||causr.lastname",
         },
         executionuserprofile: {
             column: "(select string_agg(description, ',') from role where corpid = 1 and orgid = 1 and roleid = any(string_to_array(caous.rolegroups,',')::bigint[]))",
@@ -1375,58 +1375,43 @@ module.exports = {
         },
     },
     messagetemplate: {
-        id: {
-            column: "mt.messagetemplateid",
-            type: "number"
-        },
         createdate: {
-            column: "to_char(mt.createdate + 0 * INTERVAL '1hour', 'YYYY-MM-DD')"
+            column: "to_char(MT.createdate + 0 * INTERVAL '1hour', 'YYYY-MM-DD')"
         },
-        templateid: {
-            column: "mt.messagetemplateid",
+        id: {
+            column: "MT.messagetemplateid",
             type: "number"
-        },
-        type: {
-            column: "mt.type"
-        },
-        templatetype: {
-            column: "mt.templatetype"
-        },
-        name: {
-            column: "mt.name"
-        },
-        namespace: {
-            column: "mt.namespace"
-        },
-        status: {
-            column: "mt.status"
-        },
-        category: {
-            column: "mt.category"
-        },
-        language: {
-            column: "mt.language"
-        },
-        body: {
-            column: "mt.body"
-        },
-        fromprovider: {
-            column: "mt.fromprovider",
-            type: "boolean"
-        },
-        externalstatus: {
-            column: "mt.externalstatus"
-        },
-        category: {
-            column: "mt.category"
-        },
-        language: {
-            column: "mt.language"
         },
         communicationchanneldesc: {
-            column: "cc.description"
+            column: "CC.description"
         },
-
+        name: {
+            column: "MT.name"
+        },
+        language: {
+            column: "MT.language"
+        },
+        type: {
+            column: "MT.type"
+        },
+        category: {
+            column: "MT.category"
+        },
+        providerstatus: {
+            column: "MT.providerstatus"
+        },
+        templatetype: {
+            column: "MT.templatetype"
+        },
+        providerquality: {
+            column: "MT.providerquality"
+        },
+        providermessagelimit: {
+            column: "MT.providermessagelimit"
+        },
+        body: {
+            column: "MT.body"
+        },
     },
     reportrequestsd: {
         sd_request: {
@@ -1465,7 +1450,7 @@ module.exports = {
             type: "date"
         },
         resolution: {
-            column: "ld.resolution_date",           
+            column: "ld.resolution_date",
         },
     },
     reportcompliancesla: {
