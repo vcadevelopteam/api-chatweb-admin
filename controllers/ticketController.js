@@ -897,7 +897,7 @@ exports.getConversationWithToken = async (req, res) => {
         });
         const resultTicket = await executesimpletransaction("UFN_CONVERSATION_PERSON_SEL", params);
 
-        return res.json({ error: false, success: true, interactions: result, ticket: resultTicket });
+        return res.json({ error: false, success: true, interactions: result.filter(x => x.interactiontype !== "LOG"), ticket: resultTicket });
 
     } catch (exception) {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
