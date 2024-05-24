@@ -246,11 +246,10 @@ exports.messages = async (req, res) => {
 
 exports.addFile = async (req, res) => {
   try {
-    const { file_url, file_name, apikey } = req.body;
+    const { files, apikey } = req.body;
     let responseAddFile = await axiosObservable({
       data: {
-        file_url: file_url,
-        file_name: file_name,
+        files: files,
         apikey: apikey,
       },
       headers: {   
@@ -282,11 +281,11 @@ exports.addFile = async (req, res) => {
 
 exports.assignFile = async (req, res) => {
   try {
-    const { assistant_id, file_id, apikey } = req.body;
+    const { assistant_id, file_ids, apikey } = req.body;
     let responseAssignFile = await axiosObservable({
       data: {
         assistant_id: assistant_id,
-        file_id: file_id,
+        file_ids: file_ids,
         apikey: apikey,
       },
       headers: {   
@@ -353,10 +352,10 @@ exports.verifyFile = async (req, res) => {
 
 exports.deleteFile = async (req, res) => {
   try {
-    const { file_id, apikey } = req.body;
+    const { file_ids, apikey } = req.body;
     let responseDeleteFile = await axiosObservable({
       data: {
-        file_id: file_id,
+        file_ids: file_ids,
         apikey: apikey,
       },
       headers: {   
