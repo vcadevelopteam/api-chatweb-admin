@@ -1091,7 +1091,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CONVERSATION_PERSON_SEL: {
-        query: "SELECT * FROM ufn_conversation_person_sel($corpid, $orgid, $personid, $conversationid)",
+        query: "SELECT * FROM ufn_conversation_person_sel($corpid, $orgid, $personid, $conversationid, $userid)",
         module: "", //supervisor and inbox
         protected: "SELECT"
     },
