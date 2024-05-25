@@ -65,6 +65,38 @@ exports.createCollectionDocument = async (req, res) => {
   }
 };
 
+exports.createCollectionDocuments = async (req, res) => {
+  try {
+    const { collection, urls } = req.body;
+    let responseCollectionDocuments = await axiosObservable({
+      data: { collection: collection, urls: urls },
+      headers: {
+        Authorization: req.headers.authorization,
+        "Content-Type": "application/json",
+      },
+      method: "post",
+      url: `${process.env.LLAMA}/create_collection_documents`,
+      _requestid: req._requestid,
+    });
+
+    if (responseCollectionDocuments.data && responseCollectionDocuments.statusText === "OK") {
+      return res.json({ ...responseCollectionDocuments.data, success: true });
+    }
+    return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+  } catch (exception) {
+    return res
+      .status(500)
+      .json(
+        getErrorCode(
+          null,
+          exception,
+          `Request to ${req.originalUrl}`,
+          req._requestid
+        )
+      );
+  }
+};
+
 exports.deleteCollection = async (req, res) => {
   try {
     const { name } = req.body;
@@ -186,6 +218,38 @@ exports.addFile = async (req, res) => {
 
     if (responseAddFile.data && responseAddFile.status === 201) {
       return res.json(responseAddFile.data);
+    }
+    return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+  } catch (exception) {
+    return res
+      .status(500)
+      .json(
+        getErrorCode(
+          null,
+          exception,
+          `Request to ${req.originalUrl}`,
+          req._requestid
+        )
+      );
+  }
+};
+
+exports.addFiles = async (req, res) => {
+  try {
+    const { urls, collection } = req.body;
+    let responseAddFiles = await axiosObservable({
+      data: { urls: urls, collection: collection },
+      headers: {
+        Authorization: req.headers.authorization,
+        "Content-Type": "application/json",
+      },
+      method: "post",
+      url: `${process.env.LLAMA}/add_files`,
+      _requestid: req._requestid,
+    });
+
+    if (responseAddFiles.data && responseAddFiles.status === 201) {
+      return res.json(responseAddFiles.data);
     }
     return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
   } catch (exception) {
