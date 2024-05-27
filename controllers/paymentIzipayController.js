@@ -4,6 +4,7 @@ const genericfunctions = require('../config/genericfunctions');
 const { axiosObservable, getErrorCode } = require('../config/helpers');
 
 const izipayEndpoint = process.env.IZIPAY_ENDPOINT;
+const izipayScript = process.env.IZIPAY_SCRIPT;
 const servicesEndpoint = process.env.SERVICES;
 
 exports.getPaymentOrder = async (request, response) => {
@@ -40,6 +41,7 @@ exports.getPaymentOrder = async (request, response) => {
 
                         if (requestGetToken.data) {
                             if (requestGetToken.data?.response?.token) {
+                                paymentorder[0].sessionscript = izipayScript;
                                 paymentorder[0].token = requestGetToken.data?.response?.token;
                                 paymentorder[0].transactionid = transactionId;
 
