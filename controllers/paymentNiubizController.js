@@ -8,6 +8,7 @@ const servicesEndpoint = process.env.SERVICES;
 const niubizEndpoint = process.env.NIUBIZ_ENDPOINT;
 const niubizMerchantId = process.env.NIUBIZ_MERCHANTID;
 const niubizPassword = process.env.NIUBIZ_PASSWORD;
+const niubizScript = process.env.NIUBIZ_SCRIPT;
 const niubizUsername = process.env.NIUBIZ_USERNAME;
 
 exports.createSessionToken = async (request, response) => {
@@ -57,7 +58,7 @@ exports.createSessionToken = async (request, response) => {
                             });
 
                             if (requestSessionToken.data) {
-                                responsedata = genericfunctions.changeResponseData(responsedata, null, { ...paymentorder[0], ...{ sessiontoken: requestSessionToken.data.sessionKey, merchantid: (authCredentials?.merchantId || niubizMerchantId) } }, 'success', 200, true);
+                                responsedata = genericfunctions.changeResponseData(responsedata, null, { ...paymentorder[0], ...{ sessionscript: niubizScript, sessiontoken: requestSessionToken.data.sessionKey, merchantid: (authCredentials?.merchantId || niubizMerchantId) } }, 'success', 200, true);
                             }
                             else {
                                 responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, requestSessionToken.data, 'Error creating session token', responsedata.status, responsedata.success);
