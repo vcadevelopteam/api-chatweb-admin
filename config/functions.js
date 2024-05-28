@@ -1046,7 +1046,7 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_MESSAGETEMPLATE_EXPORT: {
-        query: "SELECT * FROM ufn_messagetemplate_export($corpid, $orgid, $where, $order)",
+        query: "SELECT * FROM ufn_messagetemplate_export($corpid, $orgid, $where, $order, $translation, $offset)",
         module: ["/extras/messagetemplate"],
         protected: "SELECT"
     },
