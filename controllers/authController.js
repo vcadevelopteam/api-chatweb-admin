@@ -479,7 +479,10 @@ exports.samlSso = async (req, res) => {
     try {
         passport.authenticate('samlStrategy', { failureRedirect: '/', failureFlash: true, session: false })(req, res, () => {
             console.log('user :', req.user)
-            return res.redirect('sso/success')
+            if (req.user && req.user.nameID) {
+                const token = jwt.sign({ nameID: req.user.nameID }, process.env.SECRETA);
+                return res.redirect(`sso/success?token=${token}`);
+            }
         })
     } catch (exception) {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
@@ -488,8 +491,9 @@ exports.samlSso = async (req, res) => {
 
 exports.samlSuccess = async (req, res) => {
     const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? '*';
-    if (req.user && req.user.nameID) {
-        const token = jwt.sign({ nameID: req.user.nameID }, process.env.SECRETA);
+    const token = req.query.token;
+    
+    if (token) {
         return res.send(`
             <script>
                 window.opener.postMessage({ success: true, code: '${token}' }, '${ALLOWED_ORIGIN}');
