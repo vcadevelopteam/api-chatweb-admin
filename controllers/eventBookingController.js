@@ -1517,15 +1517,15 @@ const createGoogleEvent = async (assignedAgentId, newcalendarbookingid, calendar
         const personmail = params?.parameters.find(param => param?.name === 'personmail')?.text;
 
         const description = `${calendarData?.description}`
-                            .replace(/eventname/gi, eventname)
-                            .replace(/eventdate/gi, eventdate)
-                            .replace(/eventtime/gi, eventtime)
-                            .replace(/eventcode/gi, eventcode)
-                            .replace(/eventlinkcode/gi, eventlinkcode)
-                            .replace(/personcontact/gi, personcontact)
-                            .replace(/eventlocation/gi, eventlocation)
-                            .replace(/personname/gi, personname)
-                            .replace(/personmail/gi, personmail)
+                            .replace(/{{eventname}}/gi, eventname)
+                            .replace(/{{eventdate}}/gi, eventdate)
+                            .replace(/{{eventtime}}/gi, eventtime)
+                            .replace(/{{eventcode}}/gi, eventcode)
+                            .replace(/{{eventlinkcode}}/gi, eventlinkcode)
+                            .replace(/{{personcontact}}/gi, personcontact)
+                            .replace(/{{eventlocation}}/gi, eventlocation)
+                            .replace(/{{personname}}/gi, personname)
+                            .replace(/{{personmail}}/gi, personmail)
 
         const eventInfo = {
             summary: params?.parameters.find(param => param?.name === 'eventname')?.text,
