@@ -111,7 +111,7 @@ const validateResProperty = (r, type) => {
 }
 
 exports.authenticate = async (req, res) => {
-    const { data: { usr, password, facebookid, googleid, origin = "WEB", token, token_recaptcha, cur } } = req.body;
+    const { data: { usr, password, facebookid, googleid, origin = "WEB", token, token_recaptcha, cur, samlCode } } = req.body;
 
     logger.child({ _requestid: req._requestid, body: req.body }).info(`authenticate.body`);
 
@@ -136,6 +136,14 @@ exports.authenticate = async (req, res) => {
         } else if (googleid) {
             result = await executesimpletransaction("QUERY_AUTHENTICATED_BY_GOOGLEID", { ...prevdata, googleid });
             integration = true;
+        } else if (samlCode) {
+            try {
+                const cifrado = jwt.verify(samlCode, process.env.SECRETA);
+                result = await executesimpletransaction("QUERY_AUTHENTICATED", { ...prevdata, usr: cifrado.nameID });
+                integration = true;
+            } catch (error) {
+                return res.status(401).json({ code: errors.LOGIN_USER_INCORRECT });
+            }
         } else {
             result = await executesimpletransaction("QUERY_AUTHENTICATED", { ...prevdata, usr });
         }
@@ -475,5 +483,25 @@ exports.samlSso = async (req, res) => {
         })
     } catch (exception) {
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+    }
+}
+
+exports.samlSuccess = async (req, res) => {
+    const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? '*';
+    if (req.user && req.user.nameID) {
+        const token = jwt.sign({ nameID: req.user.nameID }, process.env.SECRETA);
+        return res.send(`
+            <script>
+                window.opener.postMessage({ success: true, code: '${token}' }, '${ALLOWED_ORIGIN}');
+                window.close();
+            </script>
+        `);
+    } else {
+        return res.send(`
+            <script>
+                window.opener.postMessage({ success: false, error: "Unexcepted error" }, '${ALLOWED_ORIGIN}');
+                window.close();
+            </script>
+        `);
     }
 }
