@@ -480,7 +480,7 @@ exports.samlSso = async (req, res) => {
         passport.authenticate('samlStrategy', { failureRedirect: '/', failureFlash: true, session: false })(req, res, () => {
             console.log('user :', req.user)
             if (req.user && req.user.nameID) {
-                const token = jwt.sign({ nameID: req.user.nameID }, process.env.SECRETA);
+                const token = jwt.sign({ nameID: req.user.nameID }, process.env.SECRETA, { expiresIn: '1m' });
                 return res.redirect(`sso/success?token=${token}`);
             }
         })
