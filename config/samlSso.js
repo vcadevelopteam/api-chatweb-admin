@@ -13,10 +13,12 @@ const samlStrategy = new SamlStrategy(
 		issuer: 'https://testapix.laraigo.com/api/auth/idps/saml20',
 		idpIssuer: 'https://devidentidades.claro.com.pe/isam/sps/QuickFed/saml20',
 		callbackUrl: 'https://testapix.laraigo.com/api/auth/idps/saml20/sso',
+		logoutUrl: 'https://devidentidades.claro.com.pe/isam/sps/QuickFed/saml20/slo',
 		decryptionPvk: pvkey,
 		privateKey: pvkey,
 		cert: idp,
-		signatureAlgorithm: 'sha256'
+		signatureAlgorithm: 'sha256',
+		identifierFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress'
 	},
 	// (profile, done) => done(null, profile),
     // (profile, done) => done(null, profile)

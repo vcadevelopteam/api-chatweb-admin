@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { errors, getErrorCode, cleanPropertyValue, recaptcha, axiosObservable } = require('../config/helpers');
 const { addApplication } = require('./voximplantController');
+const { samlStrategy } = require("../config/samlSso");
 
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -509,3 +510,16 @@ exports.samlSuccess = async (req, res) => {
         `);
     }
 }
+
+exports.samlSsoLogout = async (req, res) => {
+    req.user = { nameID: "C17836" };
+    samlStrategy.logout(req, (err, requestUrl) => {
+        if (err) {
+            console.error("SAML logout error:", err);
+            return res.status(500).send("An error occurred while logging out.");
+        }
+
+        // Redirect the user to the IdP logout URL
+        res.redirect(requestUrl);
+    });
+};
