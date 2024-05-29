@@ -3457,7 +3457,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_RESET: {
-        query: "UPDATE messagetemplate SET status = 'ELIMINADO', changeby = $username, changedate = NOW() WHERE corpid = $corpid AND orgid = $orgid AND (communicationchannelid = $communicationchannelid OR namespace = $namespace);",
+        query: "UPDATE messagetemplate SET status = 'ELIMINADO', changeby = $username, changedate = NOW() WHERE corpid = $corpid AND orgid = $orgid AND type = 'HSM' AND status 'ACTIVO' AND (communicationchannelid = $communicationchannelid OR namespace = $namespace);",
         module: "",
         protected: "UPDATE"
     },
