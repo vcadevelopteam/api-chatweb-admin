@@ -46,6 +46,7 @@ router.get("/idps/saml20/sso/success", authController.samlSuccess);
 router.get("/idps/saml20/sso/logout", authController.samlSsoLogout);
 
 router.post('/idps/saml20/slo', (req, res) => {
+    console.log('test');
     res.send('Logout successful');
 })
 
