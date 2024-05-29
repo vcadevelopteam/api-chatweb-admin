@@ -341,12 +341,32 @@ exports.logout = async (req, res) => {
         if (req.user.origin === "MOVIL") {
             await exitFromAllGroup1(req.user.token, req._requestid);
         }
-        executesimpletransaction("UFN_USERSTATUS_UPDATE", { _requestid: req._requestid, ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
+        // executesimpletransaction("UFN_USERSTATUS_UPDATE", { _requestid: req._requestid, ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
+        if (req.user.usr === 'pablo.rojas@vcaperu.com') {
+            req.user = { nameID: "C17836" };
+            samlStrategy.logout(req, (err, requestUrl) => {
+                if (err) {
+                    console.error("SAML logout error:", err);
+                    return res.status(500).send("An error occurred while logging out.");
+                }
+
+                // Actualiza el estado del usuario en la base de datos
+                // executesimpletransaction("UFN_USERSTATUS_UPDATE", { _requestid: req._requestid, ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
+
+                // Redirigir al usuario a la URL de cierre de sesión del IdP
+                return res.redirect(requestUrl);
+            });
+        } else {
+            // Actualiza el estado del usuario en la base de datos
+            executesimpletransaction("UFN_USERSTATUS_UPDATE", { _requestid: req._requestid, ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
+            return res.json({ data: null, error: false });
+        }
     } catch (exception) {
-        logger.child({ error: { detail: exception.stack, message: exception.toString() } }).error(`Request to ${req.originalUrl}`);
+        logger .child({ error: { detail: exception.stack, message: exception.toString() } }) .error(`Request to ${req.originalUrl}`);
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
-    return res.json({ data: null, error: false })
-}
+    // return res.json({ data: null, error: false });
+};
 
 exports.connect = async (req, res) => {
     try {
@@ -512,6 +532,8 @@ exports.samlSuccess = async (req, res) => {
 }
 
 exports.samlSsoLogout = async (req, res) => {
+    console.log('acaaaaa')
+    console.log('req.user', req.user)
     req.user = { nameID: "C17836" };
     samlStrategy.logout(req, (err, requestUrl) => {
         if (err) {
