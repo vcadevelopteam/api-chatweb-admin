@@ -43,6 +43,6 @@ router.post('/idps/saml20/sso', authController.samlSso)
 
 router.get("/idps/saml20/sso/success", authController.samlSuccess);
 
-router.get("/idps/saml20/slo", auth, authController.samlSsoLogout);
+router.get("/idps/saml20/sso/logout", authController.samlSsoLogout);
 
 module.exports = router;
