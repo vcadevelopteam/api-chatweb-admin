@@ -525,8 +525,6 @@ exports.Collection = async (req, res) => {
                 }
 
                 if (["EMAIL", "HSM", "HSMEMAIL"].includes(notificationtype) && !parameters.calendarbookingid) {
-                    logger.child({ _requestid: req._requestid }).error(resultCalendar)
-                    logger.child({ _requestid: req._requestid }).error(parameters)
                     const ics_file = await generateIcs(req._requestid, resultCalendar[0], parameters);
                     if (assignedAgentId) createGoogleEvent(assignedAgentId, newcalendarbookingid, resultCalendar[0], parameters)
 
@@ -1503,10 +1501,33 @@ const createGoogleEvent = async (assignedAgentId, newcalendarbookingid, calendar
             [calendar, extradata] = await googleCalendarCredentials({ params })
         }
 
+        const eventname = params?.parameters.find(param => param?.name === 'eventname')?.text;
+        const eventdate = params?.parameters.find(param => param?.name === 'monthdate')?.text;
+        const eventtime = params?.parameters.find(param => param?.name === 'hourstart')?.text;
+        const eventcode = params?.parameters.find(param => param?.name === 'eventcode')?.text;
+        const eventlinkcode = params?.parameters.find(param => param?.name === 'eventlink')?.text;
+        const personcontact = params?.parameters.find(param => param?.name === 'personcontact')?.text;
+        
+        const eventlocation = params?.parameters.find(param => param?.name === 'eventlocation')?.text;
+        const hourend = params?.parameters.find(param => param?.name === 'hourend')?.text;
+        const personname = params?.parameters.find(param => param?.name === 'personname')?.text;
+        const personmail = params?.parameters.find(param => param?.name === 'personmail')?.text;
+
+        const description = `${calendarData?.description}`
+                            .replace("{{eventname}}", eventname)
+                            .replace("{{eventdate}}", eventdate)
+                            .replace("{{eventtime}}", eventtime)
+                            .replace("{{eventcode}}", eventcode)
+                            .replace("{{eventlinkcode}}", eventlinkcode)
+                            .replace("{{personcontact}}", personcontact)
+                            .replace("{{eventlocation}}", eventlocation)
+                            .replace("{{personname}}", personname)
+                            .replace("{{personmail}}", personmail)
+
         const eventInfo = {
             summary: params?.parameters.find(param => param?.name === 'eventname')?.text,
             location: calendarData?.location,
-            description: calendarData?.description,
+            description: description,
             start: {
                 dateTime: dayjs(`${params?.monthdate} ${params?.hourstart}`).utcOffset(calendarData.timezone, true).format(),
             },
