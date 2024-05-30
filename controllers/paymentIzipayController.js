@@ -4,6 +4,8 @@ const genericfunctions = require('../config/genericfunctions');
 const { axiosObservable, getErrorCode } = require('../config/helpers');
 
 const izipayEndpoint = process.env.IZIPAY_ENDPOINT;
+const izipaySandboxEndpoint = process.env.IZIPAY_SANDBOX_ENDPOINT;
+const izipaySandboxScript = process.env.IZIPAY_SANDBOX_SCRIPT;
 const izipayScript = process.env.IZIPAY_SCRIPT;
 const servicesEndpoint = process.env.SERVICES;
 
@@ -35,13 +37,13 @@ exports.getPaymentOrder = async (request, response) => {
                                 "transactionId": `${transactionId}`
                             },
                             method: 'post',
-                            url: `${izipayEndpoint}security/v1/token/generate`,
+                            url: `${authCredentials?.sandbox ? izipaySandboxEndpoint : izipayEndpoint}security/v1/token/generate`,
                             _requestid: responsedata.id,
                         });
 
                         if (requestGetToken.data) {
                             if (requestGetToken.data?.response?.token) {
-                                paymentorder[0].sessionscript = izipayScript;
+                                paymentorder[0].sessionscript = authCredentials?.sandbox ? izipaySandboxScript : izipayScript;
                                 paymentorder[0].token = requestGetToken.data?.response?.token;
                                 paymentorder[0].transactionid = transactionId;
 
