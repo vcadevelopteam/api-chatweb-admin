@@ -13,6 +13,11 @@ router.post('/create_collection_document',
     llamaController.createCollectionDocument
 )
 
+router.post('/create_collection_documents',
+    auth,
+    llamaController.createCollectionDocuments
+)
+
 router.post('/delete_collection',
     auth,
     llamaController.deleteCollection
@@ -31,6 +36,11 @@ router.post('/edit_collection',
 router.post('/add_file',
     auth,
     llamaController.addFile
+)
+
+router.post('/add_files',
+    auth,
+    llamaController.addFiles
 )
 
 router.post('/delete_file',
