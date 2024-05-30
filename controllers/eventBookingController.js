@@ -352,7 +352,7 @@ const setReminder = async (data, requestid) => {
                         phone: data.listmembers[0].phone,
                         firstname: data.listmembers[0].firstname,
                         lastname: "",
-                        parameters: data.bodyHsmMessage.match(/({{)(.*?)(}})/g)
+                        parameters: (data.bodyHsmMessage.match(/({{)(.*?)(}})/g) || [])
                             .map(x => x.substring(x.indexOf("{{") + 2, x.indexOf("}}")))
                             .map(x => ({ text: variables_keys[x] }))
                     }]
@@ -579,6 +579,9 @@ exports.Collection = async (req, res) => {
                     await send(sendmessage, req._requestid);
                 }
             }
+                else if (!parameters.calendarbookingid && assignedAgentId) {
+                    createGoogleEvent(assignedAgentId, newcalendarbookingid, resultCalendar[0], parameters)
+                }
 
                 //Inicio - Envio de recordatorio - JR
                 const reminderData = {
@@ -1514,15 +1517,15 @@ const createGoogleEvent = async (assignedAgentId, newcalendarbookingid, calendar
         const personmail = params?.parameters.find(param => param?.name === 'personmail')?.text;
 
         const description = `${calendarData?.description}`
-                            .replace("{{eventname}}", eventname)
-                            .replace("{{eventdate}}", eventdate)
-                            .replace("{{eventtime}}", eventtime)
-                            .replace("{{eventcode}}", eventcode)
-                            .replace("{{eventlinkcode}}", eventlinkcode)
-                            .replace("{{personcontact}}", personcontact)
-                            .replace("{{eventlocation}}", eventlocation)
-                            .replace("{{personname}}", personname)
-                            .replace("{{personmail}}", personmail)
+                            .replace(/{{eventname}}/gi, eventname)
+                            .replace(/{{eventdate}}/gi, eventdate)
+                            .replace(/{{eventtime}}/gi, eventtime)
+                            .replace(/{{eventcode}}/gi, eventcode)
+                            .replace(/{{eventlinkcode}}/gi, eventlinkcode)
+                            .replace(/{{personcontact}}/gi, personcontact)
+                            .replace(/{{eventlocation}}/gi, eventlocation)
+                            .replace(/{{personname}}/gi, personname)
+                            .replace(/{{personmail}}/gi, personmail)
 
         const eventInfo = {
             summary: params?.parameters.find(param => param?.name === 'eventname')?.text,
@@ -1569,14 +1572,12 @@ const createGoogleEvent = async (assignedAgentId, newcalendarbookingid, calendar
                 calendarbookingid: newcalendarbookingid
             });
         }
-        console.log("🚀 ~ [END]createGoogleEvent ~ eventid:", eventData?.data?.id)
     } catch (error) {
-        console.log({ error })
+        logger.child({ _requestid: params?._requestid ?? '' }).error(error)
     }
 }
 
 const deleteGoogleEvent = async (calendarInfo, params, sendUpdates = 'none') => {
-    console.log("🚀 ~ [START]deleteGoogleEvent")
     try {
         params.calendarintegrationid = calendarInfo.agentid;
         const [calendar, extradata] = await googleCalendarCredentials({ params })
@@ -1587,16 +1588,13 @@ const deleteGoogleEvent = async (calendarInfo, params, sendUpdates = 'none') => 
                 eventId: calendarInfo.eventid,
                 sendUpdates
             });
-            console.log("🚀 ~ [END]deleteGoogleEvent ~ result:", result?.status)
         }
     } catch (error) {
-        console.log("🚀 ~ [ERROR]deleteGoogleEvent ~ result:", error?.response?.status)
     }
 }
 
 const createAutomaticAssignedBookings = async ({ params, calendar, extradata = null }) => {
     try {
-        console.log("🚀 ~ [START]deleteGoogleEvent")
 
         let prevCalendar = extradata?.calendarintegrationid;
         const bd_data = await executesimpletransaction("UFN_CALENDAR_INTEGRATION_TO_CREATE_SEL", {
@@ -1617,7 +1615,6 @@ const createAutomaticAssignedBookings = async ({ params, calendar, extradata = n
             })
         }
 
-        console.log("🚀 ~ [END]createAutomaticAssignedBookings")
     } catch (error) {
         console.log({ error })
     }
