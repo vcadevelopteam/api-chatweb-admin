@@ -1572,15 +1572,12 @@ const createGoogleEvent = async (assignedAgentId, newcalendarbookingid, calendar
                 calendarbookingid: newcalendarbookingid
             });
         }
-        console.log("🚀 ~ [END]createGoogleEvent ~ eventid:", eventData?.data?.id)
     } catch (error) {
-        console.log({ error })
         logger.child({ _requestid: params?._requestid ?? '' }).error(error)
     }
 }
 
 const deleteGoogleEvent = async (calendarInfo, params, sendUpdates = 'none') => {
-    console.log("🚀 ~ [START]deleteGoogleEvent")
     try {
         params.calendarintegrationid = calendarInfo.agentid;
         const [calendar, extradata] = await googleCalendarCredentials({ params })
@@ -1591,16 +1588,13 @@ const deleteGoogleEvent = async (calendarInfo, params, sendUpdates = 'none') => 
                 eventId: calendarInfo.eventid,
                 sendUpdates
             });
-            console.log("🚀 ~ [END]deleteGoogleEvent ~ result:", result?.status)
         }
     } catch (error) {
-        console.log("🚀 ~ [ERROR]deleteGoogleEvent ~ result:", error?.response?.status)
     }
 }
 
 const createAutomaticAssignedBookings = async ({ params, calendar, extradata = null }) => {
     try {
-        console.log("🚀 ~ [START]deleteGoogleEvent")
 
         let prevCalendar = extradata?.calendarintegrationid;
         const bd_data = await executesimpletransaction("UFN_CALENDAR_INTEGRATION_TO_CREATE_SEL", {
@@ -1621,7 +1615,6 @@ const createAutomaticAssignedBookings = async ({ params, calendar, extradata = n
             })
         }
 
-        console.log("🚀 ~ [END]createAutomaticAssignedBookings")
     } catch (error) {
         console.log({ error })
     }
