@@ -342,7 +342,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INTELLIGENTMODELS_INS: {
-        query: "SELECT * FROM ufn_intelligentmodels_ins($corpid, $orgid, $id, $operation, $description, $endpoint , $modelid , $provider , $apikey , $type , $status , $username) ",
+        query: "SELECT * FROM ufn_intelligentmodels_ins($corpid, $orgid, $id, $operation, $description, $endpoint, $modelid, $provider, $name, $apikey, $type, $status, $username) ",
         module: ["/iaconectors"],
         protected: "INSERT"
     },
@@ -1091,7 +1091,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CONVERSATION_PERSON_SEL: {
-        query: "SELECT * FROM ufn_conversation_person_sel($corpid, $orgid, $personid, $conversationid)",
+        query: "SELECT * FROM ufn_conversation_person_sel($corpid, $orgid, $personid, $conversationid, $userid)",
         module: "", //supervisor and inbox
         protected: "SELECT"
     },
@@ -4592,7 +4592,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ASSISTANTAI_INS: {
-        query: "SELECT * FROM ufn_assistantai_ins($corpid, $orgid, $id, $code, $name, $description, $basemodel, $language, $organizationname, $querywithoutanswer, $response, $prompt, $negativeprompt, $generalprompt, $temperature, $max_tokens, $top_p, $apikey, $retrieval, $codeinterpreter, $type, $status, $username, $operation);",
+        query: "SELECT * FROM ufn_assistantai_ins($corpid, $orgid, $id, $code, $name, $description, $basemodel, $language, $organizationname, $intelligentmodelsid, $querywithoutanswer, $response, $prompt, $negativeprompt, $generalprompt, $temperature, $max_tokens, $top_p, $apikey, $retrieval, $codeinterpreter, $type, $status, $username, $operation);",
         module: "",
         protected: "INSERT"
     },
