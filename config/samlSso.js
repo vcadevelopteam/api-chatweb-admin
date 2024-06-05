@@ -13,7 +13,7 @@ const samlStrategy = new SamlStrategy(
 		issuer: 'https://testapix.laraigo.com/api/auth/idps/saml20',
 		idpIssuer: 'https://devidentidades.claro.com.pe/isam/sps/QuickFed/saml20',
 		callbackUrl: 'https://testapix.laraigo.com/api/auth/idps/saml20/sso',
-		logoutUrl: 'https://devidentidades.claro.com.pe/isam/sps/QuickFed/saml20/slo',
+		logoutUrl: 'https://devidentidades.claro.com.pe/pkmslogout',
 		decryptionPvk: pvkey,
 		privateKey: pvkey,
 		cert: idp,
