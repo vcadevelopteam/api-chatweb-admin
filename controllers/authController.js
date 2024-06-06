@@ -344,12 +344,16 @@ exports.logout = async (req, res) => {
         }
         if (req.user.samlAuth) {
             req.user.nameID = req.user.usr
+
+            if (!req.body?.session_expired) {
+                executesimpletransaction("UFN_USERSTATUS_UPDATE", { _requestid: req._requestid, ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
+            }
+
             samlStrategy.logout(req, (err, requestUrl) => {
                 if (err) {
                     console.error("SAML logout error:", err);
                     return res.status(500).send("An error occurred while logging out.");
                 }
-                executesimpletransaction("UFN_USERSTATUS_UPDATE", { _requestid: req._requestid, ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
 
                 // Redirigir al usuario a la URL de cierre de sesión del IdP
                 return res.json({
