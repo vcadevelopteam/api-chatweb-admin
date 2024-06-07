@@ -6,10 +6,9 @@ const { axiosObservable, getErrorCode } = require('../config/helpers');
 const laraigoEndpoint = process.env.LARAIGO;
 const servicesEndpoint = process.env.SERVICES;
 const niubizEndpoint = process.env.NIUBIZ_ENDPOINT;
-const niubizMerchantId = process.env.NIUBIZ_MERCHANTID;
-const niubizPassword = process.env.NIUBIZ_PASSWORD;
+const niubizSandboxEndpoint = process.env.NIUBIZ_SANDBOX_ENDPOINT;
+const niubizSandboxScript = process.env.NIUBIZ_SANDBOX_SCRIPT;
 const niubizScript = process.env.NIUBIZ_SCRIPT;
-const niubizUsername = process.env.NIUBIZ_USERNAME;
 
 exports.createSessionToken = async (request, response) => {
     let responsedata = genericfunctions.generateResponseData(request._requestid);
@@ -25,12 +24,12 @@ exports.createSessionToken = async (request, response) => {
                     try {
                         const authCredentials = JSON.parse(paymentorder[0].authcredentials || {});
 
-                        const buff = Buffer.from(`${authCredentials?.username || niubizUsername}:${authCredentials?.password || niubizPassword}`, 'utf-8');
+                        const buff = Buffer.from(`${authCredentials?.username}:${authCredentials?.password}`, 'utf-8');
 
                         const requestAccessToken = await axiosObservable({
                             headers: { Authorization: `Basic ${buff.toString('base64')}` },
                             method: 'get',
-                            url: `${niubizEndpoint}security/v1/security`,
+                            url: `${authCredentials?.sandbox ? niubizSandboxEndpoint : niubizEndpoint}security/v1/security`,
                             _requestid: request._requestid,
                         });
 
@@ -53,12 +52,12 @@ exports.createSessionToken = async (request, response) => {
                                 },
                                 headers: { Authorization: accessToken },
                                 method: 'post',
-                                url: `${niubizEndpoint}ecommerce/v2/ecommerce/token/session/${authCredentials?.merchantId || niubizMerchantId}`,
+                                url: `${authCredentials?.sandbox ? niubizSandboxEndpoint : niubizEndpoint}ecommerce/v2/ecommerce/token/session/${authCredentials?.merchantId}`,
                                 _requestid: request._requestid,
                             });
 
                             if (requestSessionToken.data) {
-                                responsedata = genericfunctions.changeResponseData(responsedata, null, { ...paymentorder[0], ...{ sessionscript: niubizScript, sessiontoken: requestSessionToken.data.sessionKey, merchantid: (authCredentials?.merchantId || niubizMerchantId) } }, 'success', 200, true);
+                                responsedata = genericfunctions.changeResponseData(responsedata, null, { ...paymentorder[0], ...{ sessionscript: authCredentials?.sandbox ? niubizSandboxScript : niubizScript, sessiontoken: requestSessionToken.data.sessionKey, merchantid: (authCredentials?.merchantId) } }, 'success', 200, true);
                             }
                             else {
                                 responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, requestSessionToken.data, 'Error creating session token', responsedata.status, responsedata.success);
@@ -112,12 +111,12 @@ exports.authorizeTransaction = async (request, response) => {
                         try {
                             const authCredentials = JSON.parse(paymentorder[0].authcredentials || {});
 
-                            const buff = Buffer.from(`${authCredentials?.username || niubizUsername}:${authCredentials?.password || niubizPassword}`, 'utf-8');
+                            const buff = Buffer.from(`${authCredentials?.username}:${authCredentials?.password}`, 'utf-8');
 
                             const requestAccessToken = await axiosObservable({
                                 headers: { Authorization: `Basic ${buff.toString('base64')}` },
                                 method: 'get',
-                                url: `${niubizEndpoint}security/v1/security`,
+                                url: `${authCredentials?.sandbox ? niubizSandboxEndpoint : niubizEndpoint}security/v1/security`,
                                 _requestid: request._requestid,
                             });
 
@@ -137,7 +136,7 @@ exports.authorizeTransaction = async (request, response) => {
                                     },
                                     headers: { Authorization: accessToken },
                                     method: 'post',
-                                    url: `${niubizEndpoint}authorization/v3/authorization/ecommerce/${authCredentials?.merchantId || niubizMerchantId}`,
+                                    url: `${authCredentials?.sandbox ? niubizSandboxEndpoint : niubizEndpoint}authorization/v3/authorization/ecommerce/${authCredentials?.merchantId}`,
                                     _requestid: request._requestid,
                                 });
 
