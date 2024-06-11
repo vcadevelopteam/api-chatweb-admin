@@ -4676,6 +4676,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_APPSETTING_INVOICE_SEL_LOCATION: {
+        query: "SELECT * FROM ufn_appsetting_invoice_sel_location($location)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_APPSETTING_INVOICE_SEL_EXCHANGERATE: {
         query: "SELECT * FROM ufn_appsetting_invoice_sel_exchangerate($code)",
         module: "",

@@ -236,70 +236,94 @@ exports.createSubscription = async (request, response) => {
         let requestSuccess = false;
 
         if (request.body) {
-            let { method, card = {}, channel = {}, parameters = {} } = request.body;
+            let { method, card = {}, parameters = {} } = request.body;
 
             let paymentcarddata = null;
             let paymentcarderror = false;
 
             if (card) {
-                const appsetting = await getAppSettingSingle(0, 0, request._requestid);
+                let appsetting = null;
+
+                if (parameters.contactcountry === "CO") {
+                    appsetting = await getAppSettingLocation("LARAIGO COLOMBIA", request._requestid);
+                }
+                else {
+                    appsetting = await getAppSettingLocation("VCA", request._requestid);
+                }
 
                 if (appsetting) {
                     card.cardnumber = card.cardnumber.split(" ").join("");
 
-                    const requestCulqiCreateClient = await axiosObservable({
-                        _requestid: request._requestid,
-                        method: "post",
-                        url: `${bridgeEndpoint}processculqi/handleclient`,
-                        data: {
-                            address: `${removeSpecialCharacter(parameters.contactaddress || "EMPTY").slice(0, 100)}`,
-                            addressCity: `${removeSpecialCharacter(parameters.timezone || "EMPTY").slice(0, 30)}`,
-                            bearer: appsetting.privatekey,
-                            countryCode: `${parameters.contactcountry || "PE"}`,
-                            email: `${parameters.contactmail || "generic@mail.com"}`,
-                            firstName: `${removeSpecialCharacter(
-                                parameters?.contactnameorcompany.replace(/[0-9]/g, "") || "EMPTY"
-                            ).slice(0, 50)}`,
-                            lastName: `${removeSpecialCharacter(
-                                parameters?.contactnameorcompany.replace(/[0-9]/g, "") || "EMPTY"
-                            ).slice(0, 50)}`,
-                            operation: "CREATE",
-                            phoneNumber: `${(parameters.contactphone
-                                ? parameters.contactphone.replace(/[^0-9]/g, "")
-                                : "51999999999"
-                            ).slice(0, 15)}`,
-                            url: appsetting.culqiurlclient,
-                        },
-                    });
-
-                    if (requestCulqiCreateClient.data.success) {
-                        const requestCulqiCreateCard = await axiosObservable({
-                            _requestid: request._requestid,
-                            method: "post",
-                            url: `${bridgeEndpoint}processculqi/handlecard`,
+                    if (appsetting?.paymentprovider === 'CULQI') {
+                        const requestCulqiCreateClient = await axiosObservable({
                             data: {
+                                address: `${removeSpecialCharacter(parameters.contactaddress || "EMPTY").slice(0, 100)}`,
+                                addressCity: `${removeSpecialCharacter(parameters.timezone || "EMPTY").slice(0, 30)}`,
                                 bearer: appsetting.privatekey,
-                                bearerToken: appsetting.publickey,
-                                cardNumber: card.cardnumber,
-                                customerId: requestCulqiCreateClient.data.result.id,
-                                cvv: card.cardsecuritycode,
-                                email: parameters.contactmail,
-                                expirationMonth: card.cardmonth,
-                                expirationYear: card.cardyear,
+                                countryCode: `${parameters.contactcountry || "PE"}`,
+                                email: `${parameters.contactmail || "generic@mail.com"}`,
+                                firstName: `${removeSpecialCharacter(
+                                    card?.cardname.replace(/[0-9]/g, "") || "EMPTY"
+                                ).slice(0, 50)}`,
+                                lastName: `${removeSpecialCharacter(
+                                    card?.cardname.replace(/[0-9]/g, "") || "EMPTY"
+                                ).slice(0, 50)}`,
                                 operation: "CREATE",
-                                url: appsetting.culqiurlcardcreate,
-                                urlToken: appsetting.culqiurltoken,
+                                phoneNumber: `${(parameters.contactphone
+                                    ? parameters.contactphone.replace(/[^0-9]/g, "")
+                                    : "51999999999"
+                                ).slice(0, 15)}`,
+                                url: appsetting.culqiurlclient,
                             },
+                            method: "post",
+                            url: `${bridgeEndpoint}processculqi/handleclient`,
+                            _requestid: request._requestid,
                         });
 
-                        if (requestCulqiCreateCard.data.success) {
-                            paymentcarddata = requestCulqiCreateCard.data.result;
+                        if (requestCulqiCreateClient.data.success) {
+                            const requestCulqiCreateCard = await axiosObservable({
+                                data: {
+                                    bearer: appsetting.privatekey,
+                                    bearerToken: appsetting.publickey,
+                                    cardNumber: card.cardnumber,
+                                    customerId: requestCulqiCreateClient.data.result.id,
+                                    cvv: card.cardsecuritycode,
+                                    email: parameters.contactmail,
+                                    expirationMonth: card.cardmonth,
+                                    expirationYear: card.cardyear,
+                                    operation: "CREATE",
+                                    url: appsetting.culqiurlcardcreate,
+                                    urlToken: appsetting.culqiurltoken,
+                                },
+                                method: "post",
+                                url: `${bridgeEndpoint}processculqi/handlecard`,
+                                _requestid: request._requestid,
+                            });
+
+                            if (requestCulqiCreateCard.data.success) {
+                                paymentcarddata = requestCulqiCreateCard.data.result;
+                            } else {
+                                paymentcarderror = true;
+                                requestMessage = "error_card_card";
+
+                                if (requestCulqiCreateCard.data.operationMessage) {
+                                    let errorData = JSON.parse(requestCulqiCreateCard.data.operationMessage);
+
+                                    if (errorData.user_message) {
+                                        requestMessage = errorData.user_message;
+                                    }
+
+                                    if (errorData.merchant_message) {
+                                        requestMessage = errorData.merchant_message.split("https://www.culqi.com/api")[0];
+                                    }
+                                }
+                            }
                         } else {
                             paymentcarderror = true;
-                            requestMessage = "error_card_card";
+                            requestMessage = "error_card_client";
 
-                            if (requestCulqiCreateCard.data.operationMessage) {
-                                let errorData = JSON.parse(requestCulqiCreateCard.data.operationMessage);
+                            if (requestCulqiCreateClient.data.operationMessage) {
+                                let errorData = JSON.parse(requestCulqiCreateClient.data.operationMessage);
 
                                 if (errorData.user_message) {
                                     requestMessage = errorData.user_message;
@@ -310,21 +334,69 @@ exports.createSubscription = async (request, response) => {
                                 }
                             }
                         }
-                    } else {
-                        paymentcarderror = true;
-                        requestMessage = "error_card_client";
+                    }
+                    else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                        const requestOpenpayCreateClient = await axiosObservable({
+                            data: {
+                                address: `${(removeSpecialCharacter(parameters.contactaddress || "EMPTY")).slice(0, 100)}`,
+                                addressCity: `${(removeSpecialCharacter(parameters.timezone || "EMPTY")).slice(0, 30)}`,
+                                countryCode: `${(parameters.contactcountry || "PE")}`,
+                                email: `${(parameters.contactmail || "generic@mail.com")}`,
+                                firstName: `${(removeSpecialCharacter(card?.cardname.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
+                                lastName: `${(removeSpecialCharacter(card?.cardname.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
+                                merchantId: appsetting.culqiurl,
+                                operation: "CREATE",
+                                phoneNumber: `${(parameters.contactphone ? parameters.contactphone.replace(/[^0-9]/g, "") : "51999999999").slice(0, 15)}`,
+                                secretKey: appsetting.privatekey,
+                                url: appsetting.culqiurlclient,
+                            },
+                            method: "post",
+                            url: `${bridgeEndpoint}processopenpay/handleclient`,
+                            _requestid: request._requestid,
+                        });
 
-                        if (requestCulqiCreateClient.data.operationMessage) {
-                            let errorData = JSON.parse(requestCulqiCreateClient.data.operationMessage);
+                        if (requestOpenpayCreateClient.data.success) {
+                            const requestOpenpayCreateCard = await axiosObservable({
+                                data: {
+                                    cardNumber: card.cardnumber,
+                                    customerId: requestOpenpayCreateClient.data.result.id,
+                                    cvv: card.cardsecuritycode,
+                                    email: parameters.contactmail,
+                                    expirationMonth: card.cardmonth,
+                                    expirationYear: `${card.cardyear}`.slice(-2),
+                                    merchantId: appsetting.culqiurl,
+                                    operation: "CREATE",
+                                    secretKey: appsetting.privatekey,
+                                    url: appsetting.culqiurlcardcreate,
+                                },
+                                method: "post",
+                                url: `${bridgeEndpoint}processopenpay/handlecard`,
+                                _requestid: request._requestid,
+                            });
 
-                            if (errorData.user_message) {
-                                requestMessage = errorData.user_message;
-                            }
+                            if (requestOpenpayCreateCard.data.success) {
+                                paymentcarddata = requestOpenpayCreateCard.data.result;
+                            } else {
+                                paymentcarderror = true;
+                                requestMessage = "error_card_card";
 
-                            if (errorData.merchant_message) {
-                                requestMessage = errorData.merchant_message.split("https://www.culqi.com/api")[0];
+                                if (requestOpenpayCreateCard.data.operationMessage) {
+                                    requestMessage = requestOpenpayCreateCard.data.operationMessage;
+                                }
                             }
                         }
+                        else {
+                            paymentcarderror = true;
+                            requestMessage = "error_card_client";
+
+                            if (requestOpenpayCreateClient.data.operationMessage) {
+                                requestMessage = requestOpenpayCreateClient.data.operationMessage;
+                            }
+                        }
+                    }
+                    else {
+                        paymentcarderror = true;
+                        requestMessage = "error_card_configuration";
                     }
                 } else {
                     paymentcarderror = true;
@@ -373,11 +445,11 @@ exports.createSubscription = async (request, response) => {
                 parameters.paymentplanid,
                 parameters.contactcurrency,
                 parameters.contactcountry,
-                parameters.contactnameorcompany,
+                parameters.companyname || parameters.contactnameorcompany,
                 parameters.contactaddress,
                 parameters.contactcountry,
                 parameters.contactmail,
-                parameters.contactnameorcompany,
+                card.cardname || parameters.contactnameorcompany,
                 true,
                 parameters.timezoneoffset,
                 parameters.timezone,
@@ -432,14 +504,6 @@ exports.createSubscription = async (request, response) => {
                             success: requestSuccess,
                         });
                     }
-                }
-
-                if (channel) {
-                    channel.corpid = corpId;
-                    channel.orgid = orgId;
-                    channel.userid = userId;
-
-                    await triggerfunctions.executesimpletransaction("UFN_SUBSCRIPTION_CREATECHANNELS", channel);
                 }
 
                 if (
@@ -986,6 +1050,21 @@ const getAppSettingSingle = async (corpid, orgid, requestId) => {
     const queryAppSettingGet = await triggerfunctions.executesimpletransaction("UFN_APPSETTING_INVOICE_SEL_SINGLE", {
         corpid: corpid,
         orgid: orgid,
+        _requestid: requestId,
+    });
+
+    if (queryAppSettingGet instanceof Array) {
+        if (queryAppSettingGet.length > 0) {
+            return queryAppSettingGet[0];
+        }
+    }
+
+    return null;
+};
+
+const getAppSettingLocation = async (location, requestId) => {
+    const queryAppSettingGet = await triggerfunctions.executesimpletransaction("UFN_APPSETTING_INVOICE_SEL_LOCATION", {
+        location: location,
         _requestid: requestId,
     });
 
