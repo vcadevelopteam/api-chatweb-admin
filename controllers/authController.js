@@ -368,7 +368,7 @@ exports.logout = async (req, res) => {
             return res.json({ data: null, error: false });
         }
     } catch (exception) {
-        logger .child({ error: { detail: exception.stack, message: exception.toString() } }) .error(`Request to ${req.originalUrl}`);
+        logger.child({ error: { detail: exception.stack, message: exception.toString() } }) .error(`Request to ${req.originalUrl}`);
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
     // return res.json({ data: null, error: false });

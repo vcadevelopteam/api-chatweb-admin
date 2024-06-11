@@ -43,7 +43,10 @@ module.exports = async function (req, res, next) {
                 if (result[0].status === 'INACTIVO')
                     return res.status(401).json({ message: 'Su usuario ha sido logeado en otra PC', code: 'USER_CONNECTED_OTHER_PC' });
                 else
-                    return res.status(401).json({ message: 'Su sesión ha sido expirada', code: 'SESION_EXPIRED' });
+                    if (!(req.path === '/logout' && req.user.samlAuth && req.body && req.body.session_expired))
+                        return res.status(401).json({ message: 'Su sesión ha sido expirada', code: 'SESION_EXPIRED' });
+                    else
+                        return next()
             }
         } else {
             return res.status(401).json({ message: 'Token no valido' });
