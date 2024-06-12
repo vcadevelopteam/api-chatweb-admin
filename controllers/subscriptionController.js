@@ -595,7 +595,6 @@ exports.createSubscription = async (request, response) => {
                             alertBody = alertBody.split("{{countryname}}").join(parameters.contactcountryname);
                             alertBody = alertBody.split("{{firstname}}").join(parameters.contactnameorcompany);
                             alertBody = alertBody.split("{{lastname}}").join("");
-                            alertBody = alertBody.split("{{organizationname}}").join(parameters.contactcountryname);
                             alertBody = alertBody.split("{{paymentplan}}").join(parameters.paymentplan);
                             alertBody = alertBody.split("{{username}}").join(parameters.loginusername);
 
@@ -615,10 +614,6 @@ exports.createSubscription = async (request, response) => {
                             alertSubject = alertSubject
                                 .split("{{link}}")
                                 .join(`${laraigoEndpoint}activateuser/${encodeURIComponent(userCode)}`);
-
-                            alertSubject = alertSubject
-                                .split("{{organizationname}}")
-                                .join(parameters.contactcountryname);
 
                             const requestMailSend = await axiosObservable({
                                 method: "post",
@@ -719,6 +714,14 @@ exports.getContract = async (request, response) => {
 
             if (queryContractGet instanceof Array) {
                 if (queryContractGet.length > 0) {
+                    const queryCityBillingGet = await triggerfunctions.executesimpletransaction("UFN_CITYBILLING_SEL", {});
+
+                    if (queryCityBillingGet instanceof Array) {
+                        if (queryCityBillingGet.length > 0) {
+                            queryContractGet[0].cityList = queryCityBillingGet;
+                        }
+                    }
+
                     requestCode = "";
                     requestData = queryContractGet;
                     requestMessage = "";
