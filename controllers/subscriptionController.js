@@ -160,61 +160,64 @@ exports.countryList = async (request, response) => {
 };
 
 const createLaraigoAccount = async (
-    method,
-    firstname,
-    lastname,
-    username,
-    password,
-    email,
-    doctype,
-    docnumber,
-    phone,
-    facebookid,
-    googleid,
-    join_reason,
-    rolecompany,
-    companysize,
-    organizationname,
-    paymentplanid,
-    currency,
-    country,
-    businessname,
-    fiscaladdress,
-    sunatcountry,
-    contactemail,
-    contact,
-    autosendinvoice,
+    loginusername,
+    loginfacebookid,
+    logingoogleid,
+    loginpassword,
+    contactdocumenttype,
+    contactdocumentnumber,
+    contactfirstname,
+    contactlastname,
+    contactmail,
+    contactphone,
+    contactcountry,
+    contactcurrency,
+    companytype,
+    companybusinessname,
+    companytradename,
+    companyaddress,
+    companyfiscalidentifier,
+    billingpaymentplanid,
+    billingsendinvoice,
+    billingpaymentmethod,
+    billingautomaticpayment,
+    billingautomaticperiod,
+    billingautomaticinvoice,
+    billingappsettingid,
+    billingcityid,
+    timezonename,
     timezoneoffset,
-    timezone,
     requestId
 ) => {
-    const queryResult = await triggerfunctions.executesimpletransaction(method, {
-        _requestid: requestId || null,
-        autosendinvoice: autosendinvoice || null,
-        businessname: businessname || null,
-        companysize: companysize || null,
-        contact: contact || null,
-        contactemail: contactemail || null,
-        country: country || null,
-        currency: currency || null,
-        docnumber: docnumber || null,
-        doctype: doctype || null,
-        email: email || null,
-        facebookid: facebookid || null,
-        firstname: firstname || null,
-        fiscaladdress: fiscaladdress || null,
-        googleid: googleid || null,
-        join_reason: join_reason || null,
-        lastname: lastname || null,
-        organizationname: organizationname || null,
-        password: password || null,
-        paymentplanid: paymentplanid || null,
-        phone: phone || null,
-        rolecompany: rolecompany || null,
-        sunatcountry: sunatcountry || null,
-        timezone: timezone || null,
-        timezoneoffset: timezoneoffset || null,
-        username: username || null,
+    const queryResult = await triggerfunctions.executesimpletransaction("UFN_LARAIGOSUBSCRIPTION_INS", {
+        loginusername: loginusername,
+        loginfacebookid: loginfacebookid,
+        logingoogleid: logingoogleid,
+        loginpassword: loginpassword,
+        contactdocumenttype: contactdocumenttype,
+        contactdocumentnumber: contactdocumentnumber,
+        contactfirstname: contactfirstname,
+        contactlastname: contactlastname,
+        contactmail: contactmail,
+        contactphone: contactphone,
+        contactcountry: contactcountry,
+        contactcurrency: contactcurrency,
+        companytype: companytype,
+        companybusinessname: companybusinessname,
+        companytradename: companytradename,
+        companyaddress: companyaddress,
+        companyfiscalidentifier: companyfiscalidentifier,
+        billingpaymentplanid: billingpaymentplanid,
+        billingsendinvoice: billingsendinvoice,
+        billingpaymentmethod: billingpaymentmethod,
+        billingautomaticpayment: billingautomaticpayment,
+        billingautomaticperiod: billingautomaticperiod,
+        billingautomaticinvoice: billingautomaticinvoice,
+        billingappsettingid: billingappsettingid,
+        billingcityid: billingcityid,
+        timezonename: timezonename,
+        timezoneoffset: timezoneoffset,
+        _requestid: requestId,
     });
 
     if (queryResult instanceof Array) {
@@ -236,14 +239,19 @@ exports.createSubscription = async (request, response) => {
         let requestSuccess = false;
 
         if (request.body) {
-            let { method, card = {}, parameters = {} } = request.body;
+            let { card = {}, parameters = {} } = request.body;
 
             let paymentcarddata = null;
             let paymentcarderror = false;
 
-            if (card) {
-                let appsetting = null;
+            let cardfirstname = null;
+            let cardlastname = null;
 
+            let appsetting = null;
+
+            let isCulqi = false;
+
+            if (card) {
                 if (parameters.contactcountry === "CO") {
                     appsetting = await getAppSettingLocation("LARAIGO COLOMBIA", request._requestid);
                 }
@@ -252,9 +260,14 @@ exports.createSubscription = async (request, response) => {
                 }
 
                 if (appsetting) {
+                    cardfirstname = `${card.cardname}`.split(/\s(.+)/)[0];
+                    cardlastname = `${card.cardname}`.split(/\s(.+)/)[1];
+
                     card.cardnumber = card.cardnumber.split(" ").join("");
 
                     if (appsetting?.paymentprovider === 'CULQI') {
+                        isCulqi = true;
+
                         const requestCulqiCreateClient = await axiosObservable({
                             data: {
                                 address: `${removeSpecialCharacter(parameters.contactaddress || "EMPTY").slice(0, 100)}`,
@@ -263,10 +276,10 @@ exports.createSubscription = async (request, response) => {
                                 countryCode: `${parameters.contactcountry || "PE"}`,
                                 email: `${parameters.contactmail || "generic@mail.com"}`,
                                 firstName: `${removeSpecialCharacter(
-                                    card?.cardname.replace(/[0-9]/g, "") || "EMPTY"
+                                    (cardfirstname || "").replace(/[0-9]/g, "") || "EMPTY"
                                 ).slice(0, 50)}`,
                                 lastName: `${removeSpecialCharacter(
-                                    card?.cardname.replace(/[0-9]/g, "") || "EMPTY"
+                                    (cardlastname || "").replace(/[0-9]/g, "") || "EMPTY"
                                 ).slice(0, 50)}`,
                                 operation: "CREATE",
                                 phoneNumber: `${(parameters.contactphone
@@ -288,7 +301,7 @@ exports.createSubscription = async (request, response) => {
                                     cardNumber: card.cardnumber,
                                     customerId: requestCulqiCreateClient.data.result.id,
                                     cvv: card.cardsecuritycode,
-                                    email: parameters.contactmail,
+                                    email: `${parameters.contactmail || "generic@mail.com"}`,
                                     expirationMonth: card.cardmonth,
                                     expirationYear: card.cardyear,
                                     operation: "CREATE",
@@ -342,8 +355,8 @@ exports.createSubscription = async (request, response) => {
                                 addressCity: `${(removeSpecialCharacter(parameters.timezone || "EMPTY")).slice(0, 30)}`,
                                 countryCode: `${(parameters.contactcountry || "PE")}`,
                                 email: `${(parameters.contactmail || "generic@mail.com")}`,
-                                firstName: `${(removeSpecialCharacter(card?.cardname.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
-                                lastName: `${(removeSpecialCharacter(card?.cardname.replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
+                                firstName: `${(removeSpecialCharacter((cardfirstname || "").replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
+                                lastName: `${(removeSpecialCharacter((cardlastname || "").replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
                                 merchantId: appsetting.culqiurl,
                                 operation: "CREATE",
                                 phoneNumber: `${(parameters.contactphone ? parameters.contactphone.replace(/[^0-9]/g, "") : "51999999999").slice(0, 15)}`,
@@ -361,7 +374,7 @@ exports.createSubscription = async (request, response) => {
                                     cardNumber: card.cardnumber,
                                     customerId: requestOpenpayCreateClient.data.result.id,
                                     cvv: card.cardsecuritycode,
-                                    email: parameters.contactmail,
+                                    email: `${(parameters.contactmail || "generic@mail.com")}`,
                                     expirationMonth: card.cardmonth,
                                     expirationYear: `${card.cardyear}`.slice(-2),
                                     merchantId: appsetting.culqiurl,
@@ -376,6 +389,7 @@ exports.createSubscription = async (request, response) => {
 
                             if (requestOpenpayCreateCard.data.success) {
                                 paymentcarddata = requestOpenpayCreateCard.data.result;
+                                paymentcarddata.customerId = requestOpenpayCreateClient.data.result.id;
                             } else {
                                 paymentcarderror = true;
                                 requestMessage = "error_card_card";
@@ -426,34 +440,41 @@ exports.createSubscription = async (request, response) => {
                 parameters.loginusername = parameters.logingoogleid;
             }
 
+            let contactfirstname = null;
+            let contactlastname = null;
+
+            contactfirstname = `${parameters.contactnameorcompany}`.split(/\s(.+)/)[0];
+            contactlastname = `${parameters.contactnameorcompany}`.split(/\s(.+)/)[1];
+
             const subscriptionLaraigo = await createLaraigoAccount(
-                method,
-                parameters.contactnameorcompany,
-                null,
                 parameters.loginusername,
-                parameters.loginpassword,
-                parameters.contactmail,
-                parameters.contactdocumenttype,
-                parameters.contactdocumentnumber,
-                parameters.contactphone,
                 parameters.loginfacebookid,
                 parameters.logingoogleid,
-                null,
-                null,
-                null,
-                parameters.contactnameorcompany,
-                parameters.paymentplanid,
-                parameters.contactcurrency,
-                parameters.contactcountry,
-                parameters.companyname || parameters.contactnameorcompany,
-                parameters.contactaddress,
-                parameters.contactcountry,
+                parameters.loginpassword,
+                `${parameters.contactdocumenttype}`,
+                parameters.contactdocumentnumber,
+                contactfirstname || '',
+                contactlastname || '',
                 parameters.contactmail,
-                card.cardname || parameters.contactnameorcompany,
+                parameters.contactphone,
+                parameters.contactcountry,
+                parameters.contactcurrency,
+                parameters.iscompany ? 'JURIDICA' : 'NATURAL',
+                parameters.companyname || parameters.contactnameorcompany,
+                parameters.contactnameorcompany,
+                parameters.contactaddress,
+                parameters.companydocument,
+                parameters.paymentplanid,
                 true,
-                parameters.timezoneoffset,
+                'POSTPAGO',
+                false,
+                true,
+                true,
+                appsetting.appsettingid,
+                null,
                 parameters.timezone,
-                request._requestid
+                parameters.timezoneoffset,
+                request._requestid,
             );
 
             if (subscriptionLaraigo) {
@@ -463,19 +484,19 @@ exports.createSubscription = async (request, response) => {
 
                 if (paymentcarddata) {
                     let cardParameters = {
-                        _requestid: request._requestid,
                         cardcode: paymentcarddata.id,
-                        cardnumber: paymentcarddata.source.cardNumber,
+                        cardnumber: isCulqi ? paymentcarddata.source.cardNumber : paymentcarddata.cardNumber,
                         clientcode: paymentcarddata.customerId,
                         corpid: corpId,
                         favorite: true,
-                        firstname: (parameters.contactnameorcompany || "").substring(0, 50),
+                        firstname: (cardfirstname || "").substring(0, 50),
                         id: 0,
-                        lastname: (parameters.contactnameorcompany || "").substring(0, 50),
+                        lastname: (cardlastname || "").substring(0, 50),
                         mail: (parameters.contactmail || "").substring(0, 50),
                         operation: "INSERT",
                         orgid: orgId,
                         status: "ACTIVO",
+                        type: "",
                         username: parameters.loginusername,
                         phone: (parameters.contactphone || "")
                             .split("+")
@@ -486,12 +507,12 @@ exports.createSubscription = async (request, response) => {
                             .join("")
                             .split(")")
                             .join(""),
-                        type: "",
+                        _requestid: request._requestid,
                     };
 
                     const queryCardCreate = await triggerfunctions.executesimpletransaction(
                         "UFN_PAYMENTCARD_INS",
-                        cardParameters
+                        cardParameters,
                     );
 
                     if (!(queryCardCreate instanceof Array)) {
@@ -511,14 +532,14 @@ exports.createSubscription = async (request, response) => {
                     (typeof parameters.logingoogleid !== "undefined" && parameters.logingoogleid)
                 ) {
                     let userParameters = {
-                        _requestid: request._requestid,
                         corpid: corpId,
                         userid: userId,
+                        _requestid: request._requestid,
                     };
 
                     const queryActivateUser = await triggerfunctions.executesimpletransaction(
                         "UFN_USER_ACTIVATE",
-                        userParameters
+                        userParameters,
                     );
 
                     if (queryActivateUser instanceof Array) {
@@ -531,24 +552,24 @@ exports.createSubscription = async (request, response) => {
                     }
                 } else {
                     let domainParameters = {
-                        _requestid: request._requestid,
                         all: false,
                         corpid: 1,
                         domainname: "ACTIVATEBODY",
                         orgid: 0,
                         username: parameters.loginusername,
+                        _requestid: request._requestid,
                     };
 
                     const transactionGetBody = await triggerfunctions.executesimpletransaction(
                         "UFN_DOMAIN_VALUES_SEL",
-                        domainParameters
+                        domainParameters,
                     );
 
                     domainParameters.domainname = "ACTIVATESUBJECT";
 
                     const transactionGetSubject = await triggerfunctions.executesimpletransaction(
                         "UFN_DOMAIN_VALUES_SEL",
-                        domainParameters
+                        domainParameters,
                     );
 
                     if (transactionGetBody instanceof Array && transactionGetSubject instanceof Array) {
@@ -600,7 +621,6 @@ exports.createSubscription = async (request, response) => {
                                 .join(parameters.contactcountryname);
 
                             const requestMailSend = await axiosObservable({
-                                _requestid: request._requestid,
                                 method: "post",
                                 url: `${bridgeEndpoint}processscheduler/sendmail`,
                                 data: {
@@ -608,6 +628,7 @@ exports.createSubscription = async (request, response) => {
                                     mailBody: alertBody,
                                     mailTitle: alertSubject,
                                 },
+                                _requestid: request._requestid,
                             });
 
                             if (requestMailSend.data.success) {

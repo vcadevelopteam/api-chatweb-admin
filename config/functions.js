@@ -1511,8 +1511,8 @@ module.exports = {
         module: ["/reports", "/dashboard"],
         protected: "SELECT"
     },
-    UFN_CREATEZYXMEACCOUNT_INS: {
-        query: "SELECT * FROM ufn_createzyxmeaccount_ins($firstname, $lastname, $username, $password, $email, $doctype, $docnumber, $phone, $facebookid, $googleid, $join_reason, $rolecompany, $companysize, $organizationname, $paymentplanid, $currency, $country, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $timezoneoffset, $timezone)",
+    UFN_LARAIGOSUBSCRIPTION_INS: {
+        query: "SELECT * FROM ufn_laraigosubscription_ins($loginusername, $loginfacebookid, $logingoogleid, $loginpassword, $contactdocumenttype, $contactdocumentnumber, $contactfirstname, $contactlastname, $contactmail, $contactphone, $contactcountry, $contactcurrency, $companytype, $companybusinessname, $companytradename, $companyaddress, $companyfiscalidentifier, $billingpaymentplanid, $billingsendinvoice, $billingpaymentmethod, $billingautomaticpayment, $billingautomaticperiod, $billingautomaticinvoice, $billingappsettingid, $billingcityid, $timezonename, $timezoneoffset)",
         module: "",
         protected: "INSERT"
     },
