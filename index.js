@@ -52,6 +52,7 @@ app.use('/api/channel', require('./routes/channel'));
 app.use('/api/ticket', require('./routes/ticket'));
 app.use('/api/gpt', require('./routes/gpt'));
 app.use('/api/llama', require('./routes/llama'));
+app.use('/api/llama3', require('./routes/llama3'));
 app.use('/api/main', require('./routes/main'));
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/load', require('./routes/load'));
