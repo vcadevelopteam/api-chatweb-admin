@@ -350,6 +350,8 @@ exports.createSubscription = async (request, response) => {
                 });
             }
 
+            let currentdate = genericfunctions.convertToUtc(new Date());
+
             let paymentperioddata = null;
             let paymentperiodtype = null;
             let paymentperioderror = false;
@@ -370,14 +372,12 @@ exports.createSubscription = async (request, response) => {
                 if (queryPlanGet instanceof Array) {
                     if (queryPlanGet[0]) {
                         if (queryPlanGet[0].plancost) {
-                            currentPlanCost = queryPlanGet[0].plancost;
+                            currentPlanCost = parseFloat(`${queryPlanGet[0].plancost}`);
                         }
                     }
                 }
 
                 if (currentPlanCost) {
-                    let currentdate = genericfunctions.convertToUtc(new Date());
-
                     if (parameters.timezoneoffset > 0 || parameters.timezoneoffset < 0) {
                         currentdate.setHours(currentdate.getHours() + parameters.timezoneoffset);
                     }
@@ -385,7 +385,7 @@ exports.createSubscription = async (request, response) => {
                     let daylast = new Date(currentdate.getFullYear(), currentdate.getMonth() + 1, 0).getDate();
                     let daydifference = daylast - daycurrent + 1;
 
-                    paymentsubtotal = Math.round((((planData.plancost * daydifference) / daylast) + Number.EPSILON) * 100) / 100;
+                    paymentsubtotal = Math.round((((currentPlanCost * daydifference) / daylast) + Number.EPSILON) * 100) / 100;
                     paymenttaxes = Math.round(((paymentsubtotal * billingtax) + Number.EPSILON) * 100) / 100;
                     paymenttotal = Math.round(((paymentsubtotal + paymenttaxes) + Number.EPSILON) * 100) / 100;
 
@@ -570,10 +570,10 @@ exports.createSubscription = async (request, response) => {
                 if (paymentperioddata) {
                     let lastExchangeData = await genericfunctions.getExchangeRate("USD", request._requestid);
 
-                    const datestring = daycurrent.toISOString().split("T")[0];
+                    const datestring = currentdate.toISOString().split("T")[0];
 
-                    const billingyear = daycurrent.getFullYear();
-                    const billingmonth = daycurrent.getMonth() + 1;
+                    const billingyear = currentdate.getFullYear();
+                    const billingmonth = currentdate.getMonth() + 1;
 
                     let invoiceresponse = await genericfunctions.createInvoice(corpId, orgId, 0, `Laraigo Subscription (${billingyear}/${billingmonth})`, "ACTIVO", "INVOICE", null, null, null, null, null, null, null, null, null, null, `${parameters.contactdocumenttype}`, parameters.contactdocumentnumber, parameters.companyname || parameters.contactnameorcompany, parameters.contactaddress, parameters.contactcountry, parameters.contactmail, null, null, null, null, `Laraigo Subscription (${billingyear}/${billingmonth})`, datestring, null, paymentsubtotal, paymenttaxes, paymenttotal, "USD", lastExchangeData?.exchangerate || 1, "PENDING", null, null, null, null, null, null, "typecredit_alcontado", null, null, null, null, null, parameters.loginusername, null, paymentsubtotal, "PAID", false, billingyear, billingmonth, paymentperiodtype || "", request._requestid);
 
@@ -608,7 +608,7 @@ exports.createSubscription = async (request, response) => {
                             productnetworth = paymenttotal;
                         }
 
-                        await createInvoiceDetail(corpId, orgId, invoiceresponse.invoiceid, `Laraigo Subscription (${parameters.contactdocumentnumber})`, "ACTIVO", "NINGUNO", 1, "S001", producthasigv, "10", productigvtribute, "ZZ", producttotaligv, producttotalamount, productigvrate, productprice, `Laraigo Subscription (${parameters.contactdocumentnumber})`, productnetprice, productnetworth, paymentsubtotal, parameters.loginusername, request._requestid);
+                        await genericfunctions.createInvoiceDetail(corpId, orgId, invoiceresponse.invoiceid, `Laraigo Subscription (${parameters.contactdocumentnumber})`, "ACTIVO", "NINGUNO", 1, "S001", producthasigv, "10", productigvtribute, "ZZ", producttotaligv, producttotalamount, productigvrate, productprice, `Laraigo Subscription (${parameters.contactdocumentnumber})`, productnetprice, productnetworth, paymentsubtotal, parameters.loginusername, request._requestid);
 
                         const chargedata = await genericfunctions.insertCharge(corpId, orgId, invoiceresponse.invoiceid, null, paymenttotal, true, paymentperioddata, paymentperioddata.id, "USD", "Laraigo Subscription", parameters.contactmail || "generic@mail.com", "INSERT", null, null, parameters.loginusername, "PAID", null, null, "REGISTEREDCARD", request._requestid);
 
@@ -627,7 +627,7 @@ exports.createSubscription = async (request, response) => {
                         }
 
                         if (invoicecorrelative) {
-                            await invoiceSubscription(appsetting, parameters, invoiceresponse, invoicecorrelative, lastExchangeData, documenttype, datestring, billingyear, billingmonth, paymentperiodtype, paymentsubtotal, paymenttaxes, paymenttotal, producttotaligv, producttotalamount, productigvrate, productprice, productnetprice, productnetworth, producthasigv, productigvtribute, true, request._requestid)
+                            await invoiceSubscription(corpId, orgId, appsetting, parameters, invoiceresponse, invoicecorrelative, lastExchangeData, documenttype, datestring, billingyear, billingmonth, paymentperiodtype, paymentsubtotal, paymenttaxes, paymenttotal, producttotaligv, producttotalamount, productigvrate, productprice, productnetprice, productnetworth, producthasigv, productigvtribute, true, request._requestid)
                         }
                         else {
                             requestMessage = "subscription_invoice_correlative_error";
@@ -723,16 +723,18 @@ exports.createSubscription = async (request, response) => {
 
                             let lastExchangeData = await genericfunctions.getExchangeRate("USD", request._requestid);
 
-                            const datestring = daycurrent.toISOString().split("T")[0];
+                            const datestring = currentdate.toISOString().split("T")[0];
 
-                            const billingyear = daycurrent.getFullYear();
-                            const billingmonth = daycurrent.getMonth() + 1;
+                            const billingyear = currentdate.getFullYear();
+                            const billingmonth = currentdate.getMonth() + 1;
 
-                            var balanceresponse = await genericfunctions.createBalance(corpId, orgId, 0, `Onboarding (${billingyear}/${billingmonth})`, "ACTIVO", "GENERAL", null, null, paymenttotal, ((org?.balance || 0) + paymentsubtotal), `${parameters.contactdocumenttype}`, parameters.contactdocumentnumber, "PAID", new Date().toISOString().split("T")[0], parameters.loginusername, parameters.loginusername, request._requestid);
+                            var balanceresponse = await genericfunctions.createBalance(corpId, orgId, 0, `Onboarding (${billingyear}/${billingmonth})`, "ACTIVO", "GENERAL", null, null, paymentsubtotal, ((org?.balance || 0) + paymentsubtotal), `${parameters.contactdocumenttype}`, parameters.contactdocumentnumber, "PAID", new Date().toISOString().split("T")[0], parameters.loginusername, parameters.loginusername, request._requestid);
 
-                            let invoiceresponse = await genericfunctions.createInvoice(corpId, orgId, balanceresponse.balanceid, `Onboarding (${billingyear}/${billingmonth})`, "ACTIVO", "INVOICE", null, null, null, null, null, null, null, null, null, null, `${parameters.contactdocumenttype}`, parameters.contactdocumentnumber, parameters.companyname || parameters.contactnameorcompany, parameters.contactaddress, parameters.contactcountry, parameters.contactmail, null, null, null, null, `Laraigo Subscription (${billingyear}/${billingmonth})`, datestring, null, paymentsubtotal, paymenttaxes, paymenttotal, "USD", lastExchangeData?.exchangerate || 1, "PENDING", null, null, null, null, null, null, "typecredit_alcontado", null, null, null, null, null, parameters.loginusername, null, paymentsubtotal, "PAID", false, billingyear, billingmonth, paymentchargetype || "", request._requestid);
+                            let invoiceresponse = await genericfunctions.createInvoice(corpId, orgId, 0, `Onboarding (${billingyear}/${billingmonth})`, "ACTIVO", "INVOICE", null, null, null, null, null, null, null, null, null, null, `${parameters.contactdocumenttype}`, parameters.contactdocumentnumber, parameters.companyname || parameters.contactnameorcompany, parameters.contactaddress, parameters.contactcountry, parameters.contactmail, null, null, null, null, `Laraigo Subscription (${billingyear}/${billingmonth})`, datestring, null, paymentsubtotal, paymenttaxes, paymenttotal, "USD", lastExchangeData?.exchangerate || 1, "PENDING", null, null, null, null, null, null, "typecredit_alcontado", null, null, null, null, null, parameters.loginusername, null, paymentsubtotal, "PAID", false, billingyear, billingmonth, paymentchargetype || "", request._requestid);
 
                             if (invoiceresponse) {
+                                await genericfunctions.changeInvoiceBalance(corpId, orgId, balanceresponse.balanceid, invoiceresponse.invoiceid, parameters.loginusername, request._requestid);
+
                                 let producthasigv = "";
                                 let productigvtribute = "";
                                 let producttotaligv = 0;
@@ -763,7 +765,7 @@ exports.createSubscription = async (request, response) => {
                                     productnetworth = paymenttotal;
                                 }
 
-                                await createInvoiceDetail(corpId, orgId, invoiceresponse.invoiceid, `Onboarding (${parameters.contactdocumentnumber})`, "ACTIVO", "NINGUNO", 1, "S001", producthasigv, "10", productigvtribute, "ZZ", producttotaligv, producttotalamount, productigvrate, productprice, `Onboarding (${parameters.contactdocumentnumber})`, productnetprice, productnetworth, paymentsubtotal, parameters.loginusername, request._requestid);
+                                await genericfunctions.createInvoiceDetail(corpId, orgId, invoiceresponse.invoiceid, `Onboarding (${parameters.contactdocumentnumber})`, "ACTIVO", "NINGUNO", 1, "S001", producthasigv, "10", productigvtribute, "ZZ", producttotaligv, producttotalamount, productigvrate, productprice, `Onboarding (${parameters.contactdocumentnumber})`, productnetprice, productnetworth, paymentsubtotal, parameters.loginusername, request._requestid);
 
                                 const chargedata = await genericfunctions.insertCharge(corpId, orgId, invoiceresponse.invoiceid, null, paymenttotal, true, paymentchargedata, paymentchargedata.id, "USD", "Laraigo Onboarding", parameters.contactmail || "generic@mail.com", "INSERT", null, null, parameters.loginusername, "PAID", null, null, "REGISTEREDCARD", request._requestid);
 
@@ -782,7 +784,7 @@ exports.createSubscription = async (request, response) => {
                                 }
 
                                 if (invoicecorrelative) {
-                                    await invoiceSubscription(appsetting, parameters, invoiceresponse, invoicecorrelative, lastExchangeData, documenttype, datestring, billingyear, billingmonth, paymentchargetype, paymentsubtotal, paymenttaxes, paymenttotal, producttotaligv, producttotalamount, productigvrate, productprice, productnetprice, productnetworth, producthasigv, productigvtribute, false, request._requestid)
+                                    await invoiceSubscription(corpId, orgId, appsetting, parameters, invoiceresponse, invoicecorrelative, lastExchangeData, documenttype, datestring, billingyear, billingmonth, paymentchargetype, paymentsubtotal, paymenttaxes, paymenttotal, producttotaligv, producttotalamount, productigvrate, productprice, productnetprice, productnetworth, producthasigv, productigvtribute, false, request._requestid)
                                 }
                             }
                         }
@@ -1332,7 +1334,7 @@ exports.validateUsername = async (request, response) => {
     }
 };
 
-const invoiceSubscription = async (appsetting, parameters, invoiceresponse, invoicecorrelative, exchangedata, documenttype, datestring, billingyear, billingmonth, paymenttype, paymentsubtotal, paymenttaxes, paymenttotal, producttotaligv, producttotalamount, productigvrate, productprice, productnetprice, productnetworth, producthasigv, productigvtribute, sendmail, requestId) => {
+const invoiceSubscription = async (corpid, orgid, appsetting, parameters, invoiceresponse, invoicecorrelative, exchangedata, documenttype, datestring, billingyear, billingmonth, paymenttype, paymentsubtotal, paymenttaxes, paymenttotal, producttotaligv, producttotalamount, productigvrate, productprice, productnetprice, productnetworth, producthasigv, productigvtribute, sendmail, requestId) => {
     let invoiceSuccess = false;
     let invoiceCorrelative = null;
     let invoiceLink = null;
@@ -1475,7 +1477,7 @@ const invoiceSubscription = async (appsetting, parameters, invoiceresponse, invo
             }
         }
         else if (appsetting.invoiceprovider === "SIIGO") {
-            const corp = await genericfunctions.getCorporation(corpId, requestId);
+            const corp = await genericfunctions.getCorporation(corpid, requestId);
 
             invoicedata.TipoDocumentoSiigo = "FV";
             invoicedata.TipoCambio = (exchangedata?.exchangeratecop / exchangedata?.exchangerate) || 1;

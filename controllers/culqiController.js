@@ -3541,16 +3541,19 @@ exports.getExchangeRate = async (request, response) => {
         var lastExchangeData = await genericfunctions.getExchangeRate(request?.body?.code || "USD", responsedata.id);
         var lastExchange = lastExchangeData?.exchangerate || 0;
         var lastExchangeSol = lastExchangeData?.exchangeratesol || 0;
+        var lastExchangeCop = lastExchangeData?.exchangeratecop || 0;
 
         if (lastExchange) {
             responsedata = genericfunctions.changeResponseData(responsedata, null, {}, "success", 200, true);
             responsedata.exchangerate = lastExchange;
             responsedata.exchangeratesol = lastExchangeSol;
+            responsedata.exchangeratecop = lastExchangeCop;
         }
         else {
             responsedata = genericfunctions.changeResponseData(responsedata, null, {}, "error", 400, false);
             responsedata.exchangerate = lastExchange;
             responsedata.exchangeratesol = lastExchangeSol;
+            responsedata.exchangeratecop = lastExchangeCop;
         }
 
         return response.status(responsedata.status).json(responsedata);
