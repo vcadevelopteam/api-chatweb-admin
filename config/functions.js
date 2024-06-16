@@ -2588,12 +2588,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGMESSAGING_INS: {
-        query: "SELECT * FROM ufn_billingmessaging_ins($year, $month, $id, $pricepersms, $vcacomissionpersms, $pricepermail, $vcacomissionpermail, $description, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_billingmessaging_ins($year, $month, $id, $pricepersms, $vcacomissionpersms, $pricepermail, $vcacomissionpermail, $description, $status, $type, $username, $operation, $countrycode, $plancurrency, $minimumquantitysms, $fixedfeesms, $minimumquantitymail, $fixedfeemail, $priceperchatweb, $vcacomissionperchatweb, $minimumquantitychatweb, $fixedfeechatweb, $priceperfacebook, $vcacomissionperfacebook, $minimumquantityfacebook, $fixedfeefacebook, $pricepermybusiness, $vcacomissionpermybusiness, $minimumquantitymybusiness, $fixedfeemybusiness, $priceperinstagram, $vcacomissionperinstagram, $minimumquantityinstagram, $fixedfeeinstagram, $priceperinstagramdm, $vcacomissionperinstagramdm, $minimumquantityinstagramdm, $fixedfeeinstagramdm, $pricepermessenger, $vcacomissionpermessenger, $minimumquantitymessenger, $fixedfeemessenger, $pricepertelegram, $vcacomissionpertelegram, $minimumquantitytelegram, $fixedfeetelegram, $pricepertiktok, $vcacomissionpertiktok, $minimumquantitytiktok, $fixedfeetiktok, $pricepervoice, $vcacomissionpervoice, $minimumquantityvoice, $fixedfeevoice, $pricepertwitter, $vcacomissionpertwitter, $minimumquantitytwitter, $fixedfeetwitter, $priceperyoutube, $vcacomissionperyoutube, $minimumquantityyoutube, $fixedfeeyoutube)",
         module: ["/billing_setups"],
         protected: "INSERT"
     },
     UFN_BILLINGMESSAGING_SEL: {
-        query: "SELECT * FROM ufn_billingmessaging_sel($year, $month)",
+        query: "SELECT * FROM ufn_billingmessaging_sel($year, $month, $countrycode)",
         module: ["/billing_setups"],
     },
     UFN_REPORT_PERSONALIZED_ORIGIN_SEL: {
