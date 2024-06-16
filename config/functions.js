@@ -2335,6 +2335,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_SEL_PROPERTY_ON_LOGIN: {
+        query: "SELECT propertyname, propertyvalue FROM property p WHERE p.corpid = $corpid AND p.orgid = $orgid AND p.propertyname = $propertyname and p.status = 'ACTIVO';",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_SEL_BALANCE_ON_LOGIN: {
+        query: "SELECT balance, balancedate, balanceby FROM org og WHERE og.corpid = $corpid AND og.orgid = $orgid;",
+        module: "",
+        protected: "SELECT"
+    },
     QUERY_SEL_PROPERTY_INTEGRATION: {
         query: `SELECT im.corpid, im.orgid, p.propertyname, p.propertyvalue FROM integrationmanager im
         INNER JOIN property p ON p.corpid = im.corpid AND p.orgid = im.orgid AND p.propertyname = 'MAXIMAPI'
@@ -3053,7 +3063,7 @@ module.exports = {
         query: "SELECT * FROM ufn_calendarbooking_edit($corpid, $orgid, $calendarbookingid, $personmail, $personname, $notes, $comments)",
         module: "",
         protected: "SELECT"
-    },    
+    },
     UFN_PERSONS_BY_CATEGORY_SEL: {
         query: "SELECT * FROM ufn_persons_by_category_sel($corpid, $orgid)",
         module: "",
