@@ -3617,7 +3617,7 @@ exports.deleteTemplate = async (request, response) => {
                     let deletesuccess = true;
 
                     if (messagetemplate.communicationchannelid) {
-                        const channellist = await getChannelData(request.user.corpid, request.user.orgid, messagetemplate.communicationchannelid, request._requestid);
+                        const channellist = await getChannelData(request.user.corpid, request.user.orgid, parseInt(`${messagetemplate.communicationchannelid}`.split(",")[0]), request._requestid);
 
                         if (channellist) {
                             if (channellist[0]) {
