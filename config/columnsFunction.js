@@ -1383,7 +1383,7 @@ module.exports = {
             type: "number"
         },
         communicationchanneldesc: {
-            column: "CC.description"
+            column: "(SELECT string_agg(CC.description, '', '') FROM communicationchannel CC WHERE CC.corpid = MT.corpid AND CC.orgid = MT.orgid AND CC.communicationchannelid = ANY(string_to_array(MT.communicationchannelid, '','')::bigint[]))"
         },
         name: {
             column: "MT.name"
