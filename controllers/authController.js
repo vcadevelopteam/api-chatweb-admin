@@ -269,10 +269,10 @@ exports.getUser = async (req, res) => {
             executesimpletransaction("UFN_DOMAIN_LST_VALUES_ONLY_DATA", { ...req.user, domainname: "TIPODESCONEXION", ...prevdata }),
             executesimpletransaction("QUERY_SEL_PROPERTY_ENV_ON_LOGIN", { ...req.user, ...prevdata }),
             executesimpletransaction("QUERY_SEL_BALANCE_ON_LOGIN", { ...req.user, ...prevdata }),
-            executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN", { ...req.user, propertyname: "HABILITARNOTIFICACION_RECARGA", ...prevdata }),
-            executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN", { ...req.user, propertyname: "SALDONOTIFICACION_RECARGA", ...prevdata }),
-            executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN", { ...req.user, propertyname: "MENSAJENOTIFICACION_RECARGA", ...prevdata }),
-            executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN", { ...req.user, propertyname: "SHOWSTARTSCREEN", ...prevdata }),
+            executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN_SINGLE", { ...req.user, propertyname: "HABILITARNOTIFICACION_RECARGA", ...prevdata }),
+            executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN_SINGLE", { ...req.user, propertyname: "SALDONOTIFICACION_RECARGA", ...prevdata }),
+            executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN_SINGLE", { ...req.user, propertyname: "MENSAJENOTIFICACION_RECARGA", ...prevdata }),
+            executesimpletransaction("QUERY_SEL_PROPERTY_ON_LOGIN_SINGLE", { ...req.user, propertyname: "SHOWSTARTSCREEN", ...prevdata }),
             ...((firstload && req.user.roledesc.split(",").some(x => ["ADMINISTRADOR", "SUPERADMIN"].includes(x))) ? [executesimpletransaction("QUERY_NEW_GETCHANNELS", { ...req.user })] : [])
         ]);
 
