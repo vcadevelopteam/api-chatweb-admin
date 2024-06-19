@@ -3086,7 +3086,7 @@ exports.synchronizeTemplate = async (request, response) => {
                 const channeldatadelete = await getChannelData(corpid, orgid, 0, "ELIMINADO", request._requestid);
 
                 if (channeldatadelete) {
-                    for (const communicationchanneldelete of channeldata) {
+                    for (const communicationchanneldelete of channeldatadelete) {
                         if (communicationchanneldelete.servicecredentials) {
                             await channelfunctions.messageTemplateReset(
                                 corpid,
