@@ -2341,7 +2341,7 @@ module.exports = {
         protected: "SELECT"
     },
     QUERY_SEL_BALANCE_ON_LOGIN: {
-        query: "SELECT balance, balancedate, balanceby FROM org og WHERE og.corpid = $corpid AND og.orgid = $orgid;",
+        query: "SELECT og.balance, og.balancedate, og.balanceby, cp.paymentmethod FROM org og LEFT JOIN corp cp ON og.corpid = cp.corpid WHERE og.corpid = $corpid AND og.orgid = $orgid;",
         module: "",
         protected: "SELECT"
     },

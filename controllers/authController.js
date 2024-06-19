@@ -278,6 +278,7 @@ exports.getUser = async (req, res) => {
 
         const resultBDProperties = resultBD[3];
         const propertyEnv = resultBD[5] instanceof Array && resultBD[5].length > 0 ? resultBD[5][0].propertyvalue : "";
+        const showBalance = resultBD[6] instanceof Array && resultBD[6].length > 0 ? resultBD[6][0].paymentmethod === "PREPAGO" : false;
         const balanceCurrent = resultBD[6] instanceof Array && resultBD[6].length > 0 ? (resultBD[6][0].balance || 0) : 0;
         const balanceNotificationEnabled = resultBD[7] instanceof Array && resultBD[7].length > 0 ? (resultBD[7][0].propertyvalue === "1") : false;
         const balanceNotificationMinimum = resultBD[8] instanceof Array && resultBD[8].length > 0 ? parseFloat(resultBD[8][0].propertyvalue || "0") : 0;
@@ -332,6 +333,7 @@ exports.getUser = async (req, res) => {
                         balanceNotificationEnabled,
                         balanceNotificationMessage,
                         balanceNotificationMinimum,
+                        showBalance,
                     },
                 }
             });
