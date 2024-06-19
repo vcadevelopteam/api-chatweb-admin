@@ -2340,6 +2340,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_SEL_PROPERTY_ON_LOGIN: {
+        query: "SELECT propertyname, propertyvalue FROM property p WHERE p.corpid = $corpid AND p.orgid = $orgid AND p.propertyname = $propertyname and p.status = 'ACTIVO';",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_SEL_BALANCE_ON_LOGIN: {
+        query: "SELECT og.balance, og.balancedate, og.balanceby, cp.paymentmethod FROM org og LEFT JOIN corp cp ON og.corpid = cp.corpid WHERE og.corpid = $corpid AND og.orgid = $orgid;",
+        module: "",
+        protected: "SELECT"
+    },
     QUERY_SEL_PROPERTY_INTEGRATION: {
         query: `SELECT im.corpid, im.orgid, p.propertyname, p.propertyvalue FROM integrationmanager im
         INNER JOIN property p ON p.corpid = im.corpid AND p.orgid = im.orgid AND p.propertyname = 'MAXIMAPI'
@@ -2583,12 +2593,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLINGMESSAGING_INS: {
-        query: "SELECT * FROM ufn_billingmessaging_ins($year, $month, $id, $pricepersms, $vcacomissionpersms, $pricepermail, $vcacomissionpermail, $description, $status, $type, $username, $operation)",
+        query: "SELECT * FROM ufn_billingmessaging_ins($year, $month, $id, $pricepersms, $vcacomissionpersms, $pricepermail, $vcacomissionpermail, $description, $status, $type, $username, $operation, $countrycode, $plancurrency, $minimumquantitysms, $fixedfeesms, $minimumquantitymail, $fixedfeemail, $priceperchatweb, $vcacomissionperchatweb, $minimumquantitychatweb, $fixedfeechatweb, $priceperfacebook, $vcacomissionperfacebook, $minimumquantityfacebook, $fixedfeefacebook, $pricepermybusiness, $vcacomissionpermybusiness, $minimumquantitymybusiness, $fixedfeemybusiness, $priceperinstagram, $vcacomissionperinstagram, $minimumquantityinstagram, $fixedfeeinstagram, $priceperinstagramdm, $vcacomissionperinstagramdm, $minimumquantityinstagramdm, $fixedfeeinstagramdm, $pricepermessenger, $vcacomissionpermessenger, $minimumquantitymessenger, $fixedfeemessenger, $pricepertelegram, $vcacomissionpertelegram, $minimumquantitytelegram, $fixedfeetelegram, $pricepertiktok, $vcacomissionpertiktok, $minimumquantitytiktok, $fixedfeetiktok, $pricepervoice, $vcacomissionpervoice, $minimumquantityvoice, $fixedfeevoice, $pricepertwitter, $vcacomissionpertwitter, $minimumquantitytwitter, $fixedfeetwitter, $priceperyoutube, $vcacomissionperyoutube, $minimumquantityyoutube, $fixedfeeyoutube)",
         module: ["/billing_setups"],
         protected: "INSERT"
     },
     UFN_BILLINGMESSAGING_SEL: {
-        query: "SELECT * FROM ufn_billingmessaging_sel($year, $month)",
+        query: "SELECT * FROM ufn_billingmessaging_sel($year, $month, $countrycode)",
         module: ["/billing_setups"],
     },
     UFN_REPORT_PERSONALIZED_ORIGIN_SEL: {
@@ -3058,7 +3068,7 @@ module.exports = {
         query: "SELECT * FROM ufn_calendarbooking_edit($corpid, $orgid, $calendarbookingid, $personmail, $personname, $notes, $comments)",
         module: "",
         protected: "SELECT"
-    },    
+    },
     UFN_PERSONS_BY_CATEGORY_SEL: {
         query: "SELECT * FROM ufn_persons_by_category_sel($corpid, $orgid)",
         module: "",

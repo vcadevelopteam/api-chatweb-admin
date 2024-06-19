@@ -1,9 +1,10 @@
 const { axiosObservable, getErrorCode, setSessionParameters } = require("../config/helpers");
 
-const bcryptjs = require("bcryptjs");
-const triggerfunctions = require("../config/triggerfunctions");
-
 const cryptojs = require("crypto-js");
+const bcryptjs = require("bcryptjs");
+
+const triggerfunctions = require("../config/triggerfunctions");
+const genericfunctions = require("../config/genericfunctions");
 
 const bridgeEndpoint = process.env.BRIDGE;
 const laraigoEndpoint = process.env.LARAIGO;
@@ -159,78 +160,6 @@ exports.countryList = async (request, response) => {
     }
 };
 
-const createLaraigoAccount = async (
-    loginusername,
-    loginfacebookid,
-    logingoogleid,
-    loginpassword,
-    contactdocumenttype,
-    contactdocumentnumber,
-    contactfirstname,
-    contactlastname,
-    contactmail,
-    contactphone,
-    contactcountry,
-    contactcurrency,
-    companytype,
-    companybusinessname,
-    companytradename,
-    companyaddress,
-    companyfiscalidentifier,
-    billingpaymentplanid,
-    billingsendinvoice,
-    billingpaymentmethod,
-    billingautomaticpayment,
-    billingautomaticperiod,
-    billingautomaticinvoice,
-    billingappsettingid,
-    billingcityid,
-    timezonename,
-    timezoneoffset,
-    requestId
-) => {
-    const queryResult = await triggerfunctions.executesimpletransaction("UFN_LARAIGOSUBSCRIPTION_INS", {
-        loginusername: loginusername,
-        loginfacebookid: loginfacebookid,
-        logingoogleid: logingoogleid,
-        loginpassword: loginpassword,
-        contactdocumenttype: contactdocumenttype,
-        contactdocumentnumber: contactdocumentnumber,
-        contactfirstname: contactfirstname,
-        contactlastname: contactlastname,
-        contactmail: contactmail,
-        contactphone: contactphone,
-        contactcountry: contactcountry,
-        contactcurrency: contactcurrency,
-        companytype: companytype,
-        companybusinessname: companybusinessname,
-        companytradename: companytradename,
-        companyaddress: companyaddress,
-        companyfiscalidentifier: companyfiscalidentifier,
-        billingpaymentplanid: billingpaymentplanid,
-        billingsendinvoice: billingsendinvoice,
-        billingpaymentmethod: billingpaymentmethod,
-        billingautomaticpayment: billingautomaticpayment,
-        billingautomaticperiod: billingautomaticperiod,
-        billingautomaticinvoice: billingautomaticinvoice,
-        billingappsettingid: billingappsettingid,
-        billingcityid: billingcityid,
-        timezonename: timezonename,
-        timezoneoffset: timezoneoffset,
-        _requestid: requestId,
-    });
-
-    if (queryResult instanceof Array) {
-        return queryResult[0];
-    }
-
-    return null;
-};
-
-const removeSpecialCharacter = (text) => {
-    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-};
-
 exports.createSubscription = async (request, response) => {
     try {
         let requestCode = "error_unexpected_error";
@@ -251,12 +180,27 @@ exports.createSubscription = async (request, response) => {
 
             let isCulqi = false;
 
+            let billinglocation = null;
+            let billingtax = null;
+
             if (card) {
                 if (parameters.contactcountry === "CO") {
-                    appsetting = await getAppSettingLocation("LARAIGO COLOMBIA", request._requestid);
+                    appsetting = await genericfunctions.getAppSettingLocation("LARAIGO COLOMBIA", request._requestid);
+
+                    billinglocation = "LARAIGO COLOMBIA";
+                    billingtax = 0.19;
                 }
                 else {
-                    appsetting = await getAppSettingLocation("VCA", request._requestid);
+                    appsetting = await genericfunctions.getAppSettingLocation("VCA", request._requestid);
+
+                    billinglocation = "VCA";
+
+                    if (parameters.contactcountry === "PE") {
+                        billingtax = 0.18;
+                    }
+                    else {
+                        billingtax = 0;
+                    }
                 }
 
                 if (appsetting) {
@@ -265,20 +209,20 @@ exports.createSubscription = async (request, response) => {
 
                     card.cardnumber = card.cardnumber.split(" ").join("");
 
-                    if (appsetting?.paymentprovider === 'CULQI') {
+                    if (appsetting.paymentprovider === "CULQI") {
                         isCulqi = true;
 
                         const requestCulqiCreateClient = await axiosObservable({
                             data: {
-                                address: `${removeSpecialCharacter(parameters.contactaddress || "EMPTY").slice(0, 100)}`,
-                                addressCity: `${removeSpecialCharacter(parameters.timezone || "EMPTY").slice(0, 30)}`,
+                                address: `${genericfunctions.removeSpecialCharacter(parameters.contactaddress || "EMPTY").slice(0, 100)}`,
+                                addressCity: `${genericfunctions.removeSpecialCharacter(parameters.timezone || "EMPTY").slice(0, 30)}`,
                                 bearer: appsetting.privatekey,
                                 countryCode: `${parameters.contactcountry || "PE"}`,
                                 email: `${parameters.contactmail || "generic@mail.com"}`,
-                                firstName: `${removeSpecialCharacter(
+                                firstName: `${genericfunctions.removeSpecialCharacter(
                                     (cardfirstname || "").replace(/[0-9]/g, "") || "EMPTY"
                                 ).slice(0, 50)}`,
-                                lastName: `${removeSpecialCharacter(
+                                lastName: `${genericfunctions.removeSpecialCharacter(
                                     (cardlastname || "").replace(/[0-9]/g, "") || "EMPTY"
                                 ).slice(0, 50)}`,
                                 operation: "CREATE",
@@ -317,46 +261,22 @@ exports.createSubscription = async (request, response) => {
                                 paymentcarddata = requestCulqiCreateCard.data.result;
                             } else {
                                 paymentcarderror = true;
-                                requestMessage = "error_card_card";
-
-                                if (requestCulqiCreateCard.data.operationMessage) {
-                                    let errorData = JSON.parse(requestCulqiCreateCard.data.operationMessage);
-
-                                    if (errorData.user_message) {
-                                        requestMessage = errorData.user_message;
-                                    }
-
-                                    if (errorData.merchant_message) {
-                                        requestMessage = errorData.merchant_message.split("https://www.culqi.com/api")[0];
-                                    }
-                                }
+                                requestMessage = genericfunctions.getCulqiError(requestCulqiCreateCard?.data?.operationMessage) || "error_card_client";
                             }
                         } else {
                             paymentcarderror = true;
-                            requestMessage = "error_card_client";
-
-                            if (requestCulqiCreateClient.data.operationMessage) {
-                                let errorData = JSON.parse(requestCulqiCreateClient.data.operationMessage);
-
-                                if (errorData.user_message) {
-                                    requestMessage = errorData.user_message;
-                                }
-
-                                if (errorData.merchant_message) {
-                                    requestMessage = errorData.merchant_message.split("https://www.culqi.com/api")[0];
-                                }
-                            }
+                            requestMessage = genericfunctions.getCulqiError(requestCulqiCreateClient?.data?.operationMessage) || "error_card_client";
                         }
                     }
-                    else if (appsetting?.paymentprovider === 'OPENPAY COLOMBIA') {
+                    else if (appsetting.paymentprovider === "OPENPAY COLOMBIA") {
                         const requestOpenpayCreateClient = await axiosObservable({
                             data: {
-                                address: `${(removeSpecialCharacter(parameters.contactaddress || "EMPTY")).slice(0, 100)}`,
-                                addressCity: `${(removeSpecialCharacter(parameters.timezone || "EMPTY")).slice(0, 30)}`,
+                                address: `${(genericfunctions.removeSpecialCharacter(parameters.contactaddress || "EMPTY")).slice(0, 100)}`,
+                                addressCity: `${(genericfunctions.removeSpecialCharacter(parameters.timezone || "EMPTY")).slice(0, 30)}`,
                                 countryCode: `${(parameters.contactcountry || "PE")}`,
                                 email: `${(parameters.contactmail || "generic@mail.com")}`,
-                                firstName: `${(removeSpecialCharacter((cardfirstname || "").replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
-                                lastName: `${(removeSpecialCharacter((cardlastname || "").replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
+                                firstName: `${(genericfunctions.removeSpecialCharacter((cardfirstname || "").replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
+                                lastName: `${(genericfunctions.removeSpecialCharacter((cardlastname || "").replace(/[0-9]/g, "") || "EMPTY")).slice(0, 50)}`,
                                 merchantId: appsetting.culqiurl,
                                 operation: "CREATE",
                                 phoneNumber: `${(parameters.contactphone ? parameters.contactphone.replace(/[^0-9]/g, "") : "51999999999").slice(0, 15)}`,
@@ -430,6 +350,126 @@ exports.createSubscription = async (request, response) => {
                 });
             }
 
+            let currentdate = genericfunctions.convertToUtc(new Date());
+
+            let paymentperioddata = null;
+            let paymentperiodtype = null;
+            let paymentperioderror = false;
+
+            let daycurrent = currentdate.getDate();
+
+            let paymentsubtotal = 0;
+            let paymenttaxes = 0;
+            let paymenttotal = 0;
+
+            if (card && paymentcarddata && parameters.paymentplan) {
+                let currentPlanCost = null;
+
+                const queryPlanGet = await triggerfunctions.executesimpletransaction("GET_CONTRACT", {
+                    code: parameters.paymentplan,
+                });
+
+                if (queryPlanGet instanceof Array) {
+                    if (queryPlanGet[0]) {
+                        if (queryPlanGet[0].plancost) {
+                            currentPlanCost = parseFloat(`${queryPlanGet[0].plancost}`);
+                        }
+                    }
+                }
+
+                if (currentPlanCost) {
+                    if (parameters.timezoneoffset > 0 || parameters.timezoneoffset < 0) {
+                        currentdate.setHours(currentdate.getHours() + parameters.timezoneoffset);
+                    }
+
+                    let daylast = new Date(currentdate.getFullYear(), currentdate.getMonth() + 1, 0).getDate();
+                    let daydifference = daylast - daycurrent + 1;
+
+                    paymentsubtotal = Math.round((((currentPlanCost * daydifference) / daylast) + Number.EPSILON) * 100) / 100;
+                    paymenttaxes = Math.round(((paymentsubtotal * billingtax) + Number.EPSILON) * 100) / 100;
+                    paymenttotal = Math.round(((paymentsubtotal + paymenttaxes) + Number.EPSILON) * 100) / 100;
+
+                    if (appsetting.paymentprovider === "CULQI") {
+                        const requestCulqiCharge = await axiosObservable({
+                            data: {
+                                amount: Math.round((paymenttotal * 100 + Number.EPSILON) * 100) / 100,
+                                bearer: appsetting.privatekey,
+                                description: (genericfunctions.removeSpecialCharacter(`Laraigo Subscription for ${parameters.contactdocumentnumber}`)).slice(0, 80),
+                                currencyCode: "USD",
+                                email: `${(parameters.contactmail || "generic@mail.com")}`,
+                                sourceId: paymentcarddata.id,
+                                operation: "CREATE",
+                                url: appsetting.culqiurlcharge,
+                                metadata: {
+                                    companydocument: genericfunctions.removeSpecialCharacter(parameters.companydocument || ""),
+                                    companyname: genericfunctions.removeSpecialCharacter(parameters.companyname || ""),
+                                    paymentplan: genericfunctions.removeSpecialCharacter(parameters.paymentplan || ""),
+                                    paymenttype: "SUBSCRIPTION",
+                                    personcountry: genericfunctions.removeSpecialCharacter(parameters.contactcountryname || ""),
+                                    personmail: genericfunctions.removeSpecialCharacter(parameters.contactmail || ""),
+                                    personname: genericfunctions.removeSpecialCharacter(parameters.contactnameorcompany || ""),
+                                    personphone: genericfunctions.removeSpecialCharacter(parameters.contactphone || ""),
+                                },
+                            },
+                            method: "post",
+                            url: `${bridgeEndpoint}processculqi/handlecharge`,
+                            _requestid: request._requestid,
+                        });
+
+                        if (requestCulqiCharge.data.success) {
+                            paymentperioddata = requestCulqiCharge.data.result;
+                            paymentperiodtype = requestCulqiCharge?.data?.result?.source?.iin?.card_type;
+                        }
+                        else {
+                            paymentperioderror = true;
+                            requestMessage = genericfunctions.getCulqiError(requestCulqiCharge?.data?.operationMessage) || "error_card_payment";
+                        }
+                    }
+                    else if (appsetting.paymentprovider === "OPENPAY COLOMBIA") {
+                        const requestOpenpayCharge = await axiosObservable({
+                            data: {
+                                amount: Math.round((paymenttotal * 100 + Number.EPSILON) * 100) / 100,
+                                currencyCode: "USD",
+                                customerId: paymentcarddata.customerId,
+                                description: (genericfunctions.removeSpecialCharacter(`Laraigo Subscription for ${parameters.contactdocumentnumber}`)).slice(0, 80),
+                                igv: `${((billingtax || 0) + 1)}`,
+                                merchantId: appsetting.culqiurl,
+                                operation: "CREATE",
+                                orderId: `${parameters.contactdocumentnumber}-${Math.floor(Math.random() * 99999999)}`,
+                                secretKey: appsetting.privatekey,
+                                sourceId: paymentcarddata.id,
+                                url: appsetting.culqiurlcharge,
+                            },
+                            method: "post",
+                            url: `${bridgeEndpoint}processopenpay/handlecharge`,
+                            _requestid: request._requestid,
+                        });
+
+                        if (requestOpenpayCharge.data.success) {
+                            paymentperioddata = requestOpenpayCharge.data.result;
+                            paymentperiodtype = requestOpenpayCharge?.data?.result?.card?.type;
+                        }
+                        else {
+                            paymentperioderror = true;
+                            requestMessage = requestOpenpayCharge?.data?.operationMessage || "error_card_payment";
+                        }
+                    }
+                    else {
+                        paymentperioderror = true;
+                        requestMessage = "error_payment_configuration";
+                    }
+                }
+            }
+
+            if (paymentperioderror) {
+                return response.status(requestStatus).json({
+                    code: requestCode,
+                    error: !requestSuccess,
+                    message: requestMessage,
+                    success: requestSuccess,
+                });
+            }
+
             parameters.loginpassword = await bcryptjs.hash(parameters.loginpassword, await bcryptjs.genSalt(10));
 
             if (parameters.loginfacebookid) {
@@ -446,32 +486,32 @@ exports.createSubscription = async (request, response) => {
             contactfirstname = `${parameters.contactnameorcompany}`.split(/\s(.+)/)[0];
             contactlastname = `${parameters.contactnameorcompany}`.split(/\s(.+)/)[1];
 
-            const subscriptionLaraigo = await createLaraigoAccount(
+            const subscriptionLaraigo = await genericfunctions.createLaraigoAccount(
                 parameters.loginusername,
                 parameters.loginfacebookid,
                 parameters.logingoogleid,
                 parameters.loginpassword,
                 `${parameters.contactdocumenttype}`,
                 parameters.contactdocumentnumber,
-                contactfirstname || '',
-                contactlastname || '',
+                contactfirstname || "",
+                contactlastname || "",
                 parameters.contactmail,
                 parameters.contactphone,
                 parameters.contactcountry,
                 parameters.contactcurrency,
-                parameters.iscompany ? 'JURIDICA' : 'NATURAL',
+                parameters.iscompany ? "JURIDICA" : "NATURAL",
                 parameters.companyname || parameters.contactnameorcompany,
                 parameters.contactnameorcompany,
                 parameters.contactaddress,
                 parameters.companydocument,
                 parameters.paymentplanid,
                 true,
-                'POSTPAGO',
+                "PREPAGO",
                 false,
                 true,
                 true,
                 appsetting.appsettingid,
-                null,
+                parameters.citybillingid || null,
                 parameters.timezone,
                 parameters.timezoneoffset,
                 request._requestid,
@@ -524,6 +564,230 @@ exports.createSubscription = async (request, response) => {
                             message: requestMessage,
                             success: requestSuccess,
                         });
+                    }
+                }
+
+                if (paymentperioddata) {
+                    let lastExchangeData = await genericfunctions.getExchangeRate("USD", request._requestid);
+
+                    const datestring = currentdate.toISOString().split("T")[0];
+
+                    const billingyear = currentdate.getFullYear();
+                    const billingmonth = currentdate.getMonth() + 1;
+
+                    let invoiceresponse = await genericfunctions.createInvoice(corpId, orgId, 0, `Laraigo Subscription (${billingyear}/${billingmonth})`, "ACTIVO", "INVOICE", null, null, null, null, null, null, null, null, null, null, `${parameters.contactdocumenttype}`, parameters.contactdocumentnumber, parameters.companyname || parameters.contactnameorcompany, parameters.contactaddress, parameters.contactcountry, parameters.contactmail, null, null, null, null, `Laraigo Subscription (${billingyear}/${billingmonth})`, datestring, null, paymentsubtotal, paymenttaxes, paymenttotal, "USD", lastExchangeData?.exchangerate || 1, "PENDING", null, null, null, null, null, null, "typecredit_alcontado", null, null, null, null, null, parameters.loginusername, null, paymentsubtotal, "PAID", false, billingyear, billingmonth, paymentperiodtype || "", request._requestid);
+
+                    if (invoiceresponse) {
+                        let producthasigv = "";
+                        let productigvtribute = "";
+                        let producttotaligv = 0;
+                        let producttotalamount = 0;
+                        let productigvrate = 0;
+                        let productprice = 0;
+                        let productnetprice = 0;
+                        let productnetworth = 0;
+
+                        if (`${parameters.contactdocumenttype}` !== "0") {
+                            producthasigv = "10";
+                            productigvtribute = "1000";
+                            producttotaligv = paymenttaxes;
+                            producttotalamount = paymenttotal;
+                            productigvrate = billingtax;
+                            productprice = paymenttotal;
+                            productnetprice = paymentsubtotal;
+                            productnetworth = paymentsubtotal;
+                        }
+                        else {
+                            producthasigv = "40";
+                            productigvtribute = "9998";
+                            producttotaligv = 0;
+                            producttotalamount = paymenttotal;
+                            productigvrate = 0;
+                            productprice = paymenttotal;
+                            productnetprice = paymenttotal;
+                            productnetworth = paymenttotal;
+                        }
+
+                        await genericfunctions.createInvoiceDetail(corpId, orgId, invoiceresponse.invoiceid, `Laraigo Subscription (${parameters.contactdocumentnumber})`, "ACTIVO", "NINGUNO", 1, "S001", producthasigv, "10", productigvtribute, "ZZ", producttotaligv, producttotalamount, productigvrate, productprice, `Laraigo Subscription (${parameters.contactdocumentnumber})`, productnetprice, productnetworth, paymentsubtotal, parameters.loginusername, request._requestid);
+
+                        const chargedata = await genericfunctions.insertCharge(corpId, orgId, invoiceresponse.invoiceid, null, paymenttotal, true, paymentperioddata, paymentperioddata.id, "USD", "Laraigo Subscription", parameters.contactmail || "generic@mail.com", "INSERT", null, null, parameters.loginusername, "PAID", null, null, "REGISTEREDCARD", request._requestid);
+
+                        await genericfunctions.insertPayment(corpId, orgId, invoiceresponse.invoiceid, true, chargedata?.chargeid, paymentperioddata, paymentperioddata.id, paymenttotal, parameters.contactmail || "generic@mail.com", parameters.loginusername, null, null, appsetting.location, appsetting.paymentprovider, request._requestid);
+
+                        let invoicecorrelative = null;
+                        let documenttype = null;
+
+                        if ((parameters.contactcountry === "PE") && (`${parameters.contactdocumenttype}` === "1" || `${parameters.contactdocumenttype}` === "4" || `${parameters.contactdocumenttype}` === "7")) {
+                            invoicecorrelative = await genericfunctions.getCorrelative(corpId, orgId, invoiceresponse.invoiceid, "TICKET", request._requestid);
+                            documenttype = "03";
+                        }
+                        else {
+                            invoicecorrelative = await genericfunctions.getCorrelative(corpId, orgId, invoiceresponse.invoiceid, "INVOICE", request._requestid);
+                            documenttype = "01";
+                        }
+
+                        if (invoicecorrelative) {
+                            await invoiceSubscription(corpId, orgId, appsetting, parameters, invoiceresponse, invoicecorrelative, lastExchangeData, documenttype, datestring, billingyear, billingmonth, paymentperiodtype, paymentsubtotal, paymenttaxes, paymenttotal, producttotaligv, producttotalamount, productigvrate, productprice, productnetprice, productnetworth, producthasigv, productigvtribute, true, request._requestid)
+                        }
+                        else {
+                            requestMessage = "subscription_invoice_correlative_error";
+                        }
+                    }
+                    else {
+                        requestMessage = "subscription_invoice_create_error";
+                    }
+                }
+
+                if (parameters.recharge) {
+                    if (parameters.recharge.rechargeamount) {
+                        let currentdate = genericfunctions.convertToUtc(new Date());
+
+                        if (parameters.timezoneoffset > 0 || parameters.timezoneoffset < 0) {
+                            currentdate.setHours(currentdate.getHours() + parameters.timezoneoffset);
+                        }
+
+                        paymentsubtotal = Math.round((parseFloat(parameters.recharge.rechargeamount) + Number.EPSILON) * 100) / 100;
+                        paymenttaxes = Math.round(((paymentsubtotal * billingtax) + Number.EPSILON) * 100) / 100;
+                        paymenttotal = Math.round(((paymentsubtotal + paymenttaxes) + Number.EPSILON) * 100) / 100;
+
+                        let paymentchargedata = null;
+                        let paymentchargetype = null;
+                        let paymentchargeerror = false;
+
+                        if (appsetting.paymentprovider === "CULQI") {
+                            const requestCulqiCharge = await axiosObservable({
+                                data: {
+                                    amount: Math.round((paymenttotal * 100 + Number.EPSILON) * 100) / 100,
+                                    bearer: appsetting.privatekey,
+                                    description: (genericfunctions.removeSpecialCharacter(`Onboarding for ${parameters.contactdocumentnumber}`)).slice(0, 80),
+                                    currencyCode: "USD",
+                                    email: `${(parameters.contactmail || "generic@mail.com")}`,
+                                    sourceId: paymentcarddata.id,
+                                    operation: "CREATE",
+                                    url: appsetting.culqiurlcharge,
+                                    metadata: {
+                                        companydocument: genericfunctions.removeSpecialCharacter(parameters.companydocument || ""),
+                                        companyname: genericfunctions.removeSpecialCharacter(parameters.companyname || ""),
+                                        paymentplan: genericfunctions.removeSpecialCharacter(parameters.paymentplan || ""),
+                                        paymenttype: "ONBOARDING",
+                                        personcountry: genericfunctions.removeSpecialCharacter(parameters.contactcountryname || ""),
+                                        personmail: genericfunctions.removeSpecialCharacter(parameters.contactmail || ""),
+                                        personname: genericfunctions.removeSpecialCharacter(parameters.contactnameorcompany || ""),
+                                        personphone: genericfunctions.removeSpecialCharacter(parameters.contactphone || ""),
+                                    },
+                                },
+                                method: "post",
+                                url: `${bridgeEndpoint}processculqi/handlecharge`,
+                                _requestid: request._requestid,
+                            });
+
+                            if (requestCulqiCharge.data.success) {
+                                paymentchargedata = requestCulqiCharge.data.result;
+                                paymentchargetype = requestCulqiCharge?.data?.result?.source?.iin?.card_type;
+                            }
+                            else {
+                                paymentchargeerror = true;
+                            }
+                        }
+                        else if (appsetting.paymentprovider === "OPENPAY COLOMBIA") {
+                            const requestOpenpayCharge = await axiosObservable({
+                                data: {
+                                    amount: Math.round((paymenttotal * 100 + Number.EPSILON) * 100) / 100,
+                                    currencyCode: "USD",
+                                    customerId: paymentcarddata.customerId,
+                                    description: (genericfunctions.removeSpecialCharacter(`Onboarding for ${parameters.contactdocumentnumber}`)).slice(0, 80),
+                                    igv: `${((billingtax || 0) + 1)}`,
+                                    merchantId: appsetting.culqiurl,
+                                    operation: "CREATE",
+                                    orderId: `${parameters.contactdocumentnumber}-${Math.floor(Math.random() * 99999999)}`,
+                                    secretKey: appsetting.privatekey,
+                                    sourceId: paymentcarddata.id,
+                                    url: appsetting.culqiurlcharge,
+                                },
+                                method: "post",
+                                url: `${bridgeEndpoint}processopenpay/handlecharge`,
+                                _requestid: request._requestid,
+                            });
+
+                            if (requestOpenpayCharge.data.success) {
+                                paymentchargedata = requestOpenpayCharge.data.result;
+                                paymentchargetype = requestOpenpayCharge?.data?.result?.card?.type;
+                            }
+                            else {
+                                paymentchargeerror = true;
+                            }
+                        }
+
+                        if (!paymentchargeerror && paymentchargedata) {
+                            const org = await genericfunctions.getOrganization(corpId, orgId, request._requestid);
+
+                            let lastExchangeData = await genericfunctions.getExchangeRate("USD", request._requestid);
+
+                            const datestring = currentdate.toISOString().split("T")[0];
+
+                            const billingyear = currentdate.getFullYear();
+                            const billingmonth = currentdate.getMonth() + 1;
+
+                            var balanceresponse = await genericfunctions.createBalance(corpId, orgId, 0, `Onboarding (${billingyear}/${billingmonth})`, "ACTIVO", "GENERAL", null, null, paymentsubtotal, ((org?.balance || 0) + paymentsubtotal), `${parameters.contactdocumenttype}`, parameters.contactdocumentnumber, "PAID", new Date().toISOString().split("T")[0], parameters.loginusername, parameters.loginusername, request._requestid);
+
+                            let invoiceresponse = await genericfunctions.createInvoice(corpId, orgId, 0, `Onboarding (${billingyear}/${billingmonth})`, "ACTIVO", "INVOICE", null, null, null, null, null, null, null, null, null, null, `${parameters.contactdocumenttype}`, parameters.contactdocumentnumber, parameters.companyname || parameters.contactnameorcompany, parameters.contactaddress, parameters.contactcountry, parameters.contactmail, null, null, null, null, `Laraigo Subscription (${billingyear}/${billingmonth})`, datestring, null, paymentsubtotal, paymenttaxes, paymenttotal, "USD", lastExchangeData?.exchangerate || 1, "PENDING", null, null, null, null, null, null, "typecredit_alcontado", null, null, null, null, null, parameters.loginusername, null, paymentsubtotal, "PAID", false, billingyear, billingmonth, paymentchargetype || "", request._requestid);
+
+                            if (invoiceresponse) {
+                                await genericfunctions.changeInvoiceBalance(corpId, orgId, balanceresponse.balanceid, invoiceresponse.invoiceid, parameters.loginusername, request._requestid);
+
+                                let producthasigv = "";
+                                let productigvtribute = "";
+                                let producttotaligv = 0;
+                                let producttotalamount = 0;
+                                let productigvrate = 0;
+                                let productprice = 0;
+                                let productnetprice = 0;
+                                let productnetworth = 0;
+
+                                if (`${parameters.contactdocumenttype}` !== "0") {
+                                    producthasigv = "10";
+                                    productigvtribute = "1000";
+                                    producttotaligv = paymenttaxes;
+                                    producttotalamount = paymenttotal;
+                                    productigvrate = billingtax;
+                                    productprice = paymenttotal;
+                                    productnetprice = paymentsubtotal;
+                                    productnetworth = paymentsubtotal;
+                                }
+                                else {
+                                    producthasigv = "40";
+                                    productigvtribute = "9998";
+                                    producttotaligv = 0;
+                                    producttotalamount = paymenttotal;
+                                    productigvrate = 0;
+                                    productprice = paymenttotal;
+                                    productnetprice = paymenttotal;
+                                    productnetworth = paymenttotal;
+                                }
+
+                                await genericfunctions.createInvoiceDetail(corpId, orgId, invoiceresponse.invoiceid, `Onboarding (${parameters.contactdocumentnumber})`, "ACTIVO", "NINGUNO", 1, "S001", producthasigv, "10", productigvtribute, "ZZ", producttotaligv, producttotalamount, productigvrate, productprice, `Onboarding (${parameters.contactdocumentnumber})`, productnetprice, productnetworth, paymentsubtotal, parameters.loginusername, request._requestid);
+
+                                const chargedata = await genericfunctions.insertCharge(corpId, orgId, invoiceresponse.invoiceid, null, paymenttotal, true, paymentchargedata, paymentchargedata.id, "USD", "Laraigo Onboarding", parameters.contactmail || "generic@mail.com", "INSERT", null, null, parameters.loginusername, "PAID", null, null, "REGISTEREDCARD", request._requestid);
+
+                                await genericfunctions.insertPayment(corpId, orgId, invoiceresponse.invoiceid, true, chargedata?.chargeid, paymentchargedata, paymentchargedata.id, paymenttotal, parameters.contactmail || "generic@mail.com", parameters.loginusername, null, null, appsetting.location, appsetting.paymentprovider, request._requestid);
+
+                                let invoicecorrelative = null;
+                                let documenttype = null;
+
+                                if ((parameters.contactcountry === "PE") && (`${parameters.contactdocumenttype}` === "1" || `${parameters.contactdocumenttype}` === "4" || `${parameters.contactdocumenttype}` === "7")) {
+                                    invoicecorrelative = await genericfunctions.getCorrelative(corpId, orgId, invoiceresponse.invoiceid, "TICKET", request._requestid);
+                                    documenttype = "03";
+                                }
+                                else {
+                                    invoicecorrelative = await genericfunctions.getCorrelative(corpId, orgId, invoiceresponse.invoiceid, "INVOICE", request._requestid);
+                                    documenttype = "01";
+                                }
+
+                                if (invoicecorrelative) {
+                                    await invoiceSubscription(corpId, orgId, appsetting, parameters, invoiceresponse, invoicecorrelative, lastExchangeData, documenttype, datestring, billingyear, billingmonth, paymentchargetype, paymentsubtotal, paymenttaxes, paymenttotal, producttotaligv, producttotalamount, productigvrate, productprice, productnetprice, productnetworth, producthasigv, productigvtribute, false, request._requestid)
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -814,7 +1078,7 @@ exports.recoverPassword = async (request, response) => {
                     let validMail = false;
 
                     if (typeof queryUserGet[0].email !== "undefined" && queryUserGet[0].email) {
-                        if (validateEmail(queryUserGet[0].email) !== null) {
+                        if (genericfunctions.validateEmail(queryUserGet[0].email) !== null) {
                             validMail = true;
                         }
                     }
@@ -1070,39 +1334,260 @@ exports.validateUsername = async (request, response) => {
     }
 };
 
-const getAppSettingSingle = async (corpid, orgid, requestId) => {
-    const queryAppSettingGet = await triggerfunctions.executesimpletransaction("UFN_APPSETTING_INVOICE_SEL_SINGLE", {
-        corpid: corpid,
-        orgid: orgid,
-        _requestid: requestId,
-    });
+const invoiceSubscription = async (corpid, orgid, appsetting, parameters, invoiceresponse, invoicecorrelative, exchangedata, documenttype, datestring, billingyear, billingmonth, paymenttype, paymentsubtotal, paymenttaxes, paymenttotal, producttotaligv, producttotalamount, productigvrate, productprice, productnetprice, productnetworth, producthasigv, productigvtribute, sendmail, requestId) => {
+    let invoiceSuccess = false;
+    let invoiceCorrelative = null;
+    let invoiceLink = null;
 
-    if (queryAppSettingGet instanceof Array) {
-        if (queryAppSettingGet.length > 0) {
-            return queryAppSettingGet[0];
+    try {
+        let invoicedata = {
+            CodigoAnexoEmisor: appsetting.annexcode,
+            CodigoFormatoImpresion: appsetting.printingformat,
+            CodigoMoneda: "USD",
+            Username: appsetting.sunatusername,
+            TipoDocumento: documenttype,
+            TipoRucEmisor: appsetting.emittertype,
+            CodigoRucReceptor: `${parameters.contactdocumenttype}`,
+            CodigoUbigeoEmisor: appsetting.ubigeo,
+            EnviarSunat: true,
+            FechaEmision: datestring,
+            FechaVencimiento: datestring,
+            MailEnvio: parameters.contactmail,
+            MontoTotal: paymenttotal,
+            NombreComercialEmisor: appsetting.tradename,
+            RazonSocialEmisor: appsetting.businessname,
+            RazonSocialReceptor: parameters.companyname || parameters.contactnameorcompany,
+            CorrelativoDocumento: genericfunctions.padNumber(invoicecorrelative.p_correlative, 8),
+            RucEmisor: appsetting.ruc,
+            NumeroDocumentoReceptor: parameters.contactdocumentnumber,
+            NumeroSerieDocumento: documenttype === "01" ? appsetting.invoiceserie : appsetting.ticketserie,
+            RetornaPdf: appsetting.returnpdf,
+            RetornaXmlSunat: appsetting.returnxmlsunat,
+            RetornaXml: appsetting.returnxml,
+            TipoCambio: (exchangedata?.exchangeratesol / exchangedata?.exchangerate) || 1,
+            Token: appsetting.token,
+            DireccionFiscalEmisor: appsetting.fiscaladdress,
+            DireccionFiscalReceptor: parameters.contactaddress,
+            VersionXml: appsetting.xmlversion,
+            VersionUbl: appsetting.ublversion,
+            Endpoint: appsetting.sunaturl,
+            PaisRecepcion: parameters.contactcountry,
+            ProductList: [],
+            DataList: []
+        }
+
+        invoicedata.CodigoOperacionSunat = parameters.contactcountry === "PE" ? appsetting.operationcodeperu : appsetting.operationcodeother;
+        invoicedata.MontoTotalGravado = parameters.contactcountry === "PE" ? paymentsubtotal : null;
+        invoicedata.MontoTotalInafecto = parameters.contactcountry === "PE" ? "0" : paymentsubtotal;
+        invoicedata.MontoTotalIgv = parameters.contactcountry === "PE" ? paymenttaxes : null;
+
+        let calcdetraction = false;
+
+        if (parameters.contactcountry === "PE") {
+            calcdetraction = true;
+        }
+
+        if (calcdetraction) {
+            if (appsetting.detraction && appsetting.detractioncode && appsetting.detractionaccount && (appsetting.detractionminimum || appsetting.detractionminimum === 0)) {
+                let compareamount = 0;
+
+                if (appsetting.detractionminimum) {
+                    compareamount = (paymenttotal / (exchangedata?.exchangerate || 0) * (exchangedata?.exchangeratesol || 0));
+                }
+
+                if (compareamount > appsetting.detractionminimum) {
+                    invoicedata.CodigoDetraccion = appsetting.detractioncode;
+                    invoicedata.CodigoOperacionSunat = "1001";
+                    invoicedata.MontoTotalDetraccion = Math.round(Math.round(((paymenttotal * appsetting.detraction) + Number.EPSILON) * 100) / 100);
+                    invoicedata.MontoPendienteDetraccion = Math.round(((invoicedata.MontoTotal - (invoicedata.MontoTotalDetraccion || 0)) + Number.EPSILON) * 100) / 100;
+                    invoicedata.MontoTotalInafecto = null;
+                    invoicedata.NumeroCuentaDetraccion = appsetting.detractionaccount;
+                    invoicedata.PaisRecepcion = null;
+                    invoicedata.PorcentajeTotalDetraccion = appsetting.detraction * 100;
+
+                    let adicional02 = {
+                        CodigoDatoAdicional: "06",
+                        DescripcionDatoAdicional: "CUENTA DE DETRACCION: " + appsetting.detractionaccount
+                    }
+
+                    invoicedata.DataList.push(adicional02);
+                }
+            }
+        }
+
+        let adicional01 = {
+            CodigoDatoAdicional: "05",
+            DescripcionDatoAdicional: "FORMA DE PAGO: TRANSFERENCIA"
+        }
+
+        invoicedata.DataList.push(adicional01);
+
+        let adicional05 = {
+            CodigoDatoAdicional: "01",
+            DescripcionDatoAdicional: "AL CONTADO"
+        }
+
+        invoicedata.DataList.push(adicional05);
+
+        if (adicional05) {
+            invoicedata.FechaVencimiento = null;
+        }
+
+        let invoicedetaildata = {
+            CantidadProducto: 1,
+            CodigoProducto: "S001",
+            TipoVenta: "10",
+            UnidadMedida: "ZZ",
+            IgvTotal: Math.round((producttotaligv + Number.EPSILON) * 100) / 100,
+            MontoTotal: Math.round((producttotalamount + Number.EPSILON) * 100) / 100,
+            TasaIgv: Math.round((productigvrate * 100) || 0),
+            PrecioProducto: Math.round((productprice + Number.EPSILON) * 100) / 100,
+            DescripcionProducto: `Laraigo Subscription (${parameters.contactdocumentnumber})`,
+            PrecioNetoProducto: Math.round((productnetprice + Number.EPSILON) * 100) / 100,
+            ValorNetoProducto: Math.round((productnetworth + Number.EPSILON) * 100) / 100,
+            AfectadoIgv: producthasigv,
+            TributoIgv: productigvtribute,
+        };
+
+        invoicedata.ProductList.push(invoicedetaildata);
+
+        if (appsetting.invoiceprovider === "MIFACT") {
+            const requestSendToSunat = await axiosObservable({
+                data: invoicedata,
+                method: "post",
+                url: `${bridgeEndpoint}processmifact/sendinvoice`,
+                _requestid: requestId,
+            });
+
+            if (requestSendToSunat.data.result) {
+                await genericfunctions.invoiceSunat(corpid, orgid, invoiceresponse.invoiceid, "INVOICED", null, requestSendToSunat.data.result.cadenaCodigoQr, requestSendToSunat.data.result.codigoHash, requestSendToSunat.data.result.urlCdrSunat, requestSendToSunat.data.result.urlPdf, requestSendToSunat.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting.ruc || null, appsetting.businessname || null, appsetting.tradename || null, appsetting.fiscaladdress || null, appsetting.ubigeo || null, appsetting.emittertype || null, appsetting.annexcode || null, appsetting.printingformat || null, invoicedata?.EnviarSunat || null, appsetting.returnpdf || null, appsetting.returnxmlsunat || null, appsetting.returnxml || null, appsetting.token || null, appsetting.sunaturl || null, appsetting.sunatusername || null, appsetting.xmlversion || null, appsetting.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, "typecredit_alcontado" || null, appsetting.detractioncode || null, appsetting.detraction || null, appsetting.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, requestId);
+
+                invoiceSuccess = true;
+                invoiceLink = requestSendToSunat.data.result.urlPdf;
+            }
+            else {
+                await genericfunctions.invoiceSunat(corpid, orgid, invoiceresponse.invoiceid, "ERROR", requestSendToSunat.data.operationMessage, null, null, null, null, null, null, appsetting.ruc || null, appsetting.businessname || null, appsetting.tradename || null, appsetting.fiscaladdress || null, appsetting.ubigeo || null, appsetting.emittertype || null, appsetting.annexcode || null, appsetting.printingformat || null, invoicedata?.EnviarSunat || null, appsetting.returnpdf || null, appsetting.returnxmlsunat || null, appsetting.returnxml || null, appsetting.token || null, appsetting.sunaturl || null, appsetting.sunatusername || null, appsetting.xmlversion || null, appsetting.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, "typecredit_alcontado" || null, appsetting.detractioncode || null, appsetting.detraction || null, appsetting.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, requestId);
+
+                if ((parameters.contactcountry === "PE") && (`${parameters.contactdocumentnumber}` === "1" || `${parameters.contactdocumentnumber}` === "4" || `${parameters.contactdocumentnumber}` === "7")) {
+                    await genericfunctions.getCorrelative(corpid, orgid, invoiceresponse.invoiceid, "TICKETERROR", requestId);
+                }
+                else {
+                    await genericfunctions.getCorrelative(corpid, orgid, invoiceresponse.invoiceid, "INVOICEERROR", requestId);
+                }
+            }
+        }
+        else if (appsetting.invoiceprovider === "SIIGO") {
+            const corp = await genericfunctions.getCorporation(corpid, requestId);
+
+            invoicedata.TipoDocumentoSiigo = "FV";
+            invoicedata.TipoCambio = (exchangedata?.exchangeratecop / exchangedata?.exchangerate) || 1;
+            invoicedata.TipoPago = (paymenttype == "Crédito" || paymenttype == "credit") ? "Tarjeta Crédito" : "Tarjeta Débito";
+            invoicedata.CityCountry = corp.countrycode;
+            invoicedata.CityState = corp.statecode;
+            invoicedata.CityCode = corp.citycode;
+
+            const requestSendToSiigo = await axiosObservable({
+                data: invoicedata,
+                method: "post",
+                url: `${bridgeEndpoint}processsiigo/sendinvoice`,
+                _requestid: requestId,
+            });
+
+            if (requestSendToSiigo.data.result) {
+                let correlativeOverride = null;
+
+                if (requestSendToSiigo.data.result.correlativoCpe) {
+                    correlativeOverride = parseInt(`${requestSendToSiigo.data.result.correlativoCpe}`);
+                }
+
+                await genericfunctions.invoiceSunat(corpid, orgid, invoiceresponse.invoiceid, "INVOICED", null, requestSendToSiigo.data.result.cadenaCodigoQr, requestSendToSiigo.data.result.codigoHash, requestSendToSiigo.data.result.urlCdrSunat, requestSendToSiigo.data.result.urlPdf, requestSendToSiigo.data.result.urlXml, invoicedata.NumeroSerieDocumento, appsetting.ruc || null, appsetting.businessname || null, appsetting.tradename || null, appsetting.fiscaladdress || null, appsetting.ubigeo || null, appsetting.emittertype || null, appsetting.annexcode || null, appsetting.printingformat || null, invoicedata?.EnviarSunat || null, appsetting.returnpdf || null, appsetting.returnxmlsunat || null, appsetting.returnxml || null, appsetting.token || null, appsetting.sunaturl || null, appsetting.sunatusername || null, appsetting.xmlversion || null, appsetting.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, "typecredit_alcontado" || null, appsetting.detractioncode || null, appsetting.detraction || null, appsetting.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, correlativeOverride, requestId);
+
+                invoiceSuccess = true;
+                invoiceCorrelative = correlativeOverride;
+                invoiceLink = requestSendToSunat.data.result.urlPdf;
+            }
+            else {
+                await genericfunctions.invoiceSunat(corpid, orgid, invoiceresponse.invoiceid, "ERROR", requestSendToSiigo.data.operationMessage, null, null, null, null, null, null, appsetting.ruc || null, appsetting.businessname || null, appsetting.tradename || null, appsetting.fiscaladdress || null, appsetting.ubigeo || null, appsetting.emittertype || null, appsetting.annexcode || null, appsetting.printingformat || null, invoicedata?.EnviarSunat || null, appsetting.returnpdf || null, appsetting.returnxmlsunat || null, appsetting.returnxml || null, appsetting.token || null, appsetting.sunaturl || null, appsetting.sunatusername || null, appsetting.xmlversion || null, appsetting.ublversion || null, invoicedata?.CodigoRucReceptor || null, invoicedata?.NumeroDocumentoReceptor || null, invoicedata?.RazonSocialReceptor || null, invoicedata?.DireccionFiscalReceptor || null, invoicedata?.PaisRecepcion || null, invoicedata?.MailEnvio || null, documenttype || null, invoicedata?.CodigoOperacionSunat || null, invoicedata?.FechaVencimiento || null, null, null, "typecredit_alcontado" || null, appsetting.detractioncode || null, appsetting.detraction || null, appsetting.detractionaccount, invoicedata?.FechaEmision, appsetting.location, appsetting.invoiceprovider, null, requestId);
+
+                if ((parameters.contactcountry === "PE") && (`${parameters.contactdocumentnumber}` === "1" || `${parameters.contactdocumentnumber}` === "4" || `${parameters.contactdocumentnumber}` === "7")) {
+                    await genericfunctions.getCorrelative(corpid, orgid, invoiceresponse.invoiceid, "TICKETERROR", requestId);
+                }
+                else {
+                    await genericfunctions.getCorrelative(corpid, orgid, invoiceresponse.invoiceid, "INVOICEERROR", requestId);
+                }
+            }
+        }
+    }
+    catch (exception) {
+        await genericfunctions.invoiceSunat(corpid, orgid, invoiceresponse.invoiceid, "ERROR", exception.message, null, null, null, null, null, null, appsetting.ruc, appsetting.businessname, appsetting.tradename, appsetting.fiscaladdress, appsetting.ubigeo, appsetting.emittertype, appsetting.annexcode, appsetting.printingformat, appsetting.sendtosunat, appsetting.returnpdf, appsetting.returnxmlsunat, appsetting.returnxml, appsetting.token, appsetting.sunaturl, appsetting.sunatusername, appsetting.xmlversion, appsetting.ublversion, `${parameters.contactdocumentnumber}`, parameters.contactdocumentnumber, parameters.companyname || parameters.contactnameorcompany, parameters.contactaddress, parameters.contactcountry, parameters.contactmail, documenttype, null, null, null, null, "typecredit_alcontado", null, null, null, null, appsetting.location, appsetting.invoiceprovider, null, requestId);
+
+        if ((parameters.contactcountry === "PE") && (`${parameters.contactdocumentnumber}` === "1" || `${parameters.contactdocumentnumber}` === "4" || `${parameters.contactdocumentnumber}` === "7")) {
+            await genericfunctions.getCorrelative(corpid, orgid, invoiceresponse.invoiceid, "TICKETERROR", requestId);
+        }
+        else {
+            await genericfunctions.getCorrelative(corpid, orgid, invoiceresponse.invoiceid, "INVOICEERROR", requestId);
         }
     }
 
-    return null;
-};
+    if (sendmail) {
+        const alertBodySuccess = await genericfunctions.searchDomain(1, 0, false, "PAYMENTSUBSCRIPTIONBODYSUCCESS", "SCHEDULER", requestId);
+        const alertBodyError = await genericfunctions.searchDomain(1, 0, false, "PAYMENTSUBSCRIPTIONBODYERROR", "SCHEDULER", requestId);
+        const alertSubject = await genericfunctions.searchDomain(1, 0, false, "PAYMENTSUBSCRIPTIONSUBJECT", "SCHEDULER", requestId);
 
-const getAppSettingLocation = async (location, requestId) => {
-    const queryAppSettingGet = await triggerfunctions.executesimpletransaction("UFN_APPSETTING_INVOICE_SEL_LOCATION", {
-        location: location,
-        _requestid: requestId,
-    });
+        if (alertBodySuccess && alertBodyError && alertSubject) {
+            let mailBodySuccess = alertBodySuccess.domainvalue;
+            let mailBodyError = alertBodyError.domainvalue;
+            let mailSubject = alertSubject.domainvalue;
 
-    if (queryAppSettingGet instanceof Array) {
-        if (queryAppSettingGet.length > 0) {
-            return queryAppSettingGet[0];
+            mailBodySuccess = mailBodySuccess.split("{{clientaddress}}").join(parameters.contactaddress);
+            mailBodySuccess = mailBodySuccess.split("{{clientcountry}}").join(parameters.contactcountry);
+            mailBodySuccess = mailBodySuccess.split("{{clientdocument}}").join(parameters.contactdocumentnumber);
+            mailBodySuccess = mailBodySuccess.split("{{clientmail}}").join(parameters.contactmail);
+            mailBodySuccess = mailBodySuccess.split("{{clientname}}").join(parameters.contactnameorcompany);
+            mailBodySuccess = mailBodySuccess.split("{{clientphone}}").join(parameters.contactphone);
+            mailBodySuccess = mailBodySuccess.split("{{companyname}}").join(parameters.companyname);
+            mailBodySuccess = mailBodySuccess.split("{{laraigoplan}}").join(parameters.paymentplan);
+            mailBodySuccess = mailBodySuccess.split("{{month}}").join(billingmonth);
+            mailBodySuccess = mailBodySuccess.split("{{year}}").join(billingyear);
+
+            mailBodyError = mailBodyError.split("{{clientaddress}}").join(parameters.contactaddress);
+            mailBodyError = mailBodyError.split("{{clientcountry}}").join(parameters.contactcountry);
+            mailBodyError = mailBodyError.split("{{clientdocument}}").join(parameters.contactdocumentnumber);
+            mailBodyError = mailBodyError.split("{{clientmail}}").join(parameters.contactmail);
+            mailBodyError = mailBodyError.split("{{clientname}}").join(parameters.contactnameorcompany);
+            mailBodyError = mailBodyError.split("{{clientphone}}").join(parameters.contactphone);
+            mailBodyError = mailBodyError.split("{{companyname}}").join(parameters.companyname);
+            mailBodyError = mailBodyError.split("{{laraigoplan}}").join(parameters.paymentplan);
+            mailBodyError = mailBodyError.split("{{month}}").join(billingmonth);
+            mailBodyError = mailBodyError.split("{{year}}").join(billingyear);
+
+            mailSubject = mailSubject.split("{{clientaddress}}").join(parameters.contactaddress);
+            mailSubject = mailSubject.split("{{clientcountry}}").join(parameters.contactcountry);
+            mailSubject = mailSubject.split("{{clientdocument}}").join(parameters.contactdocumentnumber);
+            mailSubject = mailSubject.split("{{clientmail}}").join(parameters.contactmail);
+            mailSubject = mailSubject.split("{{clientname}}").join(parameters.contactnameorcompany);
+            mailSubject = mailSubject.split("{{clientphone}}").join(parameters.contactphone);
+            mailSubject = mailSubject.split("{{companyname}}").join(parameters.companyname);
+            mailSubject = mailSubject.split("{{laraigoplan}}").join(parameters.paymentplan);
+            mailSubject = mailSubject.split("{{month}}").join(billingmonth);
+            mailSubject = mailSubject.split("{{year}}").join(billingyear);
+
+            await axiosObservable({
+                data: {
+                    mailAddress: parameters.contactmail,
+                    mailBody: invoiceSuccess ? mailBodySuccess : mailBodyError,
+                    mailTitle: mailSubject,
+                    attachments: [
+                        {
+                            type: "URL",
+                            value: invoiceLink ? invoiceLink : null,
+                        }
+                    ]
+                },
+                method: "post",
+                url: `${bridgeEndpoint}processscheduler/sendmail`,
+                _requestid: requestId,
+            });
         }
     }
-
-    return null;
-};
-
-const validateEmail = (email) => {
-    return /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.exec(
-        String(email).toLowerCase()
-    );
-};
+}
