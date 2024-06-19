@@ -3447,7 +3447,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_COMMUNICATIONCHANNEL_SEL_WHATSAPP_PROVIDER: {
-        query: "SELECT * FROM ufn_communicationchannel_sel_whatsapp_provider($corpid, $orgid, $communicationchannelid)",
+        query: "SELECT * FROM ufn_communicationchannel_sel_whatsapp_provider($corpid, $orgid, $communicationchannelid, $status)",
         module: "",
         protected: "SELECT"
     },
