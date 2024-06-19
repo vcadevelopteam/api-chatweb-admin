@@ -2340,7 +2340,7 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    QUERY_SEL_PROPERTY_ON_LOGIN: {
+    QUERY_SEL_PROPERTY_ON_LOGIN_SINGLE: {
         query: "SELECT propertyname, propertyvalue FROM property p WHERE p.corpid = $corpid AND p.orgid = $orgid AND p.propertyname = $propertyname and p.status = 'ACTIVO';",
         module: "",
         protected: "SELECT"
