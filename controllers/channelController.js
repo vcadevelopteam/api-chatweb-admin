@@ -3083,7 +3083,24 @@ exports.synchronizeTemplate = async (request, response) => {
             }
 
             if (corpid && orgid) {
-                const channeldata = await getChannelData(corpid, orgid, 0, request._requestid);
+                const channeldatadelete = await getChannelData(corpid, orgid, 0, "ELIMINADO", request._requestid);
+
+                if (channeldatadelete) {
+                    for (const communicationchanneldelete of channeldata) {
+                        if (communicationchanneldelete.servicecredentials) {
+                            await channelfunctions.messageTemplateReset(
+                                corpid,
+                                orgid,
+                                communicationchanneldelete.communicationchannelid,
+                                null,
+                                request.user?.usr || "scheduler",
+                                request._requestid,
+                            );
+                        }
+                    }
+                }
+
+                const channeldata = await getChannelData(corpid, orgid, 0, "ACTIVO", request._requestid);
 
                 if (channeldata) {
                     for (const communicationchannel of channeldata) {
@@ -3455,7 +3472,7 @@ exports.addTemplate = async (request, response) => {
             if (communicationchannelid) {
                 let createsuccess = false;
 
-                const channellist = await getChannelData(request.user.corpid, request.user.orgid, communicationchannelid, request._requestid);
+                const channellist = await getChannelData(request.user.corpid, request.user.orgid, communicationchannelid, "ACTIVO", request._requestid);
 
                 if (channellist) {
                     if (channellist[0]) {
@@ -3617,7 +3634,7 @@ exports.deleteTemplate = async (request, response) => {
                     let deletesuccess = true;
 
                     if (messagetemplate.communicationchannelid) {
-                        const channellist = await getChannelData(request.user.corpid, request.user.orgid, parseInt(`${messagetemplate.communicationchannelid}`.split(",")[0]), request._requestid);
+                        const channellist = await getChannelData(request.user.corpid, request.user.orgid, parseInt(`${messagetemplate.communicationchannelid}`.split(",")[0]), "ACTIVO", request._requestid);
 
                         if (channellist) {
                             if (channellist[0]) {
@@ -3728,13 +3745,14 @@ exports.deleteTemplate = async (request, response) => {
     }
 };
 
-const getChannelData = async (corpId, orgId, communicationChannelId, requestId) => {
+const getChannelData = async (corpId, orgId, communicationChannelId, status, requestId) => {
     if (orgId) {
         const queryString = "UFN_COMMUNICATIONCHANNEL_SEL_WHATSAPP_PROVIDER";
         const queryParameters = {
             corpid: corpId,
             orgid: orgId,
             communicationchannelid: communicationChannelId,
+            status: status,
             _requestid: requestId,
         }
 
