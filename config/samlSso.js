@@ -6,18 +6,24 @@ const SamlStrategy = require('passport-saml').Strategy
 // const idp = fs.readFileSync(path.resolve(__dirname, 'certs/claro.pem'), 'utf-8');
 const pvkey = fs.readFileSync(path.resolve(__dirname, 'certs/pvkey.pem'), 'utf-8');
 
+// Datos del IDP para configuracion de SAML
 const IDP_CERT = process.env.IPD_SAML_CERT ?? '----';
 const IDP_ENTRYPOINT = process.env.IDP_SAML_ENTRYPOINT ?? ''
 const IDP_ISSUER = process.env.IDP_SAML_ISSUER ?? ''
 const IDP_LOGOUTURL = process.env.IDP_SAML_LOGOUTURL ?? ''
 
+// Datos del SP
+const SP_ISSUER = process.env.SP_SAML_ISSUER ?? ''
+const SP_CALLBACKURL = process.env.SP_SAML_CALLBACK_URL ?? ''
+
+
 const samlStrategy = new SamlStrategy(
 	{
 		path: '/api/auth/idps/saml20/sso',
 		entryPoint: IDP_ENTRYPOINT,
-		issuer: 'https://apiprd.laraigo.com/api/auth/idps/saml20',
+		issuer: SP_ISSUER,
 		idpIssuer: IDP_ISSUER,
-		callbackUrl: 'https://stagingapix.laraigo.com/api/auth/idps/saml20/sso',
+		callbackUrl: SP_CALLBACKURL,
 		logoutUrl: IDP_LOGOUTURL,
 		decryptionPvk: pvkey,
 		privateKey: pvkey,
