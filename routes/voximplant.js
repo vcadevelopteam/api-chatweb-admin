@@ -47,6 +47,10 @@ router.post("/getCallHistory",
     ip,
     voximplantController.getCallHistory
 )
+router.post("/getRecord",
+    ip,
+    voximplantController.getRecord
+)
 router.post("/getTransactionHistory",
     ip,
     voximplantController.getTransactionHistory

@@ -167,6 +167,40 @@ exports.getCallHistory = async (request, response) => {
     }
 }
 
+exports.getRecord = async (request, response) => {
+    try {
+        let record_url = new URL(request.body['record_url']);
+        record_url.searchParams.append('account_id', request.body['account_id']);
+        record_url.searchParams.append('api_key', request.body['api_key']);
+
+        let record_url_str = record_url.toString();
+
+        try {
+            record_data = await axios.get(record_url_str, {
+                responseType: 'arraybuffer',
+            });
+            if (record_data.status === 200) {
+                response.set('Content-Disposition', record_data.headers["content-disposition"]);
+                response.set('Content-Type', record_data.headers["content-type"]);
+                let base64data = record_data.data.toString('base64');
+                return response.send(base64data)
+            }
+        }
+        catch (error) {
+            return response.status(400).json({
+                code: "error_record_error",
+                message: "Recoard error"
+            })
+        }
+    }
+    catch (exception) {
+        return response.status(500).json({
+            ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+            message: exception.message
+        });
+    }
+}
+
 exports.getTransactionHistory = async (request, response) => {
     try {
         let requestResult = await voximplant.getTransactionHistory({ ...request.body, requestid: request._requestid });
