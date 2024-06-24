@@ -37,4 +37,17 @@ router.get("/",
     authController.getUser
 )
 
+router.get('/idps/saml20/sso/login', authController.samlSsoLogin)
+
+router.post('/idps/saml20/sso', authController.samlSso)
+
+router.get("/idps/saml20/sso/success", authController.samlSuccess);
+
+router.get("/idps/saml20/sso/logout", authController.samlSsoLogout);
+
+router.post('/idps/saml20/slo', (req, res) => {
+    console.log('test');
+    res.send('Logout successful');
+})
+
 module.exports = router;

@@ -3,10 +3,12 @@ const { v4: uuidv4 } = require('uuid');
 const { executesimpletransaction } = require('../config/triggerfunctions');
 const { errors, getErrorCode, cleanPropertyValue, recaptcha, axiosObservable } = require('../config/helpers');
 const { addApplication } = require('./voximplantController');
+const { samlStrategy } = require("../config/samlSso");
 
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { loginGroup, exitFromAllGroup1 } = require('../config/firebase');
+const passport = require('passport');
 
 //type: int|string|bool
 const properties = [
@@ -110,7 +112,7 @@ const validateResProperty = (r, type) => {
 }
 
 exports.authenticate = async (req, res) => {
-    const { data: { usr, password, facebookid, googleid, origin = "WEB", token, token_recaptcha, cur } } = req.body;
+    const { data: { usr, password, facebookid, googleid, origin = "WEB", token, token_recaptcha, cur, samlCode } } = req.body;
 
     logger.child({ _requestid: req._requestid, body: req.body }).info(`authenticate.body`);
 
@@ -134,6 +136,14 @@ exports.authenticate = async (req, res) => {
         } else if (googleid) {
             result = await executesimpletransaction("QUERY_AUTHENTICATED_BY_GOOGLEID", { ...prevdata, googleid });
             integration = true;
+        } else if (samlCode) {
+            try {
+                const cifrado = jwt.verify(samlCode, process.env.SECRETA);
+                result = await executesimpletransaction("QUERY_AUTHENTICATED", { ...prevdata, usr: cifrado.nameID });
+                integration = true;
+            } catch (error) {
+                return res.status(401).json({ code: errors.LOGIN_USER_INCORRECT });
+            }
         } else {
             result = await executesimpletransaction("QUERY_AUTHENTICATED", { ...prevdata, usr });
         }
@@ -216,6 +226,7 @@ exports.authenticate = async (req, res) => {
 
             user.token = tokenzyx;
             user.origin = origin;
+            if (samlCode) user.samlAuth = true
             delete user.pwd;
 
             if (origin === "MOVIL" && /(supervisor|administrador)/gi.test(user.roledesc)) {
@@ -330,12 +341,37 @@ exports.logout = async (req, res) => {
         if (req.user.origin === "MOVIL") {
             await exitFromAllGroup1(req.user.token, req._requestid);
         }
-        executesimpletransaction("UFN_USERSTATUS_UPDATE", { _requestid: req._requestid, ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
+        if (req.user.samlAuth) {
+            req.user.nameID = req.user.usr
+
+            if (!req.body?.session_expired) {
+                executesimpletransaction("UFN_USERSTATUS_UPDATE", { _requestid: req._requestid, ...req.user, type: 'LOGOUT', status: 'DESCONECTADO', description: null, motive: null, username: req.user.usr });
+            }
+
+            samlStrategy.logout(req, (err, requestUrl) => {
+                if (err) {
+                    console.error("SAML logout error:", err);
+                    return res.status(500).send("An error occurred while logging out.");
+                }
+
+                // Redirigir al usuario a la URL de cierre de sesión del IdP
+                return res.json({
+                    data: {
+                        redirectUrl: requestUrl,
+                        error: false,
+                    },
+                });
+            });
+        } else {
+            executesimpletransaction("UFN_USERSTATUS_UPDATE", { _requestid: req._requestid, ...req.user, type: "LOGOUT", status: "DESCONECTADO", description: null, motive: null, username: req.user.usr, });
+            return res.json({ data: null, error: false });
+        }
     } catch (exception) {
-        logger.child({ error: { detail: exception.stack, message: exception.toString() } }).error(`Request to ${req.originalUrl}`);
+        logger.child({ error: { detail: exception.stack, message: exception.toString() } }) .error(`Request to ${req.originalUrl}`);
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
-    return res.json({ data: null, error: false })
-}
+    // return res.json({ data: null, error: false });
+};
 
 exports.connect = async (req, res) => {
     try {
@@ -454,3 +490,70 @@ exports.changeOrganization = async (req, res) => {
         return res.status(400).json(getErrorCode());
     }
 }
+
+exports.samlSsoLogin = async (req, res) => {
+    try {
+        passport.authenticate('samlStrategy', { failureRedirect: '/login' })(req, res, () => {
+            res.redirect('/');
+        })
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+    }
+}
+
+exports.samlSso = async (req, res) => {
+    try {
+        passport.authenticate('samlStrategy', { failureRedirect: '/', failureFlash: true, session: false })(req, res, () => {
+            console.log('user :', req.user)
+            if (req.user && req.user.nameID) {
+                const token = jwt.sign({ nameID: req.user.nameID }, process.env.SECRETA, { expiresIn: '1m' });
+                return res.redirect(`sso/success?token=${token}`);
+            }
+        })
+    } catch (exception) {
+        return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
+    }
+}
+
+exports.samlSuccess = async (req, res) => {
+    const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? '*';
+    const token = req.query.token;
+    
+    if (token) {
+        return res.send(`
+            <script>
+                window.opener.postMessage({ success: true, code: '${token}' }, '${ALLOWED_ORIGIN}');
+                window.close();
+            </script>
+        `);
+    } else {
+        return res.send(`
+            <script>
+                window.opener.postMessage({ success: false, error: "Unexcepted error" }, '${ALLOWED_ORIGIN}');
+                window.close();
+            </script>
+        `);
+    }
+}
+
+exports.samlSsoLogout = async (req, res) => {
+    return res.send();
+    // console.log('acaaaaa')
+    // console.log('req.user', req.user)
+    // req.user = { nameID: "C17836" };
+    // samlStrategy.logout(req, (err, requestUrl) => {
+    //     if (err) {
+    //         console.error("SAML logout error:", err);
+    //         return res.status(500).send("An error occurred while logging out.");
+    //     }
+
+    //     // Redirect the user to the IdP logout URL
+    //     console.log("🚀 ~ samlStrategy.logout ~ requestUrl:", requestUrl)
+    //     axios.get(requestUrl).then((response) => {
+    //         console.log('response', response)
+    //     }).catch((error) => {
+    //         console.log('erroraa', error)
+    //     })
+    //     res.redirect(requestUrl);
+    // });
+};
