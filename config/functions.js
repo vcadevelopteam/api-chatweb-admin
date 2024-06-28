@@ -1411,7 +1411,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_CAMPAIGN_INS: {
-        query: "SELECT * FROM ufn_campaign_ins($corpid, $orgid, $id, $communicationchannelid, $usergroup, $type, $status, $title, $description, $subject, $message, $startdate, $enddate, $repeatable, $frecuency, $messagetemplateid, $messagetemplatename, $messagetemplatenamespace, $messagetemplateheader, $messagetemplatebuttons, $executiontype, $batchjson, $fields, $messagetemplatefooter, $messagetemplatetype, $messagetemplateattachment, $source, $messagetemplatelanguage, $messagetemplatepriority, $username, $operation, $carouseljson, $variableshidden)",
+        query: "SELECT * FROM ufn_campaign_ins($corpid, $orgid, $id, $communicationchannelid, $usergroup, $type, $status, $title, $description, $subject, $message, $startdate, $enddate, $repeatable, $frecuency, $messagetemplateid, $messagetemplatename, $messagetemplatenamespace, $messagetemplateheader, $messagetemplatebuttons, $executiontype, $batchjson, $fields, $messagetemplatefooter, $messagetemplatetype, $messagetemplateattachment, $source, $messagetemplatelanguage, $messagetemplatepriority, $username, $operation, $carouseljson, $variableshidden, $membercount, $offset)",
         module: ["/extras/campaign"],
         protected: "INSERT"
     },
