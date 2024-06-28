@@ -891,7 +891,7 @@ exports.getConversationWithToken = async (req, res) => {
         
         const textBody = decryptString(Buffer.from(token, "base64").toString(), "LARAIGOVSZYXMEV2QWERTYUIOP")
         const params = JSON.parse(textBody);
-        
+        params.userid = 1;
         const result = await executesimpletransaction("UFN_CONVERSATION_SEL_INTERACTION", {
             conversationid:params.conversationid, lock:false, conversationold: 0, userid:1
         });
