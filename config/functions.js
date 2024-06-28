@@ -1391,6 +1391,11 @@ module.exports = {
         module: ["/tickets", "/crm", "/extras/campaign"],
         protected: "SELECT"
     },
+    UFN_CAMPAIGN_LST_OLD: {
+        query: "SELECT * FROM ufn_campaign_lst($corpid, $orgid, $username, $startdate, $enddate, $offset, $newversion)",
+        module: ["/tickets", "/crm", "/extras/campaign"],
+        protected: "SELECT"
+    },
     UFN_CAMPAIGN_SEL: {
         query: "SELECT * FROM ufn_campaign_sel($corpid, $orgid, $id, $username)",
         module: ["/extras/campaign"],
