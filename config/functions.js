@@ -2522,6 +2522,12 @@ module.exports = {
         module: ["/supervisor", "/message_inbox", "/calendar", "/extras/campaign", "/crm", "/servicedesk", "/automatizationrules", "/person", "/extras/botdesigner", "/extras/users",],
         protected: "INSERT"
     },
+    
+    UFN_MESSAGETEMPLATE_LST_OLD: {
+        query: "SELECT * FROM ufn_messagetemplate_lst($corpid, $orgid, $type, $username, $newversion)",
+        module: ["/supervisor", "/message_inbox", "/calendar", "/extras/campaign", "/crm", "/servicedesk", "/automatizationrules", "/person", "/extras/botdesigner", "/extras/users",],
+        protected: "INSERT"
+    },
     QUERY_UPDATE_PERSON_BY_HSM: {
         query: "UPDATE person pe SET firstcontact = CASE WHEN pe.firstcontact IS NULL THEN NOW() else pe.firstcontact END, lastcontact = NOW() where pe.personid IN (:personids) and pe.corpid = :corpid and pe.orgid = :orgid;",
         module: "",
