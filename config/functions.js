@@ -1420,6 +1420,11 @@ module.exports = {
         module: ["/extras/campaign"],
         protected: "INSERT"
     },
+    UFN_CAMPAIGN_INS_OLD: {
+        query: "SELECT * FROM ufn_campaign_ins($corpid, $orgid, $id, $communicationchannelid, $usergroup, $type, $status, $title, $description, $subject, $message, $startdate, $enddate, $repeatable, $frecuency, $messagetemplateid, $messagetemplatename, $messagetemplatenamespace, $messagetemplateheader, $messagetemplatebuttons, $executiontype, $batchjson, $fields, $messagetemplatefooter, $messagetemplatetype, $messagetemplateattachment, $source, $messagetemplatelanguage, $messagetemplatepriority, $username, $operation, $carouseljson, $variableshidden, $membercount, $offset, $newversion)",
+        module: ["/extras/campaign"],
+        protected: "INSERT"
+    },
     UFN_CAMPAIGN_DEL: {
         query: "SELECT * FROM ufn_campaign_del($corpid, $orgid, $id, $status, $username, $operation)",
         module: ["/extras/campaign"],
