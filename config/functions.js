@@ -698,8 +698,18 @@ module.exports = {
         module: ["/extras/messagetemplate"],
         protected: "SELECT"
     },
+    UFN_MESSAGETEMPLATE_SEL_OLD: {
+        query: "SELECT * FROM ufn_messagetemplate_sel($corpid, $orgid, $take, $skip, $where, $order, $newversion)",
+        module: ["/extras/messagetemplate"],
+        protected: "SELECT"
+    },
     UFN_MESSAGETEMPLATE_TOTALRECORDS: {
         query: "SELECT * FROM ufn_messagetemplate_totalrecords($corpid, $orgid, $where)",
+        module: ["/extras/messagetemplate"],
+        protected: "SELECT"
+    },
+    UFN_MESSAGETEMPLATE_TOTALRECORDS_OLD: {
+        query: "SELECT * FROM ufn_messagetemplate_totalrecords($corpid, $orgid, $where, $newversion)",
         module: ["/extras/messagetemplate"],
         protected: "SELECT"
     },
@@ -1042,6 +1052,11 @@ module.exports = {
     },
     UFN_MESSAGETEMPLATE_INS: {
         query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $footerenabled, $footer, $buttonsenabled, $priority, $attachment, $communicationchannelid, $communicationchanneltype, $authenticationdata, $bodyvariables, $buttonsgeneric, $buttonsquickreply, $carouseldata, $headervariables, $provideraccountid, $providerexternalid, $providerid, $providermessagelimit, $providerpartnerid, $providerquality, $providerstatus, $username, $operation)",
+        module: ["/extras/messagetemplate"],
+        protected: "INSERT"
+    },
+    UFN_MESSAGETEMPLATE_INS_OLD: {
+        query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $footerenabled, $footer, $buttonsenabled, $priority, $attachment, $communicationchannelid, $communicationchanneltype, $authenticationdata, $bodyvariables, $buttonsgeneric, $buttonsquickreply, $carouseldata, $headervariables, $provideraccountid, $providerexternalid, $providerid, $providermessagelimit, $providerpartnerid, $providerquality, $providerstatus, $username, $operation, $newversion)",
         module: ["/extras/messagetemplate"],
         protected: "INSERT"
     },
