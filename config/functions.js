@@ -4857,7 +4857,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_DETAIL_SENTMESSAGES_BY_TEMPLATE: {
-        query: "SELECT * FROM ufn_detail_sentmessages_by_template($corpid,$orgid,$startdate,$enddate,$offset,$messagetemplateid,$communicationchannelid,$userid)",
+        query: "SELECT * FROM ufn_detail_sentmessages_by_template($corpid,$orgid,$startdate,$enddate,$offset,$messagetemplateid,$communicationchannelid,$usersid,$userid)",
         module: "",
         protected: "SELECT"
     },
