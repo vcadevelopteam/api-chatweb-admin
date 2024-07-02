@@ -699,7 +699,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_SEL_OLD: {
-        query: "SELECT * FROM ufn_messagetemplate_sel($corpid, $orgid, $take, $skip, $where, $order, $newversion)",
+        query: "SELECT * FROM ufn_messagetemplate_sel($corpid, $orgid, $take, $skip, $where, $order, $newversion, $communicationchannelid)",
         module: ["/extras/messagetemplate"],
         protected: "SELECT"
     },
