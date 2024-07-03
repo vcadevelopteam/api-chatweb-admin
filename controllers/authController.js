@@ -295,7 +295,7 @@ exports.getUser = async (req, res) => {
         const balanceNotificationMinimum = resultBD[8] instanceof Array && resultBD[8].length > 0 ? parseFloat(resultBD[8][0].propertyvalue || "0") : 0;
         const balanceNotificationMessage = resultBD[9] instanceof Array && resultBD[9].length > 0 ? resultBD[9][0].propertyvalue : "";
         const showStartScreen = resultBD[10] instanceof Array && resultBD[10].length > 0 ? (resultBD[10][0].propertyvalue === "1") : false;
-        const newChannels = resultBD[11] instanceof Array ? true : false;
+        const newChannels = resultBD[11] instanceof Array && resultBD[11].length > 0 ? false : true;
 
         if (!(resultBD[0] instanceof Array)) {
             return res.status(500).json(getErrorCode());
@@ -385,7 +385,7 @@ exports.logout = async (req, res) => {
             return res.json({ data: null, error: false });
         }
     } catch (exception) {
-        logger.child({ error: { detail: exception.stack, message: exception.toString() } }) .error(`Request to ${req.originalUrl}`);
+        logger.child({ error: { detail: exception.stack, message: exception.toString() } }).error(`Request to ${req.originalUrl}`);
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
     // return res.json({ data: null, error: false });
@@ -536,7 +536,7 @@ exports.samlSso = async (req, res) => {
 exports.samlSuccess = async (req, res) => {
     const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? '*';
     const token = req.query.token;
-    
+
     if (token) {
         return res.send(`
             <script>
