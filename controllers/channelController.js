@@ -3604,6 +3604,8 @@ exports.addTemplate = async (request, response) => {
                                             parameters.buttonsquickreply = parameters.buttonsquickreply ? JSON.stringify(parameters.buttonsquickreply) : null;
                                             parameters.carouseldata = parameters.carouseldata ? JSON.stringify(parameters.carouseldata) : null;
                                             parameters.headervariables = parameters.headervariables ? JSON.stringify(parameters.headervariables) : null;
+                                            parameters.buttons = null;
+                                            parameters.bodyobject = null;
 
                                             const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
                                                 "UFN_MESSAGETEMPLATE_INS",
@@ -3649,6 +3651,8 @@ exports.addTemplate = async (request, response) => {
                                             parameters.buttonsquickreply = parameters.buttonsquickreply ? JSON.stringify(parameters.buttonsquickreply) : null;
                                             parameters.carouseldata = parameters.carouseldata ? JSON.stringify(parameters.carouseldata) : null;
                                             parameters.headervariables = parameters.headervariables ? JSON.stringify(parameters.headervariables) : null;
+                                            parameters.buttons = null;
+                                            parameters.bodyobject = null;
 
                                             const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
                                                 "UFN_MESSAGETEMPLATE_INS",
@@ -3798,6 +3802,8 @@ exports.deleteTemplate = async (request, response) => {
                         parameters.buttonsquickreply = messagetemplate.buttonsquickreply ? JSON.stringify(messagetemplate.buttonsquickreply) : null;
                         parameters.carouseldata = messagetemplate.carouseldata ? JSON.stringify(messagetemplate.carouseldata) : null;
                         parameters.headervariables = messagetemplate.headervariables ? JSON.stringify(messagetemplate.headervariables) : null;
+                        parameters.buttons = null;
+                        parameters.bodyobject = null;
 
                         const queryMessageTemplateDelete = await triggerfunctions.executesimpletransaction(
                             "UFN_MESSAGETEMPLATE_INS",
