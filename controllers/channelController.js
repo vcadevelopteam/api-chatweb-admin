@@ -3543,6 +3543,7 @@ exports.addTemplate = async (request, response) => {
                                         parameters.headervariables = null;
                                         parameters.newversion = false;
                                         parameters.buttons = JSON.stringify(request.body.buttons) || null;
+                                        parameters.bodyobject = null;
 
                                         const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
                                             "UFN_MESSAGETEMPLATE_INS_OLD",
