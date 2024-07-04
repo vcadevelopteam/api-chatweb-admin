@@ -335,7 +335,7 @@ exports.getUser = async (req, res) => {
                     redirect: (firstload && req.user.roledesc.split(",").some(x => ["ADMINISTRADOR", "SUPERADMIN"].includes(x))) ? "/channels" : req.user.redirect,
                     newChannels: newChannels && showStartScreen,
                     organizations: resultBD[1],
-                    notifications: resultBD[2],
+                    notifications: (showBalance && balanceNotificationEnabled && balanceNotificationMessage && (balanceCurrent <= balanceNotificationMinimum)) ? [...resultBD[2], ...[{ duedate: new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().split(".")[0].replace("T", " "), notificationtype: "BALANCEALERT", description: balanceNotificationMessage }]] : resultBD[2],
                     domains: {
                         reasons_disconnection: resultBD[4],
                     },
