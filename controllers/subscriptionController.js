@@ -575,7 +575,7 @@ exports.createSubscription = async (request, response) => {
                     const billingyear = currentdate.getFullYear();
                     const billingmonth = currentdate.getMonth() + 1;
 
-                    let invoiceresponse = await genericfunctions.createInvoice(corpId, orgId, 0, `Laraigo Subscription (${billingyear}/${billingmonth})`, "ACTIVO", "INVOICE", null, null, null, null, null, null, null, null, null, null, `${parameters.contactdocumenttype}`, parameters.contactdocumentnumber, parameters.companyname || parameters.contactnameorcompany, parameters.contactaddress, parameters.contactcountry, parameters.contactmail, null, null, null, null, `Laraigo Subscription (${billingyear}/${billingmonth})`, datestring, null, paymentsubtotal, paymenttaxes, paymenttotal, "USD", lastExchangeData?.exchangerate || 1, "PENDING", null, null, null, null, null, null, "typecredit_alcontado", null, null, null, null, null, parameters.loginusername, null, paymentsubtotal, "PAID", false, billingyear, billingmonth, paymentperiodtype || "", request._requestid);
+                    let invoiceresponse = await genericfunctions.createInvoice(corpId, orgId, 0, `Plataforma Cognitiva Laraigo - ${genericfunctions.getMonth(billingmonth)} ${billingyear}`, "ACTIVO", "INVOICE", null, null, null, null, null, null, null, null, null, null, `${parameters.contactdocumenttype}`, parameters.contactdocumentnumber, parameters.companyname || parameters.contactnameorcompany, parameters.contactaddress, parameters.contactcountry, parameters.contactmail, null, null, null, null, `Plataforma Cognitiva Laraigo - ${genericfunctions.getMonth(billingmonth)} ${billingyear}`, datestring, null, paymentsubtotal, paymenttaxes, paymenttotal, "USD", lastExchangeData?.exchangerate || 1, "PENDING", null, null, null, null, null, null, "typecredit_alcontado", null, null, null, null, null, parameters.loginusername, null, paymentsubtotal, "PAID", false, billingyear, billingmonth, paymentperiodtype || "", request._requestid);
 
                     if (invoiceresponse) {
                         let producthasigv = "";
@@ -608,7 +608,7 @@ exports.createSubscription = async (request, response) => {
                             productnetworth = paymenttotal;
                         }
 
-                        await genericfunctions.createInvoiceDetail(corpId, orgId, invoiceresponse.invoiceid, `Laraigo Subscription (${parameters.contactdocumentnumber})`, "ACTIVO", "NINGUNO", 1, "S001", producthasigv, "10", productigvtribute, "ZZ", producttotaligv, producttotalamount, productigvrate, productprice, `Laraigo Subscription (${parameters.contactdocumentnumber})`, productnetprice, productnetworth, paymentsubtotal, parameters.loginusername, request._requestid);
+                        await genericfunctions.createInvoiceDetail(corpId, orgId, invoiceresponse.invoiceid, `Plataforma Cognitiva Laraigo - ${genericfunctions.getMonth(billingmonth)} ${billingyear}`, "ACTIVO", "NINGUNO", 1, "S001", producthasigv, "10", productigvtribute, "ZZ", producttotaligv, producttotalamount, productigvrate, productprice, `Plataforma Cognitiva Laraigo - ${genericfunctions.getMonth(billingmonth)} ${billingyear}`, productnetprice, productnetworth, paymentsubtotal, parameters.loginusername, request._requestid);
 
                         const chargedata = await genericfunctions.insertCharge(corpId, orgId, invoiceresponse.invoiceid, null, paymenttotal, true, paymentperioddata, paymentperioddata.id, "USD", "Laraigo Subscription", parameters.contactmail || "generic@mail.com", "INSERT", null, null, parameters.loginusername, "PAID", null, null, "REGISTEREDCARD", request._requestid);
 
@@ -730,7 +730,7 @@ exports.createSubscription = async (request, response) => {
 
                             var balanceresponse = await genericfunctions.createBalance(corpId, orgId, 0, `Onboarding (${billingyear}/${billingmonth})`, "ACTIVO", "GENERAL", null, null, paymentsubtotal, ((org?.balance || 0) + paymentsubtotal), `${parameters.contactdocumenttype}`, parameters.contactdocumentnumber, "PAID", new Date().toISOString().split("T")[0], parameters.loginusername, parameters.loginusername, request._requestid);
 
-                            let invoiceresponse = await genericfunctions.createInvoice(corpId, orgId, 0, `Onboarding (${billingyear}/${billingmonth})`, "ACTIVO", "INVOICE", null, null, null, null, null, null, null, null, null, null, `${parameters.contactdocumenttype}`, parameters.contactdocumentnumber, parameters.companyname || parameters.contactnameorcompany, parameters.contactaddress, parameters.contactcountry, parameters.contactmail, null, null, null, null, `Laraigo Subscription (${billingyear}/${billingmonth})`, datestring, null, paymentsubtotal, paymenttaxes, paymenttotal, "USD", lastExchangeData?.exchangerate || 1, "PENDING", null, null, null, null, null, null, "typecredit_alcontado", null, null, null, null, null, parameters.loginusername, null, paymentsubtotal, "PAID", false, billingyear, billingmonth, paymentchargetype || "", request._requestid);
+                            let invoiceresponse = await genericfunctions.createInvoice(corpId, orgId, 0, `Onboarding (${billingyear}/${billingmonth})`, "ACTIVO", "INVOICE", null, null, null, null, null, null, null, null, null, null, `${parameters.contactdocumenttype}`, parameters.contactdocumentnumber, parameters.companyname || parameters.contactnameorcompany, parameters.contactaddress, parameters.contactcountry, parameters.contactmail, null, null, null, null, `Plataforma Cognitiva Laraigo - ${genericfunctions.getMonth(billingmonth)} ${billingyear}`, datestring, null, paymentsubtotal, paymenttaxes, paymenttotal, "USD", lastExchangeData?.exchangerate || 1, "PENDING", null, null, null, null, null, null, "typecredit_alcontado", null, null, null, null, null, parameters.loginusername, null, paymentsubtotal, "PAID", false, billingyear, billingmonth, paymentchargetype || "", request._requestid);
 
                             if (invoiceresponse) {
                                 await genericfunctions.changeInvoiceBalance(corpId, orgId, balanceresponse.balanceid, invoiceresponse.invoiceid, parameters.loginusername, request._requestid);
@@ -861,6 +861,7 @@ exports.createSubscription = async (request, response) => {
                             alertBody = alertBody.split("{{lastname}}").join("");
                             alertBody = alertBody.split("{{paymentplan}}").join(parameters.paymentplan);
                             alertBody = alertBody.split("{{username}}").join(parameters.loginusername);
+                            alertBody = alertBody.split("{{organizationname}}").join(parameters.companyname);
 
                             alertBody = alertBody
                                 .split("{{link}}")
@@ -874,6 +875,7 @@ exports.createSubscription = async (request, response) => {
                             alertSubject = alertSubject.split("{{lastname}}").join("");
                             alertSubject = alertSubject.split("{{paymentplan}}").join(parameters.paymentplan);
                             alertSubject = alertSubject.split("{{username}}").join(parameters.loginusername);
+                            alertSubject = alertSubject.split("{{organizationname}}").join(parameters.companyname);
 
                             alertSubject = alertSubject
                                 .split("{{link}}")
@@ -1442,7 +1444,7 @@ const invoiceSubscription = async (corpid, orgid, appsetting, parameters, invoic
             MontoTotal: Math.round((producttotalamount + Number.EPSILON) * 100) / 100,
             TasaIgv: Math.round((productigvrate * 100) || 0),
             PrecioProducto: Math.round((productprice + Number.EPSILON) * 100) / 100,
-            DescripcionProducto: `Laraigo Subscription (${parameters.contactdocumentnumber})`,
+            DescripcionProducto: `Plataforma Cognitiva Laraigo - ${genericfunctions.getMonth(billingmonth)} ${billingyear}`,
             PrecioNetoProducto: Math.round((productnetprice + Number.EPSILON) * 100) / 100,
             ValorNetoProducto: Math.round((productnetworth + Number.EPSILON) * 100) / 100,
             AfectadoIgv: producthasigv,
@@ -1452,6 +1454,8 @@ const invoiceSubscription = async (corpid, orgid, appsetting, parameters, invoic
         invoicedata.ProductList.push(invoicedetaildata);
 
         if (appsetting.invoiceprovider === "MIFACT") {
+            invoicedata.FilenameOverride = `${documenttype === "03" ? "BV" : "FV"} - PLATAFORMA LARAIGO ${genericfunctions.getMonth(billingmonth)} ${billingyear}`;
+
             const requestSendToSunat = await axiosObservable({
                 data: invoicedata,
                 method: "post",
@@ -1477,6 +1481,8 @@ const invoiceSubscription = async (corpid, orgid, appsetting, parameters, invoic
             }
         }
         else if (appsetting.invoiceprovider === "SIIGO") {
+            invoicedata.FilenameOverride = `FV - PLATAFORMA LARAIGO ${genericfunctions.getMonth(billingmonth)} ${billingyear}`;
+
             const corp = await genericfunctions.getCorporation(corpid, requestId);
 
             invoicedata.TipoDocumentoSiigo = "FV";
@@ -1558,7 +1564,7 @@ const invoiceSubscription = async (corpid, orgid, appsetting, parameters, invoic
             mailBodyError = mailBodyError.split("{{clientphone}}").join(parameters.contactphone);
             mailBodyError = mailBodyError.split("{{companyname}}").join(parameters.companyname);
             mailBodyError = mailBodyError.split("{{laraigoplan}}").join(parameters.paymentplan);
-            mailBodyError = mailBodyError.split("{{month}}").join(billingmonth);
+            mailBodyError = mailBodyError.split("{{month}}").join(genericfunctions.getMonth(billingmonth));
             mailBodyError = mailBodyError.split("{{year}}").join(billingyear);
 
             mailSubject = mailSubject.split("{{clientaddress}}").join(parameters.contactaddress);
@@ -1569,7 +1575,7 @@ const invoiceSubscription = async (corpid, orgid, appsetting, parameters, invoic
             mailSubject = mailSubject.split("{{clientphone}}").join(parameters.contactphone);
             mailSubject = mailSubject.split("{{companyname}}").join(parameters.companyname);
             mailSubject = mailSubject.split("{{laraigoplan}}").join(parameters.paymentplan);
-            mailSubject = mailSubject.split("{{month}}").join(billingmonth);
+            mailSubject = mailSubject.split("{{month}}").join(genericfunctions.getMonth(billingmonth));
             mailSubject = mailSubject.split("{{year}}").join(billingyear);
 
             await axiosObservable({

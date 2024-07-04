@@ -80,7 +80,7 @@ module.exports = {
         protected: "SELECT"
     },
     QUERY_NEW_GETCHANNELS: {
-        query: "SELECT cc.communicationchannelid, cc.description FROM communicationchannel cc WHERE cc.corpid = $corpid AND cc.orgid = $orgid AND cc.type NOT IN ('FORM', 'VOXI', 'FBWA', 'INST') AND cc.status = 'INACTIVO'",
+        query: "SELECT cc.communicationchannelid, cc.description FROM communicationchannel cc WHERE cc.corpid = $corpid AND cc.orgid = $orgid AND cc.status = 'ACTIVO'",
         module: "/extras/users",
         protected: "SELECT"
     },
