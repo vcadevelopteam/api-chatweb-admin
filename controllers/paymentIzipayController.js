@@ -135,9 +135,11 @@ exports.processTransaction = async (request, response) => {
                                     personid: paymentorder[0].personid,
                                     variables: {
                                         card_mask: `${paymentdetails?.response?.card?.pan}`,
-                                        id_payment: `${paymentdetails.response.uniqueId || paymentdetails.response.order[0]?.uniqueId}`,
+                                        id_payment: `${paymentdetails?.response?.uniqueId || paymentdetails?.response?.order[0]?.uniqueId}`,
                                         last4numbers: `${paymentdetails?.response?.card?.pan}`.split('&x_quotas=')[0]?.slice(-4),
                                         syspaymentnotification: "1",
+                                        izi_tipo_tarjeta: `${paymentdetails?.response?.card?.brand}`,
+                                        izi_num_transf: `${paymentdetails?.response?.uniqueId || paymentdetails?.response?.order[0]?.uniqueId}`,
                                     }
                                 },
                                 method: 'post',
