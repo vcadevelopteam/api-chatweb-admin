@@ -4851,4 +4851,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UPDATE_PINNED_MESSAGE: {
+        query: "SELECT * FROM update_pinned_message($corpid, $orgid, $conversationid, $interactionid, $interactiontext, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
 }
