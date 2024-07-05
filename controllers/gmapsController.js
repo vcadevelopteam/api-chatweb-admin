@@ -578,7 +578,16 @@ function findSchedule(nombre) {
             friday: "12:00-22:30",
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
-        },       
+        }, 
+        "REPARTO FAUCETT OUTLET": {
+            monday: "12:00-21:30",
+            tuesday: "12:00-21:30",
+            wednesday: "12:00-21:30",
+            thursday: "12:00-21:30",
+            friday: "12:00-21:30",
+            saturday: "12:00-21:30",
+            sunday: "12:00-21:30"
+        },         
     };
 
     const lowerCaseName = removeAccents(nombre.toLowerCase());
@@ -645,6 +654,7 @@ function findStoreId(nombre) {
         "REPARTO VILLA MARIA": 126,
         "REPARTO VITARTE 2": 164,
         "REPARTO ZARATE": 169,  
+        "REPARTO FAUCETT OUTLET": 212,
     };
     
     const lowerCaseName = removeAccents(nombre.toLowerCase());
