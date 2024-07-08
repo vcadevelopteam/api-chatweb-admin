@@ -49,8 +49,10 @@ function formatCoordinate(coordinate) {
 function transformKMLtoJSON(kmlObject) {
     const newFeatures = [];
 
-    if (kmlObject.kml && kmlObject.kml.Document && kmlObject.kml.Document[0] && kmlObject.kml.Document[0].Folder) {
-        const folders = kmlObject.kml.Document[0].Folder;
+    if (kmlObject.kml && kmlObject.kml.Document && kmlObject.kml.Document[0]) {
+
+        const document = kmlObject.kml.Document[0];
+        const folders = document.Folder || [document];
 
         folders.forEach((folder, folderIndex) => {
             const folderName = folder.name && folder.name[0];
@@ -58,26 +60,26 @@ function transformKMLtoJSON(kmlObject) {
 
             if (folderName && placemarks) {
                 placemarks.forEach((placemark, index) => {
-                    const nombre = placemark.name && placemark.name[0];
-                    const coordinates = placemark.Polygon && placemark.Polygon[0].outerBoundaryIs[0].LinearRing[0].coordinates[0];
-
-                    console.log('Folder:', folderName);
-                    console.log('Nombre:', nombre);
-                    console.log('Coordinates:', coordinates);
+                    let nombre = placemark.name && placemark.name[0];
+                    const polygon = placemark.Polygon && placemark.Polygon[0];
+                    const coordinates = polygon && polygon.outerBoundaryIs[0].LinearRing[0].coordinates[0];
+                    
+                    if (nombre && nombre.toLowerCase() === 'poligono kokoriko') {
+                        nombre = 'Reparto Kokoriko San Diego';
+                    }
 
                     if (nombre == 'ZONA ROJA - Santa Anita 2') {
                         const x = 2
                     }
+
                     if (nombre && coordinates) {
-                        const storeid = findStoreId(nombre);  
-                        const coordenadas = coordinates.split(' ').map(formatCoordinate).filter(coord => coord !== null);
-
+                        const storeid = findStoreId(nombre);
+                        const coordenadas = coordinates.split(' ').map(formatCoordinate).filter(coord => coord !== null);                  
                         const horario = findSchedule(nombre);
-
                         const newJSON = {
                             id: 0,
                             name: nombre,
-                            storeid: storeid,  
+                            storeid: storeid,
                             schedule: horario,
                             polygons: coordenadas,
                             operation: 'INSERT'
@@ -88,6 +90,8 @@ function transformKMLtoJSON(kmlObject) {
                 });
             }
         });
+    } else {
+        console.log('KML structure does not match expected format');
     }
     console.log('Nuevo JSON:', newFeatures);
     return newFeatures;
