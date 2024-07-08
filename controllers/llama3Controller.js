@@ -11,7 +11,7 @@ exports.createCollection = async (req, res) => {
         "Content-Type": "application/json",
       },
       method: "post",
-      url: `${process.env.LLAMA}/create_collection`,
+      url: `${process.env.LLAMA3}/create_collection`,
       _requestid: req._requestid,
     });
 
@@ -43,7 +43,7 @@ exports.createCollectionDocument = async (req, res) => {
         "Content-Type": "application/json",
       },
       method: "post",
-      url: `${process.env.LLAMA}/create_collection_document`,
+      url: `${process.env.LLAMA3}/create_collection_document`,
       _requestid: req._requestid,
     });
 
@@ -64,7 +64,7 @@ exports.createCollectionDocument = async (req, res) => {
       );
   }
 };
-
+//falta
 exports.createCollectionDocuments = async (req, res) => {
   try {
     const { collection, urls } = req.body;
@@ -75,7 +75,7 @@ exports.createCollectionDocuments = async (req, res) => {
         "Content-Type": "application/json",
       },
       method: "post",
-      url: `${process.env.LLAMA}/create_collection_documents`,
+      url: `${process.env.LLAMA3}/create_collection_documents`,
       _requestid: req._requestid,
     });
 
@@ -107,7 +107,7 @@ exports.deleteCollection = async (req, res) => {
         "Content-Type": "application/json",
       },
       method: "post",
-      url: `${process.env.LLAMA}/delete_collection`,
+      url: `${process.env.LLAMA3}/delete_collection`,
       _requestid: req._requestid,
     });
 
@@ -142,7 +142,7 @@ exports.massiveDeleteCollection = async (req, res) => {
         "Content-Type": "application/json",
       },
       method: "post",
-      url: `${process.env.LLAMA}/massive_delete`,
+      url: `${process.env.LLAMA3}/massive_delete`,
       _requestid: req._requestid,
     });
 
@@ -177,7 +177,7 @@ exports.editCollection = async (req, res) => {
         "Content-Type": "application/json",
       },
       method: "post",
-      url: `${process.env.LLAMA}/edit_collection`,
+      url: `${process.env.LLAMA3}/edit_collection`,
       _requestid: req._requestid,
     });
 
@@ -212,7 +212,7 @@ exports.addFile = async (req, res) => {
         "Content-Type": "application/json",
       },
       method: "post",
-      url: `${process.env.LLAMA}/add_file`,
+      url: `${process.env.LLAMA3}/add_file`,
       _requestid: req._requestid,
     });
 
@@ -233,7 +233,7 @@ exports.addFile = async (req, res) => {
       );
   }
 };
-
+//falta
 exports.addFiles = async (req, res) => {
   try {
     const { urls, collection } = req.body;
@@ -244,7 +244,7 @@ exports.addFiles = async (req, res) => {
         "Content-Type": "application/json",
       },
       method: "post",
-      url: `${process.env.LLAMA}/add_files`,
+      url: `${process.env.LLAMA3}/add_files`,
       _requestid: req._requestid,
     });
 
@@ -276,7 +276,7 @@ exports.deleteFile = async (req, res) => {
         "Content-Type": "application/json",
       },
       method: "post",
-      url: `${process.env.LLAMA}/delete_file`,
+      url: `${process.env.LLAMA3}/delete_file`,
       _requestid: req._requestid,
     });
 
@@ -300,7 +300,7 @@ exports.deleteFile = async (req, res) => {
 
 exports.query = async (req, res) => {
   try {
-    const { assistant_name, query, system_prompt, model, thread_id, max_new_tokens, temperature, top_p, decoding_method } = req.body;
+    const { assistant_name, query, system_prompt, model, thread_id, max_new_tokens, temperature, top_p } = req.body;
     let responseQuery = await axiosObservable({
       data: {
         assistant_name: assistant_name,
@@ -310,15 +310,14 @@ exports.query = async (req, res) => {
         thread_id: thread_id,
         max_new_tokens: max_new_tokens,
         temperature: temperature,
-        top_p: top_p,
-        decoding_method: decoding_method
+        top_p: top_p
       },
       headers: {
         Authorization: req.headers.authorization,
         "Content-Type": "application/json",
       },
       method: "post",
-      url: `${process.env.LLAMA}/query`,
+      url: `${process.env.LLAMA3}/llama3/query`,
       _requestid: req._requestid,
     });
 
@@ -350,7 +349,7 @@ exports.deleteThread = async (req, res) => {
         "Content-Type": "application/json",
       },
       method: "post",
-      url: `${process.env.LLAMA}/delete_thread`,
+      url: `${process.env.LLAMA3}/delete_thread`,
       _requestid: req._requestid,
     });
 
