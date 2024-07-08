@@ -115,3 +115,6 @@ queries/
 googleauth.json
 
 config/certs
+
+config/certs/claro.pem
+config/certs/pvkey.pem

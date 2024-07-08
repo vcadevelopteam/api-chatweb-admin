@@ -4861,4 +4861,19 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_USER_MESSAGE_OUTBOUND: {
+        query: "SELECT * FROM ufn_user_message_outbound($corpid,$orgid,$startdate,$enddate,$offset,$communicationchannelid,$userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_REPORT_SENTMESSAGES_BY_TEMPLATE: {
+        query: "SELECT * FROM ufn_report_sentmessages_by_template($corpid,$orgid,$startdate,$enddate,$offset,$communicationchannelid, $userSid,$userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_DETAIL_SENTMESSAGES_BY_TEMPLATE: {
+        query: "SELECT * FROM ufn_detail_sentmessages_by_template($corpid,$orgid,$startdate,$enddate,$offset,$messagetemplateid,$communicationchannelid,$usersid,$userid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
