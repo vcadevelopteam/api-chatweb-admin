@@ -698,8 +698,18 @@ module.exports = {
         module: ["/extras/messagetemplate"],
         protected: "SELECT"
     },
+    UFN_MESSAGETEMPLATE_SEL_OLD: {
+        query: "SELECT * FROM ufn_messagetemplate_sel($corpid, $orgid, $take, $skip, $where, $order, $newversion, $communicationchannelid)",
+        module: ["/extras/messagetemplate"],
+        protected: "SELECT"
+    },
     UFN_MESSAGETEMPLATE_TOTALRECORDS: {
         query: "SELECT * FROM ufn_messagetemplate_totalrecords($corpid, $orgid, $where)",
+        module: ["/extras/messagetemplate"],
+        protected: "SELECT"
+    },
+    UFN_MESSAGETEMPLATE_TOTALRECORDS_OLD: {
+        query: "SELECT * FROM ufn_messagetemplate_totalrecords($corpid, $orgid, $where, $newversion)",
         module: ["/extras/messagetemplate"],
         protected: "SELECT"
     },
@@ -1041,7 +1051,12 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_MESSAGETEMPLATE_INS: {
-        query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $footerenabled, $footer, $buttonsenabled, $priority, $attachment, $communicationchannelid, $communicationchanneltype, $authenticationdata, $bodyvariables, $buttonsgeneric, $buttonsquickreply, $carouseldata, $headervariables, $provideraccountid, $providerexternalid, $providerid, $providermessagelimit, $providerpartnerid, $providerquality, $providerstatus, $username, $operation)",
+        query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $footerenabled, $footer, $buttonsenabled, $priority, $attachment, $communicationchannelid, $communicationchanneltype, $authenticationdata, $bodyvariables, $buttonsgeneric, $buttonsquickreply, $carouseldata, $headervariables, $provideraccountid, $providerexternalid, $providerid, $providermessagelimit, $providerpartnerid, $providerquality, $providerstatus, $username, $operation, false, $buttons, $bodyobject)",
+        module: ["/extras/messagetemplate"],
+        protected: "INSERT"
+    },
+    UFN_MESSAGETEMPLATE_INS_OLD: {
+        query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $footerenabled, $footer, $buttonsenabled, $priority, $attachment, $communicationchannelid, $communicationchanneltype, $authenticationdata, $bodyvariables, $buttonsgeneric, $buttonsquickreply, $carouseldata, $headervariables, $provideraccountid, $providerexternalid, $providerid, $providermessagelimit, $providerpartnerid, $providerquality, $providerstatus, $username, $operation, $newversion, $buttons, $bodyobject)",
         module: ["/extras/messagetemplate"],
         protected: "INSERT"
     },
@@ -1391,6 +1406,11 @@ module.exports = {
         module: ["/tickets", "/crm", "/extras/campaign"],
         protected: "SELECT"
     },
+    UFN_CAMPAIGN_LST_OLD: {
+        query: "SELECT * FROM ufn_campaign_lst($corpid, $orgid, $username, $startdate, $enddate, $offset, $newversion)",
+        module: ["/tickets", "/crm", "/extras/campaign"],
+        protected: "SELECT"
+    },
     UFN_CAMPAIGN_SEL: {
         query: "SELECT * FROM ufn_campaign_sel($corpid, $orgid, $id, $username)",
         module: ["/extras/campaign"],
@@ -1412,6 +1432,11 @@ module.exports = {
     },
     UFN_CAMPAIGN_INS: {
         query: "SELECT * FROM ufn_campaign_ins($corpid, $orgid, $id, $communicationchannelid, $usergroup, $type, $status, $title, $description, $subject, $message, $startdate, $enddate, $repeatable, $frecuency, $messagetemplateid, $messagetemplatename, $messagetemplatenamespace, $messagetemplateheader, $messagetemplatebuttons, $executiontype, $batchjson, $fields, $messagetemplatefooter, $messagetemplatetype, $messagetemplateattachment, $source, $messagetemplatelanguage, $messagetemplatepriority, $username, $operation, $carouseljson, $variableshidden, $membercount, $offset)",
+        module: ["/extras/campaign"],
+        protected: "INSERT"
+    },
+    UFN_CAMPAIGN_INS_OLD: {
+        query: "SELECT * FROM ufn_campaign_ins($corpid, $orgid, $id, $communicationchannelid, $usergroup, $type, $status, $title, $description, $subject, $message, $startdate, $enddate, $repeatable, $frecuency, $messagetemplateid, $messagetemplatename, $messagetemplatenamespace, $messagetemplateheader, $messagetemplatebuttons, $executiontype, $batchjson, $fields, $messagetemplatefooter, $messagetemplatetype, $messagetemplateattachment, $source, $messagetemplatelanguage, $messagetemplatepriority, $username, $operation, $carouseljson, $variableshidden, $membercount, $offset, $newversion)",
         module: ["/extras/campaign"],
         protected: "INSERT"
     },
@@ -2487,6 +2512,12 @@ module.exports = {
         module: ["/supervisor", "/message_inbox", "/calendar", "/extras/campaign", "/crm", "/servicedesk", "/automatizationrules", "/person", "/extras/botdesigner", "/extras/users",],
         protected: "INSERT"
     },
+
+    UFN_MESSAGETEMPLATE_LST_OLD: {
+        query: "SELECT * FROM ufn_messagetemplate_lst($corpid, $orgid, $type, $username, $newversion)",
+        module: ["/supervisor", "/message_inbox", "/calendar", "/extras/campaign", "/crm", "/servicedesk", "/automatizationrules", "/person", "/extras/botdesigner", "/extras/users",],
+        protected: "INSERT"
+    },
     QUERY_UPDATE_PERSON_BY_HSM: {
         query: "UPDATE person pe SET firstcontact = CASE WHEN pe.firstcontact IS NULL THEN NOW() else pe.firstcontact END, lastcontact = NOW() where pe.personid IN (:personids) and pe.corpid = :corpid and pe.orgid = :orgid;",
         module: "",
@@ -3058,7 +3089,7 @@ module.exports = {
         query: "SELECT * FROM ufn_calendarbooking_edit($corpid, $orgid, $calendarbookingid, $personmail, $personname, $notes, $comments)",
         module: "",
         protected: "SELECT"
-    },    
+    },
     UFN_PERSONS_BY_CATEGORY_SEL: {
         query: "SELECT * FROM ufn_persons_by_category_sel($corpid, $orgid)",
         module: "",
