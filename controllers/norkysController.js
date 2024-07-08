@@ -82,7 +82,7 @@ exports.RockysSendInfo = async (req, res) => {
         const { username, password, channel, store_id, account_id, total_paid, shopping_cart_products, payment_method, address_name, address_coord, customer_name, customer_phone, customer_lastname, customer_telephone, customer_document_type, customer_document_number, shipping_amount, shipping_method, last_four_digits, terms_conditions, customer_group_id, customer_is_guest, total_qty_ordered, external_code_store, external_order_code, card_mask, number_auth } = req.body;
         const shipping_method1 = shipping_method === "Recojo en tienda" ? "recojo_en_tienda" : "delivery";
         const newData = {
-            "origin": "",
+            "origin": "web",
             "status": "",
             "weight": 0,
             "channel": channel,//validar
