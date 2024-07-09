@@ -2570,11 +2570,11 @@ exports.insertChannel = async (request, response) => {
                         accessToken: service.accesstoken,
                         endpoint: metaEndpoint,
                         numberId: service.phone,
-                        siteId: `${requestCreateMeta.data.phoneNumber}`.replace(/[^0-9.]/g, ''),
+                        siteId: `${requestCreateMeta.data.phoneNumber}`.replace(/[^0-9.]/g, ""),
                     };
 
-                    parameters.communicationchannelsite = `${requestCreateMeta.data.phoneNumber}`.replace(/[^0-9.]/g, '');
-                    parameters.phone = `${requestCreateMeta.data.phoneNumber}`.replace(/[^0-9.]/g, '');
+                    parameters.communicationchannelsite = `${requestCreateMeta.data.phoneNumber}`.replace(/[^0-9.]/g, "");
+                    parameters.phone = `${requestCreateMeta.data.phoneNumber}`.replace(/[^0-9.]/g, "");
                     parameters.servicecredentials = JSON.stringify(serviceCredentials);
                     parameters.type = "WHAM";
 
@@ -3072,209 +3072,356 @@ exports.synchronizeTemplate = async (request, response) => {
         }
 
         if (request.body) {
-            let { messagetemplatelist, communicationchannel } = request.body;
+            let { corpid, orgid } = request.body;
 
-            if (messagetemplatelist[0]) {
-                messagetemplatelist = messagetemplatelist.sort((a, b) =>
-                    a.communicationchannelservicecredentials > b.communicationchannelservicecredentials ? 1 : -1
-                );
+            if (!corpid) {
+                corpid = request.user?.corpid;
+            }
 
-                let servicecredentials = null;
-                let templatelist = null;
+            if (!orgid) {
+                orgid = request.user?.orgid;
+            }
 
-                for (const messagetemplate of messagetemplatelist) {
-                    if (messagetemplate.communicationchannelservicecredentials && messagetemplate.fromprovider) {
-                        if (messagetemplate.communicationchannelservicecredentials != servicecredentials) {
-                            servicecredentials = messagetemplate.communicationchannelservicecredentials;
+            if (corpid && orgid) {
+                const channeldatadelete = await getChannelData(corpid, orgid, 0, "ELIMINADO", request._requestid);
 
-                            switch (messagetemplate.communicationchanneltype) {
+                if (channeldatadelete) {
+                    for (const communicationchanneldelete of channeldatadelete) {
+                        if (communicationchanneldelete.servicecredentials) {
+                            await channelfunctions.messageTemplateReset(
+                                corpid,
+                                orgid,
+                                communicationchanneldelete.communicationchannelid,
+                                null,
+                                request.user?.usr || "scheduler",
+                                request._requestid,
+                            );
+                        }
+                    }
+                }
+
+                const channeldata = await getChannelData(corpid, orgid, 0, "ACTIVO", request._requestid);
+
+                if (channeldata) {
+                    for (const communicationchannel of channeldata) {
+                        let templatelist = [];
+
+                        const servicecredentials = JSON.parse(communicationchannel.servicecredentials);
+
+                        if (communicationchannel.servicecredentials) {
+                            switch (communicationchannel.type) {
                                 case "WHAM":
-                                    if (servicecredentials) {
-                                        let serviceData = JSON.parse(servicecredentials);
+                                    const requestListMeta = await axiosObservable({
+                                        _requestid: request._requestid,
+                                        method: "post",
+                                        url: `${bridgeEndpoint}processlaraigo/meta/metamessagetemplate`,
+                                        data: {
+                                            AccessToken: servicecredentials.accessToken,
+                                            NumberId: servicecredentials.numberId,
+                                            Type: "LIST",
+                                        },
+                                    });
 
-                                        const requestListDialog = await axiosObservable({
-                                            _requestid: request._requestid,
-                                            method: "post",
-                                            url: `${bridgeEndpoint}processlaraigo/meta/metamessagetemplate`,
-                                            data: {
-                                                AccessToken: serviceData.accessToken,
-                                                NumberId: serviceData.numberId,
-                                                Type: "LIST",
-                                            },
-                                        });
-
-                                        if (requestListDialog.data.success) {
-                                            templatelist = requestListDialog.data.result;
-                                        } else {
-                                            requestCode = requestListDialog.data.operationMessage;
-                                            requestMessage = requestListDialog.data.operationMessage;
+                                    if (requestListMeta.data.success) {
+                                        if (requestListMeta.data.templateList) {
+                                            templatelist = [...templatelist, ...requestListMeta.data.templateList];
                                         }
+                                    } else {
+                                        requestCode = requestListMeta.data.operationMessage;
+                                        requestMessage = requestListMeta.data.operationMessage;
                                     }
                                     break;
 
                                 case "WHAD":
-                                    if (servicecredentials) {
-                                        let serviceData = JSON.parse(servicecredentials);
+                                    const requestListDialog = await axiosObservable({
+                                        _requestid: request._requestid,
+                                        method: "post",
+                                        url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
+                                        data: {
+                                            ApiKey: servicecredentials.apiKey,
+                                            IsCloud: !!servicecredentials.isCloud,
+                                            Type: "LIST",
+                                        },
+                                    });
 
-                                        const requestListDialog = await axiosObservable({
-                                            _requestid: request._requestid,
-                                            method: "post",
-                                            url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
-                                            data: {
-                                                ApiKey: serviceData.apiKey,
-                                                IsCloud: !!serviceData.isCloud,
-                                                Type: "LIST",
-                                            },
-                                        });
-
-                                        if (requestListDialog.data.success) {
-                                            templatelist = requestListDialog.data.result;
-                                        } else {
-                                            requestCode = requestListDialog.data.operationMessage;
-                                            requestMessage = requestListDialog.data.operationMessage;
+                                    if (requestListDialog.data.success) {
+                                        if (requestListDialog.data.templateList) {
+                                            templatelist = [...templatelist, ...requestListDialog.data.templateList];
                                         }
+                                    } else {
+                                        requestCode = requestListDialog.data.operationMessage;
+                                        requestMessage = requestListDialog.data.operationMessage;
                                     }
                                     break;
 
                                 case "WHAG":
-                                    if (servicecredentials) {
-                                        let serviceData = JSON.parse(servicecredentials);
+                                    const requestListGupshup = await axiosObservable({
+                                        _requestid: request._requestid,
+                                        method: "post",
+                                        url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
+                                        data: {
+                                            ApiKey: servicecredentials.apiKey,
+                                            AppName: servicecredentials.app,
+                                            Type: "LIST",
+                                        },
+                                    });
 
-                                        const requestListGupshup = await axiosObservable({
-                                            _requestid: request._requestid,
-                                            method: "post",
-                                            url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
-                                            data: {
-                                                ApiKey: serviceData.apiKey,
-                                                AppName: serviceData.app,
-                                                Type: "LIST",
-                                            },
-                                        });
-
-                                        if (requestListGupshup.data.success) {
-                                            templatelist = requestListGupshup.data.result;
-                                        } else {
-                                            requestCode = requestListGupshup.data.operationMessage;
-                                            requestMessage = requestListGupshup.data.operationMessage;
+                                    if (requestListGupshup.data.success) {
+                                        if (requestListGupshup.data.templateList) {
+                                            templatelist = [...templatelist, ...requestListGupshup.data.templateList];
                                         }
-                                    }
-                                    break;
-
-                                case "WHAT":
-                                    if (servicecredentials) {
-                                        let serviceData = JSON.parse(servicecredentials);
-
-                                        const requestListSmooch = await axiosObservable({
-                                            _requestid: request._requestid,
-                                            method: "post",
-                                            url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
-                                            data: {
-                                                AppId: serviceData.appId,
-                                                IntegrationId: messagetemplate.communicationchannelintegrationid,
-                                                KeyId: serviceData.apiKeyId,
-                                                KeySecret: serviceData.apiKeySecret,
-                                                Type: "LIST",
-                                            },
-                                        });
-
-                                        if (requestListSmooch.data.success) {
-                                            templatelist = requestListSmooch.data.result;
-                                        } else {
-                                            requestCode = requestListSmooch.data.operationMessage;
-                                            requestMessage = requestListSmooch.data.operationMessage;
-                                        }
+                                    } else {
+                                        requestCode = requestListGupshup.data.operationMessage;
+                                        requestMessage = requestListGupshup.data.operationMessage;
                                     }
                                     break;
                             }
                         }
 
                         if (templatelist) {
-                            const templatefound = templatelist.find((x) => x.name === messagetemplate.name);
+                            if (templatelist.length > 0) {
+                                await channelfunctions.messageTemplateReset(
+                                    corpid,
+                                    orgid,
+                                    communicationchannel.communicationchannelid,
+                                    templatelist[0].namespace || null,
+                                    request.user?.usr || "scheduler",
+                                    request._requestid,
+                                );
 
-                            if (templatefound) {
-                                let buttonObject = [];
+                                for (const templatedata of templatelist) {
+                                    let authenticationData = null;
+                                    let bodyData = null;
+                                    let buttonGenericData = null;
+                                    let buttonQuickReplyData = null;
+                                    let carouselData = null;
+                                    let footerData = null;
+                                    let headerData = null;
 
-                                if (templatefound.buttons) {
-                                    for (const buttonData of templatefound.buttons) {
-                                        let buttonInformation = {
-                                            payload: buttonData.data || buttonData.text || "",
-                                            title: buttonData.text || "",
-                                            type: (buttonData.type || "").toLowerCase(),
-                                        };
+                                    if (templatedata.category === "AUTHENTICATION") {
+                                        authenticationData = {
+                                            buttonautofilltext: null,
+                                            buttonotptype: null,
+                                            buttonpackagename: null,
+                                            buttonsignaturehash: null,
+                                            buttontext: null,
+                                            buttontype: null,
+                                            codeexpirationminutes: 0,
+                                            configurevalidityperiod: false,
+                                            safetyrecommendation: false,
+                                            showexpirationdate: false,
+                                            validityperiod: null,
+                                        }
 
-                                        buttonObject.push(buttonInformation);
+                                        if (templatedata.components) {
+                                            for (const templatecomponent of templatedata.components) {
+                                                if (templatedata.messageSendTtlSeconds) {
+                                                    authenticationData.configurevalidityperiod = true;
+                                                    authenticationData.validityperiod = templatedata.messageSendTtlSeconds;
+                                                }
+
+                                                if (templatecomponent.type === "BODY") {
+                                                    authenticationData.safetyrecommendation = templatecomponent.addSecurityRecommendation;
+                                                }
+
+                                                if (templatecomponent.type === "FOOTER") {
+                                                    authenticationData.codeexpirationminutes = templatecomponent.codeExpirationMinutes;
+
+                                                    if (authenticationData.codeexpirationminutes) {
+                                                        authenticationData.showexpirationdate = true;
+                                                    }
+                                                }
+
+                                                if (templatecomponent.type === "BUTTONS") {
+                                                    if (templatecomponent.buttons) {
+                                                        for (const templatebutton of templatecomponent.buttons) {
+                                                            authenticationData.buttonautofilltext = templatebutton.autofillText;
+                                                            authenticationData.buttonotptype = templatebutton.otpType;
+                                                            authenticationData.buttonpackagename = templatebutton.packageName;
+                                                            authenticationData.buttonsignaturehash = templatebutton.signatureHash;
+                                                            authenticationData.buttontext = templatebutton.text;
+                                                            authenticationData.buttontype = templatebutton.type;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        if (templatedata.components) {
+                                            for (const templatecomponent of templatedata.components) {
+                                                if (templatecomponent.type === "BODY") {
+                                                    bodyData = {
+                                                        text: templatecomponent.text,
+                                                    }
+
+                                                    if (templatecomponent.example) {
+                                                        if (templatecomponent.example.bodyText) {
+                                                            bodyData.example = templatecomponent.example.bodyText;
+                                                        }
+                                                    }
+                                                }
+
+                                                if (templatecomponent.type === "FOOTER") {
+                                                    footerData = {
+                                                        text: templatecomponent.text,
+                                                    }
+                                                }
+
+                                                if (templatecomponent.type === "HEADER") {
+                                                    headerData = {
+                                                        text: templatecomponent.text,
+                                                        type: templatecomponent.format,
+                                                    }
+
+                                                    if (templatecomponent.example) {
+                                                        if (templatecomponent.example.headerHandle) {
+                                                            headerData.example = templatecomponent.example.headerHandle;
+                                                            headerData.text = headerData.text || templatecomponent.example.headerHandle[0];
+                                                        }
+
+                                                        if (templatecomponent.example.headerText) {
+                                                            headerData.example = templatecomponent.example.headerText;
+                                                        }
+                                                    }
+                                                }
+
+                                                if (templatecomponent.type === "BUTTONS") {
+                                                    buttonGenericData = [];
+                                                    buttonQuickReplyData = [];
+
+                                                    if (templatecomponent.buttons) {
+                                                        for (const templatebutton of templatecomponent.buttons) {
+                                                            if (templatebutton.type === "QUICK_REPLY") {
+                                                                buttonQuickReplyData.push({
+                                                                    type: templatebutton.type,
+                                                                    btn: {
+                                                                        payload: templatebutton.text,
+                                                                        text: templatebutton.text,
+                                                                    }
+                                                                });
+                                                            }
+                                                            else {
+                                                                buttonGenericData.push({
+                                                                    type: templatebutton.type,
+                                                                    btn: {
+                                                                        code: templatebutton.countryCode,
+                                                                        phone_number: templatebutton.phoneNumber,
+                                                                        text: templatebutton.text,
+                                                                        type: templatebutton.example ? "dynamic" : "static",
+                                                                        url: templatebutton.url,
+                                                                        variables: templatebutton.example,
+                                                                    }
+                                                                });
+                                                            }
+                                                        }
+                                                    }
+                                                }
+
+                                                if (templatecomponent.type === "CAROUSEL") {
+                                                    if (templatecomponent.cards) {
+                                                        carouselData = [];
+
+                                                        for (const templatecarousel of templatecomponent.cards) {
+                                                            if (templatecarousel.components) {
+                                                                carouselComponent = {
+                                                                    body: null,
+                                                                    header: null,
+                                                                    headertype: null,
+                                                                    buttons: [],
+                                                                };
+
+                                                                for (const templatecarouselcomponent of templatecarousel.components) {
+                                                                    if (templatecarouselcomponent.type === "BODY") {
+                                                                        carouselComponent.body = templatecarouselcomponent.text;
+
+                                                                        if (templatecarouselcomponent.example) {
+                                                                            if (templatecarouselcomponent.example.bodyText) {
+                                                                                carouselComponent.bodyvariables = templatecarouselcomponent.example.bodyText;
+                                                                            }
+                                                                        }
+                                                                    }
+
+                                                                    if (templatecarouselcomponent.type === "HEADER") {
+                                                                        carouselComponent.header = templatecarouselcomponent.text;
+                                                                        carouselComponent.headertype = templatecarouselcomponent.format;
+
+                                                                        if (templatecarouselcomponent.example) {
+                                                                            if (templatecarouselcomponent.example.headerHandle) {
+                                                                                carouselComponent.header = carouselComponent.header || templatecarouselcomponent.example.headerHandle[0];
+                                                                            }
+                                                                        }
+                                                                    }
+
+                                                                    if (templatecarouselcomponent.type === "BUTTONS") {
+                                                                        if (templatecarouselcomponent.buttons) {
+                                                                            for (const templatecarouselcomponentbutton of templatecarouselcomponent.buttons) {
+                                                                                carouselComponent.buttons.push({
+                                                                                    type: templatecarouselcomponentbutton.type,
+                                                                                    btn: {
+                                                                                        payload: templatecarouselcomponentbutton.text,
+                                                                                        code: templatecarouselcomponentbutton.countryCode,
+                                                                                        phone_number: templatecarouselcomponentbutton.phoneNumber,
+                                                                                        text: templatecarouselcomponentbutton.text,
+                                                                                        type: templatecarouselcomponentbutton.example ? "dynamic" : "static",
+                                                                                        url: templatecarouselcomponentbutton.url,
+                                                                                        variables: templatecarouselcomponentbutton.example,
+                                                                                    }
+                                                                                });
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+
+                                                                carouselData.push(carouselComponent);
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
+
+                                    const templateType = carouselData ? "CAROUSEL" : ((authenticationData || buttonGenericData || buttonQuickReplyData || footerData || headerData) ? "MULTIMEDIA" : "STANDARD");
+
+                                    await channelfunctions.messageTemplateUpd(
+                                        corpid,
+                                        orgid,
+                                        '',
+                                        "HSM",
+                                        "ACTIVO",
+                                        templatedata.name || null,
+                                        templatedata.namespace || null,
+                                        templatedata.category || null,
+                                        templatedata.language || null,
+                                        templateType || null,
+                                        headerData ? true : false,
+                                        headerData ? headerData.type : null,
+                                        headerData ? headerData.text : null,
+                                        bodyData ? bodyData.text : null,
+                                        footerData ? true : false,
+                                        footerData ? footerData.text : null,
+                                        (buttonGenericData || buttonQuickReplyData) ? true : false,
+                                        2,
+                                        null,
+                                        communicationchannel.communicationchannelid,
+                                        communicationchannel.type,
+                                        authenticationData ? JSON.stringify(authenticationData) || null : null,
+                                        bodyData ? (bodyData.example ? JSON.stringify(bodyData.example) || null : null) : null,
+                                        buttonGenericData ? JSON.stringify(buttonGenericData) || null : null,
+                                        buttonQuickReplyData ? JSON.stringify(buttonQuickReplyData) || null : null,
+                                        carouselData ? JSON.stringify(carouselData) || null : null,
+                                        headerData ? JSON.stringify(headerData.example) || null : null,
+                                        templatedata.wabaAccountId || null,
+                                        templatedata.externalId || null,
+                                        templatedata.id || null,
+                                        templatedata.messageLimit || null,
+                                        templatedata.partnerId || null,
+                                        templatedata.qualityRating || null,
+                                        templatedata.status || null,
+                                        request.user?.usr || "scheduler",
+                                        request._requestid,
+                                    );
                                 }
-
-                                await channelfunctions.messageTemplateUpd(
-                                    messagetemplate.corpid,
-                                    messagetemplate.orgid,
-                                    messagetemplate.description,
-                                    "HSM",
-                                    "ACTIVO",
-                                    templatefound.name,
-                                    messagetemplate.communicationchanneltype === "WHAD" ||
-                                        messagetemplate.communicationchanneltype === "WHAG"
-                                        ? templatefound.id
-                                        : messagetemplate.namespace,
-                                    templatefound.category,
-                                    templatefound.language,
-                                    templatefound.header || templatefound.footer || templatefound.buttons
-                                        ? "MULTIMEDIA"
-                                        : "STANDARD",
-                                    !!templatefound.header,
-                                    templatefound.header?.type ? templatefound.header?.type.toLowerCase() : null,
-                                    templatefound.header?.text || null,
-                                    templatefound.body?.text || null,
-                                    null,
-                                    !!templatefound.footer,
-                                    templatefound.footer?.text || null,
-                                    !!templatefound.buttons,
-                                    templatefound.buttons ? JSON.stringify(buttonObject) : null,
-                                    true,
-                                    templatefound.id,
-                                    templatefound.status,
-                                    messagetemplate.communicationchannelid,
-                                    messagetemplate.communicationchanneltype,
-                                    null,
-                                    request.user.usr,
-                                    request._requestid
-                                );
-
-                                requestCode = "";
-                                requestMessage = "";
-                                requestStatus = 200;
-                                requestSuccess = true;
-                            } else {
-                                await channelfunctions.messageTemplateUpd(
-                                    messagetemplate.corpid,
-                                    messagetemplate.orgid,
-                                    messagetemplate.description,
-                                    messagetemplate.type,
-                                    messagetemplate.status,
-                                    messagetemplate.name,
-                                    messagetemplate.namespace,
-                                    messagetemplate.category,
-                                    messagetemplate.language,
-                                    messagetemplate.templatetype,
-                                    messagetemplate.headerenabled,
-                                    messagetemplate.headertype,
-                                    messagetemplate.header,
-                                    messagetemplate.body,
-                                    messagetemplate.bodyobject,
-                                    messagetemplate.footerenabled,
-                                    messagetemplate.footer,
-                                    messagetemplate.buttonsenabled,
-                                    messagetemplate.buttons,
-                                    messagetemplate.fromprovider,
-                                    messagetemplate.externalid,
-                                    "DELETED",
-                                    messagetemplate.communicationchannelid,
-                                    messagetemplate.communicationchanneltype,
-                                    messagetemplate.exampleparameters,
-                                    request.user.usr,
-                                    request._requestid
-                                );
 
                                 requestCode = "";
                                 requestMessage = "";
@@ -3282,178 +3429,6 @@ exports.synchronizeTemplate = async (request, response) => {
                                 requestSuccess = true;
                             }
                         }
-                    }
-                }
-            } else if (communicationchannel) {
-                if (communicationchannel.type) {
-                    let templateList = null;
-
-                    switch (communicationchannel.type) {
-                        case "WHAM":
-                            if (communicationchannel.servicecredentials) {
-                                let serviceData = JSON.parse(communicationchannel.servicecredentials);
-
-                                const requestListDialog = await axiosObservable({
-                                    _requestid: request._requestid,
-                                    method: "post",
-                                    url: `${bridgeEndpoint}processlaraigo/meta/metamessagetemplate`,
-                                    data: {
-                                        AccessToken: serviceData.accessToken,
-                                        NumberId: serviceData.numberId,
-                                        Type: "LIST",
-                                    },
-                                });
-
-                                if (requestListDialog.data.success) {
-                                    templateList = requestListDialog.data.result;
-                                } else {
-                                    requestCode = requestListDialog.data.operationMessage;
-                                    requestMessage = requestListDialog.data.operationMessage;
-                                }
-                            }
-                            break;
-
-                        case "WHAD":
-                            if (communicationchannel.servicecredentials) {
-                                let serviceData = JSON.parse(communicationchannel.servicecredentials);
-
-                                const requestListDialog = await axiosObservable({
-                                    _requestid: request._requestid,
-                                    method: "post",
-                                    url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
-                                    data: {
-                                        ApiKey: serviceData.apiKey,
-                                        IsCloud: !!serviceData.isCloud,
-                                        Type: "LIST",
-                                    },
-                                });
-
-                                if (requestListDialog.data.success) {
-                                    templateList = requestListDialog.data.result;
-                                } else {
-                                    requestCode = requestListDialog.data.operationMessage;
-                                    requestMessage = requestListDialog.data.operationMessage;
-                                }
-                            }
-                            break;
-
-                        case "WHAG":
-                            if (communicationchannel.servicecredentials) {
-                                let serviceData = JSON.parse(communicationchannel.servicecredentials);
-
-                                const requestListGupshup = await axiosObservable({
-                                    _requestid: request._requestid,
-                                    method: "post",
-                                    url: `${bridgeEndpoint}processlaraigo/gupshup/gupshupmessagetemplate`,
-                                    data: {
-                                        ApiKey: serviceData.apiKey,
-                                        AppName: serviceData.app,
-                                        Type: "LIST",
-                                    },
-                                });
-
-                                if (requestListGupshup.data.success) {
-                                    templateList = requestListGupshup.data.result;
-                                } else {
-                                    requestCode = requestListGupshup.data.operationMessage;
-                                    requestMessage = requestListGupshup.data.operationMessage;
-                                }
-                            }
-                            break;
-
-                        case "WHAT":
-                            if (communicationchannel.servicecredentials) {
-                                let serviceData = JSON.parse(communicationchannel.servicecredentials);
-
-                                const requestListSmooch = await axiosObservable({
-                                    _requestid: request._requestid,
-                                    method: "post",
-                                    url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
-                                    data: {
-                                        AppId: serviceData.appId,
-                                        IntegrationId: communicationchannel.integrationid,
-                                        KeyId: serviceData.apiKeyId,
-                                        KeySecret: serviceData.apiKeySecret,
-                                        Type: "LIST",
-                                    },
-                                });
-
-                                if (requestListSmooch.data.success) {
-                                    templateList = requestListSmooch.data.result;
-                                } else {
-                                    requestCode = requestListSmooch.data.operationMessage;
-                                    requestMessage = requestListSmooch.data.operationMessage;
-                                }
-                            }
-                            break;
-                    }
-
-                    if (templateList) {
-                        await channelfunctions.messageTemplateReset(
-                            communicationchannel.corpid,
-                            communicationchannel.orgid,
-                            communicationchannel.communicationchannelid,
-                            communicationchannel.type === "WHAD" || communicationchannel.type === "WHAG"
-                                ? templateList[0]?.id || null
-                                : null,
-                            request.user.usr,
-                            request._requestid
-                        );
-
-                        for (const templateData of templateList) {
-                            let buttonObject = [];
-
-                            if (templateData.buttons) {
-                                for (const buttonData of templateData.buttons) {
-                                    let buttonInformation = {
-                                        payload: buttonData.data || buttonData.text || "",
-                                        title: buttonData.text || "",
-                                        type: (buttonData.type || "").toLowerCase(),
-                                    };
-
-                                    buttonObject.push(buttonInformation);
-                                }
-                            }
-
-                            await channelfunctions.messageTemplateUpd(
-                                communicationchannel.corpid,
-                                communicationchannel.orgid,
-                                communicationchannel.communicationchanneldesc,
-                                "HSM",
-                                "ACTIVO",
-                                templateData.name,
-                                communicationchannel.type === "WHAD" || communicationchannel.type === "WHAG"
-                                    ? templateData.id
-                                    : null,
-                                templateData.category,
-                                templateData.language,
-                                templateData.header || templateData.footer || templateData.buttons
-                                    ? "MULTIMEDIA"
-                                    : "STANDARD",
-                                !!templateData.header,
-                                templateData.header?.type ? templateData.header?.type.toLowerCase() : null,
-                                templateData.header?.text || null,
-                                templateData.body?.text || null,
-                                null,
-                                !!templateData.footer,
-                                templateData.footer?.text || null,
-                                !!templateData.buttons,
-                                templateData.buttons ? JSON.stringify(buttonObject) : null,
-                                true,
-                                templateData.id,
-                                templateData.status,
-                                communicationchannel.communicationchannelid,
-                                communicationchannel.type,
-                                null,
-                                request.user.usr,
-                                request._requestid
-                            );
-                        }
-
-                        requestCode = "";
-                        requestMessage = "";
-                        requestStatus = 200;
-                        requestSuccess = true;
                     }
                 }
             }
@@ -3492,169 +3467,216 @@ exports.addTemplate = async (request, response) => {
         }
 
         if (request.body) {
-            if (request.body.communicationchanneltype) {
-                let addSuccess = false;
+            const { communicationchannelid } = request.body;
 
-                switch (request.body.communicationchanneltype) {
-                    case "WHAD":
-                        if (request.body.servicecredentials) {
-                            let serviceData = JSON.parse(request.body.servicecredentials);
+            if (communicationchannelid) {
+                let createsuccess = false;
 
-                            let createBody = {
-                                ApiKey: serviceData.apiKey,
-                                Body: { Text: request.body.body },
-                                Category: request.body.category,
-                                Footer: request.body.footerenabled ? { Text: request.body.footer } : null,
-                                IsCloud: !!serviceData.isCloud,
-                                Name: request.body.name,
-                                Type: "CREATE",
-                                Header: request.body.headerenabled
-                                    ? {
-                                        Type: request.body.headertype,
-                                        Text: request.body.headertype === "text" ? request.body.header : null,
-                                    }
-                                    : null,
-                                Language:
-                                    (request.body.language || "").split("_").length > 1
-                                        ? `${(request.body.language || "").split("_")[0].toLowerCase()}_${(request.body.language || "").split("_")[1]
-                                        }`
-                                        : (request.body.language || "").split("_")[0].toLowerCase(),
-                            };
+                const channellist = await getChannelData(request.user.corpid, request.user.orgid, communicationchannelid, "ACTIVO", request._requestid);
 
-                            if (request.body.buttons && request.body.buttons.length > 0) {
-                                createBody.Buttons = [];
+                if (channellist) {
+                    if (channellist[0]) {
+                        const channeldata = channellist[0];
 
-                                request.body.buttons.forEach((element) => {
-                                    createBody.Buttons.push({
-                                        Text: element.title,
-                                        Type: element.type,
-                                        Data:
-                                            element.type === "phone_number"
-                                                ? `phoneNumber: ${element.payload}`
-                                                : element.type === "url"
-                                                    ? `url: ${element.payload}`
-                                                    : null,
+                        if (request.body.oldversion) {
+                            if (channeldata.servicecredentials) {
+                                const servicecredentials = JSON.parse(channeldata.servicecredentials);
+
+                                let createbody = {
+                                    ApiKey: servicecredentials.apiKey,
+                                    Body: { Text: request.body.body },
+                                    Category: request.body.category,
+                                    Footer: request.body.footerenabled ? { Text: request.body.footer } : null,
+                                    IsCloud: !!servicecredentials.isCloud,
+                                    Name: request.body.name,
+                                    Type: "CREATE",
+                                    Header: request.body.headerenabled
+                                        ? {
+                                            Type: request.body.headertype,
+                                            Text: request.body.headertype === "text" ? request.body.header : null,
+                                        }
+                                        : null,
+                                    Language:
+                                        (request.body.language || "").split("_").length > 1
+                                            ? `${(request.body.language || "").split("_")[0].toLowerCase()}_${(request.body.language || "").split("_")[1]
+                                            }`
+                                            : (request.body.language || "").split("_")[0].toLowerCase(),
+                                };
+
+                                if (request.body.buttons && request.body.buttons.length > 0) {
+                                    createbody.Buttons = [];
+
+                                    request.body.buttons.forEach((element) => {
+                                        createbody.Buttons.push({
+                                            Text: element.title,
+                                            Type: element.type,
+                                            Data:
+                                                element.type === "phone_number"
+                                                    ? `phoneNumber: ${element.payload}`
+                                                    : element.type === "url"
+                                                        ? `url: ${element.payload}`
+                                                        : null,
+                                        });
                                     });
-                                });
-                            }
-
-                            const requestCreateDialog = await axiosObservable({
-                                _requestid: request._requestid,
-                                data: createBody,
-                                method: "post",
-                                url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
-                            });
-
-                            if (requestCreateDialog.data.success) {
-                                let parameters = request.body;
-
-                                parameters.bodyobject = JSON.stringify(request.body.bodyobject);
-                                parameters.buttons = JSON.stringify(request.body.buttons);
-                                parameters.corpid = request.user.corpid;
-                                parameters.externalid = requestCreateDialog.data.result[0].id || "";
-                                parameters.namespace = requestCreateDialog.data.result[0].id || "";
-                                parameters.orgid = request.user.orgid;
-                                parameters.username = request.user.usr;
-
-                                const queryTemplateAdd = await triggerfunctions.executesimpletransaction(
-                                    "UFN_MESSAGETEMPLATE_INS",
-                                    parameters
-                                );
-
-                                if (queryTemplateAdd instanceof Array) {
-                                    addSuccess = true;
-                                } else {
-                                    requestCode = queryTemplateAdd.code;
-                                    requestMessage = queryTemplateAdd.code;
                                 }
-                            } else {
-                                requestCode = requestCreateDialog.data.operationMessage;
-                                requestMessage = requestCreateDialog.data.operationMessage;
+
+                                if (channeldata.type === "WHAD") {
+                                    const requestCreateDialog = await axiosObservable({
+                                        _requestid: request._requestid,
+                                        data: createbody,
+                                        method: "post",
+                                        url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplateoriginal`,
+                                    });
+
+                                    if (requestCreateDialog.data.success) {
+                                        let parameters = request.body;
+
+                                        parameters.corpid = request.user.corpid;
+                                        parameters.orgid = request.user.orgid;
+                                        parameters.username = request.user.usr;
+                                        parameters.namespace = requestCreateDialog.data.result[0].id || null;
+                                        parameters.authenticationdata = null;
+                                        parameters.bodyvariables = null;
+                                        parameters.buttonsgeneric = null;
+                                        parameters.buttonsquickreply = null;
+                                        parameters.carouseldata = null;
+                                        parameters.headervariables = null;
+                                        parameters.newversion = false;
+                                        parameters.buttons = JSON.stringify(request.body.buttons) || null;
+                                        parameters.bodyobject = null;
+
+                                        const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
+                                            "UFN_MESSAGETEMPLATE_INS_OLD",
+                                            parameters,
+                                        );
+
+                                        if (queryMessageTemplateCreate instanceof Array) {
+                                            createsuccess = true;
+                                        } else {
+                                            requestCode = queryMessageTemplateCreate.code;
+                                            requestMessage = queryMessageTemplateCreate.code;
+                                        }
+                                    } else {
+                                        requestCode = requestCreateDialog.data.operationMessage;
+                                        requestMessage = requestCreateDialog.data.operationMessage;
+                                    }
+                                }
                             }
                         }
-                        break;
+                        else {
+                            if (channeldata.servicecredentials) {
+                                const servicecredentials = JSON.parse(channeldata.servicecredentials);
 
-                    case "WHAT":
-                        if (request.body.servicecredentials) {
-                            let serviceData = JSON.parse(request.body.servicecredentials);
+                                let templatebody = request.body;
 
-                            let createBody = {
-                                AppId: serviceData.appId,
-                                Body: { Text: request.body.body },
-                                Category: request.body.category,
-                                Footer: request.body.footerenabled ? { Text: request.body.footer } : null,
-                                IntegrationId: request.body.integrationid,
-                                KeyId: serviceData.apiKeyId,
-                                KeySecret: serviceData.apiKeySecret,
-                                Name: request.body.name,
-                                Type: "CREATE",
-                                Header: request.body.headerenabled
-                                    ? {
-                                        Type: request.body.headertype,
-                                        Text: request.body.headertype === "text" ? request.body.header : null,
-                                    }
-                                    : null,
-                                Language:
-                                    (request.body.language || "").split("_").length > 1
-                                        ? `${(request.body.language || "").split("_")[0].toLowerCase()}_${(request.body.language || "").split("_")[1]
-                                        }`
-                                        : (request.body.language || "").split("_")[0].toLowerCase(),
-                            };
+                                templatebody.authenticationdata = templatebody.authenticationdata ? JSON.parse(templatebody.authenticationdata) : null;
+                                templatebody.bodyvariables = templatebody.bodyvariables ? JSON.parse(templatebody.bodyvariables) : null;
+                                templatebody.buttonsgeneric = templatebody.buttonsgeneric ? JSON.parse(templatebody.buttonsgeneric) : null;
+                                templatebody.buttonsquickreply = templatebody.buttonsquickreply ? JSON.parse(templatebody.buttonsquickreply) : null;
+                                templatebody.carouseldata = templatebody.carouseldata ? JSON.parse(templatebody.carouseldata) : null;
+                                templatebody.headervariables = templatebody.headervariables ? JSON.parse(templatebody.headervariables) : null;
 
-                            if (request.body.buttons && request.body.buttons.length > 0) {
-                                createBody.Buttons = [];
+                                switch (channeldata.type) {
+                                    case "WHAD":
+                                        const requestCreateDialog = await axiosObservable({
+                                            _requestid: request._requestid,
+                                            method: "post",
+                                            url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
+                                            data: {
+                                                ApiKey: servicecredentials.apiKey,
+                                                IsCloud: !!servicecredentials.isCloud,
+                                                TemplateData: templatebody,
+                                                Type: "CREATE",
+                                            },
+                                        });
 
-                                request.body.buttons.forEach((element) => {
-                                    createBody.Buttons.push({
-                                        Text: element.title,
-                                        Type: element.type,
-                                        Data:
-                                            element.type === "phone_number"
-                                                ? `phoneNumber: ${element.payload}`
-                                                : element.type === "url"
-                                                    ? `url: ${element.payload}`
-                                                    : null,
-                                    });
-                                });
-                            }
+                                        if (requestCreateDialog.data.success) {
+                                            let parameters = request.body;
 
-                            const requestCreateSmooch = await axiosObservable({
-                                _requestid: request._requestid,
-                                data: createBody,
-                                method: "post",
-                                url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
-                            });
+                                            parameters.corpid = request.user.corpid;
+                                            parameters.orgid = request.user.orgid;
+                                            parameters.username = request.user.usr;
+                                            parameters.namespace = requestCreateDialog.data.namespace || null;
+                                            parameters.status = requestCreateDialog.data.status || null;
+                                            parameters.authenticationdata = parameters.authenticationdata ? JSON.stringify(parameters.authenticationdata) : null;
+                                            parameters.bodyvariables = parameters.bodyvariables ? JSON.stringify(parameters.bodyvariables) : null;
+                                            parameters.buttonsgeneric = parameters.buttonsgeneric ? JSON.stringify(parameters.buttonsgeneric) : null;
+                                            parameters.buttonsquickreply = parameters.buttonsquickreply ? JSON.stringify(parameters.buttonsquickreply) : null;
+                                            parameters.carouseldata = parameters.carouseldata ? JSON.stringify(parameters.carouseldata) : null;
+                                            parameters.headervariables = parameters.headervariables ? JSON.stringify(parameters.headervariables) : null;
+                                            parameters.buttons = null;
+                                            parameters.bodyobject = null;
 
-                            if (requestCreateSmooch.data.success) {
-                                let parameters = request.body;
+                                            const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
+                                                "UFN_MESSAGETEMPLATE_INS",
+                                                parameters,
+                                            );
 
-                                parameters.bodyobject = JSON.stringify(request.body.bodyobject);
-                                parameters.buttons = JSON.stringify(request.body.buttons);
-                                parameters.corpid = request.user.corpid;
-                                parameters.externalid = requestCreateSmooch.data.result[0].id || "";
-                                parameters.orgid = request.user.orgid;
-                                parameters.username = request.user.usr;
+                                            if (queryMessageTemplateCreate instanceof Array) {
+                                                createsuccess = true;
+                                            } else {
+                                                requestCode = queryMessageTemplateCreate.code;
+                                                requestMessage = queryMessageTemplateCreate.code;
+                                            }
+                                        } else {
+                                            requestCode = requestCreateDialog.data.operationMessage;
+                                            requestMessage = requestCreateDialog.data.operationMessage;
+                                        }
+                                        break;
 
-                                const queryTemplateAdd = await triggerfunctions.executesimpletransaction(
-                                    "UFN_MESSAGETEMPLATE_INS",
-                                    parameters
-                                );
+                                    case "WHAM":
+                                        const requestCreateMeta = await axiosObservable({
+                                            _requestid: request._requestid,
+                                            method: "post",
+                                            url: `${bridgeEndpoint}processlaraigo/meta/metamessagetemplate`,
+                                            data: {
+                                                AccessToken: servicecredentials.accessToken,
+                                                NumberId: servicecredentials.numberId,
+                                                TemplateData: templatebody,
+                                                Type: "CREATE",
+                                            },
+                                        });
 
-                                if (queryTemplateAdd instanceof Array) {
-                                    addSuccess = true;
-                                } else {
-                                    requestCode = queryTemplateAdd.code;
-                                    requestMessage = queryTemplateAdd.code;
+                                        if (requestCreateMeta.data.success) {
+                                            let parameters = request.body;
+
+                                            parameters.corpid = request.user.corpid;
+                                            parameters.orgid = request.user.orgid;
+                                            parameters.username = request.user.usr;
+                                            parameters.namespace = requestCreateMeta.data.namespace || null;
+                                            parameters.status = requestCreateMeta.data.status || null;
+                                            parameters.authenticationdata = parameters.authenticationdata ? JSON.stringify(parameters.authenticationdata) : null;
+                                            parameters.bodyvariables = parameters.bodyvariables ? JSON.stringify(parameters.bodyvariables) : null;
+                                            parameters.buttonsgeneric = parameters.buttonsgeneric ? JSON.stringify(parameters.buttonsgeneric) : null;
+                                            parameters.buttonsquickreply = parameters.buttonsquickreply ? JSON.stringify(parameters.buttonsquickreply) : null;
+                                            parameters.carouseldata = parameters.carouseldata ? JSON.stringify(parameters.carouseldata) : null;
+                                            parameters.headervariables = parameters.headervariables ? JSON.stringify(parameters.headervariables) : null;
+                                            parameters.buttons = null;
+                                            parameters.bodyobject = null;
+
+                                            const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
+                                                "UFN_MESSAGETEMPLATE_INS",
+                                                parameters,
+                                            );
+
+                                            if (queryMessageTemplateCreate instanceof Array) {
+                                                createsuccess = true;
+                                            } else {
+                                                requestCode = queryMessageTemplateCreate.code;
+                                                requestMessage = queryMessageTemplateCreate.code;
+                                            }
+                                        } else {
+                                            requestCode = requestCreateMeta.data.operationMessage;
+                                            requestMessage = requestCreateMeta.data.operationMessage;
+                                        }
+                                        break;
                                 }
-                            } else {
-                                requestCode = requestCreateSmooch.data.operationMessage;
-                                requestMessage = requestCreateSmooch.data.operationMessage;
                             }
                         }
-                        break;
+                    }
                 }
 
-                if (addSuccess) {
+                if (createsuccess) {
                     requestCode = "";
                     requestMessage = "";
                     requestStatus = 200;
@@ -3696,103 +3718,106 @@ exports.deleteTemplate = async (request, response) => {
         }
 
         if (request.body) {
-            let { messagetemplatelist } = request.body;
+            const { messagetemplatelist } = request.body;
 
-            if (messagetemplatelist[0]) {
+            if (messagetemplatelist) {
                 for (const messagetemplate of messagetemplatelist) {
-                    let deleteSuccess = false;
+                    let deletesuccess = true;
 
-                    if (messagetemplate.deleteprovider) {
-                        switch (messagetemplate.communicationchanneltype) {
-                            case "WHAD":
-                                if (messagetemplate.communicationchannelservicecredentials) {
-                                    let serviceData = JSON.parse(
-                                        messagetemplate.communicationchannelservicecredentials
-                                    );
+                    if (messagetemplate.communicationchannelid) {
+                        const channellist = await getChannelData(request.user.corpid, request.user.orgid, parseInt(`${messagetemplate.communicationchannelid}`.split(",")[0]), "ACTIVO", request._requestid);
 
-                                    const requestDeleteDialog = await axiosObservable({
-                                        _requestid: request._requestid,
-                                        method: "post",
-                                        url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
-                                        data: {
-                                            ApiKey: serviceData.apiKey,
-                                            DeleteName: messagetemplate.name,
-                                            IsCloud: !!serviceData.isCloud,
-                                            Type: "DELETE",
-                                        },
-                                    });
+                        if (channellist) {
+                            if (channellist[0]) {
+                                const channeldata = channellist[0];
 
-                                    if (requestDeleteDialog.data.success) {
-                                        deleteSuccess = true;
-                                    } else {
-                                        requestCode = requestDeleteDialog.data.operationMessage;
-                                        requestMessage = requestDeleteDialog.data.operationMessage;
+                                if (channeldata.servicecredentials) {
+                                    deletesuccess = false;
+
+                                    const servicecredentials = JSON.parse(channeldata.servicecredentials);
+
+                                    switch (messagetemplate.communicationchanneltype) {
+                                        case "WHAD":
+                                            const requestDeleteDialog = await axiosObservable({
+                                                _requestid: request._requestid,
+                                                method: "post",
+                                                url: `${bridgeEndpoint}processlaraigo/dialog360/dialog360messagetemplate`,
+                                                data: {
+                                                    ApiKey: servicecredentials.apiKey,
+                                                    IsCloud: !!servicecredentials.isCloud,
+                                                    TemplateName: messagetemplate.name,
+                                                    Type: "DELETE",
+                                                },
+                                            });
+
+                                            if (requestDeleteDialog.data.success) {
+                                                deletesuccess = true;
+                                            } else {
+                                                requestCode = requestDeleteDialog.data.operationMessage;
+                                                requestMessage = requestDeleteDialog.data.operationMessage;
+                                            }
+                                            break;
+
+                                        case "WHAM":
+                                            const requestDeleteMeta = await axiosObservable({
+                                                _requestid: request._requestid,
+                                                method: "post",
+                                                url: `${bridgeEndpoint}processlaraigo/meta/metamessagetemplate`,
+                                                data: {
+                                                    AccessToken: servicecredentials.accessToken,
+                                                    NumberId: servicecredentials.numberId,
+                                                    TemplateName: messagetemplate.name,
+                                                    Type: "DELETE",
+                                                },
+                                            });
+
+                                            if (requestDeleteMeta.data.success) {
+                                                deletesuccess = true;
+                                            } else {
+                                                requestCode = requestDeleteMeta.data.operationMessage;
+                                                requestMessage = requestDeleteMeta.data.operationMessage;
+                                            }
+                                            break;
+
+                                        default:
+                                            deletesuccess = true;
+                                            break;
                                     }
                                 }
-                                break;
-
-                            case "WHAT":
-                                if (messagetemplate.communicationchannelservicecredentials) {
-                                    let serviceData = JSON.parse(
-                                        messagetemplate.communicationchannelservicecredentials
-                                    );
-
-                                    const requestDeleteSmooch = await axiosObservable({
-                                        _requestid: request._requestid,
-                                        method: "post",
-                                        url: `${bridgeEndpoint}processlaraigo/smooch/smoochmessagetemplate`,
-                                        data: {
-                                            AppId: serviceData.appId,
-                                            DeleteName: messagetemplate.name,
-                                            IntegrationId: messagetemplate.communicationchannelintegrationid,
-                                            KeyId: serviceData.apiKeyId,
-                                            KeySecret: serviceData.apiKeySecret,
-                                            Type: "DELETE",
-                                        },
-                                    });
-
-                                    if (requestDeleteSmooch.data.success) {
-                                        deleteSuccess = true;
-                                    } else {
-                                        requestCode = requestDeleteSmooch.data.operationMessage;
-                                        requestMessage = requestDeleteSmooch.data.operationMessage;
-                                    }
-                                }
-                                break;
-
-                            case "WHAG":
-                            case "WHAM":
-                                if (messagetemplate.communicationchannelservicecredentials) {
-                                    deleteSuccess = true;
-                                }
-                                break;
+                            }
                         }
                     } else {
-                        deleteSuccess = true;
+                        deletesuccess = true;
                     }
 
-                    if (deleteSuccess) {
+                    if (deletesuccess) {
                         let parameters = messagetemplate;
 
-                        parameters.bodyobject = JSON.stringify(messagetemplate.bodyobject);
-                        parameters.buttons = JSON.stringify(messagetemplate.buttons);
                         parameters.corpid = request.user.corpid;
                         parameters.orgid = request.user.orgid;
                         parameters.username = request.user.usr;
+                        parameters.authenticationdata = messagetemplate.authenticationdata ? JSON.stringify(messagetemplate.authenticationdata) : null;
+                        parameters.bodyvariables = messagetemplate.bodyvariables ? JSON.stringify(messagetemplate.bodyvariables) : null;
+                        parameters.buttonsgeneric = messagetemplate.buttonsgeneric ? JSON.stringify(messagetemplate.buttonsgeneric) : null;
+                        parameters.buttonsquickreply = messagetemplate.buttonsquickreply ? JSON.stringify(messagetemplate.buttonsquickreply) : null;
+                        parameters.carouseldata = messagetemplate.carouseldata ? JSON.stringify(messagetemplate.carouseldata) : null;
+                        parameters.headervariables = messagetemplate.headervariables ? JSON.stringify(messagetemplate.headervariables) : null;
+                        parameters.buttons = null;
+                        parameters.bodyobject = null;
 
-                        const queryTemplateDelete = await triggerfunctions.executesimpletransaction(
+                        const queryMessageTemplateDelete = await triggerfunctions.executesimpletransaction(
                             "UFN_MESSAGETEMPLATE_INS",
-                            parameters
+                            parameters,
                         );
 
-                        if (queryTemplateDelete instanceof Array) {
+                        if (queryMessageTemplateDelete instanceof Array) {
                             requestCode = "";
                             requestMessage = "";
                             requestStatus = 200;
                             requestSuccess = true;
                         } else {
-                            requestCode = queryTemplateDelete.code;
-                            requestMessage = queryTemplateDelete.code;
+                            requestCode = queryMessageTemplateDelete.code;
+                            requestMessage = queryMessageTemplateDelete.code;
                         }
                     }
                 }
@@ -3812,3 +3837,24 @@ exports.deleteTemplate = async (request, response) => {
         });
     }
 };
+
+const getChannelData = async (corpId, orgId, communicationChannelId, status, requestId) => {
+    if (orgId) {
+        const queryString = "UFN_COMMUNICATIONCHANNEL_SEL_WHATSAPP_PROVIDER";
+        const queryParameters = {
+            corpid: corpId,
+            orgid: orgId,
+            communicationchannelid: communicationChannelId,
+            status: status,
+            _requestid: requestId,
+        }
+
+        const queryResult = await triggerfunctions.executesimpletransaction(queryString, queryParameters);
+
+        if (queryResult instanceof Array) {
+            return queryResult;
+        }
+    }
+
+    return null;
+}

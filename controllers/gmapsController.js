@@ -578,7 +578,16 @@ function findSchedule(nombre) {
             friday: "12:00-22:30",
             saturday: "12:00-22:30",
             sunday: "12:00-22:30"
-        },       
+        }, 
+        "REPARTO FAUCETT OUTLET": {
+            monday: "12:00-21:30",
+            tuesday: "12:00-21:30",
+            wednesday: "12:00-21:30",
+            thursday: "12:00-21:30",
+            friday: "12:00-21:30",
+            saturday: "12:00-21:30",
+            sunday: "12:00-21:30"
+        },         
     };
 
     const lowerCaseName = removeAccents(nombre.toLowerCase());
@@ -645,16 +654,29 @@ function findStoreId(nombre) {
         "REPARTO VILLA MARIA": 126,
         "REPARTO VITARTE 2": 164,
         "REPARTO ZARATE": 169,  
+        "REPARTO FAUCETT OUTLET": 212,
     };
     
-
     const lowerCaseName = removeAccents(nombre.toLowerCase());
+    let bestSimilarity = 0;
+    let bestStoreId = null;
+
     for (const storeName in storeData) {
-        if (lowerCaseName.includes(storeName.toLowerCase())) {
-            return storeData[storeName];
+        const keyWords = storeName.split(" ");
+        const similarity = keyWords.reduce((total, word) => {
+            if (lowerCaseName.includes(word.toLowerCase())) {
+                return total + 1;
+            }
+            return total;
+        }, 0);
+
+        if (similarity > bestSimilarity) {
+            bestSimilarity = similarity;
+            bestStoreId = storeData[storeName];
         }
     }
-    return 0;  
+
+    return bestStoreId !== null ? bestStoreId : 0;
 }
 
 exports.polygonsinsertmassive = async (req, res) => {

@@ -109,7 +109,7 @@ const getAppSettingVoximplant = async (corpid, orgid, requestid = null) => {
     return null
 }
 
-exports.messageTemplateUpd = async (corpid, orgid, description, type, status, name, namespace, category, language, templatetype, headerenabled, headertype, header, body, bodyobject, footerenabled, footer, buttonsenabled, buttons, fromprovider, externalid, externalstatus, communicationchannelid, communicationchanneltype, exampleparameters, username, requestid = null) => {
+exports.messageTemplateUpd = async (corpid, orgid, description, type, status, name, namespace, category, language, templatetype, headerenabled, headertype, header, body, footerenabled, footer, buttonsenabled, priority, attachment, communicationchannelid, communicationchanneltype, authenticationdata, bodyvariables, buttonsgeneric, buttonsquickreply, carouseldata, headervariables, provideraccountid, providerexternalid, providerid, providermessagelimit, providerpartnerid, providerquality, providerstatus, username, requestid = null) => {
     const queryMethod = "UFN_MESSAGETEMPLATE_UPD";
     const queryParameters = {
         corpid: corpid,
@@ -126,17 +126,26 @@ exports.messageTemplateUpd = async (corpid, orgid, description, type, status, na
         headertype: headertype,
         header: header,
         body: body,
-        bodyobject: bodyobject,
         footerenabled: footerenabled,
         footer: footer,
         buttonsenabled: buttonsenabled,
-        buttons: buttons,
-        fromprovider: fromprovider,
-        externalid: externalid,
-        externalstatus: externalstatus,
+        priority: priority,
+        attachment: attachment,
         communicationchannelid: communicationchannelid,
         communicationchanneltype: communicationchanneltype,
-        exampleparameters: exampleparameters,
+        authenticationdata: authenticationdata,
+        bodyvariables: bodyvariables,
+        buttonsgeneric: buttonsgeneric,
+        buttonsquickreply: buttonsquickreply,
+        carouseldata: carouseldata,
+        headervariables: headervariables,
+        provideraccountid: provideraccountid,
+        providerexternalid: providerexternalid,
+        providerid: providerid,
+        providermessagelimit: providermessagelimit,
+        providerpartnerid: providerpartnerid,
+        providerquality: providerquality,
+        providerstatus: providerstatus,
         username: username,
         _requestid: requestid,
     }
