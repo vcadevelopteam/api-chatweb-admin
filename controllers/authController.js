@@ -55,6 +55,11 @@ const properties = [
         type: 'text'
     },
     {
+        propertyname: "BOTBYSUPERVISOR",
+        key: "bot_by_supervisor",
+        type: 'text'
+    },
+    {
         propertyname: "OCULTARLOGCONVERSACION",
         key: "hide_log_conversation",
         type: 'bool',
