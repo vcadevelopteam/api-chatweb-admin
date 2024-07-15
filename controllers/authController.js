@@ -441,6 +441,7 @@ exports.changeOrganization = async (req, res) => {
             domainname: resultBD[0]?.domainname,
             iconurl: resultBD[0]?.iconurl,
             logourl: resultBD[0]?.logourl,
+            channels: resultBD[0]?.channels,
             startlogourl: resultBD[0]?.startlogourl,
             ispoweredbylaraigo: resultBD[0]?.ispoweredbylaraigo,
         };
