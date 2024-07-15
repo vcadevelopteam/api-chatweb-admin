@@ -13,7 +13,7 @@ module.exports = {
         WHERE us.usr = $usr AND ous.bydefault
         AND ous.status <> 'ELIMINADO'
         AND (role.code = 'SUPERADMIN' OR (org.status = 'ACTIVO' AND corp.status = 'ACTIVO'))
-        GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
+        GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid, ous.channels
         LIMIT 1`,
         module: "",
         protected: false
@@ -41,7 +41,7 @@ module.exports = {
         AND ous.bydefault
         AND ous.status <> 'ELIMINADO'
         AND (role.code = 'SUPERADMIN' OR (org.status = 'ACTIVO' AND corp.status = 'ACTIVO'))
-        GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
+        GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid, ous.channels
         LIMIT 1`,
         module: "",
         protected: false
@@ -65,7 +65,7 @@ module.exports = {
         AND ous.bydefault
         AND ous.status <> 'ELIMINADO'
         AND (role.code = 'SUPERADMIN' OR (org.status = 'ACTIVO' AND corp.status = 'ACTIVO'))
-        GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
+        GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid, ous.channels
         LIMIT 1`,
         module: "",
         protected: false
