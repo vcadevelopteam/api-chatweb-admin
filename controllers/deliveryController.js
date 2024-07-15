@@ -93,9 +93,6 @@ exports.routing = async (req, res) => {
     try {
         setSessionParameters(parameters, req.user, req._requestid);
 
-        parameters.corpid = 1407;
-        parameters.orgid = 1678;
-
         const orders = (await executesimpletransaction("UFN_ORDERS_BY_CONFIGURATION_SEL", parameters)).map(element => {
             element.latitude = parseFloat(element.latitude);
             element.longitude = parseFloat(element.longitude);
