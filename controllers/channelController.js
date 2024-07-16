@@ -3593,6 +3593,22 @@ exports.addTemplate = async (request, response) => {
                                         if (requestCreateDialog.data.success) {
                                             let parameters = request.body;
 
+                                            if (parameters.buttonsgeneric) {
+                                                let buttonsgenericdata = JSON.parse(parameters.buttonsgeneric);
+
+                                                if (buttonsgenericdata) {
+                                                    for (var buttondata of buttonsgenericdata) {
+                                                        if (buttondata.type === "URL" && buttondata.btn) {
+                                                            if (buttondata.btn.type === "dynamic" && !(`${buttondata.btn.url}`.endsWith("}}"))) {
+                                                                buttondata.btn.url = `${buttondata.btn.url}{{1}}`;
+                                                            }
+                                                        }
+                                                    }
+
+                                                    parameters.buttonsgeneric = JSON.stringify(buttonsgenericdata);
+                                                }
+                                            }
+
                                             parameters.corpid = request.user.corpid;
                                             parameters.orgid = request.user.orgid;
                                             parameters.username = request.user.usr;
@@ -3639,6 +3655,22 @@ exports.addTemplate = async (request, response) => {
 
                                         if (requestCreateMeta.data.success) {
                                             let parameters = request.body;
+
+                                            if (parameters.buttonsgeneric) {
+                                                let buttonsgenericdata = JSON.parse(parameters.buttonsgeneric);
+
+                                                if (buttonsgenericdata) {
+                                                    for (var buttondata of buttonsgenericdata) {
+                                                        if (buttondata.type === "URL" && buttondata.btn) {
+                                                            if (buttondata.btn.type === "dynamic" && !(`${buttondata.btn.url}`.endsWith("}}"))) {
+                                                                buttondata.btn.url = `${buttondata.btn.url}{{1}}`;
+                                                            }
+                                                        }
+                                                    }
+
+                                                    parameters.buttonsgeneric = JSON.stringify(buttonsgenericdata);
+                                                }
+                                            }
 
                                             parameters.corpid = request.user.corpid;
                                             parameters.orgid = request.user.orgid;
