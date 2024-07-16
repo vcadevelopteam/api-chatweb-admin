@@ -3576,22 +3576,6 @@ exports.addTemplate = async (request, response) => {
                                 templatebody.carouseldata = templatebody.carouseldata ? JSON.parse(templatebody.carouseldata) : null;
                                 templatebody.headervariables = templatebody.headervariables ? JSON.parse(templatebody.headervariables) : null;
 
-                                if (parameters.buttonsgeneric) {
-                                    let buttonsgenericdata = JSON.parse(parameters.buttonsgeneric);
-
-                                    if (buttonsgenericdata) {
-                                        for (var buttondata of buttonsgenericdata) {
-                                            if (buttondata.type === "URL" && buttondata.btn) {
-                                                if (buttondata.btn.type === "dynamic" && !(`${buttondata.btn.url}`.endsWith("}}"))) {
-                                                    buttondata.btn.url = `${buttondata.btn.url}{{1}}`;
-                                                }
-                                            }
-                                        }
-
-                                        parameters.buttonsgeneric = JSON.stringify(buttonsgenericdata);
-                                    }
-                                }
-
                                 switch (channeldata.type) {
                                     case "WHAD":
                                         const requestCreateDialog = await axiosObservable({
@@ -3608,6 +3592,22 @@ exports.addTemplate = async (request, response) => {
 
                                         if (requestCreateDialog.data.success) {
                                             let parameters = request.body;
+
+                                            if (parameters.buttonsgeneric) {
+                                                let buttonsgenericdata = JSON.parse(parameters.buttonsgeneric);
+
+                                                if (buttonsgenericdata) {
+                                                    for (var buttondata of buttonsgenericdata) {
+                                                        if (buttondata.type === "URL" && buttondata.btn) {
+                                                            if (buttondata.btn.type === "dynamic" && !(`${buttondata.btn.url}`.endsWith("}}"))) {
+                                                                buttondata.btn.url = `${buttondata.btn.url}{{1}}`;
+                                                            }
+                                                        }
+                                                    }
+
+                                                    parameters.buttonsgeneric = JSON.stringify(buttonsgenericdata);
+                                                }
+                                            }
 
                                             parameters.corpid = request.user.corpid;
                                             parameters.orgid = request.user.orgid;
@@ -3655,6 +3655,22 @@ exports.addTemplate = async (request, response) => {
 
                                         if (requestCreateMeta.data.success) {
                                             let parameters = request.body;
+
+                                            if (parameters.buttonsgeneric) {
+                                                let buttonsgenericdata = JSON.parse(parameters.buttonsgeneric);
+
+                                                if (buttonsgenericdata) {
+                                                    for (var buttondata of buttonsgenericdata) {
+                                                        if (buttondata.type === "URL" && buttondata.btn) {
+                                                            if (buttondata.btn.type === "dynamic" && !(`${buttondata.btn.url}`.endsWith("}}"))) {
+                                                                buttondata.btn.url = `${buttondata.btn.url}{{1}}`;
+                                                            }
+                                                        }
+                                                    }
+
+                                                    parameters.buttonsgeneric = JSON.stringify(buttonsgenericdata);
+                                                }
+                                            }
 
                                             parameters.corpid = request.user.corpid;
                                             parameters.orgid = request.user.orgid;
