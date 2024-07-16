@@ -3594,18 +3594,12 @@ exports.addTemplate = async (request, response) => {
                                             let parameters = request.body;
 
                                             if (parameters.buttonsgeneric) {
-                                                let buttonsgenericdata = JSON.parse(parameters.buttonsgeneric);
-
-                                                if (buttonsgenericdata) {
-                                                    for (var buttondata of buttonsgenericdata) {
-                                                        if (buttondata.type === "URL" && buttondata.btn) {
-                                                            if (buttondata.btn.type === "dynamic" && !(`${buttondata.btn.url}`.endsWith("}}"))) {
-                                                                buttondata.btn.url = `${buttondata.btn.url}{{1}}`;
-                                                            }
+                                                for (var buttondata of parameters.buttonsgeneric) {
+                                                    if (buttondata.type === "URL" && buttondata.btn) {
+                                                        if (buttondata.btn.type === "dynamic" && !(`${buttondata.btn.url}`.endsWith("}}"))) {
+                                                            buttondata.btn.url = `${buttondata.btn.url}{{1}}`;
                                                         }
                                                     }
-
-                                                    parameters.buttonsgeneric = JSON.stringify(buttonsgenericdata);
                                                 }
                                             }
 
@@ -3657,18 +3651,12 @@ exports.addTemplate = async (request, response) => {
                                             let parameters = request.body;
 
                                             if (parameters.buttonsgeneric) {
-                                                let buttonsgenericdata = JSON.parse(parameters.buttonsgeneric);
-
-                                                if (buttonsgenericdata) {
-                                                    for (var buttondata of buttonsgenericdata) {
-                                                        if (buttondata.type === "URL" && buttondata.btn) {
-                                                            if (buttondata.btn.type === "dynamic" && !(`${buttondata.btn.url}`.endsWith("}}"))) {
-                                                                buttondata.btn.url = `${buttondata.btn.url}{{1}}`;
-                                                            }
+                                                for (var buttondata of parameters.buttonsgeneric) {
+                                                    if (buttondata.type === "URL" && buttondata.btn) {
+                                                        if (buttondata.btn.type === "dynamic" && !(`${buttondata.btn.url}`.endsWith("}}"))) {
+                                                            buttondata.btn.url = `${buttondata.btn.url}{{1}}`;
                                                         }
                                                     }
-
-                                                    parameters.buttonsgeneric = JSON.stringify(buttonsgenericdata);
                                                 }
                                             }
 
