@@ -300,15 +300,21 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
             ` : '') + ((applyFilterGroups && !columns.some(x => x.join_alias === "campaign")) ? `
             LEFT JOIN campaign campaign ON campaign.corpid = conversation.corpid AND campaign.orgid = conversation.orgid AND campaign.campaignid = conversation.campaignid
             ` : '') + `LEFT JOIN hsmhistory hh ON hh.corpid = conversation.corpid AND hh.orgid = conversation.orgid AND hh.hsmhistoryid = conversation.hsmhistoryid`,
+            
             queryWhere: !applyFilterGroups ? '' :
             `AND CASE WHEN string_to_array($roles,',') && Array['ADMINISTRADOR', 'ADMINISTRADOR P', 'SUPERADMIN']
             THEN TRUE
             ELSE
                 CASE WHEN (SELECT(array_length(array_agg(groups), 1)) FROM w1) IS NOT NULL THEN 
-                    (case when conversation.origin = 'INBOUND' THEN string_to_array(lastorguser.groups,',') && (SELECT array_agg(groups) FROM w1)
-                        when conversation.origin = 'OUTBOUND' then array [campaign.usergroup::text] && (SELECT array_agg(groups) FROM w1)
-                        else array [hh.groupname::text] && (SELECT array_agg(groups) FROM w1)
-                        end
+                    (CASE 
+                        WHEN conversation.origin = 'INBOUND' THEN 
+                            (conversation.lastuserid NOT IN (2, 3) AND (string_to_array(lastorguser.groups,',') && (SELECT array_agg(groups) FROM w1))) OR
+                            (conversation.lastuserid = 2 AND array [co.usergroup::text] && (SELECT array_agg(groups) FROM w1))
+                        WHEN conversation.origin = 'OUTBOUND' THEN
+                            array [campaign.usergroup::text] && (SELECT array_agg(groups) FROM w1)
+                        ELSE 
+                            array [hh.groupname::text] && (SELECT array_agg(groups) FROM w1)
+                        END
                     ) OR
                     ((string_to_array($roles, ',') && array ['SUPERVISOR CLIENTE'] AND (conversation.lastuserid = 2 OR (conversation.lastuserid = 3 AND array [conversation.usergroup::text] && (SELECT array_agg(groups) FROM w1)))))
                 ELSE 
