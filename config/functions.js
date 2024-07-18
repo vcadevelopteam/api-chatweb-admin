@@ -695,7 +695,7 @@ module.exports = {
     },
     UFN_MESSAGETEMPLATE_SEL: {
         query: "SELECT * FROM ufn_messagetemplate_sel($corpid, $orgid, $take, $skip, $where, $order)",
-        module: ["/extras/messagetemplate"],
+        module: ["/extras/messagetemplate", "/extras/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_SEL_OLD: {
@@ -705,7 +705,7 @@ module.exports = {
     },
     UFN_MESSAGETEMPLATE_TOTALRECORDS: {
         query: "SELECT * FROM ufn_messagetemplate_totalrecords($corpid, $orgid, $where)",
-        module: ["/extras/messagetemplate"],
+        module: ["/extras/messagetemplate", "/extras/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_TOTALRECORDS_OLD: {
@@ -1383,22 +1383,22 @@ module.exports = {
     },
     UFN_CAMPAIGN_PERSON_TOTALRECORDS: {
         query: "SELECT * FROM ufn_campaign_person_totalrecords($corpid, $orgid, $startdate, $enddate, $where, $username, $offset)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/extras/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_CAMPAIGN_PERSON_SEL: {
         query: "SELECT  * FROM ufn_campaign_person_sel($corpid, $orgid, $startdate, $enddate, $where, $order, $take, $skip, $username, $offset)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/extras/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_CAMPAIGN_LEAD_PERSON_TOTALRECORDS: {
         query: "SELECT * FROM ufn_campaign_lead_person_totalrecords($corpid, $orgid, $startdate, $enddate, $where, $username, $offset)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/extras/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_CAMPAIGN_LEAD_PERSON_SEL: {
         query: "SELECT  * FROM ufn_campaign_lead_person_sel($corpid, $orgid, $startdate, $enddate, $where, $order, $take, $skip, $username, $offset)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/extras/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_CAMPAIGN_LST: {
@@ -1413,7 +1413,7 @@ module.exports = {
     },
     UFN_CAMPAIGN_SEL: {
         query: "SELECT * FROM ufn_campaign_sel($corpid, $orgid, $id, $username)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/extras/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     QUERY_CAMPAIGN_SEL: {
@@ -1432,22 +1432,22 @@ module.exports = {
     },
     UFN_CAMPAIGN_INS: {
         query: "SELECT * FROM ufn_campaign_ins($corpid, $orgid, $id, $communicationchannelid, $usergroup, $type, $status, $title, $description, $subject, $message, $startdate, $enddate, $repeatable, $frecuency, $messagetemplateid, $messagetemplatename, $messagetemplatenamespace, $messagetemplateheader, $messagetemplatebuttons, $executiontype, $batchjson, $fields, $messagetemplatefooter, $messagetemplatetype, $messagetemplateattachment, $source, $messagetemplatelanguage, $messagetemplatepriority, $username, $operation, $carouseljson, $variableshidden, $membercount, $offset)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/extras/advancedtemplatescampaigns"],
         protected: "INSERT"
     },
     UFN_CAMPAIGN_INS_OLD: {
         query: "SELECT * FROM ufn_campaign_ins($corpid, $orgid, $id, $communicationchannelid, $usergroup, $type, $status, $title, $description, $subject, $message, $startdate, $enddate, $repeatable, $frecuency, $messagetemplateid, $messagetemplatename, $messagetemplatenamespace, $messagetemplateheader, $messagetemplatebuttons, $executiontype, $batchjson, $fields, $messagetemplatefooter, $messagetemplatetype, $messagetemplateattachment, $source, $messagetemplatelanguage, $messagetemplatepriority, $username, $operation, $carouseljson, $variableshidden, $membercount, $offset, $newversion)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/extras/advancedtemplatescampaigns"],
         protected: "INSERT"
     },
     UFN_CAMPAIGN_DEL: {
         query: "SELECT * FROM ufn_campaign_del($corpid, $orgid, $id, $status, $username, $operation)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/extras/advancedtemplatescampaigns"],
         protected: "INSERT"
     },
     UFN_CAMPAIGN_START: {
         query: "SELECT * FROM ufn_campaign_start($corpid, $orgid, $id, $username, $offset)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/extras/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     QUERY_CAMPAIGN_START: {
@@ -1457,12 +1457,12 @@ module.exports = {
     },
     UFN_CAMPAIGN_STATUS: {
         query: "SELECT * FROM ufn_campaign_status($corpid, $orgid, $id)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/extras/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_CAMPAIGN_STOP: {
         query: "SELECT * FROM ufn_campaign_stop($corpid, $orgid, $campaignid)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/extras/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     QUERY_CAMPAIGN_STOP: {
@@ -1477,7 +1477,7 @@ module.exports = {
     },
     UFN_CAMPAIGNMEMBER_SEL: {
         query: "SELECT * FROM ufn_campaignmember_sel($corpid, $orgid, $campaignid)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/extras/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     QUERY_CAMPAIGNMEMBER_SEL: {
@@ -1498,37 +1498,37 @@ module.exports = {
     },
     UFN_CAMPAIGNMEMBER_INS: {
         query: "SELECT * FROM ufn_campaignmember_ins($corpid, $orgid, $id, $personid, $personcommunicationchannel, $personcommunicationchannelowner, $type, $displayname, $status, $operation, $campaignid, $field1, $field2, $field3, $field4, $field5, $field6, $field7, $field8, $field9, $field10, $field11, $field12, $field13, $field14, $field15, $batchindex)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/extras/advancedtemplatescampaigns"],
         protected: "INSERT"
     },
     UFN_CAMPAIGNMEMBER_STATUS: {
         query: "SELECT * FROM ufn_campaignmember_status($corpid, $orgid, $campaignid, $campaignmemberid, $status)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/extras/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_BLACKLIST_INS: {
         query: "SELECT * FROM ufn_blacklist_ins($corpid, $orgid, $id, $description, $type, $status, $phone, $username, $operation)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/extras/advancedtemplatescampaigns"],
         protected: "INSERT"
     },
     UFN_BLACKLIST_INS_ARRAY: {
         query: "SELECT * FROM ufn_blacklist_ins_array($corpid, $orgid, $username, $table)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/extras/advancedtemplatescampaigns"],
         protected: "INSERT"
     },
     UFN_BLACKLIST_SEL: {
         query: "SELECT * FROM ufn_blacklist_sel($corpid, $orgid, $where, $order, $take, $skip, $offset)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/extras/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_BLACKLIST_TOTALRECORDS: {
         query: "SELECT * FROM ufn_blacklist_totalrecords($corpid, $orgid, $where, $offset)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/extras/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_BLACKLIST_EXPORT: {
         query: "SELECT * FROM ufn_blacklist_export($corpid, $orgid, $where, $offset)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/extras/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_REPORTTEMPLATE_SEL: {
