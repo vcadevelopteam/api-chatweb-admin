@@ -4071,6 +4071,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CONVERSATION_PERSON_SEL_MOVIL2: {
+        query: "SELECT * FROM ufn_conversation_person_sel_movil2($personid, $conversationid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_PERSONADDINFO_SEL_MOVIL: {
         query: "SELECT * FROM ufn_personaddinfo_sel($personid)",
         module: "",
