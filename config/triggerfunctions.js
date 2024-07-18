@@ -309,7 +309,7 @@ exports.buildQueryDynamic2 = async (columns, filters, parameters, summaries, fro
                     (CASE 
                         WHEN conversation.origin = 'INBOUND' THEN 
                             (conversation.lastuserid NOT IN (2, 3) AND (string_to_array(lastorguser.groups,',') && (SELECT array_agg(groups) FROM w1))) OR
-                            (conversation.lastuserid = 2 AND array [co.usergroup::text] && (SELECT array_agg(groups) FROM w1))
+                            (conversation.lastuserid = 2 AND array [conversation.usergroup::text] && (SELECT array_agg(groups) FROM w1))
                         WHEN conversation.origin = 'OUTBOUND' THEN
                             array [campaign.usergroup::text] && (SELECT array_agg(groups) FROM w1)
                         ELSE 
