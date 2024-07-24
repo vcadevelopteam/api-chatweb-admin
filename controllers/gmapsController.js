@@ -733,6 +733,18 @@ exports.findcoordinateinpolygons = async (req, res) => {
             ? moment(order_datetime).tz('America/Lima')
             : moment().tz('America/Lima');
         const result = await executesimpletransaction("SEARCH_POINT_ON_AREAS", { corpid, orgid, latitude, longitude });
+
+        if (result.length === 0) {
+            const response = {
+                corpid,
+                orgid,
+                result: [],
+                inside_schedule: false,
+                order_datetime: currentDateTime.format('YYYY-MM-DD HH:mm:ss'),
+            };
+            return res.json(response);
+        }
+
         const modifiedResult = result.map((polygon) => {
             let modifiedName = polygon.name;
             if (modifiedName.toLowerCase().includes('zona roja - ')) {
@@ -740,13 +752,17 @@ exports.findcoordinateinpolygons = async (req, res) => {
             }
 
             const storeid = findStoreId(modifiedName);
+            if (storeid === 0) {
+                return null;
+            }
             return {
                 polygonsid: polygon.polygonsid,
                 storeid: storeid,
                 name: modifiedName,
                 schedule: polygon.schedule,
             };
-        });
+        }).filter(polygon => polygon !== null); 
+
         const inside_schedule = modifiedResult.length > 0 && isInsideSchedule(modifiedResult, currentDateTime);
         const response = {
             corpid,
