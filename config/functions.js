@@ -4866,4 +4866,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CONVERSATION_SEL_CLASSIFICATION_HISTORY: {
+        query: "SELECT * FROM ufn_conversation_sel_classification_history($corpid, $orgid, $personid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
