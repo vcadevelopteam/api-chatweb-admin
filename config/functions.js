@@ -4876,4 +4876,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CONVERSATION_SEL_OPPORTUNITY_HISTORY: {
+        query: "SELECT * FROM ufn_conversation_sel_opportunity_history($corpid, $orgid, $personid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_SEL_SS_HISTORY: {
+        query: "SELECT * FROM ufn_conversation_sel_ss_history($corpid, $orgid, $personid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
