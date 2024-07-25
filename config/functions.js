@@ -1090,6 +1090,11 @@ module.exports = {
         module: ["/message_inbox", "/supervisor"], //messag einbox y supervisor admitir arrays
         protected: "SELECT"
     },
+    UFN_CONVERSATION_SEL_TICKETSBYUSER_CLOSED: {
+        query: "SELECT * FROM ufn_conversation_sel_ticketsbyuser_closed($corpid, $orgid, $agentid, $userid)",
+        module: ["/message_inbox", "/supervisor"], //messag einbox y supervisor admitir arrays
+        protected: "SELECT"
+    },
     UFN_CONVERSATION_SEL_INTENT: {
         query: "SELECT * FROM ufn_conversation_sel_intent($conversationid)",
         module: "", //supervisor and inbox
@@ -4909,6 +4914,21 @@ module.exports = {
     },
     UFN_DETAIL_SENTMESSAGES_BY_TEMPLATE: {
         query: "SELECT * FROM ufn_detail_sentmessages_by_template($corpid,$orgid,$startdate,$enddate,$offset,$messagetemplateid,$communicationchannelid,$usersid,$userid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UPDATE_PINNED_MESSAGE: {
+        query: "SELECT * FROM update_pinned_message($corpid, $orgid, $conversationid, $interactionid, $interactiontext, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_SEL_ATTACHMENT_HISTORY: {
+        query: "SELECT * FROM ufn_conversation_sel_attachment_history($corpid, $orgid, $personid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_SEL_CLASSIFICATION_HISTORY: {
+        query: "SELECT * FROM ufn_conversation_sel_classification_history($corpid, $orgid, $personid)",
         module: "",
         protected: "SELECT"
     },
