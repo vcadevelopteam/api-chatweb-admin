@@ -5,7 +5,7 @@ const SamlStrategy = require('passport-saml').Strategy
 
 let pvkey = '----';
 try {
-	pvkey = fs.readFileSync(path.resolve(__dirname, 'certs/pvkey3.pem'), 'utf-8');
+	pvkey = fs.readFileSync(path.resolve(__dirname, 'certs/pvkey.pem'), 'utf-8');
 } catch (error) {
 	console.log('Error reading pvkey.pem')
 }
