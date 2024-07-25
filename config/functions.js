@@ -4952,4 +4952,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CONVERSATION_SEL_ORDER_HISTORY: {
+        query: "SELECT * FROM ufn_conversation_sel_order_history($corpid, $orgid, $personid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
