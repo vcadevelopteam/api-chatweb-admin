@@ -4861,4 +4861,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CONVERSATION_SEL_ATTACHMENT_HISTORY: {
+        query: "SELECT * FROM ufn_conversation_sel_attachment_history($corpid, $orgid, $personid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
