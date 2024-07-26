@@ -4912,4 +4912,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UPDATE_LANGUAGE_SETTINGS: {
+        query: "SELECT * FROM update_language_settings($corpid, $orgid, $userid, $languagesettings)",
+        module: "",
+        protected: "SELECT"
+    }
 }
