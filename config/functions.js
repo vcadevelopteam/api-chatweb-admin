@@ -25,7 +25,7 @@ module.exports = {
     },
     QUERY_AUTHENTICATED_BY_FACEBOOKID: {
         query: `
-        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid,
+        SELECT us.company, us.languagesettings, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid,
 		us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan,
 		string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi,
 		cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision, corp.partnerid, ous.channels
@@ -48,7 +48,7 @@ module.exports = {
     },
     QUERY_AUTHENTICATED_BY_GOOGLEID: {
         query: `
-        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid,
+        SELECT us.company, us.languagesettings, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid,
         ous.orgid, us.userid, us.usr, us.pwd,
         us.firstname, us.image, us.lastname, us.email, us.status,
         ous.groups, ous.redirect, pp.plan, COALESCE(cur.symbol, 'S/') currencysymbol,
