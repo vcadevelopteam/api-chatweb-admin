@@ -4967,7 +4967,7 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
-    UFN_UPDATE_LANGUAGE_SETTINGS: {
+    UPDATE_LANGUAGE_SETTINGS: {
         query: "SELECT * FROM update_language_settings($corpid, $orgid, $userid, $languagesettings)",
         module: "",
         protected: "SELECT"
