@@ -3,8 +3,12 @@ const fs = require('fs')
 const path = require('path');
 const SamlStrategy = require('passport-saml').Strategy
 
-// const idp = fs.readFileSync(path.resolve(__dirname, 'certs/claro.pem'), 'utf-8');
-const pvkey = fs.readFileSync(path.resolve(__dirname, 'certs/pvkey.pem'), 'utf-8');
+let pvkey = '----';
+try {
+	pvkey = fs.readFileSync(path.resolve(__dirname, 'certs/pvkey.pem'), 'utf-8');
+} catch (error) {
+	console.log('Error reading pvkey.pem')
+}
 
 // Datos del IDP para configuracion de SAML
 const IDP_CERT = process.env.IPD_SAML_CERT ?? '----';
