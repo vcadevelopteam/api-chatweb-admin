@@ -1968,6 +1968,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_LEAD_FUNNEL_SEL: {
+        query: "select * from ufn_lead_funnel_sel($corpid, $orgid, $startdate, $enddate, $channel, $userid, $leadproduct)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_COLUMN_SD_SEL: {
         query: "select * from ufn_column_sd_sel($corpid, $orgid, $id, $lost, $all)",
         module: ["/servicedesk"],
