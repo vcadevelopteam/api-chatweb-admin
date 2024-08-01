@@ -698,6 +698,11 @@ module.exports = {
         module: ["/extras/messagetemplate"],
         protected: "SELECT"
     },
+    UFN_MESSAGETEMPLATE_SEL1: {
+        query: "SELECT * FROM ufn_messagetemplate_sel($corpid, $orgid, $take, $skip, $where, $order, true, 0, $communicationchannelids)",
+        module: ["/extras/messagetemplate"],
+        protected: "SELECT"
+    },
     UFN_MESSAGETEMPLATE_SEL_OLD: {
         query: "SELECT * FROM ufn_messagetemplate_sel($corpid, $orgid, $take, $skip, $where, $order, $newversion, $communicationchannelid)",
         module: ["/extras/messagetemplate"],
@@ -705,6 +710,11 @@ module.exports = {
     },
     UFN_MESSAGETEMPLATE_TOTALRECORDS: {
         query: "SELECT * FROM ufn_messagetemplate_totalrecords($corpid, $orgid, $where)",
+        module: ["/extras/messagetemplate"],
+        protected: "SELECT"
+    },
+    UFN_MESSAGETEMPLATE_TOTALRECORDS1: {
+        query: "SELECT * FROM ufn_messagetemplate_totalrecords($corpid, $orgid, $where, true, $communicationchannelids)",
         module: ["/extras/messagetemplate"],
         protected: "SELECT"
     },
