@@ -2438,7 +2438,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_REPORT_SENTMESSAGES_REPORT: {
-        query: "SELECT * FROM ufn_report_sentmessages_sel($corpid, $orgid, $date, $name, $from, $offset, $userid);",
+        query: "SELECT * FROM ufn_report_sentmessages_sel($corpid, $orgid, $date, $name, $from, $offset, $userid, $campaignname);",
         module: ["/reports"],
         protected: "SELECT"
     },
