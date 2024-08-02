@@ -3381,7 +3381,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                         }
                                     }
 
-                                    const templateType = carouselData ? "CAROUSEL" : ((authenticationData || buttonGenericData || buttonQuickReplyData || footerData || headerData) ? "MULTIMEDIA" : "STANDARD");
+                                    const templateType = carouselData ? "CAROUSEL" : "MULTIMEDIA";
 
                                     await channelfunctions.messageTemplateUpd(
                                         corpid,
