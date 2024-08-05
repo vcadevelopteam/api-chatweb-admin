@@ -940,7 +940,7 @@ exports.insertChannel = async (request, response) => {
         parameters.phone = null;
         parameters.resolvelithium = null;
         parameters.schedule = null;
-        parameters.status = "ACTIVO";
+        parameters.status = parameters.onboarding ? "INACTIVO" : "ACTIVO";
         parameters.updintegration = null;
         parameters.username = request.user.usr;
         parameters.voximplantholdtone = null;
