@@ -33,7 +33,7 @@ const verifyIP = async (clientIP, params) => {
     const whitelist = await executesimpletransaction("QUERY_WHITELIST", params);
     
     if (whitelist.length > 0) {
-        const isAllowed = whitelist.some(ipRange => clientIP === ipRange.ipstart);
+        const isAllowed = whitelist.some(ipRange => clientIP === ipRange.ipstart || ipRange.ipstart === "0.0.0.0/0");
     
         if (!isAllowed) {
             // Si la IP no está permitida, envía una respuesta de acceso denegado
