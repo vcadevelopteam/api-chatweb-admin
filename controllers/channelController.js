@@ -3400,16 +3400,16 @@ exports.synchronizeTemplate = async (request, response) => {
                                         bodyData ? bodyData.text : null,
                                         footerData ? true : false,
                                         footerData ? footerData.text : null,
-                                        (buttonGenericData || buttonQuickReplyData) ? true : false,
+                                        ((buttonGenericData || buttonQuickReplyData) || []).length > 0 ? true : false,
                                         2,
                                         null,
                                         communicationchannel.communicationchannelid,
                                         communicationchannel.type,
                                         authenticationData ? JSON.stringify(authenticationData) || null : null,
                                         bodyData ? (bodyData.example ? JSON.stringify(bodyData.example) || null : null) : null,
-                                        buttonGenericData ? JSON.stringify(buttonGenericData) || null : null,
-                                        buttonQuickReplyData ? JSON.stringify(buttonQuickReplyData) || null : null,
-                                        carouselData ? JSON.stringify(carouselData) || null : null,
+                                        (buttonGenericData || []).length > 0 ? JSON.stringify(buttonGenericData) : null,
+                                        (buttonQuickReplyData || []).length > 0 ? JSON.stringify(buttonQuickReplyData) : null,
+                                        (carouselData || []).length > 0 ? JSON.stringify(carouselData) : null,
                                         headerData ? JSON.stringify(headerData.example) || null : null,
                                         templatedata.wabaAccountId || null,
                                         templatedata.externalId || null,
@@ -3542,7 +3542,7 @@ exports.addTemplate = async (request, response) => {
                                         parameters.carouseldata = null;
                                         parameters.headervariables = null;
                                         parameters.newversion = false;
-                                        parameters.buttons = JSON.stringify(request.body.buttons) || null;
+                                        parameters.buttons = (request.body.buttons || []).length > 0 ? JSON.stringify(request.body.buttons) : null;
                                         parameters.bodyobject = null;
 
                                         const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
@@ -3610,9 +3610,9 @@ exports.addTemplate = async (request, response) => {
                                             parameters.status = requestCreateDialog.data.status || null;
                                             parameters.authenticationdata = parameters.authenticationdata ? JSON.stringify(parameters.authenticationdata) : null;
                                             parameters.bodyvariables = parameters.bodyvariables ? JSON.stringify(parameters.bodyvariables) : null;
-                                            parameters.buttonsgeneric = parameters.buttonsgeneric ? JSON.stringify(parameters.buttonsgeneric) : null;
-                                            parameters.buttonsquickreply = parameters.buttonsquickreply ? JSON.stringify(parameters.buttonsquickreply) : null;
-                                            parameters.carouseldata = parameters.carouseldata ? JSON.stringify(parameters.carouseldata) : null;
+                                            parameters.buttonsgeneric = (parameters.buttonsgeneric || []).length > 0 ? JSON.stringify(parameters.buttonsgeneric) : null;
+                                            parameters.buttonsquickreply = (parameters.buttonsquickreply || []).length > 0 ? JSON.stringify(parameters.buttonsquickreply) : null;
+                                            parameters.carouseldata = (parameters.carouseldata || []).length > 0 ? JSON.stringify(parameters.carouseldata) : null;
                                             parameters.headervariables = parameters.headervariables ? JSON.stringify(parameters.headervariables) : null;
                                             parameters.buttons = null;
                                             parameters.bodyobject = null;
@@ -3667,9 +3667,9 @@ exports.addTemplate = async (request, response) => {
                                             parameters.status = requestCreateMeta.data.status || null;
                                             parameters.authenticationdata = parameters.authenticationdata ? JSON.stringify(parameters.authenticationdata) : null;
                                             parameters.bodyvariables = parameters.bodyvariables ? JSON.stringify(parameters.bodyvariables) : null;
-                                            parameters.buttonsgeneric = parameters.buttonsgeneric ? JSON.stringify(parameters.buttonsgeneric) : null;
-                                            parameters.buttonsquickreply = parameters.buttonsquickreply ? JSON.stringify(parameters.buttonsquickreply) : null;
-                                            parameters.carouseldata = parameters.carouseldata ? JSON.stringify(parameters.carouseldata) : null;
+                                            parameters.buttonsgeneric = (parameters.buttonsgeneric || []).length > 0 ? JSON.stringify(parameters.buttonsgeneric) : null;
+                                            parameters.buttonsquickreply = (parameters.buttonsquickreply || []).length > 0 ? JSON.stringify(parameters.buttonsquickreply) : null;
+                                            parameters.carouseldata = (parameters.carouseldata || []).length > 0 ? JSON.stringify(parameters.carouseldata) : null;
                                             parameters.headervariables = parameters.headervariables ? JSON.stringify(parameters.headervariables) : null;
                                             parameters.buttons = null;
                                             parameters.bodyobject = null;
@@ -3818,9 +3818,9 @@ exports.deleteTemplate = async (request, response) => {
                         parameters.username = request.user.usr;
                         parameters.authenticationdata = messagetemplate.authenticationdata ? JSON.stringify(messagetemplate.authenticationdata) : null;
                         parameters.bodyvariables = messagetemplate.bodyvariables ? JSON.stringify(messagetemplate.bodyvariables) : null;
-                        parameters.buttonsgeneric = messagetemplate.buttonsgeneric ? JSON.stringify(messagetemplate.buttonsgeneric) : null;
-                        parameters.buttonsquickreply = messagetemplate.buttonsquickreply ? JSON.stringify(messagetemplate.buttonsquickreply) : null;
-                        parameters.carouseldata = messagetemplate.carouseldata ? JSON.stringify(messagetemplate.carouseldata) : null;
+                        parameters.buttonsgeneric = (messagetemplate.buttonsgeneric || []).length > 0 ? JSON.stringify(messagetemplate.buttonsgeneric) : null;
+                        parameters.buttonsquickreply = (messagetemplate.buttonsquickreply || []).length > 0 ? JSON.stringify(messagetemplate.buttonsquickreply) : null;
+                        parameters.carouseldata = (messagetemplate.carouseldata || []).length > 0 ? JSON.stringify(messagetemplate.carouseldata) : null;
                         parameters.headervariables = messagetemplate.headervariables ? JSON.stringify(messagetemplate.headervariables) : null;
                         parameters.buttons = null;
                         parameters.bodyobject = null;
