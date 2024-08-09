@@ -1974,7 +1974,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LEAD_REPORT_SEL: {
-        query: "select * from ufn_lead_report_sel($corpid, $orgid,  $id, $fullname, $leadproduct, $campaignid, $tags, $userid, $supervisorid, $persontype, $ordertype, $orderby, $all, $communicationchannel)",
+        query: "select * from ufn_lead_report_sel($corpid, $orgid, $communicationchannel, $startdate, $enddate, $offset)",
         module: "",
         protected: "SELECT"
     },
