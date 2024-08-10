@@ -3765,7 +3765,7 @@ module.exports = {
         l.expected_revenue,
         l.priority,
         (select c.description from "column" c where c.columnid = l.columnid and c.status = 'ACTIVO' limit 1) "column",
-        (select string_agg(pc.title,',') from productcatalog pc where pc.corpid = l.corpid and pc.orgid = l.orgid and pc.productcatalogid = ANY(string_to_array(l.leadproduct,',')::bigint[])) products
+        (select string_agg(pc.title,',') from productcatalog pc where pc.corpid = l.corpid and pc.orgid = l.orgid and pc.productcatalogid::text = ANY(string_to_array(l.leadproduct,',')::text[])) products
         from "lead" l
         where l.personid = $personid
         and l.userid = $userid
