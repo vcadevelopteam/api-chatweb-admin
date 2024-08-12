@@ -1978,6 +1978,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_LEAD_REPORT_GRAPHIC_SEL: {
+        query: "select * from ufn_lead_report_graphic_sel($corpid, $orgid, $column, $summarization, $communicationchannel, $startdate, $enddate, $offset)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_COLUMN_SD_SEL: {
         query: "select * from ufn_column_sd_sel($corpid, $orgid, $id, $lost, $all)",
         module: ["/servicedesk"],
