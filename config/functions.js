@@ -179,7 +179,7 @@ module.exports = {
     },
     UFN_AUDIT_SEL: {
         query: "SELECT * FROM ufn_audit_sel($corpid, $orgid, $startdate, $enddate, $offset)",
-        module: [],
+        module: ["/reports"],
         protected: "SELECT"
     },
     UFN_AUDIT_INS: {
