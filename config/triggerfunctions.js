@@ -86,7 +86,7 @@ exports.getCollectionPagination = async (methodcollection, methodcount, data, pe
                 const queryCountCleaned = querycount.replace("###WHERE###", data.where || "");
                 
                 const profiler = logger.child({ ctx: data, _requestid: data._requestid }).startTimer();
-                console.log("dataaaa", data)
+                
                 const results = await Promise.all([
                     sequelize.query(queryCollectionCleaned, {
                         type: QueryTypes.SELECT,
