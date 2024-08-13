@@ -1454,7 +1454,7 @@ const invoiceSubscription = async (corpid, orgid, appsetting, parameters, invoic
         invoicedata.ProductList.push(invoicedetaildata);
 
         if (appsetting.invoiceprovider === "MIFACT") {
-            invoicedata.FilenameOverride = `${documenttype === "03" ? "BV" : "FV"} - PLATAFORMA LARAIGO ${genericfunctions.getMonth(billingmonth)} ${billingyear}`;
+            invoicedata.FilenameOverride = `${documenttype === "03" ? "BV" : "FV"} - PLATAFORMA LARAIGO ${genericfunctions.getMonth(billingmonth)} ${billingyear}.pdf`;
 
             const requestSendToSunat = await axiosObservable({
                 data: invoicedata,
@@ -1481,7 +1481,7 @@ const invoiceSubscription = async (corpid, orgid, appsetting, parameters, invoic
             }
         }
         else if (appsetting.invoiceprovider === "SIIGO") {
-            invoicedata.FilenameOverride = `FV - PLATAFORMA LARAIGO ${genericfunctions.getMonth(billingmonth)} ${billingyear}`;
+            invoicedata.FilenameOverride = `FV - PLATAFORMA LARAIGO ${genericfunctions.getMonth(billingmonth)} ${billingyear}.pdf`;
 
             const corp = await genericfunctions.getCorporation(corpid, requestId);
 
