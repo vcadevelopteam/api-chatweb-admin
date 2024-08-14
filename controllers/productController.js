@@ -83,15 +83,17 @@ exports.createorder = async (req, res) => {
         conversationid,
         personid,
         personcommunicationchannel,
-        status,
+        status = 'ACTIVO',
         currency = "PEN",
         amount = 0,
-        paymentstatus,
-        paymentref,
-        deliverytype,
-        deliveryaddress,
+        paymentstatus = 'pendiente',
+        paymentref = '',
+        deliverytype = '',
+        deliveryaddress = '',
         description = "",
         paymentmethod = "",
+        address = "",
+        detalle = ""
     } = req.body;
     try {
         const insertData = await executesimpletransaction("UFN_API_ORDER_INS", {
@@ -106,10 +108,11 @@ exports.createorder = async (req, res) => {
             paymentstatus,
             paymentref,
             deliverytype,
-            deliveryaddress,
+            deliveryaddress: address,
             username: "admin",
             description,
             paymentmethod,
+            additional_info: detalle
         });
 
         if (!(insertData instanceof Array)) {
