@@ -5013,7 +5013,7 @@ module.exports = {
         protected: "SELECT"
     },
     UPDATE_LANGUAGE_SETTINGS: {
-        query: "SELECT * FROM update_language_settings($corpid, $orgid, $userid, $languagesettings)",
+        query: "SELECT * FROM update_language_settings($userid, $languagesettings)",
         module: "",
         protected: "SELECT"
     }
