@@ -112,7 +112,7 @@ exports.createorder = async (req, res) => {
             username: "admin",
             description,
             paymentmethod,
-            additional_info: detalle
+            additional_info: detalle && { productos: detalle }
         });
 
         if (!(insertData instanceof Array)) {
