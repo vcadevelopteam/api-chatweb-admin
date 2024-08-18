@@ -105,8 +105,11 @@ exports.dashboardDesigner = async (req, res) => {
                         return resIndicator[0];
                     } else {
                         const report = resIndicator[0];
+                        
+                        
+
                         const filterHard = [
-                            ...JSON.parse(report.filterjson).filter(x => !!x.filter || x.type_filter === 'unique_value').map(x => ({ ...x, value: x.filter })),
+                            ...JSON.parse(report.filterjson).filter(x => !!x.filter || (x.type_filter === 'unique_value' && !x.type?.includes("timestamp"))).map(x => ({ ...x, value: x.filter })),
                             {
                                 columnname: `${report.dataorigin}.createdate`,
                                 type: "timestamp without time zone",

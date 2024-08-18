@@ -94,7 +94,7 @@ module.exports = {
             type: "date"
         },
         interactionid: {
-            column: "inter.interactionid"
+            column: "inter.interactionid::text"
         },
         interactiondatehour: {
             column: "inter.createdate",
