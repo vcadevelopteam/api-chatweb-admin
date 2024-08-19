@@ -42,6 +42,7 @@ exports.updateInformation = async (req, res) => {
         } else {
             parameters.password = "";
         }
+        parameters.languagesettings = parameters.languagesettings || null;
         
         const result = await executesimpletransaction("UFN_USER_UPDATE", parameters)
 
