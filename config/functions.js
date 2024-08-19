@@ -1884,7 +1884,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_USER_UPDATE: {
-        query: "SELECT * FROM ufn_user_update($userid, $firstname, $lastname, $password, $image)",
+        query: "SELECT * FROM ufn_user_update($userid, $firstname, $lastname, $password, $image, $languagesettings)",
         module: "",
         protected: "INSERT"
     },

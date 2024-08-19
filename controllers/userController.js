@@ -42,7 +42,7 @@ exports.updateInformation = async (req, res) => {
         } else {
             parameters.password = "";
         }
-
+        
         const result = await executesimpletransaction("UFN_USER_UPDATE", parameters)
 
         if (result instanceof Array) {
@@ -51,6 +51,7 @@ exports.updateInformation = async (req, res) => {
                 firstname: parameters.firstname || req.user.firstname,
                 lastname: parameters.lastname || req.user.lastname,
                 image: parameters.image || req.user.image,
+                languagesettings: parameters.languagesettings || req.user.languagesettings,
             };
             jwt.sign({ user: newusertoken }, (process.env.SECRETA || "palabrasecreta"), {}, (error, token) => {
                 if (error) throw error;
