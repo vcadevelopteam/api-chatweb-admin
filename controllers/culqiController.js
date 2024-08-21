@@ -1785,10 +1785,16 @@ exports.chargeInvoice = async (request, response) => {
             return response.status(responsedata.status).json(responsedata);
         }
     } catch (exception) {
-        if (exception.charge_id) {
+        if (exception.user_message) {
             return response.status(500).json({
                 ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-                message: exception.merchant_message,
+                message: exception.user_message,
+            });
+        }
+        else if (exception.merchant_message) {
+            return response.status(500).json({
+                ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+                message: exception.merchant_message.split("https://www.culqi.com/api")[0],
             });
         }
         else {
@@ -2418,10 +2424,16 @@ exports.createBalance = async (request, response) => {
             return response.status(responsedata.status).json(responsedata);
         }
     } catch (exception) {
-        if (exception.charge_id) {
+        if (exception.user_message) {
             return response.status(500).json({
                 ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-                message: exception.merchant_message,
+                message: exception.user_message,
+            });
+        }
+        else if (exception.merchant_message) {
+            return response.status(500).json({
+                ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+                message: exception.merchant_message.split("https://www.culqi.com/api")[0],
             });
         }
         else {
