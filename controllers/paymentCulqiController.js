@@ -23,7 +23,32 @@ exports.newPayment = async (request, response) => {
 
                 if (authcredentials) {
                     if (authcredentials.privateKey) {
-                        const charge = await createCharge({ address: paymentorder.useraddress, address_city: paymentorder.usercity, firstname: paymentorder.userfirstname, lastname: paymentorder.userlastname, phone: paymentorder.userphone }, settings, token, metadata, authcredentials.privateKey);
+                        let charge = null;
+
+                        try {
+                            charge = await createCharge({ address: paymentorder.useraddress, address_city: paymentorder.usercity, firstname: paymentorder.userfirstname, lastname: paymentorder.userlastname, phone: paymentorder.userphone }, settings, token, metadata, authcredentials.privateKey);
+                        }
+                        catch (exception) {
+                            if (exception.user_message || exception.merchant_message) {
+                                await axiosObservable({
+                                    data: {
+                                        conversationid: paymentorder.conversationid,
+                                        corpid: paymentorder.corpid,
+                                        orgid: paymentorder.orgid,
+                                        personid: paymentorder.personid,
+                                        variables: {
+                                            payment_error: exception.user_message || exception.merchant_message,
+                                            syspaymentnotification: "0",
+                                        }
+                                    },
+                                    method: 'post',
+                                    url: `${servicesEndpoint}handler/continueflow`,
+                                    _requestid: responsedata.id,
+                                });
+                            }
+
+                            throw exception;
+                        }
 
                         if (charge.object === 'error') {
                             responsedata = genericfunctions.changeResponseData(responsedata, responsedata.code, { code: charge.code, id: charge.charge_id, message: charge.user_message, object: charge.object }, null, responsedata.status, responsedata.success);
@@ -96,10 +121,16 @@ exports.newPayment = async (request, response) => {
         return response.status(responsedata.status).json(responsedata);
     }
     catch (exception) {
-        if (exception.charge_id) {
+        if (exception.user_message) {
             return response.status(500).json({
                 ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
-                message: exception.merchant_message,
+                message: exception.user_message,
+            });
+        }
+        else if (exception.merchant_message) {
+            return response.status(500).json({
+                ...getErrorCode(null, exception, `Request to ${request.originalUrl}`, request._requestid),
+                message: exception.merchant_message.split("https://www.culqi.com/api")[0],
             });
         }
         else {

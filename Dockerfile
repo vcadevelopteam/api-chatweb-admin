@@ -3,9 +3,11 @@ ARG CONFIGFILE=.env \
     NODE_ENV=production \
     PORT=6065
 
-RUN apk --update add ttf-freefont fontconfig && rm -rf /var/cache/apk/*
+ENV npm_config_cache=/home/node/app/.npm
 ENV PHANTOMJS_VERSION=2.1.1
 ENV OPENSSL_CONF=/etc/ssl/
+
+RUN apk --update add ttf-freefont fontconfig && rm -rf /var/cache/apk/*
 RUN apk add --no-cache curl && \
     cd /tmp && curl -Ls https://github.com/topseom/phantomized/releases/download/${PHANTOMJS_VERSION}/dockerized-phantomjs.tar.gz | tar xz && \
     cp -R lib lib64 / && \
@@ -20,6 +22,8 @@ RUN apk add --no-cache curl && \
 WORKDIR /app
 COPY ["package.json", "package-lock.json*", "./"]
 RUN apk add g++ make py3-pip
+RUN chown -R 1000:1000 /app
+RUN npm cache clean --force
 RUN npm install --${NODE_ENV}
 COPY . .
 EXPOSE ${PORT}
