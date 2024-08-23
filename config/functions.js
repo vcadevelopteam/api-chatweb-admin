@@ -159,12 +159,32 @@ module.exports = {
         module: "/extras/users",
         protected: "INSERT"
     },
+    QUERY_GET_DATA_FROM_DESIGNER: {
+        query: `SELECT rp.columnjson, rp.filterjson, rp.summaryjson, rp.description
+		FROM reporttemplate rp 
+		WHERE rp.corpid = $corpid
+		AND rp.orgid = $orgid
+        AND rp.reporttemplateid = $reporttemplateid
+		AND rp.status <> 'ELIMINADO'`,
+        module: "",
+        protected: "INSERT"
+    },
     QUERY_WHITELIST: {
         query: `select ipstart from ipwhitelist
         where corpid = $corpid
         and orgid = $orgid
         and status = 'ACTIVO'`,
         module: "/extras/users",
+        protected: "INSERT"
+    },
+    UFN_AUDIT_SEL: {
+        query: "SELECT * FROM ufn_audit_sel($corpid, $orgid, $startdate, $enddate, $offset)",
+        module: ["/reports"],
+        protected: "SELECT"
+    },
+    UFN_AUDIT_INS: {
+        query: "SELECT * FROM ufn_audit_ins($corpid, $orgid, $description, 0, $type, $status, $origin, $parameters, $userid, $username)",
+        module: [],
         protected: "INSERT"
     },
     UFN_USER_INS: {
@@ -634,7 +654,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ORG_INS: {
-        query: "SELECT * FROM ufn_org_ins($corpid, $id, $description, $status, $type, $username, $operation, $email, $password, $port, $host, $default_credentials, $ssl, $private_mail, $currency, $country, $timezoneoffset, $timezone, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $iconbot, $iconadvisor, $iconclient, $credittype, $automaticpayment, $automaticperiod, $automaticinvoice, $voximplantautomaticrecharge, $voximplantrechargerange, $voximplantrechargepercentage, $voximplantrechargefixed, $voximplantadditionalperchannel, $appsettingid, $citybillingid, $variablecontext)",
+        query: "SELECT * FROM ufn_org_ins($corpid, $id, $description, $status, $type, $username, $operation, $email, $password, $port, $host, $default_credentials, $ssl, $private_mail, $currency, $country, $timezoneoffset, $timezone, $doctype, $docnum, $businessname, $fiscaladdress, $sunatcountry, $contactemail, $contact, $autosendinvoice, $iconbot, $iconadvisor, $iconclient, $credittype, $automaticpayment, $automaticperiod, $automaticinvoice, $voximplantautomaticrecharge, $voximplantrechargerange, $voximplantrechargepercentage, $voximplantrechargefixed, $voximplantadditionalperchannel, $appsettingid, $citybillingid, $variablecontext, $paymentplanid)",
         module: ["/organizations", "/extras/users"],
         protected: "INSERT"
     },
@@ -2443,7 +2463,7 @@ module.exports = {
         protected: "INSERT"
     },
     QUERY_GET_DASHBOARDTEMPLATE: {
-        query: "select detailjson from dashboardtemplate where corpid = $corpid and orgid = $orgid and dashboardtemplateid = $dashboardtemplateid",
+        query: "select detailjson, description from dashboardtemplate where corpid = $corpid and orgid = $orgid and dashboardtemplateid = $dashboardtemplateid",
         module: "",
         protected: "INSERT"
     },
@@ -4939,6 +4959,21 @@ module.exports = {
     },
     UFN_CONVERSATION_SEL_CLASSIFICATION_HISTORY: {
         query: "SELECT * FROM ufn_conversation_sel_classification_history($corpid, $orgid, $personid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_SEL_ORDER_HISTORY: {
+        query: "SELECT * FROM ufn_conversation_sel_order_history($corpid, $orgid, $personid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_SEL_OPPORTUNITY_HISTORY: {
+        query: "SELECT * FROM ufn_conversation_sel_opportunity_history($corpid, $orgid, $personid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_CONVERSATION_SEL_SS_HISTORY: {
+        query: "SELECT * FROM ufn_conversation_sel_ss_history($corpid, $orgid, $personid)",
         module: "",
         protected: "SELECT"
     },

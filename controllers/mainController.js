@@ -7,6 +7,56 @@ const Cursor = require('pg-cursor')
 const { processCursor } = require("../config/pg-cursor");
 
 
+
+const validateMethodToAudit = async (method, parameters) => {
+    try {
+        const FUNCTIONSTOAUDIT = [
+            { method: 'UFN_REPORT_PRODUCTIVITY_SEL', type: 'report' },
+            { method: 'UFN_REPORT_INTERACTION_SEL', type: 'report' },
+            { method: 'UFN_REPORT_TIPIFICATION_SEL', type: 'report' },
+            { method: 'UFN_REPORT_USERPRODUCTIVITYHOURS_SEL', type: 'report' },
+            { method: 'UFN_REPORT_USERPRODUCTIVITY_SEL', type: 'report' },
+            { method: 'UFN_REPORT_INPUTRETRY_SEL', type: 'report' },
+            { method: 'UFN_LOGINHISTORY_SEL', type: 'report' },
+            { method: 'UFN_REPORT_ASESOR_VS_TICKET_SEL', type: 'report' },
+            { method: 'UFN_CAMPAIGNREPORT_SEL', type: 'report' },
+            { method: 'UFN_REPORT_VOICECALL_SEL', type: 'report' },
+            { method: 'UFN_REPORT_COMPLIANCESLA_SEL', type: 'report' },
+            { method: 'UFN_LEADGRID_TRACKING_SEL', type: 'report' },
+            { method: 'UFN_REPORT_REQUESTSD_SEL', type: 'report' },
+            { method: 'UFN_REPORT_SENTMESSAGES_LST', type: 'report' },
+            { method: 'UFN_REPORT_INVOICE_SUMMARY_SEL', type: 'report' },
+            { method: 'UFN_REPORT_KPI_OPERATIVO_SEL', type: 'report' },
+            { method: 'UFN_REPORT_UNIQUECONTACTS_SEL', type: 'report' },
+            { method: 'UFN_REPORT_SENTMESSAGES_BY_TEMPLATE', type: 'report' },
+            { method: 'UFN_CONVERSATIONGRID_SEL', type: 'report' },
+            { method: 'UFN_PERSON_SEL', type: 'report' },
+            { method: 'UFN_DASHBOARD_GERENCIAL_TMO_GENERAL_SEL', type: 'dashboard' },
+            { method: 'UFN_DASHBOARD_OPERATIVO_TMO_GENERAL_SEL', type: 'dashboard' },
+            { method: 'UFN_DASHBOARD_PUSH_HSMCATEGORYRANK_SEL', type: 'dashboard' },
+            { method: 'UFN_DASHBOARD_GERENCIAL_TAG_SEL', type: 'dashboard' },
+            { method: 'UFN_DASHBOARD_DICONNECTIONTIMES_SEL', type: 'dashboard' },
+            { method: 'UFN_DASHBOARD_KPI_SUMMARY_SEL', type: 'dashboard' },
+            { method: 'UFN_DASHBOARD_KPI_SUMMARY_BY_MONTH', type: 'dashboard' },
+        ]
+
+        const rr = FUNCTIONSTOAUDIT.find(x => x.method === method)
+        if (rr) {
+            await executesimpletransaction("UFN_AUDIT_INS", {
+                ...parameters,
+                type: rr.type,
+                status: "ACTIVO",
+                origin: "custom",
+                description: method,
+                parameters: parameters || {}
+            });
+        }
+
+    } catch (error) {
+        console.log("aaa", error)
+    }
+}
+
 exports.GetCollection = async (req, res) => {
     let parameters = req.body.parameters || req.body.data || {};
     const { method, key } = req.body;
@@ -14,6 +64,8 @@ exports.GetCollection = async (req, res) => {
     setSessionParameters(parameters, req.user, req._requestid);
 
     logger.child({ _requestid: req._requestid, ctx: parameters }).info(`${method}: ${parameters.username}`);
+
+    validateMethodToAudit(method, parameters)
 
     const result = await executesimpletransaction(method, parameters, req.user.menu || {});
 
@@ -113,6 +165,8 @@ exports.getCollectionPagination = async (req, res) => {
 
     setSessionParameters(parameters, req.user, req._requestid);
 
+    validateMethodToAudit(methodCollection, parameters)
+
     logger.child({ _requestid: req._requestid, ctx: parameters }).info(`${methodCollection}: ${parameters.username}`);
     //data/parameters tendra distinct para el agrupamiento
     const result = await getCollectionPagination(methodCollection, methodCount, parameters, req.user.menu || {}, req._requestid);
@@ -146,6 +200,8 @@ exports.multiCollection = async (req, res) => {
             setSessionParameters(x.parameters, req.user);
             return x;
         })
+
+        data.forEach(item => validateMethodToAudit(item.method, item.parameters))
 
         const result = await GetMultiCollection(data, req.user.menu || {}, req._requestid);
 

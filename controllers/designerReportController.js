@@ -2,11 +2,31 @@ const { buildQueryDynamic, buildQueryDynamicGroupInterval, buildQueryDynamic2, e
 const { setSessionParameters, errors, getErrorCode, stringToMinutes, secondsToTime } = require('../config/helpers');
 
 exports.drawReport = async (req, res) => {
-    const { columns, filters, summaries, parameters = {} } = req.body;
+    const { filters, parameters = {}, reporttemplateid } = req.body;
 
     setSessionParameters(parameters, req.user, req._requestid);
 
-    const result = await buildQueryDynamic2(columns, filters, parameters, summaries, false, req.user);
+    const dataReport = await executesimpletransaction("QUERY_GET_DATA_FROM_DESIGNER", { ...parameters, reporttemplateid });
+
+    if (!(dataReport instanceof Array && dataReport.length > 0)) {
+        throw new Error("The report name not exists.")
+    }
+
+    const { columnjson, summaryjson, description } = dataReport[0];
+
+    await executesimpletransaction("UFN_AUDIT_INS", {
+        ...parameters,
+        type: "report",
+        status: "ACTIVO",
+        origin: "personalized",
+        description,
+        parameters: filters?.reduce((acc, item) => ({
+            ...acc,
+            [item.columnname]: item
+        }), {}) || {}
+    });
+
+    const result = await buildQueryDynamic2(JSON.parse(columnjson), filters, parameters, JSON.parse(summaryjson), false, req.user);
     if (!result.error)
         return res.json(result);
     else
@@ -74,6 +94,15 @@ exports.dashboardDesigner = async (req, res) => {
     try {
         const template = await executesimpletransaction("QUERY_GET_DASHBOARDTEMPLATE", parameters);
         if (template instanceof Array && template.length > 0) {
+
+            await executesimpletransaction("UFN_AUDIT_INS", {
+                ...parameters,
+                type: "dashboard",
+                status: "ACTIVO",
+                origin: "personalized",
+                description: template[0].description,
+                parameters: parameters || {}
+            });
 
             const templateDashboard = JSON.parse(template[0].detailjson);
             const keysIndicators = Object.keys(templateDashboard);
@@ -226,11 +255,6 @@ exports.dashboardDesigner = async (req, res) => {
                                         path: x.value
                                     }
                                 });
-                                // return Object.entries(resCleaned).map(([key, value], index) => ({
-                                //     title: tags[index].title,
-                                //     quantity: value,
-                                //     path: key
-                                // })).sort((a, b) => b.quantity - a.quantity)
                             }
                         } else {
                             const res = resIndicator.reduce((acc, item) => ({
@@ -269,7 +293,7 @@ exports.dashboardDesigner = async (req, res) => {
                             reportname,
                             total,
                             dataorigin,
-                            interval: !!summarizationfunction ? "" : interval,
+                            interval: summarizationfunction ? "" : interval,
                             columns: contentType === "report" ? JSON.parse(columnjson).map(x => ({ ...x, disabled: undefined, descriptionT: undefined })) : undefined,
                             error,
                             errorcode

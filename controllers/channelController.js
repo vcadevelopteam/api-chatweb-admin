@@ -3417,7 +3417,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                         templatedata.messageLimit || null,
                                         templatedata.partnerId || null,
                                         templatedata.qualityRating || null,
-                                        templatedata.status || null,
+                                        templatedata.status || 'REJECTED',
                                         request.user?.usr || "scheduler",
                                         request._requestid,
                                     );
