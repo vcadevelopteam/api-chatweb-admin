@@ -198,5 +198,8 @@ router.post("/getCallLists",
 router.post("/stopCallListProcessing",
     voximplantController.stopCallListProcessing
 )
+router.post("/getCompleteRecord",
+    voximplantController.getCompleteRecord
+)
 
 module.exports = router;
