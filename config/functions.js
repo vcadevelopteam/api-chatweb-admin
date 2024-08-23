@@ -4977,4 +4977,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_CLASSIFICATION_INS_ARRAY: {
+        query: "SELECT * FROM ufn_classification_ins_array($corpid, $orgid, $table, $username)",
+        module: "",
+        protected: "INSERT"
+    },
 }
