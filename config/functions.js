@@ -3523,7 +3523,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_UPD: {
-        query: "SELECT * FROM ufn_messagetemplate_upd($corpid, $orgid, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $footerenabled, $footer, $buttonsenabled, $priority, $attachment, $communicationchannelid, $communicationchanneltype, $authenticationdata, $bodyvariables, $buttonsgeneric, $buttonsquickreply, $carouseldata, $headervariables, $provideraccountid, $providerexternalid, $providerid, $providermessagelimit, $providerpartnerid, $providerquality, $providerstatus, $username)",
+        query: "SELECT * FROM ufn_messagetemplate_upd($corpid, $orgid, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $footerenabled, $footer, $buttonsenabled, $buttons, $priority, $attachment, $communicationchannelid, $communicationchanneltype, $authenticationdata, $bodyvariables, $buttonsgeneric, $buttonsquickreply, $carouseldata, $headervariables, $provideraccountid, $providerexternalid, $providerid, $providermessagelimit, $providerpartnerid, $providerquality, $providerstatus, $username)",
         module: "",
         protected: "SELECT"
     },

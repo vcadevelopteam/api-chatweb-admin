@@ -3383,6 +3383,41 @@ exports.synchronizeTemplate = async (request, response) => {
 
                                     const templateType = carouselData ? "CAROUSEL" : ((authenticationData || buttonGenericData || buttonQuickReplyData || footerData || headerData) ? "MULTIMEDIA" : "STANDARD");
 
+                                    let hasButtons = false;
+                                    let buttons = [];
+
+                                    if ((buttonGenericData || []).length > 0 || (buttonQuickReplyData || []).length > 0) {
+                                        hasButtons = true;
+
+                                        if ((buttonGenericData || []).length > 0) {
+                                            for (const buttonGeneric of buttonGenericData) {
+                                                if (buttonGeneric) {
+                                                    if (buttonGeneric.btn) {
+                                                        buttons.push({
+                                                            payload: `${buttonGeneric.btn.payload || buttonGeneric.btn.url || buttonGeneric.btn.phone_number || buttonGeneric.btn.text}`,
+                                                            title: `${buttonGeneric.btn.text}`,
+                                                            type: `${buttonGeneric.type}`.toLowerCase(),
+                                                        });
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        if ((buttonQuickReplyData || []).length > 0) {
+                                            for (const buttonQuickReply of buttonQuickReplyData) {
+                                                if (buttonQuickReply) {
+                                                    if (buttonQuickReply.btn) {
+                                                        buttons.push({
+                                                            payload: `${buttonQuickReply.btn.payload || buttonQuickReply.btn.url || buttonQuickReply.btn.phone_number || buttonQuickReply.btn.text}`,
+                                                            title: `${buttonQuickReply.btn.text}`,
+                                                            type: `${buttonQuickReply.type}`.toLowerCase(),
+                                                        });
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
                                     await channelfunctions.messageTemplateUpd(
                                         corpid,
                                         orgid,
@@ -3400,7 +3435,8 @@ exports.synchronizeTemplate = async (request, response) => {
                                         bodyData ? bodyData.text : null,
                                         footerData ? true : false,
                                         footerData ? footerData.text : null,
-                                        ((buttonGenericData || buttonQuickReplyData) || []).length > 0 ? true : false,
+                                        hasButtons,
+                                        (buttons || []).length > 0 ? JSON.stringify(buttons) : null,
                                         2,
                                         null,
                                         communicationchannel.communicationchannelid,
