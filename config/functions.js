@@ -576,6 +576,11 @@ module.exports = {
         module: ["/tickets"],
         protected: "SELECT"
     },
+    UFN_CLASSIFICATION_MASSIVE_DEL: {
+        query: "SELECT * FROM ufn_classification_massive_del($corpid, $orgid, $ids, $username)",
+        module: ["/tickets"],
+        protected: "SELECT"
+    },
     UFN_DOMAIN_SEL: {
         query: "SELECT * FROM ufn_domain_sel($corpid , $orgid , $domainname  , $username , $all)",
         module: ["/extras/domains"],
