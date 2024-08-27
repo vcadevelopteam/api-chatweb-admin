@@ -576,8 +576,8 @@ module.exports = {
         module: ["/tickets"],
         protected: "SELECT"
     },
-    UFN_CLASSIFICATION_MASSIVE_DEL: {
-        query: "SELECT * FROM ufn_classification_massive_del($corpid, $orgid, $ids, $username)",
+    UFN_INTELLIGENTMODELSCONFIGURATION_MASSIVE_DEL: {
+        query: "SELECT * FROM ufn_intelligentmodelsconfiguration_massive_del($corpid, $orgid, $ids, $username)",
         module: ["/tickets"],
         protected: "SELECT"
     },
