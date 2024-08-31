@@ -109,7 +109,7 @@ const getAppSettingVoximplant = async (corpid, orgid, requestid = null) => {
     return null
 }
 
-exports.messageTemplateUpd = async (corpid, orgid, description, type, status, name, namespace, category, language, templatetype, headerenabled, headertype, header, body, footerenabled, footer, buttonsenabled, priority, attachment, communicationchannelid, communicationchanneltype, authenticationdata, bodyvariables, buttonsgeneric, buttonsquickreply, carouseldata, headervariables, provideraccountid, providerexternalid, providerid, providermessagelimit, providerpartnerid, providerquality, providerstatus, categorychange, firstbuttons, username, requestid = null) => {
+exports.messageTemplateUpd = async (corpid, orgid, description, type, status, name, namespace, category, language, templatetype, headerenabled, headertype, header, body, footerenabled, footer, buttonsenabled, buttons, priority, attachment, communicationchannelid, communicationchanneltype, authenticationdata, bodyvariables, buttonsgeneric, buttonsquickreply, carouseldata, headervariables, provideraccountid, providerexternalid, providerid, providermessagelimit, providerpartnerid, providerquality, providerstatus, categorychange, firstbuttons, username, requestid = null) => {
     const queryMethod = "UFN_MESSAGETEMPLATE_UPD";
     const queryParameters = {
         corpid: corpid,
@@ -129,6 +129,7 @@ exports.messageTemplateUpd = async (corpid, orgid, description, type, status, na
         footerenabled: footerenabled,
         footer: footer,
         buttonsenabled: buttonsenabled,
+        buttons: buttons,
         priority: priority,
         attachment: attachment,
         communicationchannelid: communicationchannelid,
