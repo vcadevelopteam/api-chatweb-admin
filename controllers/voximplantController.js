@@ -1797,6 +1797,123 @@ exports.getCompleteRecord = async (request, result) => {
     }
 }
 
+const validateBearerToken = async (token) => {
+    if (token) {
+        const authHeader = String(token);
+        if (authHeader.startsWith('Bearer ')) {
+            const apikey = authHeader.substring(7, authHeader.length);
+            const resApikey = await executesimpletransaction("QUERY_GET_DATA_FROM_APIKEY", { apikey })
+
+            if ((resApikey instanceof Array) && resApikey.length > 0) {
+                return resApikey[0];
+            } else {
+                const key = process.env?.SECRETA ?? "palabrasecreta";
+                try {
+                    const jsonData = CryptoJS.AES.decrypt(apikey, key).toString(CryptoJS.enc.Utf8)
+                    const user = JSON.parse(jsonData);
+                    if (user.admin) {
+                        return JSON.parse(jsonData);
+                    }
+                } catch (error) {
+
+                }
+            }
+        }
+    }
+    throw new Error("token is not valid")
+}
+
+exports.getCompleteRecordExternal = async (request, response) => {
+    try {
+        const params = await validateBearerToken(request.headers['authorization'])
+        
+        params.conversationid = request.body.conversationid;
+
+        if (!params.conversationid) {
+            throw new Error("Conversationid is obligatory.")
+        }
+        const resConversations = await executesimpletransaction("QUERY_GET_CONVERSATION", params);
+        
+        if (!(resConversations instanceof Array && resConversations.length > 0)) {
+            throw new Error("Conversation is not found.")
+        }
+        
+        params.call_session_history_id = resConversations[0].call_session_history_id;
+        
+        if (!params.call_session_history_id) {
+            throw new Error("Conversation does not have session on voximplant.")
+        }
+
+
+        // Try to get information of VOXI in org table
+        const voxiorgdata = await executesimpletransaction("QUERY_GET_VOXIMPLANT_ORG", {
+            corpid: params.corpid,
+            orgid: params.orgid,
+            _requestid: request._requestid,
+        });
+
+        // If exists info of VOXI in org
+        if (voxiorgdata instanceof Array && voxiorgdata.length > 0) {
+            params['account_id'] = voxiorgdata[0].voximplantaccountid;
+            params['api_key'] = voxiorgdata[0].voximplantapikey;
+            params['application_id'] = voxiorgdata[0].voximplantapplicationid;
+        }
+
+        let requestResult = await voximplant.getCallRecord({ ...params, requestid: request._requestid });
+        if (requestResult) {
+            if (requestResult?.result.length > 0) {
+                let record_url_str = requestResult?.result[0]?.records?.[0]?.record_url;
+                if (!record_url_str) {
+                    return response.status(400).json({
+                        ...resultData,
+                        code: "error_no_record",
+                        message: "No record"
+                    })
+                }
+                let record_url = new URL(record_url_str);
+                record_url.searchParams.append('account_id', params['account_id']);
+                record_url.searchParams.append('api_key', params['api_key']);
+                record_url_str = record_url.toString();
+                try {
+                    record_data = await axios.get(record_url_str, {
+                        responseType: 'arraybuffer',
+                    });
+                    if (record_data.status === 200) {
+                        response.set('Content-Disposition', record_data.headers["content-disposition"]);
+                        response.set('Content-Type', record_data.headers["content-type"]);
+                        let base64data = record_data.data.toString('base64');
+                        return response.send(base64data)
+                    }
+                }
+                catch (error) {
+                    return response.status(400).json({
+                        ...resultData,
+                        code: "error_record_error",
+                        message: "Record error"
+                    })
+                }
+            }
+        }
+        return response.status(400).json({
+            ...resultData,
+            code: "error_invalid_call",
+            message: "Invalid call"
+        })
+        
+
+
+
+
+
+
+
+
+    }
+    catch (error) {
+        return response.status(400).json({ error: true, message: error.message })
+    }
+}
+
 exports.getCallLists = async (request, result) => {
     try {
         let requestResult = await voximplant.getCallLists(request.body)

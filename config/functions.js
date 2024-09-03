@@ -94,6 +94,15 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_GET_CONVERSATION: {
+        query: `SELECT postexternalid as call_session_history_id, corpid, orgid 
+        from conversation 
+        where conversationid = $conversationid
+        and corpid = $corpid
+        and orgid = $orgid`,
+        module: "/api",
+        protected: "SELECT"
+    },
     UFN_USER_SEL: {
         query: "SELECT * FROM ufn_user_sel($corpid, $orgid, $id, $username, $all, $userid)",
         module: ["/extras/users", "/tickets"],
