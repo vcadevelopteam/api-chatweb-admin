@@ -1,6 +1,7 @@
 const { getErrorCode, axiosObservable, errors } = require("../config/helpers");
 const { executesimpletransaction } = require("../config/triggerfunctions");
 const { getFileRequest, extractDataFile } = require("../config/productCatalog.helper");
+const { pushNotification } = require('../config/firebase_bodegueros');
 // var https = require('https');
 
 // const agent = new https.Agent({
@@ -93,7 +94,8 @@ exports.createorder = async (req, res) => {
         description = "",
         paymentmethod = "",
         address = "",
-        detalle = ""
+        detalle = "",
+        order_scheduling_date = ""
     } = req.body;
     try {
         const insertData = await executesimpletransaction("UFN_API_ORDER_INS", {
@@ -112,12 +114,25 @@ exports.createorder = async (req, res) => {
             username: "admin",
             description,
             paymentmethod,
-            additional_info: detalle && { productos: detalle }
+            additional_info: detalle && { productos: detalle, order_scheduling_date }
         });
 
         if (!(insertData instanceof Array)) {
             return res.status(500).json(getErrorCode(insertData.code || "UNEXPECTED_ERROR"));
         }
+
+        const ticketToGive = {
+            data: {
+                interactiontype: 'text',
+                mode: "messagein",
+                ...req.body
+            },
+            notification: {
+                title: `Nueva orden creada`,
+                body: `${insertData[0].ordernumber}`,
+            }
+        }
+        pushNotification(ticketToGive, 'new_order')
 
         return res.json({
             error: false,
