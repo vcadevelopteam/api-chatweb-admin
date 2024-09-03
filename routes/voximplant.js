@@ -60,6 +60,10 @@ router.post("/getCallRecord",
     auth,
     voximplantController.getCallRecord
 )
+router.post("/getCallRecord/external",
+    voximplantController.getCompleteRecordExternal
+)
+
 router.post("/getCallTranscription",
     voximplantController.getCallTranscription
 )
