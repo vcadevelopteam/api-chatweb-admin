@@ -125,7 +125,8 @@ exports.createorder = async (req, res) => {
             data: {
                 interactiontype: 'text',
                 mode: "messagein",
-                ...req.body
+                ...req.body,
+                displayname: insertData[0].v_displayname
             },
             notification: {
                 title: `Nueva orden creada`,
