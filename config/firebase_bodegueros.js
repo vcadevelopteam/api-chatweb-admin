@@ -69,7 +69,6 @@ exports.pushNotification = (datatmp, topic = "") => {
                 .messaging()
                 .send({
                     topic,
-                    notification,
                     apns,
                     android: {
                         priority: "high",
