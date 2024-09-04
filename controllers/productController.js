@@ -138,7 +138,7 @@ exports.createorder = async (req, res) => {
         return res.json({
             error: false,
             success: true,
-            data: { ordernumber: insertData[0].ordernumber, orderid: insertData[0].orderid },
+            data: { ordernumber: insertData[0].ordernumber, orderid: insertData[0].orderid, displayname: insertData[0].v_displayname },
         });
     } catch (exception) {
         return res.status(500).json({ message: "Error al procesar el registro.", error: true, success: false });
