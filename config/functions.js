@@ -1632,7 +1632,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_INTELLIGENTMODELSCONFIGURATION_INS: {
-        query: "SELECT * FROM ufn_intelligentmodelsconfiguration_ins($corpid, $orgid, $communicationchannelid, $username, $intelligentmodelsconfigurationid, $operation, $description, $type, $status, $color, $icontype, $parameters, $intelligentmodelsid, $connectortype, $firstinteraccion, $originanalysis, $model, $translation, $language)",
+        query: "SELECT * FROM ufn_intelligentmodelsconfiguration_ins($corpid, $orgid, $communicationchannelid, $username, $intelligentmodelsconfigurationid, $operation, $description, $type, $status, $color, $icontype, $intelligentmodelsid, $connectortype, $firstinteraccion, $originanalysis, $model, $translation, $language)",
         module: ["/iaconfigurations"],
         protected: "INSERT"
     },
