@@ -247,14 +247,14 @@ exports.changeorderstatus = async (req, res) => {
 
         const data = getHsmData(corpid, orgid, orderstatus, order_data[0]);
 
-        const responseservices = await axiosObservable({
-            method: "post",
-            url: `${process.env.SERVICES}handler/external/sendhsm`,
-            data,
-        });
-        if (!responseservices.data.Success) {
-            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
-        }
+        // const responseservices = await axiosObservable({
+        //     method: "post",
+        //     url: `${process.env.SERVICES}handler/external/sendhsm`,
+        //     data,
+        // });
+        // if (!responseservices.data.Success) {
+        //     return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+        // }
 
         await executesimpletransaction("UFN_CHANGE_ORDERSTATUS", {
             corpid,
