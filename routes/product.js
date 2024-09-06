@@ -14,4 +14,7 @@ router.post("/createorderitem", productController.createorderitem);
 
 router.post("/changeorderstatus", productController.changeorderstatus);
 
+router.post("/createcomment", productController.createcomment);
+
+
 module.exports = router;

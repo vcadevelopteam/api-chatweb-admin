@@ -4630,6 +4630,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_API_ORDER_COMMENTS_INS: {
+        query: "SELECT * FROM ufn_api_order_comments_ins($orderid, $comment)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_API_ORDERLINE_INS: {
         query: "SELECT * FROM ufn_api_orderline_ins($corpid, $orgid, $orderid, $conversationid, $personid, $personcommunicationchannel, $description, $productid, $type, $title, $imagelink, $quantity, $currency, $unitprice, $amount, $username)",
         module: "",
