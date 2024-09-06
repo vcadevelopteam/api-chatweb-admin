@@ -164,7 +164,7 @@ exports.createcomment = async (req, res) => {
             return res.status(500).json(getErrorCode(insertData.code || "UNEXPECTED_ERROR"));
         }
 
-        if (author.toLowerCase().trim() === 'client') {
+        if (author.toLowerCase().trim() === 'cliente') {
             const notifyComment = {
                 data: {
                     orderid,
