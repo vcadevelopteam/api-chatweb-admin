@@ -4717,7 +4717,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_MESSAGEAI_INS: {
-        query: "SELECT * FROM ufn_messageai_ins($corpid, $orgid, $assistantaiid, $threadid, $assistantaidocumentid, $id, $messagetext, $infosource, $type, $status, $username, $operation);",
+        query: "SELECT * FROM ufn_messageai_ins($corpid, $orgid, $assistantaiid, $threadid, $assistantaidocumentid, $id, $messagetext, $infosource, $type, $status, $username, $operation, $tokencount);",
         module: "",
         protected: "INSERT"
     },
