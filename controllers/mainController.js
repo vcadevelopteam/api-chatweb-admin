@@ -8,7 +8,7 @@ const { processCursor } = require("../config/pg-cursor");
 
 
 
-const validateMethodToAudit = async (method, parameters) => {
+const validateMethodToAudit = async (method, parameters, user) => {
     try {
         const FUNCTIONSTOAUDIT = [
             { method: 'UFN_REPORT_PRODUCTIVITY_SEL', type: 'report' },
@@ -43,7 +43,10 @@ const validateMethodToAudit = async (method, parameters) => {
         const rr = FUNCTIONSTOAUDIT.find(x => x.method === method)
         if (rr) {
             await executesimpletransaction("UFN_AUDIT_INS", {
-                ...parameters,
+                corpid: user.corpid,
+                orgid: user.orgid,
+                userid: user.userid,
+                username: user.usr,
                 type: rr.type,
                 status: "ACTIVO",
                 origin: "custom",
@@ -65,7 +68,7 @@ exports.GetCollection = async (req, res) => {
 
     logger.child({ _requestid: req._requestid, ctx: parameters }).info(`${method}: ${parameters.username}`);
 
-    validateMethodToAudit(method, parameters)
+    validateMethodToAudit(method, parameters, req.user)
 
     const result = await executesimpletransaction(method, parameters, req.user.menu || {});
 
@@ -165,7 +168,7 @@ exports.getCollectionPagination = async (req, res) => {
 
     setSessionParameters(parameters, req.user, req._requestid);
 
-    validateMethodToAudit(methodCollection, parameters)
+    validateMethodToAudit(methodCollection, parameters, req.user)
 
     logger.child({ _requestid: req._requestid, ctx: parameters }).info(`${methodCollection}: ${parameters.username}`);
     //data/parameters tendra distinct para el agrupamiento
@@ -201,7 +204,7 @@ exports.multiCollection = async (req, res) => {
             return x;
         })
 
-        data.forEach(item => validateMethodToAudit(item.method, item.parameters))
+        data.forEach(item => validateMethodToAudit(item.method, item.parameters, req.user))
 
         const result = await GetMultiCollection(data, req.user.menu || {}, req._requestid);
 
