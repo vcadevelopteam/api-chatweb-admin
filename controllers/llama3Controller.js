@@ -308,6 +308,7 @@ exports.query = async (req, res) => {
         system_prompt: system_prompt,
         model: model,
         thread_id: thread_id,
+        context: " ",
         max_new_tokens: max_new_tokens,
         temperature: temperature,
         top_p: top_p
