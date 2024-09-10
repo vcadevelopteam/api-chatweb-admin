@@ -169,7 +169,8 @@ exports.createcomment = async (req, res) => {
                 data: {
                     orderid,
                     author,
-                    comment
+                    comment,
+                    topic: "new_comment"
                 },
                 notification: {
                     title: `Nueva orden creada`,
