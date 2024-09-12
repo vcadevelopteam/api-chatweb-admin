@@ -4655,6 +4655,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_WATSON_ITEMS_SEL: {
+        query: "SELECT * FROM public.ufn_watson_items_sel($corpid, $orgid, $watsonid, $type)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_ALL_INVENTORY_INVENTORYMOVEMENT_SEL: {
         query: "SELECT * FROM inventario.ufn_all_inventory_inventorymovement_sel($corpid, $orgid, $inventoryid, $username)",
         module: "",
