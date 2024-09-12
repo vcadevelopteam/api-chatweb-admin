@@ -1,6 +1,10 @@
 const { getErrorCode, axiosObservable, errors } = require("../config/helpers");
 const { executesimpletransaction } = require("../config/triggerfunctions");
 const { getFileRequest, extractDataFile } = require("../config/productCatalog.helper");
+const { pushNotification } = require('../config/firebase_bodegueros');
+const dayjs = require("dayjs");
+const utc = require("dayjs/plugin/utc");
+dayjs.extend(utc);
 // var https = require('https');
 
 // const agent = new https.Agent({
@@ -83,15 +87,18 @@ exports.createorder = async (req, res) => {
         conversationid,
         personid,
         personcommunicationchannel,
-        status,
+        status = 'ACTIVO',
         currency = "PEN",
         amount = 0,
-        paymentstatus,
-        paymentref,
-        deliverytype,
-        deliveryaddress,
+        paymentstatus = 'pendiente',
+        paymentref = '',
+        deliverytype = '',
+        deliveryaddress = '',
         description = "",
         paymentmethod = "",
+        address = "",
+        detalle = "",
+        order_scheduling_date = ""
     } = req.body;
     try {
         const insertData = await executesimpletransaction("UFN_API_ORDER_INS", {
@@ -106,20 +113,77 @@ exports.createorder = async (req, res) => {
             paymentstatus,
             paymentref,
             deliverytype,
-            deliveryaddress,
+            deliveryaddress: address,
             username: "admin",
             description,
             paymentmethod,
+            additional_info: detalle && { productos: detalle, order_scheduling_date }
         });
 
         if (!(insertData instanceof Array)) {
             return res.status(500).json(getErrorCode(insertData.code || "UNEXPECTED_ERROR"));
         }
 
+        const ticketToGive = {
+            data: {
+                interactiontype: 'text',
+                mode: "messagein",
+                ...req.body,
+                displayname: insertData[0].v_displayname
+            },
+            notification: {
+                title: `Nueva orden creada`,
+                body: `${insertData[0].ordernumber}`,
+            }
+        }
+        pushNotification(ticketToGive, 'new_order')
+
         return res.json({
             error: false,
             success: true,
-            data: { ordernumber: insertData[0].ordernumber, orderid: insertData[0].orderid },
+            data: { ordernumber: insertData[0].ordernumber, orderid: insertData[0].orderid, displayname: insertData[0].v_displayname },
+        });
+    } catch (exception) {
+        return res.status(500).json({ message: "Error al procesar el registro.", error: true, success: false });
+    }
+};
+
+exports.createcomment = async (req, res) => {
+    const { orderid, author, comment, offset = -5 } = req.body;
+    try {
+        const insertData = await executesimpletransaction("UFN_API_ORDER_COMMENTS_INS", {
+            orderid,
+            comment: JSON.stringify({
+                author,
+                comment,
+                date: dayjs().utcOffset(-5).format('YYYY-MM-DD HH:mm:ss'),
+            })
+        });
+
+        if (!(insertData instanceof Array)) {
+            return res.status(500).json(getErrorCode(insertData.code || "UNEXPECTED_ERROR"));
+        }
+
+        if (author.toLowerCase().trim() === 'cliente') {
+            const notifyComment = {
+                data: {
+                    orderid,
+                    author,
+                    comment,
+                    topic: "new_comment"
+                },
+                notification: {
+                    title: `Nueva orden creada`,
+                    body: `${insertData[0].ordernumber}`,
+                },
+            };
+            pushNotification(notifyComment, "new_comment");
+        }
+
+        return res.json({
+            error: false,
+            success: true,
+            data: { orderid: orderid },
         });
     } catch (exception) {
         return res.status(500).json({ message: "Error al procesar el registro.", error: true, success: false });
@@ -184,14 +248,14 @@ exports.changeorderstatus = async (req, res) => {
 
         const data = getHsmData(corpid, orgid, orderstatus, order_data[0]);
 
-        const responseservices = await axiosObservable({
-            method: "post",
-            url: `${process.env.SERVICES}handler/external/sendhsm`,
-            data,
-        });
-        if (!responseservices.data.Success) {
-            return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
-        }
+        // const responseservices = await axiosObservable({
+        //     method: "post",
+        //     url: `${process.env.SERVICES}handler/external/sendhsm`,
+        //     data,
+        // });
+        // if (!responseservices.data.Success) {
+        //     return res.status(400).json(getErrorCode(errors.REQUEST_SERVICES));
+        // }
 
         await executesimpletransaction("UFN_CHANGE_ORDERSTATUS", {
             corpid,

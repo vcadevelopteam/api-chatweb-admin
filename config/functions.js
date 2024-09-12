@@ -4596,7 +4596,12 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_API_ORDER_INS: {
-        query: "SELECT * FROM ufn_api_order_ins($corpid, $orgid, $conversationid, $personid, $personcommunicationchannel, $status, $currency, $amount, $paymentstatus, $paymentref, $deliverytype, $deliveryaddress, $username, $description, $paymentmethod)",
+        query: "SELECT * FROM ufn_api_order_ins($corpid, $orgid, $conversationid, $personid, $personcommunicationchannel, $status, $currency, $amount, $paymentstatus, $paymentref, $deliverytype, $deliveryaddress, $username, $description, $paymentmethod, $additional_info)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_API_ORDER_COMMENTS_INS: {
+        query: "SELECT * FROM ufn_api_order_comments_ins($orderid, $comment)",
         module: "",
         protected: "SELECT"
     },
