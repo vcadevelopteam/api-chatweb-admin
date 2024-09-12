@@ -4670,6 +4670,21 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_INTELLIGENTMODELSCONFIGURATION_SEL: {
+        query: "select i.intelligentmodelsconfigurationid, im.intelligentmodelsid, im.endpoint, im.apikey, im.modelid from intelligentmodelsconfiguration i join intelligentmodels im on im.intelligentmodelsid = i.intelligentmodelsid where i.intelligentmodelsconfigurationid = $id and i.status = 'ACTIVO' and im.status = 'ACTIVO'",
+        module: "",
+        protected: "SELECT"
+    },
+    QUERY_WATSONMODELCONFIGURATION_SEL: {
+        query: "select w.watsonid, im.intelligentmodelsid, im.endpoint, im.apikey, im.modelid from watson w join intelligentmodels im on im.intelligentmodelsid = w.intelligentmodelsid where watsonid = $watsonid and w.status = 'ACTIVO' and im.status = 'ACTIVO';",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_INSERT_IBM_DATA: {
+        query: "SELECT * FROM public.ufn_watson_insert_ibm_data($corpid, $orgid, $intelligentmodelsid, $watson_description, $watson_language, $watson_intents_count, $watson_entities_count, $intents_json, $entities_json, $hash)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_ALL_INVENTORY_INVENTORYMOVEMENT_SEL: {
         query: "SELECT * FROM inventario.ufn_all_inventory_inventorymovement_sel($corpid, $orgid, $inventoryid, $username)",
         module: "",
