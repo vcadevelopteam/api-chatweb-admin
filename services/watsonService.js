@@ -243,7 +243,7 @@ exports.tryitModel = async (requestid, connectorData, assistant, text) => {
 exports.insertIntentionItem = async (requestid, params) => {
     let responsedata = genericfunctions.generateResponseData(requestid);
     try {
-        const insertItem = await executesimpletransaction("UFN_WATSON_ITEM_INS", {
+        const insertItem = await executesimpletransaction("UFN_WATSON_ITEM_INTENT_INS", {
             ...params,
             description: params.description || "",
             type: "intention",
@@ -300,8 +300,6 @@ exports.syncIntentionItem = async (requestid, assistant, connector, params) => {
                         .map((item) => ({ text: item.value, mentions: item.mentions })),
             }),
         };
-        console.log("🚀 ~ exports.syncIntentionItem= ~ params.detail:", params.detail.filter((item) => item.status === "ACTIVO"))
-        console.log("🚀 ~ exports.syncIntentionItem= ~ data:", data)
 
         switch (params.operation) {
             case "UPDATE":
