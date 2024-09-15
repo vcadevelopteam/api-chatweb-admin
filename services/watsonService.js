@@ -182,7 +182,7 @@ exports.getAssistantConfiguration = async (requestid, configData) => {
 
         return genericfunctions.changeResponseData(responsedata, undefined, assistant, "Success", 200, true);
     } catch (error) {
-        logger.child({ _requestid: requestid }).error(error);
+        logger.child({ _requestid: requestid, ctx: configData }).error(error);
         return genericfunctions.changeResponseData(
             responsedata,
             undefined,
@@ -199,8 +199,7 @@ exports.getWatsonConfiguration = async (requestid, watsonid) => {
         const connectorData = await executesimpletransaction("QUERY_WATSONMODELCONFIGURATION_SEL", {
             watsonid,
         });
-        if (!connectorData instanceof Array || !connectorData.length)
-            return genericfunctions.changeResponseData(responsedata, undefined, undefined, "CONFIGURATION_NOT_FOUND.");
+        if (!connectorData instanceof Array || !connectorData.length) throw new Error("CONFIGURATION_NOT_FOUND");
 
         return genericfunctions.changeResponseData(
             responsedata,
@@ -237,6 +236,105 @@ exports.tryitModel = async (requestid, connectorData, assistant, text) => {
             undefined,
             undefined,
             "Error retrieving the assistant configuration."
+        );
+    }
+};
+
+exports.insertIntentionItem = async (requestid, params) => {
+    let responsedata = genericfunctions.generateResponseData(requestid);
+    try {
+        const insertItem = await executesimpletransaction("UFN_WATSON_ITEM_INS", {
+            ...params,
+            description: params.description || "",
+            type: "intention",
+            detail_json: JSON.stringify(params.detail || []),
+        });
+        if (!insertItem instanceof Array || !insertItem.length)
+            return genericfunctions.changeResponseData(
+                responsedata,
+                undefined,
+                undefined,
+                insertItem.code || "UNEXPECTED_ERROR"
+            );
+
+        return genericfunctions.changeResponseData(
+            responsedata,
+            undefined,
+            insertItem[0],
+            "Intention item inserted successfully.",
+            200,
+            true
+        );
+    } catch (error) {
+        logger.child({ _requestid: requestid, ctx: params }).error(error);
+        return genericfunctions.changeResponseData(
+            responsedata,
+            undefined,
+            undefined,
+            "Error inserting the intention item."
+        );
+    }
+};
+
+exports.syncIntentionItem = async (requestid, assistant, connector, params) => {
+    let responsedata = genericfunctions.generateResponseData(requestid);
+    let newIntent = null;
+    try {
+        const data = {
+            workspaceId: connector.modelid,
+            intent: params.item_name,
+            ...(params.operation === "INSERT" && {
+                description: params.description,
+                examples:
+                    params.detail &&
+                    params.detail
+                        .filter((item) => item.status === "ACTIVO")
+                        .map((item) => ({ text: item.value, mentions: item.mentions })),
+            }),
+            ...(params.operation === "UPDATE" && {
+                newDescription: params.description,
+                newExamples: 
+                    params.detail &&
+                    params.detail
+                        .filter((item) => item.status === "ACTIVO")
+                        .map((item) => ({ text: item.value, mentions: item.mentions })),
+            }),
+        };
+        console.log("🚀 ~ exports.syncIntentionItem= ~ params.detail:", params.detail.filter((item) => item.status === "ACTIVO"))
+        console.log("🚀 ~ exports.syncIntentionItem= ~ data:", data)
+
+        switch (params.operation) {
+            case "UPDATE":
+                newIntent = await assistant.updateIntent(data);
+                break;
+            case "INSERT":
+                newIntent = await assistant.createIntent(data);
+                break;
+            case "DELETE":
+                newIntent = await assistant.deleteIntent(data);
+                break;
+            default:
+                break;
+        }
+
+        if (![200, 201].includes(newIntent.status))
+            throw new Error(newIntent.result || "Error creating the intent.");
+
+        return genericfunctions.changeResponseData(
+            responsedata,
+            undefined,
+            newIntent.result,
+            "Intention item inserted successfully.",
+            200,
+            true
+        );
+    } catch (error) {
+        logger.child({ _requestid: requestid, ctx: params }).error(error);
+        return genericfunctions.changeResponseData(
+            responsedata,
+            undefined,
+            undefined,
+            "Error inserting the intention item."
         );
     }
 };

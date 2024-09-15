@@ -1,4 +1,5 @@
 const logger = require("../config/winston");
+const { setSessionParameters } = require("../config/helpers");
 const {
     getConnectorConfiguration,
     getSkillInformation,
@@ -7,6 +8,8 @@ const {
     getAssistantConfiguration,
     getWatsonConfiguration,
     tryitModel,
+    insertIntentionItem,
+    syncIntentionItem,
 } = require("../services/watsonService");
 
 exports.sync = async (req, res) => {
@@ -42,4 +45,28 @@ exports.tryit = async (req, res) => {
     if (response.error) return res.status(response.status).json(response);
 
     return res.status(200).json(response);
+};
+
+exports.createIntent = async (req, res) => {
+    try {
+        const parameters = req.body;
+        setSessionParameters(parameters, req.user, req._requestid);
+
+        let connector = await getWatsonConfiguration(parameters._requestid, parameters.watsonid);
+        if (connector.error) return res.status(connector.status).json(connector);
+
+        insertData = await insertIntentionItem(parameters._requestid, parameters);
+        if (insertData.error) return res.status(insertData.status).json(insertData);
+
+        const assistant = await getAssistantConfiguration(req._requestid, connector.data);
+        if (assistant.error) return res.status(assistant.status).json(assistant);
+
+        const syncData = await syncIntentionItem(req._requestid, assistant.data, connector.data, parameters);
+        if (syncData.error) return res.status(syncData.status).json(syncData);
+
+        return res.status(200).json(syncData);
+    } catch (error) {
+        logger.child({ _requestid: requestid, ctx: parameters }).error(error);
+        return res.status(500).json({ message: "Error creating the intent." });
+    }
 };
