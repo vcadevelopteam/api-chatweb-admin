@@ -240,13 +240,15 @@ exports.tryitModel = async (requestid, connectorData, assistant, text) => {
     }
 };
 
-exports.insertIntentionItem = async (requestid, params) => {
+exports.insertIntentionItem = async (requestid, params, type) => {
     let responsedata = genericfunctions.generateResponseData(requestid);
     try {
-        const insertItem = await executesimpletransaction("UFN_WATSON_ITEM_INTENT_INS", {
+        const funName = type == "intention" ? "UFN_WATSON_ITEM_INTENT_INS" : "UFN_WATSON_ITEM_ENTITY_INS";
+
+        const insertItem = await executesimpletransaction(funName, {
             ...params,
             description: params.description || "",
-            type: "intention",
+            type,
             detail_json: JSON.stringify(params.detail || []),
         });
         if (!insertItem instanceof Array || !insertItem.length)
@@ -293,7 +295,7 @@ exports.syncIntentionItem = async (requestid, assistant, connector, params) => {
             }),
             ...(params.operation === "UPDATE" && {
                 newDescription: params.description,
-                newExamples: 
+                newExamples:
                     params.detail &&
                     params.detail
                         .filter((item) => item.status === "ACTIVO")
@@ -315,8 +317,7 @@ exports.syncIntentionItem = async (requestid, assistant, connector, params) => {
                 break;
         }
 
-        if (![200, 201].includes(newIntent.status))
-            throw new Error(newIntent.result || "Error creating the intent.");
+        if (![200, 201].includes(newIntent.status)) throw new Error(newIntent.result || "Error creating the intent.");
 
         return genericfunctions.changeResponseData(
             responsedata,
@@ -333,6 +334,66 @@ exports.syncIntentionItem = async (requestid, assistant, connector, params) => {
             undefined,
             undefined,
             "Error inserting the intention item."
+        );
+    }
+};
+
+exports.syncEntityItem = async (requestid, assistant, connector, params) => {
+    let responsedata = genericfunctions.generateResponseData(requestid);
+    let newEntity = null;
+    try {
+        const data = {
+            workspaceId: connector.modelid,
+            entity: params.item_name,
+            ...(params.operation === "INSERT" && {
+                description: params.description,
+                values:
+                    params.detail &&
+                    params.detail
+                        .filter((item) => item.status === "ACTIVO")
+                        .map((item) => ({ value: item.value, synonyms: item.synonyms })),
+            }),
+            ...(params.operation === "UPDATE" && {
+                newDescription: params.description,
+                newValues:
+                    params.detail &&
+                    params.detail
+                        .filter((item) => item.status === "ACTIVO")
+                        .map((item) => ({ value: item.value, synonyms: item.synonyms })),
+            }),
+        };
+
+        switch (params.operation) {
+            case "UPDATE":
+                newEntity = await assistant.updateEntity(data);
+                break;
+            case "INSERT":
+                newEntity = await assistant.createEntity(data);
+                break;
+            case "DELETE":
+                newEntity = await assistant.deleteEntity(data);
+                break;
+            default:
+                break;
+        }
+
+        if (![200, 201].includes(newEntity.status)) throw new Error(newEntity.result || "Error creating the entity.");
+
+        return genericfunctions.changeResponseData(
+            responsedata,
+            undefined,
+            newEntity.result,
+            "Entity item inserted successfully.",
+            200,
+            true
+        );
+    } catch (error) {
+        logger.child({ _requestid: requestid, ctx: params }).error(error);
+        return genericfunctions.changeResponseData(
+            responsedata,
+            undefined,
+            undefined,
+            "Error inserting the entity item."
         );
     }
 };

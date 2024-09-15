@@ -10,6 +10,7 @@ const {
     tryitModel,
     insertIntentionItem,
     syncIntentionItem,
+    syncEntityItem,
 } = require("../services/watsonService");
 
 exports.sync = async (req, res) => {
@@ -55,7 +56,7 @@ exports.createIntent = async (req, res) => {
         let connector = await getWatsonConfiguration(parameters._requestid, parameters.watsonid);
         if (connector.error) return res.status(connector.status).json(connector);
 
-        insertData = await insertIntentionItem(parameters._requestid, parameters);
+        insertData = await insertIntentionItem(parameters._requestid, parameters, 'intention');
         if (insertData.error) return res.status(insertData.status).json(insertData);
 
         const assistant = await getAssistantConfiguration(req._requestid, connector.data);
@@ -67,6 +68,34 @@ exports.createIntent = async (req, res) => {
         return res.status(200).json(syncData);
     } catch (error) {
         logger.child({ _requestid: requestid, ctx: parameters }).error(error);
-        return res.status(500).json({ message: "Error creating the intent." });
+        return res
+            .status(500)
+            .json({ success: false, error: true, id: req._requestid, message: "Error creating the intent." });
+    }
+};
+
+exports.createEntity = async (req, res) => {
+    try {
+        const parameters = req.body;
+        setSessionParameters(parameters, req.user, req._requestid);
+
+        let connector = await getWatsonConfiguration(parameters._requestid, parameters.watsonid);
+        if (connector.error) return res.status(connector.status).json(connector);
+
+        insertData = await insertIntentionItem(parameters._requestid, parameters, 'entity');
+        if (insertData.error) return res.status(insertData.status).json(insertData);
+
+        const assistant = await getAssistantConfiguration(req._requestid, connector.data);
+        if (assistant.error) return res.status(assistant.status).json(assistant);
+
+        const syncData = await syncEntityItem(req._requestid, assistant.data, connector.data, parameters);
+        if (syncData.error) return res.status(syncData.status).json(syncData);
+
+        return res.status(200).json(syncData);
+    } catch (error) {
+        logger.child({ _requestid: requestid, ctx: parameters }).error(error);
+        return res
+            .status(500)
+            .json({ success: false, error: true, id: req._requestid, message: "Error creating the entity." });
     }
 };
