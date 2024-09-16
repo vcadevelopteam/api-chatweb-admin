@@ -4660,6 +4660,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_WATSON_ITEM_DEL: {
+        query: "SELECT * FROM public.ufn_watson_item_del($corpid, $orgid, $watsonid, $ids, $type, $username)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_WATSON_MODELS_SEL: {
         query: "SELECT * FROM public.ufn_watson_models_sel($corpid, $orgid, $id)",
         module: "",

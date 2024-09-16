@@ -397,3 +397,75 @@ exports.syncEntityItem = async (requestid, assistant, connector, params) => {
         );
     }
 };
+
+exports.deleteItems = async (requestid, params, type) => {
+    let responsedata = genericfunctions.generateResponseData(requestid);
+    try {
+        const deletedItems = await executesimpletransaction("UFN_WATSON_ITEM_DEL", params);
+        if (!deletedItems instanceof Array || !deletedItems.length)
+            return genericfunctions.changeResponseData(
+                responsedata,
+                undefined,
+                undefined,
+                deletedItems.code || "UNEXPECTED_ERROR"
+            );
+
+        return genericfunctions.changeResponseData(
+            responsedata,
+            undefined,
+            deletedItems,
+            "Items deleted successfully.",
+            200,
+            true
+        );
+    } catch (error) {
+        logger.child({ _requestid: requestid, ctx: params }).error(error);
+        return genericfunctions.changeResponseData(responsedata, undefined, undefined, "Error deleting items.");
+    }
+};
+
+exports.syncDeletedItem = async (requestid, assistant, connector, params) => {
+    let responsedata = genericfunctions.generateResponseData(requestid);
+    try {
+        for (const item of params) {
+            if (item.type === "intention") {
+                const data = {
+                    workspaceId: connector.modelid,
+                    intent: item.item_name,
+                };
+
+                const delIntent = await assistant.deleteIntent(data);
+                if (![200, 201].includes(delIntent.status))
+                    throw new Error(delIntent.result || "Error deleting the intent.");
+            }
+
+            if (item.type === "entity") {
+                const data = {
+                    workspaceId: connector.modelid,
+                    entity: item.item_name,
+                };
+
+                const delEntity = await assistant.deleteEntity(data);
+                if (![200, 201].includes(delEntity.status))
+                    throw new Error(delEntity.result || "Error deleting the entity.");
+            }
+        }
+
+        return genericfunctions.changeResponseData(
+            responsedata,
+            undefined,
+            undefined,
+            "items deleted successfully.",
+            200,
+            true
+        );
+    } catch (error) {
+        logger.child({ _requestid: requestid, ctx: params }).error(error);
+        return genericfunctions.changeResponseData(
+            responsedata,
+            undefined,
+            undefined,
+            "Error inserting the entity item."
+        );
+    }
+};
