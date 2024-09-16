@@ -4636,12 +4636,17 @@ module.exports = {
         protected: "SELECT"
     },
     QUERY_INTELLIGENTMODELSCONFIGURATION_SEL: {
-        query: "select i.intelligentmodelsconfigurationid, im.intelligentmodelsid, im.endpoint, im.apikey, im.modelid from intelligentmodelsconfiguration i join intelligentmodels im on im.intelligentmodelsid = i.intelligentmodelsid where i.intelligentmodelsconfigurationid = $id and i.status = 'ACTIVO' and im.status = 'ACTIVO'",
+        query: "select i.intelligentmodelsconfigurationid, im.intelligentmodelsid, im.endpoint, im.apikey, im.modelid, w.watsonid from intelligentmodelsconfiguration i join intelligentmodels im on im.intelligentmodelsid = i.intelligentmodelsid left join watson w on w.intelligentmodelsid = im.intelligentmodelsid and w.status = 'ACTIVO' where i.corpid = $corpid and i.orgid = $orgid and i.intelligentmodelsconfigurationid = $id and i.status = 'ACTIVO' and im.status = 'ACTIVO';",
         module: "",
         protected: "SELECT"
     },
     QUERY_WATSONMODELCONFIGURATION_SEL: {
         query: "select w.watsonid, im.intelligentmodelsid, im.endpoint, im.apikey, im.modelid from watson w join intelligentmodels im on im.intelligentmodelsid = w.intelligentmodelsid where watsonid = $watsonid and w.status = 'ACTIVO' and im.status = 'ACTIVO';",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_GET_ITEM_DETAILS: {
+        query: "SELECT * FROM public.ufn_watson_get_item_details($corpid, $orgid, $watsonid)",
         module: "",
         protected: "SELECT"
     },
@@ -4662,6 +4667,11 @@ module.exports = {
     },
     UFN_WATSON_ITEM_DEL: {
         query: "SELECT * FROM public.ufn_watson_item_del($corpid, $orgid, $watsonid, $ids, $type, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_MENTION_INS: {
+        query: "SELECT * FROM public.ufn_watson_mention_ins($corpid, $orgid, $watsonid, $entity, $value, $username)",
         module: "",
         protected: "SELECT"
     },
