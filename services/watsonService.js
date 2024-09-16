@@ -5,11 +5,12 @@ const AssistantV1 = require("ibm-watson/assistant/v1");
 const { IamAuthenticator } = require("ibm-watson/auth");
 const crypto = require("crypto");
 
-exports.getConnectorConfiguration = async (requestid, intelligentmodelsconfigurationid) => {
+exports.getConnectorConfiguration = async (requestid, params) => {
     let responsedata = genericfunctions.generateResponseData(requestid);
     try {
         const connectorData = await executesimpletransaction("QUERY_INTELLIGENTMODELSCONFIGURATION_SEL", {
-            id: intelligentmodelsconfigurationid,
+            ...params,
+            id: params.intelligentmodelsconfigurationid,
         });
         if (!connectorData instanceof Array || !connectorData.length)
             return genericfunctions.changeResponseData(responsedata, undefined, undefined, "CONFIGURATION_NOT_FOUND.");
@@ -33,6 +34,36 @@ exports.getConnectorConfiguration = async (requestid, intelligentmodelsconfigura
     }
 };
 
+exports.getWorkspaceInformation = async (requestid, assistant, params) => {
+    let responsedata = genericfunctions.generateResponseData(requestid);
+    try {
+        const skill = await assistant.getWorkspace({
+            workspaceId: params.modelid,
+            _export: true,
+        });
+
+        if (![200, 201].includes(skill.status))
+            throw new Error(skill.result || "Error retrieving workspace information form source.");
+
+        return genericfunctions.changeResponseData(
+            responsedata,
+            undefined,
+            skill.result,
+            "Workspace retrieved successfully.",
+            200,
+            true
+        );
+    } catch (error) {
+        logger.child({ _requestid: requestid, ctx: params }).error(error);
+        return genericfunctions.changeResponseData(
+            responsedata,
+            undefined,
+            undefined,
+            "Error retrieving workspace information."
+        );
+    }
+};
+
 exports.getSkillInformation = async (requestid, configData) => {
     let responsedata = genericfunctions.generateResponseData(requestid);
     try {
@@ -48,7 +79,9 @@ exports.getSkillInformation = async (requestid, configData) => {
 
         const skill = await assistant.getWorkspace({
             workspaceId: configData.modelid,
+            _export: true,
         });
+        console.log("🚀 ~ exports.getSkillInformation= ~ skill:", skill);
 
         if (skill.status != 200 && skill.result.status !== "Available") {
             return genericfunctions.changeResponseData(responsedata, undefined, undefined, "SKILL_NOT_FOUND.");
@@ -188,6 +221,83 @@ exports.getAssistantConfiguration = async (requestid, configData) => {
             undefined,
             undefined,
             "Error retrieving the assistant configuration."
+        );
+    }
+};
+
+exports.compareWatsonData = async (requestid, parameters, assistant, connector, externalSkillInfo) => {
+    console.log("🚀 ~ exports.compareWatsonData= ~ connector:", connector);
+    let responsedata = genericfunctions.generateResponseData(requestid);
+    try {
+        const watsonData = await executesimpletransaction("UFN_WATSON_GET_ITEM_DETAILS", {
+            ...parameters,
+            watsonid: connector.watsonid,
+        });
+        if (!watsonData instanceof Array || !watsonData.length) throw new Error("CONFIGURATION_NOT_FOUND");
+
+        const externalData = {
+            intents: externalSkillInfo.intents,
+            entities: externalSkillInfo.entities,
+        };
+
+        const data = {
+            intents: watsonData
+                .filter((item) => item.item_type === "intention")
+                .map((item) => ({
+                    intent: item.item_name,
+                    description: item.description,
+                    examples: item.item_details.map((detail) => ({
+                        text: detail.value,
+                    })),
+                })),
+            entities: watsonData
+                .filter((item) => item.item_type === "entity")
+                .map((item) => ({
+                    entity: item.item_name,
+                    values: item.item_details.map((detail) => ({
+                        value: detail.value,
+                        synonyms: JSON.parse(detail.synonyms),
+                        type: "synonyms",
+                    })),
+                })),
+        };
+
+        console.log("🚀 ~ exports.compareWatsonData= ~ externalData:", JSON.stringify(externalData));
+        console.log("🚀 ~ exports.compareWatsonData= ~ data:", JSON.stringify(data));
+
+        let hash1 = hashObject(externalData);
+        let hash2 = hashObject(data);
+
+        console.log('====================', deepEqual(externalData, data))
+
+        if (hash1 === hash2) {
+            console.log("Los objetos son iguales.");
+        } else {
+            console.log("Los objetos son diferentes.");
+        }
+
+        const localDataHash = crypto.createHash("sha256").update(JSON.stringify(data)).digest("hex");
+        const outsourceData = crypto.createHash("sha256").update(JSON.stringify(externalData)).digest("hex");
+
+        if (localDataHash === outsourceData) {
+            console.log("son iguales");
+        }
+
+        return genericfunctions.changeResponseData(
+            responsedata,
+            undefined,
+            watsonData,
+            "Watson retrieved successfully.",
+            200,
+            true
+        );
+    } catch (error) {
+        logger.child({ _requestid: requestid }).error(error);
+        return genericfunctions.changeResponseData(
+            responsedata,
+            undefined,
+            undefined,
+            "Error retrieving the Watson information."
         );
     }
 };
@@ -469,3 +579,84 @@ exports.syncDeletedItem = async (requestid, assistant, connector, params) => {
         );
     }
 };
+
+exports.newMentionIns = async (requestid, params) => {
+    let responsedata = genericfunctions.generateResponseData(requestid);
+    try {
+        const newMention = await executesimpletransaction("UFN_WATSON_MENTION_INS", params);
+        if (!newMention instanceof Array || !newMention.length)
+            return genericfunctions.changeResponseData(
+                responsedata,
+                undefined,
+                undefined,
+                newMention.code || "UNEXPECTED_ERROR"
+            );
+
+        if (newMention[0].create || newMention[0].update) {
+            responsedata.data = {
+                item_name: params.entity,
+                operation: newMention[0].create ? "INSERT" : "UPDATE",
+                detail: newMention.map((item) => ({
+                    value: item.value,
+                    synonyms: JSON.parse(item.synonyms),
+                    status: item.status,
+                })),
+            };
+        }
+
+        return genericfunctions.changeResponseData(
+            responsedata,
+            undefined,
+            responsedata.data,
+            "Mention created successfully.",
+            200,
+            true
+        );
+    } catch (error) {
+        logger.child({ _requestid: requestid, ctx: params }).error(error);
+        return genericfunctions.changeResponseData(responsedata, undefined, undefined, "Error creating mention.");
+    }
+};
+
+function sortObject(obj) {
+    if (Array.isArray(obj)) {
+        return obj.map(sortObject).sort(); // Ordena arrays
+    } else if (typeof obj === "object" && obj !== null) {
+        return Object.keys(obj)
+            .sort()
+            .reduce((sorted, key) => {
+                sorted[key] = sortObject(obj[key]);
+                return sorted;
+            }, {});
+    } else {
+        return obj;
+    }
+}
+
+function sortJson(data) {
+    // Ordenar los valores dentro de cada entidad
+    data.entities.forEach((entity) => {
+        entity.values.sort((a, b) => a.value.localeCompare(b.value));
+    });
+
+    // Ordenar las entidades por el nombre de la entidad
+    data.entities.sort((a, b) => a.entity.localeCompare(b.entity));
+
+    // Ordenar los ejemplos dentro de cada intención
+    data.intents.forEach((intent) => {
+        intent.examples.sort((a, b) => a.text.localeCompare(b.text));
+    });
+
+    return data;
+}
+
+function hashObject(obj) {
+    const sortedObj = sortJson(obj);
+    const jsonString = JSON.stringify(sortedObj);
+    console.log("🚀 ~ hashObject ~ jsonString:", jsonString);
+    return crypto.createHash("sha256").update(jsonString).digest("hex");
+}
+
+function deepEqual(obj1, obj2) {
+    return JSON.stringify(obj1) === JSON.stringify(obj2);
+}
