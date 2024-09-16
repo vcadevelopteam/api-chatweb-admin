@@ -4671,7 +4671,7 @@ module.exports = {
         protected: "SELECT"
     },
     QUERY_INTELLIGENTMODELSCONFIGURATION_SEL: {
-        query: "select i.intelligentmodelsconfigurationid, im.intelligentmodelsid, im.endpoint, im.apikey, im.modelid from intelligentmodelsconfiguration i join intelligentmodels im on im.intelligentmodelsid = i.intelligentmodelsid where i.intelligentmodelsconfigurationid = $id and i.status = 'ACTIVO' and im.status = 'ACTIVO'",
+        query: "select i.intelligentmodelsconfigurationid, im.intelligentmodelsid, im.endpoint, im.apikey, im.modelid, w.watsonid from intelligentmodelsconfiguration i join intelligentmodels im on im.intelligentmodelsid = i.intelligentmodelsid left join watson w on w.intelligentmodelsid = im.intelligentmodelsid and w.status = 'ACTIVO' where i.corpid = $corpid and i.orgid = $orgid and i.intelligentmodelsconfigurationid = $id and i.status = 'ACTIVO' and im.status = 'ACTIVO';",
         module: "",
         protected: "SELECT"
     },
@@ -4680,8 +4680,33 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_WATSON_GET_ITEM_DETAILS: {
+        query: "SELECT * FROM public.ufn_watson_get_item_details($corpid, $orgid, $watsonid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_WATSON_INSERT_IBM_DATA: {
         query: "SELECT * FROM public.ufn_watson_insert_ibm_data($corpid, $orgid, $intelligentmodelsid, $watson_description, $watson_language, $watson_intents_count, $watson_entities_count, $intents_json, $entities_json, $hash)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_ITEM_INTENT_INS: {
+        query: "SELECT * FROM public.ufn_watson_item_intent_ins($corpid, $orgid, $watsonid, $watsonitemid, $item_name, $description, $type, $detail_json, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_ITEM_ENTITY_INS: {
+        query: "SELECT * FROM public.ufn_watson_item_entity_ins($corpid, $orgid, $watsonid, $watsonitemid, $item_name, $description, $type, $detail_json, $username, $operation)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_ITEM_DEL: {
+        query: "SELECT * FROM public.ufn_watson_item_del($corpid, $orgid, $watsonid, $ids, $type, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_MENTION_INS: {
+        query: "SELECT * FROM public.ufn_watson_mention_ins($corpid, $orgid, $watsonid, $entity, $value, $username)",
         module: "",
         protected: "SELECT"
     },
