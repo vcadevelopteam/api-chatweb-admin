@@ -30,12 +30,14 @@ exports.sync = async (req, res) => {
 
         const workspace = await getWorkspaceInformation(req._requestid, assistant.data, connector.data);
         if (workspace.error) return res.status(workspace.status).json(workspace);
+        
+        const compare = await compareWatsonData(req._requestid, parameters, assistant, connector.data, workspace.data);
+        if (compare.error) return res.status(compare.status).json(compare);
 
-        // const compare = await compareWatsonData(req._requestid, parameters, assistant, connector.data, workspace.data);
-        // if (compare.error) return res.status(compare.status).json(compare);
-
-        const insert = await insertSkill(req._requestid, parameters, workspace.data, connector.data);
-        if (insert.error) return res.status(insert.status).json(insert);
+        if (compare.data) {
+            const insert = await insertSkill(req._requestid, parameters, workspace.data, connector.data);
+            if (insert.error) return res.status(insert.status).json(insert);
+        }
 
         return res
             .status(200)

@@ -224,8 +224,8 @@ exports.getAssistantConfiguration = async (requestid, configData) => {
 };
 
 exports.compareWatsonData = async (requestid, parameters, assistant, connector, externalSkillInfo) => {
-    console.log("🚀 ~ exports.compareWatsonData= ~ connector:", connector);
     let responsedata = genericfunctions.generateResponseData(requestid);
+    let needUpdate = true;
     try {
         const watsonData = await executesimpletransaction("UFN_WATSON_GET_ITEM_DETAILS", {
             ...parameters,
@@ -244,7 +244,7 @@ exports.compareWatsonData = async (requestid, parameters, assistant, connector, 
                 .map((item) => ({
                     intent: item.item_name,
                     description: item.description,
-                    examples: item.item_details.map((detail) => ({
+                    examples: item.item_details[0] && item.item_details.map((detail) => ({
                         text: detail.value,
                     })),
                 })),
@@ -253,43 +253,41 @@ exports.compareWatsonData = async (requestid, parameters, assistant, connector, 
                 .map((item) => ({
                     entity: item.item_name,
                     values: item.item_details.map((detail) => ({
+                        synonyms: JSON.parse(detail.synonyms) || [],
                         value: detail.value,
-                        synonyms: JSON.parse(detail.synonyms),
                         type: "synonyms",
                     })),
                 })),
         };
 
-        console.log("🚀 ~ exports.compareWatsonData= ~ externalData:", JSON.stringify(externalData));
-        console.log("🚀 ~ exports.compareWatsonData= ~ data:", JSON.stringify(data));
+        const sortOutEntities = JSON.stringify(sortEntities(externalData.entities));
+        const sortLocalEntities = JSON.stringify(sortEntities(data.entities));
 
-        let hash1 = hashObject(externalData);
-        let hash2 = hashObject(data);
+        const sortOutIntents = JSON.stringify(sortIntents(externalData.intents));
+        const sortLocalIntents = JSON.stringify(sortIntents(data.intents));
 
-        console.log('====================', deepEqual(externalData, data))
+        console.log("=====", sortOutEntities);
+        console.log("=====", sortLocalEntities);
+        console.log("=====");
+        console.log("=====", sortOutIntents);
+        console.log("=====", sortLocalIntents);
+        console.log("=====");
 
-        if (hash1 === hash2) {
-            console.log("Los objetos son iguales.");
-        } else {
-            console.log("Los objetos son diferentes.");
-        }
-
-        const localDataHash = crypto.createHash("sha256").update(JSON.stringify(data)).digest("hex");
-        const outsourceData = crypto.createHash("sha256").update(JSON.stringify(externalData)).digest("hex");
-
-        if (localDataHash === outsourceData) {
-            console.log("son iguales");
+        if (sortOutEntities === sortLocalEntities && sortOutIntents === sortLocalIntents) {
+            console.log('son igualessss')
+            needUpdate = false;
         }
 
         return genericfunctions.changeResponseData(
             responsedata,
             undefined,
-            watsonData,
+            needUpdate,
             "Watson retrieved successfully.",
             200,
             true
         );
     } catch (error) {
+        console.log("🚀 ~ exports.compareWatsonData= ~ error:", error);
         logger.child({ _requestid: requestid }).error(error);
         return genericfunctions.changeResponseData(
             responsedata,
@@ -616,45 +614,41 @@ exports.newMentionIns = async (requestid, params) => {
     }
 };
 
-function sortObject(obj) {
-    if (Array.isArray(obj)) {
-        return obj.map(sortObject).sort(); // Ordena arrays
-    } else if (typeof obj === "object" && obj !== null) {
-        return Object.keys(obj)
-            .sort()
-            .reduce((sorted, key) => {
-                sorted[key] = sortObject(obj[key]);
-                return sorted;
-            }, {});
-    } else {
-        return obj;
-    }
-}
-
-function sortJson(data) {
-    // Ordenar los valores dentro de cada entidad
-    data.entities.forEach((entity) => {
-        entity.values.sort((a, b) => a.value.localeCompare(b.value));
+function sortEntities(arr) {
+    arr.sort((a, b) => a.entity.localeCompare(b.entity));
+    arr.forEach((obj, index) => {
+        obj.values.sort((a, b) => a.value.localeCompare(b.value));
+        obj.values = obj.values.map((valueObj) => {
+            return {
+                value: valueObj.value,
+                type: valueObj.type,
+                synonyms: valueObj.synonyms,
+            };
+        });
+        arr[index] = {
+            entity: obj.entity,
+            values: obj.values,
+        };
     });
+    return arr;
+}
 
-    // Ordenar las entidades por el nombre de la entidad
-    data.entities.sort((a, b) => a.entity.localeCompare(b.entity));
-
-    // Ordenar los ejemplos dentro de cada intención
-    data.intents.forEach((intent) => {
-        intent.examples.sort((a, b) => a.text.localeCompare(b.text));
+function sortIntents(arr) {
+    arr.sort((a, b) => a.intent.localeCompare(b.intent));
+    arr.forEach((obj, index) => {
+        if (obj.examples) {
+            obj.examples.sort((a, b) => a.text.localeCompare(b.text));
+            obj.examples = obj.examples.map((valueObj) => {
+                return {
+                    text: valueObj.text,
+                };
+            });
+        }
+        arr[index] = {
+            intent: obj.intent,
+            description: obj.description,
+            examples: obj.examples || [],
+        };
     });
-
-    return data;
-}
-
-function hashObject(obj) {
-    const sortedObj = sortJson(obj);
-    const jsonString = JSON.stringify(sortedObj);
-    console.log("🚀 ~ hashObject ~ jsonString:", jsonString);
-    return crypto.createHash("sha256").update(jsonString).digest("hex");
-}
-
-function deepEqual(obj1, obj2) {
-    return JSON.stringify(obj1) === JSON.stringify(obj2);
+    return arr;
 }
