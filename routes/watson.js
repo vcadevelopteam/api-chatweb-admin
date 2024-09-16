@@ -9,10 +9,10 @@ router.get("/sync/:watsonid", ip, auth, witaiController.sync);
 
 router.post("/tryit", ip, auth, witaiController.tryit);
 
-router.post('/item/delete', ip, auth, witaiController.deleteItem);
-
 router.post("/intent", ip, auth, validateCreateIntentRequest, witaiController.createIntent);
 
 router.post("/entity", ip, auth, validateCreateEntityRequest, witaiController.createEntity);
+
+router.post('/item/delete', ip, auth, witaiController.deleteItem);
 
 module.exports = router;
