@@ -5,7 +5,7 @@ const { validateCreateIntentRequest, validateCreateEntityRequest } = require("..
 const router = express.Router();
 const witaiController = require("../controllers/watsonController");
 
-router.get("/sync/:watsonid", ip, auth, witaiController.sync);
+router.get("/sync/:intelligentmodelsconfigurationid", ip, auth, witaiController.sync);
 
 router.post("/tryit", ip, auth, witaiController.tryit);
 
@@ -14,5 +14,7 @@ router.post("/intent", ip, auth, validateCreateIntentRequest, witaiController.cr
 router.post("/entity", ip, auth, validateCreateEntityRequest, witaiController.createEntity);
 
 router.post('/item/delete', ip, auth, witaiController.deleteItem);
+
+router.post('/mention', ip, auth, witaiController.createMention);
 
 module.exports = router;
