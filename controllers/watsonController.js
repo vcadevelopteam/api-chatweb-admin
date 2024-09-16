@@ -2,8 +2,6 @@ const logger = require("../config/winston");
 const { setSessionParameters } = require("../config/helpers");
 const {
     getConnectorConfiguration,
-    getSkillInformation,
-    getSkillConfiguration,
     insertSkill,
     getAssistantConfiguration,
     getWatsonConfiguration,
@@ -33,12 +31,15 @@ exports.sync = async (req, res) => {
         const workspace = await getWorkspaceInformation(req._requestid, assistant.data, connector.data);
         if (workspace.error) return res.status(workspace.status).json(workspace);
 
-        const compare = await compareWatsonData(req._requestid, parameters, assistant, connector.data, workspace.data);
-        if (compare.error) return res.status(compare.status).json(compare);
+        // const compare = await compareWatsonData(req._requestid, parameters, assistant, connector.data, workspace.data);
+        // if (compare.error) return res.status(compare.status).json(compare);
 
-        return res.status(compare.status).json(compare);
+        const insert = await insertSkill(req._requestid, parameters, workspace.data, connector.data);
+        if (insert.error) return res.status(insert.status).json(insert);
 
-        return res.status(200).json({ success: true, error: false, id: req._requestid, message: "exito." });
+        return res
+            .status(200)
+            .json({ success: true, error: false, id: req._requestid, message: "Skill sync correctly." });
     } catch (error) {
         logger.child({ _requestid: requestid, ctx: parameters }).error(error);
         return res.status(500).json({
