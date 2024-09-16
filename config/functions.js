@@ -4685,6 +4685,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_WATSON_ITEMS_DETAIL_SEL: {
+        query: "SELECT * FROM public.ufn_watson_items_detail_sel($corpid, $orgid, $watsonitemid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_WATSON_INSERT_IBM_DATA: {
         query: "SELECT * FROM public.ufn_watson_insert_ibm_data($corpid, $orgid, $intelligentmodelsid, $watson_description, $watson_language, $watson_intents_count, $watson_entities_count, $intents_json, $entities_json, $hash)",
         module: "",
