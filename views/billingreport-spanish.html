@@ -1,485 +1,785 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    </head>
-    <style>
-        .blue-highlight {
-            color: rgb(12, 124, 197);
-            font-weight: bold;
-            font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
-        }
 
-        .general-row {
-            display: flex;
-            font-size: 10px;
-        }
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<style>
+    .blue-highlight {
+        color: rgb(12, 124, 197);
+        font-weight: bold;
+        font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+    }
 
-        .general-column-first {
-            padding: 2px;
-            font-size: 8px;
-            width: 100%;
-        }
+    .general-row {
+        display: flex;
+        font-size: 10px;
+    }
 
-        .general-column-last {
-            padding: 4px;
-            width: auto;
-        }
+    .general-column-first {
+        padding: 2px;
+        font-size: 8px;
+        width: 100%;
+    }
 
-        .billing-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 10px;
-        }
+    .general-column-last {
+        padding: 4px;
+        width: auto;
+    }
 
-        .billing-summary {
-            width: 80%;
-            font-size: 8px;
-            border: 1px solid rgb(223, 237, 249);
-            margin-left: auto;
-            margin-right: auto;
-        }
+    .billing-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10px;
+    }
 
-        .billing-table-header {
-            padding: 2px;
-            text-align: right;
-            width: 50px;
-            max-width: 50px;
-            font-size: 8px;
-            font-weight: bold;
-            font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
-        }
+    .billing-summary {
+        width: 80%;
+        font-size: 8px;
+        border: 1px solid rgb(223, 237, 249);
+        margin-left: auto;
+        margin-right: auto;
+    }
 
-        .billing-summary-header {
-            padding: 2px;
-            text-align: center;
-            width: 60px;
-            font-weight: bold;
-            font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
-        }
+    .billing-table-header {
+        padding: 2px;
+        text-align: right;
+        width: 50px;
+        max-width: 50px;
+        font-size: 8px;
+        font-weight: bold;
+        font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+    }
 
-        .billing-table-cell-left {
-            font-size: 8px;
-            padding: 2px;
-            text-align: left;
-            font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
-        }
+    .billing-summary-header {
+        padding: 2px;
+        text-align: center;
+        width: 60px;
+        font-weight: bold;
+        font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+    }
 
-        .billing-table-cell-right {
-            font-size: 8px;
-            padding: 2px;
-            text-align: right;
-            font-family: "Times New Roman", Times, serif;
-            width: 50px;
-            max-width: 50px;
-        }
+    .billing-table-cell-left {
+        font-size: 8px;
+        padding: 2px;
+        text-align: left;
+        font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+    }
 
-        .billing-table-cell-center {
-            font-size: 8px;
-            padding: 2px;
-            text-align: center;
-            font-family: "Times New Roman", Times, serif;
-        }
+    .billing-table-cell-right {
+        font-size: 8px;
+        padding: 2px;
+        text-align: right;
+        font-family: "Times New Roman", Times, serif;
+        width: 50px;
+        max-width: 50px;
+    }
 
-        tr.billing-table-cell-top > td {
-            font-size: 8px;
-            padding-top: 1em;
-        }
-    </style>
+    .billing-table-cell-center {
+        font-size: 8px;
+        padding: 2px;
+        text-align: center;
+        font-family: "Times New Roman", Times, serif;
+    }
 
-    <body>
-        <div style="width: 90%; margin-left: auto; margin-right: auto; margin-top: 10px; position: relative">
-            <img
-                src="https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/Laraigo-logo-name.svg"
-                width="100px"
-                style="position: absolute; right: 0; top: 20px"
-            />
-            <div style="text-align: center; font-size: 16px" class="blue-highlight">Reporte del Periodo</div>
-            <div>
-                <div class="blue-highlight general-row" style="margin-top: 16px">
-                    <div class="general-column-first">Cliente: <%= data[0].reporttitle %></div>
-                </div>
-                <div class="blue-highlight general-row">
-                    <div class="general-column-first">Plan: <%= data[0].reportplan %></div>
-                </div>
-                <div class="blue-highlight general-row">
-                    <div class="general-column-first">Periodo: <%= data[0].reportperiod %></div>
+    tr.billing-table-cell-top>td {
+        font-size: 8px;
+        padding-top: 1em;
+    }
+</style>
+
+<body>
+    <div style="width: 90%; margin-left: auto; margin-right: auto; margin-top: 10px; position: relative">
+        <img src="https://staticfileszyxme.s3.us-east.cloud-object-storage.appdomain.cloud/Laraigo-logo-name.svg"
+            width="100px" style="position: absolute; right: 0; top: 20px" />
+        <div style="text-align: center; font-size: 16px" class="blue-highlight">Reporte del Periodo</div>
+        <div>
+            <div class="blue-highlight general-row" style="margin-top: 16px">
+                <div class="general-column-first">Cliente: <%= data[0].reporttitle %>
                 </div>
             </div>
-            <div style="margin-top: 16px">
-                <table class="billing-table">
-                    <tr style="background-color: rgb(223, 237, 249)">
-                        <th style="text-align: right; width: auto"></th>
-                        <th class="billing-table-header">Cantidad</th>
-                        <th class="billing-table-header">Precio Unitario</th>
-                        <th class="billing-table-header">Monto</th>
-                        <th class="billing-table-header">IGV</th>
-                        <th class="billing-table-header">Monto Total</th>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left" style="font-weight: bold">Costo Base</td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"><%= data[0].basecostnet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].basecosttax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].basecost %></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">
-                            Agentes
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Contratado</td>
-                        <td class="billing-table-cell-right"><%= data[0].agentcontractedquantity %></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Adicional</td>
-                        <td class="billing-table-cell-right"><%= data[0].agentadditionalquantity %></td>
-                        <td class="billing-table-cell-right"><%= data[0].agentfee %></td>
-                        <td class="billing-table-cell-right"><%= data[0].agentcostnet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].agentcosttax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].agentcost %></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">
-                            Canales
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Canales No WhatsApp Contratados</td>
-                        <td class="billing-table-cell-right"><%= data[0].channelotherquantity %></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Canales No WhatsApp Adicionales</td>
-                        <td class="billing-table-cell-right"><%= data[0].channelotheradditional %></td>
-                        <td class="billing-table-cell-right"><%= data[0].channelotherfee %></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Canales WhatsApp Contratados</td>
-                        <td class="billing-table-cell-right"><%= data[0].channelwhatsappquantity %></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Canales WhatsApp Adicionales</td>
-                        <td class="billing-table-cell-right"><%= data[0].channelwhatsappadditional %></td>
-                        <td class="billing-table-cell-right"><%= data[0].channelwhatsappfee %></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Canales Adicionales</td>
-                        <td class="billing-table-cell-right"><%= data[0].channeladditional %></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"><%= data[0].channelcostnet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].channelcosttax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].channelcost %></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">
-                            Conversaciones WhatsApp
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Conversaciones WhatsApp Gratis</td>
-                        <td class="billing-table-cell-right"><%= data[0].conversationfreequantity %></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">
-                            Conversaciones WhatsApp de Servicio Iniciadas por el Cliente
-                        </td>
-                        <td class="billing-table-cell-right"><%= data[0].conversationuserservicequantity %></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"><%= data[0].conversationuserfeenet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].conversationuserfeetax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].conversationuserfee %></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">
-                            Conversaciones WhatsApp de Utilidad Iniciadas por el Negocio
-                        </td>
-                        <td class="billing-table-cell-right"><%= data[0].conversationbusinessutilityquantity %></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"><%= data[0].conversationbusinessutilityfeenet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].conversationbusinessutilityfeetax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].conversationbusinessutilityfee %></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">
-                            Conversaciones WhatsApp de Autenticación Iniciadas por el Negocio
-                        </td>
-                        <td class="billing-table-cell-right">
-                            <%= data[0].conversationbusinessauthenticationquantity %>
-                        </td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right">
-                            <%= data[0].conversationbusinessauthenticationfeenet %>
-                        </td>
-                        <td class="billing-table-cell-right">
-                            <%= data[0].conversationbusinessauthenticationfeetax %>
-                        </td>
-                        <td class="billing-table-cell-right"><%= data[0].conversationbusinessauthenticationfee %></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">
-                            Conversaciones WhatsApp de Marketing Iniciadas por el Negocio
-                        </td>
-                        <td class="billing-table-cell-right"><%= data[0].conversationbusinessmarketingquantity %></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"><%= data[0].conversationbusinessmarketingfeenet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].conversationbusinessmarketingfeetax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].conversationbusinessmarketingfee %></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">
-                            Mensajeria
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Cantidad Mínima de SMS</td>
-                        <td class="billing-table-cell-right"><%= data[0].messagingsmslimit %></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Mensajes SMS</td>
-                        <td class="billing-table-cell-right"><%= data[0].messagingsmsquantity %></td>
-                        <td class="billing-table-cell-right"><%= data[0].messagingsmsadditional %></td>
-                        <td class="billing-table-cell-right"><%= data[0].messagingsmsfeenet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].messagingsmsfeetax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].messagingsmsfee %></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Cantidad Mínima de Correo</td>
-                        <td class="billing-table-cell-right"><%= data[0].messagingmaillimit %></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Mensajes Correo</td>
-                        <td class="billing-table-cell-right"><%= data[0].messagingmailquantity %></td>
-                        <td class="billing-table-cell-right"><%= data[0].messagingmailadditional %></td>
-                        <td class="billing-table-cell-right"><%= data[0].messagingmailfeenet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].messagingmailfeetax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].messagingmailfee %></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">Voz</td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Números de Teléfono</td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"><%= data[0].voicephonefeenet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].voicephonefeetax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].voicephonefee %></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Llamadas de Red Pública</td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"><%= data[0].voicepstnfeenet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].voicepstnfeetax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].voicepstnfee %></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Llamadas VoIP</td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"><%= data[0].voicevoipfeenet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].voicevoipfeetax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].voicevoipfee %></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Grabaciones de Llamadas</td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"><%= data[0].voicerecordingfeenet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].voicerecordingfeetax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].voicerecordingfee %></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Otros</td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"><%= data[0].voiceotherfeenet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].voiceotherfeetax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].voiceotherfee %></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">
-                            Contactos
-                        </td>
-                    </tr>
-                    <% if (data[0].contactcalculateunique == true) { %>
-                    <tr>
-                        <td class="billing-table-cell-left">Contactos Gratis</td>
-                        <td class="billing-table-cell-right"><%= data[0].contactuniquelimit %></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Contactos Totales</td>
-                        <td class="billing-table-cell-right"><%= data[0].contactuniquequantity %></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Contactos Adicionales</td>
-                        <td class="billing-table-cell-right"><%= data[0].contactuniquequantityadditional %></td>
-                        <td class="billing-table-cell-right"><%= data[0].contactuniqueadditional %></td>
-                        <td class="billing-table-cell-right"><%= data[0].contactuniquefeenet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].contactuniquefeetax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].contactuniquefee %></td>
-                    </tr>
-                    <% }; %> <% if (data[0].contactcalculateunique == false) { %>
-                    <tr>
-                        <td class="billing-table-cell-left">Contactos de Canales No WhatsApp</td>
-                        <td class="billing-table-cell-right"><%= data[0].contactotherquantity %></td>
-                        <td class="billing-table-cell-right"><%= data[0].contactotheradditional %></td>
-                        <td class="billing-table-cell-right"><%= data[0].contactotherfeenet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].contactotherfeetax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].contactotherfee %></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Contactos de Canales WhatsApp</td>
-                        <td class="billing-table-cell-right"><%= data[0].contactwhatsappquantity %></td>
-                        <td class="billing-table-cell-right"><%= data[0].contactwhatsappadditional %></td>
-                        <td class="billing-table-cell-right"><%= data[0].contactwhatsappfeenet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].contactwhatsappfeetax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].contactwhatsappfee %></td>
-                    </tr>
-                    <% }; %> <% data[0].intelligencedetail.forEach(function(element){ %>
-                    <tr>
-                        <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">
-                            <%= element.intelligenceprovider %> <%= element.intelligenceservice %>: <%=
-                            element.intelligenceplan %>
-                        </td>
-                        <td class="billing-table-cell-right"><%= element.intelligenceaiquantity %></td>
-                        <td class="billing-table-cell-right"><%= element.intelligenceadditionalfee %></td>
-                        <td class="billing-table-cell-right"><%= element.intelligencetaxableamount %></td>
-                        <td class="billing-table-cell-right"><%= element.intelligenceigv %></td>
-                        <td class="billing-table-cell-right"><%= element.intelligenceaicost %></td>
-                    </tr>
-                    <% }); %> <% if (data[0].infrastructureenabled == true) { %>
-                    <tr>
-                        <td class="billing-table-cell-left">Infraesctructura Dedicada</td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"><%= data[0].infrastructurefeenet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].infrastructurefeetax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].infrastructurefee %></td>
-                    </tr>
-                    <% }; %>
-                    <tr>
-                        <td class="billing-table-cell-left" style="font-weight: bold"><%= data[0].supportplan %></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"><%= data[0].supportfeenet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].supportfeetax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].supportfee %></td>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-left">Consultoria</td>
-                        <td class="billing-table-cell-right"><%= data[0].consultingquantity %></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"><%= data[0].consultingfeenet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].consultingfeetax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].consultingfee %></td>
-                    </tr>
-                    <% if (data[0].additionalservice01 && data[0].additionalservice01 !== 'null') { %>
-                    <tr>
-                        <td class="billing-table-cell-left" style="font-weight: bold">
-                            <%= data[0].additionalservice01 %>
-                        </td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"><%= data[0].additionalservice01feenet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].additionalservice01feetax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].additionalservice01fee %></td>
-                    </tr>
-                    <% }; %> <% if (data[0].additionalservice02 && data[0].additionalservice02 !== 'null') { %>
-                    <tr>
-                        <td class="billing-table-cell-left" style="font-weight: bold">
-                            <%= data[0].additionalservice02 %>
-                        </td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"><%= data[0].additionalservice02feenet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].additionalservice02feetax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].additionalservice02fee %></td>
-                    </tr>
-                    <% }; %> <% if (data[0].additionalservice03 && data[0].additionalservice03 !== 'null') { %>
-                    <tr>
-                        <td class="billing-table-cell-left" style="font-weight: bold">
-                            <%= data[0].additionalservice03 %>
-                        </td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"></td>
-                        <td class="billing-table-cell-right"><%= data[0].additionalservice03feenet %></td>
-                        <td class="billing-table-cell-right"><%= data[0].additionalservice03feetax %></td>
-                        <td class="billing-table-cell-right"><%= data[0].additionalservice03fee %></td>
-                    </tr>
-                    <% }; %>
-                    <tr style="background-color: rgb(223, 237, 249)">
-                        <th class="billing-table-cell-left" style="font-weight: bold">Total</th>
-                        <th class="billing-table-cell-right"></th>
-                        <th class="billing-table-cell-right"></th>
-                        <th class="billing-table-cell-right"><%= data[0].billingtotalnet %></th>
-                        <th class="billing-table-cell-right"><%= data[0].billingtotaltax %></th>
-                        <th class="billing-table-cell-right"><%= data[0].billingtotal %></th>
-                    </tr>
-                </table>
+            <div class="blue-highlight general-row">
+                <div class="general-column-first">Plan: <%= data[0].reportplan %>
+                </div>
             </div>
-            <div style="margin-top: 16px">
-                <table class="billing-summary">
-                    <tr style="background-color: rgb(223, 237, 249)">
-                        <th class="billing-summary-header">Contactos Unicos WhatsApp</th>
-                        <th class="billing-summary-header">Contactos Unicos No WhatsApp</th>
-                        <th class="billing-summary-header">Conversaciones</th>
-                        <th class="billing-summary-header">Interacciones</th>
-                        <th class="billing-summary-header">Supervisores</th>
-                        <th class="billing-summary-header">Asesores</th>
-                    </tr>
-                    <tr>
-                        <td class="billing-table-cell-center"><%= data[0].generalwhatsappquantity %></td>
-                        <td class="billing-table-cell-center"><%= data[0].generalotherquantity %></td>
-                        <td class="billing-table-cell-center"><%= data[0].generalconversationquantity %></td>
-                        <td class="billing-table-cell-center"><%= data[0].generalinteractionquantity %></td>
-                        <td class="billing-table-cell-center"><%= data[0].generalsupervisorquantity %></td>
-                        <td class="billing-table-cell-center"><%= data[0].generaladviserquantity %></td>
-                    </tr>
-                </table>
+            <div class="blue-highlight general-row">
+                <div class="general-column-first">Periodo: <%= data[0].reportperiod %>
+                </div>
             </div>
         </div>
-    </body>
+        <div style="margin-top: 16px">
+            <table class="billing-table">
+                <tr style="background-color: rgb(223, 237, 249)">
+                    <th style="text-align: right; width: auto"></th>
+                    <th class="billing-table-header">Cantidad</th>
+                    <th class="billing-table-header">Precio Unitario</th>
+                    <th class="billing-table-header">Monto</th>
+                    <th class="billing-table-header">IGV</th>
+                    <th class="billing-table-header">Monto Total</th>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left" style="font-weight: bold">Costo Base</td>
+                    <td class="billing-table-cell-right"></td>
+                    <td class="billing-table-cell-right"></td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].basecostnet %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].basecosttax %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].basecost %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">
+                        Agentes
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Contratado</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].agentcontractedquantity %>
+                    </td>
+                    <td class="billing-table-cell-right"></td>
+                    <td class="billing-table-cell-right"></td>
+                    <td class="billing-table-cell-right"></td>
+                    <td class="billing-table-cell-right"></td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Adicional</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].agentadditionalquantity %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].agentfee %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].agentcostnet %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].agentcosttax %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].agentcost %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">
+                        Canales
+                    </td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Canales No WhatsApp Contratados</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelotherquantity %>
+                    </td>
+                    <td class="billing-table-cell-right"></td>
+                    <td class="billing-table-cell-right"></td>
+                    <td class="billing-table-cell-right"></td>
+                    <td class="billing-table-cell-right"></td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Canales No WhatsApp Adicionales</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelotheradditional %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelotherfee %>
+                    </td>
+                    <td class="billing-table-cell-right"></td>
+                    <td class="billing-table-cell-right"></td>
+                    <td class="billing-table-cell-right"></td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Canales WhatsApp Contratados</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelwhatsappquantity %>
+                    </td>
+                    <td class="billing-table-cell-right"></td>
+                    <td class="billing-table-cell-right"></td>
+                    <td class="billing-table-cell-right"></td>
+                    <td class="billing-table-cell-right"></td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Canales WhatsApp Adicionales</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelwhatsappadditional %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelwhatsappfee %>
+                    </td>
+                    <td class="billing-table-cell-right"></td>
+                    <td class="billing-table-cell-right"></td>
+                    <td class="billing-table-cell-right"></td>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-left">Canales Adicionales</td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channeladditional %>
+                    </td>
+                    <td class="billing-table-cell-right"></td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelcostnet %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelcosttax %>
+                    </td>
+                    <td class="billing-table-cell-right">
+                        <%= data[0].channelcost %>
+                    </td>
+                </tr>
+                <% data[0].dialogdetail.forEach(function(element){ %>
+                    <tr>
+                        <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">
+                            360dialog WhatsApp Conversations
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="billing-table-cell-left">Free WhatsApp Conversations</td>
+                        <td class="billing-table-cell-right">
+                            <%= element.conversationservicefreequantity %>
+                        </td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right"></td>
+                    </tr>
+                    <tr>
+                        <td class="billing-table-cell-left">User Initiated Service WhatsApp Conversations</td>
+                        <td class="billing-table-cell-right">
+                            <%= element.conversationservicequantity %>
+                        </td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right">
+                            <%= element.conversationservicenetprice %>
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.conversationservicetaxprice %>
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.conversationserviceprice %>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="billing-table-cell-left">Business Initiated Utility WhatsApp Conversations</td>
+                        <td class="billing-table-cell-right">
+                            <%= element.conversationutilityquantity %>
+                        </td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right">
+                            <%= element.conversationutilitynetprice %>
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.conversationutilitytaxprice %>
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.conversationutilityprice %>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="billing-table-cell-left">
+                            Business Initiated Authentication WhatsApp Conversations
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.conversationauthenticationquantity %>
+                        </td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right">
+                            <%= element.conversationauthenticationnetprice %>
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.conversationauthenticationtaxprice %>
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.conversationauthenticationprice %>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="billing-table-cell-left">Business Initiated Marketing WhatsApp Conversations</td>
+                        <td class="billing-table-cell-right">
+                            <%= element.conversationmarketingquantity %>
+                        </td>
+                        <td class="billing-table-cell-right"></td>
+                        <td class="billing-table-cell-right">
+                            <%= element.conversationmarketingnetprice %>
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.conversationmarketingtaxprice %>
+                        </td>
+                        <td class="billing-table-cell-right">
+                            <%= element.conversationmarketingprice %>
+                        </td>
+                    </tr>
+                    <% }); %>
+                        <% data[0].gupshupdetail.forEach(function(element){ %>
+                            <tr>
+                                <td class="billing-table-cell-top billing-table-cell-left" style="font-weight: bold">
+                                    Gupshup WhatsApp Conversations
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="billing-table-cell-left">Free WhatsApp Conversations</td>
+                                <td class="billing-table-cell-right">
+                                    <%= element.conversationfreequantity %>
+                                </td>
+                                <td class="billing-table-cell-right"></td>
+                                <td class="billing-table-cell-right"></td>
+                            </tr>
+                            <tr>
+                                <td class="billing-table-cell-left">Billable WhatsApp Conversations</td>
+                                <td class="billing-table-cell-right">
+                                    <%= element.conversationquantity %>
+                                </td>
+                                <td class="billing-table-cell-right"></td>
+                                <td class="billing-table-cell-right">
+                                    <%= element.conversationnetprice %>
+                                </td>
+                                <td class="billing-table-cell-right">
+                                    <%= element.conversationtaxprice %>
+                                </td>
+                                <td class="billing-table-cell-right">
+                                    <%= element.conversationprice %>
+                                </td>
+                            </tr>
+                            <% }); %>
+                                <tr>
+                                    <td class="billing-table-cell-top billing-table-cell-left"
+                                        style="font-weight: bold">
+                                        Mensajeria
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="billing-table-cell-left">Cantidad Mínima de SMS</td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].messagingsmslimit %>
+                                    </td>
+                                    <td class="billing-table-cell-right"></td>
+                                    <td class="billing-table-cell-right"></td>
+                                    <td class="billing-table-cell-right"></td>
+                                    <td class="billing-table-cell-right"></td>
+                                </tr>
+                                <tr>
+                                    <td class="billing-table-cell-left">Mensajes SMS</td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].messagingsmsquantity %>
+                                    </td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].messagingsmsadditional %>
+                                    </td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].messagingsmsfeenet %>
+                                    </td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].messagingsmsfeetax %>
+                                    </td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].messagingsmsfee %>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="billing-table-cell-left">Cantidad Mínima de Correo</td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].messagingmaillimit %>
+                                    </td>
+                                    <td class="billing-table-cell-right"></td>
+                                    <td class="billing-table-cell-right"></td>
+                                    <td class="billing-table-cell-right"></td>
+                                    <td class="billing-table-cell-right"></td>
+                                </tr>
+                                <tr>
+                                    <td class="billing-table-cell-left">Mensajes Correo</td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].messagingmailquantity %>
+                                    </td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].messagingmailadditional %>
+                                    </td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].messagingmailfeenet %>
+                                    </td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].messagingmailfeetax %>
+                                    </td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].messagingmailfee %>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="billing-table-cell-top billing-table-cell-left"
+                                        style="font-weight: bold">Voz</td>
+                                </tr>
+                                <tr>
+                                    <td class="billing-table-cell-left">Números de Teléfono</td>
+                                    <td class="billing-table-cell-right"></td>
+                                    <td class="billing-table-cell-right"></td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].voicephonefeenet %>
+                                    </td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].voicephonefeetax %>
+                                    </td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].voicephonefee %>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="billing-table-cell-left">Llamadas de Red Pública</td>
+                                    <td class="billing-table-cell-right"></td>
+                                    <td class="billing-table-cell-right"></td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].voicepstnfeenet %>
+                                    </td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].voicepstnfeetax %>
+                                    </td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].voicepstnfee %>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="billing-table-cell-left">Llamadas VoIP</td>
+                                    <td class="billing-table-cell-right"></td>
+                                    <td class="billing-table-cell-right"></td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].voicevoipfeenet %>
+                                    </td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].voicevoipfeetax %>
+                                    </td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].voicevoipfee %>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="billing-table-cell-left">Grabaciones de Llamadas</td>
+                                    <td class="billing-table-cell-right"></td>
+                                    <td class="billing-table-cell-right"></td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].voicerecordingfeenet %>
+                                    </td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].voicerecordingfeetax %>
+                                    </td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].voicerecordingfee %>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="billing-table-cell-left">Otros</td>
+                                    <td class="billing-table-cell-right"></td>
+                                    <td class="billing-table-cell-right"></td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].voiceotherfeenet %>
+                                    </td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].voiceotherfeetax %>
+                                    </td>
+                                    <td class="billing-table-cell-right">
+                                        <%= data[0].voiceotherfee %>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="billing-table-cell-top billing-table-cell-left"
+                                        style="font-weight: bold">
+                                        Contactos
+                                    </td>
+                                </tr>
+                                <% if (data[0].contactcalculateunique==true) { %>
+                                    <tr>
+                                        <td class="billing-table-cell-left">Contactos Gratis</td>
+                                        <td class="billing-table-cell-right">
+                                            <%= data[0].contactuniquelimit %>
+                                        </td>
+                                        <td class="billing-table-cell-right"></td>
+                                        <td class="billing-table-cell-right"></td>
+                                        <td class="billing-table-cell-right"></td>
+                                        <td class="billing-table-cell-right"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="billing-table-cell-left">Contactos Totales</td>
+                                        <td class="billing-table-cell-right">
+                                            <%= data[0].contactuniquequantity %>
+                                        </td>
+                                        <td class="billing-table-cell-right"></td>
+                                        <td class="billing-table-cell-right"></td>
+                                        <td class="billing-table-cell-right"></td>
+                                        <td class="billing-table-cell-right"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="billing-table-cell-left">Contactos Adicionales</td>
+                                        <td class="billing-table-cell-right">
+                                            <%= data[0].contactuniquequantityadditional %>
+                                        </td>
+                                        <td class="billing-table-cell-right">
+                                            <%= data[0].contactuniqueadditional %>
+                                        </td>
+                                        <td class="billing-table-cell-right">
+                                            <%= data[0].contactuniquefeenet %>
+                                        </td>
+                                        <td class="billing-table-cell-right">
+                                            <%= data[0].contactuniquefeetax %>
+                                        </td>
+                                        <td class="billing-table-cell-right">
+                                            <%= data[0].contactuniquefee %>
+                                        </td>
+                                    </tr>
+                                    <% }; %>
+                                        <% if (data[0].contactcalculateunique==false) { %>
+                                            <tr>
+                                                <td class="billing-table-cell-left">Contactos de Canales No WhatsApp
+                                                </td>
+                                                <td class="billing-table-cell-right">
+                                                    <%= data[0].contactotherquantity %>
+                                                </td>
+                                                <td class="billing-table-cell-right">
+                                                    <%= data[0].contactotheradditional %>
+                                                </td>
+                                                <td class="billing-table-cell-right">
+                                                    <%= data[0].contactotherfeenet %>
+                                                </td>
+                                                <td class="billing-table-cell-right">
+                                                    <%= data[0].contactotherfeetax %>
+                                                </td>
+                                                <td class="billing-table-cell-right">
+                                                    <%= data[0].contactotherfee %>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="billing-table-cell-left">Contactos de Canales WhatsApp</td>
+                                                <td class="billing-table-cell-right">
+                                                    <%= data[0].contactwhatsappquantity %>
+                                                </td>
+                                                <td class="billing-table-cell-right">
+                                                    <%= data[0].contactwhatsappadditional %>
+                                                </td>
+                                                <td class="billing-table-cell-right">
+                                                    <%= data[0].contactwhatsappfeenet %>
+                                                </td>
+                                                <td class="billing-table-cell-right">
+                                                    <%= data[0].contactwhatsappfeetax %>
+                                                </td>
+                                                <td class="billing-table-cell-right">
+                                                    <%= data[0].contactwhatsappfee %>
+                                                </td>
+                                            </tr>
+                                            <% }; %>
+                                                <% data[0].intelligencedetail.forEach(function(element){ %>
+                                                    <tr>
+                                                        <td class="billing-table-cell-top billing-table-cell-left"
+                                                            style="font-weight: bold">
+                                                            <%= element.intelligenceprovider %>
+                                                                <%= element.intelligenceservice %>: <%=
+                                                                        element.intelligenceplan %>
+                                                        </td>
+                                                        <td class="billing-table-cell-right">
+                                                            <%= element.intelligenceaiquantity %>
+                                                        </td>
+                                                        <td class="billing-table-cell-right">
+                                                            <%= element.intelligenceadditionalfee %>
+                                                        </td>
+                                                        <td class="billing-table-cell-right">
+                                                            <%= element.intelligencetaxableamount %>
+                                                        </td>
+                                                        <td class="billing-table-cell-right">
+                                                            <%= element.intelligenceigv %>
+                                                        </td>
+                                                        <td class="billing-table-cell-right">
+                                                            <%= element.intelligenceaicost %>
+                                                        </td>
+                                                    </tr>
+                                                    <% }); %>
+                                                        <% if (data[0].infrastructureenabled==true) { %>
+                                                            <tr>
+                                                                <td class="billing-table-cell-left">Infraesctructura
+                                                                    Dedicada</td>
+                                                                <td class="billing-table-cell-right"></td>
+                                                                <td class="billing-table-cell-right"></td>
+                                                                <td class="billing-table-cell-right">
+                                                                    <%= data[0].infrastructurefeenet %>
+                                                                </td>
+                                                                <td class="billing-table-cell-right">
+                                                                    <%= data[0].infrastructurefeetax %>
+                                                                </td>
+                                                                <td class="billing-table-cell-right">
+                                                                    <%= data[0].infrastructurefee %>
+                                                                </td>
+                                                            </tr>
+                                                            <% }; %>
+                                                                <tr>
+                                                                    <td class="billing-table-cell-left"
+                                                                        style="font-weight: bold">
+                                                                        <%= data[0].supportplan %>
+                                                                    </td>
+                                                                    <td class="billing-table-cell-right"></td>
+                                                                    <td class="billing-table-cell-right"></td>
+                                                                    <td class="billing-table-cell-right">
+                                                                        <%= data[0].supportfeenet %>
+                                                                    </td>
+                                                                    <td class="billing-table-cell-right">
+                                                                        <%= data[0].supportfeetax %>
+                                                                    </td>
+                                                                    <td class="billing-table-cell-right">
+                                                                        <%= data[0].supportfee %>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="billing-table-cell-left">Consultoria</td>
+                                                                    <td class="billing-table-cell-right">
+                                                                        <%= data[0].consultingquantity %>
+                                                                    </td>
+                                                                    <td class="billing-table-cell-right"></td>
+                                                                    <td class="billing-table-cell-right">
+                                                                        <%= data[0].consultingfeenet %>
+                                                                    </td>
+                                                                    <td class="billing-table-cell-right">
+                                                                        <%= data[0].consultingfeetax %>
+                                                                    </td>
+                                                                    <td class="billing-table-cell-right">
+                                                                        <%= data[0].consultingfee %>
+                                                                    </td>
+                                                                </tr>
+                                                                <% if (data[0].additionalservice01 &&
+                                                                    data[0].additionalservice01 !=='null' ) { %>
+                                                                    <tr>
+                                                                        <td class="billing-table-cell-left"
+                                                                            style="font-weight: bold">
+                                                                            <%= data[0].additionalservice01 %>
+                                                                        </td>
+                                                                        <td class="billing-table-cell-right"></td>
+                                                                        <td class="billing-table-cell-right"></td>
+                                                                        <td class="billing-table-cell-right">
+                                                                            <%= data[0].additionalservice01feenet %>
+                                                                        </td>
+                                                                        <td class="billing-table-cell-right">
+                                                                            <%= data[0].additionalservice01feetax %>
+                                                                        </td>
+                                                                        <td class="billing-table-cell-right">
+                                                                            <%= data[0].additionalservice01fee %>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <% }; %>
+                                                                        <% if (data[0].additionalservice02 &&
+                                                                            data[0].additionalservice02 !=='null' ) { %>
+                                                                            <tr>
+                                                                                <td class="billing-table-cell-left"
+                                                                                    style="font-weight: bold">
+                                                                                    <%= data[0].additionalservice02 %>
+                                                                                </td>
+                                                                                <td class="billing-table-cell-right">
+                                                                                </td>
+                                                                                <td class="billing-table-cell-right">
+                                                                                </td>
+                                                                                <td class="billing-table-cell-right">
+                                                                                    <%= data[0].additionalservice02feenet
+                                                                                        %>
+                                                                                </td>
+                                                                                <td class="billing-table-cell-right">
+                                                                                    <%= data[0].additionalservice02feetax
+                                                                                        %>
+                                                                                </td>
+                                                                                <td class="billing-table-cell-right">
+                                                                                    <%= data[0].additionalservice02fee
+                                                                                        %>
+                                                                                </td>
+                                                                            </tr>
+                                                                            <% }; %>
+                                                                                <% if (data[0].additionalservice03 &&
+                                                                                    data[0].additionalservice03
+                                                                                    !=='null' ) { %>
+                                                                                    <tr>
+                                                                                        <td class="billing-table-cell-left"
+                                                                                            style="font-weight: bold">
+                                                                                            <%= data[0].additionalservice03
+                                                                                                %>
+                                                                                        </td>
+                                                                                        <td
+                                                                                            class="billing-table-cell-right">
+                                                                                        </td>
+                                                                                        <td
+                                                                                            class="billing-table-cell-right">
+                                                                                        </td>
+                                                                                        <td
+                                                                                            class="billing-table-cell-right">
+                                                                                            <%= data[0].additionalservice03feenet
+                                                                                                %>
+                                                                                        </td>
+                                                                                        <td
+                                                                                            class="billing-table-cell-right">
+                                                                                            <%= data[0].additionalservice03feetax
+                                                                                                %>
+                                                                                        </td>
+                                                                                        <td
+                                                                                            class="billing-table-cell-right">
+                                                                                            <%= data[0].additionalservice03fee
+                                                                                                %>
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                    <% }; %>
+                                                                                        <tr
+                                                                                            style="background-color: rgb(223, 237, 249)">
+                                                                                            <th class="billing-table-cell-left"
+                                                                                                style="font-weight: bold">
+                                                                                                Total</th>
+                                                                                            <th
+                                                                                                class="billing-table-cell-right">
+                                                                                            </th>
+                                                                                            <th
+                                                                                                class="billing-table-cell-right">
+                                                                                            </th>
+                                                                                            <th
+                                                                                                class="billing-table-cell-right">
+                                                                                                <%= data[0].billingtotalnet
+                                                                                                    %>
+                                                                                            </th>
+                                                                                            <th
+                                                                                                class="billing-table-cell-right">
+                                                                                                <%= data[0].billingtotaltax
+                                                                                                    %>
+                                                                                            </th>
+                                                                                            <th
+                                                                                                class="billing-table-cell-right">
+                                                                                                <%= data[0].billingtotal
+                                                                                                    %>
+                                                                                            </th>
+                                                                                        </tr>
+            </table>
+        </div>
+        <div style="margin-top: 16px">
+            <table class="billing-summary">
+                <tr style="background-color: rgb(223, 237, 249)">
+                    <th class="billing-summary-header">Contactos Unicos WhatsApp</th>
+                    <th class="billing-summary-header">Contactos Unicos No WhatsApp</th>
+                    <th class="billing-summary-header">Conversaciones</th>
+                    <th class="billing-summary-header">Interacciones</th>
+                    <th class="billing-summary-header">Supervisores</th>
+                    <th class="billing-summary-header">Asesores</th>
+                </tr>
+                <tr>
+                    <td class="billing-table-cell-center">
+                        <%= data[0].generalwhatsappquantity %>
+                    </td>
+                    <td class="billing-table-cell-center">
+                        <%= data[0].generalotherquantity %>
+                    </td>
+                    <td class="billing-table-cell-center">
+                        <%= data[0].generalconversationquantity %>
+                    </td>
+                    <td class="billing-table-cell-center">
+                        <%= data[0].generalinteractionquantity %>
+                    </td>
+                    <td class="billing-table-cell-center">
+                        <%= data[0].generalsupervisorquantity %>
+                    </td>
+                    <td class="billing-table-cell-center">
+                        <%= data[0].generaladviserquantity %>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+
 </html>
