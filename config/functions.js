@@ -4777,7 +4777,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_ASSISTANTAI_INS: {
-        query: "SELECT * FROM ufn_assistantai_ins($corpid, $orgid, $id, $code, $name, $description, $basemodel, $language, $organizationname, $intelligentmodelsid, $querywithoutanswer, $response, $prompt, $negativeprompt, $generalprompt, $temperature, $max_tokens, $top_p, $apikey, $retrieval, $codeinterpreter, $type, $status, $decoding_method, $username, $operation);",
+        query: "SELECT * FROM ufn_assistantai_ins($corpid, $orgid, $id, $code, $name, $description, $basemodel, $language, $organizationname, $intelligentmodelsid, $querywithoutanswer, $response, $prompt, $negativeprompt, $generalprompt, $temperature, $max_tokens, $top_p, $apikey, $retrieval, $codeinterpreter, $type, $status, $decoding_method, $username, $operation, $top_k, $repetition_penalty, $chunk_size, $chunk_overlap);",
         module: "",
         protected: "INSERT"
     },
