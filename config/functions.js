@@ -2797,7 +2797,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_BILLING_REPORT_CONVERSATIONWHATSAPP: {
-        query: "SELECT * FROM ufn_billing_report_conversationwhatsapp($corpid, $orgid, $year, $month)",
+        query: "SELECT * FROM ufn_billing_report_conversationwhatsapp($corpid, $orgid, $year, $month, $conversationprovider)",
         module: ["/invoice"],
         protected: "SELECT"
     },
