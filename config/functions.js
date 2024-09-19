@@ -25,7 +25,7 @@ module.exports = {
     },
     QUERY_AUTHENTICATED_BY_FACEBOOKID: {
         query: `
-        SELECT us.company, us.languagesettings, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid,
+        SELECT us.company, us.languagesettings, us.languagesettings, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid,
 		us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan,
 		string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi,
 		cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision, corp.partnerid
@@ -48,7 +48,7 @@ module.exports = {
     },
     QUERY_AUTHENTICATED_BY_GOOGLEID: {
         query: `
-        SELECT us.company, us.languagesettings, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid,
+        SELECT us.company, us.languagesettings, us.languagesettings, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid,
         ous.orgid, us.userid, us.usr, us.pwd,
         us.firstname, us.image, us.lastname, us.email, us.status,
         ous.groups, ous.redirect, pp.plan, COALESCE(cur.symbol, 'S/') currencysymbol,
@@ -732,11 +732,6 @@ module.exports = {
         module: ["/extras/messagetemplate"],
         protected: "SELECT"
     },
-    UFN_MESSAGETEMPLATE_SEL1: {
-        query: "SELECT * FROM ufn_messagetemplate_sel($corpid, $orgid, $take, $skip, $where, $order, true, 0, $communicationchannelids)",
-        module: ["/extras/messagetemplate"],
-        protected: "SELECT"
-    },
     UFN_MESSAGETEMPLATE_SEL_OLD: {
         query: "SELECT * FROM ufn_messagetemplate_sel($corpid, $orgid, $take, $skip, $where, $order, $newversion, $communicationchannelid)",
         module: ["/extras/messagetemplate"],
@@ -745,11 +740,6 @@ module.exports = {
     UFN_MESSAGETEMPLATE_TOTALRECORDS: {
         query: "SELECT * FROM ufn_messagetemplate_totalrecords($corpid, $orgid, $where)",
         module: ["/extras/messagetemplate", "/advancedtemplatescampaigns"],
-        protected: "SELECT"
-    },
-    UFN_MESSAGETEMPLATE_TOTALRECORDS1: {
-        query: "SELECT * FROM ufn_messagetemplate_totalrecords($corpid, $orgid, $where, true, $communicationchannelids)",
-        module: ["/extras/messagetemplate"],
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_TOTALRECORDS1: {
@@ -3542,7 +3532,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_UPD: {
-        query: "SELECT * FROM ufn_messagetemplate_upd($corpid, $orgid, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $footerenabled, $footer, $buttonsenabled, $buttons, $priority, $attachment, $communicationchannelid, $communicationchanneltype, $authenticationdata, $bodyvariables, $buttonsgeneric, $buttonsquickreply, $carouseldata, $headervariables, $provideraccountid, $providerexternalid, $providerid, $providermessagelimit, $providerpartnerid, $providerquality, $providerstatus, $username)",
+        query: "SELECT * FROM ufn_messagetemplate_upd($corpid, $orgid, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $footerenabled, $footer, $buttonsenabled, $buttons, $priority, $attachment, $communicationchannelid, $communicationchanneltype, $authenticationdata, $bodyvariables, $buttonsgeneric, $buttonsquickreply, $carouseldata, $headervariables, $provideraccountid, $providerexternalid, $providerid, $providermessagelimit, $providerpartnerid, $providerquality, $providerstatus, $categorychange, $firstbuttons, $username)",
         module: "",
         protected: "SELECT"
     },

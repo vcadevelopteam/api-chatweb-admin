@@ -940,7 +940,7 @@ exports.insertChannel = async (request, response) => {
         parameters.phone = null;
         parameters.resolvelithium = null;
         parameters.schedule = null;
-        parameters.status = "ACTIVO";
+        parameters.status = parameters.onboarding ? "INACTIVO" : "ACTIVO";
         parameters.updintegration = null;
         parameters.username = request.user.usr;
         parameters.voximplantholdtone = null;
@@ -3454,6 +3454,8 @@ exports.synchronizeTemplate = async (request, response) => {
                                         templatedata.partnerId || null,
                                         templatedata.qualityRating || null,
                                         templatedata.status || 'REJECTED',
+                                        false,
+                                        templatedata.buttonOrder || null,
                                         request.user?.usr || "scheduler",
                                         request._requestid,
                                     );
