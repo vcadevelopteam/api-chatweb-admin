@@ -147,6 +147,8 @@ exports.messageTemplateUpd = async (corpid, orgid, description, type, status, na
         providerpartnerid: providerpartnerid,
         providerquality: providerquality,
         providerstatus: providerstatus,
+        categorychange: categorychange,
+        firstbuttons: firstbuttons,
         username: username,
         _requestid: requestid,
     }
