@@ -4681,7 +4681,7 @@ module.exports = {
         protected: "SELECT"
     },
     QUERY_WATSONMODELCONFIGURATION_SEL: {
-        query: "select w.watsonid, im.intelligentmodelsid, im.endpoint, im.apikey, im.modelid from watson w join intelligentmodels im on im.intelligentmodelsid = w.intelligentmodelsid where corpid = $corpid and orgid = $orgid and watsonid = $watsonid and w.status = 'ACTIVO' and im.status = 'ACTIVO';",
+        query: "select w.watsonid, im.intelligentmodelsid, im.endpoint, im.apikey, im.modelid from watson w join intelligentmodels im on im.intelligentmodelsid = w.intelligentmodelsid where w.corpid = $corpid and w.orgid = $orgid and watsonid = $watsonid and w.status = 'ACTIVO' and im.status = 'ACTIVO';",
         module: "",
         protected: "SELECT"
     },
