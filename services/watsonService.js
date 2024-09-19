@@ -300,12 +300,12 @@ exports.compareWatsonData = async (requestid, parameters, assistant, connector, 
     }
 };
 
-exports.getWatsonConfiguration = async (requestid, watsonid) => {
+exports.getWatsonConfiguration = async (requestid, params) => {
     let responsedata = genericfunctions.generateResponseData(requestid);
     try {
         //TODO: buscar por orgid tambien aca
         const connectorData = await executesimpletransaction("QUERY_WATSONMODELCONFIGURATION_SEL", {
-            watsonid,
+            ...params,
         });
         if (!connectorData instanceof Array || !connectorData.length) throw new Error("CONFIGURATION_NOT_FOUND");
 

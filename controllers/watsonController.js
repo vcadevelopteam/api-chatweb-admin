@@ -56,15 +56,16 @@ exports.sync = async (req, res) => {
 };
 
 exports.tryit = async (req, res) => {
-    const { watsonid, text } = req.body;
+    const parameters = req.body;
+    setSessionParameters(parameters, req.user, req._requestid);
 
-    let connector = await getWatsonConfiguration(req._requestid, watsonid);
+    let connector = await getWatsonConfiguration(req._requestid, parameters);
     if (connector.error) return res.status(connector.status).json(connector);
 
     const assistant = await getAssistantConfiguration(req._requestid, connector.data);
     if (assistant.error) return res.status(assistant.status).json(assistant);
 
-    const response = await tryitModel(req._requestid, connector.data, assistant.data, text);
+    const response = await tryitModel(req._requestid, connector.data, assistant.data, parameters.text);
     if (response.error) return res.status(response.status).json(response);
 
     return res.status(200).json(response);
@@ -75,7 +76,7 @@ exports.createIntent = async (req, res) => {
         const parameters = req.body;
         setSessionParameters(parameters, req.user, req._requestid);
 
-        let connector = await getWatsonConfiguration(parameters._requestid, parameters.watsonid);
+        let connector = await getWatsonConfiguration(parameters._requestid, parameters);
         if (connector.error) return res.status(connector.status).json(connector);
 
         insertData = await insertIntentionItem(parameters._requestid, parameters, "intention");
@@ -101,7 +102,7 @@ exports.createEntity = async (req, res) => {
         const parameters = req.body;
         setSessionParameters(parameters, req.user, req._requestid);
 
-        let connector = await getWatsonConfiguration(parameters._requestid, parameters.watsonid);
+        let connector = await getWatsonConfiguration(parameters._requestid, parameters);
         if (connector.error) return res.status(connector.status).json(connector);
 
         insertData = await insertIntentionItem(parameters._requestid, parameters, "entity");
@@ -127,7 +128,7 @@ exports.deleteItem = async (req, res) => {
         const parameters = req.body;
         setSessionParameters(parameters, req.user, req._requestid);
 
-        let connector = await getWatsonConfiguration(parameters._requestid, parameters.watsonid);
+        let connector = await getWatsonConfiguration(parameters._requestid, parameters);
         if (connector.error) return res.status(connector.status).json(connector);
 
         deleteData = await deleteItems(parameters._requestid, parameters, "entity");
@@ -153,7 +154,7 @@ exports.createMention = async (req, res) => {
         const parameters = req.body;
         setSessionParameters(parameters, req.user, req._requestid);
 
-        let connector = await getWatsonConfiguration(parameters._requestid, parameters.watsonid);
+        let connector = await getWatsonConfiguration(parameters._requestid, parameters);
         if (connector.error) return res.status(connector.status).json(connector);
 
         newEntity = await newMentionIns(parameters._requestid, parameters);
@@ -183,7 +184,7 @@ exports.bulkloadInsert = async (req, res) => {
         const parameters = req.body;
         setSessionParameters(parameters, req.user, req._requestid);
 
-        let connector = await getWatsonConfiguration(parameters._requestid, parameters.watsonid);
+        let connector = await getWatsonConfiguration(parameters._requestid, parameters);
         if (connector.error) return res.status(connector.status).json(connector);
 
         const insert = await insertBulkloadIntent(parameters._requestid, parameters);
