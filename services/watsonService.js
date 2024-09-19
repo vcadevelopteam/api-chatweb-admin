@@ -243,10 +243,12 @@ exports.compareWatsonData = async (requestid, parameters, assistant, connector, 
                 .filter((item) => item.item_type === "intention")
                 .map((item) => ({
                     intent: item.item_name,
-                    description: item.description,
-                    examples: item.item_details[0] && item.item_details.map((detail) => ({
-                        text: detail.value,
-                    })),
+                    description: item.description || undefined,
+                    examples:
+                        item.item_details[0] &&
+                        item.item_details.map((detail) => ({
+                            text: detail.value,
+                        })),
                 })),
             entities: watsonData
                 .filter((item) => item.item_type === "entity")
@@ -274,7 +276,7 @@ exports.compareWatsonData = async (requestid, parameters, assistant, connector, 
         console.log("=====");
 
         if (sortOutEntities === sortLocalEntities && sortOutIntents === sortLocalIntents) {
-            console.log('son igualessss')
+            console.log("son igualessss");
             needUpdate = false;
         }
 
@@ -651,4 +653,107 @@ function sortIntents(arr) {
         };
     });
     return arr;
+}
+
+exports.insertBulkloadIntent = async (requestid, params) => {
+    let responsedata = genericfunctions.generateResponseData(requestid);
+    try {
+        const groupData = params.type === "intention" ? groupByIntent(params.data) : groupByEntity(params.data);
+
+        const insertData = await executesimpletransaction("UFN_WATSON_BULKLOAD_ITEM_INS", {
+            ...params,
+            data: JSON.stringify(groupData),
+        });
+        if (!insertData instanceof Array || !insertData.length) throw new Error(insertData.code || "UNEXPECTED_ERROR");
+
+        console.log("🚀 ~ insertData ~ insertData:", insertData);
+        return genericfunctions.changeResponseData(
+            responsedata,
+            undefined,
+            groupData,
+            "Bulkload inserted successfully.",
+            200,
+            true
+        );
+    } catch (error) {
+        logger.child({ _requestid: requestid, ctx: params }).error(error);
+        return genericfunctions.changeResponseData(responsedata, undefined, undefined, "Error bulkload insert.");
+    }
+};
+
+exports.syncAllSkill = async (requestid, assistant, connector, params) => {
+    let responsedata = genericfunctions.generateResponseData(requestid);
+    try {
+        const watsonData = await executesimpletransaction("UFN_WATSON_GET_ITEM_DETAILS", {
+            ...params,
+            watsonid: connector.watsonid,
+        });
+        if (!watsonData instanceof Array || !watsonData.length) throw new Error("CONFIGURATION_NOT_FOUND");
+
+        const data = {
+            intents: watsonData
+                .filter((item) => item.item_type === "intention")
+                .map((item) => ({
+                    intent: item.item_name,
+                    description: item.description || undefined,
+                    examples:
+                        item.item_details[0] &&
+                        item.item_details.map((detail) => ({
+                            text: detail.value,
+                        })),
+                })),
+            entities: watsonData
+                .filter((item) => item.item_type === "entity")
+                .map((item) => ({
+                    entity: item.item_name,
+                    values: item.item_details.map((detail) => ({
+                        synonyms: JSON.parse(detail.synonyms) || [],
+                        value: detail.value,
+                        type: "synonyms",
+                    })),
+                })),
+        };
+
+        updateSkill = await assistant.updateWorkspace({
+            workspaceId: connector.modelid,
+            intents: data.intents,
+            entities: data.entities,
+        });
+
+        if (![200, 201].includes(updateSkill.status))
+            throw new Error(updateSkill.result || "Error creating the intent.");
+
+        console.log("🚀 ~ exports.syncAllSkill= ~ data:", JSON.stringify(data));
+        return genericfunctions.changeResponseData(
+            responsedata,
+            undefined,
+            updateSkill.result,
+            "Bulkload sync successfully.",
+            200,
+            true
+        );
+    } catch (error) {
+        logger.child({ _requestid: requestid, ctx: params }).error(error);
+        return genericfunctions.changeResponseData(responsedata, undefined, undefined, "Error bulkload sync.");
+    }
+};
+
+function groupByIntent(data) {
+    return data.reduce((acc, item) => {
+        if (!acc[item.intent]) {
+            acc[item.intent] = [];
+        }
+        acc[item.intent].push({ example: item.example });
+        return acc;
+    }, {});
+}
+
+function groupByEntity(data) {
+    return data.reduce((acc, item) => {
+        if (!acc[item.entity]) {
+            acc[item.entity] = [];
+        }
+        acc[item.entity].push({ value: item.value, synonyms: item.synonyms });
+        return acc;
+    }, {});
 }

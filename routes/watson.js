@@ -17,4 +17,6 @@ router.post('/item/delete', ip, auth, witaiController.deleteItem);
 
 router.post('/mention', ip, auth, witaiController.createMention);
 
+router.post('/bulkload', ip, auth, witaiController.bulkloadInsert);
+
 module.exports = router;

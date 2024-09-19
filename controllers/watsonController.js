@@ -14,6 +14,8 @@ const {
     newMentionIns,
     compareWatsonData,
     getWorkspaceInformation,
+    insertBulkloadIntent,
+    syncAllSkill,
 } = require("../services/watsonService");
 const { get } = require("../routes/watson");
 
@@ -30,7 +32,7 @@ exports.sync = async (req, res) => {
 
         const workspace = await getWorkspaceInformation(req._requestid, assistant.data, connector.data);
         if (workspace.error) return res.status(workspace.status).json(workspace);
-        
+
         const compare = await compareWatsonData(req._requestid, parameters, assistant, connector.data, workspace.data);
         if (compare.error) return res.status(compare.status).json(compare);
 
@@ -173,5 +175,33 @@ exports.createMention = async (req, res) => {
         return res
             .status(500)
             .json({ success: false, error: true, id: req._requestid, message: "Error deleting the item." });
+    }
+};
+
+exports.bulkloadInsert = async (req, res) => {
+    try {
+        const parameters = req.body;
+        setSessionParameters(parameters, req.user, req._requestid);
+
+        let connector = await getWatsonConfiguration(parameters._requestid, parameters.watsonid);
+        if (connector.error) return res.status(connector.status).json(connector);
+
+        const insert = await insertBulkloadIntent(parameters._requestid, parameters);
+        if (insert.error) return res.status(insert.status).json(insert);
+
+        const assistant = await getAssistantConfiguration(req._requestid, connector.data);
+        if (assistant.error) return res.status(assistant.status).json(assistant);
+
+        const syncData = await syncAllSkill(req._requestid, assistant.data, connector.data, parameters);
+        if (syncData.error) return res.status(syncData.status).json(syncData);
+
+        return res
+            .status(200)
+            .json({ success: true, error: false, id: req._requestid, message: "Bulkload inserted succesfully." });
+    } catch (error) {
+        logger.child({ _requestid: requestid, ctx: parameters }).error(error);
+        return res
+            .status(500)
+            .json({ success: false, error: true, id: req._requestid, message: "Error bulkloadInsert." });
     }
 };
