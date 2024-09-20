@@ -7,7 +7,7 @@ const BATCH_SIZE = 100_000;
 
 const transformCSV = (data, headerClient, _requestid, indexPart, zip, reportName) => {
     const formatToExport = "csv";
-    const titlefile = (reportName ? `${reportName}_` : "") + "Part-" + indexPart + (formatToExport !== "csv" ? ".xlsx" : ".csv");
+    const titlefile = "Part-" + indexPart + (formatToExport !== "csv" ? ".xlsx" : ".csv");
 
     let keysHeaders;
     const keys = Object.keys(data[0]);
@@ -42,7 +42,7 @@ const transformCSV = (data, headerClient, _requestid, indexPart, zip, reportName
 }
 
 const transformExcel = (data, headerClient, _requestid, indexPart, zip, reportName) => {
-    const titlefile = (reportName ? `${reportName}_` : "") + "Part-" + indexPart + ".xlsx";
+    const titlefile = "Part-" + indexPart + ".xlsx";
 
     const profiler = logger.child({ _requestid }).startTimer();
 
@@ -96,7 +96,7 @@ exports.processCursor = async (cursor, _requestid, headerClient, formatDownload,
                             level: 1,
                         }
                     })
-                    const rr = await uploadBufferToCos(_requestid, buffer, "application/zip", (reportName ? `${reportName}_` : "") + new Date().toISOString() + ".zip", true);
+                    const rr = await uploadBufferToCos(_requestid, buffer, "application/zip", new Date().toISOString() + ".zip", true);
                     resultLink.push(rr.url)
                     alreadysave = true;
                     zip = new JSZip(); //reiniciamos
@@ -109,7 +109,7 @@ exports.processCursor = async (cursor, _requestid, headerClient, formatDownload,
                 if (!rows.length) {
                     if (!alreadysave) {
                         const buffer = await zip.generateAsync({ type: "nodebuffer", compression: 'DEFLATE' })
-                        const rr = await uploadBufferToCos(_requestid, buffer, "application/zip", (reportName ? `${reportName}_` : "") + new Date().toISOString() + ".zip", true);
+                        const rr = await uploadBufferToCos(_requestid, buffer, "application/zip", new Date().toISOString() + ".zip", true);
                         resultLink.push(rr.url)
                     }
                     zip = null;
