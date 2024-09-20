@@ -170,7 +170,6 @@ exports.authenticate = async (req, res) => {
             }
             user.code = cur;
         }
-
         if (!integration) {
             const ispasswordmatch = await bcryptjs.compare(password, user.pwd)
             if (!ispasswordmatch)
