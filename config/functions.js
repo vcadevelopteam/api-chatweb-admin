@@ -4676,7 +4676,7 @@ module.exports = {
         protected: "SELECT"
     },
     QUERY_INTELLIGENTMODELSCONFIGURATION_SEL: {
-        query: "select i.intelligentmodelsconfigurationid, im.intelligentmodelsid, im.endpoint, im.apikey, im.modelid, w.watsonid from intelligentmodelsconfiguration i join intelligentmodels im on im.intelligentmodelsid = i.intelligentmodelsid left join watson w on w.intelligentmodelsid = im.intelligentmodelsid and w.status = 'ACTIVO' where i.corpid = $corpid and i.orgid = $orgid and i.intelligentmodelsconfigurationid = $id and i.status = 'ACTIVO' and im.status = 'ACTIVO';",
+        query: "select im.intelligentmodelsid, im.endpoint, im.apikey, im.modelid, w.watsonid from intelligentmodels im left join watson w on w.intelligentmodelsid = im.intelligentmodelsid and w.status = 'ACTIVO' where im.corpid = $corpid and im.orgid = $orgid and im.status = 'ACTIVO' and im.intelligentmodelsid = $id;",
         module: "",
         protected: "SELECT"
     },

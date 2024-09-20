@@ -30,7 +30,7 @@ exports.sync = async (req, res) => {
 
         if (parameters.watsonid) {
             connector = await getWatsonConfiguration(req._requestid, parameters);
-        } else if (parameters.intelligentmodelsconfigurationid) {
+        } else if (parameters.intelligentmodelsid) {
             connector = await getConnectorConfiguration(req._requestid, parameters);
         }
         if (connector.error) return res.status(connector.status).json(connector);

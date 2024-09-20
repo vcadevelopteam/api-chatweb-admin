@@ -10,7 +10,7 @@ exports.getConnectorConfiguration = async (requestid, params) => {
     try {
         const connectorData = await executesimpletransaction("QUERY_INTELLIGENTMODELSCONFIGURATION_SEL", {
             ...params,
-            id: params.intelligentmodelsconfigurationid,
+            id: params.intelligentmodelsid,
         });
         if (!connectorData instanceof Array || !connectorData.length)
             return genericfunctions.changeResponseData(responsedata, undefined, undefined, "CONFIGURATION_NOT_FOUND.");
