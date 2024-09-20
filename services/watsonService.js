@@ -738,6 +738,76 @@ exports.syncAllSkill = async (requestid, assistant, connector, params) => {
     }
 };
 
+exports.syncAllIntents = async (requestid, assistant, connector, params) => {
+    let responsedata = genericfunctions.generateResponseData(requestid);
+    try {
+        const watsonData = await executesimpletransaction("UFN_WATSON_GET_ITEM_DETAILS", {
+            ...params,
+            watsonid: connector.watsonid,
+        });
+        if (!watsonData instanceof Array || !watsonData.length) throw new Error("CONFIGURATION_NOT_FOUND");
+
+        const data = {
+            intents: watsonData
+                .filter((item) => item.item_type === "intention")
+                .map((item) => ({
+                    intent: item.item_name,
+                    description: item.description || undefined,
+                    examples:
+                        item.item_details[0] &&
+                        item.item_details.map((detail) => ({
+                            text: detail.value,
+                        })),
+                })),
+        };
+
+        updateSkill = await assistant.updateWorkspace({
+            workspaceId: connector.modelid,
+            intents: data.intents,
+        });
+
+        if (![200, 201].includes(updateSkill.status))
+            throw new Error(updateSkill.result || "Error creating the intent.");
+
+        return genericfunctions.changeResponseData(
+            responsedata,
+            undefined,
+            updateSkill.result,
+            "Intents bulkload sync successfully.",
+            200,
+            true
+        );
+    } catch (error) {
+        logger.child({ _requestid: requestid, ctx: params }).error(error);
+        return genericfunctions.changeResponseData(responsedata, undefined, undefined, "Error intents bulkload sync.");
+    }
+};
+
+exports.resolveConflictsIntents = async (requestid, params) => {
+    let responsedata = genericfunctions.generateResponseData(requestid);
+    try {
+        const insertData = await executesimpletransaction("UFN_WATSON_CONFLICTS_RESOLVE", params);
+        if (!insertData instanceof Array || !insertData.length) throw new Error(insertData.code || "UNEXPECTED_ERROR");
+
+        return genericfunctions.changeResponseData(
+            responsedata,
+            undefined,
+            insertData,
+            "Resolving conflicts successfully.",
+            200,
+            true
+        );
+    } catch (error) {
+        logger.child({ _requestid: requestid, ctx: params }).error(error);
+        return genericfunctions.changeResponseData(
+            responsedata,
+            undefined,
+            undefined,
+            "Error resolving conflicts insert."
+        );
+    }
+};
+
 function groupByIntent(data) {
     return data.reduce((acc, item) => {
         if (!acc[item.intent]) {

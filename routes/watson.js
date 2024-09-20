@@ -21,4 +21,6 @@ router.post('/mention', ip, auth, witaiController.createMention);
 
 router.post('/bulkload', ip, auth, witaiController.bulkloadInsert);
 
+router.post('/conflicts/resolve', ip, auth, witaiController.resolveConflicts);
+
 module.exports = router;

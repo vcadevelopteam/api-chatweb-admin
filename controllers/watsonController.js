@@ -16,6 +16,8 @@ const {
     getWorkspaceInformation,
     insertBulkloadIntent,
     syncAllSkill,
+    resolveConflictsIntents,
+    syncAllIntents,
 } = require("../services/watsonService");
 const { get } = require("../routes/watson");
 
@@ -202,6 +204,34 @@ exports.bulkloadInsert = async (req, res) => {
         if (assistant.error) return res.status(assistant.status).json(assistant);
 
         const syncData = await syncAllSkill(req._requestid, assistant.data, connector.data, parameters);
+        if (syncData.error) return res.status(syncData.status).json(syncData);
+
+        return res
+            .status(200)
+            .json({ success: true, error: false, id: req._requestid, message: "Bulkload inserted succesfully." });
+    } catch (error) {
+        logger.child({ _requestid: requestid, ctx: parameters }).error(error);
+        return res
+            .status(500)
+            .json({ success: false, error: true, id: req._requestid, message: "Error bulkloadInsert." });
+    }
+};
+
+exports.resolveConflicts = async (req, res) => {
+    try {
+        const parameters = req.body;
+        setSessionParameters(parameters, req.user, req._requestid);
+
+        let connector = await getWatsonConfiguration(parameters._requestid, parameters);
+        if (connector.error) return res.status(connector.status).json(connector);
+
+        const insert = await resolveConflictsIntents(parameters._requestid, parameters);
+        if (insert.error) return res.status(insert.status).json(insert);
+
+        const assistant = await getAssistantConfiguration(req._requestid, connector.data);
+        if (assistant.error) return res.status(assistant.status).json(assistant);
+
+        const syncData = await syncAllIntents(req._requestid, assistant.data, connector.data, parameters);
         if (syncData.error) return res.status(syncData.status).json(syncData);
 
         return res
