@@ -407,7 +407,7 @@ exports.syncIntentionItem = async (requestid, assistant, connector, params) => {
                     params.detail &&
                     params.detail
                         .filter((item) => item.status === "ACTIVO")
-                        .map((item) => ({ text: item.value, mentions: item.mentions })),
+                        .map((item) => ({ text: item.value, mentions: item.mentions || undefined })),
             }),
         };
 
