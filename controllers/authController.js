@@ -55,6 +55,11 @@ const properties = [
         type: 'text'
     },
     {
+        propertyname: "BOTBYSUPERVISOR",
+        key: "bot_by_supervisor",
+        type: 'text'
+    },
+    {
         propertyname: "OCULTARLOGCONVERSACION",
         key: "hide_log_conversation",
         type: 'bool',
@@ -166,7 +171,6 @@ exports.authenticate = async (req, res) => {
             user.code = cur;
         }
         
-
         if (!integration) {
             const ispasswordmatch = await bcryptjs.compare(password, user.pwd)
             if (!ispasswordmatch)
@@ -367,7 +371,7 @@ exports.logout = async (req, res) => {
             return res.json({ data: null, error: false });
         }
     } catch (exception) {
-        logger.child({ error: { detail: exception.stack, message: exception.toString() } }) .error(`Request to ${req.originalUrl}`);
+        logger.child({ error: { detail: exception.stack, message: exception.toString() } }).error(`Request to ${req.originalUrl}`);
         return res.status(500).json(getErrorCode(null, exception, `Request to ${req.originalUrl}`, req._requestid));
     }
     // return res.json({ data: null, error: false });

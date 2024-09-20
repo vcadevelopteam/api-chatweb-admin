@@ -940,7 +940,7 @@ exports.insertChannel = async (request, response) => {
         parameters.phone = null;
         parameters.resolvelithium = null;
         parameters.schedule = null;
-        parameters.status = "ACTIVO";
+        parameters.status = parameters.onboarding ? "INACTIVO" : "ACTIVO";
         parameters.updintegration = null;
         parameters.username = request.user.usr;
         parameters.voximplantholdtone = null;
@@ -3381,7 +3381,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                         }
                                     }
 
-                                    const templateType = carouselData ? "CAROUSEL" : ((authenticationData || buttonGenericData || buttonQuickReplyData || footerData || headerData) ? "MULTIMEDIA" : "STANDARD");
+                                    const templateType = carouselData ? "CAROUSEL" : "MULTIMEDIA";
 
                                     let hasButtons = false;
                                     let buttons = [];
@@ -3454,6 +3454,8 @@ exports.synchronizeTemplate = async (request, response) => {
                                         templatedata.partnerId || null,
                                         templatedata.qualityRating || null,
                                         templatedata.status || 'REJECTED',
+                                        false,
+                                        templatedata.buttonOrder || null,
                                         request.user?.usr || "scheduler",
                                         request._requestid,
                                     );
@@ -3580,6 +3582,8 @@ exports.addTemplate = async (request, response) => {
                                         parameters.newversion = false;
                                         parameters.buttons = (request.body.buttons || []).length > 0 ? JSON.stringify(request.body.buttons) : null;
                                         parameters.bodyobject = null;
+                                        parameters.categorychange = true;
+                                        parameters.firstbuttons = null;
 
                                         const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
                                             "UFN_MESSAGETEMPLATE_INS_OLD",
@@ -3652,6 +3656,8 @@ exports.addTemplate = async (request, response) => {
                                             parameters.headervariables = parameters.headervariables ? JSON.stringify(parameters.headervariables) : null;
                                             parameters.buttons = null;
                                             parameters.bodyobject = null;
+                                            parameters.categorychange = parameters.categorychange ? true : false;
+                                            parameters.firstbuttons = parameters.firstbuttons || null;
 
                                             const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
                                                 "UFN_MESSAGETEMPLATE_INS",
@@ -3709,6 +3715,8 @@ exports.addTemplate = async (request, response) => {
                                             parameters.headervariables = parameters.headervariables ? JSON.stringify(parameters.headervariables) : null;
                                             parameters.buttons = null;
                                             parameters.bodyobject = null;
+                                            parameters.categorychange = parameters.categorychange ? true : false;
+                                            parameters.firstbuttons = parameters.firstbuttons || null;
 
                                             const queryMessageTemplateCreate = await triggerfunctions.executesimpletransaction(
                                                 "UFN_MESSAGETEMPLATE_INS",
@@ -3860,6 +3868,8 @@ exports.deleteTemplate = async (request, response) => {
                         parameters.headervariables = messagetemplate.headervariables ? JSON.stringify(messagetemplate.headervariables) : null;
                         parameters.buttons = null;
                         parameters.bodyobject = null;
+                        parameters.categorychange = messagetemplate.categorychange ? true : false;
+                        parameters.firstbuttons = messagetemplate.firstbuttons || null;
 
                         const queryMessageTemplateDelete = await triggerfunctions.executesimpletransaction(
                             "UFN_MESSAGETEMPLATE_INS",
