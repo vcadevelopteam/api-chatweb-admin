@@ -4690,6 +4690,21 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_WATSON_CONFLICTS_RESOLVE: {
+        query: "SELECT * FROM public.ufn_watson_conflicts_resolve($corpid, $orgid, $watsonid, $watsonitemdetailids, $username)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_INTENTS_EXPORT: {
+        query: "SELECT * FROM public.ufn_watson_intents_export($corpid, $orgid, $watsonid)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_WATSON_ENTITES_EXPORT: {
+        query: "SELECT * FROM public.ufn_watson_entites_export($corpid, $orgid, $watsonid)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_WATSON_MODELS_SEL: {
         query: "SELECT * FROM public.ufn_watson_models_sel($corpid, $orgid, $id)",
         module: "",
