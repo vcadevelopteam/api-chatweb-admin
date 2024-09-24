@@ -35,9 +35,9 @@ exports.createCollection = async (req, res) => {
 
 exports.createCollectionDocument = async (req, res) => {
   try {
-    const { collection, url } = req.body;
+    const { collection, url, chunk_size, chunk_overlap } = req.body;
     let responseCollectionDocument = await axiosObservable({
-      data: { collection: collection, url: url },
+      data: { collection: collection, url: url, chunk_size: chunk_size, chunk_overlap: chunk_overlap },
       headers: {
         Authorization: req.headers.authorization,
         "Content-Type": "application/json",
@@ -67,9 +67,9 @@ exports.createCollectionDocument = async (req, res) => {
 //falta
 exports.createCollectionDocuments = async (req, res) => {
   try {
-    const { collection, urls } = req.body;
+    const { collection, urls, chunk_size, chunk_overlap } = req.body;
     let responseCollectionDocuments = await axiosObservable({
-      data: { collection: collection, urls: urls },
+      data: { collection: collection, urls: urls, chunk_size: chunk_size, chunk_overlap: chunk_overlap },
       headers: {
         Authorization: req.headers.authorization,
         "Content-Type": "application/json",
@@ -204,9 +204,9 @@ exports.editCollection = async (req, res) => {
 
 exports.addFile = async (req, res) => {
   try {
-    const { url, collection } = req.body;
+    const { url, collection,  chunk_size, chunk_overlap } = req.body;
     let responseAddFile = await axiosObservable({
-      data: { url: url, collection: collection },
+      data: { url: url, collection: collection, chunk_size: chunk_size, chunk_overlap: chunk_overlap },
       headers: {
         Authorization: req.headers.authorization,
         "Content-Type": "application/json",
@@ -236,9 +236,9 @@ exports.addFile = async (req, res) => {
 //falta
 exports.addFiles = async (req, res) => {
   try {
-    const { urls, collection } = req.body;
+    const { urls, collection, chunk_size, chunk_overlap } = req.body;
     let responseAddFiles = await axiosObservable({
-      data: { urls: urls, collection: collection },
+      data: { urls: urls, collection: collection, chunk_size: chunk_size, chunk_overlap: chunk_overlap },
       headers: {
         Authorization: req.headers.authorization,
         "Content-Type": "application/json",
@@ -300,7 +300,7 @@ exports.deleteFile = async (req, res) => {
 
 exports.query = async (req, res) => {
   try {
-    const { assistant_name, query, system_prompt, model, thread_id, max_new_tokens, temperature, top_p } = req.body;
+    const { assistant_name, query, system_prompt, model, thread_id, max_new_tokens, temperature, top_p, top_k, repetition_penalty } = req.body;
     let responseQuery = await axiosObservable({
       data: {
         assistant_name: assistant_name,
@@ -311,7 +311,9 @@ exports.query = async (req, res) => {
         context: " ",
         max_new_tokens: max_new_tokens,
         temperature: temperature,
-        top_p: top_p
+        top_p: top_p,
+        top_k: top_k,
+        repetition_penalty: repetition_penalty,
       },
       headers: {
         Authorization: req.headers.authorization,
