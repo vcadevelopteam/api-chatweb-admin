@@ -304,7 +304,7 @@ exports.query = async (req, res) => {
     const { assistant_name, query, system_prompt, model, thread_id, max_new_tokens, temperature, top_p, threadid } = req.body;
 
     let context = "";
-    if (thread_id) {
+    if (threadid) {
       const resinteraction = await executesimpletransaction("UFN_THREAD_LAST", { threadid });
       if (resinteraction instanceof Array && resinteraction.length > 0) {
         context = resinteraction[0].concatenated_messages
