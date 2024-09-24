@@ -74,6 +74,8 @@ exports.createAssistant = async (req, res) => {
       basemodel,
       retrieval,
       codeinterpreter,
+      temperature,
+      top_p,
     } = req.body;
 
     let reponseCreateAssistant = await axiosObservable({
@@ -84,6 +86,8 @@ exports.createAssistant = async (req, res) => {
         basemodel: basemodel,
         retrieval: retrieval,
         codeinterpreter: codeinterpreter,
+        temperature: temperature,
+        top_p: top_p
       },
       headers: {   
         Authorization: req.headers.authorization,
@@ -126,6 +130,8 @@ exports.updateAssistant = async (req, res) => {
       retrieval,
       codeinterpreter,
       file_ids,
+      temperature,
+      top_p
     } = req.body;
     let responseUpdateAssistant = await axiosObservable({
       data: {
@@ -137,6 +143,8 @@ exports.updateAssistant = async (req, res) => {
         retrieval: retrieval,
         codeinterpreter: codeinterpreter,
         file_ids: file_ids,
+        temperature: temperature,
+        top_p: top_p
       },
       headers: {   
         Authorization: req.headers.authorization,
