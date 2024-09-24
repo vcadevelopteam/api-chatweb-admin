@@ -305,11 +305,17 @@ exports.query = async (req, res) => {
 
     let context = "";
     if (threadid) {
-      const resinteraction = await executesimpletransaction("UFN_THREAD_LAST", { threadid });
-      if (resinteraction instanceof Array && resinteraction.length > 0) {
-        context = resinteraction[0].concatenated_messages
+      const match = threadid.match(/\d+/);
+      const threadIdNumber = match ? parseInt(match[0], 10) : null;
+
+      if (threadIdNumber) {
+        const resinteraction = await executesimpletransaction("UFN_THREAD_LAST", { threadid: threadIdNumber });
+        if (resinteraction instanceof Array && resinteraction.length > 0) {
+          context = resinteraction[0].concatenated_messages;
+        }
       }
     }
+
     let responseQuery = await axiosObservable({
       data: {
         assistant_name: assistant_name,
