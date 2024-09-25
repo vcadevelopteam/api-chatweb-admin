@@ -1,5 +1,6 @@
 const { default: axios } = require("axios");
 const { axiosObservable, getErrorCode, errors } = require("../config/helpers");
+const { executesimpletransaction } = require("../config/triggerfunctions");
 
 exports.createCollection = async (req, res) => {
   try {
@@ -300,7 +301,16 @@ exports.deleteFile = async (req, res) => {
 
 exports.query = async (req, res) => {
   try {
-    const { assistant_name, query, system_prompt, model, thread_id, max_new_tokens, temperature, top_p } = req.body;
+    const { assistant_name, query, system_prompt, model, thread_id, max_new_tokens, temperature, top_p, threadid } = req.body;
+
+    let context = "";
+    if (threadid) {
+      const resinteraction = await executesimpletransaction("UFN_THREAD_LAST", { threadid });
+      if (resinteraction instanceof Array && resinteraction.length > 0) {
+        context = resinteraction[0].concatenated_messages;
+      }
+    }
+    
     let responseQuery = await axiosObservable({
       data: {
         assistant_name: assistant_name,
@@ -308,7 +318,7 @@ exports.query = async (req, res) => {
         system_prompt: system_prompt,
         model: model,
         thread_id: thread_id,
-        context: " ",
+        context: context || " ",
         max_new_tokens: max_new_tokens,
         temperature: temperature,
         top_p: top_p
