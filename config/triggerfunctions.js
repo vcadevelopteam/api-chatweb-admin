@@ -189,7 +189,7 @@ exports.executeTransaction = async (header, detail, permissions, _requestid) => 
     let detailtmp = detail;
     const transaction = await sequelize.transaction();
     let resultHeader = null;
-    let lasterror = null;
+    let firstError = null;
     if (header) {
         const { method, parameters } = header;
 
@@ -247,13 +247,17 @@ exports.executeTransaction = async (header, detail, permissions, _requestid) => 
                     transaction
                 })
                     .catch(err => {
-                        lasterror = getErrorSeq(err, profiler, `transaction detail ${item.method}`, _requestid);
-                        throw new Error('error')
+                        if (!firstError) { 
+                            firstError = getErrorSeq(err, profiler, `transaction detail ${item.method}`, _requestid);
+                        }
+                        throw new Error('error');
 
                     });
             } else {
-                lasterror = getErrorCode(errors.NOT_FUNCTION_ERROR);
-                throw new Error('error')
+                if (!firstError) {
+                    firstError = getErrorCode(errors.NOT_FUNCTION_ERROR);
+                }
+                throw new Error('error');
             }
         }))
         await transaction.commit();
@@ -264,7 +268,7 @@ exports.executeTransaction = async (header, detail, permissions, _requestid) => 
         };
     } catch (e) {
         await transaction.rollback();
-        return lasterror;
+        return firstError;
     }
 }
 const NUMBERS = ["bigint", "integer", "numeric", "double precision"];
