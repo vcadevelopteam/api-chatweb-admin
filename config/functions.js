@@ -1,7 +1,7 @@
 module.exports = {
     QUERY_AUTHENTICATED: {
         query: `
-        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision, corp.partnerid
+        SELECT us.company, us.languagesettings, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi, cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision, corp.partnerid
         FROM usr us
         INNER JOIN orguser ous ON ous.userid = us.userid
         INNER JOIN org org ON org.orgid = ous.orgid
@@ -13,7 +13,7 @@ module.exports = {
         WHERE us.usr = $usr AND ous.bydefault
         AND ous.status <> 'ELIMINADO'
         AND (role.code = 'SUPERADMIN' OR (org.status = 'ACTIVO' AND corp.status = 'ACTIVO'))
-        GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
+        GROUP BY us.company, us.languagesettings, us.pwdchangefirstlogin, org.description, corp.description, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
         LIMIT 1`,
         module: "",
         protected: false
@@ -25,7 +25,7 @@ module.exports = {
     },
     QUERY_AUTHENTICATED_BY_FACEBOOKID: {
         query: `
-        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid,
+        SELECT us.company, us.languagesettings, us.languagesettings, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid,
 		us.usr, us.pwd, us.firstname, us.image, us.lastname, us.email, us.status, ous.groups, ous.redirect, pp.plan,
 		string_agg(role.description,',') roledesc, COALESCE(cur.symbol, 'S/') currencysymbol, COALESCE(org.country, 'PE') countrycode, corp.paymentmethod, cc.communicationchannelsite sitevoxi,
 		cc.communicationchannelowner ownervoxi, cc.communicationchannelid ccidvoxi, cc.voximplantcallsupervision, corp.partnerid
@@ -41,14 +41,14 @@ module.exports = {
         AND ous.bydefault
         AND ous.status <> 'ELIMINADO'
         AND (role.code = 'SUPERADMIN' OR (org.status = 'ACTIVO' AND corp.status = 'ACTIVO'))
-        GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
+        GROUP BY us.company, us.languagesettings, us.pwdchangefirstlogin, org.description, corp.description, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
         LIMIT 1`,
         module: "",
         protected: false
     },
     QUERY_AUTHENTICATED_BY_GOOGLEID: {
         query: `
-        SELECT us.company, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid,
+        SELECT us.company, us.languagesettings, us.languagesettings, us.pwdchangefirstlogin, org.description orgdesc, corp.description corpdesc, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid,
         ous.orgid, us.userid, us.usr, us.pwd,
         us.firstname, us.image, us.lastname, us.email, us.status,
         ous.groups, ous.redirect, pp.plan, COALESCE(cur.symbol, 'S/') currencysymbol,
@@ -65,7 +65,7 @@ module.exports = {
         AND ous.bydefault
         AND ous.status <> 'ELIMINADO'
         AND (role.code = 'SUPERADMIN' OR (org.status = 'ACTIVO' AND corp.status = 'ACTIVO'))
-        GROUP BY us.company, us.pwdchangefirstlogin, org.description, corp.description, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
+        GROUP BY us.company, us.languagesettings, us.pwdchangefirstlogin, org.description, corp.description, corp.domainname, corp.iconurl, corp.logourl, corp.startlogourl, corp.ispoweredbylaraigo, ous.corpid, ous.orgid, us.userid, us.usr, us.pwd, us.image, us.firstname, us.lastname, us.email, us.status, ous.groups, ous.redirect,pp.plan, COALESCE(cur.symbol, 'S/'), COALESCE(org.country, 'PE'), corp.paymentmethod, cc.communicationchannelsite, cc.communicationchannelowner, cc.communicationchannelid, cc.voximplantcallsupervision, corp.partnerid
         LIMIT 1`,
         module: "",
         protected: false
@@ -724,7 +724,7 @@ module.exports = {
     },
     UFN_MESSAGETEMPLATE_SEL: {
         query: "SELECT * FROM ufn_messagetemplate_sel($corpid, $orgid, $take, $skip, $where, $order)",
-        module: ["/extras/messagetemplate"],
+        module: ["/extras/messagetemplate", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_SEL1: {
@@ -739,7 +739,7 @@ module.exports = {
     },
     UFN_MESSAGETEMPLATE_TOTALRECORDS: {
         query: "SELECT * FROM ufn_messagetemplate_totalrecords($corpid, $orgid, $where)",
-        module: ["/extras/messagetemplate"],
+        module: ["/extras/messagetemplate", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_TOTALRECORDS1: {
@@ -1090,12 +1090,12 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_MESSAGETEMPLATE_INS: {
-        query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $footerenabled, $footer, $buttonsenabled, $priority, $attachment, $communicationchannelid, $communicationchanneltype, $authenticationdata, $bodyvariables, $buttonsgeneric, $buttonsquickreply, $carouseldata, $headervariables, $provideraccountid, $providerexternalid, $providerid, $providermessagelimit, $providerpartnerid, $providerquality, $providerstatus, $username, $operation, false, $buttons, $bodyobject)",
+        query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $footerenabled, $footer, $buttonsenabled, $priority, $attachment, $communicationchannelid, $communicationchanneltype, $authenticationdata, $bodyvariables, $buttonsgeneric, $buttonsquickreply, $carouseldata, $headervariables, $provideraccountid, $providerexternalid, $providerid, $providermessagelimit, $providerpartnerid, $providerquality, $providerstatus, $username, $operation, false, $buttons, $bodyobject, $categorychange, $firstbuttons)",
         module: ["/extras/messagetemplate"],
         protected: "INSERT"
     },
     UFN_MESSAGETEMPLATE_INS_OLD: {
-        query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $footerenabled, $footer, $buttonsenabled, $priority, $attachment, $communicationchannelid, $communicationchanneltype, $authenticationdata, $bodyvariables, $buttonsgeneric, $buttonsquickreply, $carouseldata, $headervariables, $provideraccountid, $providerexternalid, $providerid, $providermessagelimit, $providerpartnerid, $providerquality, $providerstatus, $username, $operation, $newversion, $buttons, $bodyobject)",
+        query: "SELECT * FROM ufn_messagetemplate_ins($corpid, $orgid, $id, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $footerenabled, $footer, $buttonsenabled, $priority, $attachment, $communicationchannelid, $communicationchanneltype, $authenticationdata, $bodyvariables, $buttonsgeneric, $buttonsquickreply, $carouseldata, $headervariables, $provideraccountid, $providerexternalid, $providerid, $providermessagelimit, $providerpartnerid, $providerquality, $providerstatus, $username, $operation, $newversion, $buttons, $bodyobject, $categorychange, $firstbuttons)",
         module: ["/extras/messagetemplate"],
         protected: "INSERT"
     },
@@ -1427,22 +1427,22 @@ module.exports = {
     },
     UFN_CAMPAIGN_PERSON_TOTALRECORDS: {
         query: "SELECT * FROM ufn_campaign_person_totalrecords($corpid, $orgid, $startdate, $enddate, $where, $username, $offset)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_CAMPAIGN_PERSON_SEL: {
         query: "SELECT  * FROM ufn_campaign_person_sel($corpid, $orgid, $startdate, $enddate, $where, $order, $take, $skip, $username, $offset)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_CAMPAIGN_LEAD_PERSON_TOTALRECORDS: {
         query: "SELECT * FROM ufn_campaign_lead_person_totalrecords($corpid, $orgid, $startdate, $enddate, $where, $username, $offset)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_CAMPAIGN_LEAD_PERSON_SEL: {
         query: "SELECT  * FROM ufn_campaign_lead_person_sel($corpid, $orgid, $startdate, $enddate, $where, $order, $take, $skip, $username, $offset)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_CAMPAIGN_LST: {
@@ -1457,7 +1457,7 @@ module.exports = {
     },
     UFN_CAMPAIGN_SEL: {
         query: "SELECT * FROM ufn_campaign_sel($corpid, $orgid, $id, $username)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     QUERY_CAMPAIGN_SEL: {
@@ -1476,22 +1476,22 @@ module.exports = {
     },
     UFN_CAMPAIGN_INS: {
         query: "SELECT * FROM ufn_campaign_ins($corpid, $orgid, $id, $communicationchannelid, $usergroup, $type, $status, $title, $description, $subject, $message, $startdate, $enddate, $repeatable, $frecuency, $messagetemplateid, $messagetemplatename, $messagetemplatenamespace, $messagetemplateheader, $messagetemplatebuttons, $executiontype, $batchjson, $fields, $messagetemplatefooter, $messagetemplatetype, $messagetemplateattachment, $source, $messagetemplatelanguage, $messagetemplatepriority, $username, $operation, $carouseljson, $variableshidden, $membercount, $offset)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/advancedtemplatescampaigns"],
         protected: "INSERT"
     },
     UFN_CAMPAIGN_INS_OLD: {
         query: "SELECT * FROM ufn_campaign_ins($corpid, $orgid, $id, $communicationchannelid, $usergroup, $type, $status, $title, $description, $subject, $message, $startdate, $enddate, $repeatable, $frecuency, $messagetemplateid, $messagetemplatename, $messagetemplatenamespace, $messagetemplateheader, $messagetemplatebuttons, $executiontype, $batchjson, $fields, $messagetemplatefooter, $messagetemplatetype, $messagetemplateattachment, $source, $messagetemplatelanguage, $messagetemplatepriority, $username, $operation, $carouseljson, $variableshidden, $membercount, $offset, $newversion)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/advancedtemplatescampaigns"],
         protected: "INSERT"
     },
     UFN_CAMPAIGN_DEL: {
         query: "SELECT * FROM ufn_campaign_del($corpid, $orgid, $id, $status, $username, $operation)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/advancedtemplatescampaigns"],
         protected: "INSERT"
     },
     UFN_CAMPAIGN_START: {
         query: "SELECT * FROM ufn_campaign_start($corpid, $orgid, $id, $username, $offset)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     QUERY_CAMPAIGN_START: {
@@ -1501,12 +1501,12 @@ module.exports = {
     },
     UFN_CAMPAIGN_STATUS: {
         query: "SELECT * FROM ufn_campaign_status($corpid, $orgid, $id)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_CAMPAIGN_STOP: {
         query: "SELECT * FROM ufn_campaign_stop($corpid, $orgid, $campaignid)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     QUERY_CAMPAIGN_STOP: {
@@ -1521,7 +1521,7 @@ module.exports = {
     },
     UFN_CAMPAIGNMEMBER_SEL: {
         query: "SELECT * FROM ufn_campaignmember_sel($corpid, $orgid, $campaignid)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     QUERY_CAMPAIGNMEMBER_SEL: {
@@ -1542,37 +1542,37 @@ module.exports = {
     },
     UFN_CAMPAIGNMEMBER_INS: {
         query: "SELECT * FROM ufn_campaignmember_ins($corpid, $orgid, $id, $personid, $personcommunicationchannel, $personcommunicationchannelowner, $type, $displayname, $status, $operation, $campaignid, $field1, $field2, $field3, $field4, $field5, $field6, $field7, $field8, $field9, $field10, $field11, $field12, $field13, $field14, $field15, $batchindex)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/advancedtemplatescampaigns"],
         protected: "INSERT"
     },
     UFN_CAMPAIGNMEMBER_STATUS: {
         query: "SELECT * FROM ufn_campaignmember_status($corpid, $orgid, $campaignid, $campaignmemberid, $status)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_BLACKLIST_INS: {
         query: "SELECT * FROM ufn_blacklist_ins($corpid, $orgid, $id, $description, $type, $status, $phone, $username, $operation)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/advancedtemplatescampaigns"],
         protected: "INSERT"
     },
     UFN_BLACKLIST_INS_ARRAY: {
         query: "SELECT * FROM ufn_blacklist_ins_array($corpid, $orgid, $username, $table)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/advancedtemplatescampaigns"],
         protected: "INSERT"
     },
     UFN_BLACKLIST_SEL: {
         query: "SELECT * FROM ufn_blacklist_sel($corpid, $orgid, $where, $order, $take, $skip, $offset)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_BLACKLIST_TOTALRECORDS: {
         query: "SELECT * FROM ufn_blacklist_totalrecords($corpid, $orgid, $where, $offset)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_BLACKLIST_EXPORT: {
         query: "SELECT * FROM ufn_blacklist_export($corpid, $orgid, $where, $offset)",
-        module: ["/extras/campaign"],
+        module: ["/extras/campaign", "/advancedtemplatescampaigns"],
         protected: "SELECT"
     },
     UFN_REPORTTEMPLATE_SEL: {
@@ -1923,7 +1923,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_USER_UPDATE: {
-        query: "SELECT * FROM ufn_user_update($userid, $firstname, $lastname, $password, $image)",
+        query: "SELECT * FROM ufn_user_update($userid, $firstname, $lastname, $password, $image, $languagesettings)",
         module: "",
         protected: "INSERT"
     },
@@ -3532,7 +3532,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_MESSAGETEMPLATE_UPD: {
-        query: "SELECT * FROM ufn_messagetemplate_upd($corpid, $orgid, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $footerenabled, $footer, $buttonsenabled, $buttons, $priority, $attachment, $communicationchannelid, $communicationchanneltype, $authenticationdata, $bodyvariables, $buttonsgeneric, $buttonsquickreply, $carouseldata, $headervariables, $provideraccountid, $providerexternalid, $providerid, $providermessagelimit, $providerpartnerid, $providerquality, $providerstatus, $username)",
+        query: "SELECT * FROM ufn_messagetemplate_upd($corpid, $orgid, $description, $type, $status, $name, $namespace, $category, $language, $templatetype, $headerenabled, $headertype, $header, $body, $footerenabled, $footer, $buttonsenabled, $buttons, $priority, $attachment, $communicationchannelid, $communicationchanneltype, $authenticationdata, $bodyvariables, $buttonsgeneric, $buttonsquickreply, $carouseldata, $headervariables, $provideraccountid, $providerexternalid, $providerid, $providermessagelimit, $providerpartnerid, $providerquality, $providerstatus, $categorychange, $firstbuttons, $username)",
         module: "",
         protected: "SELECT"
     },
