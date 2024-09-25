@@ -310,7 +310,7 @@ exports.query = async (req, res) => {
         context = resinteraction[0].concatenated_messages;
       }
     }
-    
+
     let responseQuery = await axiosObservable({
       data: {
         assistant_name: assistant_name,
