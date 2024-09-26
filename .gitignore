@@ -118,3 +118,6 @@ config/certs
 
 config/certs/claro.pem
 config/certs/pvkey.pem
+
+bodegueros.json
+zyxmeapp.json
