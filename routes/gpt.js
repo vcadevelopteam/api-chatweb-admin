@@ -58,4 +58,8 @@ router.post('/assistants/massivedelete',
     gptController.massiveDelete
 )
 
+router.post('/files/get',
+    gptController.files
+)
+
 module.exports = router;
