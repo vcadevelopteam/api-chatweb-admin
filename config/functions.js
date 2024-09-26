@@ -2404,6 +2404,14 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_SEL_DOCUMENT_BY_ASSISTANTID: {
+        query: `select ad.url, ad.description filename from assistantai ai
+        JOIN assistantaidocument ad ON ad.corpid = ai.corpid and ad.orgid = ai.orgid and ad.assistantaiid = ai.assistantaiid
+        where ai.code = :assistantid
+        and ad.fileid IN (:files)`,
+        module: "",
+        protected: "SELECT"
+    },
     QUERY_SEL_PROPERTY_ENV_ON_LOGIN: {
         query: "SELECT propertyname, propertyvalue FROM property p WHERE p.corpid = $corpid AND p.propertyname = 'AMBIENTE' and p.status = 'ACTIVO';",
         module: "",
