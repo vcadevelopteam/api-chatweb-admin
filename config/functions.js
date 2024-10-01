@@ -4987,7 +4987,7 @@ module.exports = {
         protected: "SELECT"
     },
     UFN_LINKREGISTER_SEL: {
-        query: "SELECT * FROM ufn_linkregister_sel($corpid, $orgid, $userid, $origin)",
+        query: "SELECT * FROM ufn_linkregister_sel($corpid, $orgid)",
         module: "",
         protected: "SELECT"
     },
