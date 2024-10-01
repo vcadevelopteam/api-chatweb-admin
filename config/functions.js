@@ -5160,4 +5160,14 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_LINKREGISTER_SEL: {
+        query: "SELECT * FROM ufn_linkregister_sel($corpid, $orgid, $userid, $origin)",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_LINKREGISTER_INS: {
+        query: "SELECT * FROM ufn_linkregister_ins($corpid, $orgid, $linkregisterid, $operation, $description, $url, $status, $startdate, $enddate, $username)",
+        module: "/linkregister",
+        protected: "INSERT"
+    },
 }
