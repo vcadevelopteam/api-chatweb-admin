@@ -34,38 +34,6 @@ exports.createCollection = async (req, res) => {
   }
 };
 
-exports.createCollectionDocument = async (req, res) => {
-  try {
-    const { collection, url } = req.body;
-    let responseCollectionDocument = await axiosObservable({
-      data: { collection: collection, url: url },
-      headers: {
-        Authorization: req.headers.authorization,
-        "Content-Type": "application/json",
-      },
-      method: "post",
-      url: `${process.env.LLAMA3}/create_collection_document`,
-      _requestid: req._requestid,
-    });
-
-    if (responseCollectionDocument.data && responseCollectionDocument.statusText === "OK") {
-      return res.json({ ...responseCollectionDocument.data, success: true });
-    }
-    return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
-  } catch (exception) {
-    return res
-      .status(500)
-      .json(
-        getErrorCode(
-          null,
-          exception,
-          `Request to ${req.originalUrl}`,
-          req._requestid
-        )
-      );
-  }
-};
-//falta
 exports.createCollectionDocuments = async (req, res) => {
   try {
     const { collection, urls } = req.body;
@@ -82,41 +50,6 @@ exports.createCollectionDocuments = async (req, res) => {
 
     if (responseCollectionDocuments.data && responseCollectionDocuments.statusText === "OK") {
       return res.json({ ...responseCollectionDocuments.data, success: true });
-    }
-    return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
-  } catch (exception) {
-    return res
-      .status(500)
-      .json(
-        getErrorCode(
-          null,
-          exception,
-          `Request to ${req.originalUrl}`,
-          req._requestid
-        )
-      );
-  }
-};
-
-exports.deleteCollection = async (req, res) => {
-  try {
-    const { name } = req.body;
-    let responseDeleteCollection = await axiosObservable({
-      data: { name: name },
-      headers: {
-        Authorization: req.headers.authorization,
-        "Content-Type": "application/json",
-      },
-      method: "post",
-      url: `${process.env.LLAMA3}/delete_collection`,
-      _requestid: req._requestid,
-    });
-
-    if (
-      responseDeleteCollection.data &&
-      responseDeleteCollection.statusText === "OK"
-    ) {
-      return res.json(responseDeleteCollection.data);
     }
     return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
   } catch (exception) {
@@ -203,38 +136,6 @@ exports.editCollection = async (req, res) => {
   }
 };
 
-exports.addFile = async (req, res) => {
-  try {
-    const { url, collection } = req.body;
-    let responseAddFile = await axiosObservable({
-      data: { url: url, collection: collection },
-      headers: {
-        Authorization: req.headers.authorization,
-        "Content-Type": "application/json",
-      },
-      method: "post",
-      url: `${process.env.LLAMA3}/add_file`,
-      _requestid: req._requestid,
-    });
-
-    if (responseAddFile.data && responseAddFile.status === 201) {
-      return res.json(responseAddFile.data);
-    }
-    return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
-  } catch (exception) {
-    return res
-      .status(500)
-      .json(
-        getErrorCode(
-          null,
-          exception,
-          `Request to ${req.originalUrl}`,
-          req._requestid
-        )
-      );
-  }
-};
-//falta
 exports.addFiles = async (req, res) => {
   try {
     const { urls, collection } = req.body;
@@ -299,6 +200,41 @@ exports.deleteFile = async (req, res) => {
   }
 };
 
+exports.deleteThread = async (req, res) => {
+  try {
+    const { threadid } = req.body;
+    let responseDeleteThread = await axiosObservable({
+      data: { threadid: threadid },
+      headers: {
+        Authorization: req.headers.authorization,
+        "Content-Type": "application/json",
+      },
+      method: "post",
+      url: `${process.env.LLAMA3}/delete_thread`,
+      _requestid: req._requestid,
+    });
+
+    if (
+      responseDeleteThread.data &&
+      responseDeleteThread.statusText === "OK"
+    ) {
+      return res.json(responseDeleteThread.data);
+    }
+    return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
+  } catch (exception) {
+    return res
+      .status(500)
+      .json(
+        getErrorCode(
+          null,
+          exception,
+          `Request to ${req.originalUrl}`,
+          req._requestid
+        )
+      );
+  }
+};
+
 exports.query = async (req, res) => {
   try {
     const { assistant_name, query, system_prompt, model, thread_id, max_new_tokens, temperature, top_p, threadid } = req.body;
@@ -334,41 +270,6 @@ exports.query = async (req, res) => {
 
     if (responseQuery.data && responseQuery.statusText === "OK") {
       return res.json({ data: responseQuery.data });
-    }
-    return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
-  } catch (exception) {
-    return res
-      .status(500)
-      .json(
-        getErrorCode(
-          null,
-          exception,
-          `Request to ${req.originalUrl}`,
-          req._requestid
-        )
-      );
-  }
-};
-
-exports.deleteThread = async (req, res) => {
-  try {
-    const { threadid } = req.body;
-    let responseDeleteThread = await axiosObservable({
-      data: { threadid: threadid },
-      headers: {
-        Authorization: req.headers.authorization,
-        "Content-Type": "application/json",
-      },
-      method: "post",
-      url: `${process.env.LLAMA3}/delete_thread`,
-      _requestid: req._requestid,
-    });
-
-    if (
-      responseDeleteThread.data &&
-      responseDeleteThread.statusText === "OK"
-    ) {
-      return res.json(responseDeleteThread.data);
     }
     return res.status(400).json(getErrorCode(errors.UNEXPECTED_ERROR));
   } catch (exception) {
