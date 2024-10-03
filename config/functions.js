@@ -5175,4 +5175,9 @@ module.exports = {
         module: "/linkregister",
         protected: "INSERT"
     },
+    UFN_REPORTLINK_INS: {
+        query: "SELECT ufn_reportlink_ins($corpid, $orgid, $messagetemplateid, $historyid, $linkregisterid, $type, $username)",
+        module: "",
+        protected: "INSERT"
+    },
 }
