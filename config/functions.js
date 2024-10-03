@@ -3536,6 +3536,11 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_MESSAGETEMPLATE_BUTTON: {
+        query: "SELECT buttonsgeneric, buttonsquickreply FROM messagetemplate WHERE corpid = $corpid AND orgid = $orgid AND name = $name AND ($communicationchannelid = ANY(string_to_array(communicationchannelid, ',')::bigint []) OR namespace = $namespace)",
+        module: "",
+        protected: "SELECT"
+    },
     UFN_MESSAGETEMPLATE_RESET: {
         query: "UPDATE messagetemplate SET status = 'ELIMINADO', changeby = $username, changedate = NOW() WHERE corpid = $corpid AND orgid = $orgid AND type = 'HSM' AND status = 'ACTIVO' AND ($communicationchannelid = ANY(string_to_array(communicationchannelid, ',')::bigint[]) OR namespace = $namespace);",
         module: "",
