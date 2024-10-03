@@ -3427,7 +3427,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                                     if (existingButtonGenericData.btn) {
                                                         let foundIndex = buttonGenericData.findIndex(element => element.btn?.text === existingButtonGenericData.btn?.text && element.type === existingButtonGenericData.type);
 
-                                                        if (foundIndex) {
+                                                        if (foundIndex !== -1) {
                                                             buttonGenericData.splice(foundIndex, 1, existingButtonGenericData);
                                                         }
                                                     }
@@ -3439,7 +3439,7 @@ exports.synchronizeTemplate = async (request, response) => {
                                                     if (existingButtonQuickReplyData.btn) {
                                                         let foundIndex = buttonQuickReplyData.findIndex(element => element.btn?.text === existingButtonQuickReplyData.btn?.text && element.type === existingButtonQuickReplyData.type);
 
-                                                        if (foundIndex) {
+                                                        if (foundIndex !== -1) {
                                                             buttonQuickReplyData.splice(foundIndex, 1, existingButtonQuickReplyData);
                                                         }
                                                     }
