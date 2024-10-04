@@ -2404,6 +2404,16 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    QUERY_SEL_UICONFIG_ON_LOGIN: {
+        query: "SELECT uiconfigurations FROM org p WHERE p.corpid = $corpid AND p.orgid = $orgid;",
+        module: "",
+        protected: "SELECT"
+    },
+    UFN_ORG_UICONFIG_INS: {
+        query: "SELECT * FROM ufn_org_uiconfig_ins($corpid, $orgid, $name, $config, $username);",
+        module: "",
+        protected: "SELECT"
+    },
     QUERY_SEL_PROPERTY_ENV_ON_LOGIN: {
         query: "SELECT propertyname, propertyvalue FROM property p WHERE p.corpid = $corpid AND p.propertyname = 'AMBIENTE' and p.status = 'ACTIVO';",
         module: "",
