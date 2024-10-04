@@ -5190,4 +5190,9 @@ module.exports = {
         module: "",
         protected: "INSERT"
     },
+    UFN_REPORTCAMPAIGNLINKS_SEL: {
+        query: "SELECT ufn_report_sentmessages_by_clickurl($corpid, $orgid, $startdate, $enddate, $offset, $communicationchannelid)",
+        module: "",
+        protected: "SELECT"
+    },
 }
