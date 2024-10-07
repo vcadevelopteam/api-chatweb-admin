@@ -5002,12 +5002,12 @@ module.exports = {
         protected: "INSERT"
     },
     UFN_REPORTLINK_INS: {
-        query: "SELECT ufn_reportlink_ins($corpid, $orgid, $messagetemplateid, $historyid, $linkregisterid, $type, $username)",
+        query: "SELECT * FROM ufn_reportlink_ins($corpid, $orgid, $messagetemplateid, $historyid, $linkregisterid, $type, $username)",
         module: "",
         protected: "INSERT"
     },
     UFN_REPORTCAMPAIGNLINKS_SEL: {
-        query: "SELECT ufn_report_sentmessages_by_clickurl($corpid, $orgid, $startdate, $enddate, $offset, $communicationchannelid)",
+        query: "SELECT * FROM ufn_report_sentmessages_by_clickurl($corpid, $orgid, $startdate, $enddate, $offset, $communicationchannelid)",
         module: "",
         protected: "SELECT"
     },
