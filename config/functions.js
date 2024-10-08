@@ -5011,4 +5011,9 @@ module.exports = {
         module: "",
         protected: "SELECT"
     },
+    UFN_REPORTCAMPAIGNLINKSDETAIL_SEL: {
+        query: "SELECT * FROM ufn_report_sentmessages_detail_by_identifier($corpid, $orgid, $startdate, $enddate, $offset, $communicationchannelid, $identifiers)",
+        module: "",
+        protected: "SELECT"
+    },
 }
